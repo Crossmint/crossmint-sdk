@@ -78,28 +78,20 @@ function CrossmintWalletProviderInternal({
 
             const originalSendAction = parent.sendAction.bind(parent);
             parent.sendAction = (args: any) => {
-                const eventStr = String(args.event);
-                const eligible =
-                    eventStr === "request:start-onboarding" ||
-                    eventStr === "request:complete-onboarding" ||
-                    eventStr === "request:sign";
+                pendingOperationRef.current = {
+                    event: args.event,
+                    data: args.data,
+                    responseEvent: args.responseEvent,
+                    options: args.options,
+                    timestamp: Date.now(),
+                };
+                retriedOnceRef.current = false;
 
-                if (eligible) {
-                    pendingOperationRef.current = {
-                        event: args.event,
-                        data: args.data,
-                        responseEvent: args.responseEvent,
-                        options: args.options,
-                        timestamp: Date.now(),
+                if (args.options?.timeoutMs != null) {
+                    args = {
+                        ...args,
+                        options: { ...args.options, timeoutMs: Math.max(args.options.timeoutMs, 15000) },
                     };
-                    retriedOnceRef.current = false;
-
-                    if (args.options?.timeoutMs != null) {
-                        args = {
-                            ...args,
-                            options: { ...args.options, timeoutMs: Math.max(args.options.timeoutMs, 15000) },
-                        };
-                    }
                 }
 
                 const promise = originalSendAction(args);
@@ -134,14 +126,10 @@ function CrossmintWalletProviderInternal({
         if (webViewParentRef.current != null) {
             const parent = webViewParentRef.current;
 
-            const handleIndexedDBFatalError = async (data: {
-                error: string;
-                operation?: string;
-                phase: "pre-flight-check";
-            }) => {
+            const handleIndexedDBFatalError = async (data: { error: string; operation?: string }) => {
                 console.error("[CrossmintWalletProvider] Fatal IndexedDB error:", data);
 
-                if (webviewRef.current != null && data.phase === "pre-flight-check") {
+                if (webviewRef.current != null) {
                     console.log("[CrossmintWalletProvider] Reloading WebView to recover from IndexedDB failure");
                     webviewRef.current.reload();
                     await onWebViewLoad();
