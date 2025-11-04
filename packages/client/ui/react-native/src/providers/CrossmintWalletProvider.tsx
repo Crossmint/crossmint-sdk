@@ -51,13 +51,6 @@ function CrossmintWalletProviderInternal({
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
-    const pendingOperationRef = useRef<{
-        event: string;
-        data: unknown;
-        responseEvent: string;
-        options?: unknown;
-        timestamp: number;
-    } | null>(null);
     const retriedOnceRef = useRef<boolean>(false);
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
@@ -77,16 +70,7 @@ function CrossmintWalletProviderInternal({
             });
 
             const originalSendAction = parent.sendAction.bind(parent);
-            parent.sendAction = (args: any) => {
-                pendingOperationRef.current = {
-                    event: args.event,
-                    data: args.data,
-                    responseEvent: args.responseEvent,
-                    options: args.options,
-                    timestamp: Date.now(),
-                };
-                retriedOnceRef.current = false;
-
+            parent.sendAction = async (args: any) => {
                 if (args.options?.timeoutMs != null) {
                     args = {
                         ...args,
@@ -94,21 +78,36 @@ function CrossmintWalletProviderInternal({
                     };
                 }
 
-                const promise = originalSendAction(args);
+                const response = await originalSendAction(args);
 
-                promise.finally(() => {
-                    if (pendingOperationRef.current && pendingOperationRef.current.event === args.event) {
-                        pendingOperationRef.current = null;
-                        retriedOnceRef.current = false;
-                    }
-                });
+                if (
+                    response &&
+                    typeof response === "object" &&
+                    "status" in response &&
+                    response.status === "error" &&
+                    "code" in response &&
+                    response.code === "indexeddb-fatal" &&
+                    !retriedOnceRef.current
+                ) {
+                    console.log("[CrossmintWalletProvider] IndexedDB fatal error detected, reloading WebView");
+                    retriedOnceRef.current = true;
 
-                return promise;
+                    webviewRef.current?.reload();
+                    await onWebViewLoad();
+
+                    console.log(`[CrossmintWalletProvider] Retrying operation: ${String(args.event)}`);
+                    const retryResponse = await originalSendAction(args);
+                    retriedOnceRef.current = false;
+                    return retryResponse;
+                }
+
+                retriedOnceRef.current = false;
+                return response;
             };
 
             webViewParentRef.current = parent;
         }
-    }, [needsWebView, webviewRef.current]);
+    }, [needsWebView, webviewRef.current, onWebViewLoad]);
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
@@ -121,35 +120,6 @@ function CrossmintWalletProviderInternal({
             }
         }
     }, []);
-
-    useEffect(() => {
-        if (webViewParentRef.current != null) {
-            const parent = webViewParentRef.current;
-
-            const handleIndexedDBFatalError = async (data: { error: string; operation?: string }) => {
-                console.error("[CrossmintWalletProvider] Fatal IndexedDB error:", data);
-
-                if (webviewRef.current != null) {
-                    console.log("[CrossmintWalletProvider] Reloading WebView to recover from IndexedDB failure");
-                    webviewRef.current.reload();
-                    await onWebViewLoad();
-
-                    const pending = pendingOperationRef.current;
-                    if (pending != null && !retriedOnceRef.current && Date.now() - pending.timestamp < 30000) {
-                        console.log(`[CrossmintWalletProvider] Retrying operation: ${String(pending.event)}`);
-                        retriedOnceRef.current = true;
-                        parent.send(pending.event as any, pending.data);
-                    }
-                }
-            };
-
-            const listenerId = parent.on("error:indexeddb-fatal", handleIndexedDBFatalError);
-
-            return () => {
-                parent.off(listenerId);
-            };
-        }
-    }, [webViewParentRef.current, onWebViewLoad]);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
