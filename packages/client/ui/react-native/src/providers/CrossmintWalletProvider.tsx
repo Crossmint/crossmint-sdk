@@ -82,13 +82,6 @@ function CrossmintWalletProviderInternal({
 
             const originalSendAction = parent.sendAction.bind(parent);
             parent.sendAction = async (args: any) => {
-                if (args.options?.timeoutMs != null) {
-                    args = {
-                        ...args,
-                        options: { ...args.options, timeoutMs: Math.max(args.options.timeoutMs, 15000) },
-                    };
-                }
-
                 const response = await originalSendAction(args);
 
                 if (
@@ -105,7 +98,15 @@ function CrossmintWalletProviderInternal({
                     await onWebViewLoad();
 
                     console.log(`[CrossmintWalletProvider] Retrying operation: ${String(args.event)}`);
-                    return await originalSendAction(args);
+
+                    const originalTimeout = args.options?.timeoutMs ?? 0;
+                    const retryTimeout = Math.max(originalTimeout, 10000);
+                    const retryArgs = {
+                        ...args,
+                        options: { ...(args.options ?? {}), timeoutMs: retryTimeout },
+                    };
+
+                    return await originalSendAction(retryArgs);
                 }
 
                 return response;
