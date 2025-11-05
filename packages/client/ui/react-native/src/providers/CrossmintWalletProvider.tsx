@@ -85,7 +85,6 @@ function CrossmintWalletProviderInternal({
                 outgoingEvents: signerInboundEvents,
                 recovery: {
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
-                    retryTimeoutFloorMs: 10000,
                 },
             });
 

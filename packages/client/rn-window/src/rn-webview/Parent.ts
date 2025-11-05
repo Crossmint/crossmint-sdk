@@ -23,9 +23,9 @@ export interface RecoveryOptions {
     recoverableErrorCodes: string[];
 
     /**
-     * Minimum timeout in milliseconds to apply on retry attempts.
-     * This ensures enough time for WebView reload + handshake completion.
-     * Default: 10000 (10 seconds)
+     * Optional minimum timeout in milliseconds to apply on retry attempts.
+     * When not provided, the original timeout is used unchanged for the retry.
+     * Only use this if you need extra time for cold-start effects after WebView reload.
      */
     retryTimeoutFloorMs?: number;
 }
@@ -126,16 +126,19 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
 
             await this.reloadAndHandshake();
 
-            const originalTimeout = args.options?.timeoutMs ?? 0;
-            const retryTimeoutFloorMs = this.recoveryOptions?.retryTimeoutFloorMs ?? 10000;
-            const retryTimeout = Math.max(originalTimeout, retryTimeoutFloorMs);
+            const retryArgs = this.recoveryOptions?.retryTimeoutFloorMs
+                ? {
+                      ...args,
+                      options: {
+                          ...(args.options ?? {}),
+                          timeoutMs: Math.max(args.options?.timeoutMs ?? 0, this.recoveryOptions.retryTimeoutFloorMs),
+                      },
+                  }
+                : args;
 
-            const retryArgs = {
-                ...args,
-                options: { ...(args.options ?? {}), timeoutMs: retryTimeout },
-            };
-
-            console.log(`[WebViewParent] Retrying operation with timeout: ${retryTimeout}ms`);
+            console.log(
+                `[WebViewParent] Retrying operation with timeout: ${retryArgs.options?.timeoutMs ?? "default"}ms`
+            );
             return await super.sendAction(retryArgs);
         }
 
