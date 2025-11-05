@@ -2,7 +2,12 @@ import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import {
+    environmentUrlConfig,
+    signerInboundEvents,
+    signerOutboundEvents,
+    SignerErrorCode,
+} from "@crossmint/client-signers";
 import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletUIBaseProvider,
@@ -78,43 +83,15 @@ function CrossmintWalletProviderInternal({
             const parent = new WebViewParent(webviewRef as RefObject<WebView>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
+                recovery: {
+                    recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                    retryTimeoutFloorMs: 10000,
+                },
             });
-
-            const originalSendAction = parent.sendAction.bind(parent);
-            parent.sendAction = async (args: any) => {
-                const response = await originalSendAction(args);
-
-                if (
-                    response &&
-                    typeof response === "object" &&
-                    "status" in response &&
-                    response.status === "error" &&
-                    "code" in response &&
-                    response.code === "indexeddb-fatal"
-                ) {
-                    console.log("[CrossmintWalletProvider] IndexedDB fatal error detected, reloading WebView");
-
-                    webviewRef.current?.reload();
-                    await onWebViewLoad();
-
-                    console.log(`[CrossmintWalletProvider] Retrying operation: ${String(args.event)}`);
-
-                    const originalTimeout = args.options?.timeoutMs ?? 0;
-                    const retryTimeout = Math.max(originalTimeout, 10000);
-                    const retryArgs = {
-                        ...args,
-                        options: { ...(args.options ?? {}), timeoutMs: retryTimeout },
-                    };
-
-                    return await originalSendAction(retryArgs);
-                }
-
-                return response;
-            };
 
             webViewParentRef.current = parent;
         }
-    }, [needsWebView, onWebViewLoad]);
+    }, [needsWebView]);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
