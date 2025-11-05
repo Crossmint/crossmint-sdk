@@ -13,7 +13,7 @@ type ErrorResponse = { status: "error"; code?: string; error?: string };
 /**
  * Recovery options for handling fatal errors in WebView operations.
  * When enabled, WebViewParent will automatically reload the WebView and retry operations
- * when specific error codes are encountered.
+ * when specific error codes are encountered. The retry uses the original timeout unchanged.
  */
 export interface RecoveryOptions {
     /**
@@ -21,13 +21,6 @@ export interface RecoveryOptions {
      * Example: ["indexeddb-fatal"]
      */
     recoverableErrorCodes: string[];
-
-    /**
-     * Optional minimum timeout in milliseconds to apply on retry attempts.
-     * When not provided, the original timeout is used unchanged for the retry.
-     * Only use this if you need extra time for cold-start effects after WebView reload.
-     */
-    retryTimeoutFloorMs?: number;
 }
 
 export interface WebViewParentOptions<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>
@@ -112,7 +105,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
 
     /**
      * Override sendAction to add automatic recovery for fatal errors.
-     * When a recoverable error is detected, reloads WebView and retries once with extended timeout.
+     * When a recoverable error is detected, reloads WebView and retries once with the original timeout.
      */
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
@@ -126,20 +119,8 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
 
             await this.reloadAndHandshake();
 
-            const retryArgs = this.recoveryOptions?.retryTimeoutFloorMs
-                ? {
-                      ...args,
-                      options: {
-                          ...(args.options ?? {}),
-                          timeoutMs: Math.max(args.options?.timeoutMs ?? 0, this.recoveryOptions.retryTimeoutFloorMs),
-                      },
-                  }
-                : args;
-
-            console.log(
-                `[WebViewParent] Retrying operation with timeout: ${retryArgs.options?.timeoutMs ?? "default"}ms`
-            );
-            return await super.sendAction(retryArgs);
+            console.log("[WebViewParent] Retrying operation with original timeout");
+            return await super.sendAction(args);
         }
 
         return response;

@@ -66,6 +66,18 @@ function CrossmintWalletProviderInternal({
         return {};
     }, [appId]);
 
+    useEffect(() => {
+        if (webviewRef.current != null && webViewParentRef.current == null) {
+            webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
+                incomingEvents: signerOutboundEvents,
+                outgoingEvents: signerInboundEvents,
+                recovery: {
+                    recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                },
+            });
+        }
+    }, [needsWebView]);
+
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
         if (parent != null) {
@@ -77,20 +89,6 @@ function CrossmintWalletProviderInternal({
             }
         }
     }, []);
-
-    useEffect(() => {
-        if (webviewRef.current != null && webViewParentRef.current == null) {
-            const parent = new WebViewParent(webviewRef as RefObject<WebView>, {
-                incomingEvents: signerOutboundEvents,
-                outgoingEvents: signerInboundEvents,
-                recovery: {
-                    recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
-                },
-            });
-
-            webViewParentRef.current = parent;
-        }
-    }, [needsWebView]);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
