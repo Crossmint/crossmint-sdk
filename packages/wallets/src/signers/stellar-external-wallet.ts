@@ -1,13 +1,26 @@
 import type { ExternalWalletInternalSignerConfig } from "./types";
 import type { StellarChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
+import { StellarShadowSigner, type ShadowSignerStorage } from "./shadow-signer";
 
 export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarChain> {
     onSignStellarTransaction?: (payload: string) => Promise<string>;
+    protected shadowSigner?: StellarShadowSigner;
+    protected shadowSignerStorage?: ShadowSignerStorage;
 
-    constructor(config: ExternalWalletInternalSignerConfig<StellarChain>) {
+    constructor(
+        config: ExternalWalletInternalSignerConfig<StellarChain>,
+        walletAddress?: string,
+        shadowSignerStorage?: ShadowSignerStorage
+    ) {
         super(config);
         this.onSignStellarTransaction = config.onSignStellarTransaction;
+        this.shadowSignerStorage = shadowSignerStorage;
+        this.shadowSigner = new StellarShadowSigner(
+            walletAddress,
+            this.shadowSignerStorage,
+            true // Default to enabled if shadowSignerStorage is provided
+        );
     }
 
     async signMessage() {
@@ -15,6 +28,9 @@ export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarCha
     }
 
     async signTransaction(payload: string) {
+        if (this.shadowSigner?.hasShadowSigner()) {
+            return await this.shadowSigner.signTransaction(payload);
+        }
         if (this.onSignStellarTransaction == null) {
             return await Promise.reject(
                 new Error(

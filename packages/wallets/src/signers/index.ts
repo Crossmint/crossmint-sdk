@@ -30,14 +30,14 @@ export function assembleSigner<C extends Chain>(
 
         case "external-wallet":
             if (chain === "solana") {
-                return new SolanaExternalWalletSigner(config);
+                return new SolanaExternalWalletSigner(config, walletAddress, shadowSignerStorage);
             }
             if (chain === "stellar") {
-                return new StellarExternalWalletSigner(config);
+                return new StellarExternalWalletSigner(config, walletAddress, shadowSignerStorage);
             }
             return new EVMExternalWalletSigner(config);
 
         case "passkey":
-            return new PasskeySigner(config);
+            return new PasskeySigner(config, shadowSignerStorage);
     }
 }

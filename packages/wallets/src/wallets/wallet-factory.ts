@@ -102,11 +102,11 @@ export class WalletFactory {
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
-            await this.buildDelegatedSigners(adminSignerConfig, args);
+            await this.buildDelegatedSigners(args);
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
         adminSignerConfig = tempArgs.signer;
-
+        console.log("deletedSigner", delegatedSigners);
         const adminSigner =
             adminSignerConfig.type === "passkey" && adminSignerConfig.id == null
                 ? await this.createPasskeySigner(adminSignerConfig)
@@ -406,6 +406,9 @@ export class WalletFactory {
         if (signer.type === "api-key") {
             return "api-key";
         }
+        if (signer.type === "device") {
+            return `device:${signer.publicKey}`;
+        }
         return signer.type;
     }
 
@@ -474,24 +477,7 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled<C extends Chain>(
-        chain: C,
-        adminSigner: SignerConfigForChain<C>,
-        delegatedSigners: Array<SignerConfigForChain<C>> = []
-    ): boolean {
-        const ncSigners = [adminSigner, ...delegatedSigners].filter(
-            (signer) => signer.type === "email" || signer.type === "phone"
-        ) as Array<EmailSignerConfig | PhoneSignerConfig>;
-        return (
-            !this.apiClient.isServerSide &&
-            (chain === "solana" || chain === "stellar") &&
-            ncSigners.length > 0 &&
-            ncSigners.some((signer) => signer.shadowSigner?.enabled !== false)
-        );
-    }
-
     private async buildDelegatedSigners<C extends Chain>(
-        adminSigner: SignerConfigForChain<C>,
         args: WalletCreateArgs<C>
     ): Promise<{
         delegatedSigners: Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>;
@@ -499,12 +485,10 @@ export class WalletFactory {
         shadowSignerPublicKeyBase64: string | null;
     }> {
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
-            await this.addShadowSignerToDelegatedSignersIfNeeded(
-                args,
-                adminSigner,
-                args.onCreateConfig?.delegatedSigners
-            );
+            await this.addShadowSignerToDelegatedSignersIfNeeded(args, args.onCreateConfig?.delegatedSigners);
         const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
+        console.log("built delegatedSigners", delegatedSigners);
+        console.log("registeredDelegatedSigners", registeredDelegatedSigners);
 
         return { delegatedSigners: registeredDelegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 };
     }
@@ -529,23 +513,25 @@ export class WalletFactory {
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
         args: WalletCreateArgs<C>,
-        adminSigner: SignerConfigForChain<C>,
         delegatedSigners?: Array<SignerConfigForChain<C>>
     ): Promise<{
         delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
-        if (this.isShadowSignerEnabled(args.chain, adminSigner, delegatedSigners)) {
+        console.log("isEnabled", args.options?.shadowSignerEnabled !== false);
+        if (args.options?.shadowSignerEnabled !== false) {
             try {
-                const { shadowSigner, publicKey, publicKeyBase64 } = await generateShadowSigner(
+                console.log("generating shadow signer");
+                const { shadowSigner, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,
                     args.options?.shadowSignerStorage
                 );
-
+                console.log("shadowSigner", shadowSigner);
+                console.log("publicKeyBase64", publicKeyBase64);
                 return {
                     delegatedSigners: [...(delegatedSigners ?? []), shadowSigner as SignerConfigForChain<C>],
-                    shadowSignerPublicKey: publicKey,
+                    shadowSignerPublicKey: shadowSigner.publicKey,
                     shadowSignerPublicKeyBase64: publicKeyBase64,
                 };
             } catch (error) {

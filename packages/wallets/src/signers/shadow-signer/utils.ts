@@ -2,7 +2,7 @@ import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
-import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
+import type { ShadowSignerConfig } from "../types";
 
 export type ShadowSignerData = {
     chain: Chain;
@@ -13,8 +13,8 @@ export type ShadowSignerData = {
 };
 
 export type ShadowSignerResult = {
-    shadowSigner: BaseExternalWalletSignerConfig;
-    publicKey: string;
+    shadowSigner: ShadowSignerConfig;
+    publicKeyBase64: string;
 };
 
 export interface ShadowSignerStorage {
@@ -38,7 +38,7 @@ export function getStorage(): ShadowSignerStorage {
 export async function generateShadowSigner<C extends Chain>(
     chain: C,
     storage?: ShadowSignerStorage
-): Promise<ShadowSignerResult & { publicKeyBase64: string }> {
+): Promise<ShadowSignerResult> {
     const storageInstance = storage ?? getStorage();
     if (chain === "solana" || chain === "stellar") {
         const publicKeyBase64 = await storageInstance.keyGenerator();
@@ -56,10 +56,9 @@ export async function generateShadowSigner<C extends Chain>(
 
         return {
             shadowSigner: {
-                type: "external-wallet",
-                address: encodedPublicKey,
+                type: "device",
+                publicKey: encodedPublicKey,
             },
-            publicKey: encodedPublicKey,
             // We need to return the public key base64 here because its the only way to retrieve the private key from the storage
             // as Stellar and Solana encoded the public key after storing the private key
             publicKeyBase64,

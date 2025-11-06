@@ -1,12 +1,19 @@
 import { WebAuthnP256 } from "ox";
 import type { PasskeyInternalSignerConfig, PasskeySignResult, Signer } from "./types";
+import type { ShadowSignerStorage } from "./shadow-signer";
 
 export class PasskeySigner implements Signer {
     type = "passkey" as const;
     id: string;
+    protected shadowSignerStorage?: ShadowSignerStorage;
 
-    constructor(private config: PasskeyInternalSignerConfig) {
+    constructor(
+        private config: PasskeyInternalSignerConfig,
+        shadowSignerStorage?: ShadowSignerStorage
+    ) {
         this.id = config.id;
+        this.shadowSignerStorage = shadowSignerStorage;
+        // Note: Shadow signer support for EVM chains (passkey is EVM-only) is not yet implemented
     }
 
     locator() {

@@ -26,6 +26,11 @@ export class AuthRejectedError extends Error {
     }
 }
 
+export type ShadowSignerConfig = {
+    type: "device";
+    publicKey: string;
+};
+
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
@@ -64,7 +69,10 @@ export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends Sola
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> | ApiKeySignerConfig;
+export type BaseSignerConfig<C extends Chain> =
+    | ExternalWalletSignerConfigForChain<C>
+    | ApiKeySignerConfig
+    | ShadowSignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -101,6 +109,9 @@ export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
 
 export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
     locator: string;
+    shadowSigner?: {
+        enabled: boolean;
+    };
 };
 
 export type InternalSignerConfig<C extends Chain> =
