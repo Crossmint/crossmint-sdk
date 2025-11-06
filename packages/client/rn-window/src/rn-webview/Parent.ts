@@ -6,11 +6,6 @@ import type { z } from "zod";
 import { RNWebViewTransport } from "../transport/RNWebViewTransport";
 
 /**
- * Error response type from signer operations
- */
-type ErrorResponse = { status: "error"; code?: string; error?: string };
-
-/**
  * Recovery options for handling fatal errors in WebView operations.
  * When enabled, WebViewParent will automatically reload the WebView and retry operations
  * when specific error codes are encountered. The retry uses the original timeout unchanged.
@@ -87,19 +82,17 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     /**
      * Checks if a response is an error response with a recoverable error code.
      */
-    private isRecoverableError(response: unknown): response is ErrorResponse {
+    private isRecoverableError(response: unknown): boolean {
         if (!this.recoveryOptions) {
             return false;
         }
 
+        const r = response as any;
+        const code = r?.code;
         return (
-            response != null &&
-            typeof response === "object" &&
-            "status" in response &&
-            response.status === "error" &&
-            "code" in response &&
-            typeof response.code === "string" &&
-            this.recoveryOptions.recoverableErrorCodes.includes(response.code)
+            r?.status === "error" &&
+            typeof code === "string" &&
+            this.recoveryOptions.recoverableErrorCodes.includes(code)
         );
     }
 
