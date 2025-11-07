@@ -11,16 +11,13 @@ export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarCha
     constructor(
         config: ExternalWalletInternalSignerConfig<StellarChain>,
         walletAddress?: string,
+        shadowSignerEnabled?: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config);
         this.onSignStellarTransaction = config.onSignStellarTransaction;
         this.shadowSignerStorage = shadowSignerStorage;
-        this.shadowSigner = new StellarShadowSigner(
-            walletAddress,
-            this.shadowSignerStorage,
-            true // Default to enabled if shadowSignerStorage is provided
-        );
+        this.shadowSigner = new StellarShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
     }
 
     async signMessage() {

@@ -14,16 +14,13 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     constructor(
         config: ExternalWalletInternalSignerConfig<SolanaChain>,
         walletAddress?: string,
+        shadowSignerEnabled?: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config);
         this.onSignTransaction = config.onSignTransaction;
         this.shadowSignerStorage = shadowSignerStorage;
-        this.shadowSigner = new SolanaShadowSigner(
-            walletAddress,
-            this.shadowSignerStorage,
-            config.shadowSigner?.enabled !== false
-        );
+        this.shadowSigner = new SolanaShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
     }
 
     async signMessage() {

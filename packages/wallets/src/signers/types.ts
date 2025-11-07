@@ -34,9 +34,6 @@ export type ShadowSignerConfig = {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
-    shadowSigner?: {
-        enabled: boolean;
-    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -48,9 +45,6 @@ export type EmailSignerConfig = {
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
-    shadowSigner?: {
-        enabled: boolean;
-    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -109,9 +103,6 @@ export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
 
 export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
     locator: string;
-    shadowSigner?: {
-        enabled: boolean;
-    };
 };
 
 export type InternalSignerConfig<C extends Chain> =
