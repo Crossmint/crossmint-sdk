@@ -1,5 +1,15 @@
 # @crossmint/client-signers
 
+## 0.1.0
+
+### Minor Changes
+
+- 25fbcf1: Removes unused get-attestation event
+
+### Patch Changes
+
+- 9386174: Add IndexedDB fatal error recovery with automatic WebView reload and retry. Implements typed error codes (SignerErrorCode.IndexedDbFatal) and opt-in recovery options in WebViewParent for handling fatal IndexedDB errors.
+
 ## 0.0.20
 
 ### Patch Changes

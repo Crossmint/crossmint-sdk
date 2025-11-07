@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.0
+
+### Minor Changes
+
+- cc7ffd4: Added new built-in UI for email and phone signers, can use 'headlessSigningFlow' to disable.
+
+### Patch Changes
+
+- 9386174: Add IndexedDB fatal error recovery with automatic WebView reload and retry. Implements typed error codes (SignerErrorCode.IndexedDbFatal) and opt-in recovery options in WebViewParent for handling fatal IndexedDB errors.
+- 9386174: Add IndexedDB error recovery for React Native WebView: automatically detect 'indexeddb-fatal' error responses, reload the WebView, re-establish handshake, and retry the operation once. Also enforce a 15s minimum timeout during recovery to allow sufficient time for WebView reload and handshake completion.
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-sdk-rn-window@0.3.10
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/client-sdk-react-base@0.7.3
+  - @crossmint/wallets-sdk@0.18.2
+
 ## 0.12.1
 
 ### Patch Changes

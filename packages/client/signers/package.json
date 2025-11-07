@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-signers",
-    "version": "0.0.20",
+    "version": "0.1.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
