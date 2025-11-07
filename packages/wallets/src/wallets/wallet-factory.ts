@@ -525,7 +525,7 @@ export class WalletFactory {
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
-        if (this.isShadowSignerEnabled(args.chain)) {
+        if (this.isShadowSignerEnabled(args.chain, args.options)) {
             try {
                 const { shadowSigner, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,
