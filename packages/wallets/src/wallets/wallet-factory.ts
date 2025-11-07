@@ -477,7 +477,7 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled<C extends Chain>(chain: C, options?: WalletOptions): boolean {
+    private isShadowSignerEnabled<C extends Chain>(chain: C, options: WalletOptions | undefined): boolean {
         return (
             !this.apiClient.isServerSide &&
             (chain === "solana" || chain === "stellar") &&
