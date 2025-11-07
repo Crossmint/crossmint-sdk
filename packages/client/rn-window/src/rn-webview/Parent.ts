@@ -63,7 +63,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * Uses single-flight pattern to prevent concurrent reloads.
      */
     private async reloadAndHandshake(): Promise<void> {
-        if (!this._reconnectFlight) {
+        if (this._reconnectFlight == null) {
             this._reconnectFlight = (async () => {
                 try {
                     console.log("[WebViewParent] Starting WebView reload and handshake");
@@ -83,7 +83,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * Checks if a response is an error response with a recoverable error code.
      */
     private isRecoverableError(response: unknown): boolean {
-        if (!this.recoveryOptions) {
+        if (this.recoveryOptions == null) {
             return false;
         }
 
