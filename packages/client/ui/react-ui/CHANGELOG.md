@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.2
+
+### Patch Changes
+
+- cc7ffd4: Updated CrossmintWalletProvider to consume shared state management from base provider, improving consistency across React implementations.
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/client-sdk-react-base@0.7.3
+  - @crossmint/wallets-sdk@0.18.2
+
 ## 2.6.1
 
 ### Patch Changes

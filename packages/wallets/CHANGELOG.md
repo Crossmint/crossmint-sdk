@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+
 ## 0.18.1
 
 ### Patch Changes

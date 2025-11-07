@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.3
+
+### Patch Changes
+
+- cc7ffd4: Consolidated UI state within base provider.
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/wallets-sdk@0.18.2
+
 ## 0.7.2
 
 ### Patch Changes
