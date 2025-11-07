@@ -9,6 +9,7 @@ export class SolanaShadowSigner extends ShadowSigner<SolanaChain> {
     protected getExternalWalletSignerClass(): new (
         config: ExternalWalletInternalSignerConfig<SolanaChain>,
         walletAddress?: string,
+        shadowSignerEnabled?: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) => SolanaExternalWalletSigner {
         return SolanaExternalWalletSigner;

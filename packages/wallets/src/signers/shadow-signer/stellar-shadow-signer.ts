@@ -8,6 +8,7 @@ export class StellarShadowSigner extends ShadowSigner<StellarChain> {
     protected getExternalWalletSignerClass(): new (
         config: ExternalWalletInternalSignerConfig<StellarChain>,
         walletAddress?: string,
+        shadowSignerEnabled?: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) => StellarExternalWalletSigner {
         return StellarExternalWalletSigner;
