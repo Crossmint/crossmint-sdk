@@ -2,7 +2,12 @@ import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import {
+    environmentUrlConfig,
+    signerInboundEvents,
+    signerOutboundEvents,
+    SignerErrorCode,
+} from "@crossmint/client-signers";
 import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletUIBaseProvider,
@@ -66,9 +71,12 @@ function CrossmintWalletProviderInternal({
             webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
+                recovery: {
+                    recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                },
             });
         }
-    }, [needsWebView, webviewRef.current]);
+    }, [needsWebView]);
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;

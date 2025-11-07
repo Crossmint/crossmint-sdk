@@ -105,4 +105,21 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
             }
         }
     };
+
+    /**
+     * Reloads the WebView. Only available when running in React Native (not inside the WebView).
+     */
+    public reload(): void {
+        if (this.isWebView) {
+            console.warn("[RNTransport WebView] reload() called from inside WebView - this is a no-op");
+            return;
+        }
+
+        if (this.webviewRef?.current?.reload) {
+            console.log("[RNTransport RN] Reloading WebView");
+            this.webviewRef.current.reload();
+        } else {
+            console.error("[RNTransport RN] WebView ref not available for reload");
+        }
+    }
 }
