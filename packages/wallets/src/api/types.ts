@@ -1,12 +1,15 @@
 import type { Address } from "viem";
 
 import type {
+    BalanceControllerFundWallet2Error,
+    BalanceControllerFundWallet2Responses,
     BalanceControllerGetBalanceForLocator2Error,
     CreateSignatureV2025Dto,
     CreateSignerV2025InputDto,
     CreateTransactionV2025Dto,
     CreateWalletV2025Dto,
     DelegatedSignerV2025Dto,
+    FundWalletAmountDto,
     SendTokenDto,
     SubmitApprovalV2025Dto,
     WalletBalanceV20250609ResponseDto,
@@ -64,6 +67,8 @@ export type GetBalanceResponse = WalletBalanceV20250609ResponseDto | BalanceCont
 export type GetBalanceSuccessResponse = WalletBalanceV20250609ResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
+export type FundWalletParams = FundWalletAmountDto;
+export type FundWalletResponse = BalanceControllerFundWallet2Responses | BalanceControllerFundWallet2Error;
 
 export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: string }>["chain"];
 export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDto["signer"], { type: "passkey" }>;

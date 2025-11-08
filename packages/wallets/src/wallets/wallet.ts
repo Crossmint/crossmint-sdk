@@ -8,6 +8,7 @@ import type {
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
+    FundWalletResponse,
 } from "../api";
 import type {
     AddDelegatedSignerOptions,
@@ -132,6 +133,28 @@ export class Wallet<C extends Chain> {
         }
 
         return this.transformBalanceResponse(response, nativeToken, tokens);
+    }
+
+    /**
+     * Funds the wallet with Crossmint's stablecoin (USDXM).
+     *
+     * **Note:** This method is only available in staging environments and exclusively supports USDXM tokens.
+     * It cannot be used in production environments.
+     * @param amount - The amount of USDXM to fund the wallet with
+     * @param chain - Optional chain to fund on. If not provided, uses the wallet's default chain
+     * @returns The funding response
+     * @throws {Error} If the funding operation fails or if called in a production environment
+     */
+    public async fund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
+        const response = await this.apiClient.fundWallet(this.address, {
+            amount,
+            token: "usdxm",
+            chain: chain ?? (this.chain as any),
+        });
+        if ("error" in response) {
+            throw new Error(`Failed to fund wallet: ${JSON.stringify(response.message)}`);
+        }
+        return response;
     }
 
     /**
