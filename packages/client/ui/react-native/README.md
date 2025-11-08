@@ -140,6 +140,53 @@ const customWallet = await getOrCreateWallet({
 });
 ```
 
+## 🛒 Embedded Checkout
+
+Accept credit card payments for tokens and NFTs directly in your React Native app with a fully customizable embedded checkout experience.
+
+### Setup
+
+```tsx
+import { 
+  CrossmintProvider,
+  CrossmintEmbeddedCheckout 
+} from "@crossmint/client-sdk-react-native-ui";
+
+export default function App() {
+  return (
+    <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY}>
+      <CrossmintEmbeddedCheckout
+        recipient={{
+          walletAddress: "your_recipient_wallet_address"
+        }}
+        payment={{
+          crypto: { enabled: false },
+          fiat: { enabled: true },
+          receiptEmail: "customer@example.com" // Required for payment receipts
+        }}
+        lineItems={{
+          tokenLocator: "solana:7EivYFyNfgGj8xbUymR7J4LuxUHLvi7Dgu",
+          executionParameters: {
+            mode: "exact-in", // USD amount to spend
+            amount: "1", // Amount in USD
+            maxSlippageBps: "500" // 5% slippage tolerance
+          }
+        }}
+      />
+    </CrossmintProvider>
+  );
+}
+```
+
+### Environment Variables
+
+Add these to your `.env`:
+```bash
+EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
+```
+
+📖 **[Full Embedded Checkout Quickstart](https://docs.crossmint.com/payments/embedded/quickstarts/credit-card-memecoin-react-native)** - Complete guide with token purchases and NFT minting examples.
+
 
 ## Custom Storage Provider
 
