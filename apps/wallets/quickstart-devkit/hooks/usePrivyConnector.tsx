@@ -21,6 +21,7 @@ export const useEVMPrivyConnector = () => {
         const syncPrivyJwt = async () => {
             try {
                 const privyJwt = await getAccessToken();
+                console.log("privyJwt", privyJwt);
                 if (privyJwt != null) {
                     setJwt(privyJwt);
                 }
@@ -166,6 +167,7 @@ const createPhoneWallet = async (getOrCreateWallet: any, chain: Chain, phone: st
 // Helper function to create email-based wallet
 const createEmailWallet = async (getOrCreateWallet: any, chain: Chain, email: string) => {
     try {
+        console.log("creating email wallet", email, chain);
         await getOrCreateWallet({
             chain,
             signer: {
