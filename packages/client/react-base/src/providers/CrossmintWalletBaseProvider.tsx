@@ -151,7 +151,6 @@ export function CrossmintWalletBaseProvider({
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
-                console.log("creating wallet");
                 if (args.signer.type === "email" || args.signer.type === "phone") {
                     await initializeWebView?.();
                 }
