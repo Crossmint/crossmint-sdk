@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
-import { CrossmintAuthLoginButton, PrivyLoginButton } from "../components/login";
+import { CrossmintAuthLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
 import { useAuth, useWallet, ExportPrivateKeyButton } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
