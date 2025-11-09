@@ -17,7 +17,7 @@ import { CrossmintWallets, createCrossmint } from "@crossmint/wallets-sdk";
 
 const crossmint = createCrossmint({
     apiKey: "<your-client-OR-server-api-key>",
-    jwt: "<your-jwt>", // required for client-side calls
+    jwt: "<your-jwt>", // required for client-side calls, optional for server-side calls
 });
 const crossmintWallets = CrossmintWallets.from(crossmint);
 const wallet = await crossmintWallets.getOrCreateWallet({

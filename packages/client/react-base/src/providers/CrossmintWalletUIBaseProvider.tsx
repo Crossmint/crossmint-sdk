@@ -3,7 +3,6 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
-import { useCrossmint } from "@/hooks/useCrossmint";
 import { useSignerAuth } from "@/hooks/useSignerAuth";
 import type { CreateOnLogin } from "@/types";
 
@@ -83,20 +82,12 @@ export function CrossmintWalletUIBaseProvider({
     renderUI,
     clientTEEConnection,
 }: CrossmintWalletUIBaseProviderProps) {
-    const { experimental_customAuth } = useCrossmint();
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const signerAuth = useSignerAuth(createOnLogin);
 
-    const email =
-        createOnLogin?.signer.type === "email" && createOnLogin?.signer.email != null
-            ? createOnLogin.signer.email
-            : experimental_customAuth?.email;
-
-    const phoneNumber =
-        createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
-            ? createOnLogin.signer.phone
-            : experimental_customAuth?.phone;
+    const email = createOnLogin?.signer.type === "email" ? createOnLogin?.signer.email : undefined;
+    const phoneNumber = createOnLogin?.signer.type === "phone" ? createOnLogin?.signer.phone : undefined;
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
