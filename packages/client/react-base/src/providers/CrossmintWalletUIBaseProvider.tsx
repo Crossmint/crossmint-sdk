@@ -90,7 +90,7 @@ export function CrossmintWalletUIBaseProvider({
 
     const email = createOnLogin?.signer.type === "email" ? createOnLogin?.signer.email : undefined;
     const phoneNumber = createOnLogin?.signer.type === "phone" ? createOnLogin?.signer.phone : undefined;
-    
+
     // When using createOnLogin, we need to set the signer email from Crossmint Auth
     const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
