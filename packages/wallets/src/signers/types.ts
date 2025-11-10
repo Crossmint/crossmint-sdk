@@ -1,6 +1,11 @@
 import type { WebAuthnP256 } from "ox";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents, exportSignerInboundEvents, exportSignerOutboundEvents } from "@crossmint/client-signers";
+import type {
+    signerInboundEvents,
+    signerOutboundEvents,
+    exportSignerInboundEvents,
+    exportSignerOutboundEvents,
+} from "@crossmint/client-signers";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { VersionedTransaction } from "@solana/web3.js";

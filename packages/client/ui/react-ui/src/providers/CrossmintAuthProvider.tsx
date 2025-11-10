@@ -42,9 +42,7 @@ function CrossmintAuthProviderContent({
     loginMethods = ["email", "google"],
 }: CrossmintAuthProviderProps) {
     const baseAuth = useCrossmintAuthBase();
-    const { crossmint, setJwt } = useCrossmint(
-        "CrossmintAuthProvider must be used within CrossmintProvider"
-    );
+    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
