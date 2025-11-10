@@ -6,5 +6,4 @@ export const paymentMethodManagementIncomingEvents = {
     }),
     "payment-method:selected": z.any(),
 };
-export type PaymentMethodManagementIncomingEventMap =
-    typeof paymentMethodManagementIncomingEvents;
+export type PaymentMethodManagementIncomingEventMap = typeof paymentMethodManagementIncomingEvents;
