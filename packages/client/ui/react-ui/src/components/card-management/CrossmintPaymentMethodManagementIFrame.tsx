@@ -32,9 +32,11 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
             return;
         }
         iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
+        iframeClient.on("payment-method:selected", (data) => props.onPaymentMethodSelected?.(data));
 
         return () => {
             iframeClient.off("ui:height.changed");
+            iframeClient.off("payment-method:selected");
         };
     }, [iframeClient]);
 
