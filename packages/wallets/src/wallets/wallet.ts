@@ -145,10 +145,12 @@ export class Wallet<C extends Chain> {
      * @returns The funding response
      * @throws {Error} If the funding operation fails or if called in a production environment
      */
-    public async fund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
+    public async stagingFund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
         const response = await this.apiClient.fundWallet(this.address, {
             amount,
             token: "usdxm",
+            // Type casting is necessary here due to a type mismatch between our DTO schema and server-side types
+            // (which only contains 10 testnet chains. Variable in main server is called EvmUsdcEnabledTestnetChains for reference).
             chain: chain ?? (this.chain as any),
         });
         if ("error" in response) {
