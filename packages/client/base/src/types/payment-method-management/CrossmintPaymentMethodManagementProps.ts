@@ -14,6 +14,12 @@ export type CrossmintPaymentMethod = {
     card: {
         brand: string;
         last4: string;
+        expiration: {
+            // 2 digit month
+            month: string;
+            // 4 digit year
+            year: string;
+        };
     };
 };
 
