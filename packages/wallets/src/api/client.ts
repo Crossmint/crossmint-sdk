@@ -1,4 +1,9 @@
-import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import {
+    type Crossmint,
+    APIKeyEnvironmentPrefix,
+    APIKeyUsageOrigin,
+    CrossmintApiClient,
+} from "@crossmint/common-sdk-base";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 import { InvalidApiKeyError } from "../utils/errors";
@@ -27,6 +32,8 @@ import type {
     SendParams,
     SendResponse,
     GetActivityResponse,
+    FundWalletResponse,
+    FundWalletParams,
 } from "./types";
 import type { Chain } from "../chains/chains";
 
@@ -165,6 +172,17 @@ class ApiClient extends CrossmintApiClient {
         queryParams.append("tokens", params.tokens.join(","));
         queryParams.append("chains", params.chains.join(","));
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/balances?${queryParams.toString()}`, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async fundWallet(walletLocator: WalletLocator, params: FundWalletParams): Promise<FundWalletResponse> {
+        if (this.environment === APIKeyEnvironmentPrefix.PRODUCTION) {
+            throw new Error("Funding wallets is only supported in staging environment");
+        }
+        const response = await this.post(`api/v1-alpha2/wallets/${walletLocator}/balances`, {
+            body: JSON.stringify(params),
             headers: this.headers,
         });
         return response.json();
