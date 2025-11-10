@@ -11,6 +11,8 @@ export const firebaseConfig = {
 };
 
 function initApp() {
+    console.log("firebaseConfig", firebaseConfig);
+    console.log("firebaseConfig.apiKey", firebaseConfig.apiKey == null);
     if (firebaseConfig.apiKey == null) {
         return;
     }
@@ -19,6 +21,7 @@ function initApp() {
 
 function initAuth() {
     const app = initApp();
+    console.log("app", app);
     if (app == null) {
         return;
     }

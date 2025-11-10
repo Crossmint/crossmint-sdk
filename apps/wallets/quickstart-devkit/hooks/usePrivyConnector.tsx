@@ -46,7 +46,7 @@ export const useEVMPrivyConnector = () => {
 
         const signerType = getSignerType(user, privyEmbeddedWallet);
         console.log("signerType", signerType);
-        if (!signerType) {
+        if (signerType == null) {
             console.warn("No suitable signer type found for EVM wallet creation");
             return;
         }
@@ -116,7 +116,7 @@ export const useSolanaPrivyConnector = () => {
         }
 
         const signerType = getSignerType(user, privyEmbeddedWallet);
-        if (!signerType) {
+        if (signerType == null) {
             console.warn("No suitable signer type found for Solana wallet creation");
             return;
         }

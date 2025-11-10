@@ -12,7 +12,7 @@ export type CrossmintAuthBaseContextType = {
     jwt?: string;
     user?: SDKExternalUser;
     status: AuthStatus;
-    getUser: () => void;
+    getUser: () => Promise<SDKExternalUser | undefined>;
     experimental_externalWalletSigner?: any;
     loginMethods?: LoginMethod[];
 };

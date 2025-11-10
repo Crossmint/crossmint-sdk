@@ -50,7 +50,7 @@ export const useEVMDynamicConnector = () => {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         viemAccount: dynamicClient.account,
-                    } as any,
+                    },
                 });
             } catch (error) {
                 console.error("Failed to create Crossmint wallet:", error);

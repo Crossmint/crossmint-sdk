@@ -8,7 +8,7 @@ export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextTy
     crossmintAuth: undefined,
     logout: () => {},
     status: "initializing",
-    getUser: () => {},
+    getUser: () => Promise.resolve(undefined),
     login: () => {},
 });
 
