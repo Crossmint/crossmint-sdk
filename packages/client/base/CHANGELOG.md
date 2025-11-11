@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-base
 
+## 1.7.4
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+
 ## 1.7.3
 
 ### Patch Changes
