@@ -28,7 +28,7 @@ export class AuthRejectedError extends Error {
 
 export type ShadowSignerConfig = {
     type: "device";
-    publicKey: string;
+    address: string;
 };
 
 export type EmailSignerConfig = {

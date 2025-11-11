@@ -57,7 +57,7 @@ export async function generateShadowSigner<C extends Chain>(
         return {
             shadowSigner: {
                 type: "device",
-                publicKey: encodedPublicKey,
+                address: encodedPublicKey,
             },
             // We need to return the public key base64 here because its the only way to retrieve the private key from the storage
             // as Stellar and Solana encoded the public key after storing the private key

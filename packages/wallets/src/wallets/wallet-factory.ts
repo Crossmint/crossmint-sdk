@@ -407,7 +407,7 @@ export class WalletFactory {
             return "api-key";
         }
         if (signer.type === "device") {
-            return `device:${signer.publicKey}`;
+            return `device:${signer.address}`;
         }
         return signer.type;
     }
@@ -534,7 +534,7 @@ export class WalletFactory {
 
                 return {
                     delegatedSigners: [...(delegatedSigners ?? []), shadowSigner as SignerConfigForChain<C>],
-                    shadowSignerPublicKey: shadowSigner.publicKey,
+                    shadowSignerPublicKey: shadowSigner.address,
                     shadowSignerPublicKeyBase64: publicKeyBase64,
                 };
             } catch (error) {
