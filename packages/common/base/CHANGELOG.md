@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.8
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+
 ## 0.9.7
 
 ### Patch Changes
