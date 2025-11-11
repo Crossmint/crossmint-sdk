@@ -13,7 +13,7 @@ export abstract class ShadowSigner<C extends Chain> {
     protected storage: ShadowSignerStorage;
     protected signer: ExternalWalletSigner<C> | null = null;
 
-    constructor(walletAddress: string, storage?: ShadowSignerStorage, enabled = true) {
+    constructor(walletAddress?: string, storage?: ShadowSignerStorage, enabled = true) {
         this.storage = storage ?? getStorage();
         this.initialize(walletAddress, enabled);
     }
@@ -24,8 +24,8 @@ export abstract class ShadowSigner<C extends Chain> {
         config: ExternalWalletInternalSignerConfig<C>
     ) => ExternalWalletSigner<C>;
 
-    private async initialize(walletAddress: string, enabled: boolean): Promise<void> {
-        if (!enabled) {
+    private async initialize(walletAddress: string | undefined, enabled: boolean): Promise<void> {
+        if (!enabled || walletAddress == null) {
             return;
         }
 
@@ -54,7 +54,7 @@ export abstract class ShadowSigner<C extends Chain> {
         if (!this.hasShadowSigner()) {
             throw new Error("Shadow signer not initialized");
         }
-        return this.signer.locator();
+        return `device:${this.address()}`;
     }
 
     address(): string {

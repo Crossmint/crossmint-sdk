@@ -13,16 +13,17 @@ export function assembleSigner<C extends Chain>(
     chain: C,
     config: InternalSignerConfig<C>,
     walletAddress: string,
+    shadowSignerEnabled: boolean,
     shadowSignerStorage?: ShadowSignerStorage
 ): Signer {
     switch (config.type) {
         case "email":
         case "phone":
             if (chain === "solana") {
-                return new SolanaNonCustodialSigner(config, walletAddress, shadowSignerStorage);
+                return new SolanaNonCustodialSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
             if (chain === "stellar") {
-                return new StellarNonCustodialSigner(config, walletAddress, shadowSignerStorage);
+                return new StellarNonCustodialSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
             return new EVMNonCustodialSigner(config, shadowSignerStorage);
         case "api-key":
@@ -30,10 +31,10 @@ export function assembleSigner<C extends Chain>(
 
         case "external-wallet":
             if (chain === "solana") {
-                return new SolanaExternalWalletSigner(config);
+                return new SolanaExternalWalletSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
             if (chain === "stellar") {
-                return new StellarExternalWalletSigner(config);
+                return new StellarExternalWalletSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
             return new EVMExternalWalletSigner(config);
 

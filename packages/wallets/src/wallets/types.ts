@@ -119,6 +119,7 @@ export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     shadowSignerStorage?: ShadowSignerStorage;
+    shadowSignerEnabled?: boolean;
 };
 
 export type WalletArgsFor<C extends Chain> = {

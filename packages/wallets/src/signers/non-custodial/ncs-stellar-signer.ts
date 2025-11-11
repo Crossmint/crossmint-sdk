@@ -6,14 +6,11 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         walletAddress: string,
+        shadowSignerEnabled: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
-        this.shadowSigner = new StellarShadowSigner(
-            walletAddress,
-            this.shadowSignerStorage,
-            this.config.shadowSigner?.enabled !== false
-        );
+        this.shadowSigner = new StellarShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
     }
 
     async signMessage() {
