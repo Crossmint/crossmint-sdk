@@ -1,5 +1,5 @@
-import { EmbeddedCheckoutV3ClientProviders } from "../../components/embed-v3/EmbeddedCheckoutV3ClientProviders";
-import { EmbeddedCheckoutV3Content } from "../../components/embed-v3/EmbeddedCheckoutV3Content";
+import { EmbeddedCheckoutV3ClientProviders } from "../../../components/embed-v3/EmbeddedCheckoutV3ClientProviders";
+import { EmbeddedCheckoutV3Content } from "../../../components/embed-v3/EmbeddedCheckoutV3Content";
 
 export default function EmbeddedCheckoutV3Page() {
     return (
