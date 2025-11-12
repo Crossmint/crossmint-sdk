@@ -77,4 +77,11 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
     protected getShadowSignerConfig(): ExternalWalletInternalSignerConfig<EVMChain> {
         throw new Error("Shadow signer not implemented for EVM chains");
     }
+
+    protected getChainKeyParams(): { scheme: "secp256k1"; encoding: "hex" } {
+        return {
+            scheme: "secp256k1",
+            encoding: "hex",
+        };
+    }
 }

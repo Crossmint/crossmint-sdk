@@ -128,10 +128,12 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
+    alias?: string;
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     onCreateConfig?: OnCreateConfig<C>;
+    alias?: string;
 };
 
 type ChainExtras = {

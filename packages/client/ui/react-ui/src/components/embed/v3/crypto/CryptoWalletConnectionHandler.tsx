@@ -144,8 +144,32 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
             }
         );
 
+        const signMessageListener = iframeClient.on("crypto:sign-message", async ({ message }) => {
+            if (primaryWallet == null) {
+                console.error("[CryptoWalletConnectionHandler] signMessage: primaryWallet is missing");
+                iframeClient.send("crypto:sign-message:failed", {
+                    error: "primaryWallet is missing",
+                });
+                return;
+            }
+
+            try {
+                const signature = await primaryWallet.signMessage(message);
+                if (signature == null) {
+                    throw new Error("Failed to sign message");
+                }
+                iframeClient.send("crypto:sign-message:success", {
+                    signature,
+                });
+            } catch (error) {
+                console.error("[CryptoWalletConnectionHandler] failed to sign message", error);
+                iframeClient.send("crypto:sign-message:failed", { error: (error as Error).message });
+            }
+        });
+
         return () => {
             iframeClient.off(signTransactionListener);
+            iframeClient.off(signMessageListener);
         };
     }, [iframeClient, primaryWallet]);
 

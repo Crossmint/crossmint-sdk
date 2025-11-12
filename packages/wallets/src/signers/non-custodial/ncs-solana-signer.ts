@@ -70,4 +70,11 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
             );
         }
     }
+
+    protected getChainKeyParams(): { scheme: "ed25519"; encoding: "base58" } {
+        return {
+            scheme: "ed25519",
+            encoding: "base58",
+        };
+    }
 }
