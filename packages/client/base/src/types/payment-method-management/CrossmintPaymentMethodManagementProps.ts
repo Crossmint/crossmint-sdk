@@ -17,6 +17,16 @@ export type CrossmintPaymentMethod = {
     type: "card";
     paymentMethodId: string;
     card: {
+        source:
+            | {
+                  type: "basis-theory-token";
+                  id: string;
+              }
+            | {
+                  type: "basis-theory-ai-token";
+                  id: string;
+                  aiPaymentMethodId: string;
+              };
         brand: string;
         last4: string;
         expiration: {

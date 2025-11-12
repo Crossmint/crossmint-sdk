@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.18.3
+
+### Patch Changes
+
+- 8315976: Expose a wallet fund method
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/common-sdk-auth@1.0.59
+
 ## 0.18.2
 
 ### Patch Changes
