@@ -7,8 +7,11 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 import type { CrossmintPaymentMethodManagementProps } from "@crossmint/client-sdk-base";
 
-export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMethodManagementProps) {
-    const [iframeClient, setIframeClient] = useState<PaymentMethodManagementIFrameEmitter | null>(null);
+export function CrossmintPaymentMethodManagementIFrame(
+    props: CrossmintPaymentMethodManagementProps
+) {
+    const [iframeClient, setIframeClient] =
+        useState<PaymentMethodManagementIFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
     const ref = useRef<HTMLIFrameElement>(null);
@@ -17,14 +20,18 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
     const apiClient = createCrossmintApiClient(crossmint, {
         usageOrigin: "client",
     });
-    const paymentMethodManagementService = createPaymentMethodManagementService({ apiClient });
+    const paymentMethodManagementService = createPaymentMethodManagementService(
+        { apiClient }
+    );
 
     useEffect(() => {
         const iframe = ref.current;
         if (!iframe || iframeClient) {
             return;
         }
-        setIframeClient(paymentMethodManagementService.iframe.createClient(iframe));
+        setIframeClient(
+            paymentMethodManagementService.iframe.createClient(iframe)
+        );
     }, [ref.current, iframeClient]);
 
     useEffect(() => {
@@ -32,11 +39,20 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
             return;
         }
         iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
-        iframeClient.on("payment-method:selected", (data) => props.onPaymentMethodSelected?.(data));
+        iframeClient.on("payment-method:selected", (data) =>
+            props.onPaymentMethodSelected?.(data)
+        );
+        iframeClient.on("order-intent:created", (data) => {
+            props.onOrderIntentCreated?.(
+                data.orderIntent,
+                data.verificationConfig
+            );
+        });
 
         return () => {
             iframeClient.off("ui:height.changed");
             iframeClient.off("payment-method:selected");
+            iframeClient.off("order-intent:created");
         };
     }, [iframeClient]);
 
