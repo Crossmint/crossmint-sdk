@@ -3,6 +3,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import { WebView } from "react-native-webview";
 import { RNWebView } from "./RNWebView";
+import type { WebViewProps } from "react-native-webview";
 
 vi.mock("react-native-webview", () => ({
     WebView: vi.fn().mockImplementation((props) => {
@@ -138,5 +139,28 @@ describe("RNWebView Security", () => {
             }),
             undefined
         );
+    });
+
+    it("should disable injectedJavaScript prop and only use combinedInjectedJs", () => {
+        render(
+            <RNWebView
+                source={{ uri: "https://example.com" }}
+                injectedJavaScript="alert('should be ignored')"
+                injectedJavaScriptBeforeContentLoaded="alert('should be ignored')"
+                injectedJavaScriptForMainFrameOnly={true}
+            />
+        );
+
+        const mockWebView = vi.mocked(WebView);
+        const lastCall = mockWebView.mock.calls[mockWebView.mock.calls.length - 1];
+        const props = lastCall[0] as WebViewProps;
+
+        // Should use our combinedInjectedJs, not the passed injectedJavaScript
+        expect(props.injectedJavaScriptBeforeContentLoaded).toContain("window.onMessageFromRN");
+        expect(props.injectedJavaScriptBeforeContentLoaded).not.toContain("should be ignored");
+
+        // Other injection props should be undefined
+        expect(props.injectedJavaScript).toBeUndefined();
+        expect(props.injectedJavaScriptForMainFrameOnly).toBeUndefined();
     });
 });
