@@ -5,5 +5,6 @@ export const paymentMethodManagementIncomingEvents = {
         height: z.number(),
     }),
     "payment-method:selected": z.any(),
+    "order-intent:created": z.any(),
 };
 export type PaymentMethodManagementIncomingEventMap = typeof paymentMethodManagementIncomingEvents;
