@@ -4,13 +4,8 @@ import type { OrderIntent, VerificationConfig } from "./OrderIntents";
 export interface CrossmintPaymentMethodManagementProps {
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
-    onPaymentMethodSelected?: (
-        paymentMethod: CrossmintPaymentMethod
-    ) => void | Promise<void>;
-    onOrderIntentCreated?: (
-        orderIntent: OrderIntent,
-        verificationConfig: VerificationConfig
-    ) => void | Promise<void>;
+    onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
+    onOrderIntentCreated?: (orderIntent: OrderIntent, verificationConfig: VerificationConfig) => void | Promise<void>;
 }
 
 export type CrossmintPaymentMethod = {

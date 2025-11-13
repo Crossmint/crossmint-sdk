@@ -1,11 +1,5 @@
-import {
-    useBtAi as useBasisTheoryAI,
-    BtAiProvider as BasisTheoryAIProvider,
-} from "@basis-theory-ai/react";
-import type {
-    OrderIntent,
-    VerificationConfig,
-} from "@crossmint/client-sdk-base";
+import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
+import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
 import { useEffect, useCallback } from "react";
 
 export interface OrderIntentVerificationProps {
@@ -17,10 +11,7 @@ export interface OrderIntentVerificationProps {
 
 export function OrderIntentVerification(props: OrderIntentVerificationProps) {
     return (
-        <BasisTheoryAIProvider
-            jwt={props.config.btJwt}
-            environment={props.config.environment}
-        >
+        <BasisTheoryAIProvider jwt={props.config.btJwt} environment={props.config.environment}>
             <OrderIntentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
