@@ -15,6 +15,7 @@ import type {
     ApiKeyInternalSignerConfig,
     EmailInternalSignerConfig,
     EmailSignerConfig,
+    P256KeypairSignerConfig,
     InternalSignerConfig,
     PasskeyInternalSignerConfig,
     PasskeySignerConfig,
@@ -156,7 +157,7 @@ export class WalletFactory {
                     args.chain,
                     signerConfig,
                     walletResponse.address,
-                    this.isShadowSignerEnabled(args.chain, args.options),
+                    this.isShadowSignerEnabled(args.options),
                     args.options?.shadowSignerStorage
                 ),
                 options: args.options,
@@ -195,6 +196,11 @@ export class WalletFactory {
             }
 
             case "external-wallet": {
+                const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
+
+                return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
+            }
+            case "p256-keypair": {
                 const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
 
                 return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
@@ -414,6 +420,9 @@ export class WalletFactory {
         if (signer.type === "api-key") {
             return "api-key";
         }
+        if (signer.type === "p256-keypair") {
+            return `p256-keypair:${signer.address}`;
+        }
         if (signer.type === "device") {
             return `device:${signer.address}`;
         }
@@ -485,18 +494,16 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled<C extends Chain>(chain: C, options: WalletOptions | undefined): boolean {
-        return (
-            !this.apiClient.isServerSide &&
-            (chain === "solana" || chain === "stellar") &&
-            options?.shadowSignerEnabled !== false
-        );
+    private isShadowSignerEnabled(options: WalletOptions | undefined): boolean {
+        return !this.apiClient.isServerSide && options?.shadowSignerEnabled !== false;
     }
 
     private async buildDelegatedSigners<C extends Chain>(
         args: WalletCreateArgs<C>
     ): Promise<{
-        delegatedSigners: Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>;
+        delegatedSigners: Array<
+            DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | P256KeypairSignerConfig }
+        >;
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
@@ -509,7 +516,9 @@ export class WalletFactory {
 
     private async registerDelegatedSigners<C extends Chain>(
         delegatedSigners?: Array<SignerConfigForChain<C>>
-    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+    ): Promise<
+        Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | P256KeypairSignerConfig }>
+    > {
         return await Promise.all(
             delegatedSigners?.map(
                 async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
@@ -519,6 +528,7 @@ export class WalletFactory {
                         }
                         return { signer };
                     }
+
                     return { signer: this.getSignerLocator(signer) };
                 }
             ) ?? []
@@ -533,7 +543,7 @@ export class WalletFactory {
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
-        if (this.isShadowSignerEnabled(args.chain, args.options)) {
+        if (this.isShadowSignerEnabled(args.options)) {
             try {
                 const { shadowSigner, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,

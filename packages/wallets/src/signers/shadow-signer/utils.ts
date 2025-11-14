@@ -18,7 +18,7 @@ export type ShadowSignerResult = {
 };
 
 export interface ShadowSignerStorage {
-    keyGenerator(): Promise<string>;
+    keyGenerator(chain: Chain): Promise<string>;
     sign(publicKey: string, data: Uint8Array): Promise<Uint8Array>;
     storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void>;
     getMetadata(walletAddress: string): Promise<ShadowSignerData | null>;
@@ -40,32 +40,31 @@ export async function generateShadowSigner<C extends Chain>(
     storage?: ShadowSignerStorage
 ): Promise<ShadowSignerResult> {
     const storageInstance = storage ?? getStorage();
-    if (chain === "solana" || chain === "stellar") {
-        const publicKeyBase64 = await storageInstance.keyGenerator();
-        const publicKeyBuffer = Buffer.from(publicKeyBase64, "base64");
-        const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+    const publicKeyBase64 = await storageInstance.keyGenerator(chain);
 
-        let encodedPublicKey: string;
-        if (chain === "stellar") {
-            // Stellar uses Ed25519 encoding (Base32 with version byte and checksum)
-            encodedPublicKey = encodeEd25519PublicKey(publicKeyBytes);
-        } else {
-            // Solana uses Base58 encoding
-            encodedPublicKey = encodeBase58(publicKeyBytes);
-        }
+    const publicKeyBuffer = Buffer.from(publicKeyBase64, "base64");
+    const publicKeyBytes = new Uint8Array(publicKeyBuffer);
 
-        return {
-            shadowSigner: {
-                type: "device",
-                address: encodedPublicKey,
-            },
-            // We need to return the public key base64 here because its the only way to retrieve the private key from the storage
-            // as Stellar and Solana encoded the public key after storing the private key
-            publicKeyBase64,
-        };
+    let encodedPublicKey: string;
+    if (chain === "stellar") {
+        // Stellar uses Ed25519 encoding (Base32 with version byte and checksum)
+        encodedPublicKey = encodeEd25519PublicKey(publicKeyBytes);
+    } else if (chain === "solana") {
+        // Solana uses Base58 encoding
+        encodedPublicKey = encodeBase58(publicKeyBytes);
+    } else {
+        encodedPublicKey = publicKeyBase64;
     }
-    // TODO: Add support for EVM chains
-    throw new Error("Unsupported chain");
+
+    return {
+        shadowSigner: {
+            type: "device",
+            address: encodedPublicKey,
+        },
+        // We need to return the public key base64 here because its the only way to retrieve the private key from the storage
+        // as Stellar and Solana encoded the public key after storing the private key
+        publicKeyBase64,
+    };
 }
 
 export async function storeShadowSigner(

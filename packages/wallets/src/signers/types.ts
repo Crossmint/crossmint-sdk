@@ -8,6 +8,7 @@ import type {
 } from "@crossmint/client-signers";
 import type {
     Crossmint,
+    P256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -15,6 +16,7 @@ import type {
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
+    P256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -71,7 +73,8 @@ export type ApiKeySignerConfig = { type: "api-key" };
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
     | ApiKeySignerConfig
-    | ShadowSignerConfig;
+    | ShadowSignerConfig
+    | (C extends SolanaChain | StellarChain ? never : P256KeypairSignerConfig);
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -110,12 +113,18 @@ export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWallet
     locator: string;
 };
 
+export type P256KeypairInternalSignerConfig = P256KeypairSignerConfig & {
+    locator: string;
+    onSignTransaction: (publicKeyBase64: string, data: Uint8Array) => Promise<Uint8Array>;
+};
+
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig
     | PhoneInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
-    | ExternalWalletInternalSignerConfig<C>;
+    | ExternalWalletInternalSignerConfig<C>
+    | P256KeypairInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signers
@@ -146,6 +155,7 @@ type SignResultMap = {
     phone: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
+    "p256-keypair": BaseSignResult;
     passkey: PasskeySignResult;
 };
 
