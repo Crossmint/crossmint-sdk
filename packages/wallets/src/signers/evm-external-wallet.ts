@@ -25,11 +25,11 @@ export class EVMExternalWalletSigner implements Signer {
         return this.config.locator;
     }
 
-    async signMessage(message: string) {
+    async sign(payload: string): Promise<{ signature: string }> {
         if (this.provider != null) {
             const signature = await this.provider.request({
                 method: "personal_sign",
-                params: [message, this._address] as any,
+                params: [payload, this._address] as any,
             });
             if (signature == null) {
                 throw new Error(
@@ -41,7 +41,7 @@ export class EVMExternalWalletSigner implements Signer {
         if (this.viemAccount?.signMessage != null) {
             const signature = await this.viemAccount.signMessage({
                 message: {
-                    raw: message as `0x${string}`,
+                    raw: payload as `0x${string}`,
                 },
             });
             if (signature == null) {
@@ -54,7 +54,11 @@ export class EVMExternalWalletSigner implements Signer {
         throw new Error("No signer provider or viem account provided");
     }
 
+    async signMessage(message: string) {
+        return await this.sign(message);
+    }
+
     async signTransaction(transaction: string) {
-        return await this.signMessage(transaction);
+        return await this.sign(transaction);
     }
 }

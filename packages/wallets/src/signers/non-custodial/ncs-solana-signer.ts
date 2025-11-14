@@ -9,16 +9,20 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+        return await Promise.reject(new Error("signMessage method not implemented for Solana email signer"));
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        await this.handleAuthRequired();
-        const jwt = this.getJwtOrThrow();
-
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        const messageData = deserializedTransaction.message.serialize();
+        const messageData = base58.encode(deserializedTransaction.message.serialize());
+
+        return await this.sign(messageData);
+    }
+
+    async sign(payload: string): Promise<{ signature: string }> {
+        await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
 
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
@@ -30,7 +34,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: base58.encode(messageData),
+                    bytes: payload,
                     encoding: "base58",
                 },
             },
@@ -42,7 +46,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         }
 
         if (res?.signature == null) {
-            throw new Error("Failed to sign transaction");
+            throw new Error("Failed to sign payload");
         }
         SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };

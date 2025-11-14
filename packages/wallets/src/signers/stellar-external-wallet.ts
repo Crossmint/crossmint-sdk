@@ -22,6 +22,10 @@ export class StellarExternalWalletSigner implements Signer {
         return this.config.locator;
     }
 
+    async sign(payload: string) {
+        return await Promise.reject(new Error("signMessage method not implemented for stellar external wallet signer"));
+    }
+
     async signMessage() {
         return await Promise.reject(new Error("signMessage method not implemented for stellar external wallet signer"));
     }
