@@ -1,9 +1,14 @@
 import type { WebAuthnP256 } from "ox";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type {
+    exportSignerInboundEvents,
+    exportSignerOutboundEvents,
+    signerInboundEvents,
+    signerOutboundEvents,
+} from "@crossmint/client-signers";
 import type {
     Crossmint,
-    EVM256KeypairSignerConfig,
+    P256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -11,7 +16,7 @@ import type {
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
-    EVM256KeypairSignerConfig,
+    P256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -28,12 +33,14 @@ export class AuthRejectedError extends Error {
     }
 }
 
+export type ShadowSignerConfig = {
+    type: "device";
+    address: string;
+};
+
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
-    shadowSigner?: {
-        enabled: boolean;
-    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -45,9 +52,6 @@ export type EmailSignerConfig = {
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
-    shadowSigner?: {
-        enabled: boolean;
-    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -69,7 +73,8 @@ export type ApiKeySignerConfig = { type: "api-key" };
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
     | ApiKeySignerConfig
-    | (C extends SolanaChain | StellarChain ? never : EVM256KeypairSignerConfig);
+    | ShadowSignerConfig
+    | (C extends SolanaChain | StellarChain ? never : P256KeypairSignerConfig);
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -108,7 +113,7 @@ export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWallet
     locator: string;
 };
 
-export type EVM256KeypairInternalSignerConfig = EVM256KeypairSignerConfig & {
+export type P256KeypairInternalSignerConfig = P256KeypairSignerConfig & {
     locator: string;
     onSignTransaction: (publicKeyBase64: string, data: Uint8Array) => Promise<Uint8Array>;
 };
@@ -119,7 +124,7 @@ export type InternalSignerConfig<C extends Chain> =
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
     | ExternalWalletInternalSignerConfig<C>
-    | EVM256KeypairInternalSignerConfig;
+    | P256KeypairInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signers
@@ -150,7 +155,7 @@ type SignResultMap = {
     phone: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
-    "evm-p256-keypair": BaseSignResult;
+    "p256-keypair": BaseSignResult;
     passkey: PasskeySignResult;
 };
 
@@ -161,3 +166,16 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }
+
+export interface ExportableSigner extends Signer {
+    _exportPrivateKey: (exportTEEConnection: ExportSignerTEEConnection) => Promise<void>;
+}
+
+export function isExportableSigner(signer: Signer): signer is ExportableSigner {
+    return (signer as ExportableSigner)._exportPrivateKey !== undefined;
+}
+
+export type ExportSignerTEEConnection = HandshakeParent<
+    typeof exportSignerOutboundEvents,
+    typeof exportSignerInboundEvents
+>;

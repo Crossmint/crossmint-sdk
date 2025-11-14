@@ -119,6 +119,7 @@ export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     shadowSignerStorage?: ShadowSignerStorage;
+    shadowSignerEnabled?: boolean;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -127,10 +128,12 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
+    alias?: string;
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     onCreateConfig?: OnCreateConfig<C>;
+    alias?: string;
 };
 
 type ChainExtras = {

@@ -15,7 +15,7 @@ import type {
     ApiKeyInternalSignerConfig,
     EmailInternalSignerConfig,
     EmailSignerConfig,
-    EVM256KeypairSignerConfig,
+    P256KeypairSignerConfig,
     InternalSignerConfig,
     PasskeyInternalSignerConfig,
     PasskeySignerConfig,
@@ -47,7 +47,9 @@ export class WalletFactory {
             );
         }
 
-        const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
+        const locator = this.getWalletLocator<C>(args);
+
+        const existingWallet = await this.apiClient.getWallet(locator);
 
         if (existingWallet != null && !("error" in existingWallet)) {
             return this.createWalletInstance(existingWallet, args);
@@ -103,11 +105,10 @@ export class WalletFactory {
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
-            await this.buildDelegatedSigners(adminSignerConfig, args);
+            await this.buildDelegatedSigners(args);
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
         adminSignerConfig = tempArgs.signer;
-
         const adminSigner =
             adminSignerConfig.type === "passkey" && adminSignerConfig.id == null
                 ? await this.createPasskeySigner(adminSignerConfig)
@@ -122,6 +123,7 @@ export class WalletFactory {
                 ...(delegatedSigners != null ? { delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
+            alias: args.alias ?? undefined,
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
@@ -155,9 +157,11 @@ export class WalletFactory {
                     args.chain,
                     signerConfig,
                     walletResponse.address,
+                    this.isShadowSignerEnabled(args.options),
                     args.options?.shadowSignerStorage
                 ),
                 options: args.options,
+                alias: args.alias,
             },
             this.apiClient
         );
@@ -196,7 +200,7 @@ export class WalletFactory {
 
                 return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
             }
-            case "evm-p256-keypair": {
+            case "p256-keypair": {
                 const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
 
                 return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
@@ -270,6 +274,10 @@ export class WalletFactory {
             return delegatedSigner;
         }
         throw new WalletCreationError(`${signerLocator} signer does not match the wallet's signer type`);
+    }
+
+    private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
+        return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
     }
 
     private async createPasskeySigner<C extends Chain>(
@@ -412,8 +420,11 @@ export class WalletFactory {
         if (signer.type === "api-key") {
             return "api-key";
         }
-        if (signer.type === "evm-p256-keypair") {
-            return `evm-p256-keypair:${signer.chain}:${signer.publicKey}`;
+        if (signer.type === "p256-keypair") {
+            return `p256-keypair:${signer.address}`;
+        }
+        if (signer.type === "device") {
+            return `device:${signer.address}`;
         }
         return signer.type;
     }
@@ -483,36 +494,21 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled<C extends Chain>(
-        adminSigner: SignerConfigForChain<C>,
-        delegatedSigners: Array<SignerConfigForChain<C>> = []
-    ): boolean {
-        const ncSigners = [adminSigner, ...delegatedSigners].filter(
-            (signer) => signer.type === "email" || signer.type === "phone"
-        ) as Array<EmailSignerConfig | PhoneSignerConfig>;
-        return (
-            !this.apiClient.isServerSide &&
-            ncSigners.length > 0 &&
-            ncSigners.some((signer) => signer.shadowSigner?.enabled !== false)
-        );
+    private isShadowSignerEnabled(options: WalletOptions | undefined): boolean {
+        return !this.apiClient.isServerSide && options?.shadowSignerEnabled !== false;
     }
 
     private async buildDelegatedSigners<C extends Chain>(
-        adminSigner: SignerConfigForChain<C>,
         args: WalletCreateArgs<C>
     ): Promise<{
         delegatedSigners: Array<
-            DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }
+            DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | P256KeypairSignerConfig }
         >;
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
-            await this.addShadowSignerToDelegatedSignersIfNeeded(
-                args,
-                adminSigner,
-                args.onCreateConfig?.delegatedSigners
-            );
+            await this.addShadowSignerToDelegatedSignersIfNeeded(args, args.onCreateConfig?.delegatedSigners);
         const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
 
         return { delegatedSigners: registeredDelegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 };
@@ -521,24 +517,18 @@ export class WalletFactory {
     private async registerDelegatedSigners<C extends Chain>(
         delegatedSigners?: Array<SignerConfigForChain<C>>
     ): Promise<
-        Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }>
+        Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | P256KeypairSignerConfig }>
     > {
         return await Promise.all(
             delegatedSigners?.map(
-                async (
-                    signer
-                ): Promise<
-                    DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }
-                > => {
+                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
                     if (signer.type === "passkey") {
                         if (signer.id == null) {
                             return { signer: await this.createPasskeySigner(signer) };
                         }
                         return { signer };
                     }
-                    if (signer.type === "evm-p256-keypair") {
-                        return { signer };
-                    }
+
                     return { signer: this.getSignerLocator(signer) };
                 }
             ) ?? []
@@ -547,23 +537,22 @@ export class WalletFactory {
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
         args: WalletCreateArgs<C>,
-        adminSigner: SignerConfigForChain<C>,
         delegatedSigners?: Array<SignerConfigForChain<C>>
     ): Promise<{
         delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
-        if (this.isShadowSignerEnabled(adminSigner, delegatedSigners)) {
+        if (this.isShadowSignerEnabled(args.options)) {
             try {
-                const { shadowSigner, publicKey, publicKeyBase64 } = await generateShadowSigner(
+                const { shadowSigner, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,
                     args.options?.shadowSignerStorage
                 );
 
                 return {
                     delegatedSigners: [...(delegatedSigners ?? []), shadowSigner as SignerConfigForChain<C>],
-                    shadowSignerPublicKey: publicKey,
+                    shadowSignerPublicKey: shadowSigner.address,
                     shadowSignerPublicKeyBase64: publicKeyBase64,
                 };
             } catch (error) {

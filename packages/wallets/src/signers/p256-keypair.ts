@@ -1,22 +1,21 @@
-import type { Signer, EVM256KeypairInternalSignerConfig } from "./types";
+import type { Signer, P256KeypairInternalSignerConfig } from "./types";
 import { keccak256, sha256, toHex } from "viem";
-export class EVM256KeypairSigner implements Signer {
-    type = "evm-p256-keypair" as const;
-    private publicKey: string;
-    private chain: string;
+
+export class P256KeypairSigner implements Signer {
+    type = "p256-keypair" as const;
+    private _address: string;
     private _locator: string;
     private onSignTransaction: (publicKeyBase64: string, data: Uint8Array) => Promise<Uint8Array>;
     private readonly STUB_ORIGIN = "https://crossmint.com";
 
-    constructor(config: EVM256KeypairInternalSignerConfig) {
-        this.chain = config.chain;
-        this.publicKey = config.publicKey;
+    constructor(config: P256KeypairInternalSignerConfig) {
+        this._address = config.address;
         this._locator = config.locator;
         this.onSignTransaction = config.onSignTransaction;
     }
 
     address() {
-        return this.publicKey;
+        return this._address;
     }
 
     locator() {
@@ -69,7 +68,7 @@ export class EVM256KeypairSigner implements Signer {
         // 4. Sign with P256 private key
         // Web Crypto API will internally do: sign(sha256(signatureMessage))
         const signatureMessageBytes = new Uint8Array(Buffer.from(signatureMessage.slice(2), "hex"));
-        const signatureBytes = await this.onSignTransaction(this.publicKey, signatureMessageBytes);
+        const signatureBytes = await this.onSignTransaction(this.address(), signatureMessageBytes);
 
         // 5. Return r + s as hex string
         const rHex = Buffer.from(signatureBytes.slice(0, 32)).toString("hex").padStart(64, "0");

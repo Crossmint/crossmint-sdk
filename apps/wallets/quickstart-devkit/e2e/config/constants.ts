@@ -24,23 +24,27 @@ if (
 // Test configurations for different provider/chain/signer combinations
 export const TEST_CONFIGURATIONS = [
     // EVM Configurations
-    { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia" },
+    { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia", alias: undefined },
     {
         provider: "crossmint",
         chain: "evm",
         signer: "phone",
         chainId: "optimism-sepolia",
         phoneNumber: AUTH_CONFIG.mailosaurPhoneNumber,
+        alias: undefined,
     },
     // Solana Configurations
-    { provider: "crossmint", chain: "solana", signer: "email", chainId: "solana" },
+    { provider: "crossmint", chain: "solana", signer: "email", chainId: "solana", alias: undefined },
     {
         provider: "crossmint",
         chain: "solana",
         signer: "phone",
         chainId: "solana",
         phoneNumber: AUTH_CONFIG.mailosaurPhoneNumber,
+        alias: undefined,
     },
+    // Stellar Configurations
+    { provider: "crossmint", chain: "stellar", signer: "email", chainId: "stellar", alias: "stellartestingwallet" },
 ] as const;
 
 export type TestConfiguration = (typeof TEST_CONFIGURATIONS)[number];
@@ -65,6 +69,7 @@ export const SIGNER_EMAIL_MAPPING: Record<SignerType, string> = {
 export const TEST_RECIPIENT_WALLET_ADDRESSES = {
     evm: "0xDF8b5F9c19E187f1Ea00730a1e46180152244315",
     solana: "AsBWK4STzydYZHvacHFuFSSongkeBzZx7Bk8rCbDeH4d",
+    stellar: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
 };
 
 // Generate email address for a specific signer type
@@ -83,6 +88,9 @@ export function buildTestUrl(config: TestConfiguration): string {
     url.searchParams.set("crossmintApiKey", AUTH_CONFIG.crossmintApiKey);
     if (config.signer === "phone" && config.phoneNumber != null) {
         url.searchParams.set("phoneNumber", config.phoneNumber);
+    }
+    if (config.alias != null) {
+        url.searchParams.set("alias", config.alias);
     }
     return url.toString();
 }

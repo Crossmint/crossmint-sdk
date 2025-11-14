@@ -26,8 +26,7 @@ export type StellarExternalWalletSignerConfig = BaseExternalWalletSignerConfig &
     onSignStellarTransaction?: (transaction: string) => Promise<string>;
 };
 
-export type EVM256KeypairSignerConfig = {
-    type: "evm-p256-keypair";
-    publicKey: string;
-    chain: string;
+export type P256KeypairSignerConfig = {
+    type: "p256-keypair";
+    address: string;
 };

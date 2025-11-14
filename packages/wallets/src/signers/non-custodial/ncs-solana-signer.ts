@@ -8,14 +8,11 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         walletAddress: string,
+        shadowSignerEnabled: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
-        this.shadowSigner = new SolanaShadowSigner(
-            walletAddress,
-            this.shadowSignerStorage,
-            this.config.shadowSigner?.enabled !== false
-        );
+        this.shadowSigner = new SolanaShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
     }
 
     async signMessage() {
@@ -72,5 +69,12 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
+    }
+
+    protected getChainKeyParams(): { scheme: "ed25519"; encoding: "base58" } {
+        return {
+            scheme: "ed25519",
+            encoding: "base58",
+        };
     }
 }

@@ -8,14 +8,11 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         walletAddress: string,
+        shadowSignerEnabled: boolean,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
-        this.shadowSigner = new EVMShadowSigner(
-            walletAddress,
-            this.shadowSignerStorage,
-            this.config.shadowSigner?.enabled !== false
-        );
+        this.shadowSigner = new EVMShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
     }
 
     async signMessage(message: string) {
@@ -76,5 +73,12 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
+    }
+
+    protected getChainKeyParams(): { scheme: "secp256k1"; encoding: "hex" } {
+        return {
+            scheme: "secp256k1",
+            encoding: "hex",
+        };
     }
 }
