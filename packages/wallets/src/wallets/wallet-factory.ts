@@ -273,6 +273,12 @@ export class WalletFactory {
         if (delegatedSigner != null) {
             return delegatedSigner;
         }
+        if (signerLocator === "passkey") {
+            const passkeySigner = [adminSigner, ...delegatedSigners].find((s) => s.type === "passkey");
+            if (passkeySigner != null) {
+                return passkeySigner;
+            }
+        }
         throw new WalletCreationError(`${signerLocator} signer does not match the wallet's signer type`);
     }
 
