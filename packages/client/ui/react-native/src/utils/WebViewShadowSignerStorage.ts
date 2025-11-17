@@ -3,7 +3,6 @@ import { SecureStorage } from "./SecureStorage";
 import type { RefObject } from "react";
 import type { WebView } from "react-native-webview";
 import * as SecureStore from "expo-secure-store";
-import { Buffer } from "buffer/";
 
 export class WebViewShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
@@ -79,6 +78,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         if (this.sendCommandViaHash == null) {
             throw new Error("Shadow signer command channel not initialized");
         }
+        const send = this.sendCommandViaHash;
 
         const id = `shadow_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
@@ -93,7 +93,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
             const payload = { id, operation, params };
             const b64 = btoa(JSON.stringify(payload));
             const hash = `#cmShadow=${encodeURIComponent(b64)}`;
-            this.sendCommandViaHash!(hash);
+            send(hash);
         });
     }
 
@@ -132,19 +132,16 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         }
     }
 
-    async keyGenerator(): Promise<string> {
-        const publicKeyBytes = await this.generateKeyInWebView();
-        return Buffer.from(publicKeyBytes).toString("base64");
+    async keyGenerator(chain: string): Promise<string> {
+        return await this.generateKeyInWebView(chain);
     }
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
         return await this.signInWebView(publicKeyBase64, data);
     }
 
-    private async generateKeyInWebView(): Promise<Uint8Array> {
-        const response = await this.callWebViewFunction("generate", {});
-        const publicKeyBytes = response.publicKeyBytes as number[];
-        return new Uint8Array(publicKeyBytes);
+    private async generateKeyInWebView(chain: string): Promise<string> {
+        return (await this.callWebViewFunction("generate", { chain })).publicKeyBase64 as string;
     }
 
     private async signInWebView(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
