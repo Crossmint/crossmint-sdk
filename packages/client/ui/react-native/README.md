@@ -140,7 +140,7 @@ const customWallet = await getOrCreateWallet({
 });
 ```
 
-## Embedded Checkout
+## 🛒 Checkout
 
 Accept credit card payments for tokens and NFTs directly in your React Native app with a fully customizable embedded checkout experience.
 
