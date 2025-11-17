@@ -26,21 +26,9 @@ export class PasskeySigner implements Signer {
         return this.config.locator;
     }
 
-    async signMessage(message: string): Promise<PasskeySignResult> {
+    async signMessage(message: string): Promise<PasskeySignResult | { signature: string }> {
         if (this.shadowSigner?.hasShadowSigner()) {
-            const result = await this.shadowSigner.signTransaction(message);
-            // Convert the shadow signer result to PasskeySignResult format
-            // Shadow signer returns { signature: string } where signature is "0x" + r + s
-            const signatureHex = result.signature.replace("0x", "");
-            const r = signatureHex.slice(0, 64);
-            const s = signatureHex.slice(64, 128);
-            return {
-                signature: {
-                    r: `0x${r}`,
-                    s: `0x${s}`,
-                },
-                metadata: {} as any, // Shadow signer doesn't provide metadata
-            };
+            return this.shadowSigner.signTransaction(message);
         }
         if (this.config.onSignWithPasskey) {
             return await this.config.onSignWithPasskey(message);

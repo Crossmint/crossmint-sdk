@@ -156,7 +156,7 @@ export class WalletFactory {
                     args.chain,
                     signerConfig,
                     walletResponse.address,
-                    this.isShadowSignerEnabled(args.chain, args.options),
+                    this.isShadowSignerEnabled(args.options),
                     args.options?.shadowSignerStorage
                 ),
                 options: args.options,
@@ -491,12 +491,8 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled<C extends Chain>(chain: C, options: WalletOptions | undefined): boolean {
-        return (
-            !this.apiClient.isServerSide &&
-            (chain === "solana" || chain === "stellar") &&
-            options?.shadowSignerEnabled !== false
-        );
+    private isShadowSignerEnabled(options: WalletOptions | undefined): boolean {
+        return !this.apiClient.isServerSide && options?.shadowSignerEnabled !== false;
     }
 
     private async buildDelegatedSigners<C extends Chain>(
@@ -539,7 +535,7 @@ export class WalletFactory {
         shadowSignerPublicKey: string | null;
         shadowSignerPublicKeyBase64: string | null;
     }> {
-        if (this.isShadowSignerEnabled(args.chain, args.options)) {
+        if (this.isShadowSignerEnabled(args.options)) {
             try {
                 const { shadowSigner, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,
