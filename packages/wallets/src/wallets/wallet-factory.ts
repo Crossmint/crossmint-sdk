@@ -260,18 +260,18 @@ export class WalletFactory {
         const config = wallet.config as SmartWalletConfig;
         const adminSigner = config?.adminSigner;
         const delegatedSigners = config?.delegatedSigners || [];
-        if ("locator" in adminSigner && adminSigner.locator === signerLocator) {
-            return adminSigner;
-        }
-        const delegatedSigner = delegatedSigners.find((ds) => ds.locator === signerLocator);
-        if (delegatedSigner != null) {
-            return delegatedSigner;
-        }
-        if (signerLocator === "passkey") {
-            const passkeySigner = [adminSigner, ...delegatedSigners].find((s) => s.type === "passkey");
-            if (passkeySigner != null) {
-                return passkeySigner;
+
+        const signers = [adminSigner, ...delegatedSigners];
+        const walletSigner = signers.find((signer) => {
+            if (signerLocator === "passkey") {
+                return signer.type === "passkey";
             }
+            if ("locator" in signer) {
+                return signer.locator === signerLocator;
+            }
+        });
+        if (walletSigner != null) {
+            return walletSigner;
         }
         throw new WalletCreationError(`${signerLocator} signer does not match the wallet's signer type`);
     }
