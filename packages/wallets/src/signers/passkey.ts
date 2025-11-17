@@ -20,6 +20,9 @@ export class PasskeySigner implements Signer {
     }
 
     locator() {
+        if (this.shadowSigner?.hasShadowSigner()) {
+            return this.shadowSigner.locator();
+        }
         return this.config.locator;
     }
 
