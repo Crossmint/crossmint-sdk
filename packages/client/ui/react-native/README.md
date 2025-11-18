@@ -140,6 +140,42 @@ const customWallet = await getOrCreateWallet({
 });
 ```
 
+## Custom Storage Provider
+
+If you need to implement a custom storage solution, you can implement the `StorageProvider` interface and pass it to the `CrossmintAuthProvider`:
+
+```tsx
+import { CrossmintAuthProvider, type StorageProvider } from "@crossmint/client-sdk-react-native-ui";
+
+// Implement your custom storage provider
+class CustomStorage implements StorageProvider {
+  async get(key: string): Promise<string | undefined> {
+    // Your implementation
+  }
+
+  async set(key: string, value: string, expiresAt?: string): Promise<void> {
+    // Your implementation
+  }
+
+  async remove(key: string): Promise<void> {
+    // Your implementation
+  }
+}
+
+// Use your custom storage provider
+function App() {
+  const customStorage = new CustomStorage();
+
+  return (
+    <CrossmintProvider apiKey="YOUR_API_KEY">
+      <CrossmintAuthProvider customStorageProvider={customStorage}>
+        {/* Your app content */}
+      </CrossmintAuthProvider>
+    </CrossmintProvider>
+  );
+}
+```
+
 ## 🛒 Checkout
 
 Accept credit card payments for tokens and NFTs directly in your React Native app with a fully customizable embedded checkout experience.
@@ -187,42 +223,6 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 
 **[Full Embedded Checkout Quickstart](https://docs.crossmint.com/payments/embedded/quickstarts/credit-card-memecoin-react-native)** - Complete guide with token purchases and NFT minting examples.
 
-
-## Custom Storage Provider
-
-If you need to implement a custom storage solution, you can implement the `StorageProvider` interface and pass it to the `CrossmintAuthProvider`:
-
-```tsx
-import { CrossmintAuthProvider, type StorageProvider } from "@crossmint/client-sdk-react-native-ui";
-
-// Implement your custom storage provider
-class CustomStorage implements StorageProvider {
-  async get(key: string): Promise<string | undefined> {
-    // Your implementation
-  }
-
-  async set(key: string, value: string, expiresAt?: string): Promise<void> {
-    // Your implementation
-  }
-
-  async remove(key: string): Promise<void> {
-    // Your implementation
-  }
-}
-
-// Use your custom storage provider
-function App() {
-  const customStorage = new CustomStorage();
-
-  return (
-    <CrossmintProvider apiKey="YOUR_API_KEY">
-      <CrossmintAuthProvider customStorageProvider={customStorage}>
-        {/* Your app content */}
-      </CrossmintAuthProvider>
-    </CrossmintProvider>
-  );
-}
-```
 
 ## 🛠️ Environment Setup
 
