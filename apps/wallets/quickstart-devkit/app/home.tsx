@@ -117,9 +117,6 @@ export function HomeContent() {
                 {wallet?.chain !== "solana" && wallet?.chain !== "stellar" && <EVMTransferFunds />}
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}
                 {wallet?.chain === "stellar" && <StellarTransferFunds />}
-                <div className="flex flex-col gap-2">
-                    <ExportPrivateKeyButton />
-                </div>
                 <Permissions />
                 <ApprovalTest />
             </div>
