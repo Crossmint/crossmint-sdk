@@ -27,6 +27,7 @@
         "@crossmint/client-signers": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@datadog/browser-logs": "6.24.0",
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",

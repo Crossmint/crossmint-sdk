@@ -7,6 +7,7 @@ import {
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 import { InvalidApiKeyError } from "../utils/errors";
+import { walletsLogger } from "../logger/init";
 
 import type {
     CreateWalletParams,
@@ -51,18 +52,51 @@ class ApiClient extends CrossmintApiClient {
 
     async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {
         const path = this.isServerSide ? `${this.apiPrefix}` : `${this.apiPrefix}/me`;
+        if (this.isServerSide) {
+            walletsLogger.info("wallets.api.createWallet.server", {
+                chainType: params.chainType,
+                walletType: params.type,
+            });
+        }
         const response = await this.post(path, {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        return response.json();
+        const result = await response.json();
+        if (this.isServerSide && "error" in result) {
+            walletsLogger.error("wallets.api.createWallet.server.error", {
+                error: result.error,
+                chainType: params.chainType,
+            });
+        } else if (this.isServerSide && "address" in result) {
+            walletsLogger.info("wallets.api.createWallet.server.success", {
+                address: result.address,
+                chainType: params.chainType,
+            });
+        }
+        return result;
     }
 
     async getWallet(locator: WalletLocator): Promise<GetWalletResponse> {
+        if (this.isServerSide) {
+            walletsLogger.info("wallets.api.getWallet.server", { locator });
+        }
         const response = await this.get(`${this.apiPrefix}/${locator}`, {
             headers: this.headers,
         });
-        return response.json();
+        const result = await response.json();
+        if (this.isServerSide && "error" in result) {
+            walletsLogger.warn("wallets.api.getWallet.server.notFound", {
+                locator,
+                error: result.error,
+            });
+        } else if (this.isServerSide && "address" in result) {
+            walletsLogger.info("wallets.api.getWallet.server.success", {
+                locator,
+                address: result.address,
+            });
+        }
+        return result;
     }
 
     async createTransaction(
@@ -204,11 +238,31 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
+        if (this.isServerSide) {
+            walletsLogger.info("wallets.api.send.server", {
+                walletLocator,
+                tokenLocator,
+                recipient: params.recipient,
+            });
+        }
         const response = await this.post(`${this.apiPrefix}/${walletLocator}/tokens/${tokenLocator}/transfers`, {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        return response.json();
+        const result = await response.json();
+        if (this.isServerSide && "error" in result) {
+            walletsLogger.error("wallets.api.send.server.error", {
+                walletLocator,
+                tokenLocator,
+                error: result.error,
+            });
+        } else if (this.isServerSide && "id" in result) {
+            walletsLogger.info("wallets.api.send.server.success", {
+                walletLocator,
+                transactionId: result.id,
+            });
+        }
+        return result;
     }
 
     public get isServerSide() {
