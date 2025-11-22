@@ -21,7 +21,10 @@ export abstract class NonCustodialSigner implements Signer {
     private _initializationPromise: Promise<void> | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
-        this.initialize();
+        // Only initialize the signer if running client-side
+        if (typeof window !== "undefined") {
+            this.initialize();
+        }
         this.type = this.config.type;
     }
 
