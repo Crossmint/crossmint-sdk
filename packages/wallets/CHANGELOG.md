@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.18.4
+
+### Patch Changes
+
+- da7fbb1: Fix Non-custodial signer initialization when running in server-side environments
+- 9ece4b2: Disable minification to prevent entire source code from being dumped in error stack traces, improving error readability.
+
 ## 0.18.3
 
 ### Patch Changes
