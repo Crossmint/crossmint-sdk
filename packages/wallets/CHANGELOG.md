@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.18.5
+
+### Patch Changes
+
+- de77241: Fix owner comparison when email has a dot
+
 ## 0.18.4
 
 ### Patch Changes
