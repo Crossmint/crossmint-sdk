@@ -176,8 +176,8 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
-                const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
+                const _onWalletCreationStart = args.options?.callbacks?.onWalletCreationStart;
+                const _onTransactionStart = args.options?.callbacks?.onTransactionStart;
 
                 const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
 
@@ -192,7 +192,7 @@ export function CrossmintWalletBaseProvider({
                     alias: args.alias,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
-                        experimental_callbacks: {
+                        callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
                         },
@@ -240,7 +240,7 @@ export function CrossmintWalletBaseProvider({
                     signer: resolvedSigner,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
-                        experimental_callbacks: callbacks,
+                        callbacks: callbacks,
                         shadowSignerStorage,
                     },
                 });

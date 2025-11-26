@@ -46,7 +46,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -73,7 +73,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
@@ -120,7 +120,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
@@ -141,7 +141,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        const signer = options?.signer ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,

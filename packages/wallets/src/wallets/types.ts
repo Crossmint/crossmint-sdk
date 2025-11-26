@@ -10,10 +10,10 @@ import type { ShadowSignerStorage } from "../signers/shadow-signer";
 
 export type { Activity } from "../api/types";
 
-export type PrepareOnly<T extends boolean = boolean> = { experimental_prepareOnly: T };
+export type PrepareOnly<T extends boolean = boolean> = { prepareOnly: T };
 
 export type TransactionInputOptions = PrepareOnly & {
-    experimental_signer?: string;
+    signer?: string;
 };
 
 export type SignatureInputOptions = PrepareOnly;
@@ -116,7 +116,7 @@ export type StellarWalletPlugin = string;
 export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWalletPlugin : never;
 
 export type WalletOptions = {
-    experimental_callbacks?: Callbacks;
+    callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     shadowSignerStorage?: ShadowSignerStorage;
     shadowSignerEnabled?: boolean;
@@ -188,7 +188,7 @@ export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly exten
       };
 
 export type ApproveOptions = {
-    experimental_approval?: Approval;
+    approval?: Approval;
     additionalSigners?: Signer[];
 };
 

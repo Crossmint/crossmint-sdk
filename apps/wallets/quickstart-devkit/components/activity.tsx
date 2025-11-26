@@ -14,7 +14,7 @@ export function Activity() {
             }
             setLoading(true);
             try {
-                const activity = await wallet.experimental_activity();
+                const activity = await wallet.activity();
                 setActivity(activity);
             } catch (error) {
                 console.error("Error fetching wallet activity:", error);

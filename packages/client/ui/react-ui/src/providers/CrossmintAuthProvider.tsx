@@ -26,7 +26,7 @@ const defaultContextValue: CrossmintAuthContext = {
     status: "initializing",
     getUser: () => {},
     experimental_externalWalletSigner: undefined,
-    experimental_loginWithOAuth: () => Promise.resolve(),
+    loginWithOAuth: () => Promise.resolve(),
     loginMethods: [],
 };
 
@@ -112,7 +112,7 @@ function CrossmintAuthProviderContent({
         return "logged-out";
     }, [baseAuth.status, baseAuth.jwt, isWeb3Enabled, dynamicSdkLoaded, dialogOpen]);
 
-    const experimental_loginWithOAuth = useCallback(
+    const loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
                 console.log("User already logged in");
@@ -129,10 +129,10 @@ function CrossmintAuthProviderContent({
             login,
             status: getAuthStatus(),
             experimental_externalWalletSigner: externalWalletSigner,
-            experimental_loginWithOAuth,
+            loginWithOAuth,
             loginMethods,
         }),
-        [baseAuth, login, getAuthStatus, externalWalletSigner, experimental_loginWithOAuth, loginMethods]
+        [baseAuth, login, getAuthStatus, externalWalletSigner, loginWithOAuth, loginMethods]
     );
 
     return (

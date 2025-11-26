@@ -61,7 +61,7 @@ console.log(transaction.explorerLink);
 ### Get wallet activity
 
 ```ts
-const activity = await wallet.experimental_activity();
+const activity = await wallet.activity();
 
 console.log(activity.events);
 ```
