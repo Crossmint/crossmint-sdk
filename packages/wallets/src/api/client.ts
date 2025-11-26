@@ -52,24 +52,23 @@ class ApiClient extends CrossmintApiClient {
 
     async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {
         const path = this.isServerSide ? `${this.apiPrefix}` : `${this.apiPrefix}/me`;
-        if (this.isServerSide) {
-            walletsLogger.info("wallets.api.createWallet.server", {
-                chainType: params.chainType,
-                walletType: params.type,
-            });
-        }
+        walletsLogger.info("wallets.api.createWallet", {
+            chainType: params.chainType,
+            walletType: params.type,
+        });
+
         const response = await this.post(path, {
             body: JSON.stringify(params),
             headers: this.headers,
         });
         const result = await response.json();
-        if (this.isServerSide && "error" in result) {
-            walletsLogger.error("wallets.api.createWallet.server.error", {
+        if ("error" in result) {
+            walletsLogger.error("wallets.api.createWallet.error", {
                 error: result.error,
                 chainType: params.chainType,
             });
-        } else if (this.isServerSide && "address" in result) {
-            walletsLogger.info("wallets.api.createWallet.server.success", {
+        } else if ("address" in result) {
+            walletsLogger.info("wallets.api.createWallet.success", {
                 address: result.address,
                 chainType: params.chainType,
             });
@@ -78,20 +77,18 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async getWallet(locator: WalletLocator): Promise<GetWalletResponse> {
-        if (this.isServerSide) {
-            walletsLogger.info("wallets.api.getWallet.server", { locator });
-        }
+        walletsLogger.info("wallets.api.getWallet", { locator });
         const response = await this.get(`${this.apiPrefix}/${locator}`, {
             headers: this.headers,
         });
         const result = await response.json();
-        if (this.isServerSide && "error" in result) {
-            walletsLogger.warn("wallets.api.getWallet.server.notFound", {
+        if ("error" in result) {
+            walletsLogger.warn("wallets.api.getWallet.error", {
                 locator,
                 error: result.error,
             });
-        } else if (this.isServerSide && "address" in result) {
-            walletsLogger.info("wallets.api.getWallet.server.success", {
+        } else if ("address" in result) {
+            walletsLogger.info("wallets.api.getWallet.success", {
                 locator,
                 address: result.address,
             });
@@ -238,26 +235,24 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
-        if (this.isServerSide) {
-            walletsLogger.info("wallets.api.send.server", {
-                walletLocator,
-                tokenLocator,
-                recipient: params.recipient,
-            });
-        }
+        walletsLogger.info("wallets.api.send", {
+            walletLocator,
+            tokenLocator,
+            recipient: params.recipient,
+        });
         const response = await this.post(`${this.apiPrefix}/${walletLocator}/tokens/${tokenLocator}/transfers`, {
             body: JSON.stringify(params),
             headers: this.headers,
         });
         const result = await response.json();
-        if (this.isServerSide && "error" in result) {
-            walletsLogger.error("wallets.api.send.server.error", {
+        if ("error" in result) {
+            walletsLogger.error("wallets.api.send.error", {
                 walletLocator,
                 tokenLocator,
                 error: result.error,
             });
-        } else if (this.isServerSide && "id" in result) {
-            walletsLogger.info("wallets.api.send.server.success", {
+        } else if ("id" in result) {
+            walletsLogger.info("wallets.api.send.success", {
                 walletLocator,
                 transactionId: result.id,
             });

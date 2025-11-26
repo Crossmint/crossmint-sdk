@@ -1,9 +1,7 @@
 import { type ReactNode, createContext, useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
-import { initReactBaseLogger, reactBaseLogger } from "../logger/init";
-
-let loggerInitialized = false;
+import { initReactBaseLogger } from "../logger/init";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -26,16 +24,8 @@ export function CrossmintProvider({
     children: ReactNode;
 }) {
     useEffect(() => {
-        if (!loggerInitialized) {
-            initReactBaseLogger(apiKey);
-            loggerInitialized = true;
-            reactBaseLogger.info("react-base.provider.initialized", {
-                hasApiKey: apiKey != null,
-                hasAppId: appId != null,
-                hasExtensionId: extensionId != null,
-            });
-        }
-    }, [apiKey, appId, extensionId]);
+        initReactBaseLogger(apiKey);
+    }, [apiKey]);
 
     const [version, setVersion] = useState(0);
     const crossmintRef = useRef<Crossmint | null>(null);
@@ -44,9 +34,6 @@ export function CrossmintProvider({
             set(target, prop, value) {
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
-                    reactBaseLogger.debug("react-base.provider.jwt.updated", {
-                        hasJwt: value != null,
-                    });
                 }
                 if (prop === "experimental_customAuth" && target.experimental_customAuth !== value) {
                     setVersion((v) => v + 1);

@@ -3,7 +3,7 @@ import {
     createLoggerInitOptions,
     initializeBrowserDatadogSink,
     initializeServerDatadogSink,
-    detectEnvironment,
+    detectPlatform,
     detectEnvironmentFromApiKey,
     type LogSink,
 } from "@crossmint/common-sdk-base";
@@ -21,7 +21,7 @@ export const walletsLogger = new SdkLogger();
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
 export function initWalletsLogger(apiKey: string): void {
-    const platform = detectEnvironment();
+    const platform = detectPlatform();
     const environment = detectEnvironmentFromApiKey(apiKey);
     const sinks: LogSink[] = [];
 

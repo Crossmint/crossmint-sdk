@@ -25,10 +25,8 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
     };
 
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     import("@datadog/mobile-react-native")
         .then(async (datadogReactNativeModule: any) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { DdSdkReactNative, DatadogProviderConfiguration } = datadogReactNativeModule;
 
             // Skip initialization in Expo Go (native modules not available)
@@ -65,16 +63,13 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
         });
 }
 
-/**
- * Package-specific logger instance for the React Native UI SDK
- */
 export const reactNativeLogger = new SdkLogger();
 
 /**
  * Initialize the SDK logger for the React Native UI SDK
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles React Native-specific Datadog sink initialization
- * @param apiKey - Optional API key to determine environment (development/staging/production)
+ * @param apiKey - API key to determine environment (development/staging/production) and project ID
  */
 export function initReactNativeLogger(apiKey: string): void {
     const environment = detectEnvironmentFromApiKey(apiKey);
@@ -87,13 +82,11 @@ export function initReactNativeLogger(apiKey: string): void {
 
     reactNativeLogger.init(initOptions);
 
-    // Check if running in Expo Go (native modules not available)
     const isExpoGo =
         Constants.executionEnvironment === "storeClient" ||
         Constants.appOwnership === "expo" ||
         !!Constants.expoVersion;
 
-    // Add React Native Datadog sink
     initializeReactNativeDatadogSink({
         version: packageJson.version,
         environment,

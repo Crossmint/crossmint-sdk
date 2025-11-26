@@ -1,7 +1,7 @@
 import type { LogContext, LogSink } from "./types";
 import type { SdkLoggerInitOptions } from "./interfaces";
-import { ConsoleSink, detectEnvironment } from "./index";
-import type { RuntimeEnvironment } from "./environment";
+import { ConsoleSink, detectPlatform } from "./index";
+import type { Platform } from "./platform";
 import { createClientDatadogSink } from "./sinks/ClientDatadogSink";
 import { createServerDatadogSink } from "./sinks/ServerDatadogSink";
 import { validateAPIKey, validateAPIKeyPrefix, type APIKeyEnvironmentPrefix } from "../apiKey";
@@ -26,14 +26,14 @@ export interface PackageLoggerContextOptions {
     packageVersion: string;
     projectId: string;
     environment: APIKeyEnvironmentPrefix;
-    platform: RuntimeEnvironment;
+    platform: Platform;
 }
 
 /**
  * Creates a logger context object for a package
  */
 export function createPackageLoggerContext(options: PackageLoggerContextOptions): LogContext {
-    const platform = options.platform ?? detectEnvironment();
+    const platform = options.platform ?? detectPlatform();
     return {
         sdk_version: options.packageVersion,
         sdk_name: options.packageName,
@@ -118,7 +118,7 @@ export interface CreateLoggerInitOptionsParams {
     packageName: string;
     packageVersion: string;
     apiKey: string;
-    platform?: RuntimeEnvironment;
+    platform?: Platform;
     sinks?: LogSink[];
     additionalContext?: LogContext;
 }
@@ -127,7 +127,7 @@ export interface CreateLoggerInitOptionsParams {
  * Creates logger initialization options with common setup
  */
 export function createLoggerInitOptions(params: CreateLoggerInitOptionsParams): SdkLoggerInitOptions {
-    const platform = params.platform ?? detectEnvironment();
+    const platform = params.platform ?? detectPlatform();
     const validationResult = validateAPIKey(params.apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);

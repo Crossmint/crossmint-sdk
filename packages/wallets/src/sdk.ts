@@ -8,26 +8,13 @@ import { initWalletsLogger, walletsLogger } from "./logger";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
-    private static loggerInitialized = false;
 
     private constructor(crossmint: Crossmint) {
-        if (!CrossmintWallets.loggerInitialized) {
-            initWalletsLogger(crossmint.apiKey);
-            CrossmintWallets.loggerInitialized = true;
-        }
-
+        initWalletsLogger(crossmint.apiKey);
         const apiClient = new ApiClient(crossmint);
         this.walletFactory = new WalletFactory(apiClient);
 
-        // Set user context if available
-        if (crossmint.apiKey != null) {
-            // Extract user identifier from API key if possible
-            // For now, we'll just log SDK initialization
-            walletsLogger.info("wallets.sdk.initialized", {
-                environment: apiClient.environment,
-                isServerSide: apiClient.isServerSide,
-            });
-        }
+        walletsLogger.info("wallets.sdk.initialized");
     }
 
     /**

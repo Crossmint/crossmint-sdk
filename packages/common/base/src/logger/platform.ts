@@ -1,13 +1,13 @@
 /**
  * Detects the runtime environment
  */
-export type RuntimeEnvironment = "browser" | "react-native" | "server" | "unknown";
+export type Platform = "browser" | "react-native" | "server" | "unknown";
 
 /**
  * Detects the current runtime environment
  * @returns The detected environment type
  */
-export function detectEnvironment(): RuntimeEnvironment {
+export function detectPlatform(): Platform {
     // Check for React Native first (before browser check)
     // React Native has navigator.product === 'ReactNative'
     if (typeof navigator !== "undefined" && navigator.product === "ReactNative") {

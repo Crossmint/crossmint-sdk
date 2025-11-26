@@ -3,7 +3,7 @@ export * from "./types";
 export * from "./SdkLogger";
 export * from "./instance";
 export * from "./sink-manager";
-export * from "./environment";
+export * from "./platform";
 export * from "./sinks/ConsoleSink";
 export * from "./sinks/DatadogSink";
 export * from "./sinks/ClientDatadogSink";

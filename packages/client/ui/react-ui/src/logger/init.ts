@@ -3,7 +3,7 @@ import {
     createLoggerInitOptions,
     initializeBrowserDatadogSink,
     detectEnvironmentFromApiKey,
-    detectEnvironment,
+    detectPlatform,
     type LogSink,
     initializeServerDatadogSink,
 } from "@crossmint/common-sdk-base";
@@ -18,7 +18,7 @@ export const reactUILogger = new SdkLogger();
  * Initialize the SDK logger for the React UI SDK
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles browser-specific Datadog sink initialization
- * @param apiKey - Optional API key to determine environment (development/staging/production)
+ * @param apiKey - API key to determine environment (development/staging/production) and project ID
  */
 export function initReactUILogger(apiKey: string): void {
     const environment = detectEnvironmentFromApiKey(apiKey);
@@ -31,7 +31,7 @@ export function initReactUILogger(apiKey: string): void {
     reactUILogger.init(initOptions);
 
     // Add browser Datadog sink if in browser environment
-    if (detectEnvironment() === "browser") {
+    if (detectPlatform() === "browser") {
         initializeBrowserDatadogSink({
             version: packageJson.version,
             environment,
@@ -40,7 +40,7 @@ export function initReactUILogger(apiKey: string): void {
                 console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
             },
         });
-    } else if (detectEnvironment() === "server") {
+    } else if (detectPlatform() === "server") {
         initializeServerDatadogSink({
             version: packageJson.version,
             environment,
