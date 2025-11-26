@@ -1,5 +1,5 @@
 import type { Chain } from "@/chains/chains";
-import type { Signer } from "../types";
+import type { BaseSignResult, Signer } from "../types";
 import {
     getShadowSigner,
     getStorage,
@@ -9,9 +9,12 @@ import {
 } from "./utils";
 import type { InternalSignerConfig } from "../types";
 
-export abstract class ShadowSigner<C extends Chain, S extends Signer, Config extends InternalSignerConfig<C>> {
+export abstract class ShadowSigner<C extends Chain, S extends Signer, Config extends InternalSignerConfig<C>>
+    implements Signer
+{
     protected storage: ShadowSignerStorage;
     protected signer: S | null = null;
+    public readonly type: "device" = "device" as const;
 
     constructor(walletAddress?: string, storage?: ShadowSignerStorage, enabled = true) {
         this.storage = storage ?? getStorage();
@@ -20,7 +23,7 @@ export abstract class ShadowSigner<C extends Chain, S extends Signer, Config ext
 
     abstract getShadowSignerConfig(shadowData: ShadowSignerData): Config;
 
-    protected abstract getSignerClass(): new (config: Config) => S;
+    protected abstract getWrappedSignerClass(): new (config: Config) => S;
 
     private async initialize(walletAddress: string | undefined, enabled: boolean): Promise<void> {
         if (!enabled || walletAddress == null) {
@@ -31,7 +34,7 @@ export abstract class ShadowSigner<C extends Chain, S extends Signer, Config ext
             const shadowData = await getShadowSigner(walletAddress, this.storage);
             if (shadowData != null) {
                 const config = this.getShadowSignerConfig(shadowData);
-                const SignerClass = this.getSignerClass();
+                const SignerClass = this.getWrappedSignerClass();
                 this.signer = new SignerClass(config);
             }
         }
@@ -39,6 +42,14 @@ export abstract class ShadowSigner<C extends Chain, S extends Signer, Config ext
 
     hasShadowSigner(): this is { signer: S } {
         return this.signer != null;
+    }
+
+    async signMessage(message: string): Promise<BaseSignResult> {
+        if (!this.hasShadowSigner()) {
+            throw new Error("Shadow signer not initialized");
+        }
+        const result = await this.signer.signMessage(message);
+        return result as BaseSignResult;
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {

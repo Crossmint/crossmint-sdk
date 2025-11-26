@@ -9,7 +9,7 @@ export class StellarShadowSigner extends ShadowSigner<
     StellarExternalWalletSigner,
     ExternalWalletInternalSignerConfig<StellarChain>
 > {
-    protected getSignerClass() {
+    protected getWrappedSignerClass() {
         return StellarExternalWalletSigner;
     }
 
@@ -18,8 +18,8 @@ export class StellarShadowSigner extends ShadowSigner<
             type: "external-wallet",
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
-            onSignStellarTransaction: async (payload) => {
-                const transactionString = typeof payload === "string" ? payload : (payload as { tx: string }).tx;
+            onSignStellarTransaction: async (payload: string | { tx: string }) => {
+                const transactionString = typeof payload === "string" ? payload : payload.tx;
                 const messageBytes = Uint8Array.from(atob(transactionString), (c) => c.charCodeAt(0));
 
                 const signature = await this.storage.sign(shadowData.publicKeyBase64, messageBytes);

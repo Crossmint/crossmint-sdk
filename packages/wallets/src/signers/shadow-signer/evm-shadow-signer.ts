@@ -9,7 +9,7 @@ export class EVMShadowSigner extends ShadowSigner<
     P256KeypairSigner,
     P256KeypairInternalSignerConfig
 > {
-    protected getSignerClass() {
+    protected getWrappedSignerClass() {
         return P256KeypairSigner;
     }
 

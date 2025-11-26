@@ -157,6 +157,7 @@ type SignResultMap = {
     "external-wallet": BaseSignResult;
     "p256-keypair": BaseSignResult;
     passkey: PasskeySignResult;
+    device: BaseSignResult;
 };
 
 export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
