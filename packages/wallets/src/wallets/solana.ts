@@ -42,7 +42,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -71,7 +71,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signer = params.options?.experimental_signer ?? this.signer.locator();
+        const signer = params.options?.signer ?? this.signer.locator();
 
         let serializedTransaction: string;
 

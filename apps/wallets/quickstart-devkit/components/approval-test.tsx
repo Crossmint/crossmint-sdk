@@ -60,7 +60,7 @@ export function ApprovalTest() {
         // const evmWallet = EVMWallet.from(wallet);
         // const txn = await evmWallet.sendTransaction({
         //     transaction: "0x",
-        //     options: { experimental_prepareOnly: true },
+        //     options: { prepareOnly: true },
         // });
 
         // const sigSigned = await evmWallet.signTypedData({
@@ -86,12 +86,12 @@ export function ApprovalTest() {
         //         chainId: BigInt(1),
         //         verifyingContract: "0x0000000000000000000000000000000000000000",
         //     },
-        //     options: { experimental_prepareOnly: false },
+        //     options: { prepareOnly: false },
         // });
 
         // const sigMessage = await evmWallet.signMessage({
         //     message: "Hello, world!",
-        //     options: { experimental_prepareOnly: true },
+        //     options: { prepareOnly: true },
         // });
 
         try {
@@ -103,7 +103,7 @@ export function ApprovalTest() {
                 prepareTransfer.recipient,
                 prepareTransfer.token,
                 prepareTransfer.amount,
-                { experimental_prepareOnly: true }
+                { prepareOnly: true }
             );
 
             setPreparedTransactionId(transaction.transactionId);

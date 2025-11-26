@@ -100,7 +100,7 @@ export class WalletFactory {
     }
 
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+        await args.options?.callbacks?.onWalletCreationStart?.();
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =

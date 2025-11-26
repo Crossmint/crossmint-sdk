@@ -40,7 +40,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -55,7 +55,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        const signer = options?.signer ?? this.signer.locator();
 
         let transaction: any;
 
