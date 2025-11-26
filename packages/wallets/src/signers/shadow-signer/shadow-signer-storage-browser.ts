@@ -1,4 +1,5 @@
 import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
+import type { Chain } from "../../chains/chains";
 
 export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
@@ -19,12 +20,32 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async keyGenerator(): Promise<string> {
+    async keyGenerator(chain: Chain): Promise<string> {
+        if (chain === "solana" || chain === "stellar") {
+            const keyPair = (await window.crypto.subtle.generateKey(
+                {
+                    name: "Ed25519",
+                    namedCurve: "Ed25519",
+                } as AlgorithmIdentifier,
+                false,
+                ["sign", "verify"]
+            )) as CryptoKeyPair;
+
+            const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+            const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+            const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
+
+            await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+
+            return publicKeyBase64;
+        }
+
+        // For EVM chains, use P256 (secp256r1)
         const keyPair = (await window.crypto.subtle.generateKey(
             {
-                name: "Ed25519",
-                namedCurve: "Ed25519",
-            } as AlgorithmIdentifier,
+                name: "ECDSA",
+                namedCurve: "P-256",
+            },
             false,
             ["sign", "verify"]
         )) as CryptoKeyPair;
@@ -44,6 +65,22 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             throw new Error(`No private key found for public key: ${publicKeyBase64}`);
         }
 
+        const algorithmName = privateKey.algorithm.name;
+
+        if (algorithmName === "ECDSA") {
+            // For P256, use ECDSA with SHA-256
+            const signature = await window.crypto.subtle.sign(
+                {
+                    name: "ECDSA",
+                    hash: { name: "SHA-256" },
+                },
+                privateKey,
+                data as BufferSource
+            );
+            return new Uint8Array(signature);
+        }
+
+        // Default to Ed25519 for Solana/Stellar
         const signature = await window.crypto.subtle.sign({ name: "Ed25519" }, privateKey, data as BufferSource);
 
         return new Uint8Array(signature);

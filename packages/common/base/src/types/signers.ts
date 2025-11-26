@@ -25,3 +25,8 @@ export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & 
 export type StellarExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
     onSignStellarTransaction?: (transaction: string) => Promise<string>;
 };
+
+export type P256KeypairSignerConfig = {
+    type: "p256-keypair";
+    address: string;
+};

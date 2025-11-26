@@ -18,3 +18,4 @@ export { ShadowSigner } from "./shadow-signer";
 export type { ShadowSigner as ShadowSignerType } from "./shadow-signer";
 export { SolanaShadowSigner } from "./solana-shadow-signer";
 export { StellarShadowSigner } from "./stellar-shadow-signer";
+export { EVMShadowSigner } from "./evm-shadow-signer";

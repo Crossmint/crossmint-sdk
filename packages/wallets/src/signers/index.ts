@@ -7,6 +7,7 @@ import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, Signer } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
+import { P256KeypairSigner } from "./p256-keypair";
 import type { ShadowSignerStorage } from "./shadow-signer";
 
 export function assembleSigner<C extends Chain>(
@@ -25,7 +26,7 @@ export function assembleSigner<C extends Chain>(
             if (chain === "stellar") {
                 return new StellarNonCustodialSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
-            return new EVMNonCustodialSigner(config, shadowSignerStorage);
+            return new EVMNonCustodialSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
         case "api-key":
             return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
 
@@ -36,9 +37,12 @@ export function assembleSigner<C extends Chain>(
             if (chain === "stellar") {
                 return new StellarExternalWalletSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
             }
-            return new EVMExternalWalletSigner(config);
+            return new EVMExternalWalletSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
 
+        case "p256-keypair": {
+            return new P256KeypairSigner(config);
+        }
         case "passkey":
-            return new PasskeySigner(config);
+            return new PasskeySigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
     }
 }
