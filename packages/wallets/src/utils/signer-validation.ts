@@ -36,7 +36,7 @@ function normalizeEmail(email: string): string {
  * This ensures that email addresses are compared using the same normalization
  * logic as the backend (e.g., Gmail addresses with dots are normalized).
  */
-function normalizeValueForComparison(value: unknown): unknown {
+export function normalizeValueForComparison(value: unknown): unknown {
     if (typeof value === "string" && isEmailValid(value)) {
         return normalizeEmail(value);
     }
