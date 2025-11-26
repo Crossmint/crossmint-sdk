@@ -14,7 +14,7 @@ import type { InternalSignerConfig, SignerConfigForChain } from "../signers/type
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
-import { compareSignerConfigs } from "../utils/signer-validation";
+import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -242,7 +242,11 @@ export class WalletFactory {
     ): void {
         this.mutateSignerFromCustomAuth(args);
 
-        if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
+        if (
+            args.owner != null &&
+            existingWallet.owner != null &&
+            normalizeValueForComparison(args.owner) !== normalizeValueForComparison(existingWallet.owner)
+        ) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
