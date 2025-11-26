@@ -20,14 +20,7 @@ export class ServerDatadogSink implements DatadogSink {
     constructor(options: DatadogSinkOptions) {
         this.options = options;
         // Determine intake URL based on site
-        const site = options.site ?? "datadoghq.com";
-        const baseUrl = site.includes("eu")
-            ? "https://http-intake.logs.datadoghq.eu"
-            : "https://http-intake.logs.datadoghq.com";
-        this.intakeUrl =
-            options.telemetryProxyEndpoint != null
-                ? `${options.telemetryProxyEndpoint}/v1/input`
-                : `${baseUrl}/v1/input/${options.clientToken}`;
+        this.intakeUrl = "https://telemetry.crossmint.com";
     }
 
     initialize(): void {

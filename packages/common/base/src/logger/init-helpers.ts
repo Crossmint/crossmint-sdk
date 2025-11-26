@@ -4,7 +4,7 @@ import { ConsoleSink, detectEnvironment } from "./index";
 import type { RuntimeEnvironment } from "./environment";
 import { createClientDatadogSink } from "./sinks/ClientDatadogSink";
 import { createServerDatadogSink } from "./sinks/ServerDatadogSink";
-import { validateAPIKeyPrefix, type APIKeyEnvironmentPrefix } from "../apiKey";
+import { validateAPIKey, validateAPIKeyPrefix, type APIKeyEnvironmentPrefix } from "../apiKey";
 
 /**
  * Datadog client token shared across all SDK packages
@@ -24,8 +24,9 @@ export interface DatadogSinkLoggerOptions {
 export interface PackageLoggerContextOptions {
     packageName: string;
     packageVersion: string;
-    platform?: RuntimeEnvironment;
-    environment?: APIKeyEnvironmentPrefix;
+    projectId: string;
+    environment: APIKeyEnvironmentPrefix;
+    platform: RuntimeEnvironment;
 }
 
 /**
@@ -38,6 +39,7 @@ export function createPackageLoggerContext(options: PackageLoggerContextOptions)
         sdk_name: options.packageName,
         platform,
         environment: options.environment,
+        project_id: options.projectId,
         package: options.packageName,
     };
 }
@@ -63,7 +65,7 @@ export function initializeBrowserDatadogSink(options: DatadogSinkLoggerOptions):
     const datadogOptions = {
         clientToken: DATADOG_CLIENT_TOKEN,
         site: "datadoghq.com",
-        service: "crossmint-sdk",
+        service: window.location.hostname,
         version: options.version,
         env: options.environment,
         sampleRate: 100,
@@ -115,7 +117,7 @@ export function initializeServerDatadogSink(options: DatadogSinkLoggerOptions): 
 export interface CreateLoggerInitOptionsParams {
     packageName: string;
     packageVersion: string;
-    apiKey?: string;
+    apiKey: string;
     platform?: RuntimeEnvironment;
     sinks?: LogSink[];
     additionalContext?: LogContext;
@@ -126,7 +128,11 @@ export interface CreateLoggerInitOptionsParams {
  */
 export function createLoggerInitOptions(params: CreateLoggerInitOptionsParams): SdkLoggerInitOptions {
     const platform = params.platform ?? detectEnvironment();
-    const environment = detectEnvironmentFromApiKey(params.apiKey);
+    const validationResult = validateAPIKey(params.apiKey);
+    if (!validationResult.isValid) {
+        throw new Error(`Invalid API key: ${validationResult.message}`);
+    }
+    const { environment, projectId } = validationResult;
     const sinks = params.sinks ?? [new ConsoleSink()];
 
     const context = createPackageLoggerContext({
@@ -134,6 +140,7 @@ export function createLoggerInitOptions(params: CreateLoggerInitOptionsParams): 
         packageVersion: params.packageVersion,
         platform,
         environment,
+        projectId,
     });
 
     return {

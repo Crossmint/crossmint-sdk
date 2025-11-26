@@ -20,7 +20,7 @@ export const walletsLogger = new SdkLogger();
  * Automatically detects the platform and environment from API key
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
-export function initWalletsLogger(apiKey?: string): void {
+export function initWalletsLogger(apiKey: string): void {
     const platform = detectEnvironment();
     const environment = detectEnvironmentFromApiKey(apiKey);
     const sinks: LogSink[] = [];

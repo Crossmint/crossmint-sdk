@@ -11,7 +11,7 @@ export const reactBaseLogger = new SdkLogger();
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
-export function initReactBaseLogger(apiKey?: string): void {
+export function initReactBaseLogger(apiKey: string): void {
     const initOptions = createLoggerInitOptions({
         packageName: packageJson.name,
         packageVersion: packageJson.version,

@@ -32,11 +32,6 @@ export interface DatadogSinkOptions {
      * Whether to forward errors to logs
      */
     forwardErrorsToLogs?: boolean;
-    /**
-     * Custom endpoint for telemetry proxy (e.g., 'telemetry.crossmint.com')
-     * If provided, logs will be sent to this endpoint instead of Datadog directly
-     */
-    telemetryProxyEndpoint?: string;
 }
 
 /**

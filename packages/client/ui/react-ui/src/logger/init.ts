@@ -20,7 +20,7 @@ export const reactUILogger = new SdkLogger();
  * This handles browser-specific Datadog sink initialization
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
-export function initReactUILogger(apiKey?: string): void {
+export function initReactUILogger(apiKey: string): void {
     const environment = detectEnvironmentFromApiKey(apiKey);
     const initOptions = createLoggerInitOptions({
         packageName: packageJson.name,
@@ -33,7 +33,6 @@ export function initReactUILogger(apiKey?: string): void {
     // Add browser Datadog sink if in browser environment
     if (detectEnvironment() === "browser") {
         initializeBrowserDatadogSink({
-            service: "crossmint-react-ui",
             version: packageJson.version,
             environment,
             onSinkCreated: (sink: LogSink) => reactUILogger.addSink(sink),
@@ -43,7 +42,6 @@ export function initReactUILogger(apiKey?: string): void {
         });
     } else if (detectEnvironment() === "server") {
         initializeServerDatadogSink({
-            service: "crossmint-react-ui",
             version: packageJson.version,
             environment,
             onSinkCreated: (sink: LogSink) => reactUILogger.addSink(sink),

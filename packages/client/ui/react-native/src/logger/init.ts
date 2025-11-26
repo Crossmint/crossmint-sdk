@@ -76,7 +76,7 @@ export const reactNativeLogger = new SdkLogger();
  * This handles React Native-specific Datadog sink initialization
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
-export function initReactNativeLogger(apiKey?: string): void {
+export function initReactNativeLogger(apiKey: string): void {
     const environment = detectEnvironmentFromApiKey(apiKey);
     const initOptions = createLoggerInitOptions({
         packageName: packageJson.name,
@@ -95,7 +95,6 @@ export function initReactNativeLogger(apiKey?: string): void {
 
     // Add React Native Datadog sink
     initializeReactNativeDatadogSink({
-        service: "crossmint-react-native-ui",
         version: packageJson.version,
         environment,
         isExpoGo,
