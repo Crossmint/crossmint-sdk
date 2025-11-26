@@ -20,7 +20,7 @@ export class ServerDatadogSink implements DatadogSink {
     constructor(options: DatadogSinkOptions) {
         this.options = options;
         // Determine intake URL based on site
-        this.intakeUrl = "https://telemetry.crossmint.com";
+        this.intakeUrl = "https://telemetry.crossmint.com/dd";
     }
 
     initialize(): void {

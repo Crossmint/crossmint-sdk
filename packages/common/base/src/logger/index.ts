@@ -1,7 +1,6 @@
 export * from "./interfaces";
 export * from "./types";
 export * from "./SdkLogger";
-export * from "./instance";
 export * from "./sink-manager";
 export * from "./platform";
 export * from "./sinks/ConsoleSink";

@@ -71,7 +71,7 @@ export class ClientDatadogSink implements DatadogSink {
             version: this.options.version,
             sessionSampleRate: this.options.sampleRate ?? 100,
             forwardErrorsToLogs: this.options.forwardErrorsToLogs ?? false,
-            proxy: "https://telemetry.crossmint.com",
+            proxy: "https://telemetry.crossmint.com/dd",
         });
     }
 
