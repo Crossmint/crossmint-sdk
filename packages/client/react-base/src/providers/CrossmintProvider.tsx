@@ -1,6 +1,7 @@
-import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
+import { type ReactNode, createContext, useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
+import { initReactBaseLogger } from "../logger/init";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -22,6 +23,10 @@ export function CrossmintProvider({
 }: CrossmintConfig & {
     children: ReactNode;
 }) {
+    useEffect(() => {
+        initReactBaseLogger(apiKey);
+    }, [apiKey]);
+
     const [version, setVersion] = useState(0);
     const crossmintRef = useRef<Crossmint | null>(null);
     if (crossmintRef.current == null) {

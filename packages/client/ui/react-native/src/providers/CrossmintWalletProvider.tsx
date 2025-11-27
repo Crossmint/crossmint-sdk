@@ -17,6 +17,7 @@ import {
 } from "@crossmint/client-sdk-react-base";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { reactNativeLogger } from "../logger/init";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
@@ -68,6 +69,7 @@ function CrossmintWalletProviderInternal({
 
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
+            reactNativeLogger.info("react-native.wallet.webview.initializing");
             webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
@@ -75,6 +77,7 @@ function CrossmintWalletProviderInternal({
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
                 },
             });
+            reactNativeLogger.info("react-native.wallet.webview.initialized");
         }
     }, [needsWebView]);
 
@@ -82,9 +85,14 @@ function CrossmintWalletProviderInternal({
         const parent = webViewParentRef.current;
         if (parent != null) {
             try {
+                reactNativeLogger.info("react-native.wallet.webview.handshake.start");
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
+                reactNativeLogger.info("react-native.wallet.webview.handshake.success");
             } catch (e) {
+                reactNativeLogger.error("react-native.wallet.webview.handshake.error", {
+                    error: e instanceof Error ? e.message : String(e),
+                });
                 console.error("[CrossmintWalletProvider] Handshake error:", e);
             }
         }
@@ -156,6 +164,7 @@ function CrossmintWalletProviderInternal({
     };
 
     const initializeWebView = async () => {
+        reactNativeLogger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
         let attempts = 0;
         const maxAttempts = 100; // 5 seconds total with 50ms intervals
@@ -165,8 +174,10 @@ function CrossmintWalletProviderInternal({
         }
 
         if (webViewParentRef.current == null) {
+            reactNativeLogger.error("react-native.wallet.webview.init.timeout", { attempts });
             throw new Error("WebView not ready or handshake incomplete");
         }
+        reactNativeLogger.info("react-native.wallet.webview.init.success", { attempts });
     };
 
     return (

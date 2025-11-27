@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import Constants from "expo-constants";
 import { CrossmintProvider as BaseCrossmintProvider } from "@crossmint/client-sdk-react-base";
 import type { CrossmintConfig } from "@crossmint/common-sdk-base";
+import { initReactNativeLogger } from "../logger/init";
 
 export function CrossmintProvider({
     children,
@@ -10,6 +12,10 @@ export function CrossmintProvider({
 }: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
     children: ReactNode;
 }) {
+    useEffect(() => {
+        initReactNativeLogger(apiKey);
+    }, [apiKey]);
+
     // Get app ID from Expo constants
     const appId = Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
 

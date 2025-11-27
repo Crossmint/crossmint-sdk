@@ -1,4 +1,5 @@
 import { WebAuthnP256 } from "ox";
+import { walletsLogger } from "../logger";
 
 import type {
     AdminSignerConfig,
@@ -31,12 +32,24 @@ export class WalletFactory {
 
         const locator = this.getWalletLocator<C>(args);
 
+        walletsLogger.info("wallet.getOrCreate.start", {
+            chain: args.chain,
+            signerType: args.signer.type,
+        });
+
         const existingWallet = await this.apiClient.getWallet(locator);
 
         if (existingWallet != null && !("error" in existingWallet)) {
+            walletsLogger.info("wallet.getOrCreate.existing", {
+                chain: args.chain,
+                address: existingWallet.address,
+            });
             return this.createWalletInstance(existingWallet, args);
         }
 
+        walletsLogger.info("wallet.getOrCreate.creating", {
+            chain: args.chain,
+        });
         return this.createWallet(args);
     }
 
@@ -45,16 +58,35 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
+        walletsLogger.info("wallet.get.start", {
+            walletLocator,
+            chain: args.chain,
+        });
+
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
+            walletsLogger.warn("wallet.get.notFound", {
+                walletLocator,
+                error: existingWallet.error,
+            });
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
+
+        walletsLogger.info("wallet.get.success", {
+            walletLocator,
+            address: existingWallet.address,
+        });
 
         return this.createWalletInstance(existingWallet, args);
     }
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+
+        walletsLogger.info("wallet.create.start", {
+            chain: args.chain,
+            signerType: args.signer.type,
+        });
 
         this.mutateSignerFromCustomAuth(args, true);
 
@@ -74,8 +106,17 @@ export class WalletFactory {
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
+            walletsLogger.error("wallet.create.error", {
+                chain: args.chain,
+                error: walletResponse.error,
+            });
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
+
+        walletsLogger.info("wallet.create.success", {
+            chain: args.chain,
+            address: walletResponse.address,
+        });
 
         return this.createWalletInstance(walletResponse, args);
     }

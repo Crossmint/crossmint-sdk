@@ -1,14 +1,17 @@
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletUIBaseProvider,
     type UIRenderProps,
     type CreateOnLogin,
+    useCrossmint,
 } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { initReactUILogger } from "../logger/init";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
@@ -38,6 +41,12 @@ export function CrossmintWalletProvider({
     createOnLogin,
     callbacks,
 }: CrossmintWalletProviderProps) {
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+
+    useEffect(() => {
+        initReactUILogger(crossmint.apiKey);
+    }, [crossmint.apiKey]);
+
     return (
         <CrossmintWalletUIBaseProvider
             createOnLogin={createOnLogin}
