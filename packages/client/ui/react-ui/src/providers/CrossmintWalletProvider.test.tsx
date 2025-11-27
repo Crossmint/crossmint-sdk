@@ -5,6 +5,7 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
+        crossmint: { apiKey: "test-api-key" },
         experimental_customAuth: undefined,
     })),
     CrossmintWalletUIBaseProvider: ({ children }: { children: React.ReactNode }) => (
@@ -18,6 +19,10 @@ vi.mock("@/components/auth/PasskeyPrompt", () => ({
 
 vi.mock("@/components/signers/EmailSignersDialog", () => ({
     EmailSignersDialog: () => <div data-testid="email-signers-dialog">Email Signers Dialog</div>,
+}));
+
+vi.mock("../logger/init", () => ({
+    initReactUILogger: vi.fn(),
 }));
 
 vi.mock("react-dom", () => ({
