@@ -3,6 +3,8 @@ import {
     initializeBrowserDatadogSink,
     detectEnvironmentFromApiKey,
     type LogSink,
+    detectPlatform,
+    initializeServerDatadogSink,
 } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 
@@ -21,14 +23,24 @@ export function initReactUILogger(apiKey: string): SdkLogger {
     });
 
     const environment = detectEnvironmentFromApiKey(apiKey);
-    initializeBrowserDatadogSink({
-        version: packageJson.version,
-        environment,
-        onSinkCreated: (sink: LogSink) => logger.addSink(sink),
-        onError: (error: unknown) => {
-            console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
-        },
-    });
+    const platform = detectPlatform();
+    if (platform === "browser") {
+        initializeBrowserDatadogSink({
+            environment,
+            onSinkCreated: (sink: LogSink) => logger.addSink(sink),
+            onError: (error: unknown) => {
+                console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
+            },
+        });
+    } else if (platform === "server") {
+        initializeServerDatadogSink({
+            environment,
+            onSinkCreated: (sink: LogSink) => logger.addSink(sink),
+            onError: (error: unknown) => {
+                console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
+            },
+        });
+    }
 
     return logger;
 }

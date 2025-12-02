@@ -3,7 +3,7 @@ import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
 import { mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { validateAPIKey } from "../apiKey";
-import { SinkManager } from "./sink-manager";
+import { sinkManager } from "./sink-manager";
 
 /**
  * Simple initialization parameters for creating a logger
@@ -24,14 +24,12 @@ export interface SdkLoggerInitParams {
 export class SdkLogger implements ISdkLogger {
     private globalContext: LogContext = {};
     private initialized = false;
-    private readonly sinkManager: SinkManager;
 
     /**
      * Create and initialize a logger with simple parameters
      * This is the recommended way to create a logger
      */
     constructor(params?: SdkLoggerInitParams) {
-        this.sinkManager = new SinkManager();
         if (params != null) {
             this.init(params);
         }
@@ -72,8 +70,8 @@ export class SdkLogger implements ISdkLogger {
         }
 
         // Initialize sink manager with console sink if not already initialized
-        if (!this.sinkManager.isInitialized()) {
-            this.sinkManager.init([new ConsoleSink()]);
+        if (!sinkManager.isInitialized()) {
+            sinkManager.init([new ConsoleSink()]);
         }
 
         this.initialized = true;
@@ -88,7 +86,7 @@ export class SdkLogger implements ISdkLogger {
             console.warn("[SdkLogger] Cannot add sink before initialization. Call init() first.");
             return;
         }
-        this.sinkManager.addSink(sink);
+        sinkManager.addSink(sink);
     }
 
     /**
@@ -167,7 +165,7 @@ export class SdkLogger implements ISdkLogger {
         };
 
         // Write to all shared sinks
-        const sinks = this.sinkManager.getSinks();
+        const sinks = sinkManager.getSinks();
         for (const sink of sinks) {
             try {
                 sink.write(entry);

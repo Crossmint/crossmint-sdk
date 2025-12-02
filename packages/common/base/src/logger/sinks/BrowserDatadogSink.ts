@@ -8,6 +8,7 @@ import type { DatadogSinkLoggerOptions } from "../init-helpers";
  * Uses @datadog/browser-logs for logging
  */
 export class BrowserDatadogSink implements DatadogSink {
+    readonly id = "browser-datadog";
     private initialized = false;
     protected options: DatadogSinkOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,7 +48,6 @@ export class BrowserDatadogSink implements DatadogSink {
             site: this.options.site,
             service: this.options.service ?? "crossmint-sdk",
             env: this.options.env,
-            version: this.options.version,
             sessionSampleRate: this.options.sampleRate ?? 100,
             forwardErrorsToLogs: this.options.forwardErrorsToLogs ?? false,
             proxy: "https://telemetry.crossmint.com/dd",
@@ -70,7 +70,7 @@ export class BrowserDatadogSink implements DatadogSink {
             const context = {
                 ...entry.context,
                 service: this.options.service ?? "crossmint-sdk",
-                ddsource: "crossmint-sdk",
+                source: "crossmint-sdk",
             };
 
             // Write to Datadog
@@ -109,7 +109,6 @@ export function initializeBrowserDatadogSink(options: DatadogSinkLoggerOptions):
         clientToken: DATADOG_CLIENT_TOKEN,
         site: "datadoghq.com",
         service: window.location.hostname,
-        version: options.version,
         env: options.environment,
         sampleRate: 100,
         forwardErrorsToLogs: false,

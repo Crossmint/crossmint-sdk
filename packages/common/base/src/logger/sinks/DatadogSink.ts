@@ -21,10 +21,6 @@ export interface DatadogSinkOptions {
      */
     env?: string;
     /**
-     * Version of the SDK or application
-     */
-    version?: string;
-    /**
      * Sample rate (0-100). 100 means all logs are sent.
      */
     sampleRate?: number;

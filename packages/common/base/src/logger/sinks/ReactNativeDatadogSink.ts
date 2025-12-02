@@ -6,6 +6,7 @@ import type { LogEntry } from "../types";
  * Uses @datadog/mobile-react-native for logging
  */
 export class ReactNativeDatadogSink implements DatadogSink {
+    readonly id = "react-native-datadog";
     private initialized = false;
     protected options: DatadogSinkOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,7 +48,7 @@ export class ReactNativeDatadogSink implements DatadogSink {
             const attributes = {
                 ...entry.context,
                 service: this.options.service ?? "crossmint-sdk",
-                ddsource: "crossmint-sdk",
+                source: "crossmint-sdk",
             };
 
             loggerMethod(entry.message, attributes);

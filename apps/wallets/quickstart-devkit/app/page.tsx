@@ -1,7 +1,25 @@
 import Image from "next/image";
 import { HomeContent } from "@/app/home";
+import { CrossmintWallets } from "@crossmint/wallets-sdk";
+import { createCrossmint } from "@crossmint/common-sdk-base";
 
-export default function Home() {
+export default async function Home() {
+    const crossmint = createCrossmint({
+        apiKey: process.env.SERVER_CROSSMINT_API_KEY ?? "",
+    });
+    const wallets = CrossmintWallets.from(crossmint);
+    const wallet = await wallets.getWallet("email:guille.a@paella.dev:evm", {
+        chain: "base-sepolia",
+        signer: { type: "email", email: "guille.a@paella.dev" },
+    });
+    console.log(wallet);
+    if (wallet == null) {
+        const wallet = await wallets.createWallet({
+            chain: "base-sepolia",
+            signer: { type: "email", email: "guille.a@paella.dev" },
+        });
+        console.log(wallet);
+    }
     return (
         <div className="grid grid-rows-[0px_1fr_60px] items-center justify-items-center min-h-screen p-2 pb-20 gap-16 sm:p-20">
             <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">

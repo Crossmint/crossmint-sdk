@@ -8,6 +8,7 @@ import {
 } from "@crossmint/common-sdk-base";
 import Constants from "expo-constants";
 import packageJson from "../../package.json";
+import { ProxyType } from "@datadog/mobile-react-native";
 
 interface ReactNativeDatadogSinkLoggerOptions extends DatadogSinkLoggerOptions {
     isExpoGo: boolean;
@@ -17,7 +18,6 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
     const datadogOptions = {
         clientToken: DATADOG_CLIENT_TOKEN,
         site: "datadoghq.com",
-        version: options.version,
         env: options.environment,
         sampleRate: 100,
         forwardErrorsToLogs: false,
@@ -43,6 +43,10 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
                             false // trackErrors
                         );
                         config.site = "datadoghq.com";
+                        config.proxyConfig = {
+                            address: "telemetry.crossmint.com",
+                            type: ProxyType.HTTPS,
+                        };
 
                         await DdSdkReactNative.initialize(config);
                     } catch (error) {
@@ -83,7 +87,6 @@ export function initReactNativeLogger(apiKey: string): SdkLogger {
         !!Constants.expoVersion;
 
     initializeReactNativeDatadogSink({
-        version: packageJson.version,
         environment,
         isExpoGo,
         onSinkCreated: (sink: LogSink) => logger.addSink(sink),

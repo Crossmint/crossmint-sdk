@@ -25,6 +25,11 @@ export interface LogEntry {
  */
 export interface LogSink {
     /**
+     * Unique identifier for the sink
+     * Used to prevent duplicate sinks from being added
+     */
+    id: string;
+    /**
      * Write a log entry to the sink
      */
     write(entry: LogEntry): void;

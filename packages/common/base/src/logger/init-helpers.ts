@@ -9,7 +9,6 @@ import type { APIKeyEnvironmentPrefix } from "../apiKey";
 export const DATADOG_CLIENT_TOKEN = "pub9d76220d6115fba533270f58bbd2ebce";
 
 export interface DatadogSinkLoggerOptions {
-    version: string;
     environment?: APIKeyEnvironmentPrefix;
     onSinkCreated?: (sink: LogSink) => void;
     onError?: (error: unknown) => void;

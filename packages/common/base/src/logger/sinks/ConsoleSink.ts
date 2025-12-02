@@ -5,6 +5,8 @@ import type { LogContext, LogEntry, LogSink } from "../types";
  * Works in browser, React Native, and Node.js environments
  */
 export class ConsoleSink implements LogSink {
+    readonly id = "console";
+
     write(entry: LogEntry): void {
         const { level, message, context } = entry;
         const logMethod = this.getConsoleMethod(level);
@@ -29,7 +31,7 @@ export class ConsoleSink implements LogSink {
             case "warn":
                 return console.warn;
             case "error":
-                return console.error;
+                return console.warn;
             default:
                 return console.log;
         }

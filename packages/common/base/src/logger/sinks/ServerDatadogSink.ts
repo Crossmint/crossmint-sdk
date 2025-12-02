@@ -1,5 +1,5 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
-import type { LogEntry, LogSink } from "../types";
+import type { LogEntry } from "../types";
 import { DATADOG_CLIENT_TOKEN, type DatadogSinkLoggerOptions } from "../init-helpers";
 
 /**
@@ -35,6 +35,7 @@ const SPAN_ID = generateTraceId();
  * without requiring additional dependencies (uses native fetch in Node.js 18+)
  */
 export class ServerDatadogSink implements DatadogSink {
+    readonly id = "server-datadog";
     private initialized = false;
     private options: DatadogSinkOptions;
     private intakeUrl: string;
@@ -90,8 +91,8 @@ export class ServerDatadogSink implements DatadogSink {
         try {
             // Format logs for Datadog HTTP intake
             const logs = batch.map((entry) => ({
-                ddsource: "crossmint-sdk",
-                ddtags: `env:${this.options.env ?? "production"},service:${this.options.service ?? "crossmint-sdk"},version:${this.options.version ?? "unknown"}`,
+                source: "crossmint-sdk",
+                ddtags: `env:${this.options.env ?? "production"},service:${this.options.service ?? "crossmint-sdk"}`,
                 hostname: typeof process !== "undefined" ? process.env.HOSTNAME ?? "unknown" : "unknown",
                 message: entry.message,
                 service: this.options.service ?? "crossmint-sdk",
@@ -154,7 +155,6 @@ export function initializeServerDatadogSink(options: DatadogSinkLoggerOptions): 
             clientToken: DATADOG_CLIENT_TOKEN,
             site: "datadoghq.com",
             service: "crossmint-sdk",
-            version: options.version,
             env: options.environment,
             sampleRate: 100,
             forwardErrorsToLogs: false,

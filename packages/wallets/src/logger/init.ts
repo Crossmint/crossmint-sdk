@@ -35,7 +35,6 @@ export function initWalletsLogger(apiKey: string): void {
     switch (platform) {
         case "browser": {
             initializeBrowserDatadogSink({
-                version: SDK_VERSION,
                 environment,
                 onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
                 onError: (error: unknown) => {
@@ -52,7 +51,6 @@ export function initWalletsLogger(apiKey: string): void {
         }
         case "server": {
             initializeServerDatadogSink({
-                version: SDK_VERSION,
                 environment,
                 onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
                 onError: (error: unknown) => {
