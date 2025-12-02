@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import {
@@ -12,6 +12,7 @@ import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { initReactUILogger } from "../logger/init";
+import { LoggerContext } from "./LoggerProvider";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
@@ -43,19 +44,21 @@ export function CrossmintWalletProvider({
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
 
-    useEffect(() => {
-        initReactUILogger(crossmint.apiKey);
+    const logger = useMemo(() => {
+        return initReactUILogger(crossmint.apiKey);
     }, [crossmint.apiKey]);
 
     return (
-        <CrossmintWalletUIBaseProvider
-            createOnLogin={createOnLogin}
-            appearance={appearance}
-            showPasskeyHelpers={showPasskeyHelpers}
-            callbacks={callbacks}
-            renderUI={renderWebUI}
-        >
-            {children}
-        </CrossmintWalletUIBaseProvider>
+        <LoggerContext.Provider value={logger}>
+            <CrossmintWalletUIBaseProvider
+                createOnLogin={createOnLogin}
+                appearance={appearance}
+                showPasskeyHelpers={showPasskeyHelpers}
+                callbacks={callbacks}
+                renderUI={renderWebUI}
+            >
+                {children}
+            </CrossmintWalletUIBaseProvider>
+        </LoggerContext.Provider>
     );
 }

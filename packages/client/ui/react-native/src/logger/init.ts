@@ -1,9 +1,8 @@
 import {
     DATADOG_CLIENT_TOKEN,
     SdkLogger,
-    createLoggerInitOptions,
     detectEnvironmentFromApiKey,
-    createClientDatadogSink,
+    ReactNativeDatadogSink,
     type LogSink,
     type DatadogSinkLoggerOptions,
 } from "@crossmint/common-sdk-base";
@@ -30,9 +29,8 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
             const { DdSdkReactNative, DatadogProviderConfiguration } = datadogReactNativeModule;
 
             // Skip initialization in Expo Go (native modules not available)
-            if (!options.isExpoGo && DdSdkReactNative != null && DatadogProviderConfiguration != null) {
-                const isInitialized =
-                    typeof DdSdkReactNative.isInitialized === "function" && DdSdkReactNative.isInitialized();
+            if (!options.isExpoGo) {
+                const isInitialized = DdSdkReactNative.isInitialized();
 
                 if (!isInitialized) {
                     try {
@@ -53,7 +51,7 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
                 }
             }
 
-            const sink = createClientDatadogSink(datadogOptions, datadogReactNativeModule);
+            const sink = new ReactNativeDatadogSink(datadogOptions, datadogReactNativeModule);
             sink.initialize();
             options.onSinkCreated?.(sink);
         })
@@ -63,25 +61,22 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
         });
 }
 
-export const reactNativeLogger = new SdkLogger();
-
 /**
  * Initialize the SDK logger for the React Native UI SDK
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles React Native-specific Datadog sink initialization
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @returns The initialized logger instance
  */
-export function initReactNativeLogger(apiKey: string): void {
-    const environment = detectEnvironmentFromApiKey(apiKey);
-    const initOptions = createLoggerInitOptions({
+export function initReactNativeLogger(apiKey: string): SdkLogger {
+    const logger = new SdkLogger({
         packageName: packageJson.name,
         packageVersion: packageJson.version,
         apiKey,
         platform: "react-native",
     });
 
-    reactNativeLogger.init(initOptions);
-
+    const environment = detectEnvironmentFromApiKey(apiKey);
     const isExpoGo =
         Constants.executionEnvironment === "storeClient" ||
         Constants.appOwnership === "expo" ||
@@ -91,7 +86,7 @@ export function initReactNativeLogger(apiKey: string): void {
         version: packageJson.version,
         environment,
         isExpoGo,
-        onSinkCreated: (sink: LogSink) => reactNativeLogger.addSink(sink),
+        onSinkCreated: (sink: LogSink) => logger.addSink(sink),
         onError: (error: unknown) => {
             if (error instanceof Error && error.message.includes("Native modules require")) {
                 console.warn(
@@ -103,4 +98,6 @@ export function initReactNativeLogger(apiKey: string): void {
             }
         },
     });
+
+    return logger;
 }

@@ -1,5 +1,31 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
-import type { LogEntry } from "../types";
+import type { LogEntry, LogSink } from "../types";
+import { DATADOG_CLIENT_TOKEN, type DatadogSinkLoggerOptions } from "../init-helpers";
+
+/**
+ * Generates a trace ID for log correlation
+ * Singleton trace ID generated once per SDK instance
+ */
+function generateTraceId(): string {
+    if (typeof crypto !== "undefined" && crypto.randomUUID != null) {
+        // Use crypto.randomUUID() and convert to hex format (64-bit for Datadog)
+        const uuid = crypto.randomUUID().replace(/-/g, "");
+        // Take first 16 characters for 64-bit trace ID
+        return uuid.substring(0, 16);
+    }
+    // Fallback for environments without crypto.randomUUID
+    const chars = "0123456789abcdef";
+    let result = "";
+    for (let i = 0; i < 16; i++) {
+        result += chars[Math.floor(Math.random() * 16)];
+    }
+    return result;
+}
+
+// Singleton trace ID - generated once when module loads
+// All logs from this sink instance will share the same trace ID for correlation
+const TRACE_ID = generateTraceId();
+const SPAN_ID = generateTraceId();
 
 /**
  * Server/Node.js implementation of Datadog sink
@@ -19,7 +45,6 @@ export class ServerDatadogSink implements DatadogSink {
 
     constructor(options: DatadogSinkOptions) {
         this.options = options;
-        // Determine intake URL based on site
         this.intakeUrl = "https://telemetry.crossmint.com/dd";
     }
 
@@ -72,6 +97,8 @@ export class ServerDatadogSink implements DatadogSink {
                 service: this.options.service ?? "crossmint-sdk",
                 status: this.mapLevelToStatus(entry.level),
                 timestamp: entry.timestamp,
+                "dd.trace_id": TRACE_ID,
+                "dd.span_id": SPAN_ID,
                 ...entry.context,
             }));
 
@@ -115,4 +142,27 @@ export class ServerDatadogSink implements DatadogSink {
  */
 export function createServerDatadogSink(options: DatadogSinkOptions): DatadogSink {
     return new ServerDatadogSink(options);
+}
+
+/**
+ * Initializes a server Datadog sink synchronously
+ * Calls onSinkCreated if successful, onError if it fails
+ */
+export function initializeServerDatadogSink(options: DatadogSinkLoggerOptions): void {
+    try {
+        const datadogOptions = {
+            clientToken: DATADOG_CLIENT_TOKEN,
+            site: "datadoghq.com",
+            service: "crossmint-sdk",
+            version: options.version,
+            env: options.environment,
+            sampleRate: 100,
+            forwardErrorsToLogs: false,
+        };
+        const sink = createServerDatadogSink(datadogOptions);
+        sink.initialize();
+        options.onSinkCreated?.(sink);
+    } catch (error) {
+        options.onError?.(error);
+    }
 }

@@ -1,6 +1,5 @@
 import {
     SdkLogger,
-    createLoggerInitOptions,
     initializeBrowserDatadogSink,
     initializeServerDatadogSink,
     detectPlatform,
@@ -23,7 +22,14 @@ export const walletsLogger = new SdkLogger();
 export function initWalletsLogger(apiKey: string): void {
     const platform = detectPlatform();
     const environment = detectEnvironmentFromApiKey(apiKey);
-    const sinks: LogSink[] = [];
+
+    // Initialize the package-specific logger instance with package context
+    walletsLogger.init({
+        packageName: SDK_NAME,
+        packageVersion: SDK_VERSION,
+        apiKey,
+        platform,
+    });
 
     // Add platform-specific Datadog sink
     switch (platform) {
@@ -31,10 +37,7 @@ export function initWalletsLogger(apiKey: string): void {
             initializeBrowserDatadogSink({
                 version: SDK_VERSION,
                 environment,
-                onSinkCreated: (sink: LogSink) => {
-                    sinks.push(sink);
-                    walletsLogger.addSink(sink);
-                },
+                onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
                 onError: (error: unknown) => {
                     console.warn("[Wallets SDK]", error instanceof Error ? error.message : String(error));
                 },
@@ -51,10 +54,7 @@ export function initWalletsLogger(apiKey: string): void {
             initializeServerDatadogSink({
                 version: SDK_VERSION,
                 environment,
-                onSinkCreated: (sink: LogSink) => {
-                    sinks.push(sink);
-                    walletsLogger.addSink(sink);
-                },
+                onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
                 onError: (error: unknown) => {
                     console.warn("[Wallets SDK] Failed to initialize Datadog sink:", error);
                 },
@@ -66,15 +66,4 @@ export function initWalletsLogger(apiKey: string): void {
             break;
         }
     }
-
-    // Initialize the package-specific logger instance with shared sinks and package context
-    const initOptions = createLoggerInitOptions({
-        packageName: SDK_NAME,
-        packageVersion: SDK_VERSION,
-        apiKey,
-        platform,
-        sinks,
-    });
-
-    walletsLogger.init(initOptions);
 }

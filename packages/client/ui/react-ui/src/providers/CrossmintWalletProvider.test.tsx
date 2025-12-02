@@ -22,7 +22,14 @@ vi.mock("@/components/signers/EmailSignersDialog", () => ({
 }));
 
 vi.mock("../logger/init", () => ({
-    initReactUILogger: vi.fn(),
+    initReactUILogger: vi.fn(() => ({
+        init: vi.fn(),
+        addSink: vi.fn(),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+    })),
 }));
 
 vi.mock("react-dom", () => ({

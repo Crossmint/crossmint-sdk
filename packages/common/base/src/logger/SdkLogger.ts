@@ -1,7 +1,20 @@
-import type { ISdkLogger, SdkLoggerInitOptions } from "./interfaces";
+import type { ISdkLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
 import { mergeContext, serializeLogArgs } from "./utils";
-import { sinkManager } from "./sink-manager";
+import { ConsoleSink, detectPlatform, type Platform } from "./index";
+import { validateAPIKey } from "../apiKey";
+import { SinkManager } from "./sink-manager";
+
+/**
+ * Simple initialization parameters for creating a logger
+ */
+export interface SdkLoggerInitParams {
+    packageName: string;
+    packageVersion: string;
+    apiKey: string;
+    platform?: Platform;
+    additionalContext?: LogContext;
+}
 
 /**
  * Main SDK Logger implementation
@@ -11,31 +24,58 @@ import { sinkManager } from "./sink-manager";
 export class SdkLogger implements ISdkLogger {
     private globalContext: LogContext = {};
     private initialized = false;
+    private readonly sinkManager: SinkManager;
+
+    /**
+     * Create and initialize a logger with simple parameters
+     * This is the recommended way to create a logger
+     */
+    constructor(params?: SdkLoggerInitParams) {
+        this.sinkManager = new SinkManager();
+        if (params != null) {
+            this.init(params);
+        }
+    }
 
     /**
      * Initialize the logger with package-specific context
-     * Sinks are shared via the global sink manager
-     * @param opts - Initialization options including package-specific context
+     * Context is set via setContext() internally
+     * Sinks should be added separately using addSink()
      */
-    init(opts: SdkLoggerInitOptions): void {
+    init(params: SdkLoggerInitParams): void {
         if (this.initialized) {
             this.warn("SdkLogger.init called multiple times. Ignoring subsequent calls.");
             return;
         }
 
-        // Initialize sink manager if not already initialized
-        if (!sinkManager.isInitialized()) {
-            sinkManager.init(opts.sinks);
-        } else {
-            // If sink manager is already initialized, add any new sinks
-            for (const sink of opts.sinks) {
-                sinkManager.addSink(sink);
-            }
+        const platform = params.platform ?? detectPlatform();
+        const validationResult = validateAPIKey(params.apiKey);
+        if (!validationResult.isValid) {
+            throw new Error(`Invalid API key: ${validationResult.message}`);
+        }
+        const { environment, projectId } = validationResult;
+
+        // Build base context
+        const baseContext: LogContext = {
+            sdk_version: params.packageVersion,
+            sdk_name: params.packageName,
+            platform,
+            environment,
+            project_id: projectId,
+            package: params.packageName,
+        };
+
+        // Set context using setContext() method
+        this.setContext(baseContext);
+        if (params.additionalContext != null) {
+            this.setContext(params.additionalContext);
         }
 
-        if (opts.context != null) {
-            this.globalContext = { ...opts.context };
+        // Initialize sink manager with console sink if not already initialized
+        if (!this.sinkManager.isInitialized()) {
+            this.sinkManager.init([new ConsoleSink()]);
         }
+
         this.initialized = true;
     }
 
@@ -48,7 +88,7 @@ export class SdkLogger implements ISdkLogger {
             console.warn("[SdkLogger] Cannot add sink before initialization. Call init() first.");
             return;
         }
-        sinkManager.addSink(sink);
+        this.sinkManager.addSink(sink);
     }
 
     /**
@@ -127,7 +167,7 @@ export class SdkLogger implements ISdkLogger {
         };
 
         // Write to all shared sinks
-        const sinks = sinkManager.getSinks();
+        const sinks = this.sinkManager.getSinks();
         for (const sink of sinks) {
             try {
                 sink.write(entry);

@@ -1,4 +1,4 @@
-import { SdkLogger, createLoggerInitOptions } from "@crossmint/common-sdk-base";
+import { SdkLogger } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 
 /**
@@ -12,11 +12,9 @@ export const reactBaseLogger = new SdkLogger();
  * @param apiKey - Optional API key to determine environment (development/staging/production)
  */
 export function initReactBaseLogger(apiKey: string): void {
-    const initOptions = createLoggerInitOptions({
+    reactBaseLogger.init({
         packageName: packageJson.name,
         packageVersion: packageJson.version,
         apiKey,
     });
-
-    reactBaseLogger.init(initOptions);
 }

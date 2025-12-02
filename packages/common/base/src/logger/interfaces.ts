@@ -1,27 +1,15 @@
 import type { LogContext, LogSink } from "./types";
-
-/**
- * Initialization options for the SDK Logger
- */
-export interface SdkLoggerInitOptions {
-    /**
-     * Array of sinks to write logs to (e.g., console, Datadog)
-     */
-    sinks: LogSink[];
-    /**
-     * Base context to attach to all logs (e.g., sdk_version, platform, package)
-     */
-    context?: LogContext;
-}
+import type { SdkLoggerInitParams } from "./SdkLogger";
 
 /**
  * Main SDK Logger interface
  */
 export interface ISdkLogger {
     /**
-     * One-time initialization: configure sinks + base context
+     * One-time initialization: configure base context
+     * Sinks should be added separately using addSink()
      */
-    init(opts: SdkLoggerInitOptions): void;
+    init(params: SdkLoggerInitParams): void;
 
     /**
      * Add a sink after initialization (useful for async-loaded sinks like Datadog)

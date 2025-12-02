@@ -1,53 +1,34 @@
 import {
     SdkLogger,
-    createLoggerInitOptions,
     initializeBrowserDatadogSink,
     detectEnvironmentFromApiKey,
-    detectPlatform,
     type LogSink,
-    initializeServerDatadogSink,
 } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 
 /**
- * Package-specific logger instance for the React UI SDK
- */
-export const reactUILogger = new SdkLogger();
-
-/**
  * Initialize the SDK logger for the React UI SDK
- * Should be called once when the SDK is initialized (typically in CrossmintProvider)
+ * Should be called once when the SDK is initialized (typically in CrossmintWalletProvider)
  * This handles browser-specific Datadog sink initialization
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @returns The initialized logger instance
  */
-export function initReactUILogger(apiKey: string): void {
-    const environment = detectEnvironmentFromApiKey(apiKey);
-    const initOptions = createLoggerInitOptions({
+export function initReactUILogger(apiKey: string): SdkLogger {
+    const logger = new SdkLogger({
         packageName: packageJson.name,
         packageVersion: packageJson.version,
         apiKey,
     });
 
-    reactUILogger.init(initOptions);
+    const environment = detectEnvironmentFromApiKey(apiKey);
+    initializeBrowserDatadogSink({
+        version: packageJson.version,
+        environment,
+        onSinkCreated: (sink: LogSink) => logger.addSink(sink),
+        onError: (error: unknown) => {
+            console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
+        },
+    });
 
-    // Add browser Datadog sink if in browser environment
-    if (detectPlatform() === "browser") {
-        initializeBrowserDatadogSink({
-            version: packageJson.version,
-            environment,
-            onSinkCreated: (sink: LogSink) => reactUILogger.addSink(sink),
-            onError: (error: unknown) => {
-                console.warn("[React UI SDK]", error instanceof Error ? error.message : String(error));
-            },
-        });
-    } else if (detectPlatform() === "server") {
-        initializeServerDatadogSink({
-            version: packageJson.version,
-            environment,
-            onSinkCreated: (sink: LogSink) => reactUILogger.addSink(sink),
-            onError: (error: unknown) => {
-                console.warn("[React UI SDK] Failed to initialize Datadog sink:", error);
-            },
-        });
-    }
+    return logger;
 }
