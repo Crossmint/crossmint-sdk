@@ -2,6 +2,7 @@ import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
 import type { LogEntry } from "../types";
 import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
 import type { DatadogSinkLoggerOptions } from "../init-helpers";
+import type { DatadogBrowserLogsModule, DatadogBrowserLogger } from "./datadogTypes";
 
 /**
  * Browser-specific Datadog sink implementation
@@ -11,18 +12,13 @@ export class BrowserDatadogSink implements DatadogSink {
     readonly id = "browser-datadog";
     private initialized = false;
     protected options: DatadogSinkOptions;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private datadogLogger: any = null;
+    private datadogLogger: DatadogBrowserLogger | null = null;
 
     /**
      * @param options - Datadog configuration options
      * @param datadogLogger - The Datadog browser logs module (datadogLogs)
      */
-    constructor(
-        options: DatadogSinkOptions,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        datadogLogger: any
-    ) {
+    constructor(options: DatadogSinkOptions, datadogLogger: DatadogBrowserLogsModule) {
         this.options = options;
         this.datadogLogger = datadogLogger?.datadogLogs ?? null;
     }
@@ -114,9 +110,8 @@ export function initializeBrowserDatadogSink(options: DatadogSinkLoggerOptions):
     };
 
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     import("@datadog/browser-logs")
-        .then((datadogLogsModule: any) => {
+        .then((datadogLogsModule: DatadogBrowserLogsModule) => {
             const sink = new BrowserDatadogSink(datadogOptions, datadogLogsModule);
             sink.initialize();
             options.onSinkCreated?.(sink);

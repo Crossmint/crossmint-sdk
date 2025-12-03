@@ -1,5 +1,6 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
 import type { LogEntry } from "../types";
+import type { DatadogReactNativeSdk, DatadogReactNativeLogs } from "./datadogTypes";
 
 /**
  * React Native-specific Datadog sink implementation
@@ -9,18 +10,13 @@ export class ReactNativeDatadogSink implements DatadogSink {
     readonly id = "react-native-datadog";
     private initialized = false;
     protected options: DatadogSinkOptions;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private datadogSdk: any = null;
+    private datadogSdk: DatadogReactNativeSdk | null = null;
 
     /**
      * @param options - Datadog configuration options
      * @param datadogSdk - The Datadog React Native SDK module (DdSdkReactNative)
      */
-    constructor(
-        options: DatadogSinkOptions,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        datadogSdk: any
-    ) {
+    constructor(options: DatadogSinkOptions, datadogSdk: DatadogReactNativeSdk) {
         this.options = options;
         this.datadogSdk = datadogSdk;
     }
@@ -58,8 +54,7 @@ export class ReactNativeDatadogSink implements DatadogSink {
     }
 
     private getReactNativeMethod(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        logger: any,
+        logger: DatadogReactNativeLogs,
         level: LogEntry["level"]
     ): ((message: string, attributes?: Record<string, unknown>) => void) | null {
         if (logger == null) {
