@@ -48,7 +48,6 @@ export class ReactNativeDatadogSink implements DatadogSink {
             const attributes = {
                 ...entry.context,
                 service: this.options.service ?? "crossmint-sdk",
-                source: "crossmint-sdk",
             };
 
             loggerMethod(entry.message, attributes);

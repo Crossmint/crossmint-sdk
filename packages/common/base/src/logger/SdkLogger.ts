@@ -2,16 +2,16 @@ import type { ISdkLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
 import { mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
-import { validateAPIKey } from "../apiKey";
 import { sinkManager } from "./sink-manager";
-
+import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
 /**
  * Simple initialization parameters for creating a logger
  */
 export interface SdkLoggerInitParams {
     packageName: string;
     packageVersion: string;
-    apiKey: string;
+    environment?: APIKeyEnvironmentPrefix;
+    projectId?: string;
     platform?: Platform;
     additionalContext?: LogContext;
 }
@@ -47,20 +47,15 @@ export class SdkLogger implements ISdkLogger {
         }
 
         const platform = params.platform ?? detectPlatform();
-        const validationResult = validateAPIKey(params.apiKey);
-        if (!validationResult.isValid) {
-            throw new Error(`Invalid API key: ${validationResult.message}`);
-        }
-        const { environment, projectId } = validationResult;
-
         // Build base context
         const baseContext: LogContext = {
             sdk_version: params.packageVersion,
             sdk_name: params.packageName,
             platform,
-            environment,
-            project_id: projectId,
+            environment: params.environment,
+            project_id: params.projectId,
             package: params.packageName,
+            origin: "crossmint-sdk",
         };
 
         // Set context using setContext() method

@@ -1,14 +1,13 @@
 import {
     DATADOG_CLIENT_TOKEN,
     SdkLogger,
-    detectEnvironmentFromApiKey,
     ReactNativeDatadogSink,
     type LogSink,
     type DatadogSinkLoggerOptions,
+    validateAPIKey,
 } from "@crossmint/common-sdk-base";
 import Constants from "expo-constants";
 import packageJson from "../../package.json";
-import { ProxyType } from "@datadog/mobile-react-native";
 
 interface ReactNativeDatadogSinkLoggerOptions extends DatadogSinkLoggerOptions {
     isExpoGo: boolean;
@@ -30,7 +29,9 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
 
             // Skip initialization in Expo Go (native modules not available)
             if (!options.isExpoGo) {
-                const isInitialized = DdSdkReactNative.isInitialized();
+                // Check if SDK is already initialized using wasAutoInstrumented
+                // Note: DdSdkReactNative doesn't have isInitialized() in this version
+                const isInitialized = DdSdkReactNative.wasAutoInstrumented === true;
 
                 if (!isInitialized) {
                     try {
@@ -43,10 +44,6 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
                             false // trackErrors
                         );
                         config.site = "datadoghq.com";
-                        config.proxyConfig = {
-                            address: "telemetry.crossmint.com",
-                            type: ProxyType.HTTPS,
-                        };
 
                         await DdSdkReactNative.initialize(config);
                     } catch (error) {
@@ -73,14 +70,19 @@ export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSink
  * @returns The initialized logger instance
  */
 export function initReactNativeLogger(apiKey: string): SdkLogger {
+    const validationResult = validateAPIKey(apiKey);
+    if (!validationResult.isValid) {
+        throw new Error(`Invalid API key: ${validationResult.message}`);
+    }
+    const { environment, projectId } = validationResult;
     const logger = new SdkLogger({
         packageName: packageJson.name,
         packageVersion: packageJson.version,
-        apiKey,
+        environment,
+        projectId,
         platform: "react-native",
     });
 
-    const environment = detectEnvironmentFromApiKey(apiKey);
     const isExpoGo =
         Constants.executionEnvironment === "storeClient" ||
         Constants.appOwnership === "expo" ||

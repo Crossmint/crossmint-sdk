@@ -46,7 +46,9 @@ export class ServerDatadogSink implements DatadogSink {
 
     constructor(options: DatadogSinkOptions) {
         this.options = options;
-        this.intakeUrl = "https://telemetry.crossmint.com/dd";
+        const site = "datadoghq.com";
+        const fullIntakeUrl = `https://http-intake.logs.${site}/v1/input/${options.clientToken}`;
+        this.intakeUrl = `https://telemetry.crossmint.com/dd?ddforward=${encodeURIComponent(fullIntakeUrl)}`;
     }
 
     initialize(): void {
@@ -91,15 +93,13 @@ export class ServerDatadogSink implements DatadogSink {
         try {
             // Format logs for Datadog HTTP intake
             const logs = batch.map((entry) => ({
-                source: "crossmint-sdk",
                 ddtags: `env:${this.options.env ?? "production"},service:${this.options.service ?? "crossmint-sdk"}`,
                 hostname: typeof process !== "undefined" ? process.env.HOSTNAME ?? "unknown" : "unknown",
                 message: entry.message,
                 service: this.options.service ?? "crossmint-sdk",
                 status: this.mapLevelToStatus(entry.level),
                 timestamp: entry.timestamp,
-                "dd.trace_id": TRACE_ID,
-                "dd.span_id": SPAN_ID,
+                "dd-session_id": SPAN_ID,
                 ...entry.context,
             }));
 
@@ -109,13 +109,23 @@ export class ServerDatadogSink implements DatadogSink {
                 throw new Error("fetch is not available. Please use Node.js 18+ or polyfill fetch (e.g., node-fetch)");
             }
 
-            await fetch(this.intakeUrl, {
+            const response = await fetch(this.intakeUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(logs),
             });
+
+            if (!response.ok) {
+                const responseText = await response.text();
+                console.warn(
+                    "[SDK Logger] Datadog proxy returned error:",
+                    response.status,
+                    response.statusText,
+                    responseText
+                );
+            }
         } catch (error) {
             // Don't let Datadog errors break the application
             // Log to console as fallback

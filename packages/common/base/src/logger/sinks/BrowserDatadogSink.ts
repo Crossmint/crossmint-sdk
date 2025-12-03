@@ -70,7 +70,6 @@ export class BrowserDatadogSink implements DatadogSink {
             const context = {
                 ...entry.context,
                 service: this.options.service ?? "crossmint-sdk",
-                source: "crossmint-sdk",
             };
 
             // Write to Datadog

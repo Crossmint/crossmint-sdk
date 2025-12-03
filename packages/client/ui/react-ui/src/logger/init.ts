@@ -1,10 +1,10 @@
 import {
     SdkLogger,
     initializeBrowserDatadogSink,
-    detectEnvironmentFromApiKey,
     type LogSink,
     detectPlatform,
     initializeServerDatadogSink,
+    validateAPIKey,
 } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 
@@ -16,13 +16,18 @@ import packageJson from "../../package.json";
  * @returns The initialized logger instance
  */
 export function initReactUILogger(apiKey: string): SdkLogger {
+    const validationResult = validateAPIKey(apiKey);
+    if (!validationResult.isValid) {
+        throw new Error(`Invalid API key: ${validationResult.message}`);
+    }
+    const { environment, projectId } = validationResult;
     const logger = new SdkLogger({
         packageName: packageJson.name,
         packageVersion: packageJson.version,
-        apiKey,
+        environment,
+        projectId,
     });
 
-    const environment = detectEnvironmentFromApiKey(apiKey);
     const platform = detectPlatform();
     if (platform === "browser") {
         initializeBrowserDatadogSink({

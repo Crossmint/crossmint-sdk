@@ -3,8 +3,8 @@ import {
     initializeBrowserDatadogSink,
     initializeServerDatadogSink,
     detectPlatform,
-    detectEnvironmentFromApiKey,
     type LogSink,
+    validateAPIKey,
 } from "@crossmint/common-sdk-base";
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 
@@ -21,13 +21,17 @@ export const walletsLogger = new SdkLogger();
  */
 export function initWalletsLogger(apiKey: string): void {
     const platform = detectPlatform();
-    const environment = detectEnvironmentFromApiKey(apiKey);
-
+    const validationResult = validateAPIKey(apiKey);
+    if (!validationResult.isValid) {
+        throw new Error(`Invalid API key: ${validationResult.message}`);
+    }
+    const { environment, projectId } = validationResult;
     // Initialize the package-specific logger instance with package context
     walletsLogger.init({
         packageName: SDK_NAME,
         packageVersion: SDK_VERSION,
-        apiKey,
+        environment,
+        projectId,
         platform,
     });
 
