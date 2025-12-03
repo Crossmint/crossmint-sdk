@@ -22,11 +22,6 @@ export interface ISdkLogger {
     setContext(ctx: LogContext): void;
 
     /**
-     * Run a function with a temporary context (e.g., request/session)
-     */
-    withContext<T>(ctx: LogContext, fn: () => T): T;
-
-    /**
      * Log a debug message
      */
     debug(message: unknown, ...rest: unknown[]): void;

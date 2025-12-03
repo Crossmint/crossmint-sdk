@@ -92,20 +92,6 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
-     * Run a function with a temporary context (e.g., request/session)
-     * The context is only active during the function execution
-     */
-    withContext<T>(ctx: LogContext, fn: () => T): T {
-        const previousContext = { ...this.globalContext };
-        this.globalContext = mergeContext(this.globalContext, ctx);
-        try {
-            return fn();
-        } finally {
-            this.globalContext = previousContext;
-        }
-    }
-
-    /**
      * Log a debug message
      */
     debug(message: unknown, ...rest: unknown[]): void {
