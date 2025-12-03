@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.1.1
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+
 ## 0.1.0
 
 ### Minor Changes

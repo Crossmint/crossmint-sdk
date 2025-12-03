@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 0.18.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- de77241: Fix owner comparison when email has a dot
+- Updated dependencies [978420c]
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+
 ## 0.18.4
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.3
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-sdk-react-base@0.7.6
+  - @crossmint/client-sdk-rn-window@0.3.11
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
 ## 0.13.2
 
 ### Patch Changes

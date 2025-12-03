@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.32
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/common-sdk-base@0.9.9
+
 ## 1.2.31
 
 ### Patch Changes
