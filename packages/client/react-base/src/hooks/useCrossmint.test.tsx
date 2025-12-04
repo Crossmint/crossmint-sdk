@@ -18,6 +18,10 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
+vi.mock("@/logger/init", () => ({
+    initReactLogger: vi.fn(),
+}));
+
 function renderCrossmintProvider({ children }: { children: JSX.Element }) {
     return render(<CrossmintProvider apiKey={MOCK_API_KEY}>{children}</CrossmintProvider>);
 }

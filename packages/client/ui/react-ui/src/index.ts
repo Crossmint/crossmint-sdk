@@ -11,4 +11,4 @@ export {
     CrossmintEvents,
 } from "@crossmint/client-sdk-base";
 
-export { CrossmintProvider } from "@crossmint/client-sdk-react-base";
+export { CrossmintProvider } from "./providers/CrossmintProvider";
