@@ -2,7 +2,7 @@ import { type ReactNode, createContext, useCallback, useMemo, useRef, useState }
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
 import { initReactLogger } from "../logger/init";
-import { LoggerContext } from "./LoggerProvider";
+import { createLoggerContext } from "./LoggerProvider";
 import packageJson from "../../package.json";
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -14,6 +14,8 @@ export interface CrossmintContext {
 }
 
 export const CrossmintContext = createContext<CrossmintContext | null>(null);
+
+export const LoggerContext = createLoggerContext();
 
 export function CrossmintProvider({
     children,

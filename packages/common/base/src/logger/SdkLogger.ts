@@ -8,8 +8,8 @@ import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
  * Simple initialization parameters for creating a logger
  */
 export interface SdkLoggerInitParams {
-    packageName: string;
-    packageVersion: string;
+    packageName?: string;
+    packageVersion?: string;
     environment?: APIKeyEnvironmentPrefix;
     projectId?: string;
     platform?: Platform;

@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Constants from "expo-constants";
-import { CrossmintProvider as BaseCrossmintProvider, LoggerContext } from "@crossmint/client-sdk-react-base";
+import { CrossmintProvider as BaseCrossmintProvider, createLoggerContext } from "@crossmint/client-sdk-react-base";
 import type { CrossmintConfig } from "@crossmint/common-sdk-base";
 import { initReactNativeLogger } from "../logger/init";
+
+export const LoggerContext = createLoggerContext();
 
 export function CrossmintProvider({
     children,
