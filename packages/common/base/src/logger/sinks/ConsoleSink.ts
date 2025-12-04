@@ -31,10 +31,18 @@ export class ConsoleSink implements LogSink {
             case "warn":
                 return console.warn;
             case "error":
-                return console.warn;
+                // In development, use console.warn instead of console.error to avoid
+                // React DevTools showing these logs as errors in the error overlay,
+                // which can be confusing for developers. In production, use console.error
+                // for proper error tracking and monitoring.
+                return this.isProduction() ? console.error : console.warn;
             default:
                 return console.log;
         }
+    }
+
+    private isProduction(): boolean {
+        return typeof process !== "undefined" && process.env != null && process.env.NODE_ENV === "production";
     }
 
     private formatMessage(message: string, context: LogContext): string {
