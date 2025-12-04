@@ -269,7 +269,7 @@ export abstract class NonCustodialSigner implements Signer {
             return;
         }
 
-        console.error("[verifyOtp] Failed to validate OTP:", response);
+        console.error("[verifyOtp] Failed to validate OTP:", JSON.stringify(response, null, 2));
         this._needsAuth = true;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);

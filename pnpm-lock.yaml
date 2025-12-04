@@ -711,7 +711,7 @@ importers:
         version: link:../../../wallets
       '@datadog/mobile-react-native':
         specifier: 2.13.2
-        version: 2.13.2(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
+        version: 2.13.2(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)
       '@solana/web3.js':
         specifier: 1.98.1
         version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -1844,7 +1844,7 @@ packages:
   '@datadog/mobile-react-native@2.13.2':
     resolution: {integrity: sha512-Xhc5NiYnctJAYgM4g5tJr+tGV1uzlyAb92K7JYPQBwWM8av/tYShjuAXcyzVCR3sCfQRq0BG2yq64AyGOsnwiQ==}
     peerDependencies:
-      react: 19.1.0
+      react: 19.1.2
       react-native: 0.81.4
 
   '@discoveryjs/json-ext@0.5.7':
@@ -14377,11 +14377,11 @@ snapshots:
     dependencies:
       '@datadog/browser-core': 6.24.1
 
-  '@datadog/mobile-react-native@2.13.2(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)':
+  '@datadog/mobile-react-native@2.13.2(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)':
     dependencies:
       big-integer: 1.6.52
-      react: 19.1.0
-      react-native: 0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
+      react: 19.1.2
+      react-native: 0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10)
 
   '@discoveryjs/json-ext@0.5.7': {}
 

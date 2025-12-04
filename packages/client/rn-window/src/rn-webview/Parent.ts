@@ -76,7 +76,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
                 }
             })();
         }
-        return this._reconnectFlight;
+        return await this._reconnectFlight;
     }
 
     /**
