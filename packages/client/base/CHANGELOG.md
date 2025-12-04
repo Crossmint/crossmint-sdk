@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-base
 
+## 1.7.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-base@0.9.9
+
 ## 1.7.4
 
 ### Patch Changes

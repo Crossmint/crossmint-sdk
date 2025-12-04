@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.6
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+
 ## 1.0.5
 
 ### Patch Changes

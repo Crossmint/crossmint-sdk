@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.11
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-window@1.0.6
+
 ## 0.3.10
 
 ### Patch Changes

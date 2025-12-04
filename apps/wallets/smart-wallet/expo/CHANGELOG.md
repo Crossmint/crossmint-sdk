@@ -1,5 +1,17 @@
 # expo-demo
 
+## 1.1.104
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-rn-window@0.3.11
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-react-native-ui@0.13.3
+  - @crossmint/wallets-sdk@0.18.5
+
 ## 1.1.103
 
 ### Patch Changes

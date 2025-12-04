@@ -1,5 +1,13 @@
 # crossmint-auth-node
 
+## 1.1.61
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/server-sdk@1.2.50
+
 ## 1.1.60
 
 ### Patch Changes

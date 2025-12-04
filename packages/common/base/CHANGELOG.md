@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.9
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+
 ## 0.9.8
 
 ### Patch Changes

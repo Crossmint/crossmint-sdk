@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-sdk-react-base@0.7.6
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
 ## 2.6.4
 
 ### Patch Changes
