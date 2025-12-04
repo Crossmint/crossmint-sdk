@@ -1,6 +1,8 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
 import type { LogEntry } from "../types";
 import type { DatadogReactNativeSdk, DatadogReactNativeLogs } from "./datadogTypes";
+import type { APIKeyEnvironmentPrefix } from "@/apiKey";
+import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
 
 /**
  * React Native-specific Datadog sink implementation
@@ -16,9 +18,16 @@ export class ReactNativeDatadogSink implements DatadogSink {
      * @param options - Datadog configuration options
      * @param datadogSdk - The Datadog React Native SDK module (DdSdkReactNative)
      */
-    constructor(options: DatadogSinkOptions, datadogSdk: DatadogReactNativeSdk) {
-        this.options = options;
+    constructor(environment: APIKeyEnvironmentPrefix, datadogSdk: DatadogReactNativeSdk) {
+        this.options = {
+            clientToken: DATADOG_CLIENT_TOKEN,
+            site: "datadoghq.com",
+            env: environment,
+            sampleRate: 100,
+            forwardErrorsToLogs: false,
+        };
         this.datadogSdk = datadogSdk;
+        this.initialize();
     }
 
     initialize(): void {
@@ -30,7 +39,7 @@ export class ReactNativeDatadogSink implements DatadogSink {
 
     write(entry: LogEntry): void {
         const DdLogs = this.datadogSdk?.DdLogs;
-        if (DdLogs == null || DdLogs.nativeLogs == null) {
+        if (DdLogs == null) {
             // Native module not ready (e.g., Expo Go or initialization failed)
             return;
         }

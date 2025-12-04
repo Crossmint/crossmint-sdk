@@ -1,12 +1,12 @@
 import {
     SdkLogger,
-    initializeBrowserDatadogSink,
-    initializeServerDatadogSink,
+    BrowserDatadogSink,
     detectPlatform,
-    type LogSink,
     validateAPIKey,
+    ServerDatadogSink,
 } from "@crossmint/common-sdk-base";
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
+import * as datadogLogger from "@datadog/browser-logs";
 
 /**
  * Package-specific logger instance for the wallets SDK
@@ -38,13 +38,8 @@ export function initWalletsLogger(apiKey: string): void {
     // Add platform-specific Datadog sink
     switch (platform) {
         case "browser": {
-            initializeBrowserDatadogSink({
-                environment,
-                onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
-                onError: (error: unknown) => {
-                    console.warn("[Wallets SDK]", error instanceof Error ? error.message : String(error));
-                },
-            });
+            const sink = new BrowserDatadogSink(environment, datadogLogger);
+            walletsLogger.addSink(sink);
             break;
         }
         case "react-native": {
@@ -54,13 +49,8 @@ export function initWalletsLogger(apiKey: string): void {
             break;
         }
         case "server": {
-            initializeServerDatadogSink({
-                environment,
-                onSinkCreated: (sink: LogSink) => walletsLogger.addSink(sink),
-                onError: (error: unknown) => {
-                    console.warn("[Wallets SDK] Failed to initialize Datadog sink:", error);
-                },
-            });
+            const sink = new ServerDatadogSink(environment);
+            walletsLogger.addSink(sink);
             break;
         }
         default: {

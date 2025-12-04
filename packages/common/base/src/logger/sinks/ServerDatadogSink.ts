@@ -1,6 +1,7 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
 import type { LogEntry } from "../types";
-import { DATADOG_CLIENT_TOKEN, type DatadogSinkLoggerOptions } from "../init-helpers";
+import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
+import type { APIKeyEnvironmentPrefix } from "@/apiKey";
 
 /**
  * Generates a trace ID for log correlation
@@ -24,7 +25,6 @@ function generateTraceId(): string {
 
 // Singleton trace ID - generated once when module loads
 // All logs from this sink instance will share the same trace ID for correlation
-const TRACE_ID = generateTraceId();
 const SPAN_ID = generateTraceId();
 
 /**
@@ -44,10 +44,17 @@ export class ServerDatadogSink implements DatadogSink {
     private readonly BATCH_SIZE = 10;
     private readonly BATCH_TIMEOUT_MS = 5000; // 5 seconds
 
-    constructor(options: DatadogSinkOptions) {
-        this.options = options;
+    constructor(environment: APIKeyEnvironmentPrefix) {
+        this.options = {
+            clientToken: DATADOG_CLIENT_TOKEN,
+            site: "datadoghq.com",
+            service: "crossmint-sdk",
+            env: environment,
+            sampleRate: 100,
+            forwardErrorsToLogs: false,
+        };
         const site = "datadoghq.com";
-        const fullIntakeUrl = `https://http-intake.logs.${site}/v1/input/${options.clientToken}`;
+        const fullIntakeUrl = `https://http-intake.logs.${site}/v1/input/${DATADOG_CLIENT_TOKEN}`;
         this.intakeUrl = `https://telemetry.crossmint.com/dd?ddforward=${encodeURIComponent(fullIntakeUrl)}`;
     }
 
@@ -145,34 +152,5 @@ export class ServerDatadogSink implements DatadogSink {
             default:
                 return "info";
         }
-    }
-}
-
-/**
- * Factory function to create a server Datadog sink
- */
-export function createServerDatadogSink(options: DatadogSinkOptions): DatadogSink {
-    return new ServerDatadogSink(options);
-}
-
-/**
- * Initializes a server Datadog sink synchronously
- * Calls onSinkCreated if successful, onError if it fails
- */
-export function initializeServerDatadogSink(options: DatadogSinkLoggerOptions): void {
-    try {
-        const datadogOptions = {
-            clientToken: DATADOG_CLIENT_TOKEN,
-            site: "datadoghq.com",
-            service: "crossmint-sdk",
-            env: options.environment,
-            sampleRate: 100,
-            forwardErrorsToLogs: false,
-        };
-        const sink = createServerDatadogSink(datadogOptions);
-        sink.initialize();
-        options.onSinkCreated?.(sink);
-    } catch (error) {
-        options.onError?.(error);
     }
 }

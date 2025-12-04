@@ -1,9 +1,9 @@
 import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
-import { initReactBaseLogger } from "../logger/init";
+import { initReactLogger } from "../logger/init";
 import { LoggerContext } from "./LoggerProvider";
-
+import packageJson from "../../package.json";
 export interface CrossmintContext {
     crossmint: Crossmint;
     /* @deprecated Use setJwt instead */
@@ -25,7 +25,7 @@ export function CrossmintProvider({
     children: ReactNode;
 }) {
     const logger = useMemo(() => {
-        return initReactBaseLogger(apiKey);
+        return initReactLogger(apiKey, packageJson.name, packageJson.version);
     }, [apiKey]);
 
     const [version, setVersion] = useState(0);

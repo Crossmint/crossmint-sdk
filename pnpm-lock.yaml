@@ -611,6 +611,9 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../wallets
+      '@datadog/browser-logs':
+        specifier: 6.24.1
+        version: 6.24.1
       lodash.clonedeep:
         specifier: 4.5.0
         version: 4.5.0
@@ -1822,6 +1825,9 @@ packages:
   '@datadog/browser-core@6.24.0':
     resolution: {integrity: sha512-mTv01ckd+QDiNbhqYhvj6UxwMhoM5LWrPODEWpWSHRc2T9xnWqUBdaJmCudfz72qlhCYqp44uBwv5cZ7bdHxUA==}
 
+  '@datadog/browser-core@6.24.1':
+    resolution: {integrity: sha512-ViLqvvCrZtKRCrSCcrZmSbc4Th7Y0rUQ7PruP1KGNgmE2fY4rrRP/n77zXuF8y/bmBce0na8kCdoCUkKzl/xuQ==}
+
   '@datadog/browser-logs@4.42.2':
     resolution: {integrity: sha512-idl9DilUGmWbmYb1D6VPmkpnhqaIdsQ08qjOw1c0QbtGUAFlFYyFCrugf2qwMt8QbJ8DqvEiwULTVAZOV9O4kA==}
     peerDependencies:
@@ -1834,6 +1840,14 @@ packages:
     resolution: {integrity: sha512-ICvw+TMDjciDk969R133fo0V8/aZxjXTpmWZegQ87mCNKPrk4dKRbdxcz0ARrXiIa+ToUNxoAE8fdxGoIICyug==}
     peerDependencies:
       '@datadog/browser-rum': 6.24.0
+    peerDependenciesMeta:
+      '@datadog/browser-rum':
+        optional: true
+
+  '@datadog/browser-logs@6.24.1':
+    resolution: {integrity: sha512-SmqUVzif6IRrdkhh8mewfFa64IfcnkPXLgMYigJDzo7O1f8PEuHF63sDJ2/x2hTXR68e2JKBKE/ooFpAmtCnYw==}
+    peerDependencies:
+      '@datadog/browser-rum': 6.24.1
     peerDependenciesMeta:
       '@datadog/browser-rum':
         optional: true
@@ -14366,6 +14380,8 @@ snapshots:
 
   '@datadog/browser-core@6.24.0': {}
 
+  '@datadog/browser-core@6.24.1': {}
+
   '@datadog/browser-logs@4.42.2':
     dependencies:
       '@datadog/browser-core': 4.42.2
@@ -14373,6 +14389,10 @@ snapshots:
   '@datadog/browser-logs@6.24.0':
     dependencies:
       '@datadog/browser-core': 6.24.0
+
+  '@datadog/browser-logs@6.24.1':
+    dependencies:
+      '@datadog/browser-core': 6.24.1
 
   '@datadog/mobile-react-native@2.13.2(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)':
     dependencies:

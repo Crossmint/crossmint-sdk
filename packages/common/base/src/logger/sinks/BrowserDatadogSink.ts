@@ -1,8 +1,8 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
 import type { LogEntry } from "../types";
 import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
-import type { DatadogSinkLoggerOptions } from "../init-helpers";
 import type { DatadogBrowserLogsModule, DatadogBrowserLogger } from "./datadogTypes";
+import type { APIKeyEnvironmentPrefix } from "@/apiKey";
 
 /**
  * Browser-specific Datadog sink implementation
@@ -18,9 +18,17 @@ export class BrowserDatadogSink implements DatadogSink {
      * @param options - Datadog configuration options
      * @param datadogLogger - The Datadog browser logs module (datadogLogs)
      */
-    constructor(options: DatadogSinkOptions, datadogLogger: DatadogBrowserLogsModule) {
-        this.options = options;
+    constructor(environment: APIKeyEnvironmentPrefix, datadogLogger: DatadogBrowserLogsModule) {
+        this.options = {
+            clientToken: DATADOG_CLIENT_TOKEN,
+            site: "datadoghq.com",
+            service: window.location.hostname,
+            env: environment,
+            sampleRate: 100,
+            forwardErrorsToLogs: false,
+        };
         this.datadogLogger = datadogLogger?.datadogLogs ?? null;
+        this.initialize();
     }
 
     initialize(): void {
@@ -94,32 +102,4 @@ export class BrowserDatadogSink implements DatadogSink {
                 return this.datadogLogger.logger.info?.bind(this.datadogLogger.logger);
         }
     }
-}
-
-/**
- * Initializes a browser Datadog sink asynchronously
- */
-export function initializeBrowserDatadogSink(options: DatadogSinkLoggerOptions): void {
-    const datadogOptions = {
-        clientToken: DATADOG_CLIENT_TOKEN,
-        site: "datadoghq.com",
-        service: window.location.hostname,
-        env: options.environment,
-        sampleRate: 100,
-        forwardErrorsToLogs: false,
-    };
-
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("@datadog/browser-logs")
-        .then((datadogLogsModule: DatadogBrowserLogsModule) => {
-            const sink = new BrowserDatadogSink(datadogOptions, datadogLogsModule);
-            sink.initialize();
-            options.onSinkCreated?.(sink);
-        })
-        .catch(() => {
-            const error = new Error(
-                "@datadog/browser-logs not found. Datadog logging will be disabled. Install it to enable: npm install @datadog/browser-logs"
-            );
-            options.onError?.(error);
-        });
 }

@@ -17,7 +17,7 @@ import {
 } from "@crossmint/client-sdk-react-base";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
-import { useLogger } from "./LoggerProvider";
+import { useLogger } from "@crossmint/client-sdk-react-base";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;

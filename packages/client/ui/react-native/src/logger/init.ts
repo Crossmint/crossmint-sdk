@@ -2,64 +2,43 @@ import {
     DATADOG_CLIENT_TOKEN,
     SdkLogger,
     ReactNativeDatadogSink,
-    type LogSink,
-    type DatadogSinkLoggerOptions,
     validateAPIKey,
+    type APIKeyEnvironmentPrefix,
 } from "@crossmint/common-sdk-base";
 import Constants from "expo-constants";
 import packageJson from "../../package.json";
+import * as datadogReactNativeModule from "@datadog/mobile-react-native";
 
-interface ReactNativeDatadogSinkLoggerOptions extends DatadogSinkLoggerOptions {
+const { DdSdkReactNative, DatadogProviderConfiguration } = datadogReactNativeModule;
+
+type InitializeDatadogOptions = {
+    environment: APIKeyEnvironmentPrefix;
     isExpoGo: boolean;
-}
+};
 
-export function initializeReactNativeDatadogSink(options: ReactNativeDatadogSinkLoggerOptions): void {
-    const datadogOptions = {
-        clientToken: DATADOG_CLIENT_TOKEN,
-        site: "datadoghq.com",
-        env: options.environment,
-        sampleRate: 100,
-        forwardErrorsToLogs: false,
-    };
+export async function initializeDatadog(options: InitializeDatadogOptions): Promise<void> {
+    try {
+        const config = new DatadogProviderConfiguration(
+            DATADOG_CLIENT_TOKEN,
+            options.environment ?? "production",
+            "crossmint-sdk",
+            false, // trackUserInteractions
+            false, // trackXHRResources
+            false // trackErrors
+        );
+        config.site = "datadoghq.com";
 
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("@datadog/mobile-react-native")
-        .then(async (datadogReactNativeModule: any) => {
-            const { DdSdkReactNative, DatadogProviderConfiguration } = datadogReactNativeModule;
-
-            // Skip initialization in Expo Go (native modules not available)
-            if (!options.isExpoGo) {
-                // Check if SDK is already initialized using wasAutoInstrumented
-                // Note: DdSdkReactNative doesn't have isInitialized() in this version
-                const isInitialized = DdSdkReactNative.wasAutoInstrumented === true;
-
-                if (!isInitialized) {
-                    try {
-                        const config = new DatadogProviderConfiguration(
-                            DATADOG_CLIENT_TOKEN,
-                            options.environment ?? "production",
-                            "crossmint-sdk",
-                            false, // trackUserInteractions
-                            false, // trackXHRResources
-                            false // trackErrors
-                        );
-                        config.site = "datadoghq.com";
-
-                        await DdSdkReactNative.initialize(config);
-                    } catch (error) {
-                        options.onError?.(error);
-                    }
-                }
-            }
-
-            const sink = new ReactNativeDatadogSink(datadogOptions, datadogReactNativeModule);
-            sink.initialize();
-            options.onSinkCreated?.(sink);
-        })
-        .catch(() => {
-            const error = new Error("@datadog/mobile-react-native not found. Datadog logging will be disabled.");
-            options.onError?.(error);
-        });
+        await DdSdkReactNative.initialize(config);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("Native modules require")) {
+            console.warn(
+                "[React Native UI SDK] Datadog SDK initialization failed. Native modules require a development build (not Expo Go).",
+                error
+            );
+        } else {
+            console.warn("[React Native UI SDK]", error instanceof Error ? error.message : String(error));
+        }
+    }
 }
 
 /**
@@ -88,21 +67,12 @@ export function initReactNativeLogger(apiKey: string): SdkLogger {
         Constants.appOwnership === "expo" ||
         !!Constants.expoVersion;
 
-    initializeReactNativeDatadogSink({
+    initializeDatadog({
         environment,
         isExpoGo,
-        onSinkCreated: (sink: LogSink) => logger.addSink(sink),
-        onError: (error: unknown) => {
-            if (error instanceof Error && error.message.includes("Native modules require")) {
-                console.warn(
-                    "[React Native UI SDK] Datadog SDK initialization failed. Native modules require a development build (not Expo Go).",
-                    error
-                );
-            } else {
-                console.warn("[React Native UI SDK]", error instanceof Error ? error.message : String(error));
-            }
-        },
     });
+    const sink = new ReactNativeDatadogSink(environment, datadogReactNativeModule);
+    logger.addSink(sink);
 
     return logger;
 }

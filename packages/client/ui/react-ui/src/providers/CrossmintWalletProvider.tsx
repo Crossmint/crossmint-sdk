@@ -6,14 +6,14 @@ import {
     type UIRenderProps,
     type CreateOnLogin,
     useCrossmint,
+    LoggerContext,
+    initReactLogger,
 } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
-import { initReactUILogger } from "../logger/init";
-import { LoggerContext } from "./LoggerProvider";
-
+import packageJson from "../../package.json";
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
@@ -45,7 +45,7 @@ export function CrossmintWalletProvider({
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
 
     const logger = useMemo(() => {
-        return initReactUILogger(crossmint.apiKey);
+        return initReactLogger(crossmint.apiKey, packageJson.name, packageJson.version);
     }, [crossmint.apiKey]);
 
     return (
