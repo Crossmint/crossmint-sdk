@@ -75,6 +75,10 @@ function CrossmintWalletProviderInternal({
             webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
+                handshakeOptions: {
+                    timeoutMs: 30_000,
+                    intervalMs: 500,
+                },
                 recovery: {
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
                 },
@@ -176,7 +180,9 @@ function CrossmintWalletProviderInternal({
         }
 
         if (webViewParentRef.current == null) {
-            logger.error("react-native.wallet.webview.init.timeout", { attempts });
+            logger.error("react-native.wallet.webview.init.timeout", {
+                attempts,
+            });
             throw new Error("WebView not ready or handshake incomplete");
         }
         logger.info("react-native.wallet.webview.init.success", { attempts });
