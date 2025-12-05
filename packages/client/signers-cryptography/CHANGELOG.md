@@ -1,5 +1,11 @@
 # @crossmint/client-signers-cryptography
 
+## 0.0.4
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+
 ## 0.0.3
 
 ### Patch Changes

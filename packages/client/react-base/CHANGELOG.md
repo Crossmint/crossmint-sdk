@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.7
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-window@1.0.7
+  - @crossmint/client-sdk-auth@1.2.39
+  - @crossmint/client-sdk-base@1.7.6
+  - @crossmint/common-sdk-auth@1.0.61
+
 ## 0.7.6
 
 ### Patch Changes

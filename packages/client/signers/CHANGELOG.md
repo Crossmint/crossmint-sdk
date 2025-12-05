@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.1.2
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+
 ## 0.1.1
 
 ### Patch Changes
