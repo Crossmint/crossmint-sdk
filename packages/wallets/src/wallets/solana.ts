@@ -1,5 +1,5 @@
 import bs58 from "bs58";
-import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
+import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
     ApproveOptions,
@@ -37,54 +37,55 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "solanaWallet.sendTransaction",
+        buildContext(thisArg: SolanaWallet) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        return walletsLogger.withContext(
-            "solanaWallet.sendTransaction",
-            { chain: this.chain, address: this.address },
-            async () => {
-                walletsLogger.info("solanaWallet.sendTransaction.start");
+        walletsLogger.info("solanaWallet.sendTransaction.start");
 
-                await this.preAuthIfNeeded();
-                const createdTransaction = await this.createTransaction(params);
+        await this.preAuthIfNeeded();
+        const createdTransaction = await this.createTransaction(params);
 
-                if (params.options?.experimental_prepareOnly) {
-                    walletsLogger.info("solanaWallet.sendTransaction.prepared", {
-                        transactionId: createdTransaction.id,
-                    });
-                    return {
-                        hash: undefined,
-                        explorerLink: undefined,
-                        transactionId: createdTransaction.id,
-                    } as Transaction<T extends PrepareOnly<true> ? true : false>;
-                }
+        if (params.options?.experimental_prepareOnly) {
+            walletsLogger.info("solanaWallet.sendTransaction.prepared", {
+                transactionId: createdTransaction.id,
+            });
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: createdTransaction.id,
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+        }
 
-                const _additionalSigners = params.additionalSigners?.map(
-                    (signer) =>
-                        new SolanaExternalWalletSigner({
-                            type: "external-wallet",
-                            address: signer.publicKey.toString(),
-                            locator: `external-wallet:${signer.publicKey.toString()}`,
-                            onSignTransaction: (transaction) => {
-                                transaction.sign([signer]);
-                                return Promise.resolve(transaction);
-                            },
-                        })
-                );
-
-                const options: ApproveOptions = {
-                    additionalSigners: _additionalSigners,
-                };
-
-                const result = await this.approveTransactionAndWait(createdTransaction.id, options);
-                walletsLogger.info("solanaWallet.sendTransaction.success", {
-                    transactionId: createdTransaction.id,
-                    hash: result.hash,
-                });
-                return result;
-            }
+        const _additionalSigners = params.additionalSigners?.map(
+            (signer) =>
+                new SolanaExternalWalletSigner({
+                    type: "external-wallet",
+                    address: signer.publicKey.toString(),
+                    locator: `external-wallet:${signer.publicKey.toString()}`,
+                    onSignTransaction: (transaction) => {
+                        transaction.sign([signer]);
+                        return Promise.resolve(transaction);
+                    },
+                })
         );
+
+        const options: ApproveOptions = {
+            additionalSigners: _additionalSigners,
+        };
+
+        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        walletsLogger.info("solanaWallet.sendTransaction.success", {
+            transactionId: createdTransaction.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {

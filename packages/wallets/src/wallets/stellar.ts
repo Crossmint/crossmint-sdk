@@ -1,4 +1,4 @@
-import { isValidStellarAddress } from "@crossmint/common-sdk-base";
+import { isValidStellarAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
@@ -35,39 +35,40 @@ export class StellarWallet extends Wallet<StellarChain> {
         return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "stellarWallet.sendTransaction",
+        buildContext(thisArg: StellarWallet) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        return walletsLogger.withContext(
-            "stellarWallet.sendTransaction",
-            { chain: this.chain, address: this.address },
-            async () => {
-                walletsLogger.info("stellarWallet.sendTransaction.start");
+        walletsLogger.info("stellarWallet.sendTransaction.start");
 
-                await this.preAuthIfNeeded();
-                const createdTransaction = await this.createTransaction(params);
+        await this.preAuthIfNeeded();
+        const createdTransaction = await this.createTransaction(params);
 
-                if (params.options?.experimental_prepareOnly) {
-                    walletsLogger.info("stellarWallet.sendTransaction.prepared", {
-                        transactionId: createdTransaction.id,
-                    });
-                    return {
-                        hash: undefined,
-                        explorerLink: undefined,
-                        transactionId: createdTransaction.id,
-                    } as Transaction<T extends PrepareOnly<true> ? true : false>;
-                }
+        if (params.options?.experimental_prepareOnly) {
+            walletsLogger.info("stellarWallet.sendTransaction.prepared", {
+                transactionId: createdTransaction.id,
+            });
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: createdTransaction.id,
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+        }
 
-                const options: ApproveOptions = {};
+        const options: ApproveOptions = {};
 
-                const result = await this.approveTransactionAndWait(createdTransaction.id, options);
-                walletsLogger.info("stellarWallet.sendTransaction.success", {
-                    transactionId: createdTransaction.id,
-                    hash: result.hash,
-                });
-                return result;
-            }
-        );
+        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        walletsLogger.info("stellarWallet.sendTransaction.success", {
+            transactionId: createdTransaction.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {

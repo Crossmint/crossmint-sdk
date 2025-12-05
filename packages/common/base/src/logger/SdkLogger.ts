@@ -28,7 +28,7 @@ export class SdkLogger implements ISdkLogger {
     /**
      * Current span context for tracing function execution.
      * When set, all logs will automatically include this context.
-     * Used by withContext() to provide span-based tracing.
+     * Used by withSpanContext() to provide span-based tracing.
      */
     private currentSpanContext: LogContext | undefined;
 
@@ -127,7 +127,7 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
-     * HOC-style context wrapper for tracing function execution.
+     * HOC-style context wrapper for tracing function execution with span-based tracing.
      *
      * - If a span is already active on this logger, runs `fn` without changing context
      *   to avoid stepping over the existing span.
@@ -139,7 +139,7 @@ export class SdkLogger implements ISdkLogger {
      * @param fn - The function to execute within the span context
      * @returns The result of the function execution
      */
-    withContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
+    withSpanContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
         // If there is already a span, we stay out of the way to avoid stepping over the existing context
         if (this.currentSpanContext?.span_id != null) {
             return fn();

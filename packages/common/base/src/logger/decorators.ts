@@ -27,10 +27,10 @@ export interface WithLoggerContextOptions<T = unknown> {
 }
 
 /**
- * Decorator for public SDK methods that wraps them with logger context.
+ * Decorator for public SDK methods that wraps them with logger span context.
  *
  * This decorator:
- * - Wraps the method execution with logger.withContext()
+ * - Wraps the method execution with logger.withSpanContext()
  * - Automatically generates a span ID for tracing
  * - Checks if there's already an active span to avoid stepping over existing context
  * - Properly handles both sync and async methods
@@ -69,8 +69,8 @@ export function WithLoggerContext<T = unknown>(options: WithLoggerContextOptions
 
         const wrapped = function (this: T, ...args: unknown[]): unknown {
             const ctx = options.buildContext ? options.buildContext(this, args) : {};
-            // Delegate span lifecycle to logger.withContext
-            return options.logger.withContext(methodName, ctx, () => original.apply(this, args));
+            // Delegate span lifecycle to logger.withSpanContext
+            return options.logger.withSpanContext(methodName, ctx, () => original.apply(this, args));
         };
 
         descriptor.value = wrapped as M;
