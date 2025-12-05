@@ -1,6 +1,6 @@
 import type { ISdkLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { mergeContext, serializeLogArgs } from "./utils";
+import { generateExecutionId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -24,6 +24,13 @@ export interface SdkLoggerInitParams {
 export class SdkLogger implements ISdkLogger {
     private globalContext: LogContext = {};
     private initialized = false;
+
+    /**
+     * Current execution context for tracing function execution.
+     * When set, all logs will automatically include this context.
+     * Used by withExecutionContext() to provide execution-based tracing.
+     */
+    private currentExecutionContext: LogContext | undefined;
 
     /**
      * Create and initialize a logger with simple parameters
@@ -120,6 +127,67 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
+     * HOC-style context wrapper for tracing function execution with execution-based tracing.
+     *
+     * - If an execution context is already active on this logger, runs `fn` without changing context
+     *   to avoid stepping over the existing execution.
+     * - Otherwise, sets up a new execution context, runs `fn`, and restores the previous context
+     *   even if `fn` throws or returns a rejected Promise.
+     *
+     * @param methodName - The name of the method being traced
+     * @param additionalContext - Optional additional context to include in all logs
+     * @param fn - The function to execute within the execution context
+     * @returns The result of the function execution
+     */
+    withExecutionContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
+        // If there is already an execution context, we stay out of the way to avoid stepping over the existing context
+        if (this.currentExecutionContext?.execution_id != null) {
+            return fn();
+        }
+
+        const previousContext = this.currentExecutionContext;
+        const executionId = generateExecutionId();
+
+        const executionContext: LogContext = {
+            ...(previousContext ?? {}),
+            execution_id: executionId,
+            method: methodName,
+            ...(additionalContext ?? {}),
+        };
+
+        // Set new execution context
+        this.currentExecutionContext = executionContext;
+
+        let result: T;
+        try {
+            result = fn();
+        } catch (err) {
+            // Synchronous throw: cleanup and rethrow
+            this.currentExecutionContext = previousContext;
+            throw err;
+        }
+
+        // If result is a Promise, restore context once it settles
+        if (result && typeof (result as unknown as Promise<unknown>).then === "function") {
+            const promise = result as unknown as Promise<unknown>;
+            return promise.finally(() => {
+                this.currentExecutionContext = previousContext;
+            }) as unknown as T;
+        }
+
+        // Non-promise result: restore immediately
+        this.currentExecutionContext = previousContext;
+        return result;
+    }
+
+    /**
+     * Get the current execution ID if one is active
+     */
+    getCurrentExecutionId(): string | undefined {
+        return this.currentExecutionContext?.execution_id as string | undefined;
+    }
+
+    /**
      * Internal log method that handles serialization and sink writing
      */
     private log(level: LogLevel, message: unknown, ...rest: unknown[]): void {
@@ -133,9 +201,10 @@ export class SdkLogger implements ISdkLogger {
         // Serialize arguments into message and context
         const { message: serializedMessage, context: argsContext } = serializeLogArgs([message, ...rest]);
 
-        // Merge global context with argument context
+        // Merge global context with current execution context and argument context
         // The package name is set in globalContext during initialization
-        const mergedContext = mergeContext(this.globalContext, argsContext);
+        // currentExecutionContext is automatically included when withExecutionContext() is active
+        const mergedContext = mergeContext(this.globalContext, this.currentExecutionContext ?? {}, argsContext);
 
         // Create log entry
         const entry: LogEntry = {

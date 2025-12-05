@@ -10,3 +10,4 @@ export * from "./sinks/ReactNativeDatadogSink";
 export * from "./sinks/ServerDatadogSink";
 export * from "./utils";
 export * from "./init-helpers";
+export * from "./decorators";
