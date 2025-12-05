@@ -10,6 +10,7 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { walletsLogger } from "../logger";
 
 export class StellarWallet extends Wallet<StellarChain> {
     constructor(wallet: Wallet<StellarChain>) {
@@ -37,10 +38,17 @@ export class StellarWallet extends Wallet<StellarChain> {
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        const logger = walletsLogger.withContext("stellarWallet.sendTransaction", {
+            chain: this.chain,
+            address: this.address,
+        });
+        logger.info("stellarWallet.sendTransaction.start");
+
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {
+            logger.info("stellarWallet.sendTransaction.prepared", { transactionId: createdTransaction.id });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -50,7 +58,12 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         const options: ApproveOptions = {};
 
-        return await this.approveTransactionAndWait(createdTransaction.id, options);
+        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        logger.info("stellarWallet.sendTransaction.success", {
+            transactionId: createdTransaction.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {

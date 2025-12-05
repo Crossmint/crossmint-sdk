@@ -24,56 +24,60 @@ export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
 
     public async getOrCreateWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
+        const logger = walletsLogger.withContext("walletFactory.getOrCreateWallet", {
+            chain: args.chain,
+            signerType: args.signer.type,
+        });
+
         if (this.apiClient.isServerSide) {
+            logger.error("walletFactory.getOrCreateWallet.error", {
+                error: "getOrCreateWallet can only be called from client-side code",
+            });
             throw new WalletCreationError(
                 "getOrCreateWallet can only be called from client-side code.\n- Make sure you're running this in the browser (or another client environment), not on your server.\n- Use your Crossmint Client API Key (not a server key)."
             );
         }
 
         const locator = this.getWalletLocator<C>(args);
-
-        walletsLogger.info("wallet.getOrCreate.start", {
-            chain: args.chain,
-            signerType: args.signer.type,
-        });
+        logger.info("walletFactory.getOrCreateWallet.start");
 
         const existingWallet = await this.apiClient.getWallet(locator);
 
         if (existingWallet != null && !("error" in existingWallet)) {
-            walletsLogger.info("wallet.getOrCreate.existing", {
-                chain: args.chain,
+            logger.info("walletFactory.getOrCreateWallet.existing", {
                 address: existingWallet.address,
             });
             return this.createWalletInstance(existingWallet, args);
         }
 
-        walletsLogger.info("wallet.getOrCreate.creating", {
-            chain: args.chain,
-        });
+        logger.info("walletFactory.getOrCreateWallet.creating");
         return this.createWallet(args);
     }
 
     public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        if (!this.apiClient.isServerSide) {
-            throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
-        }
-
-        walletsLogger.info("wallet.get.start", {
+        const logger = walletsLogger.withContext("walletFactory.getWallet", {
             walletLocator,
             chain: args.chain,
         });
 
+        if (!this.apiClient.isServerSide) {
+            logger.error("walletFactory.getWallet.error", {
+                error: "getWallet is not supported on client side",
+            });
+            throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
+        }
+
+        logger.info("walletFactory.getWallet.start");
+
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
-            walletsLogger.warn("wallet.get.notFound", {
-                walletLocator,
+            logger.warn("walletFactory.getWallet.notFound", {
                 error: existingWallet.error,
             });
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
 
-        walletsLogger.info("wallet.get.success", {
-            walletLocator,
+        logger.info("walletFactory.getWallet.success", {
             address: existingWallet.address,
         });
 
@@ -81,12 +85,13 @@ export class WalletFactory {
     }
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        await args.options?.experimental_callbacks?.onWalletCreationStart?.();
-
-        walletsLogger.info("wallet.create.start", {
+        const logger = walletsLogger.withContext("walletFactory.createWallet", {
             chain: args.chain,
             signerType: args.signer.type,
         });
+
+        await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+        logger.info("walletFactory.createWallet.start");
 
         this.mutateSignerFromCustomAuth(args, true);
 
@@ -106,15 +111,13 @@ export class WalletFactory {
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
-            walletsLogger.error("wallet.create.error", {
-                chain: args.chain,
+            logger.error("walletFactory.createWallet.error", {
                 error: walletResponse.error,
             });
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        walletsLogger.info("wallet.create.success", {
-            chain: args.chain,
+        logger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
         });
 

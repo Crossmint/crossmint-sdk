@@ -1,6 +1,6 @@
-import type { ISdkLogger } from "./interfaces";
+import type { ISdkLogger, IScopedLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { mergeContext, serializeLogArgs } from "./utils";
+import { generateSpanId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -120,9 +120,34 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
+     * Create a scoped logger with additional context
+     * Useful for tracing function execution with a unique span ID
+     * @param methodName - The name of the method being traced (used as context)
+     * @param additionalContext - Optional additional context to include in all logs
+     * @returns A scoped logger instance with the span context
+     */
+    withContext(methodName: string, additionalContext?: LogContext): IScopedLogger {
+        const spanId = generateSpanId();
+        const scopedContext: LogContext = {
+            span_id: spanId,
+            method: methodName,
+            ...additionalContext,
+        };
+
+        return new ScopedLogger(this, scopedContext, spanId);
+    }
+
+    /**
      * Internal log method that handles serialization and sink writing
      */
     private log(level: LogLevel, message: unknown, ...rest: unknown[]): void {
+        this.logWithContext(level, {}, message, ...rest);
+    }
+
+    /**
+     * Internal log method with additional context support
+     */
+    logWithContext(level: LogLevel, additionalContext: LogContext, message: unknown, ...rest: unknown[]): void {
         if (!this.initialized) {
             // Fallback to console if not initialized
             const fallbackMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
@@ -133,9 +158,9 @@ export class SdkLogger implements ISdkLogger {
         // Serialize arguments into message and context
         const { message: serializedMessage, context: argsContext } = serializeLogArgs([message, ...rest]);
 
-        // Merge global context with argument context
+        // Merge global context with additional context and argument context
         // The package name is set in globalContext during initialization
-        const mergedContext = mergeContext(this.globalContext, argsContext);
+        const mergedContext = mergeContext(this.globalContext, additionalContext, argsContext);
 
         // Create log entry
         const entry: LogEntry = {
@@ -156,5 +181,37 @@ export class SdkLogger implements ISdkLogger {
                 console.error("[SdkLogger] Error writing to sink:", error);
             }
         }
+    }
+}
+
+/**
+ * Scoped logger that wraps the main logger with additional context
+ * All logs from this logger will include the scoped context (e.g., span ID)
+ */
+class ScopedLogger implements IScopedLogger {
+    public readonly spanId: string;
+
+    constructor(
+        private readonly parentLogger: SdkLogger,
+        private readonly scopedContext: LogContext,
+        spanId: string
+    ) {
+        this.spanId = spanId;
+    }
+
+    debug(message: unknown, ...rest: unknown[]): void {
+        this.parentLogger.logWithContext("debug", this.scopedContext, message, ...rest);
+    }
+
+    info(message: unknown, ...rest: unknown[]): void {
+        this.parentLogger.logWithContext("info", this.scopedContext, message, ...rest);
+    }
+
+    warn(message: unknown, ...rest: unknown[]): void {
+        this.parentLogger.logWithContext("warn", this.scopedContext, message, ...rest);
+    }
+
+    error(message: unknown, ...rest: unknown[]): void {
+        this.parentLogger.logWithContext("error", this.scopedContext, message, ...rest);
     }
 }

@@ -12,6 +12,7 @@ import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { walletsLogger } from "../logger";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -39,10 +40,17 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        const logger = walletsLogger.withContext("solanaWallet.sendTransaction", {
+            chain: this.chain,
+            address: this.address,
+        });
+        logger.info("solanaWallet.sendTransaction.start");
+
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {
+            logger.info("solanaWallet.sendTransaction.prepared", { transactionId: createdTransaction.id });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -67,7 +75,12 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             additionalSigners: _additionalSigners,
         };
 
-        return await this.approveTransactionAndWait(createdTransaction.id, options);
+        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        logger.info("solanaWallet.sendTransaction.success", {
+            transactionId: createdTransaction.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {

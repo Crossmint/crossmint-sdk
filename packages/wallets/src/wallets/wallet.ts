@@ -46,6 +46,7 @@ import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { walletsLogger } from "../logger";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -109,6 +110,12 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
+        const logger = walletsLogger.withContext("wallet.balances", {
+            chain: this.chain,
+            address: this.address,
+        });
+        logger.info("wallet.balances.start");
+
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -129,9 +136,11 @@ export class Wallet<C extends Chain> {
         });
 
         if ("error" in response) {
+            logger.error("wallet.balances.error", { error: response });
             throw new Error(`Failed to get balances for wallet: ${JSON.stringify(response.message)}`);
         }
 
+        logger.info("wallet.balances.success");
         return this.transformBalanceResponse(response, nativeToken, tokens);
     }
 
@@ -146,6 +155,13 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the funding operation fails or if called in a production environment
      */
     public async stagingFund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
+        const logger = walletsLogger.withContext("wallet.stagingFund", {
+            chain: chain ?? this.chain,
+            address: this.address,
+            amount,
+        });
+        logger.info("wallet.stagingFund.start");
+
         const response = await this.apiClient.fundWallet(this.address, {
             amount,
             token: "usdxm",
@@ -154,8 +170,10 @@ export class Wallet<C extends Chain> {
             chain: chain ?? (this.chain as any),
         });
         if ("error" in response) {
+            logger.error("wallet.stagingFund.error", { error: response });
             throw new Error(`Failed to fund wallet: ${JSON.stringify(response.message)}`);
         }
+        logger.info("wallet.stagingFund.success");
         return response;
     }
 
@@ -302,9 +320,18 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        await this.preAuthIfNeeded();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
+        const logger = walletsLogger.withContext("wallet.send", {
+            chain: this.chain,
+            address: this.address,
+            recipient,
+            token: tokenLocator,
+            amount,
+        });
+        logger.info("wallet.send.start");
+
+        await this.preAuthIfNeeded();
         const sendParams = {
             recipient,
             amount,
@@ -313,12 +340,14 @@ export class Wallet<C extends Chain> {
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
         if ("message" in transactionCreationResponse) {
+            logger.error("wallet.send.error", { error: transactionCreationResponse });
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
         }
 
         if (options?.experimental_prepareOnly) {
+            logger.info("wallet.send.prepared", { transactionId: transactionCreationResponse.id });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -326,7 +355,9 @@ export class Wallet<C extends Chain> {
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
-        return await this.approveTransactionAndWait(transactionCreationResponse.id);
+        const result = await this.approveTransactionAndWait(transactionCreationResponse.id);
+        logger.info("wallet.send.success", { transactionId: transactionCreationResponse.id, hash: result.hash });
+        return result;
     }
 
     /**
@@ -359,12 +390,28 @@ export class Wallet<C extends Chain> {
      */
 
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+        const logger = walletsLogger.withContext("wallet.approve", {
+            chain: this.chain,
+            address: this.address,
+            transactionId: params.transactionId,
+            signatureId: params.signatureId,
+        });
+        logger.info("wallet.approve.start");
+
         if (params.transactionId != null) {
-            return (await this.approveTransactionAndWait(params.transactionId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveTransactionAndWait(
+                params.transactionId,
+                params.options
+            )) as ApproveResult<T>;
+            logger.info("wallet.approve.success", { transactionId: params.transactionId });
+            return result;
         }
         if (params.signatureId != null) {
-            return (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            logger.info("wallet.approve.success", { signatureId: params.signatureId });
+            return result;
         }
+        logger.error("wallet.approve.error", { error: "Either transactionId or signatureId must be provided" });
         throw new Error("Either transactionId or signatureId must be provided");
     }
 
@@ -378,31 +425,44 @@ export class Wallet<C extends Chain> {
         signer: string | RegisterSignerPasskeyParams;
         options?: T;
     }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
+        const logger = walletsLogger.withContext("wallet.addDelegatedSigner", {
+            chain: this.chain,
+            address: this.address,
+        });
+        logger.info("wallet.addDelegatedSigner.start");
+
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
         });
 
         if ("error" in response) {
+            logger.error("wallet.addDelegatedSigner.error", { error: response });
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
         if (this.chain === "solana" || this.chain === "stellar") {
             if (!("transaction" in response) || response.transaction == null) {
+                logger.error("wallet.addDelegatedSigner.error", {
+                    error: "Expected transaction in response for Solana/Stellar chain",
+                });
                 throw new Error("Expected transaction in response for Solana/Stellar chain");
             }
 
             const transactionId = response.transaction.id;
 
             if (params.options?.experimental_prepareOnly) {
+                logger.info("wallet.addDelegatedSigner.prepared", { transactionId });
                 return { transactionId } as any;
             }
 
             await this.approveTransactionAndWait(transactionId);
+            logger.info("wallet.addDelegatedSigner.success", { transactionId });
             return undefined as any;
         }
 
         if (!("chains" in response)) {
+            logger.error("wallet.addDelegatedSigner.error", { error: "Expected chains in response for EVM chain" });
             throw new Error("Expected chains in response for EVM chain");
         }
 
@@ -410,24 +470,35 @@ export class Wallet<C extends Chain> {
 
         if (params.options?.experimental_prepareOnly) {
             const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
+            logger.info("wallet.addDelegatedSigner.prepared", { signatureId });
             return { signatureId } as any;
         }
 
         if (chainResponse?.status === "awaiting-approval") {
             await this.approveSignatureAndWait(chainResponse.id);
+            logger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
             return undefined as any;
         }
         if (chainResponse?.status === "pending") {
             await this.waitForSignature(chainResponse.id);
+            logger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
             return undefined as any;
         }
 
+        logger.info("wallet.addDelegatedSigner.success");
         return undefined as any;
     }
 
     public async delegatedSigners(): Promise<DelegatedSigner[]> {
+        const logger = walletsLogger.withContext("wallet.delegatedSigners", {
+            chain: this.chain,
+            address: this.address,
+        });
+        logger.info("wallet.delegatedSigners.start");
+
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
+            logger.error("wallet.delegatedSigners.error", { error: walletResponse });
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
@@ -437,11 +508,14 @@ export class Wallet<C extends Chain> {
                 walletResponse.chainType !== "solana" &&
                 walletResponse.chainType !== "stellar")
         ) {
+            logger.error("wallet.delegatedSigners.error", {
+                error: `Wallet type ${walletResponse.type} not supported`,
+            });
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
         // Map wallet-type to simply wallet
-        return (
+        const signers =
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
                 // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
@@ -449,8 +523,10 @@ export class Wallet<C extends Chain> {
                 return {
                     signer: `external-wallet:${address}`,
                 };
-            }) ?? []
-        );
+            }) ?? [];
+
+        logger.info("wallet.delegatedSigners.success", { count: signers.length });
+        return signers;
     }
 
     protected get walletLocator(): WalletLocator {
