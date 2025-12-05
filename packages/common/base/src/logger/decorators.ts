@@ -53,27 +53,25 @@ export interface WithLoggerContextOptions<T = unknown> {
  * }
  * ```
  */
-export function WithLoggerContext<T = unknown>(options: WithLoggerContextOptions<T>) {
-    return function <M extends (...args: unknown[]) => unknown>(
-        target: object,
-        propertyKey: string | symbol,
-        descriptor: TypedPropertyDescriptor<M>
-    ): TypedPropertyDescriptor<M> {
-        const original = descriptor.value;
+export function WithLoggerContext<TThis = unknown>(options: WithLoggerContextOptions<TThis>): MethodDecorator {
+    return function (target, propertyKey, descriptor) {
+        const original = descriptor.value as ((...args: unknown[]) => unknown) | undefined;
+
         if (original == null) {
             return descriptor;
         }
 
-        const methodNameFromKey = `${target.constructor.name}.${String(propertyKey)}`;
+        const methodNameFromKey = `${(target as { constructor: { name: string } }).constructor.name}.${String(propertyKey)}`;
         const methodName = options.methodName ?? methodNameFromKey;
 
-        const wrapped = function (this: T, ...args: unknown[]): unknown {
+        const wrapped = function (this: TThis, ...args: unknown[]): unknown {
             const ctx = options.buildContext ? options.buildContext(this, args) : {};
             // Delegate span lifecycle to logger.withSpanContext
             return options.logger.withSpanContext(methodName, ctx, () => original.apply(this, args));
         };
 
-        descriptor.value = wrapped as M;
+        // The cast confines unsafety to the decorator implementation
+        descriptor.value = wrapped as typeof descriptor.value;
         return descriptor;
     };
 }
