@@ -38,32 +38,36 @@ export class StellarWallet extends Wallet<StellarChain> {
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        const logger = walletsLogger.withContext("stellarWallet.sendTransaction", {
-            chain: this.chain,
-            address: this.address,
-        });
-        logger.info("stellarWallet.sendTransaction.start");
+        return walletsLogger.withContext(
+            "stellarWallet.sendTransaction",
+            { chain: this.chain, address: this.address },
+            async () => {
+                walletsLogger.info("stellarWallet.sendTransaction.start");
 
-        await this.preAuthIfNeeded();
-        const createdTransaction = await this.createTransaction(params);
+                await this.preAuthIfNeeded();
+                const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
-            logger.info("stellarWallet.sendTransaction.prepared", { transactionId: createdTransaction.id });
-            return {
-                hash: undefined,
-                explorerLink: undefined,
-                transactionId: createdTransaction.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
-        }
+                if (params.options?.experimental_prepareOnly) {
+                    walletsLogger.info("stellarWallet.sendTransaction.prepared", {
+                        transactionId: createdTransaction.id,
+                    });
+                    return {
+                        hash: undefined,
+                        explorerLink: undefined,
+                        transactionId: createdTransaction.id,
+                    } as Transaction<T extends PrepareOnly<true> ? true : false>;
+                }
 
-        const options: ApproveOptions = {};
+                const options: ApproveOptions = {};
 
-        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
-        logger.info("stellarWallet.sendTransaction.success", {
-            transactionId: createdTransaction.id,
-            hash: result.hash,
-        });
-        return result;
+                const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+                walletsLogger.info("stellarWallet.sendTransaction.success", {
+                    transactionId: createdTransaction.id,
+                    hash: result.hash,
+                });
+                return result;
+            }
+        );
     }
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {

@@ -1,4 +1,4 @@
-import type { ISdkLogger, IScopedLogger } from "./interfaces";
+import type { ISdkLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
 import { generateSpanId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
@@ -24,6 +24,13 @@ export interface SdkLoggerInitParams {
 export class SdkLogger implements ISdkLogger {
     private globalContext: LogContext = {};
     private initialized = false;
+
+    /**
+     * Current span context for tracing function execution.
+     * When set, all logs will automatically include this context.
+     * Used by withContext() to provide span-based tracing.
+     */
+    private currentSpanContext: LogContext | undefined;
 
     /**
      * Create and initialize a logger with simple parameters
@@ -120,21 +127,64 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
-     * Create a scoped logger with additional context
-     * Useful for tracing function execution with a unique span ID
-     * @param methodName - The name of the method being traced (used as context)
+     * HOC-style context wrapper for tracing function execution.
+     *
+     * - If a span is already active on this logger, runs `fn` without changing context
+     *   to avoid stepping over the existing span.
+     * - Otherwise, sets up a new span, runs `fn`, and restores the previous context
+     *   even if `fn` throws or returns a rejected Promise.
+     *
+     * @param methodName - The name of the method being traced
      * @param additionalContext - Optional additional context to include in all logs
-     * @returns A scoped logger instance with the span context
+     * @param fn - The function to execute within the span context
+     * @returns The result of the function execution
      */
-    withContext(methodName: string, additionalContext?: LogContext): IScopedLogger {
+    withContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
+        // If there is already a span, we stay out of the way to avoid stepping over the existing context
+        if (this.currentSpanContext?.span_id != null) {
+            return fn();
+        }
+
+        const previousContext = this.currentSpanContext;
         const spanId = generateSpanId();
-        const scopedContext: LogContext = {
+
+        const spanContext: LogContext = {
+            ...(previousContext ?? {}),
             span_id: spanId,
             method: methodName,
-            ...additionalContext,
+            ...(additionalContext ?? {}),
         };
 
-        return new ScopedLogger(this, scopedContext, spanId);
+        // Set new span context
+        this.currentSpanContext = spanContext;
+
+        let result: T;
+        try {
+            result = fn();
+        } catch (err) {
+            // Synchronous throw: cleanup and rethrow
+            this.currentSpanContext = previousContext;
+            throw err;
+        }
+
+        // If result is a Promise, restore context once it settles
+        if (result && typeof (result as unknown as Promise<unknown>).then === "function") {
+            const promise = result as unknown as Promise<unknown>;
+            return promise.finally(() => {
+                this.currentSpanContext = previousContext;
+            }) as unknown as T;
+        }
+
+        // Non-promise result: restore immediately
+        this.currentSpanContext = previousContext;
+        return result;
+    }
+
+    /**
+     * Get the current span ID if one is active
+     */
+    getCurrentSpanId(): string | undefined {
+        return this.currentSpanContext?.span_id as string | undefined;
     }
 
     /**
@@ -147,7 +197,7 @@ export class SdkLogger implements ISdkLogger {
     /**
      * Internal log method with additional context support
      */
-    logWithContext(level: LogLevel, additionalContext: LogContext, message: unknown, ...rest: unknown[]): void {
+    private logWithContext(level: LogLevel, additionalContext: LogContext, message: unknown, ...rest: unknown[]): void {
         if (!this.initialized) {
             // Fallback to console if not initialized
             const fallbackMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
@@ -158,9 +208,15 @@ export class SdkLogger implements ISdkLogger {
         // Serialize arguments into message and context
         const { message: serializedMessage, context: argsContext } = serializeLogArgs([message, ...rest]);
 
-        // Merge global context with additional context and argument context
+        // Merge global context with current span context, additional context, and argument context
         // The package name is set in globalContext during initialization
-        const mergedContext = mergeContext(this.globalContext, additionalContext, argsContext);
+        // currentSpanContext is automatically included when withContext() is active
+        const mergedContext = mergeContext(
+            this.globalContext,
+            this.currentSpanContext ?? {},
+            additionalContext,
+            argsContext
+        );
 
         // Create log entry
         const entry: LogEntry = {
@@ -181,37 +237,5 @@ export class SdkLogger implements ISdkLogger {
                 console.error("[SdkLogger] Error writing to sink:", error);
             }
         }
-    }
-}
-
-/**
- * Scoped logger that wraps the main logger with additional context
- * All logs from this logger will include the scoped context (e.g., span ID)
- */
-class ScopedLogger implements IScopedLogger {
-    public readonly spanId: string;
-
-    constructor(
-        private readonly parentLogger: SdkLogger,
-        private readonly scopedContext: LogContext,
-        spanId: string
-    ) {
-        this.spanId = spanId;
-    }
-
-    debug(message: unknown, ...rest: unknown[]): void {
-        this.parentLogger.logWithContext("debug", this.scopedContext, message, ...rest);
-    }
-
-    info(message: unknown, ...rest: unknown[]): void {
-        this.parentLogger.logWithContext("info", this.scopedContext, message, ...rest);
-    }
-
-    warn(message: unknown, ...rest: unknown[]): void {
-        this.parentLogger.logWithContext("warn", this.scopedContext, message, ...rest);
-    }
-
-    error(message: unknown, ...rest: unknown[]): void {
-        this.parentLogger.logWithContext("error", this.scopedContext, message, ...rest);
     }
 }
