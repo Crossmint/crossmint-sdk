@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.5
+
+### Patch Changes
+
+- a07545f: Modify handshake options for react native
+- Updated dependencies [a5f64e2]
+  - @crossmint/wallets-sdk@0.18.7
+  - @crossmint/client-sdk-react-base@0.7.8
+
 ## 0.13.4
 
 ### Patch Changes

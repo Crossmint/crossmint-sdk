@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.18.7
+
+### Patch Changes
+
+- a5f64e2: Modify retry policy
+
 ## 0.18.6
 
 ### Patch Changes
