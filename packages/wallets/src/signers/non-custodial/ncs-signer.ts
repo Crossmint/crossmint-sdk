@@ -45,7 +45,9 @@ export abstract class NonCustodialSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+            const iframeManager = new NcsIframeManager({
+                environment: parsedAPIKey.environment,
+            });
             this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }
@@ -81,7 +83,9 @@ export abstract class NonCustodialSigner implements Signer {
         if (!parsedAPIKey.isValid) {
             throw new Error("Invalid API key");
         }
-        const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+        const iframeManager = new NcsIframeManager({
+            environment: parsedAPIKey.environment,
+        });
         this.config.clientTEEConnection = await iframeManager.initialize();
 
         if (this.config.clientTEEConnection == null) {
@@ -113,10 +117,7 @@ export abstract class NonCustodialSigner implements Signer {
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 5,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (signerResponse?.status !== "success") {
@@ -177,7 +178,11 @@ export abstract class NonCustodialSigner implements Signer {
         return jwt;
     }
 
-    private createAuthPromise(): { promise: Promise<void>; resolve: () => void; reject: (error: Error) => void } {
+    private createAuthPromise(): {
+        promise: Promise<void>;
+        resolve: () => void;
+        reject: (error: Error) => void;
+    } {
         let resolvePromise!: () => void;
         let rejectPromise!: (error: Error) => void;
 
@@ -202,10 +207,7 @@ export abstract class NonCustodialSigner implements Signer {
                 },
                 data: { authId },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 3,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
@@ -242,10 +244,7 @@ export abstract class NonCustodialSigner implements Signer {
                         onboardingAuthentication: { encryptedOtp },
                     },
                 },
-                options: {
-                    ...DEFAULT_EVENT_OPTIONS,
-                    maxRetries: 3,
-                },
+                options: DEFAULT_EVENT_OPTIONS,
             });
         } catch (err) {
             console.error("[verifyOtp] Error sending OTP validation request:", err);
@@ -312,10 +311,12 @@ export abstract class NonCustodialSigner implements Signer {
      * Get the appropriate scheme and encoding based on the chain
      * Must be implemented by concrete classes
      */
-    protected abstract getChainKeyParams(): { scheme: "secp256k1" | "ed25519"; encoding: "base58" | "hex" | "strkey" };
+    protected abstract getChainKeyParams(): {
+        scheme: "secp256k1" | "ed25519";
+        encoding: "base58" | "hex" | "strkey";
+    };
 }
 
 export const DEFAULT_EVENT_OPTIONS = {
-    timeoutMs: 10_000,
-    intervalMs: 5_000,
+    timeoutMs: 30_000,
 };
