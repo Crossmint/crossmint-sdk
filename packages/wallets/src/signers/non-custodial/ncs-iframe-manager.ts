@@ -16,6 +16,8 @@ export class NcsIframeManager {
             return this.handshakeParent;
         }
 
+        console.info("Initializing signers frame for the first time");
+        const t0 = Date.now();
         const iframeUrl = new URL(environmentUrlConfig[this.config.environment]);
         iframeUrl.searchParams.set("targetOrigin", window.location.origin);
 
@@ -26,11 +28,15 @@ export class NcsIframeManager {
                 targetOrigin: iframeUrl.origin,
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
+                handshakeOptions: {
+                    timeoutMs: 30_000,
+                    intervalMs: 500,
+                },
             },
             SignersWindowTransport
         );
-
         await this.handshakeParent.handshakeWithChild();
+        console.info(`Signers frame initialized in ${Date.now() - t0}ms`);
         return this.handshakeParent;
     }
 
