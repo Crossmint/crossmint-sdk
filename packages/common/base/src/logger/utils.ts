@@ -1,10 +1,10 @@
 import type { LogContext } from "./types";
 
 /**
- * Generates a unique span ID for tracing function execution
+ * Generates a unique execution ID for tracing function execution
  * Uses a combination of timestamp and random characters for uniqueness
  */
-export function generateSpanId(): string {
+export function generateExecutionId(): string {
     const timestamp = Date.now().toString(36);
     const randomPart = Math.random().toString(36).substring(2, 10);
     return `${timestamp}-${randomPart}`;

@@ -1,6 +1,6 @@
 import type { ISdkLogger } from "./interfaces";
 import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { generateSpanId, mergeContext, serializeLogArgs } from "./utils";
+import { generateExecutionId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -26,11 +26,11 @@ export class SdkLogger implements ISdkLogger {
     private initialized = false;
 
     /**
-     * Current span context for tracing function execution.
+     * Current execution context for tracing function execution.
      * When set, all logs will automatically include this context.
-     * Used by withSpanContext() to provide span-based tracing.
+     * Used by withExecutionContext() to provide execution-based tracing.
      */
-    private currentSpanContext: LogContext | undefined;
+    private currentExecutionContext: LogContext | undefined;
 
     /**
      * Create and initialize a logger with simple parameters
@@ -127,43 +127,43 @@ export class SdkLogger implements ISdkLogger {
     }
 
     /**
-     * HOC-style context wrapper for tracing function execution with span-based tracing.
+     * HOC-style context wrapper for tracing function execution with execution-based tracing.
      *
-     * - If a span is already active on this logger, runs `fn` without changing context
-     *   to avoid stepping over the existing span.
-     * - Otherwise, sets up a new span, runs `fn`, and restores the previous context
+     * - If an execution context is already active on this logger, runs `fn` without changing context
+     *   to avoid stepping over the existing execution.
+     * - Otherwise, sets up a new execution context, runs `fn`, and restores the previous context
      *   even if `fn` throws or returns a rejected Promise.
      *
      * @param methodName - The name of the method being traced
      * @param additionalContext - Optional additional context to include in all logs
-     * @param fn - The function to execute within the span context
+     * @param fn - The function to execute within the execution context
      * @returns The result of the function execution
      */
-    withSpanContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
-        // If there is already a span, we stay out of the way to avoid stepping over the existing context
-        if (this.currentSpanContext?.span_id != null) {
+    withExecutionContext<T>(methodName: string, additionalContext: LogContext | undefined, fn: () => T): T {
+        // If there is already an execution context, we stay out of the way to avoid stepping over the existing context
+        if (this.currentExecutionContext?.execution_id != null) {
             return fn();
         }
 
-        const previousContext = this.currentSpanContext;
-        const spanId = generateSpanId();
+        const previousContext = this.currentExecutionContext;
+        const executionId = generateExecutionId();
 
-        const spanContext: LogContext = {
+        const executionContext: LogContext = {
             ...(previousContext ?? {}),
-            span_id: spanId,
+            execution_id: executionId,
             method: methodName,
             ...(additionalContext ?? {}),
         };
 
-        // Set new span context
-        this.currentSpanContext = spanContext;
+        // Set new execution context
+        this.currentExecutionContext = executionContext;
 
         let result: T;
         try {
             result = fn();
         } catch (err) {
             // Synchronous throw: cleanup and rethrow
-            this.currentSpanContext = previousContext;
+            this.currentExecutionContext = previousContext;
             throw err;
         }
 
@@ -171,33 +171,26 @@ export class SdkLogger implements ISdkLogger {
         if (result && typeof (result as unknown as Promise<unknown>).then === "function") {
             const promise = result as unknown as Promise<unknown>;
             return promise.finally(() => {
-                this.currentSpanContext = previousContext;
+                this.currentExecutionContext = previousContext;
             }) as unknown as T;
         }
 
         // Non-promise result: restore immediately
-        this.currentSpanContext = previousContext;
+        this.currentExecutionContext = previousContext;
         return result;
     }
 
     /**
-     * Get the current span ID if one is active
+     * Get the current execution ID if one is active
      */
-    getCurrentSpanId(): string | undefined {
-        return this.currentSpanContext?.span_id as string | undefined;
+    getCurrentExecutionId(): string | undefined {
+        return this.currentExecutionContext?.execution_id as string | undefined;
     }
 
     /**
      * Internal log method that handles serialization and sink writing
      */
     private log(level: LogLevel, message: unknown, ...rest: unknown[]): void {
-        this.logWithContext(level, {}, message, ...rest);
-    }
-
-    /**
-     * Internal log method with additional context support
-     */
-    private logWithContext(level: LogLevel, additionalContext: LogContext, message: unknown, ...rest: unknown[]): void {
         if (!this.initialized) {
             // Fallback to console if not initialized
             const fallbackMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
@@ -208,15 +201,10 @@ export class SdkLogger implements ISdkLogger {
         // Serialize arguments into message and context
         const { message: serializedMessage, context: argsContext } = serializeLogArgs([message, ...rest]);
 
-        // Merge global context with current span context, additional context, and argument context
+        // Merge global context with current execution context and argument context
         // The package name is set in globalContext during initialization
-        // currentSpanContext is automatically included when withContext() is active
-        const mergedContext = mergeContext(
-            this.globalContext,
-            this.currentSpanContext ?? {},
-            additionalContext,
-            argsContext
-        );
+        // currentExecutionContext is automatically included when withExecutionContext() is active
+        const mergedContext = mergeContext(this.globalContext, this.currentExecutionContext ?? {}, argsContext);
 
         // Create log entry
         const entry: LogEntry = {
