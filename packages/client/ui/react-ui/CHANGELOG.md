@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.8
+
+### Patch Changes
+
+- Updated dependencies [affbfc7]
+- Updated dependencies [be241bd]
+  - @crossmint/wallets-sdk@0.18.8
+  - @crossmint/common-sdk-base@0.9.11
+  - @crossmint/client-sdk-react-base@0.7.9
+  - @crossmint/client-sdk-auth@1.2.40
+  - @crossmint/client-sdk-base@1.7.7
+  - @crossmint/common-sdk-auth@1.0.62
+
 ## 2.6.7
 
 ### Patch Changes
