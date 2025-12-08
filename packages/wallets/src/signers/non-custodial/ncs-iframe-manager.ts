@@ -30,7 +30,7 @@ export class NcsIframeManager {
                 outgoingEvents: signerInboundEvents,
                 handshakeOptions: {
                     timeoutMs: 30_000,
-                    intervalMs: 500,
+                    intervalMs: 100,
                 },
             },
             SignersWindowTransport
