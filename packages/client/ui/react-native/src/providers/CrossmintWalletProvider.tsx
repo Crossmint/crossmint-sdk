@@ -1,42 +1,46 @@
-import { type ReactNode, useCallback, useEffect, useRef, useMemo, createContext, useState } from "react";
+import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type RefObject } from "react";
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import { validateAPIKey } from "@crossmint/common-sdk-base";
-import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
-import { useCrossmint } from "@/hooks";
-
-const throwNotAvailable = (functionName: string) => () => {
-    throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
-};
-
-type CrossmintWalletEmailSignerContext = {
-    needsAuth: boolean;
-    sendEmailWithOtp: () => Promise<void>;
-    verifyOtp: (otp: string) => Promise<void>;
-    reject: (error?: Error) => void;
-};
-
-// Create the auth context
-export const CrossmintWalletEmailSignerContext = createContext<CrossmintWalletEmailSignerContext>({
-    needsAuth: false,
-    sendEmailWithOtp: throwNotAvailable("sendEmailWithOtp"),
-    verifyOtp: throwNotAvailable("verifyOtp"),
-    reject: throwNotAvailable("reject"),
-});
+import {
+    environmentUrlConfig,
+    signerInboundEvents,
+    signerOutboundEvents,
+    SignerErrorCode,
+} from "@crossmint/client-signers";
+import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
+import {
+    CrossmintWalletUIBaseProvider,
+    type UIRenderProps,
+    type CreateOnLogin,
+    useCrossmint,
+} from "@crossmint/client-sdk-react-base";
+import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
+import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { useLogger } from "@crossmint/client-sdk-react-base";
+import { LoggerContext } from "./CrossmintProvider";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
     createOnLogin?: CreateOnLogin;
+    appearance?: UIConfig;
+    /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
+    headlessSigningFlow?: boolean;
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
 }
 
-export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: CrossmintWalletProviderProps) {
+function CrossmintWalletProviderInternal({
+    children,
+    createOnLogin,
+    appearance,
+    headlessSigningFlow = true,
+    callbacks,
+}: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const logger = useLogger(LoggerContext);
     const { apiKey, appId } = crossmint;
 
     const parsedAPIKey = useMemo(() => {
@@ -56,15 +60,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         null
     );
 
-    // Use useState only for needsAuth since it needs to trigger re-renders
-    const [needsAuth, setNeedsAuth] = useState<boolean>(false);
-
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
-
-    // Keep functions as refs to avoid unnecessary re-renders
-    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
-    const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
-    const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -75,24 +71,38 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
 
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
-            webViewParentRef.current = new WebViewParent(webviewRef, {
+            logger.info("react-native.wallet.webview.initializing");
+            webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
+                handshakeOptions: {
+                    timeoutMs: 30_000,
+                    intervalMs: 100,
+                },
+                recovery: {
+                    recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                },
             });
+            logger.info("react-native.wallet.webview.initialized");
         }
-    }, [needsWebView, webviewRef.current]);
+    }, [needsWebView, logger]);
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
         if (parent != null) {
             try {
+                logger.info("react-native.wallet.webview.handshake.start");
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
+                logger.info("react-native.wallet.webview.handshake.success");
             } catch (e) {
+                logger.error("react-native.wallet.webview.handshake.error", {
+                    error: e instanceof Error ? e.message : String(e),
+                });
                 console.error("[CrossmintWalletProvider] Handshake error:", e);
             }
         }
-    }, []);
+    }, [logger]);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
@@ -114,7 +124,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                             return argStr;
                         }
                         return JSON.parse(argStr);
-                    } catch (e) {
+                    } catch {
                         return argStr;
                     }
                 });
@@ -138,7 +148,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                 }
                 return;
             }
-        } catch (_) {}
+        } catch {}
 
         parent.handleMessage(event);
     }, []);
@@ -150,7 +160,17 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         return webViewParentRef.current;
     };
 
+    const renderNativeUI = ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
+        return (
+            <>
+                <EmailSignersDialog {...emailSignerProps} />
+                <PhoneSignersDialog {...phoneSignerProps} />
+            </>
+        );
+    };
+
     const initializeWebView = async () => {
+        logger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
         let attempts = 0;
         const maxAttempts = 100; // 5 seconds total with 50ms intervals
@@ -160,43 +180,26 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         }
 
         if (webViewParentRef.current == null) {
+            logger.error("react-native.wallet.webview.init.timeout", {
+                attempts,
+            });
             throw new Error("WebView not ready or handshake incomplete");
         }
+        logger.info("react-native.wallet.webview.init.success", { attempts });
     };
-
-    const onAuthRequired = async (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => {
-        setNeedsAuth(needsAuth);
-        sendEmailWithOtpRef.current = sendEmailWithOtp;
-        verifyOtpRef.current = verifyOtp;
-        rejectRef.current = reject;
-    };
-
-    const authContextValue = useMemo(
-        () => ({
-            needsAuth,
-            sendEmailWithOtp: sendEmailWithOtpRef.current,
-            verifyOtp: verifyOtpRef.current,
-            reject: rejectRef.current,
-        }),
-        [needsAuth]
-    );
 
     return (
-        <CrossmintWalletBaseProvider
+        <CrossmintWalletUIBaseProvider
             createOnLogin={createOnLogin}
-            onAuthRequired={onAuthRequired}
-            clientTEEConnection={getClientTEEConnection}
+            appearance={appearance}
+            headlessSigningFlow={headlessSigningFlow}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
+            renderUI={headlessSigningFlow ? undefined : renderNativeUI}
+            clientTEEConnection={getClientTEEConnection}
         >
-            <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
-                {children}
-            </CrossmintWalletEmailSignerContext.Provider>
+            {children}
+
             {needsWebView && (
                 <View
                     style={{
@@ -235,6 +238,10 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                     />
                 </View>
             )}
-        </CrossmintWalletBaseProvider>
+        </CrossmintWalletUIBaseProvider>
     );
+}
+
+export function CrossmintWalletProvider(props: CrossmintWalletProviderProps) {
+    return <CrossmintWalletProviderInternal {...props} />;
 }

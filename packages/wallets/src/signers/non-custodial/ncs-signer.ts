@@ -1,4 +1,10 @@
-import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
+import type {
+    BaseSignResult,
+    EmailInternalSignerConfig,
+    ExportSignerTEEConnection,
+    PhoneInternalSignerConfig,
+    Signer,
+} from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -15,7 +21,10 @@ export abstract class NonCustodialSigner implements Signer {
     private _initializationPromise: Promise<void> | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
-        this.initialize();
+        // Only initialize the signer if running client-side
+        if (typeof window !== "undefined") {
+            this.initialize();
+        }
         this.type = this.config.type;
     }
 
@@ -36,7 +45,9 @@ export abstract class NonCustodialSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+            const iframeManager = new NcsIframeManager({
+                environment: parsedAPIKey.environment,
+            });
             this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }
@@ -72,7 +83,9 @@ export abstract class NonCustodialSigner implements Signer {
         if (!parsedAPIKey.isValid) {
             throw new Error("Invalid API key");
         }
-        const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+        const iframeManager = new NcsIframeManager({
+            environment: parsedAPIKey.environment,
+        });
         this.config.clientTEEConnection = await iframeManager.initialize();
 
         if (this.config.clientTEEConnection == null) {
@@ -104,10 +117,7 @@ export abstract class NonCustodialSigner implements Signer {
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 5,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (signerResponse?.status !== "success") {
@@ -168,7 +178,11 @@ export abstract class NonCustodialSigner implements Signer {
         return jwt;
     }
 
-    private createAuthPromise(): { promise: Promise<void>; resolve: () => void; reject: (error: Error) => void } {
+    private createAuthPromise(): {
+        promise: Promise<void>;
+        resolve: () => void;
+        reject: (error: Error) => void;
+    } {
         let resolvePromise!: () => void;
         let rejectPromise!: (error: Error) => void;
 
@@ -193,10 +207,7 @@ export abstract class NonCustodialSigner implements Signer {
                 },
                 data: { authId },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 3,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
@@ -233,10 +244,7 @@ export abstract class NonCustodialSigner implements Signer {
                         onboardingAuthentication: { encryptedOtp },
                     },
                 },
-                options: {
-                    ...DEFAULT_EVENT_OPTIONS,
-                    maxRetries: 3,
-                },
+                options: DEFAULT_EVENT_OPTIONS,
             });
         } catch (err) {
             console.error("[verifyOtp] Error sending OTP validation request:", err);
@@ -260,16 +268,55 @@ export abstract class NonCustodialSigner implements Signer {
             return;
         }
 
-        console.error("[verifyOtp] Failed to validate OTP:", response);
+        console.error("[verifyOtp] Failed to validate OTP:", JSON.stringify(response, null, 2));
         this._needsAuth = true;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);
         this._authPromise?.reject(error);
         throw error;
     }
+
+    /**
+     * Export the private key for this signer
+     * @throws {Error} If signer is not authenticated
+     */
+    async _exportPrivateKey(exportTEEConnection: ExportSignerTEEConnection): Promise<void> {
+        await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
+
+        const { scheme, encoding } = this.getChainKeyParams();
+
+        const response = await exportTEEConnection.sendAction({
+            event: "request:export-signer",
+            responseEvent: "response:export-signer",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data: {
+                    scheme,
+                    encoding,
+                },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (response?.status === "error") {
+            throw new Error(response.error || "Failed to export private key");
+        }
+    }
+
+    /**
+     * Get the appropriate scheme and encoding based on the chain
+     * Must be implemented by concrete classes
+     */
+    protected abstract getChainKeyParams(): {
+        scheme: "secp256k1" | "ed25519";
+        encoding: "base58" | "hex" | "strkey";
+    };
 }
 
 export const DEFAULT_EVENT_OPTIONS = {
-    timeoutMs: 10_000,
-    intervalMs: 5_000,
+    timeoutMs: 30_000,
 };

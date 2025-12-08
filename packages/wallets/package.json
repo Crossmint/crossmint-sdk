@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/wallets-sdk",
-    "version": "0.17.0",
+    "version": "0.18.7",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -25,7 +25,9 @@
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
+        "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@datadog/browser-logs": "6.24.1",
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",

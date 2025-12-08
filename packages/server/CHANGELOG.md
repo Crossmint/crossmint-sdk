@@ -1,5 +1,38 @@
 # @crossmint/server-sdk
 
+## 1.2.51
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 1.2.50
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+
+## 1.2.49
+
+### Patch Changes
+
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 1.2.48
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.58
+
 ## 1.2.47
 
 ### Patch Changes

@@ -1,5 +1,111 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.5
+
+### Patch Changes
+
+- a07545f: Modify handshake options for react native
+- Updated dependencies [a5f64e2]
+  - @crossmint/wallets-sdk@0.18.7
+  - @crossmint/client-sdk-react-base@0.7.8
+
+## 0.13.4
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-react-base@0.7.7
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-sdk-rn-window@0.3.12
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-auth@1.2.39
+  - @crossmint/client-sdk-base@1.7.6
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 0.13.3
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-sdk-react-base@0.7.6
+  - @crossmint/client-sdk-rn-window@0.3.11
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
+## 0.13.2
+
+### Patch Changes
+
+- Updated dependencies [da7fbb1]
+- Updated dependencies [9ece4b2]
+  - @crossmint/wallets-sdk@0.18.4
+  - @crossmint/client-sdk-react-base@0.7.5
+
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [8315976]
+- Updated dependencies [dcbfab4]
+  - @crossmint/wallets-sdk@0.18.3
+  - @crossmint/client-sdk-base@1.7.4
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/client-sdk-react-base@0.7.4
+  - @crossmint/client-sdk-auth@1.2.37
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 0.13.0
+
+### Minor Changes
+
+- cc7ffd4: Added new built-in UI for email and phone signers, can use 'headlessSigningFlow' to disable.
+
+### Patch Changes
+
+- 9386174: Add IndexedDB fatal error recovery with automatic WebView reload and retry. Implements typed error codes (SignerErrorCode.IndexedDbFatal) and opt-in recovery options in WebViewParent for handling fatal IndexedDB errors.
+- 9386174: Add IndexedDB error recovery for React Native WebView: automatically detect 'indexeddb-fatal' error responses, reload the WebView, re-establish handshake, and retry the operation once. Also enforce a 15s minimum timeout during recovery to allow sufficient time for WebView reload and handshake completion.
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-sdk-rn-window@0.3.10
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/client-sdk-react-base@0.7.3
+  - @crossmint/wallets-sdk@0.18.2
+
+## 0.12.1
+
+### Patch Changes
+
+- Updated dependencies [2cae54d]
+  - @crossmint/client-sdk-base@1.7.3
+  - @crossmint/client-sdk-auth@1.2.36
+  - @crossmint/client-sdk-react-base@0.7.2
+  - @crossmint/common-sdk-auth@1.0.58
+  - @crossmint/wallets-sdk@0.18.1
+
+## 0.12.0
+
+### Minor Changes
+
+- 8fc9ed9: Adds ExportPrivateKey component to get the email or phone signer private key
+
+### Patch Changes
+
+- Updated dependencies [8fc9ed9]
+- Updated dependencies [28e6fd3]
+  - @crossmint/wallets-sdk@0.18.0
+  - @crossmint/client-sdk-react-base@0.7.1
+
 ## 0.11.13
 
 ### Patch Changes

@@ -17,3 +17,5 @@ export type {
 export { environmentUrlConfig } from "./urls";
 
 export type { KeyType, Encoding, KEY_ENCODINGS, KEY_TYPES } from "./schemas";
+
+export { SignerErrorCode } from "./errorCodes";

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-base",
-    "version": "0.7.0",
+    "version": "0.7.8",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -28,7 +28,8 @@
         "@crossmint/client-signers": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
         "lodash.isequal": "4.5.0",
-        "lodash.clonedeep": "4.5.0"
+        "lodash.clonedeep": "4.5.0",
+        "@datadog/browser-logs": "6.24.1"
     },
     "devDependencies": {
         "@types/react": "19.0.12",

@@ -1,5 +1,91 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.8
+
+### Patch Changes
+
+- Updated dependencies [a5f64e2]
+  - @crossmint/wallets-sdk@0.18.7
+
+## 0.7.7
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-window@1.0.7
+  - @crossmint/client-sdk-auth@1.2.39
+  - @crossmint/client-sdk-base@1.7.6
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 0.7.6
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
+## 0.7.5
+
+### Patch Changes
+
+- Updated dependencies [da7fbb1]
+- Updated dependencies [9ece4b2]
+  - @crossmint/wallets-sdk@0.18.4
+
+## 0.7.4
+
+### Patch Changes
+
+- Updated dependencies [8315976]
+- Updated dependencies [dcbfab4]
+  - @crossmint/wallets-sdk@0.18.3
+  - @crossmint/client-sdk-base@1.7.4
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/client-sdk-auth@1.2.37
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 0.7.3
+
+### Patch Changes
+
+- cc7ffd4: Consolidated UI state within base provider.
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/wallets-sdk@0.18.2
+
+## 0.7.2
+
+### Patch Changes
+
+- Updated dependencies [2cae54d]
+  - @crossmint/client-sdk-base@1.7.3
+  - @crossmint/client-sdk-auth@1.2.36
+  - @crossmint/common-sdk-auth@1.0.58
+  - @crossmint/wallets-sdk@0.18.1
+
+## 0.7.1
+
+### Patch Changes
+
+- Updated dependencies [8fc9ed9]
+- Updated dependencies [28e6fd3]
+  - @crossmint/wallets-sdk@0.18.0
+
 ## 0.7.0
 
 ### Minor Changes

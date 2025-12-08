@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "2.5.11",
+    "version": "2.6.7",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -20,6 +20,7 @@
         "test:vitest": "vitest run"
     },
     "dependencies": {
+        "@basis-theory-ai/react": "^1.0.1-beta.9",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",

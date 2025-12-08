@@ -6,6 +6,7 @@ import type { BlockchainIncludingTestnet, PayerSupportedBlockchains, JSONObject 
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
     payment: EmbeddedCheckoutV3Payment;
+    jwt?: string;
 }
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
@@ -236,4 +237,5 @@ export type EmbeddedCheckoutPayer = {
     supportedChains?: PayerSupportedBlockchains[];
     handleSignAndSendTransaction(serializedTransaction: string): Promise<TransactionResponse>;
     handleChainSwitch(chain: PayerSupportedBlockchains): Promise<void>;
+    handleSignMessage?(message: string): Promise<string>;
 };

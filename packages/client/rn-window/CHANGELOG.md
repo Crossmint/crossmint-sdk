@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.12
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-window@1.0.7
+
+## 0.3.11
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-window@1.0.6
+
+## 0.3.10
+
+### Patch Changes
+
+- 9386174: Add IndexedDB fatal error recovery with automatic WebView reload and retry. Implements typed error codes (SignerErrorCode.IndexedDbFatal) and opt-in recovery options in WebViewParent for handling fatal IndexedDB errors.
+
 ## 0.3.9
 
 ### Patch Changes

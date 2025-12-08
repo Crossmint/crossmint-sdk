@@ -1,5 +1,38 @@
 # @crossmint/client-sdk-base
 
+## 1.7.6
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/client-sdk-window@1.0.7
+
+## 1.7.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-base@0.9.9
+
+## 1.7.4
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+
+## 1.7.3
+
+### Patch Changes
+
+- 2cae54d: PaymentMethodManagement: alpha
+
 ## 1.7.2
 
 ### Patch Changes

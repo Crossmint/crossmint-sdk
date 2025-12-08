@@ -1,5 +1,24 @@
 # @crossmint/common-sdk-base
 
+## 0.9.10
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+
+## 0.9.9
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+
+## 0.9.8
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+
 ## 0.9.7
 
 ### Patch Changes

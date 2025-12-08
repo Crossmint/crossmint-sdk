@@ -1,5 +1,106 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.7
+
+### Patch Changes
+
+- Updated dependencies [a5f64e2]
+  - @crossmint/wallets-sdk@0.18.7
+  - @crossmint/client-sdk-react-base@0.7.8
+
+## 2.6.6
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-react-base@0.7.7
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-window@1.0.7
+  - @crossmint/client-sdk-auth@1.2.39
+  - @crossmint/client-sdk-base@1.7.6
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 2.6.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-sdk-react-base@0.7.6
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
+## 2.6.4
+
+### Patch Changes
+
+- Updated dependencies [da7fbb1]
+- Updated dependencies [9ece4b2]
+  - @crossmint/wallets-sdk@0.18.4
+  - @crossmint/client-sdk-react-base@0.7.5
+
+## 2.6.3
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+- Updated dependencies [8315976]
+- Updated dependencies [dcbfab4]
+  - @crossmint/wallets-sdk@0.18.3
+  - @crossmint/client-sdk-base@1.7.4
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/client-sdk-react-base@0.7.4
+  - @crossmint/client-sdk-auth@1.2.37
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 2.6.2
+
+### Patch Changes
+
+- cc7ffd4: Updated CrossmintWalletProvider to consume shared state management from base provider, improving consistency across React implementations.
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/client-sdk-react-base@0.7.3
+  - @crossmint/wallets-sdk@0.18.2
+
+## 2.6.1
+
+### Patch Changes
+
+- Updated dependencies [2cae54d]
+  - @crossmint/client-sdk-base@1.7.3
+  - @crossmint/client-sdk-auth@1.2.36
+  - @crossmint/client-sdk-react-base@0.7.2
+  - @crossmint/common-sdk-auth@1.0.58
+  - @crossmint/wallets-sdk@0.18.1
+
+## 2.6.0
+
+### Minor Changes
+
+- 8fc9ed9: Adds ExportPrivateKey component to get the email or phone signer private key
+
+### Patch Changes
+
+- 7a1f5ca: Fix Submit button display for Firefox in Login and Verify OTP
+- Updated dependencies [8fc9ed9]
+- Updated dependencies [28e6fd3]
+  - @crossmint/wallets-sdk@0.18.0
+  - @crossmint/client-sdk-react-base@0.7.1
+
 ## 2.5.11
 
 ### Patch Changes

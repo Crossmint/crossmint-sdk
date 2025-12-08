@@ -1,5 +1,76 @@
 # @crossmint/wallets-sdk
 
+## 0.18.7
+
+### Patch Changes
+
+- a5f64e2: Modify retry policy
+
+## 0.18.6
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-window@1.0.7
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 0.18.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- de77241: Fix owner comparison when email has a dot
+- Updated dependencies [978420c]
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+
+## 0.18.4
+
+### Patch Changes
+
+- da7fbb1: Fix Non-custodial signer initialization when running in server-side environments
+- 9ece4b2: Disable minification to prevent entire source code from being dumped in error stack traces, improving error readability.
+
+## 0.18.3
+
+### Patch Changes
+
+- 8315976: Expose a wallet fund method
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+
+## 0.18.1
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.58
+
+## 0.18.0
+
+### Minor Changes
+
+- 8fc9ed9: Adds support for exporting email and phone signer private keys
+
+### Patch Changes
+
+- 28e6fd3: Fix email signer validation to normalize Gmail addresses before comparison. Users with dotted Gmail addresses (e.g., jer.coffey@gmail.com) can now retrieve wallets without validation errors.
+
 ## 0.17.0
 
 ### Minor Changes

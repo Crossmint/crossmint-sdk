@@ -1,4 +1,5 @@
 import { WebAuthnP256 } from "ox";
+import { walletsLogger } from "../logger";
 
 import type {
     AdminSignerConfig,
@@ -14,7 +15,7 @@ import type { InternalSignerConfig, SignerConfigForChain } from "../signers/type
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
-import { compareSignerConfigs } from "../utils/signer-validation";
+import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -31,12 +32,24 @@ export class WalletFactory {
 
         const locator = this.getWalletLocator<C>(args);
 
+        walletsLogger.info("wallet.getOrCreate.start", {
+            chain: args.chain,
+            signerType: args.signer.type,
+        });
+
         const existingWallet = await this.apiClient.getWallet(locator);
 
         if (existingWallet != null && !("error" in existingWallet)) {
+            walletsLogger.info("wallet.getOrCreate.existing", {
+                chain: args.chain,
+                address: existingWallet.address,
+            });
             return this.createWalletInstance(existingWallet, args);
         }
 
+        walletsLogger.info("wallet.getOrCreate.creating", {
+            chain: args.chain,
+        });
         return this.createWallet(args);
     }
 
@@ -45,16 +58,35 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
+        walletsLogger.info("wallet.get.start", {
+            walletLocator,
+            chain: args.chain,
+        });
+
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
+            walletsLogger.warn("wallet.get.notFound", {
+                walletLocator,
+                error: existingWallet.error,
+            });
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
+
+        walletsLogger.info("wallet.get.success", {
+            walletLocator,
+            address: existingWallet.address,
+        });
 
         return this.createWalletInstance(existingWallet, args);
     }
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+
+        walletsLogger.info("wallet.create.start", {
+            chain: args.chain,
+            signerType: args.signer.type,
+        });
 
         this.mutateSignerFromCustomAuth(args, true);
 
@@ -74,8 +106,17 @@ export class WalletFactory {
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
+            walletsLogger.error("wallet.create.error", {
+                chain: args.chain,
+                error: walletResponse.error,
+            });
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
+
+        walletsLogger.info("wallet.create.success", {
+            chain: args.chain,
+            address: walletResponse.address,
+        });
 
         return this.createWalletInstance(walletResponse, args);
     }
@@ -242,7 +283,11 @@ export class WalletFactory {
     ): void {
         this.mutateSignerFromCustomAuth(args);
 
-        if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
+        if (
+            args.owner != null &&
+            existingWallet.owner != null &&
+            normalizeValueForComparison(args.owner) !== normalizeValueForComparison(existingWallet.owner)
+        ) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
