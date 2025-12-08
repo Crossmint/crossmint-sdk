@@ -77,7 +77,7 @@ function CrossmintWalletProviderInternal({
                 outgoingEvents: signerInboundEvents,
                 handshakeOptions: {
                     timeoutMs: 30_000,
-                    intervalMs: 500,
+                    intervalMs: 100,
                 },
                 recovery: {
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
