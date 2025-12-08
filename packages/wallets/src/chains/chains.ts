@@ -23,6 +23,7 @@ import {
     plumeTestnet,
 } from "viem/chains";
 
+import { arcTestnet } from "./definitions/arcTestnet";
 import { story } from "./definitions/story";
 import { storyTestnet } from "./definitions/storyTestnet";
 
@@ -43,6 +44,7 @@ const TESTNET_AA_CHAINS = [
     Blockchain.STORY_TESTNET,
     Blockchain.WORLD_CHAIN_SEPOLIA,
     Blockchain.ZORA_SEPOLIA,
+    Blockchain.ARC_TESTNET,
 ] as const;
 
 const PRODUCTION_AA_CHAINS = [
@@ -116,6 +118,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return plumeTestnet;
         case Blockchain.PLUME:
             return plume;
+        case Blockchain.ARC_TESTNET:
+            return arcTestnet;
         case Blockchain.ABSTRACT:
         case Blockchain.ABSTRACT_TESTNET:
         case Blockchain.APECHAIN:

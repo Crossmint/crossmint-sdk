@@ -50,6 +50,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "flow-testnet": "Flow Testnet",
     plume: "Plume",
     "plume-testnet": "Plume Testnet",
+    "arc-testnet": "Arc Testnet",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
