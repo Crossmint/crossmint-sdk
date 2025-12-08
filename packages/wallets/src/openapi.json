@@ -6339,7 +6339,8 @@
                                             "sei-atlantic-2-testnet",
                                             "story-testnet",
                                             "world-chain-sepolia",
-                                            "zora-sepolia"
+                                            "zora-sepolia",
+                                            "arc-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -6871,7 +6872,8 @@
                                             "sei-atlantic-2-testnet",
                                             "story-testnet",
                                             "world-chain-sepolia",
-                                            "zora-sepolia"
+                                            "zora-sepolia",
+                                            "arc-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -13492,7 +13494,8 @@
                                                         "sei-atlantic-2-testnet",
                                                         "story-testnet",
                                                         "world-chain-sepolia",
-                                                        "zora-sepolia"
+                                                        "zora-sepolia",
+                                                        "arc-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 },
@@ -16979,7 +16982,8 @@
                                             "sei-atlantic-2-testnet",
                                             "story-testnet",
                                             "world-chain-sepolia",
-                                            "zora-sepolia"
+                                            "zora-sepolia",
+                                            "arc-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -20438,7 +20442,8 @@
                                             "sei-atlantic-2-testnet",
                                             "story-testnet",
                                             "world-chain-sepolia",
-                                            "zora-sepolia"
+                                            "zora-sepolia",
+                                            "arc-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -21685,7 +21690,8 @@
                                             "sei-atlantic-2-testnet",
                                             "story-testnet",
                                             "world-chain-sepolia",
-                                            "zora-sepolia"
+                                            "zora-sepolia",
+                                            "arc-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -22947,7 +22953,8 @@
                                                         "sei-atlantic-2-testnet",
                                                         "story-testnet",
                                                         "world-chain-sepolia",
-                                                        "zora-sepolia"
+                                                        "zora-sepolia",
+                                                        "arc-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 },
