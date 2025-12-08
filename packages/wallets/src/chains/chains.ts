@@ -23,6 +23,7 @@ import {
     plumeTestnet,
 } from "viem/chains";
 
+import { arcTestnet } from "./definitions/arcTestnet";
 import { story } from "./definitions/story";
 import { storyTestnet } from "./definitions/storyTestnet";
 
