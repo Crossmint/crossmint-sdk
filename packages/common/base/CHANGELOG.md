@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.11
+
+### Patch Changes
+
+- be241bd: Supporting arc testnet
+
 ## 0.9.10
 
 ### Patch Changes
