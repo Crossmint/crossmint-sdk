@@ -53,6 +53,7 @@ export const EVMBlockchainTestnet = {
     FLOW_TESTNET: "flow-testnet",
     PLUME_TESTNET: "plume-testnet",
     ARC_TESTNET: "arc-testnet",
+    TEMPO_TESTNET: "tempo-testnet",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
