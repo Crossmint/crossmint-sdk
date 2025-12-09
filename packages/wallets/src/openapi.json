@@ -477,6 +477,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -1410,6 +1411,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -1692,6 +1694,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -1972,6 +1975,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -3916,6 +3920,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -4731,6 +4736,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -5011,6 +5017,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -5161,6 +5168,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -5303,6 +5311,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -5436,6 +5445,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -5637,7 +5647,8 @@
                                     "story-testnet",
                                     "world-chain-sepolia",
                                     "zora-sepolia",
-                                    "arc-testnet"
+                                    "arc-testnet",
+                                    "tempo-testnet"
                                 ],
                                 "description": "The chain where the signer will be registered"
                             },
@@ -6105,7 +6116,8 @@
                                     "story-testnet",
                                     "world-chain-sepolia",
                                     "zora-sepolia",
-                                    "arc-testnet"
+                                    "arc-testnet",
+                                    "tempo-testnet"
                                 ],
                                 "description": "The chain where the signer will be registered"
                             },
@@ -6340,7 +6352,8 @@
                                             "story-testnet",
                                             "world-chain-sepolia",
                                             "zora-sepolia",
-                                            "arc-testnet"
+                                            "arc-testnet",
+                                            "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -6515,6 +6528,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -6873,7 +6887,8 @@
                                             "story-testnet",
                                             "world-chain-sepolia",
                                             "zora-sepolia",
-                                            "arc-testnet"
+                                            "arc-testnet",
+                                            "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -6993,6 +7008,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -12497,6 +12513,7 @@
                                 "plume-testnet",
                                 "flow-testnet",
                                 "arc-testnet",
+                                "tempo-testnet",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -12820,6 +12837,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -12950,6 +12968,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -13495,7 +13514,8 @@
                                                         "story-testnet",
                                                         "world-chain-sepolia",
                                                         "zora-sepolia",
-                                                        "arc-testnet"
+                                                        "arc-testnet",
+                                                        "tempo-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 },
@@ -14113,6 +14133,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -16343,6 +16364,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -16468,6 +16490,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -16983,7 +17006,8 @@
                                             "story-testnet",
                                             "world-chain-sepolia",
                                             "zora-sepolia",
-                                            "arc-testnet"
+                                            "arc-testnet",
+                                            "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -17551,6 +17575,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -19590,6 +19615,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -19732,6 +19758,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -20018,6 +20045,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -20152,6 +20180,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -20443,7 +20472,8 @@
                                             "story-testnet",
                                             "world-chain-sepolia",
                                             "zora-sepolia",
-                                            "arc-testnet"
+                                            "arc-testnet",
+                                            "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -21021,6 +21051,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -21691,7 +21722,8 @@
                                             "story-testnet",
                                             "world-chain-sepolia",
                                             "zora-sepolia",
-                                            "arc-testnet"
+                                            "arc-testnet",
+                                            "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -22269,6 +22301,7 @@
                                             "plume-testnet",
                                             "flow-testnet",
                                             "arc-testnet",
+                                            "tempo-testnet",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -22954,7 +22987,8 @@
                                                         "story-testnet",
                                                         "world-chain-sepolia",
                                                         "zora-sepolia",
-                                                        "arc-testnet"
+                                                        "arc-testnet",
+                                                        "tempo-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 },
@@ -23544,6 +23578,7 @@
                                                         "plume-testnet",
                                                         "flow-testnet",
                                                         "arc-testnet",
+                                                        "tempo-testnet",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
