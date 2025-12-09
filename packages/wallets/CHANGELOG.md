@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.18.9
+
+### Patch Changes
+
+- b6e4d15: Support tempo testnet
+- Updated dependencies [b6e4d15]
+  - @crossmint/common-sdk-base@0.9.12
+  - @crossmint/common-sdk-auth@1.0.63
+
 ## 0.18.8
 
 ### Patch Changes
