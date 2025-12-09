@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet-next-starter
 
+## 0.1.194
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.9
+
 ## 0.1.193
 
 ### Patch Changes
