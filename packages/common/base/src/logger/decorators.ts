@@ -16,9 +16,9 @@ export interface WithLoggerContextOptions<T = unknown> {
     logger: SdkLogger;
 
     /**
-     * Optional custom method name (defaults to ClassName.methodName)
+     * The method name to use for logging context (required to avoid minification issues)
      */
-    methodName?: string;
+    methodName: string;
 
     /**
      * Optional function to build additional context from the method's this and arguments
@@ -61,13 +61,10 @@ export function WithLoggerContext<TThis = unknown>(options: WithLoggerContextOpt
             return descriptor;
         }
 
-        const methodNameFromKey = `${(target as { constructor: { name: string } }).constructor.name}.${String(propertyKey)}`;
-        const methodName = options.methodName ?? methodNameFromKey;
-
         const wrapped = function (this: TThis, ...args: unknown[]): unknown {
             const ctx = options.buildContext ? options.buildContext(this, args) : {};
             // Delegate execution lifecycle to logger.withExecutionContext
-            return options.logger.withExecutionContext(methodName, ctx, () => original.apply(this, args));
+            return options.logger.withExecutionContext(options.methodName, ctx, () => original.apply(this, args));
         };
 
         // The cast confines unsafety to the decorator implementation

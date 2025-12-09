@@ -4,6 +4,13 @@ import { generateExecutionId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
+
+/**
+ * Type guard to check if a value is a Promise-like object
+ */
+function isPromise(value: unknown): value is Promise<unknown> {
+    return value != null && typeof (value as Promise<unknown>).then === "function";
+}
 /**
  * Simple initialization parameters for creating a logger
  */
@@ -168,9 +175,8 @@ export class SdkLogger implements ISdkLogger {
         }
 
         // If result is a Promise, restore context once it settles
-        if (result && typeof (result as unknown as Promise<unknown>).then === "function") {
-            const promise = result as unknown as Promise<unknown>;
-            return promise.finally(() => {
+        if (isPromise(result)) {
+            return result.finally(() => {
                 this.currentExecutionContext = previousContext;
             }) as unknown as T;
         }
