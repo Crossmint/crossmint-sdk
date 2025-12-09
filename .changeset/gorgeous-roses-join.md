@@ -3,4 +3,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Support tempo testnet
+change tempo currency
