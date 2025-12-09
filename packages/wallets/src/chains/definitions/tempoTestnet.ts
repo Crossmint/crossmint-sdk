@@ -5,8 +5,8 @@ export const tempoTestnet = defineChain({
     name: "Tempo Testnet",
     nativeCurrency: {
         decimals: 6,
-        name: "LUSD",
-        symbol: "LUSD",
+        name: "pathUSD",
+        symbol: "pathUSD",
     },
     rpcUrls: {
         default: { http: ["https://rpc.testnet.tempo.xyz"] },
