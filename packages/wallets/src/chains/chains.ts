@@ -46,6 +46,7 @@ const TESTNET_AA_CHAINS = [
     Blockchain.WORLD_CHAIN_SEPOLIA,
     Blockchain.ZORA_SEPOLIA,
     Blockchain.ARC_TESTNET,
+    Blockchain.TEMPO_TESTNET,
 ] as const;
 
 const PRODUCTION_AA_CHAINS = [
