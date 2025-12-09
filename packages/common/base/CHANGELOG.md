@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.12
+
+### Patch Changes
+
+- b6e4d15: Support tempo testnet
+
 ## 0.9.11
 
 ### Patch Changes
