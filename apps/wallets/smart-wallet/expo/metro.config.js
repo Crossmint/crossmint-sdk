@@ -9,7 +9,10 @@ const monorepoRoot = path.resolve(__dirname, "../../../..");
 
 // React paths - force all React imports to use the same instance (react@19.1.1)
 const reactPath = path.resolve(monorepoRoot, "node_modules/.pnpm/react@19.1.1/node_modules/react");
-const reactDomPath = path.resolve(monorepoRoot, "node_modules/.pnpm/react-dom@19.1.1_react@19.1.1/node_modules/react-dom");
+const reactDomPath = path.resolve(
+    monorepoRoot,
+    "node_modules/.pnpm/react-dom@19.1.1_react@19.1.1/node_modules/react-dom"
+);
 
 module.exports = {
     ...config,
@@ -18,10 +21,7 @@ module.exports = {
     resolver: {
         ...config.resolver,
         // Block list to prevent Metro from resolving react@19.1.2
-        blockList: [
-            /node_modules\/\.pnpm\/react@19\.1\.2\/.*/,
-            /node_modules\/\.pnpm\/react-dom@19\.1\.2.*/,
-        ],
+        blockList: [/node_modules\/\.pnpm\/react@19\.1\.2\/.*/, /node_modules\/\.pnpm\/react-dom@19\.1\.2.*/],
         extraNodeModules: {
             ...config.resolver.extraNodeModules,
             // see https://docs.solanamobile.com/react-native/polyfill-guides/spl-token
