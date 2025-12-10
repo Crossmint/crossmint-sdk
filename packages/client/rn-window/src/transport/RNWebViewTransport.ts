@@ -90,7 +90,15 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     public handleMessage = (event: WebViewMessageEvent) => {
         if (!this.isWebView) {
             try {
-                const parsedData = JSON.parse(event.nativeEvent.data);
+                const data = event.nativeEvent.data;
+
+                // Handle plain string messages like "frame-ready"
+                if (data === "frame-ready") {
+                    // Frame is ready, no need to parse as JSON
+                    return;
+                }
+
+                const parsedData = JSON.parse(data);
                 this.dispatchToListeners({
                     type: "message",
                     data: parsedData,
