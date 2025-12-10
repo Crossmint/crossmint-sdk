@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.13
+
+### Patch Changes
+
+- a4dee5e: change tempo currency
+
 ## 0.9.12
 
 ### Patch Changes

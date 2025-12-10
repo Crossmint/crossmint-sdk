@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.18.10
+
+### Patch Changes
+
+- a4dee5e: change tempo currency
+- Updated dependencies [a4dee5e]
+  - @crossmint/common-sdk-base@0.9.13
+  - @crossmint/common-sdk-auth@1.0.64
+
 ## 0.18.9
 
 ### Patch Changes
