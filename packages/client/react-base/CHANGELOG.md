@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.12
+
+### Patch Changes
+
+- 19f61d9: Updates react devdependencies to match the react version used in demo app
+
 ## 0.7.11
 
 ### Patch Changes
