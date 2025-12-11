@@ -130,33 +130,26 @@ function CrossmintWalletProviderInternal({
                         }
                     });
 
-                    const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
                     const logMessage = `react-native.wallet.webview.console.${consoleMethod}`;
                     const logContext = { webview_args: args };
 
                     switch (consoleMethod) {
                         case "log":
-                            console.log(prefix, ...args);
                             logger.info(logMessage, logContext);
                             break;
                         case "error":
-                            console.error(prefix, ...args);
                             logger.error(logMessage, logContext);
                             break;
                         case "warn":
-                            console.warn(prefix, ...args);
                             logger.warn(logMessage, logContext);
                             break;
                         case "info":
-                            console.info(prefix, ...args);
                             logger.info(logMessage, logContext);
                             break;
                         case "debug":
-                            console.debug(prefix, ...args);
                             logger.debug(logMessage, logContext);
                             break;
                         default:
-                            console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
                             logger.info(`react-native.wallet.webview.console.unknown`, {
                                 webview_method: consoleMethod,
                                 webview_args: args,
