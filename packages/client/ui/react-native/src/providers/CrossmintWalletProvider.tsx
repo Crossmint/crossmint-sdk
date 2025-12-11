@@ -104,54 +104,65 @@ function CrossmintWalletProviderInternal({
         }
     }, [logger]);
 
-    const handleMessage = useCallback((event: WebViewMessageEvent) => {
-        const parent = webViewParentRef.current;
-        if (parent == null) {
-            return;
-        }
-
-        try {
-            const messageData = JSON.parse(event.nativeEvent.data);
-            if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
-                const consoleMethod = messageData.type.split(".")[1];
-                const args = (messageData.data || []).map((argStr: string) => {
-                    try {
-                        if (
-                            argStr === "[Function]" ||
-                            argStr === "[Circular Reference]" ||
-                            argStr === "[Unserializable Object]"
-                        ) {
-                            return argStr;
-                        }
-                        return JSON.parse(argStr);
-                    } catch {
-                        return argStr;
-                    }
-                });
-
-                const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
-                switch (consoleMethod) {
-                    case "log":
-                        console.log(prefix, ...args);
-                        break;
-                    case "error":
-                        console.error(prefix, ...args);
-                        break;
-                    case "warn":
-                        console.warn(prefix, ...args);
-                        break;
-                    case "info":
-                        console.info(prefix, ...args);
-                        break;
-                    default:
-                        console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
-                }
+    const handleMessage = useCallback(
+        (event: WebViewMessageEvent) => {
+            const parent = webViewParentRef.current;
+            if (parent == null) {
                 return;
             }
-        } catch {}
 
-        parent.handleMessage(event);
-    }, []);
+            try {
+                const messageData = JSON.parse(event.nativeEvent.data);
+                if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
+                    const consoleMethod = messageData.type.split(".")[1];
+                    const args = (messageData.data || []).map((argStr: string) => {
+                        try {
+                            if (
+                                argStr === "[Function]" ||
+                                argStr === "[Circular Reference]" ||
+                                argStr === "[Unserializable Object]"
+                            ) {
+                                return argStr;
+                            }
+                            return JSON.parse(argStr);
+                        } catch {
+                            return argStr;
+                        }
+                    });
+
+                    const logMessage = `react-native.wallet.webview.console.${consoleMethod}`;
+                    const logContext = { webview_args: args };
+
+                    switch (consoleMethod) {
+                        case "log":
+                            logger.info(logMessage, logContext);
+                            break;
+                        case "error":
+                            logger.error(logMessage, logContext);
+                            break;
+                        case "warn":
+                            logger.warn(logMessage, logContext);
+                            break;
+                        case "info":
+                            logger.info(logMessage, logContext);
+                            break;
+                        case "debug":
+                            logger.debug(logMessage, logContext);
+                            break;
+                        default:
+                            logger.info(`react-native.wallet.webview.console.unknown`, {
+                                webview_method: consoleMethod,
+                                webview_args: args,
+                            });
+                    }
+                    return;
+                }
+            } catch {}
+
+            parent.handleMessage(event);
+        },
+        [logger]
+    );
 
     const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
