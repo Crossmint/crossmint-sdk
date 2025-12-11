@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.10
+
+### Patch Changes
+
+- aaad402: feat: push RN WebView console logs to Datadog logger
+
+  Captures console logs from the WebView iframe and forwards them to the Datadog logger for debugging purposes. This enables better observability of WebView behavior in production React Native apps.
+
 ## 0.13.9
 
 ### Patch Changes
