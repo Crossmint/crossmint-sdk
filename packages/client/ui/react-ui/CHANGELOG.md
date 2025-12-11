@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.11
+
+### Patch Changes
+
+- Updated dependencies [19f61d9]
+  - @crossmint/client-sdk-react-base@0.7.12
+
 ## 2.6.10
 
 ### Patch Changes

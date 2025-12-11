@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.13
+
+### Patch Changes
+
+- 19f61d9: Updates react devdependencies to match the react version used in demo app
+- fbedd6e: Fix JSON parse error when receiving 'frame-ready' plain string message from open-signer frame
+
 ## 0.3.12
 
 ### Patch Changes
