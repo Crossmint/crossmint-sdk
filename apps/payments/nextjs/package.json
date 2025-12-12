@@ -30,7 +30,7 @@
         "@dynamic-labs/ethereum": "4.8.3",
         "@dynamic-labs/sdk-react-core": "4.8.3",
         "@dynamic-labs/solana": "4.8.3",
-        "next": "14.2.26",
+        "next": "14.2.34",
         "react": "18.3.1",
         "react-dom": "18.3.1"
     },
