@@ -1,5 +1,12 @@
 # expo-demo
 
+## 1.1.112
+
+### Patch Changes
+
+- Updated dependencies [d5ddafa]
+  - @crossmint/client-sdk-react-native-ui@0.13.11
+
 ## 1.1.111
 
 ### Patch Changes
