@@ -715,7 +715,7 @@ importers:
         specifier: workspace:*
         version: link:../../../wallets
       '@datadog/mobile-react-native':
-        specifier: ~2.13.2
+        specifier: ~2.13.0
         version: 2.13.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)
       '@solana/web3.js':
         specifier: 1.98.1
