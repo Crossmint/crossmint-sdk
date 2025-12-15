@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.12
+
+### Patch Changes
+
+- 9924b76: Makes DD sdk version flexible to avoid compatibility issues
+
 ## 0.13.11
 
 ### Patch Changes
