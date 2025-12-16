@@ -571,8 +571,8 @@ importers:
         specifier: workspace:*
         version: link:../../common/base
       '@datadog/browser-logs':
-        specifier: 4.42.2
-        version: 4.42.2
+        specifier: 6.24.1
+        version: 6.24.1
       exponential-backoff:
         specifier: 3.1.1
         version: 3.1.1
@@ -1845,19 +1845,8 @@ packages:
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
 
-  '@datadog/browser-core@4.42.2':
-    resolution: {integrity: sha512-LnkcdFyNRpMEuvV1ePfKdgRvYh+VqqAiVRoAmgObcuzdYdIwQSfcJp4GFbBgr5v7uF2uhAp/b96MIyKlqi0Ixg==}
-
   '@datadog/browser-core@6.24.1':
     resolution: {integrity: sha512-ViLqvvCrZtKRCrSCcrZmSbc4Th7Y0rUQ7PruP1KGNgmE2fY4rrRP/n77zXuF8y/bmBce0na8kCdoCUkKzl/xuQ==}
-
-  '@datadog/browser-logs@4.42.2':
-    resolution: {integrity: sha512-idl9DilUGmWbmYb1D6VPmkpnhqaIdsQ08qjOw1c0QbtGUAFlFYyFCrugf2qwMt8QbJ8DqvEiwULTVAZOV9O4kA==}
-    peerDependencies:
-      '@datadog/browser-rum': 4.42.2
-    peerDependenciesMeta:
-      '@datadog/browser-rum':
-        optional: true
 
   '@datadog/browser-logs@6.24.1':
     resolution: {integrity: sha512-SmqUVzif6IRrdkhh8mewfFa64IfcnkPXLgMYigJDzo7O1f8PEuHF63sDJ2/x2hTXR68e2JKBKE/ooFpAmtCnYw==}
@@ -14711,13 +14700,7 @@ snapshots:
 
   '@csstools/css-tokenizer@3.0.4': {}
 
-  '@datadog/browser-core@4.42.2': {}
-
   '@datadog/browser-core@6.24.1': {}
-
-  '@datadog/browser-logs@4.42.2':
-    dependencies:
-      '@datadog/browser-core': 4.42.2
 
   '@datadog/browser-logs@6.24.1':
     dependencies:
