@@ -10,7 +10,7 @@ export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
 
     private constructor(crossmint: Crossmint) {
-        initWalletsLogger(crossmint.apiKey);
+        initWalletsLogger(crossmint.apiKey, crossmint.loggingConsent);
         const apiClient = new ApiClient(crossmint);
         this.walletFactory = new WalletFactory(apiClient);
 
