@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.8
+
+### Patch Changes
+
+- cdcec95: Prevent concurrent handshakes
+
 ## 1.0.7
 
 ### Patch Changes

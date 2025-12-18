@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-base
 
+## 1.7.10
+
+### Patch Changes
+
+- 74009b1: Update @datadog/browser-logs from 4.42.2 to 6.24.1 and update sampleRate to sessionSampleRate for v6 compatibility
+- Updated dependencies [cdcec95]
+  - @crossmint/client-sdk-window@1.0.8
+
 ## 1.7.9
 
 ### Patch Changes
