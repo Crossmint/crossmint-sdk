@@ -46,9 +46,10 @@ export async function initializeDatadog(options: InitializeDatadogOptions): Prom
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles React Native-specific Datadog sink initialization
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @param loggingConsent - Whether the user has consented to logging. If false, the logger will not be initialized with Datadog sinks.
  * @returns The initialized logger instance
  */
-export function initReactNativeLogger(apiKey: string): SdkLogger {
+export function initReactNativeLogger(apiKey: string, loggingConsent?: boolean): SdkLogger {
     const validationResult = validateAPIKey(apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);
@@ -62,17 +63,19 @@ export function initReactNativeLogger(apiKey: string): SdkLogger {
         platform: "react-native",
     });
 
-    const isExpoGo =
-        Constants.executionEnvironment === "storeClient" ||
-        Constants.appOwnership === "expo" ||
-        !!Constants.expoVersion;
+    if (loggingConsent === true) {
+        const isExpoGo =
+            Constants.executionEnvironment === "storeClient" ||
+            Constants.appOwnership === "expo" ||
+            !!Constants.expoVersion;
 
-    initializeDatadog({
-        environment,
-        isExpoGo,
-    });
-    const sink = new ReactNativeDatadogSink(environment, datadogReactNativeModule);
-    logger.addSink(sink);
+        initializeDatadog({
+            environment,
+            isExpoGo,
+        });
+        const sink = new ReactNativeDatadogSink(environment, datadogReactNativeModule);
+        logger.addSink(sink);
+    }
 
     return logger;
 }

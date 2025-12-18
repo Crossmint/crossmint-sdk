@@ -6,9 +6,15 @@ import * as datadogLogger from "@datadog/browser-logs";
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles browser-specific Datadog sink initialization
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @param loggingConsent - Whether the user has consented to logging. If false, the logger will not be initialized with Datadog sinks.
  * @returns The initialized logger instance
  */
-export function initReactLogger(apiKey: string, packageName: string, packageVersion: string): SdkLogger {
+export function initReactLogger(
+    apiKey: string,
+    packageName: string,
+    packageVersion: string,
+    loggingConsent?: boolean
+): SdkLogger {
     const validationResult = validateAPIKey(apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);
@@ -21,13 +27,15 @@ export function initReactLogger(apiKey: string, packageName: string, packageVers
         projectId,
     });
 
-    const platform = detectPlatform();
-    if (platform === "browser") {
-        const sink = new BrowserDatadogSink(environment, datadogLogger);
-        logger.addSink(sink);
-    } else if (platform === "server") {
-        const sink = new ServerDatadogSink(environment);
-        logger.addSink(sink);
+    if (loggingConsent === true) {
+        const platform = detectPlatform();
+        if (platform === "browser") {
+            const sink = new BrowserDatadogSink(environment, datadogLogger);
+            logger.addSink(sink);
+        } else if (platform === "server") {
+            const sink = new ServerDatadogSink(environment);
+            logger.addSink(sink);
+        }
     }
 
     return logger;

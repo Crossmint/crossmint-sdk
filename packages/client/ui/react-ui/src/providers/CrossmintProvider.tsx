@@ -9,13 +9,13 @@ import { useMemo, type ReactNode } from "react";
 
 export const LoggerContext = createLoggerContext();
 
-export function CrossmintProvider({ apiKey, ...props }: CrossmintConfig & { children: ReactNode }) {
+export function CrossmintProvider({ apiKey, loggingConsent, ...props }: CrossmintConfig & { children: ReactNode }) {
     const logger = useMemo(() => {
-        return initReactLogger(apiKey, packageJson.name, packageJson.version);
-    }, [apiKey]);
+        return initReactLogger(apiKey, packageJson.name, packageJson.version, loggingConsent);
+    }, [apiKey, loggingConsent]);
     return (
         <LoggerContext.Provider value={logger}>
-            <BaseCrossmintProvider apiKey={apiKey} {...props} />
+            <BaseCrossmintProvider apiKey={apiKey} loggingConsent={loggingConsent} {...props} />
         </LoggerContext.Provider>
     );
 }

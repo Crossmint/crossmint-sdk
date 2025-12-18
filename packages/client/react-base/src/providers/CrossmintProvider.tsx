@@ -23,12 +23,13 @@ export function CrossmintProvider({
     appId,
     extensionId,
     overrideBaseUrl,
+    loggingConsent,
 }: CrossmintConfig & {
     children: ReactNode;
 }) {
     const logger = useMemo(() => {
-        return initReactLogger(apiKey, packageJson.name, packageJson.version);
-    }, [apiKey]);
+        return initReactLogger(apiKey, packageJson.name, packageJson.version, loggingConsent);
+    }, [apiKey, loggingConsent]);
 
     const [version, setVersion] = useState(0);
     const crossmintRef = useRef<Crossmint | null>(null);

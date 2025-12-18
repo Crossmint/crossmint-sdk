@@ -11,12 +11,13 @@ export function CrossmintProvider({
     children,
     apiKey,
     overrideBaseUrl,
-}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
+    loggingConsent,
+}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl" | "loggingConsent"> & {
     children: ReactNode;
 }) {
     const logger = useMemo(() => {
-        return initReactNativeLogger(apiKey);
-    }, [apiKey]);
+        return initReactNativeLogger(apiKey, loggingConsent);
+    }, [apiKey, loggingConsent]);
 
     // Get app ID from Expo constants
     const appId = Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
