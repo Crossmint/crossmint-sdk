@@ -35,6 +35,6 @@ function init() {
         clientToken: DATADOG_CLIENT_TOKEN,
         site: "datadoghq.com",
         forwardErrorsToLogs: false,
-        sampleRate: 100,
+        sessionSampleRate: 100,
     });
 }
