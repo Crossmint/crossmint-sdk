@@ -33,6 +33,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
 > {
     protected transport: RNWebViewTransport<OutgoingEvents>;
     private recoveryOptions?: RecoveryOptions;
+    private _reconnectFlight?: Promise<void>;
 
     /**
      * @param webviewRef A React ref to the WebView component
@@ -59,14 +60,23 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
 
     /**
      * Reloads the WebView and re-establishes handshake.
-     * The handshake uses single-flight pattern to prevent concurrent handshakes.
+     * Uses single-flight pattern to prevent concurrent reloads.
      */
     private async reloadAndHandshake(): Promise<void> {
-        console.log("[WebViewParent] Starting WebView reload and handshake");
-        this.isConnected = false;
-        this.transport.reload();
-        await this.handshakeWithChild();
-        console.log("[WebViewParent] WebView reload and handshake completed");
+        if (this._reconnectFlight == null) {
+            this._reconnectFlight = (async () => {
+                try {
+                    console.log("[WebViewParent] Starting WebView reload and handshake");
+                    this.isConnected = false;
+                    this.transport.reload();
+                    await this.handshakeWithChild();
+                    console.log("[WebViewParent] WebView reload and handshake completed");
+                } finally {
+                    this._reconnectFlight = undefined;
+                }
+            })();
+        }
+        return await this._reconnectFlight;
     }
 
     /**
