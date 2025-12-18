@@ -18,6 +18,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
 > {
     handshakeOptions: Required<HandshakeOptions>;
     isConnected = false;
+    private _ongoingHandshakeWithChild?: Promise<void>;
 
     constructor(
         transport: Transport<OutgoingEvents>,
@@ -36,7 +37,27 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         this.handshakeOptions = { ...DEFAULT_HANDSHAKE_OPTIONS, ...options?.handshakeOptions };
     }
 
+    /**
+     * Establishes handshake with child using single-flight pattern.
+     * If called while another handshake is running, returns the existing promise.
+     */
     async handshakeWithChild() {
+        if (this._ongoingHandshakeWithChild == null) {
+            this._ongoingHandshakeWithChild = (async () => {
+                try {
+                    await this._performHandshake();
+                } finally {
+                    this._ongoingHandshakeWithChild = undefined;
+                }
+            })();
+        }
+        return await this._ongoingHandshakeWithChild;
+    }
+
+    /**
+     * Performs the actual handshake logic.
+     */
+    private async _performHandshake() {
         console.log("[HandshakeParent] handshakeWithChild() called");
 
         if (this.isConnected) {
