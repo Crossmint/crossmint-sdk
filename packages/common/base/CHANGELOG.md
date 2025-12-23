@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.14
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+
 ## 0.9.13
 
 ### Patch Changes

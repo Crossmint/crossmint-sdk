@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.14
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+- Updated dependencies [e8e63c0]
+  - @crossmint/client-sdk-react-base@0.7.14
+  - @crossmint/common-sdk-base@0.9.14
+  - @crossmint/wallets-sdk@0.18.12
+  - @crossmint/client-sdk-auth@1.2.44
+  - @crossmint/client-sdk-base@1.7.11
+  - @crossmint/common-sdk-auth@1.0.66
+
 ## 0.13.13
 
 ### Patch Changes
