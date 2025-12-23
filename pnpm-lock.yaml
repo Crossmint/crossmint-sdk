@@ -717,6 +717,12 @@ importers:
       bs58:
         specifier: ^5.0.0
         version: 5.0.0
+      lodash.clonedeep:
+        specifier: 4.5.0
+        version: 4.5.0
+      lodash.isequal:
+        specifier: 4.5.0
+        version: 4.5.0
       lucide-react-native:
         specifier: 0.548.0
         version: 0.548.0(react-native-svg@15.14.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)
