@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.15
+
+### Patch Changes
+
+- 0f31420: Add lodash.clonedeep and lodash.isequal as direct dependencies to fix pnpm strict dependency resolution issues on fresh installs
+
 ## 0.13.14
 
 ### Patch Changes
