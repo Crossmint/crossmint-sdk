@@ -58,6 +58,24 @@ export class SinkManager {
     isInitialized(): boolean {
         return this.initialized;
     }
+
+    /**
+     * Flush all sinks that support flushing
+     * This ensures pending logs are sent before app/browser close
+     */
+    async flush(): Promise<void> {
+        const flushPromises: Promise<void>[] = [];
+        for (const sink of this.sinks) {
+            if (typeof sink.flush === "function") {
+                const flushResult = sink.flush();
+                if (flushResult instanceof Promise) {
+                    flushPromises.push(flushResult);
+                }
+            }
+        }
+        // Wait for all flush operations to complete
+        await Promise.allSettled(flushPromises);
+    }
 }
 
 export const sinkManager = new SinkManager();

@@ -1,50 +1,15 @@
-import {
-    DATADOG_CLIENT_TOKEN,
-    SdkLogger,
-    ReactNativeDatadogSink,
-    validateAPIKey,
-    type APIKeyEnvironmentPrefix,
-} from "@crossmint/common-sdk-base";
+import { SdkLogger, ReactNativeDatadogSink, validateAPIKey } from "@crossmint/common-sdk-base";
+import { AppState } from "react-native";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import packageJson from "../../package.json";
-import * as datadogReactNativeModule from "@datadog/mobile-react-native";
-
-const { DdSdkReactNative, DatadogProviderConfiguration } = datadogReactNativeModule;
-
-type InitializeDatadogOptions = {
-    environment: APIKeyEnvironmentPrefix;
-    isExpoGo: boolean;
-};
-
-export async function initializeDatadog(options: InitializeDatadogOptions): Promise<void> {
-    try {
-        const config = new DatadogProviderConfiguration(
-            DATADOG_CLIENT_TOKEN,
-            options.environment ?? "production",
-            "crossmint-sdk",
-            false, // trackUserInteractions
-            false, // trackXHRResources
-            false // trackErrors
-        );
-        config.site = "datadoghq.com";
-
-        await DdSdkReactNative.initialize(config);
-    } catch (error) {
-        if (error instanceof Error && error.message.includes("Native modules require")) {
-            console.warn(
-                "[React Native UI SDK] Datadog SDK initialization failed. Native modules require a development build (not Expo Go).",
-                error
-            );
-        } else {
-            console.warn("[React Native UI SDK]", error instanceof Error ? error.message : String(error));
-        }
-    }
-}
 
 /**
  * Initialize the SDK logger for the React Native UI SDK
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles React Native-specific Datadog sink initialization
+ *
+ *
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
  * @returns The initialized logger instance
  */
@@ -62,17 +27,41 @@ export function initReactNativeLogger(apiKey: string): SdkLogger {
         platform: "react-native",
     });
 
-    const isExpoGo =
-        Constants.executionEnvironment === "storeClient" ||
-        Constants.appOwnership === "expo" ||
-        !!Constants.expoVersion;
+    // Get app bundle ID to use as service name in Datadog logs
+    const bundleId: string | undefined =
+        Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package ?? undefined;
 
-    initializeDatadog({
-        environment,
-        isExpoGo,
-    });
-    const sink = new ReactNativeDatadogSink(environment, datadogReactNativeModule);
+    // Collect device and OS information for agent info
+    const agentInfo: Record<string, string | undefined> = {};
+    if (Device != null) {
+        agentInfo.device = Device.modelName ?? Device.deviceName ?? Device.brand ?? undefined;
+        agentInfo.os_version = Device.osVersion ?? undefined;
+        agentInfo.os_name = Device.osName ?? undefined;
+    }
+
+    // Create HTTP-based Datadog sink that sends logs directly via telemetry proxy
+    // This bypasses the Datadog React Native SDK entirely, ensuring isolation
+    // Service name is set to the app bundle ID for better log identification
+    const sink = new ReactNativeDatadogSink(environment, bundleId, agentInfo);
     logger.addSink(sink);
 
+    // Set up app state change listener to flush logs when app goes to background
+    // This ensures logs are sent before the app is closed or backgrounded
+    setupReactNativeFlushListeners(logger);
+
     return logger;
+}
+
+/**
+ * Set up React Native app state change listeners to flush logs when app goes to background
+ */
+function setupReactNativeFlushListeners(logger: SdkLogger): void {
+    AppState.addEventListener("change", (nextAppState) => {
+        // Flush logs when app goes to background or inactive
+        if (nextAppState === "background" || nextAppState === "inactive") {
+            if (typeof logger.flush === "function") {
+                void logger.flush();
+            }
+        }
+    });
 }

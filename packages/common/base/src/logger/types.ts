@@ -33,4 +33,9 @@ export interface LogSink {
      * Write a log entry to the sink
      */
     write(entry: LogEntry): void;
+    /**
+     * Flush any pending logs to the destination
+     * This is optional - sinks that don't buffer logs don't need to implement this
+     */
+    flush?(): Promise<void> | void;
 }

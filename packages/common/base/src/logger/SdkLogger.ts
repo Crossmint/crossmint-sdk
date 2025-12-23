@@ -66,6 +66,7 @@ export interface SdkLoggerInitParams {
 export class SdkLogger implements ISdkLogger {
     private globalContext: LogContext = {};
     private initialized = false;
+    private static flushListenersSetup = false;
 
     /**
      * Current execution context for tracing function execution (browser/React Native fallback).
@@ -124,6 +125,12 @@ export class SdkLogger implements ISdkLogger {
         // Initialize sink manager with console sink if not already initialized
         if (!sinkManager.isInitialized()) {
             sinkManager.init([new ConsoleSink()]);
+        }
+
+        // Set up flush listeners for app/browser close (only once globally)
+        if (!SdkLogger.flushListenersSetup) {
+            this.setupFlushListeners(platform);
+            SdkLogger.flushListenersSetup = true;
         }
 
         this.initialized = true;
@@ -289,6 +296,91 @@ export class SdkLogger implements ISdkLogger {
      */
     getCurrentExecutionId(): string | undefined {
         return this.getExecutionContext()?.execution_id as string | undefined;
+    }
+
+    /**
+     * Flush all pending logs from all sinks
+     * This ensures logs are sent before app/browser close
+     * Should be called when the application is shutting down
+     */
+    async flush(): Promise<void> {
+        await sinkManager.flush();
+    }
+
+    /**
+     * Set up event listeners to flush logs before app/browser close
+     * This is called once globally during the first logger initialization
+     */
+    private setupFlushListeners(platform: Platform): void {
+        if (platform === "browser") {
+            this.setupBrowserFlushListeners();
+        } else if (platform === "server") {
+            this.setupServerFlushListeners();
+        }
+        // React Native apps should handle app state changes in their own code
+        // by calling logger.flush() when the app goes to background
+    }
+
+    /**
+     * Set up browser event listeners for page unload and visibility changes
+     */
+    private setupBrowserFlushListeners(): void {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        // Flush on page unload (beforeunload fires before the page is unloaded)
+        const handleBeforeUnload = () => {
+            // Use sendBeacon for reliable delivery during page unload
+            // Note: sendBeacon is synchronous and works during page unload
+            // We'll still try to flush, but sendBeacon is more reliable
+            void this.flush();
+        };
+
+        // Flush when page becomes hidden (user switches tabs, minimizes window, etc.)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") {
+                void this.flush();
+            }
+        };
+
+        // Use pagehide as a fallback (more reliable than beforeunload in some browsers)
+        const handlePageHide = () => {
+            void this.flush();
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("pagehide", handlePageHide);
+    }
+
+    /**
+     * Set up Node.js process exit handlers
+     */
+    private setupServerFlushListeners(): void {
+        if (typeof process === "undefined") {
+            return;
+        }
+
+        const flushOnExit = async () => {
+            try {
+                await this.flush();
+            } catch (error) {
+                // Silently fail during shutdown
+                console.error("[SdkLogger] Error flushing logs on exit:", error);
+            }
+        };
+
+        // Handle graceful shutdown signals
+        process.once("SIGTERM", flushOnExit);
+        process.once("SIGINT", flushOnExit);
+
+        // Handle process exit (fires before the process exits)
+        process.once("beforeExit", flushOnExit);
+
+        // Handle uncaught exceptions and unhandled rejections
+        // Note: We don't flush on these as the process might crash immediately
+        // but we could add it if needed
     }
 
     /**

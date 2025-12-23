@@ -22,7 +22,6 @@
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
-        "@datadog/mobile-react-native": "~2.13.0",
         "@solana/web3.js": "1.98.1",
         "bs58": "^5.0.0",
         "lucide-react-native": "0.548.0",

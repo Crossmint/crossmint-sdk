@@ -616,9 +616,6 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../wallets
-      '@datadog/browser-logs':
-        specifier: 6.24.1
-        version: 6.24.1
       lodash.clonedeep:
         specifier: 4.5.0
         version: 4.5.0
@@ -714,9 +711,6 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
-      '@datadog/mobile-react-native':
-        specifier: ~2.13.0
-        version: 2.13.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)
       '@solana/web3.js':
         specifier: 1.98.1
         version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -1077,9 +1071,6 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../common/base
-      '@datadog/browser-logs':
-        specifier: 6.24.1
-        version: 6.24.1
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
@@ -1855,12 +1846,6 @@ packages:
     peerDependenciesMeta:
       '@datadog/browser-rum':
         optional: true
-
-  '@datadog/mobile-react-native@2.13.2':
-    resolution: {integrity: sha512-Xhc5NiYnctJAYgM4g5tJr+tGV1uzlyAb92K7JYPQBwWM8av/tYShjuAXcyzVCR3sCfQRq0BG2yq64AyGOsnwiQ==}
-    peerDependencies:
-      react: 19.1.2
-      react-native: 0.82.1
 
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -14705,12 +14690,6 @@ snapshots:
   '@datadog/browser-logs@6.24.1':
     dependencies:
       '@datadog/browser-core': 6.24.1
-
-  '@datadog/mobile-react-native@2.13.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)':
-    dependencies:
-      big-integer: 1.6.52
-      react: 19.1.2
-      react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10)
 
   '@discoveryjs/json-ext@0.5.7': {}
 

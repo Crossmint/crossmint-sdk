@@ -1,10 +1,15 @@
 import { SdkLogger, detectPlatform, validateAPIKey } from "@crossmint/common-sdk-base";
 import { BrowserDatadogSink, ServerDatadogSink } from "@crossmint/common-sdk-base";
-import * as datadogLogger from "@datadog/browser-logs";
 /**
  * Initialize the SDK logger for the React Base SDK
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles browser-specific Datadog sink initialization
+ *
+ * Note: This implementation uses HTTP API directly to send logs to Datadog,
+ * completely bypassing the Datadog browser SDK. This ensures complete
+ * isolation from any client-side Datadog initialization, allowing both
+ * instances to coexist without conflicts.
+ *
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
  * @returns The initialized logger instance
  */
@@ -23,7 +28,9 @@ export function initReactLogger(apiKey: string, packageName: string, packageVers
 
     const platform = detectPlatform();
     if (platform === "browser") {
-        const sink = new BrowserDatadogSink(environment, datadogLogger);
+        // Create HTTP-based Datadog sink that sends logs directly via telemetry proxy
+        // This bypasses the Datadog browser SDK entirely, ensuring isolation
+        const sink = new BrowserDatadogSink(environment);
         logger.addSink(sink);
     } else if (platform === "server") {
         const sink = new ServerDatadogSink(environment);

@@ -1,76 +1,24 @@
-import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
-import type { LogEntry } from "../types";
-import type { DatadogReactNativeSdk, DatadogReactNativeLogs } from "./datadogTypes";
 import type { APIKeyEnvironmentPrefix } from "@/apiKey";
-import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
+import { HttpDatadogSink } from "./HttpDatadogSink";
 
 /**
  * React Native-specific Datadog sink implementation
- * Uses @datadog/mobile-react-native for logging
+ * Uses HTTP API to send logs directly to Datadog via telemetry proxy
+ *
+ * This is a thin wrapper around HttpDatadogSink for backward compatibility.
+ * It ensures complete isolation from any client-side Datadog initialization.
  */
-export class ReactNativeDatadogSink implements DatadogSink {
-    readonly id = "react-native-datadog";
-    private initialized = false;
-    protected options: DatadogSinkOptions;
-    private datadogSdk: DatadogReactNativeSdk | null = null;
-
+export class ReactNativeDatadogSink extends HttpDatadogSink {
     /**
-     * @param options - Datadog configuration options
-     * @param datadogSdk - The Datadog React Native SDK module (DdSdkReactNative)
+     * @param environment - Environment prefix from API key
+     * @param service - Service name (typically app bundle ID). Defaults to "crossmint-sdk" if not provided.
+     * @param agentInfo - Optional agent information (device, OS version, OS name, etc.)
      */
-    constructor(environment: APIKeyEnvironmentPrefix, datadogSdk: DatadogReactNativeSdk) {
-        this.options = {
-            clientToken: DATADOG_CLIENT_TOKEN,
-            site: "datadoghq.com",
-            env: environment,
-            sampleRate: 100,
-            forwardErrorsToLogs: false,
-        };
-        this.datadogSdk = datadogSdk;
-        this.initialize();
-    }
-
-    initialize(): void {
-        if (this.initialized) {
-            return;
-        }
-        this.initialized = true;
-    }
-
-    write(entry: LogEntry): void {
-        const DdLogs = this.datadogSdk?.DdLogs;
-        if (DdLogs == null) {
-            // Native module not ready (e.g., Expo Go or initialization failed)
-            return;
-        }
-
-        try {
-            const loggerMethod = this.getReactNativeMethod(DdLogs, entry.level);
-            if (loggerMethod == null) {
-                return;
-            }
-
-            const attributes = {
-                ...entry.context,
-                service: this.options.service ?? "crossmint-sdk",
-            };
-
-            loggerMethod(entry.message, attributes);
-        } catch (error) {
-            // Don't let Datadog errors break the application
-            console.warn("[SDK Logger] Error writing to Datadog:", error);
-        }
-    }
-
-    private getReactNativeMethod(
-        logger: DatadogReactNativeLogs,
-        level: LogEntry["level"]
-    ): ((message: string, attributes?: Record<string, unknown>) => void) | null {
-        if (logger == null) {
-            return null;
-        }
-
-        const method = logger[level] ?? logger.info;
-        return method != null && typeof method === "function" ? method.bind(logger) : null;
+    constructor(
+        environment: APIKeyEnvironmentPrefix,
+        service?: string,
+        agentInfo?: Record<string, string | undefined>
+    ) {
+        super("react-native", environment, service, agentInfo);
     }
 }
