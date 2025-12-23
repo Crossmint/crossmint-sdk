@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.18.12
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+- Updated dependencies [e8e63c0]
+  - @crossmint/common-sdk-base@0.9.14
+  - @crossmint/common-sdk-auth@1.0.66
+
 ## 0.18.11
 
 ### Patch Changes
