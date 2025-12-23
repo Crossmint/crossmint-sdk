@@ -6,7 +6,6 @@ import {
     ServerDatadogSink,
 } from "@crossmint/common-sdk-base";
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
-import * as datadogLogger from "@datadog/browser-logs";
 
 /**
  * Package-specific logger instance for the wallets SDK
@@ -38,7 +37,9 @@ export function initWalletsLogger(apiKey: string): void {
     // Add platform-specific Datadog sink
     switch (platform) {
         case "browser": {
-            const sink = new BrowserDatadogSink(environment, datadogLogger);
+            // Create HTTP-based Datadog sink that sends logs directly via telemetry proxy
+            // This bypasses the Datadog browser SDK entirely, ensuring isolation
+            const sink = new BrowserDatadogSink(environment);
             walletsLogger.addSink(sink);
             break;
         }

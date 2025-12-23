@@ -40,4 +40,11 @@ export interface ISdkLogger {
      * Log an error message
      */
     error(message: unknown, ...rest: unknown[]): void;
+
+    /**
+     * Flush all pending logs from all sinks
+     * This ensures logs are sent before app/browser close
+     * Should be called when the application is shutting down
+     */
+    flush(): Promise<void>;
 }
