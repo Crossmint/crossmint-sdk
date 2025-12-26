@@ -27,7 +27,7 @@ vi.mock("@crossmint/common-sdk-base", async (importOriginal) => {
         isValidAddress: vi.fn((addr: string) => true),
         isValidEvmAddress: vi.fn((addr: string) => addr.startsWith("0x") && addr.length === 42),
         isValidSolanaAddress: vi.fn((addr: string) => addr.length > 30 && addr.length < 45),
-        isValidStellarAddress: vi.fn((addr: string) => addr.startsWith("G") && addr.length === 56),
+        isValidStellarAddress: vi.fn((addr: string) => (addr.startsWith("G") || addr.startsWith("C")) && addr.length === 56),
         SdkLogger: MockSdkLogger,
     };
 });
