@@ -12,4 +12,3 @@ export default defineConfig({
         alias: [{ find: "@", replacement: resolve(__dirname, "./src") }],
     },
 });
-

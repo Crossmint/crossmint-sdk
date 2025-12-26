@@ -4,7 +4,6 @@ import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
 import type { Signer } from "../../signers/types";
 
-
 export type MockedApiClient = {
     isServerSide: boolean;
     createTransaction: MockedFunction<ApiClient["createTransaction"]>;
@@ -42,7 +41,10 @@ const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): st
     }
 };
 
-export const createMockSigner = (type: "api-key" | "external-wallet" = "api-key", chain: Chain = "base-sepolia"): Signer => {
+export const createMockSigner = (
+    type: "api-key" | "external-wallet" = "api-key",
+    chain: Chain = "base-sepolia"
+): Signer => {
     const signer = {
         type,
         locator: () => getSignerLocator(type, chain),
@@ -86,4 +88,3 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
 export const createMockSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };
-

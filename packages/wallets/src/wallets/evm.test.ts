@@ -329,9 +329,7 @@ describe("EVMWallet - signTypedData()", () => {
                     verifyingContract: "0x1234567890123456789012345678901234567890" as `0x${string}`,
                 },
                 types: {
-                    Message: [
-                        { name: "content", type: "string" },
-                    ],
+                    Message: [{ name: "content", type: "string" }],
                 },
                 primaryType: "Message",
                 message: {
@@ -503,4 +501,3 @@ describe("EVMWallet - from()", () => {
         expect(() => EVMWallet.from(solanaWallet)).toThrow("Wallet is not an EVM wallet");
     });
 });
-

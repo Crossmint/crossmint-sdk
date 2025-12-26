@@ -29,7 +29,8 @@ describe("StellarWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6",
-                    explorerLink: "https://stellar.expert/explorer/public/tx/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6",
+                    explorerLink:
+                        "https://stellar.expert/explorer/public/tx/a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6",
                 },
                 params: {
                     transaction: {
@@ -89,7 +90,8 @@ describe("StellarWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1",
-                    explorerLink: "https://stellar.expert/explorer/public/tx/b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1",
+                    explorerLink:
+                        "https://stellar.expert/explorer/public/tx/b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1",
                 },
                 params: {
                     transaction: {
@@ -150,7 +152,8 @@ describe("StellarWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2",
-                    explorerLink: "https://stellar.expert/explorer/public/tx/c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2",
+                    explorerLink:
+                        "https://stellar.expert/explorer/public/tx/c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2",
                 },
                 params: {
                     transaction: {
@@ -237,7 +240,8 @@ describe("StellarWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2c3",
-                    explorerLink: "https://stellar.expert/explorer/public/tx/d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2c3",
+                    explorerLink:
+                        "https://stellar.expert/explorer/public/tx/d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a1b2c3",
                 },
                 params: {
                     transaction: {
@@ -298,13 +302,12 @@ describe("StellarWallet - sendTransaction()", () => {
                     amount: "1000000",
                 },
             });
-            
+
             await expect(promise).rejects.toThrow(TransactionNotCreatedError);
-            
+
             try {
                 await promise;
-            } catch {
-            }
+            } catch {}
         });
 
         it("should throw error when transaction approval fails", async () => {
@@ -343,7 +346,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     amount: "1000000",
                 },
             });
-            
+
             const errorPromise = promise.catch(() => {});
             await vi.runAllTimersAsync();
             await expect(promise).rejects.toThrow();
@@ -373,4 +376,3 @@ describe("StellarWallet - from()", () => {
         expect(() => StellarWallet.from(evmWallet)).toThrow("Wallet is not a Stellar wallet");
     });
 });
-

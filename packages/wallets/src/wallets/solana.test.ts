@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SolanaWallet } from "./solana";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
-import { createMockWallet, createMockApiClient, createMockSerializedTransaction, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockWallet,
+    createMockApiClient,
+    createMockSerializedTransaction,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 
 describe("SolanaWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
@@ -31,7 +36,8 @@ describe("SolanaWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
-                    explorerLink: "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
+                    explorerLink:
+                        "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
                 },
                 params: {
                     transaction: serializedTx,
@@ -49,7 +55,9 @@ describe("SolanaWallet - sendTransaction()", () => {
             await vi.runAllTimersAsync();
             const result = await sendPromise;
 
-            expect(result.hash).toBe("5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW");
+            expect(result.hash).toBe(
+                "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW"
+            );
             expect(result.transactionId).toBe("txn-sol-123");
             expect(mockApiClient.createTransaction).toHaveBeenCalledWith(
                 "me:solana:smart",
@@ -63,7 +71,8 @@ describe("SolanaWallet - sendTransaction()", () => {
         });
 
         it("should send transaction with serialized transaction string", async () => {
-            const serializedTx = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
+            const serializedTx =
+                "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 
             const mockTransactionResponse = {
                 id: "txn-sol-456",
@@ -72,7 +81,8 @@ describe("SolanaWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
-                    explorerLink: "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
+                    explorerLink:
+                        "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
                 },
                 params: {
                     transaction: serializedTx,
@@ -90,7 +100,9 @@ describe("SolanaWallet - sendTransaction()", () => {
             await vi.runAllTimersAsync();
             const result = await sendPromise;
 
-            expect(result.hash).toBe("5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW");
+            expect(result.hash).toBe(
+                "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW"
+            );
             expect(result.transactionId).toBe("txn-sol-456");
             expect(mockApiClient.createTransaction).toHaveBeenCalledWith(
                 "me:solana:smart",
@@ -140,7 +152,8 @@ describe("SolanaWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
-                    explorerLink: "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
+                    explorerLink:
+                        "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
                 },
                 params: {
                     transaction: serializedTx,
@@ -172,7 +185,8 @@ describe("SolanaWallet - sendTransaction()", () => {
                 walletType: "smart" as const,
                 onChain: {
                     txId: "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
-                    explorerLink: "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
+                    explorerLink:
+                        "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
                 },
                 params: {
                     transaction: serializedTx,
@@ -216,13 +230,12 @@ describe("SolanaWallet - sendTransaction()", () => {
             const promise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
             });
-            
+
             await expect(promise).rejects.toThrow(TransactionNotCreatedError);
-            
+
             try {
                 await promise;
-            } catch {
-            }
+            } catch {}
         });
 
         it("should throw error when transaction approval fails", async () => {
@@ -249,7 +262,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             const promise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
             });
-            
+
             const errorPromise = promise.catch(() => {});
             await vi.runAllTimersAsync();
             await expect(promise).rejects.toThrow();
@@ -291,4 +304,3 @@ describe("SolanaWallet - from()", () => {
         expect(() => SolanaWallet.from(invalidWallet)).toThrow("Wallet is not a Solana wallet");
     });
 });
-

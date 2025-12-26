@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Wallet } from "./wallet";
+import type { Wallet } from "./wallet";
 import type { GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import {
     TransactionNotCreatedError,
@@ -378,9 +378,7 @@ describe("Wallet - send()", () => {
 
             mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
 
-            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow(
-                TransactionNotCreatedError
-            );
+            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow(TransactionNotCreatedError);
         });
 
         it("should throw error when transaction approval fails", async () => {
@@ -446,9 +444,7 @@ describe("Wallet - approve()", () => {
 
             mockApiClient.getTransaction.mockResolvedValue(errorResponse as any);
 
-            await expect(wallet.approve({ transactionId: "txn-123" })).rejects.toThrow(
-                TransactionNotAvailableError
-            );
+            await expect(wallet.approve({ transactionId: "txn-123" })).rejects.toThrow(TransactionNotAvailableError);
         });
     });
 
@@ -479,9 +475,7 @@ describe("Wallet - approve()", () => {
 
             mockApiClient.getSignature.mockResolvedValue(errorResponse as any);
 
-            await expect(wallet.approve({ signatureId: "sig-123" })).rejects.toThrow(
-                SignatureNotAvailableError
-            );
+            await expect(wallet.approve({ signatureId: "sig-123" })).rejects.toThrow(SignatureNotAvailableError);
         });
     });
 
@@ -792,4 +786,3 @@ describe("Wallet - delegatedSigners()", () => {
         });
     });
 });
-
