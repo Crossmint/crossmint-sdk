@@ -30,7 +30,9 @@ const getChainAddress = (chain: Chain): string => {
 };
 
 const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): string => {
-    if (type === "api-key") return "api-key:test";
+    if (type === "api-key") {
+        return "api-key:test";
+    }
     switch (chain) {
         case "solana":
             return "external-wallet:ABC123";
@@ -85,6 +87,6 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     ...overrides,
 });
 
-export const createMockSerializedTransaction = (): string => {
+export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };

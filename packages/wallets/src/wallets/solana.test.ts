@@ -5,7 +5,7 @@ import { TransactionNotCreatedError } from "../utils/errors";
 import {
     createMockWallet,
     createMockApiClient,
-    createMockSerializedTransaction,
+    createMockSolanaSerializedTransaction,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -27,7 +27,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
     describe("success cases", () => {
         it("should send transaction with serialized transaction string", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
                 id: "txn-sol-123",
@@ -116,7 +116,7 @@ describe("SolanaWallet - sendTransaction()", () => {
         });
 
         it("should return prepared transaction when experimental_prepareOnly is true", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
                 id: "txn-sol-prepare",
@@ -143,7 +143,7 @@ describe("SolanaWallet - sendTransaction()", () => {
         });
 
         it("should handle additional signers", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
                 id: "txn-sol-with-signers",
@@ -176,7 +176,7 @@ describe("SolanaWallet - sendTransaction()", () => {
         });
 
         it("should use custom signer when experimental_signer is provided", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
                 id: "txn-sol-custom-signer",
@@ -218,7 +218,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
     describe("error cases", () => {
         it("should throw TransactionNotCreatedError when API returns error", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
             const errorResponse = {
                 error: {
                     message: "Transaction creation failed",
@@ -239,7 +239,7 @@ describe("SolanaWallet - sendTransaction()", () => {
         });
 
         it("should throw error when transaction approval fails", async () => {
-            const serializedTx = createMockSerializedTransaction();
+            const serializedTx = createMockSolanaSerializedTransaction();
             const mockTransactionResponse = {
                 id: "txn-fail",
                 status: "pending",
