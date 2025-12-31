@@ -105,7 +105,6 @@ export class Wallet<C extends Chain> {
     /**
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
-     * @param {Chain[]} chains - The chains (optional)
      * @returns {Promise<Balances<C>>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
@@ -116,7 +115,7 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
+    public async balances(tokens?: string[]): Promise<Balances<C>> {
         walletsLogger.info("wallet.balances.start");
 
         let nativeToken: string;
@@ -134,7 +133,7 @@ export class Wallet<C extends Chain> {
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
-            chains: chains ?? [this.chain],
+            chains: [this.chain],
             tokens: allTokens,
         });
 
