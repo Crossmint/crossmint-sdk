@@ -637,23 +637,20 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), this.signer];
 
-        const signedApprovals = await Promise.all(
-            pendingApprovals.map((pendingApproval) => {
+        const approvals = await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
-                return signer.signMessage(pendingApproval.message);
+                const signature = await signer.signMessage(pendingApproval.message);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
             })
         );
-
-        const approvals = signedApprovals.map((signature) => {
-            return {
-                ...signature,
-                signer: this.signer.locator(),
-            };
-        });
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -687,8 +684,8 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), this.signer];
 
-        const signedApprovals = await Promise.all(
-            pendingApprovals.map((pendingApproval) => {
+        const approvals = await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
@@ -699,16 +696,13 @@ export class Wallet<C extends Chain> {
                         ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
                         : pendingApproval.message;
 
-                return signer.signTransaction(transactionToSign);
+                const signature = await signer.signTransaction(transactionToSign);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
             })
         );
-
-        const approvals = signedApprovals.map((signature) => {
-            return {
-                ...signature,
-                signer: this.signer.locator(),
-            };
-        });
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
