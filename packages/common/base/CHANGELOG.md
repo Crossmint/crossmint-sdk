@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.15
+
+### Patch Changes
+
+- 944f239: Add logging to WithLoggerContext decorator: logs parameters before function call, result on success, and error before throwing
+
 ## 0.9.14
 
 ### Patch Changes
