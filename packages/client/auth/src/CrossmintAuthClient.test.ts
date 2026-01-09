@@ -98,13 +98,14 @@ describe("CrossmintAuthClient", () => {
 
             await crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
 
+            // Cookie names are scoped by API key prefix (defaults to "default" when no apiKey)
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
-                "crossmint-jwt",
+                "crossmint-jwt-default",
                 mockAuthMaterial.jwt,
                 new Date(getJWTExpiration(validJwt)! * 1000).toISOString()
             );
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
-                "crossmint-refresh-token",
+                "crossmint-refresh-token-default",
                 mockAuthMaterial.refreshToken.secret,
                 mockAuthMaterial.refreshToken.expiresAt
             );
