@@ -98,7 +98,7 @@ describe("CrossmintAuthClient", () => {
 
             await crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
 
-            // Cookie names are scoped by API key prefix (defaults to "default" when no apiKey)
+            // Cookie names are scoped by project ID (defaults to "default" when apiKey is missing or invalid)
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
                 "crossmint-jwt-default",
                 mockAuthMaterial.jwt,

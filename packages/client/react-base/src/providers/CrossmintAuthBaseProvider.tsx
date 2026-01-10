@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { CrossmintAuth, getCookie, type StorageProvider, getApiKeyPrefix } from "@crossmint/client-sdk-auth";
+import { CrossmintAuth, getCookie, type StorageProvider, getProjectIdFromApiKey } from "@crossmint/client-sdk-auth";
 import { type SDKExternalUser, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
 import { useCrossmint } from "../hooks";
 import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
@@ -41,7 +41,7 @@ export function CrossmintAuthBaseProvider({
     const [initialized, setInitialized] = useState(false);
 
     const crossmintAuthRef = useRef<any | null>(null);
-    const previousApiKeyPrefixRef = useRef<string | null>(null);
+    const previousProjectIdRef = useRef<string | null>(null);
 
     // Initialize auth client in useEffect to avoid state updates during render
     useEffect(() => {
@@ -70,10 +70,10 @@ export function CrossmintAuthBaseProvider({
 
     // Detect API key changes and clear JWT to prevent using a JWT from a different project
     useEffect(() => {
-        const currentApiKeyPrefix = getApiKeyPrefix(crossmint.apiKey);
+        const currentProjectId = getProjectIdFromApiKey(crossmint.apiKey);
 
-        if (previousApiKeyPrefixRef.current != null && previousApiKeyPrefixRef.current !== currentApiKeyPrefix) {
-            // API key changed, clear the JWT state to force re-authentication
+        if (previousProjectIdRef.current != null && previousProjectIdRef.current !== currentProjectId) {
+            // API key changed to a different project, clear the JWT state to force re-authentication
             setUser(undefined);
             setJwt(undefined);
             setInitialized(false);
@@ -81,7 +81,7 @@ export function CrossmintAuthBaseProvider({
             crossmintAuthRef.current = null;
         }
 
-        previousApiKeyPrefixRef.current = currentApiKeyPrefix;
+        previousProjectIdRef.current = currentProjectId;
     }, [crossmint.apiKey]);
 
     const crossmintAuth = crossmintAuthRef.current;
