@@ -1,4 +1,5 @@
 import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { deleteCookie, getCookie, setCookie } from "./cookies";
 
 export interface StorageProvider {
@@ -53,7 +54,11 @@ export function getProjectIdFromApiKey(apiKey: string | undefined | null): strin
 /**
  * Cookie storage that scopes cookies by project ID.
  * This prevents JWT conflicts when switching between different projects.
- * Each project has isolated cookie storage to prevent cross-project token usage.
+ *
+ * For JWTs: Only reads from scoped cookies to prevent using wrong project's JWT.
+ * For refresh tokens: Falls back to legacy cookies to allow migration.
+ * If a legacy refresh token is used with the wrong project, the server will reject it
+ * and the SDK will call logout(), cleaning up the legacy cookie.
  */
 export class ScopedCookieStorage implements StorageProvider {
     private projectId: string;
@@ -70,9 +75,19 @@ export class ScopedCookieStorage implements StorageProvider {
         if (typeof document === "undefined") {
             return undefined;
         }
-        // Only read from scoped cookies - no fallback to legacy cookies
-        // to prevent cross-project token usage
-        return await getCookie(this.getScopedKey(key));
+        // First try the scoped cookie
+        const scopedValue = await getCookie(this.getScopedKey(key));
+        if (scopedValue != null) {
+            return scopedValue;
+        }
+        // Only fall back to legacy cookies for refresh tokens, not JWTs.
+        // This prevents using a JWT from the wrong project (which causes audience mismatch warnings).
+        // For refresh tokens, if the legacy token is for a different project, the server will reject
+        // the refresh attempt and the SDK will call logout(), cleaning up the legacy cookie.
+        if (key === REFRESH_TOKEN_PREFIX) {
+            return await getCookie(key);
+        }
+        return undefined;
     }
 
     async set(key: string, value: string, expiresAt?: string): Promise<void> {
