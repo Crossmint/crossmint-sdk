@@ -53,7 +53,7 @@ export function getProjectIdFromApiKey(apiKey: string | undefined | null): strin
 /**
  * Cookie storage that scopes cookies by project ID.
  * This prevents JWT conflicts when switching between different projects.
- * For backward compatibility, it reads from legacy (unscoped) cookies as fallback.
+ * Each project has isolated cookie storage to prevent cross-project token usage.
  */
 export class ScopedCookieStorage implements StorageProvider {
     private projectId: string;
@@ -70,13 +70,9 @@ export class ScopedCookieStorage implements StorageProvider {
         if (typeof document === "undefined") {
             return undefined;
         }
-        // First try the scoped cookie
-        const scopedValue = await getCookie(this.getScopedKey(key));
-        if (scopedValue != null) {
-            return scopedValue;
-        }
-        // Fall back to legacy (unscoped) cookie for backward compatibility
-        return await getCookie(key);
+        // Only read from scoped cookies - no fallback to legacy cookies
+        // to prevent cross-project token usage
+        return await getCookie(this.getScopedKey(key));
     }
 
     async set(key: string, value: string, expiresAt?: string): Promise<void> {
@@ -91,7 +87,7 @@ export class ScopedCookieStorage implements StorageProvider {
         if (typeof document === "undefined") {
             return;
         }
-        // Remove both scoped and legacy cookies to ensure clean logout
+        // Remove scoped cookie (also remove legacy cookie for cleanup during logout)
         await deleteCookie(this.getScopedKey(key));
         await deleteCookie(key);
     }
