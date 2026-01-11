@@ -2,4 +2,4 @@
 "@crossmint/client-sdk-auth": patch
 ---
 
-Fix JWT cookie scoping to prevent cross-project token usage. JWTs are now scoped by project ID and only refresh tokens fall back to legacy cookies for migration.
+Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
