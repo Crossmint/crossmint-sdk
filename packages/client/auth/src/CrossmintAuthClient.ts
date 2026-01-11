@@ -12,8 +12,8 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
-import { getJWTExpiration, getJWTAudience, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
-import { type StorageProvider, getScopedStorageProvider, getProjectIdFromApiKey } from "./utils/storage";
+import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
+import { type StorageProvider, getScopedStorageProvider } from "./utils/storage";
 
 // Global flag to prevent multiple concurrent initial refresh calls across all instances
 let globalInitialRefreshInProgress = false;
@@ -137,19 +137,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
             // Await the shared promise - this handles concurrent calls to the same refresh
             const authMaterial = await this.refreshPromise;
-
-            // Verify the JWT's audience matches the current project to prevent cross-project token usage.
-            // This can happen when a legacy refresh token (from before cookie scoping) is used with a different project.
-            // The server accepts the refresh token but issues a JWT for the original project, not the current one.
-            const jwtAudience = getJWTAudience(authMaterial.jwt);
-            const currentProjectId = getProjectIdFromApiKey(this.crossmint.apiKey);
-            if (jwtAudience != null && jwtAudience !== currentProjectId) {
-                console.debug(
-                    `JWT audience mismatch: JWT is for project ${jwtAudience}, but current project is ${currentProjectId}. Logging out.`
-                );
-                await this.logout();
-                return null;
-            }
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
