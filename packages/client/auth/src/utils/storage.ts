@@ -73,6 +73,7 @@ export class ScopedCookieStorage implements StorageProvider {
 
     async get(key: string): Promise<string | undefined> {
         if (typeof document === "undefined") {
+            console.debug(`[ScopedCookieStorage] Skipping cookie read for "${key}" - document is undefined (SSR)`);
             return undefined;
         }
         // First try the scoped cookie
