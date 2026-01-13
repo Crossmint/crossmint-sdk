@@ -56,7 +56,7 @@ jobs:
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.MAILOSAUR_PHONE_NUMBER }}
                   PLAYWRIGHT_BASE_URL: ${{ secrets.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' }}
               run: |
-                  pnpm exec playwright test --config=playwright.smoke.config.ts
+                  pnpm exec playwright test --project=smoke
               continue-on-error: true
 
             - name: Generate test report
