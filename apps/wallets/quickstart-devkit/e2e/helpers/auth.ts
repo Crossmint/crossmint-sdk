@@ -84,8 +84,47 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         console.log("📱 Signer confirmation needed, starting flow...");
 
+        // Clear emails before requesting a new code to avoid getting stale codes
+        if (signerType === "email") {
+            const email = getEmailForSigner(signerType);
+            await clearEmailsForAddress(email);
+            console.log("🗑️ Cleared existing emails before requesting new code");
+        }
+
+        const beforeSendCodeTime = new Date();
+
+        const sendCodePromise = page.waitForResponse(
+            (response) => {
+                const url = response.url();
+                const method = response.request().method();
+                return (
+                    (url.includes("/api/") &&
+                        (url.includes("/signers/") ||
+                            url.includes("/approvals") ||
+                            url.includes("/transactions/") ||
+                            url.includes("/signatures/")) &&
+                        method === "POST") ||
+                    (url.includes("/api/") && url.includes("/confirm") && method === "POST")
+                );
+            },
+            { timeout: 30000 }
+        );
+
         await sendCodeButton.click();
         console.log("📧 Clicked 'Send code' button");
+
+        try {
+            const sendCodeResponse = await sendCodePromise;
+            if (sendCodeResponse.status() >= 400) {
+                console.warn(`⚠️ Send code API returned status ${sendCodeResponse.status()}`);
+            } else {
+                console.log("✅ Send code API call completed successfully");
+            }
+        } catch (e) {
+            console.warn("⚠️ Could not detect send code API response, continuing anyway");
+        }
+
+        await page.waitForTimeout(2000);
 
         console.log("⏳ Waiting for 'Check your email/phone' message...");
         if (signerType === "email") {
@@ -103,9 +142,9 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
         let signerConfirmationCode: string | undefined;
         console.log(`📧 Fetching OTP code from ${signerType}...`);
         if (signerType === "email") {
-            signerConfirmationCode = await getEmailOTPCode(getEmailForSigner(signerType), "signer");
+            signerConfirmationCode = await getEmailOTPCode(getEmailForSigner(signerType), "signer", beforeSendCodeTime);
         } else if (signerType === "phone") {
-            signerConfirmationCode = await getPhoneOTPCode();
+            signerConfirmationCode = await getPhoneOTPCode(beforeSendCodeTime);
         }
 
         if (signerConfirmationCode == null) {
@@ -117,10 +156,31 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
         await otpInput.fill(signerConfirmationCode);
         console.log("📝 Filled OTP code");
 
-        const submitBtn = page.locator('button[type="submit"]:has-text("Submit")').first();
-        if (await submitBtn.isVisible({ timeout: 2000 })) {
+        await page.waitForTimeout(500);
+
+        const submitBtn = page.locator('button[type="submit"]:has-text("Submit"), button:has-text("Confirm")').first();
+        const isSubmitVisible = await submitBtn.isVisible({ timeout: 5000 }).catch(() => false);
+
+        if (isSubmitVisible) {
             await submitBtn.click();
-            console.log("✅ Clicked submit button");
+
+            try {
+                await page.waitForTimeout(1000);
+                const modalStillVisible = await modal.isVisible({ timeout: 2000 }).catch(() => false);
+                if (!modalStillVisible) {
+                } else {
+                    const errorMsg = page.locator("text=/invalid/i, text=/incorrect/i, text=/error/i").first();
+                    const hasError = await errorMsg.isVisible({ timeout: 2000 }).catch(() => false);
+                    if (hasError) {
+                        const errorText = await errorMsg.textContent();
+                        throw new Error(`OTP submission failed: ${errorText}`);
+                    }
+                }
+            } catch (e) {
+                console.warn("⚠️ Could not verify OTP submission status:", e);
+            }
+        } else {
+            console.log("⚠️ No submit button found - OTP might auto-submit or modal might have closed");
         }
 
         console.log("✅ Signer confirmation flow completed successfully");
@@ -130,13 +190,30 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
     }
 }
 
-export async function handleSignerConfirmation(page: Page): Promise<void> {
-    const url = new URL(page.url());
-    const signerType = url.searchParams.get("signer") as SignerType;
-    console.log(`🔐 Signer type: ${signerType}`);
+export async function handleSignerConfirmation(page: Page, signerType?: SignerType): Promise<void> {
+    if (!signerType) {
+        try {
+            const url = new URL(page.url());
+            signerType = url.searchParams.get("signer") as SignerType;
+        } catch (e) {
+            console.warn("⚠️ Could not parse URL to get signer type, will try to detect from modal");
+        }
+    }
+
+    console.log(`🔐 Signer type: ${signerType || "unknown"}`);
 
     if (signerType === "email" || signerType === "phone") {
         await handleEmailPhoneSignerFlow(page, signerType);
+    } else {
+        const modal = page.locator("div[role='dialog']").first();
+        try {
+            await modal.waitFor({ state: "visible", timeout: 5000 });
+            // If modal appears but we don't know signer type, try email first (most common)
+            console.log("⚠️ Signer type unknown, trying email flow");
+            await handleEmailPhoneSignerFlow(page, "email");
+        } catch (_) {
+            console.log("✅ No signer modal appeared, confirmation not needed");
+        }
     }
 
     return;

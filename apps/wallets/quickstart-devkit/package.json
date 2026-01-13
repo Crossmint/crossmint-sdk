@@ -8,7 +8,9 @@
         "start": "next start",
         "lint": "next lint",
         "test": "playwright test",
-        "test:ui": "playwright test --ui"
+        "test:ui": "playwright test --ui",
+        "test:smoke": "playwright test --config=playwright.smoke.config.ts",
+        "test:smoke:ui": "playwright test --config=playwright.smoke.config.ts --ui"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "workspace:*",
