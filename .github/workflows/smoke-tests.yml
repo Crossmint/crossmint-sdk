@@ -9,6 +9,10 @@ on:
             - "packages/client/react-base/**"
     workflow_dispatch:
 
+permissions:
+    contents: read
+    pull-requests: write
+
 jobs:
     smoke-tests:
         name: Run Smoke Tests
@@ -61,7 +65,71 @@ jobs:
                   if [ -f test-results/smoke-results.json ]; then
                       node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md
                   else
-                      echo "# Smoke Test Results\n\n⚠️ Test results file not found." > test-results/report.md
+                      printf "# Smoke Test Results\n\n⚠️ Test results file not found.\n" > test-results/report.md
                   fi
+
+            - name: Comment with test results
+              if: always()
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require('fs');
+                      const path = require('path');
+                      
+                      const reportPath = path.join('apps/wallets/quickstart-devkit', 'test-results', 'report.md');
+                      let reportContent = '## 🔥 Smoke Test Results\n\n';
+                      
+                      try {
+                          if (fs.existsSync(reportPath)) {
+                              const content = fs.readFileSync(reportPath, 'utf8');
+                              // Remove the duplicate title if it exists in the report
+                              const cleanContent = content.replace(/^#+\s*Smoke Test Results\s*\n*/i, '');
+                              reportContent += cleanContent.trim();
+                          } else {
+                              reportContent += '⚠️ Test report not found. Check workflow logs for details.';
+                          }
+                      } catch (error) {
+                          reportContent += `❌ Error reading test report: ${error.message}`;
+                      }
+                      
+                      // Try to find associated PR for push events
+                      if (context.eventName === 'push') {
+                          const { data: pulls } = await github.rest.pulls.list({
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              state: 'open',
+                              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
+                          });
+                          
+                          if (pulls.length > 0) {
+                              const prNumber = pulls[0].number;
+                              
+                              const comments = await github.rest.issues.listComments({
+                                  owner: context.repo.owner,
+                                  repo: context.repo.repo,
+                                  issue_number: prNumber,
+                              });
+                              
+                              const botComment = comments.data.find(
+                                  comment => comment.user.type === 'Bot' && comment.body.includes('Smoke Test Results')
+                              );
+                              
+                              if (botComment) {
+                                  await github.rest.issues.updateComment({
+                                      owner: context.repo.owner,
+                                      repo: context.repo.repo,
+                                      comment_id: botComment.id,
+                                      body: reportContent,
+                                  });
+                              } else {
+                                  await github.rest.issues.createComment({
+                                      owner: context.repo.owner,
+                                      repo: context.repo.repo,
+                                      issue_number: prNumber,
+                                      body: reportContent,
+                                  });
+                              }
+                          }
+                      }
 
 
