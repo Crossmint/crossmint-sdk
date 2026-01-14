@@ -8,7 +8,7 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
         crossmint: { apiKey: "test-api-key" },
         experimental_customAuth: undefined,
     })),
-    CrossmintWalletUIBaseProvider: ({ children }: { children: React.ReactNode }) => (
+    CrossmintWalletBaseProvider: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="wallet-base-provider">{children}</div>
     ),
 }));
