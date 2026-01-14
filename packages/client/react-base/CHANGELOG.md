@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-base
 
+## 1.0.0
+
+### Major Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+### Patch Changes
+
+- 38b9087: Adds logs for email signer otp modal flow
+- Updated dependencies [38b9087]
+- Updated dependencies [38b9087]
+  - @crossmint/wallets-sdk@0.18.14
+
 ## 0.7.15
 
 ### Patch Changes

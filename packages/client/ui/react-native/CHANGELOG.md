@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.17
+
+### Patch Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+- Updated dependencies [38b9087]
+- Updated dependencies [38b9087]
+  - @crossmint/client-sdk-react-base@1.0.0
+  - @crossmint/wallets-sdk@0.18.14
+
 ## 0.13.16
 
 ### Patch Changes
