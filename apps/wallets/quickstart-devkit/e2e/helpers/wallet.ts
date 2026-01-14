@@ -1,20 +1,6 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
 
-/**
- * Map chainId to Circle faucet network name
- */
-function getCircleFaucetNetworkName(chainId: string): string | null {
-    const networkMap: Record<string, string> = {
-        "optimism-sepolia": "OP Sepolia",
-        "base-sepolia": "Base Sepolia",
-        "ethereum-sepolia": "Ethereum Sepolia",
-        "arbitrum-sepolia": "Arbitrum Sepolia",
-        "polygon-amoy": "Polygon PoS Amoy",
-    };
-    return networkMap[chainId] || null;
-}
-
 export async function getWalletAddress(page: Page): Promise<string> {
     const addressElement = page.locator('[data-testid^="wallet-address:"]').first();
     const dataTestId = await addressElement.getAttribute("data-testid");
@@ -214,22 +200,18 @@ export async function createPreparedTransaction(
     signerType?: string
 ): Promise<string> {
     try {
-        // Find the approval test section
         const approvalSection = page.locator("text=/1\\. Create Transaction \\(Prepare Only\\)/i").first();
         await approvalSection.scrollIntoViewIfNeeded();
         await approvalSection.waitFor({ timeout: 10000 });
 
-        // Select token - find select within the approval section
         const tokenSelect = approvalSection.locator("..").locator("select").first();
         await tokenSelect.waitFor({ timeout: 10000 });
         await tokenSelect.selectOption(token);
 
-        // Fill amount - find number input in the approval section
         const amountInput = approvalSection.locator("..").locator('input[type="number"]').first();
         await amountInput.waitFor({ timeout: 10000 });
         await amountInput.fill(amount);
 
-        // Fill recipient - find text input with placeholder containing "0x" or "Base58"
         const recipientInput = approvalSection
             .locator("..")
             .locator('input[placeholder*="0x" i], input[placeholder*="Base58" i]')
@@ -237,7 +219,6 @@ export async function createPreparedTransaction(
         await recipientInput.waitFor({ timeout: 10000 });
         await recipientInput.fill(recipientAddress);
 
-        // Click create prepared transaction button
         const createButton = approvalSection
             .locator("..")
             .locator('button:has-text("Create Prepared Transaction")')
@@ -245,26 +226,23 @@ export async function createPreparedTransaction(
         await createButton.waitFor({ timeout: 10000 });
         await createButton.click();
 
-        // Wait for signer confirmation if needed
         await handleSignerConfirmation(page, signerType as any);
 
-        // Wait for the prepared transaction ID to appear in the green success box
-        const transactionIdElement = page.locator("text=/Prepared Transaction ID:/i").first();
-        await transactionIdElement.waitFor({ timeout: 60000 });
+        const transactionIdContainer = page.locator('p:has-text("Prepared Transaction ID:")').first();
+        await transactionIdContainer.waitFor({ timeout: 60000 });
 
-        // Extract transaction ID from the text
-        const transactionIdText = await transactionIdElement.textContent();
+        // Get the full text content from the paragraph element
+        const transactionIdText = await transactionIdContainer.textContent();
         if (!transactionIdText) {
             throw new Error("Could not find prepared transaction ID");
         }
 
-        // Extract the transaction ID (format: "Prepared Transaction ID: txn-xxx")
-        const transactionIdMatch = transactionIdText.match(/Prepared Transaction ID:\s*([^\s]+)/);
+        const transactionIdMatch = transactionIdText.match(/Prepared Transaction ID:\s*([a-zA-Z0-9-]+)/);
         if (!transactionIdMatch || !transactionIdMatch[1]) {
             throw new Error(`Could not extract transaction ID from: ${transactionIdText}`);
         }
 
-        const transactionId = transactionIdMatch[1];
+        const transactionId = transactionIdMatch[1].trim();
         console.log(`✅ Prepared transaction created: ${transactionId}`);
 
         return transactionId;
@@ -276,12 +254,10 @@ export async function createPreparedTransaction(
 
 export async function approveTransactionById(page: Page, transactionId: string, signerType?: string): Promise<void> {
     try {
-        // Find the approval section (section 2)
         const approveSection = page.locator("text=/2\\. Approve Transaction by ID/i").first();
         await approveSection.scrollIntoViewIfNeeded();
         await approveSection.waitFor({ timeout: 10000 });
 
-        // Find the transaction ID input in section 2
         const transactionIdInput = approveSection
             .locator("..")
             .locator('input[placeholder*="transaction ID" i], input[placeholder*="Enter transaction ID" i]')
@@ -289,19 +265,15 @@ export async function approveTransactionById(page: Page, transactionId: string, 
         await transactionIdInput.waitFor({ timeout: 10000 });
         await transactionIdInput.fill(transactionId);
 
-        // Click approve transaction button
         const approveButton = approveSection.locator("..").locator('button:has-text("Approve Transaction")').first();
         await approveButton.waitFor({ timeout: 10000 });
         await approveButton.click();
 
-        // Wait for signer confirmation if needed
         await handleSignerConfirmation(page, signerType as any);
 
-        // Wait for approval result to appear
         const approvalResult = page.locator("text=/Approval Result/i").first();
         await approvalResult.waitFor({ timeout: 120000 }); // 2 minutes for approval
 
-        // Verify the result shows the transaction ID
         const resultSection = approvalResult.locator("..");
         const resultText = await resultSection.textContent();
         if (resultText && !resultText.includes(transactionId)) {
@@ -315,108 +287,3 @@ export async function approveTransactionById(page: Page, transactionId: string, 
     }
 }
 
-/**
- * Fund wallet with testnet USDC using Circle faucet
- * @param page - Playwright page instance
- * @param walletAddress - Wallet address to fund
- * @param chainId - Chain ID (e.g., "optimism-sepolia", "base-sepolia")
- * @returns true if funding was successful or already funded, false if rate limited
- */
-export async function fundWalletWithCircleFaucet(page: Page, walletAddress: string, chainId: string): Promise<boolean> {
-    try {
-        const networkName = getCircleFaucetNetworkName(chainId);
-        if (!networkName) {
-            console.warn(`⚠️ Circle faucet does not support chainId: ${chainId}, skipping funding`);
-            return false;
-        }
-
-        console.log(`💰 Funding wallet ${walletAddress} with 1 USDC on ${networkName} via Circle faucet`);
-
-        await page.goto("https://faucet.circle.com/");
-        await page.waitForLoadState("networkidle");
-
-        // Handle cookie consent banner if present
-        try {
-            const acceptCookiesButton = page.locator("#onetrust-accept-btn-handler").first();
-            const cookieBanner = page.locator("#onetrust-group-container").first();
-
-            // Check if cookie banner is visible
-            const isBannerVisible = await cookieBanner.isVisible({ timeout: 3000 }).catch(() => false);
-
-            if (isBannerVisible) {
-                console.log("🍪 Cookie consent banner detected, accepting cookies...");
-                await acceptCookiesButton.waitFor({ timeout: 5000 });
-                await acceptCookiesButton.click();
-                // Wait for banner to disappear
-                await cookieBanner.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {
-                    console.log("⚠️ Cookie banner may still be visible, continuing anyway");
-                });
-                console.log("✅ Cookies accepted");
-            }
-        } catch (error) {
-            console.log("ℹ️ Cookie consent banner not found or already handled, continuing...");
-        }
-
-        const usdcButton = page.locator('button:has-text("USDC")').first();
-        await usdcButton.waitFor({ timeout: 10000 });
-        const isUSDCSelected = await usdcButton.getAttribute("aria-pressed");
-        if (isUSDCSelected !== "true") {
-            await usdcButton.click();
-            await page.waitForTimeout(500);
-        }
-
-        const networkDropdown = page.locator('select, [role="combobox"]').first();
-        await networkDropdown.waitFor({ timeout: 10000 });
-        await networkDropdown.selectOption({ label: networkName });
-        console.log(`✅ Selected network: ${networkName}`);
-
-        const addressInput = page.locator('input[placeholder*="Send to" i], input[type="text"]').first();
-        await addressInput.waitFor({ timeout: 10000 });
-        await addressInput.fill(walletAddress);
-        console.log(`✅ Entered wallet address: ${walletAddress}`);
-
-        const sendButton = page.locator('button:has-text("Send 1 USDC"), button:has-text("Send")').first();
-        await sendButton.waitFor({ timeout: 10000 });
-        await sendButton.click();
-        console.log("🖱️ Clicked send button");
-
-        // Wait for response - either success or error
-        try {
-            // Wait for success message or error
-            const successMessage = page.locator("text=/success/i, text=/sent/i, text=/completed/i").first();
-            const errorMessage = page.locator("text=/limit/i, text=/error/i, text=/exceeded/i").first();
-
-            // Wait for either success or error to appear
-            await Promise.race([
-                successMessage.waitFor({ timeout: 30000 }).then(() => "success"),
-                errorMessage.waitFor({ timeout: 30000 }).then(() => "error"),
-            ]);
-
-            // Check which one appeared
-            const hasSuccess = await successMessage.isVisible({ timeout: 2000 }).catch(() => false);
-            const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false);
-
-            if (hasSuccess) {
-                console.log("✅ Wallet funded successfully via Circle faucet");
-                return true;
-            } else if (hasError) {
-                const errorText = await errorMessage.textContent();
-                console.warn(`⚠️ Circle faucet error: ${errorText}`);
-                if (errorText?.toLowerCase().includes("limit")) {
-                    console.log("ℹ️ Rate limit reached - wallet may already be funded or need to wait 2 hours");
-                    return true; // Return true as wallet might already have funds
-                }
-                return false;
-            }
-        } catch (e) {
-            console.warn("⚠️ Could not determine faucet result, assuming success");
-            await page.waitForTimeout(5000);
-            return true;
-        }
-
-        return true;
-    } catch (error) {
-        console.error("❌ Failed to fund wallet via Circle faucet:", error);
-        return false;
-    }
-}

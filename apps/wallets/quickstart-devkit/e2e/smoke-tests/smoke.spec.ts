@@ -7,7 +7,6 @@ import {
     transferFunds,
     createPreparedTransaction,
     approveTransactionById,
-    fundWalletWithCircleFaucet,
 } from "../helpers";
 import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../config/constants";
 
@@ -105,16 +104,15 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
     test("should transfer funds", async ({ authenticatedPage, testConfig }) => {
         const walletAddress = await getWalletAddress(authenticatedPage);
 
-        const initialBalance = await getWalletBalance(authenticatedPage);
-        const initialBalanceNum = parseFloat(initialBalance);
-
-        // Fund the wallet
-        const funded = await fundWalletWithCircleFaucet(authenticatedPage, walletAddress, testConfig.chainId);
-        if (!funded) {
+        // Check wallet balance and skip if 0
+        const balance = await getWalletBalance(authenticatedPage);
+        const balanceNum = parseFloat(balance);
+        
+        if (balanceNum === 0) {
             console.log(
-                `❌ ${testConfig.chain}:${testConfig.signer}:${walletAddress} wallet balance is too low and could not be funded. Skipping...`
+                `⚠️ Wallet ${walletAddress} has 0 balance. Skipping transfer test.`
             );
-            console.log(`⚠️ Please fund wallet: ${walletAddress} with some stablecoin to run this test`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
             test.skip();
             return;
         }
@@ -147,23 +145,15 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(recipientAddress.length).toBe(42);
         expectAuth(/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)).toBe(true);
 
+        // Check wallet balance and skip if 0
         const initialBalance = await getWalletBalance(authenticatedPage);
         const initialBalanceNum = parseFloat(initialBalance);
 
-        if (initialBalanceNum < 0.0001) {
-            console.log(`💰 Wallet balance is too low (${initialBalanceNum}), attempting to fund via Circle faucet...`);
-            const funded = await fundWalletWithCircleFaucet(authenticatedPage, walletAddress, testConfig.chainId);
-            if (!funded) {
-                console.log(`❌ Wallet balance is too low and could not be funded. Skipping approval test...`);
-                test.skip();
-                return;
-            }
-
-            // Wait a bit for balance to update and refresh the page
-            await authenticatedPage.waitForTimeout(5000);
-            await authenticatedPage.reload();
-            await authenticatedPage.waitForLoadState("networkidle");
-            console.log(`✅ Wallet funded successfully`);
+        if (initialBalanceNum === 0) {
+            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Skipping approval test.`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
+            test.skip();
+            return;
         }
 
         const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();
