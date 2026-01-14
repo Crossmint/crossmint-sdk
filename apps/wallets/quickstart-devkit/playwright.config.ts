@@ -11,9 +11,7 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: 1,
     maxFailures: process.env.CI ? 1 : undefined,
-    reporter: process.env.CI 
-        ? [["json", { outputFile: "test-results/smoke-results.json" }], ["list"]]
-        : "html",
+    reporter: process.env.CI ? [["json", { outputFile: "test-results/smoke-results.json" }], ["list"]] : "html",
     timeout: 60000,
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
