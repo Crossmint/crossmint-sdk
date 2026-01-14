@@ -7,12 +7,6 @@ on:
             - "packages/client/ui/react-ui/**"
             - "packages/wallets/**"
             - "packages/client/react-base/**"
-    pull_request:
-        paths:
-            - "apps/wallets/quickstart-devkit/**"
-            - "packages/client/ui/react-ui/**"
-            - "packages/wallets/**"
-            - "packages/client/react-base/**"
     workflow_dispatch:
 
 jobs:
@@ -70,51 +64,4 @@ jobs:
                       echo "# Smoke Test Results\n\n⚠️ Test results file not found." > test-results/report.md
                   fi
 
-            - name: Comment PR with test results
-              if: github.event_name == 'pull_request' && always()
-              uses: actions/github-script@v7
-              with:
-                  script: |
-                      const fs = require('fs');
-                      const path = require('path');
-                      
-                      const reportPath = path.join('apps/wallets/quickstart-devkit', 'test-results', 'report.md');
-                      let reportContent = '## 🔥 Smoke Test Results\n\n';
-                      
-                      try {
-                          if (fs.existsSync(reportPath)) {
-                              const content = fs.readFileSync(reportPath, 'utf8');
-                              reportContent += content;
-                          } else {
-                              reportContent += '⚠️ Test report not found. Check workflow logs for details.';
-                          }
-                      } catch (error) {
-                          reportContent += `❌ Error reading test report: ${error.message}`;
-                      }
-                      
-                      const comments = await github.rest.issues.listComments({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          issue_number: context.issue.number,
-                      });
-                      
-                      const botComment = comments.data.find(
-                          comment => comment.user.type === 'Bot' && comment.body.includes('Smoke Test Results')
-                      );
-                      
-                      if (botComment) {
-                          await github.rest.issues.updateComment({
-                              owner: context.repo.owner,
-                              repo: context.repo.repo,
-                              comment_id: botComment.id,
-                              body: reportContent,
-                          });
-                      } else {
-                          await github.rest.issues.createComment({
-                              owner: context.repo.owner,
-                              repo: context.repo.repo,
-                              issue_number: context.issue.number,
-                              body: reportContent,
-                          });
-                      }
 
