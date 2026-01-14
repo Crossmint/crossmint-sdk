@@ -57,12 +57,12 @@ export function CrossmintWalletUIBaseProvider({
     const { wallet } = useWallet();
 
     const signerType = wallet?.signer.type;
-    const signerLocator = wallet?.signer.locator().split(":")[1];
+    const signerValue = wallet?.signer.locator().split(":")[1];
 
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
-            email: signerType === "email" ? signerLocator : undefined,
-            open: signerAuth.emailSignerDialogOpen && signerType === "email" && signerLocator != null,
+            email: signerType === "email" ? signerValue : undefined,
+            open: signerAuth.emailSignerDialogOpen && signerType === "email" && signerValue != null,
             setOpen: signerAuth.setEmailSignerDialogOpen,
             step: signerAuth.emailSignerDialogStep,
             onSubmitOTP: signerAuth.emailsigners_handleOTPSubmit,
@@ -72,8 +72,8 @@ export function CrossmintWalletUIBaseProvider({
             appearance,
         },
         phoneSignerProps: {
-            phone: signerType === "phone" ? signerLocator : undefined,
-            open: signerAuth.phoneSignerDialogOpen && signerType === "phone" && signerLocator != null,
+            phone: signerType === "phone" ? signerValue : undefined,
+            open: signerAuth.phoneSignerDialogOpen && signerType === "phone" && signerValue != null,
             setOpen: signerAuth.setPhoneSignerDialogOpen,
             step: signerAuth.phoneSignerDialogStep,
             onSubmitOTP: signerAuth.phonesigners_handleOTPSubmit,

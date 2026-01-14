@@ -123,7 +123,8 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ) => {
-            if (signer?.type === "phone" && signer?.locator().split(":")[1] != null) {
+            const signerValue = signer?.locator().split(":")[1];
+            if (signer?.type === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
                 sendPhoneWithOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
