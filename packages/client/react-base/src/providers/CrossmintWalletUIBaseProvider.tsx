@@ -1,4 +1,4 @@
-import { type ReactNode, type MutableRefObject } from "react";
+import type { ReactNode, MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
 
