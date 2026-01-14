@@ -28,20 +28,13 @@ export function HomeContent() {
     //     crossmintWalletStatus: status,
     //     isLoading,
     // } = useEVMDynamicConnector();
-    const { wallet, status, getOrCreateWallet } = useWallet();
-    const { status: crossminAuthStatus, user } = useAuth();
+    const { wallet, status } = useWallet();
+    const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
     const walletAddress = wallet?.address;
-    const isLoggedIn = user != null;
+    const isLoggedIn = wallet != null && status === "loaded";
     const [copiedAddress, setCopiedAddress] = useState(false);
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            console.log("Creating wallet for user", user.email);
-            getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email", email: user.email } });
-        }
-    }, [isLoggedIn, getOrCreateWallet, user]);
 
     if (isLoading) {
         return (

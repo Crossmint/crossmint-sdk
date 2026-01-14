@@ -1,16 +1,13 @@
-import { type ReactNode, type MutableRefObject, useEffect } from "react";
+import { type ReactNode, type MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
-import type { CreateOnLogin } from "@/types";
-import { useLogger } from "./LoggerProvider";
-import { LoggerContext } from "./CrossmintProvider";
+
 import type { PasskeyPromptState } from "./CrossmintWalletBaseProvider";
 import { useWallet } from "@/hooks/useWallet";
 
 export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
     appearance?: UIConfig;
-    createOnLogin?: CreateOnLogin;
     headlessSigningFlow?: boolean;
     showPasskeyHelpers?: boolean;
     renderUI?: (props: UIRenderProps) => ReactNode;
@@ -52,34 +49,15 @@ export interface UIRenderProps {
 export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
-    createOnLogin,
     headlessSigningFlow,
     renderUI,
     passkeyPromptState,
     signerAuth,
 }: CrossmintWalletUIBaseProviderProps) {
-    const logger = useLogger(LoggerContext);
-
-    useEffect(() => {
-        logger.info("CrossmintWalletUIBaseProvider: createOnLogin", { createOnLogin });
-    }, [createOnLogin, logger]);
-
     const { wallet } = useWallet();
 
     const signerType = wallet?.signer.type;
     const signerLocator = wallet?.signer.locator().split(":")[1];
-
-    useEffect(() => {
-        logger.info("CrossmintWalletUIBaseProvider: wallet", { wallet });
-        logger.info("CrossmintWalletUIBaseProvider: wallet.signer.type", { signerType: wallet?.signer.type });
-        logger.info("CrossmintWalletUIBaseProvider: wallet.signer.locator", {
-            signerLocator: wallet?.signer.locator().split(":")[1],
-        });
-    }, [wallet, logger]);
-
-    console.log("CrossmintWalletUIBaseProvider: signerAuth.emailSignerDialogOpen", {
-        emailSignerDialogOpen: signerAuth.emailSignerDialogOpen,
-    });
 
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {

@@ -155,7 +155,6 @@ export function CrossmintWalletBaseProvider({
             });
 
             if (onAuthRequired) {
-                logger.info("wrappedOnAuthRequired: onAuthRequired", { onAuthRequired });
                 return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
             }
         },
@@ -182,13 +181,7 @@ export function CrossmintWalletBaseProvider({
 
                 if (args?.signer?.type === "email") {
                     const email = args.signer.email ?? experimental_customAuth?.email;
-                    logger.info("getOrCreateWallet: Email signer onAuthRequired", {
-                        onAuthRequired: args.signer.onAuthRequired,
-                    });
                     const _onAuthRequired = args.signer.onAuthRequired ?? wrappedOnAuthRequired;
-                    logger.info("getOrCreateWallet: Email signer onAuthRequired wrapped", {
-                        onAuthRequired: _onAuthRequired,
-                    });
 
                     if (email == null) {
                         throw new Error(
@@ -316,7 +309,6 @@ export function CrossmintWalletBaseProvider({
             {hasUIProps ? (
                 <CrossmintWalletUIBaseProvider
                     appearance={appearance}
-                    createOnLogin={createOnLogin}
                     headlessSigningFlow={headlessSigningFlow}
                     renderUI={renderUI}
                     passkeyPromptState={passkeyPromptState}

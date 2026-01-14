@@ -29,14 +29,6 @@ export function EmailSignersDialog({
     rejectRef,
     appearance,
 }: EmailSignersDialogProps) {
-    console.log("EmailSignersDialog: email", email);
-    console.log("EmailSignersDialog: open", open);
-    console.log("EmailSignersDialog: step", step);
-    console.log("EmailSignersDialog: onSubmitOTP", onSubmitOTP);
-    console.log("EmailSignersDialog: onResendOTPCode", onResendOTPCode);
-    console.log("EmailSignersDialog: onSubmitEmail", onSubmitEmail);
-    console.log("EmailSignersDialog: rejectRef", rejectRef);
-    console.log("EmailSignersDialog: appearance", appearance);
     function handleOnCancel(isOpen?: boolean) {
         if (open || isOpen) {
             rejectRef.current?.(new Error());
