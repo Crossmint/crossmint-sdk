@@ -13,6 +13,8 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
+import { useLogger } from "./LoggerProvider";
+import { LoggerContext } from "./CrossmintProvider";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
@@ -62,6 +64,7 @@ export function CrossmintWalletBaseProvider({
     clientTEEConnection,
     initializeWebView,
 }: CrossmintWalletBaseProviderProps) {
+    const logger = useLogger(LoggerContext);
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
     );
@@ -90,6 +93,7 @@ export function CrossmintWalletBaseProvider({
             });
 
             if (onAuthRequired) {
+                logger.info("wrappedOnAuthRequired: onAuthRequired", { onAuthRequired });
                 return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
             }
         },
@@ -116,7 +120,13 @@ export function CrossmintWalletBaseProvider({
 
                 if (args?.signer?.type === "email") {
                     const email = args.signer.email ?? experimental_customAuth?.email;
+                    logger.info("getOrCreateWallet: Email signer onAuthRequired", {
+                        onAuthRequired: args.signer.onAuthRequired,
+                    });
                     const _onAuthRequired = args.signer.onAuthRequired ?? wrappedOnAuthRequired;
+                    logger.info("getOrCreateWallet: Email signer onAuthRequired wrapped", {
+                        onAuthRequired: _onAuthRequired,
+                    });
 
                     if (email == null) {
                         throw new Error(

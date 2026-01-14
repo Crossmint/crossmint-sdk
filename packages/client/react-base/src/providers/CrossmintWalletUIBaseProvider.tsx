@@ -6,6 +6,8 @@ import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
 import { useCrossmint } from "@/hooks/useCrossmint";
 import { useSignerAuth } from "@/hooks/useSignerAuth";
 import type { CreateOnLogin } from "@/types";
+import { useLogger } from "./LoggerProvider";
+import { LoggerContext } from "./CrossmintProvider";
 
 export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
@@ -85,6 +87,9 @@ export function CrossmintWalletUIBaseProvider({
 }: CrossmintWalletUIBaseProviderProps) {
     const { experimental_customAuth } = useCrossmint();
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const logger = useLogger(LoggerContext);
+    logger.info("CrossmintWalletUIBaseProvider: createOnLogin", { createOnLogin });
+    logger.info("CrossmintWalletUIBaseProvider: experimental_customAuth", { experimental_customAuth });
 
     const signerAuth = useSignerAuth(createOnLogin);
 
@@ -92,7 +97,7 @@ export function CrossmintWalletUIBaseProvider({
         createOnLogin?.signer.type === "email" && createOnLogin?.signer.email != null
             ? createOnLogin.signer.email
             : experimental_customAuth?.email;
-
+    logger.info("CrossmintWalletUIBaseProvider: email", { email });
     const phoneNumber =
         createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
             ? createOnLogin.signer.phone

@@ -55,20 +55,7 @@ function EVMCrossmintAuthProvider({
                 authModalTitle="EVM Wallets Quickstart"
                 loginMethods={["google", "twitter", "email"]}
             >
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={
-                        createOnLogin != null
-                            ? createOnLogin
-                            : {
-                                  chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                                  signer: { type: "email" },
-                                  ...ALIAS_CONFIG,
-                              }
-                    }
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
