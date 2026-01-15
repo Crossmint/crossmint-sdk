@@ -156,6 +156,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
             return;
         }
 
+        //check approval test heading
         const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();
         await approvalTestHeading.scrollIntoViewIfNeeded();
         await expectAuth(approvalTestHeading).toBeVisible();
