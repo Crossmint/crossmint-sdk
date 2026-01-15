@@ -15,7 +15,7 @@ export async function getWalletBalance(page: Page): Promise<string> {
             (response) => {
                 const url = response.url();
                 // Support both API versions
-                return /\/api\/(2025-06-09|2022-06-09)\/wallets\/[^/]+\/balances/.test(url);
+                return /\/api\/2025-06-09\/wallets\/[^/]+\/balances/.test(url);
             },
             { timeout: 10000 }
         );
@@ -109,7 +109,7 @@ export async function getWalletActivity(page: Page): Promise<{
         .waitForResponse(
             (response) => {
                 const url = response.url();
-                return /\/api\/(2025-06-09|2022-06-09)\/wallets\/[^/]+\/activity/.test(url);
+                return /\/api\/2025-06-09\/wallets\/[^/]+\/activity/.test(url);
             },
             { timeout: 30000 }
         )
@@ -123,7 +123,7 @@ export async function getWalletActivity(page: Page): Promise<{
                 return await page.waitForResponse(
                     (response) => {
                         const url = response.url();
-                        return /\/api\/(2025-06-09|2022-06-09)\/wallets\/[^/]+\/activity/.test(url);
+                        return /\/api\/2025-06-09\/wallets\/[^/]+\/activity/.test(url);
                     },
                     { timeout: 20000 }
                 );
