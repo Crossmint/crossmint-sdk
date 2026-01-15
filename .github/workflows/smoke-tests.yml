@@ -48,11 +48,13 @@ jobs:
             - name: Run smoke tests
               working-directory: apps/wallets/quickstart-devkit
               env:
-                  TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY }}
+                  NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+                  NEXT_PUBLIC_EVM_CHAIN: "optimism-sepolia"
+                  TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY_SMOKE_TESTS }}
                   MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
-                  MAILOSAUR_SERVER_ID: ${{ secrets.MAILOSAUR_SERVER_ID }}
-                  MAILOSAUR_PHONE_NUMBER: ${{ secrets.MAILOSAUR_PHONE_NUMBER }}
-                  PLAYWRIGHT_BASE_URL: ${{ secrets.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' }}
+                  MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
+                  MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
+                  PLAYWRIGHT_BASE_URL: "http://localhost:3000"
               run: |
                   pnpm exec playwright test --project=smoke
 
