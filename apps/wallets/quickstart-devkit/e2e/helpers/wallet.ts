@@ -36,13 +36,26 @@ export async function getWalletBalances(page: Page): Promise<{
     usdc: { amount: string; symbol: string };
     tokens: Array<{ amount: string; symbol: string }>;
 }> {
+    // Increase timeout for CI environments where API calls might be slower
+    const timeout = process.env.CI ? 60000 : 30000;
+    
+    console.log("⏳ Waiting for balance API response...");
     const balanceResponse = await page.waitForResponse(
         (response) => {
             const url = response.url();
-            return /\/api\/(2025-06-09|2022-06-09)\/wallets\/[^/]+\/balances/.test(url);
+            const matches = /\/api\/(2025-06-09|2022-06-09)\/wallets\/[^/]+\/balances/.test(url);
+            if (matches) {
+                console.log(`✅ Balance API response received: ${url}`);
+            }
+            return matches;
         },
-        { timeout: 30000 }
-    );
+        { timeout }
+    ).catch((error) => {
+        console.error("❌ Failed to get balance API response");
+        console.error("Error:", error.message);
+        console.error("⏱️ Timeout was:", timeout, "ms");
+        throw error;
+    });
 
     if (balanceResponse.status() >= 400) {
         throw new Error(`Balance API call failed with status ${balanceResponse.status()}`);
