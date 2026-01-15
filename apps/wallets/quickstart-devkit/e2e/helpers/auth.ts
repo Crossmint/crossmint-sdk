@@ -18,7 +18,11 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
         await submitButton.click();
 
-        await page.locator("text=/Check your email/i").waitFor({ timeout: 10000 });
+        console.log("⏳ Waiting for email confirmation message...");
+        await page
+            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+            .first()
+            .waitFor({ timeout: 60000, state: "visible" });
         console.log("📧 Email OTP sent, waiting for email...");
 
         const otpCode = await getEmailOTPCode(email, "login");
