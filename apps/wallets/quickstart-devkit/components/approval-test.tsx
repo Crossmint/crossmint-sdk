@@ -254,7 +254,7 @@ export function ApprovalTest() {
 
                 {preparedTransactionId && (
                     <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                        <p className="text-sm text-green-700">
+                        <p className="text-sm text-green-700" data-testid="prepared-transaction-id">
                             <strong>Prepared Transaction ID:</strong> {preparedTransactionId}
                         </p>
                     </div>

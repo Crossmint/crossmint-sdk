@@ -228,11 +228,13 @@ export async function createPreparedTransaction(
 
         await handleSignerConfirmation(page, signerType as any);
 
-        const transactionIdContainer = page.locator('p:has-text("Prepared Transaction ID:")').first();
-        await transactionIdContainer.waitFor({ timeout: 60000 });
+        // Wait for the prepared transaction ID element to appear
+        const transactionIdElement = page.locator('[data-testid="prepared-transaction-id"]').first();
+        await transactionIdElement.waitFor({ timeout: 60000 });
 
-        // Get the full text content from the paragraph element
-        const transactionIdText = await transactionIdContainer.textContent();
+        // Get the full text content from the element
+        const transactionIdText = await transactionIdElement.textContent();
+        
         if (!transactionIdText) {
             throw new Error("Could not find prepared transaction ID");
         }
