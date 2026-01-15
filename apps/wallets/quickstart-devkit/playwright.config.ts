@@ -56,6 +56,7 @@ export default defineConfig({
         command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
         url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
+        timeout: process.env.CI ? 180000 : 60000,
         stdout: "pipe",
         stderr: "pipe",
     },

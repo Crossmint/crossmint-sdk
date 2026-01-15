@@ -55,7 +55,6 @@ jobs:
                   PLAYWRIGHT_BASE_URL: ${{ secrets.PLAYWRIGHT_BASE_URL || 'http://localhost:3000' }}
               run: |
                   pnpm exec playwright test --project=smoke
-              continue-on-error: true
 
             - name: Generate test report
               if: always()
