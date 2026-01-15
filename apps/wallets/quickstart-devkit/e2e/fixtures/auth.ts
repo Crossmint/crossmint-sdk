@@ -23,40 +23,9 @@ export const test = base.extend<AuthFixtures>({
 
         const cached = authenticatedPageCache.get(cacheKey);
         if (cached) {
-            // Check if the cached page/context is still valid (not closed)
-            try {
-                const cachedBrowser = cached.context.browser();
-                
-                if (cachedBrowser !== null && cachedBrowser.isConnected()) {
-                    const expectedUrl = buildTestUrl(testConfig);
-                    const currentUrl = cached.page.url();
-                    
-                    // Always navigate to ensure fresh API calls are triggered
-                    // This is important because API calls might not be retriggered on an already-loaded page
-                    if (!currentUrl.includes(expectedUrl.split('?')[0])) {
-                        console.log(`🔄 Cached page is on wrong URL (${currentUrl}), navigating to ${expectedUrl}`);
-                        await cached.page.goto(expectedUrl);
-                        await cached.page.waitForTimeout(2000);
-                        await waitForWalletReady(cached.page);
-                    } else {
-                        // Even if on correct URL, reload to trigger fresh API calls
-                        console.log(`🔄 Reloading page to trigger fresh API calls`);
-                        await cached.page.reload();
-                        await cached.page.waitForTimeout(2000);
-                        await waitForWalletReady(cached.page);
-                    }
-                    
-                    console.log(`♻️  Reusing authenticated session for ${cacheKey}`);
-                    await use(cached.page);
-                    return;
-                } else {
-                    console.log(`⚠️  Cached session for ${cacheKey} is closed, creating new one`);
-                    authenticatedPageCache.delete(cacheKey);
-                }
-            } catch (error) {
-                console.log(`⚠️  Cached session for ${cacheKey} is invalid, creating new one:`, error);
-                authenticatedPageCache.delete(cacheKey);
-            }
+            console.log(`♻️  Reusing authenticated session for ${cacheKey}`);
+            await use(cached.page);
+            return;
         }
 
         console.log(`🚀 Creating NEW authenticated session for ${cacheKey}`);
