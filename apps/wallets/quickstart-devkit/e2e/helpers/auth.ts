@@ -97,8 +97,38 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         const beforeSendCodeTime = new Date();
 
+        const sendCodePromise = page.waitForResponse(
+            (response) => {
+                const url = response.url();
+                const method = response.request().method();
+                return (
+                    (url.includes("/api/") &&
+                        (url.includes("/signers/") ||
+                            url.includes("/approvals") ||
+                            url.includes("/transactions/") ||
+                            url.includes("/signatures/")) &&
+                        method === "POST") ||
+                    (url.includes("/api/") && url.includes("/confirm") && method === "POST")
+                );
+            },
+            { timeout: 30000 }
+        );
+
         await sendCodeButton.click();
         console.log("📧 Clicked 'Send code' button");
+
+        try {
+            const sendCodeResponse = await sendCodePromise;
+            if (sendCodeResponse.status() >= 400) {
+                console.warn(`⚠️ Send code API returned status ${sendCodeResponse.status()}`);
+            } else {
+                console.log("✅ Send code API call completed successfully");
+            }
+        } catch (e) {
+            console.warn("⚠️ Could not detect send code API response, continuing anyway");
+        }
+
+        await page.waitForTimeout(2000);
 
         // Wait for UI confirmation instead of network response - more reliable and works for both client-side and server-side requests
         console.log("⏳ Waiting for 'Check your email/phone' message...");
