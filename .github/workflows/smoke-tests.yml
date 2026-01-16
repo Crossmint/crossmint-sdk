@@ -67,8 +67,16 @@ jobs:
                   echo "Expected report path: $(pwd)/test-results/report.md"
                   if [ -f test-results/smoke-results.json ]; then
                       echo "✅ Found test results JSON, generating report..."
+                      echo "JSON file size: $(wc -c < test-results/smoke-results.json) bytes"
+                      echo "First 500 chars of JSON:"
+                      head -c 500 test-results/smoke-results.json || echo "Could not read JSON file"
+                      echo ""
+                      echo "Checking JSON structure..."
+                      node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('test-results/smoke-results.json','utf8')); console.log('Top-level keys:', Object.keys(data)); if(data.suites) console.log('Number of suites:', data.suites.length);" || echo "Could not parse JSON"
                       node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md
                       echo "✅ Report generated at $(pwd)/test-results/report.md"
+                      echo "Report content preview:"
+                      head -20 test-results/report.md || echo "Could not read report"
                       echo "Files in test-results:"
                       ls -la test-results/
                       echo "Verifying report.md exists:"
