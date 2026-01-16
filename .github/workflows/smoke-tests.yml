@@ -72,8 +72,12 @@ jobs:
                       head -c 500 test-results/smoke-results.json || echo "Could not read JSON file"
                       echo ""
                       echo "Checking JSON structure..."
-                      node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('test-results/smoke-results.json','utf8')); console.log('Top-level keys:', Object.keys(data)); if(data.suites) console.log('Number of suites:', data.suites.length);" || echo "Could not parse JSON"
-                      node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md
+                      node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('test-results/smoke-results.json','utf8')); console.log('Top-level keys:', Object.keys(data)); if(data.suites) { console.log('Number of suites:', data.suites.length); if(data.suites[0]) { console.log('First suite keys:', Object.keys(data.suites[0])); if(data.suites[0].specs) console.log('Number of specs:', data.suites[0].specs.length); if(data.suites[0].tests) console.log('Number of tests (flat):', data.suites[0].tests.length); } } if(data.stats) console.log('Stats object:', JSON.stringify(data.stats, null, 2));" || echo "Could not parse JSON"
+                      DEBUG=1 node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md 2>test-results/debug.log || node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md
+                      if [ -f test-results/debug.log ]; then
+                          echo "Debug log:"
+                          cat test-results/debug.log
+                      fi
                       echo "✅ Report generated at $(pwd)/test-results/report.md"
                       echo "Report content preview:"
                       head -20 test-results/report.md || echo "Could not read report"

@@ -41,12 +41,23 @@ if (process.env.DEBUG) {
         console.error("Number of suites:", results.suites.length);
         if (results.suites[0]) {
             console.error("First suite keys:", Object.keys(results.suites[0]));
+            if (results.suites[0].specs) {
+                console.error("Number of specs in first suite:", results.suites[0].specs.length);
+                if (results.suites[0].specs[0]) {
+                    console.error("First spec keys:", Object.keys(results.suites[0].specs[0]));
+                    if (results.suites[0].specs[0].tests) {
+                        console.error("Number of tests in first spec:", results.suites[0].specs[0].tests.length);
+                    }
+                }
+            }
         }
     }
 }
 
 // Playwright JSON reporter outputs: { suites: [...] }
-// Each suite has: { specs: [...] }
+// Each suite can have either:
+//   - { specs: [...] } (nested structure)
+//   - OR { tests: [...] } (flat structure)
 // Each spec has: { tests: [...] }
 // Each test has: { results: [{ status, duration, ... }] }
 
@@ -56,16 +67,38 @@ let failedTests = 0;
 let skippedTests = 0;
 let duration = 0;
 
+// Parse from suites first
 if (results.suites && Array.isArray(results.suites)) {
-    results.suites.forEach((suite) => {
-        if (suite.specs && Array.isArray(suite.specs)) {
-            suite.specs.forEach((spec) => {
+    results.suites.forEach((suite, suiteIndex) => {
+        // Check if suite has tests directly (flat structure)
+        if (suite.tests && Array.isArray(suite.tests)) {
+            suite.tests.forEach((test) => {
+                totalTests++;
+                const result = test.results && test.results[0] ? test.results[0] : null;
+                const status = result?.status || "unknown";
+
+                if (status === "passed") {
+                    passedTests++;
+                } else if (status === "failed") {
+                    failedTests++;
+                } else if (status === "skipped") {
+                    skippedTests++;
+                }
+
+                if (result?.duration) {
+                    duration += result.duration;
+                }
+            });
+        }
+        // Check if suite has specs (nested structure)
+        else if (suite.specs && Array.isArray(suite.specs)) {
+            suite.specs.forEach((spec, specIndex) => {
                 if (spec.tests && Array.isArray(spec.tests)) {
                     spec.tests.forEach((test) => {
                         totalTests++;
                         const result = test.results && test.results[0] ? test.results[0] : null;
                         const status = result?.status || "unknown";
-                        
+
                         if (status === "passed") {
                             passedTests++;
                         } else if (status === "failed") {
@@ -73,21 +106,43 @@ if (results.suites && Array.isArray(results.suites)) {
                         } else if (status === "skipped") {
                             skippedTests++;
                         }
-                        
+
                         if (result?.duration) {
                             duration += result.duration;
                         }
                     });
+                } else if (process.env.DEBUG) {
+                    console.error(
+                        `Suite ${suiteIndex}, Spec ${specIndex}: No tests array found. Spec keys:`,
+                        Object.keys(spec)
+                    );
                 }
             });
+        } else if (process.env.DEBUG) {
+            console.error(`Suite ${suiteIndex}: No specs or tests array found. Suite keys:`, Object.keys(suite));
         }
     });
-} else {
+}
+
+// Fallback: if we didn't find any tests in suites, try using stats object
+if (totalTests === 0 && results.stats) {
+    if (process.env.DEBUG) {
+        console.error("No tests found in suites, trying stats object:", results.stats);
+    }
+    totalTests = results.stats.total || 0;
+    // Playwright stats might use different property names
+    passedTests = results.stats.expected || results.stats.passed || 0;
+    failedTests = results.stats.unexpected || results.stats.failed || 0;
+    skippedTests = results.stats.skipped || 0;
+    duration = results.stats.duration || 0;
+}
+
+if (totalTests === 0 && (!results.suites || !Array.isArray(results.suites))) {
     // Fallback: if structure is different, log error to stderr (won't affect report output)
     console.error("⚠️ Unexpected JSON structure. Expected 'suites' array.");
     console.error("Top-level keys:", Object.keys(results));
     if (process.env.DEBUG) {
-        console.error("Full structure:", JSON.stringify(results, null, 2));
+        console.error("Full structure (first 2000 chars):", JSON.stringify(results, null, 2).substring(0, 2000));
     }
     // Still output a report with 0 tests so the comment gets updated
 }
@@ -109,7 +164,32 @@ if (failedTests > 0 || skippedTests > 0) {
 
     if (results.suites && Array.isArray(results.suites)) {
         results.suites.forEach((suite) => {
-            if (suite.specs && Array.isArray(suite.specs)) {
+            // Handle flat structure (suite.tests)
+            if (suite.tests && Array.isArray(suite.tests)) {
+                suite.tests.forEach((test) => {
+                    const result = test.results && test.results[0] ? test.results[0] : null;
+                    const status = result?.status || "unknown";
+
+                    if (status === "failed" || status === "skipped") {
+                        const emoji = status === "failed" ? "❌" : "⚠️";
+                        const suiteTitle = suite.title || "Unknown Suite";
+                        const testTitle = test.title || "Unknown Test";
+                        report += `${emoji} **${suiteTitle}** - ${testTitle}\n`;
+
+                        if (status === "failed" && result?.error) {
+                            report += `   \`\`\`\n   ${result.error.message}\n   \`\`\`\n`;
+                        }
+
+                        if (status === "skipped") {
+                            report += `   *Test was skipped*\n`;
+                        }
+
+                        report += "\n";
+                    }
+                });
+            }
+            // Handle nested structure (suite.specs)
+            else if (suite.specs && Array.isArray(suite.specs)) {
                 suite.specs.forEach((spec) => {
                     if (spec.tests && Array.isArray(spec.tests)) {
                         spec.tests.forEach((test) => {
