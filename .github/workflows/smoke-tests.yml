@@ -63,10 +63,21 @@ jobs:
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
+                  echo "Current directory: $(pwd)"
+                  echo "Expected report path: $(pwd)/test-results/report.md"
                   if [ -f test-results/smoke-results.json ]; then
+                      echo "✅ Found test results JSON, generating report..."
                       node scripts/generate-test-report.js test-results/smoke-results.json > test-results/report.md
+                      echo "✅ Report generated at $(pwd)/test-results/report.md"
+                      echo "Files in test-results:"
+                      ls -la test-results/
+                      echo "Verifying report.md exists:"
+                      test -f test-results/report.md && echo "✅ report.md exists" || echo "❌ report.md missing"
                   else
+                      echo "⚠️ Test results JSON not found, creating placeholder report..."
                       printf "# Smoke Test Results\n\n⚠️ Test results file not found.\n" > test-results/report.md
+                      echo "Files in test-results:"
+                      ls -la test-results/ || echo "test-results directory does not exist"
                   fi
 
             - name: Comment with test results
@@ -77,20 +88,54 @@ jobs:
                       const fs = require('fs');
                       const path = require('path');
                       
-                      const reportPath = path.join('apps/wallets/quickstart-devkit', 'test-results', 'report.md');
+                      // GITHUB_WORKSPACE is always set in GitHub Actions and points to the repo root
+                      const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+                      const reportPath = path.join(workspace, 'apps', 'wallets', 'quickstart-devkit', 'test-results', 'report.md');
+                      
+                      console.log(`GITHUB_WORKSPACE: ${workspace}`);
+                      console.log(`Current working directory: ${process.cwd()}`);
+                      console.log(`Looking for report at: ${reportPath}`);
+                      
+                      // Verify the directory exists
+                      const resultsDir = path.dirname(reportPath);
+                      console.log(`Results directory: ${resultsDir}`);
+                      console.log(`Results directory exists: ${fs.existsSync(resultsDir)}`);
+                      
+                      if (fs.existsSync(resultsDir)) {
+                          const files = fs.readdirSync(resultsDir);
+                          console.log(`Files in results directory: ${files.join(', ')}`);
+                      }
+                      
                       let reportContent = '## 🔥 Smoke Test Results\n\n';
                       
                       try {
                           if (fs.existsSync(reportPath)) {
+                              console.log(`✅ Found report file at: ${reportPath}`);
                               const content = fs.readFileSync(reportPath, 'utf8');
                               // Remove the duplicate title if it exists in the report
                               const cleanContent = content.replace(/^#+\s*Smoke Test Results\s*\n*/i, '');
                               reportContent += cleanContent.trim();
                           } else {
-                              reportContent += '⚠️ Test report not found. Check workflow logs for details.';
+                              console.log(`❌ Report file not found at: ${reportPath}`);
+                              reportContent += '⚠️ Test report not found. Check workflow logs for details.\n\n';
+                              reportContent += `**Debug Info:**\n`;
+                              reportContent += `- Expected path: \`${reportPath}\`\n`;
+                              reportContent += `- Workspace: \`${workspace}\`\n`;
+                              reportContent += `- Current directory: \`${process.cwd()}\`\n`;
+                              
+                              if (fs.existsSync(resultsDir)) {
+                                  const files = fs.readdirSync(resultsDir);
+                                  reportContent += `- Files in test-results: ${files.length > 0 ? files.map(f => `\`${f}\``).join(', ') : 'none'}\n`;
+                              } else {
+                                  reportContent += `- test-results directory does not exist\n`;
+                              }
                           }
                       } catch (error) {
-                          reportContent += `❌ Error reading test report: ${error.message}`;
+                          console.error(`Error reading report: ${error.message}`);
+                          reportContent += `❌ Error reading test report: ${error.message}\n`;
+                          if (error.stack) {
+                              reportContent += `\n\`\`\`\n${error.stack}\n\`\`\`\n`;
+                          }
                       }
                       
                       // Try to find associated PR for push events
