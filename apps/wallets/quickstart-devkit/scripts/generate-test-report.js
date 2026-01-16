@@ -129,11 +129,13 @@ if (totalTests === 0 && results.stats) {
     if (process.env.DEBUG) {
         console.error("No tests found in suites, trying stats object:", results.stats);
     }
-    totalTests = results.stats.total || 0;
     // Playwright stats might use different property names
     passedTests = results.stats.expected || results.stats.passed || 0;
     failedTests = results.stats.unexpected || results.stats.failed || 0;
     skippedTests = results.stats.skipped || 0;
+    const flakyTests = results.stats.flaky || 0;
+    // Calculate total from individual counts (stats doesn't have a 'total' property)
+    totalTests = passedTests + failedTests + skippedTests + flakyTests;
     duration = results.stats.duration || 0;
 }
 
@@ -157,7 +159,9 @@ report += `- **Total Tests**: ${totalTests}\n`;
 report += `- **Passed**: ${passedTests} ✅\n`;
 report += `- **Failed**: ${failedTests} ${failedTests > 0 ? "❌" : ""}\n`;
 report += `- **Skipped**: ${skippedTests} ${skippedTests > 0 ? "⚠️" : ""}\n`;
-report += `- **Duration**: ${(duration / 1000).toFixed(2)}s\n\n`;
+// Duration is in milliseconds, convert to minutes
+const durationInMinutes = (duration / 60000).toFixed(2);
+report += `- **Duration**: ${durationInMinutes} min\n\n`;
 
 if (failedTests > 0 || skippedTests > 0) {
     report += "### Test Details\n\n";
