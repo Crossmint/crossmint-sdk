@@ -107,11 +107,9 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         // Check wallet balance and skip if 0
         const balance = await getWalletBalance(authenticatedPage);
         const balanceNum = parseFloat(balance);
-        
+
         if (balanceNum === 0) {
-            console.log(
-                `⚠️ Wallet ${walletAddress} has 0 balance. Skipping transfer test.`
-            );
+            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Skipping transfer test.`);
             console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
             test.skip();
             return;

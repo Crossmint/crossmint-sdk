@@ -38,29 +38,29 @@ export async function getWalletBalances(page: Page): Promise<{
 }> {
     // Increase timeout for CI environments where UI might take longer to load
     const timeout = process.env.CI ? 90000 : 30000;
-    
+
     console.log("⏳ Waiting for balance UI elements to be visible...");
-    
+
     // Wait for the native token balance element to be visible
     const nativeTokenBalanceElement = page.locator('[data-testid="native-token-balance"]').first();
     await nativeTokenBalanceElement.waitFor({ state: "visible", timeout });
     console.log("✅ Native token balance element is visible");
-    
+
     // Wait for the USDC balance element to be visible
     const usdcBalanceElement = page.locator('[data-testid="usdc-balance"]').first();
     await usdcBalanceElement.waitFor({ state: "visible", timeout });
     console.log("✅ USDC balance element is visible");
-    
+
     // Extract native token balance and symbol
     const nativeTokenText = await nativeTokenBalanceElement.textContent();
     const nativeTokenMatch = nativeTokenText?.match(/([\d.]+)\s+(ETH|SOL|XLM)/i);
     const nativeTokenAmount = nativeTokenMatch?.[1] || "0";
     const nativeTokenSymbol = nativeTokenMatch?.[2]?.toLowerCase() || "eth";
-    
+
     // Extract USDC balance (displayed as "$ 0.00" format)
     const usdcText = await usdcBalanceElement.textContent();
     const usdcAmount = usdcText?.replace(/[^0-9.]/g, "").trim() || "0";
-    
+
     console.log(`✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, USDC: ${usdcAmount}`);
 
     return {
@@ -225,12 +225,14 @@ export async function createPreparedTransaction(
 
         // Wait for the prepared transaction ID element to appear
         // The ID is displayed in a p element inside a div.bg-green-50 container
-        const transactionIdElement = page.locator('div.bg-green-50 p.text-green-700:has-text("Prepared Transaction ID:")').first();
+        const transactionIdElement = page
+            .locator('div.bg-green-50 p.text-green-700:has-text("Prepared Transaction ID:")')
+            .first();
         await transactionIdElement.waitFor({ timeout: 60000 });
 
         // Get the full text content from the p element
         const transactionIdText = await transactionIdElement.textContent();
-        
+
         if (!transactionIdText) {
             throw new Error("Could not find prepared transaction ID");
         }
@@ -284,4 +286,3 @@ export async function approveTransactionById(page: Page, transactionId: string, 
         throw error;
     }
 }
-
