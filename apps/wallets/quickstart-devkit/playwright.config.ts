@@ -8,7 +8,7 @@ export default defineConfig({
     testDir: "./e2e",
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: 0,
     workers: 1,
     reporter: process.env.CI ? [["json", { outputFile: "test-results/smoke-results.json" }], ["list"]] : "html",
     timeout: 60000,
@@ -27,7 +27,7 @@ export default defineConfig({
             testDir: "./e2e/smoke-tests",
             testMatch: "smoke.spec.ts",
             fullyParallel: false,
-            retries: process.env.CI ? 1 : 0,
+            retries: 0, // No retries to avoid re-running passed tests in serial mode
             timeout: 300000, // 5 minutes for smoke tests
             use: {
                 ...devices["Desktop Chrome"],
