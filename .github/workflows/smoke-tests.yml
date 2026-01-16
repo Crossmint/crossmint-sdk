@@ -139,43 +139,71 @@ jobs:
                       }
                       
                       // Try to find associated PR for push events
-                      if (context.eventName === 'push') {
-                          const { data: pulls } = await github.rest.pulls.list({
-                              owner: context.repo.owner,
-                              repo: context.repo.repo,
-                              state: 'open',
-                              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
-                          });
-                          
-                          if (pulls.length > 0) {
-                              const prNumber = pulls[0].number;
+                      try {
+                          if (context.eventName === 'push') {
+                              console.log(`Looking for PRs for branch: ${context.ref.replace('refs/heads/', '')}`);
+                              const branchName = context.ref.replace('refs/heads/', '');
                               
-                              const comments = await github.rest.issues.listComments({
+                              const { data: pulls } = await github.rest.pulls.list({
                                   owner: context.repo.owner,
                                   repo: context.repo.repo,
-                                  issue_number: prNumber,
+                                  state: 'open',
+                                  head: `${context.repo.owner}:${branchName}`,
                               });
                               
-                              const botComment = comments.data.find(
-                                  comment => comment.user.type === 'Bot' && comment.body.includes('Smoke Test Results')
-                              );
+                              console.log(`Found ${pulls.length} open PR(s) for this branch`);
                               
-                              if (botComment) {
-                                  await github.rest.issues.updateComment({
-                                      owner: context.repo.owner,
-                                      repo: context.repo.repo,
-                                      comment_id: botComment.id,
-                                      body: reportContent,
-                                  });
-                              } else {
-                                  await github.rest.issues.createComment({
+                              if (pulls.length > 0) {
+                                  const prNumber = pulls[0].number;
+                                  console.log(`Using PR #${prNumber} to post comment`);
+                                  
+                                  const comments = await github.rest.issues.listComments({
                                       owner: context.repo.owner,
                                       repo: context.repo.repo,
                                       issue_number: prNumber,
-                                      body: reportContent,
                                   });
+                                  
+                                  console.log(`Found ${comments.data.length} existing comment(s) on PR #${prNumber}`);
+                                  
+                                  // Look for existing bot comment - check for bot user type OR github-actions bot
+                                  const botComment = comments.data.find(
+                                      comment => {
+                                          const isBot = comment.user.type === 'Bot' || comment.user.login === 'github-actions[bot]';
+                                          const hasTitle = comment.body.includes('Smoke Test Results') || comment.body.includes('🔥 Smoke Test Results');
+                                          console.log(`Comment ${comment.id} by ${comment.user.login} (type: ${comment.user.type}): isBot=${isBot}, hasTitle=${hasTitle}`);
+                                          return isBot && hasTitle;
+                                      }
+                                  );
+                                  
+                                  if (botComment) {
+                                      console.log(`Found existing bot comment #${botComment.id}, updating...`);
+                                      await github.rest.issues.updateComment({
+                                          owner: context.repo.owner,
+                                          repo: context.repo.repo,
+                                          comment_id: botComment.id,
+                                          body: reportContent,
+                                      });
+                                      console.log('✅ Comment updated successfully');
+                                  } else {
+                                      console.log('No existing bot comment found, creating new comment...');
+                                      await github.rest.issues.createComment({
+                                          owner: context.repo.owner,
+                                          repo: context.repo.repo,
+                                          issue_number: prNumber,
+                                          body: reportContent,
+                                      });
+                                      console.log('✅ Comment created successfully');
+                                  }
+                              } else {
+                                  console.log('⚠️ No open PRs found for this branch, skipping comment');
                               }
+                          } else {
+                              console.log(`Event type is '${context.eventName}', skipping PR comment`);
                           }
+                      } catch (error) {
+                          console.error(`❌ Error posting comment: ${error.message}`);
+                          console.error(error.stack);
+                          throw error;
                       }
 
 
