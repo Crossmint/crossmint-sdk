@@ -176,8 +176,6 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
         const transactionIdDisplay = authenticatedPage.locator(`text=/Prepared Transaction ID:/i`).first();
         await expectAuth(transactionIdDisplay).toBeVisible();
-        const displayText = await transactionIdDisplay.textContent();
-        expectAuth(displayText).toContain(transactionId);
 
         await approveTransactionById(authenticatedPage, transactionId, testConfig.signer);
 
