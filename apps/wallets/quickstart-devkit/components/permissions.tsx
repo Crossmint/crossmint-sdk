@@ -52,7 +52,7 @@ export function Permissions() {
                 <p className="text-sm text-gray-500">
                     Allow third parties to sign transactions on behalf of your wallet.{" "}
                     <a
-                        href="https://docs.crossmint.com/wallets/advanced/delegated-keys"
+                        href="https://docs.crossmint.com/wallets/guides/delegated-signers"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-accent underline"

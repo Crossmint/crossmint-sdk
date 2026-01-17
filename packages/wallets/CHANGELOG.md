@@ -1,5 +1,25 @@
 # @crossmint/wallets-sdk
 
+## 0.18.14
+
+### Patch Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+- 38b9087: Adds logs for email signer otp modal flow
+
+## 0.18.13
+
+### Patch Changes
+
+- dbb338a: Remove chains parameter from balances() method - the wallet's default chain is now always used for balance queries, fixing a bug where passed chains were ignored during response processing.
+- c0e68b2: Fix approval signer locator bug: use correct signer's locator in approval submissions instead of always using this.signer.locator(). This makes the additionalSigners option work correctly for delegated signers.
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/common-sdk-auth@1.0.67
+
 ## 0.18.12
 
 ### Patch Changes

@@ -64,7 +64,36 @@ export function WithLoggerContext<TThis = unknown>(options: WithLoggerContextOpt
         const wrapped = function (this: TThis, ...args: unknown[]): unknown {
             const ctx = options.buildContext ? options.buildContext(this, args) : {};
             // Delegate execution lifecycle to logger.withExecutionContext
-            return options.logger.withExecutionContext(options.methodName, ctx, () => original.apply(this, args));
+            return options.logger.withExecutionContext(options.methodName, ctx, () => {
+                // Log the parameters before calling the function
+                options.logger.info(`${options.methodName} called`, { args });
+
+                let result: unknown;
+                try {
+                    result = original.apply(this, args);
+                } catch (error) {
+                    // Log the error before throwing
+                    options.logger.error(`${options.methodName} threw an error`, { error });
+                    throw error;
+                }
+
+                // Handle async functions
+                if (result instanceof Promise) {
+                    return result
+                        .then((value) => {
+                            options.logger.info(`${options.methodName} completed successfully`, { result: value });
+                            return value;
+                        })
+                        .catch((error) => {
+                            options.logger.error(`${options.methodName} threw an error`, { error });
+                            throw error;
+                        });
+                }
+
+                // Log success for sync functions
+                options.logger.info(`${options.methodName} completed successfully`, { result });
+                return result;
+            });
         };
 
         // The cast confines unsafety to the decorator implementation

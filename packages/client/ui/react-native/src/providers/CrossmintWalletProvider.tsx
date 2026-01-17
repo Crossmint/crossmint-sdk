@@ -10,7 +10,7 @@ import {
 } from "@crossmint/client-signers";
 import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
 import {
-    CrossmintWalletUIBaseProvider,
+    CrossmintWalletBaseProvider,
     type UIRenderProps,
     type CreateOnLogin,
     useCrossmint,
@@ -200,7 +200,7 @@ function CrossmintWalletProviderInternal({
     };
 
     return (
-        <CrossmintWalletUIBaseProvider
+        <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
             headlessSigningFlow={headlessSigningFlow}
@@ -249,7 +249,7 @@ function CrossmintWalletProviderInternal({
                     />
                 </View>
             )}
-        </CrossmintWalletUIBaseProvider>
+        </CrossmintWalletBaseProvider>
     );
 }
 

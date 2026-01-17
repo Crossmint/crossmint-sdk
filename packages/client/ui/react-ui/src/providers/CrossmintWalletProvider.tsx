@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import {
-    CrossmintWalletUIBaseProvider,
-    type UIRenderProps,
-    type CreateOnLogin,
-} from "@crossmint/client-sdk-react-base";
+import { CrossmintWalletBaseProvider, type UIRenderProps, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -39,7 +35,7 @@ export function CrossmintWalletProvider({
     callbacks,
 }: CrossmintWalletProviderProps) {
     return (
-        <CrossmintWalletUIBaseProvider
+        <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
             showPasskeyHelpers={showPasskeyHelpers}
@@ -47,6 +43,6 @@ export function CrossmintWalletProvider({
             renderUI={renderWebUI}
         >
             {children}
-        </CrossmintWalletUIBaseProvider>
+        </CrossmintWalletBaseProvider>
     );
 }

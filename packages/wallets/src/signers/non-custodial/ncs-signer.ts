@@ -7,8 +7,9 @@ import type {
 } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
-import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
+import { walletsLogger } from "../../logger";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -95,6 +96,10 @@ export abstract class NonCustodialSigner implements Signer {
         console.log("TEE connection initialized successfully");
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "handleAuthRequired",
+    })
     protected async handleAuthRequired() {
         const clientTEEConnection = await this.getTEEConnection();
 
@@ -131,6 +136,10 @@ export abstract class NonCustodialSigner implements Signer {
             this._needsAuth = true;
         }
 
+        walletsLogger.info("Handling auth required", { signerResponse });
+        walletsLogger.info("Needs auth", { needsAuth: this._needsAuth });
+        walletsLogger.info("Config onAuthRequired", { onAuthRequired: this.config.onAuthRequired });
+
         const { promise, resolve, reject } = this.createAuthPromise();
         this._authPromise = { promise, resolve, reject };
 
@@ -141,6 +150,7 @@ export abstract class NonCustodialSigner implements Signer {
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
                     async () => {
+                        walletsLogger.info("Auth rejected", { authRejected: true });
                         this._needsAuth = false;
                         // We call onAuthRequired again so the needsAuth state is updated for the dev
                         if (this.config.onAuthRequired != null) {
@@ -155,6 +165,7 @@ export abstract class NonCustodialSigner implements Signer {
                     }
                 );
             } catch (error) {
+                walletsLogger.error("handleAuthRequired error", { error });
                 reject(error as Error);
             }
         }
@@ -162,6 +173,7 @@ export abstract class NonCustodialSigner implements Signer {
         try {
             await promise;
         } catch (error) {
+            walletsLogger.error("handleAuthRequired promise error", { error });
             throw error;
         }
     }
