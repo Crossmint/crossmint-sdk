@@ -52,7 +52,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                         : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
                 }
 
-                await transferFunds(authenticatedPage, recipientAddress, "0.0001");
+                await transferFunds(authenticatedPage, recipientAddress, "0.0001", testConfig.signer);
 
                 console.log(
                     `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
