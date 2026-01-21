@@ -56,6 +56,13 @@ export interface SdkLoggerInitParams {
     projectId?: string;
     platform?: Platform;
     additionalContext?: LogContext;
+    /**
+     * Minimum log level for console output.
+     * Logs below this level will not be written to the console.
+     * Defaults to "debug" (all logs shown) for backward compatibility.
+     * Does not affect other sinks like Datadog which receive all logs.
+     */
+    consoleLogLevel?: LogLevel;
 }
 
 /**
@@ -123,8 +130,9 @@ export class SdkLogger implements ISdkLogger {
         }
 
         // Initialize sink manager with console sink if not already initialized
+        // Pass consoleLogLevel to filter console output (defaults to "debug" for backward compatibility)
         if (!sinkManager.isInitialized()) {
-            sinkManager.init([new ConsoleSink()]);
+            sinkManager.init([new ConsoleSink(params.consoleLogLevel)]);
         }
 
         // Set up flush listeners for app/browser close (only once globally)

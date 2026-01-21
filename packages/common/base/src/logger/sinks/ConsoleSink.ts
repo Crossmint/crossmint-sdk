@@ -1,13 +1,25 @@
-import type { LogContext, LogEntry, LogSink } from "../types";
+import type { LogContext, LogEntry, LogLevel, LogSink } from "../types";
+
+/**
+ * Log level hierarchy for filtering
+ * Lower index = less severe, higher index = more severe
+ */
+const LOG_LEVEL_HIERARCHY: LogLevel[] = ["debug", "info", "warn", "error"];
 
 /**
  * Console sink that writes logs to the console
  * Works in browser, React Native, and Node.js environments
+ * Supports filtering logs by minimum log level
  */
 export class ConsoleSink implements LogSink {
     readonly id = "console";
 
+    constructor(private minLogLevel: LogLevel = "debug") {}
+
     write(entry: LogEntry): void {
+        if (!this.shouldLog(entry.level)) {
+            return;
+        }
         const { level, message, context } = entry;
         const logMethod = this.getConsoleMethod(level);
 
@@ -51,5 +63,11 @@ export class ConsoleSink implements LogSink {
             return `[SDK] ${JSON.stringify(context)}`;
         }
         return message !== "" ? `[SDK] ${message}` : "[SDK]";
+    }
+
+    private shouldLog(level: LogLevel): boolean {
+        const entryLevelIndex = LOG_LEVEL_HIERARCHY.indexOf(level);
+        const minLevelIndex = LOG_LEVEL_HIERARCHY.indexOf(this.minLogLevel);
+        return entryLevelIndex >= minLevelIndex;
     }
 }
