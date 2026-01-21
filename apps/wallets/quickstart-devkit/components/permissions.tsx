@@ -64,11 +64,13 @@ export function Permissions() {
             </div>
             <input
                 type="text"
+                data-testid="delegated-signer-input"
                 className="w-full px-3 py-2 border rounded-md text-sm"
                 placeholder="Ex: 5YNmS1R9nNSCDzb5a7mMJ1dwK9uHeAAF4CmPEwKgVWr8"
                 onChange={(e) => setNewSigner(e.target.value)}
             />
             <button
+                data-testid="add-delegated-signer-button"
                 className={cn(
                     "w-full py-2 px-4 rounded-md text-sm font-medium transition-colors",
                     isLoading
@@ -82,12 +84,16 @@ export function Permissions() {
             </button>
             {/* List of permissions */}
             {permissions.length > 0 && (
-                <div className="bg-gray-50 py-2 px-3 rounded-md">
+                <div className="bg-gray-50 py-2 px-3 rounded-md" data-testid="registered-signers-list">
                     <p className="text-xs text-gray-500 mb-1.5">Registered signers</p>
                     <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
-                        <ul className="flex flex-col gap-1">
+                        <ul className="flex flex-col gap-1" data-testid="delegated-signers-list">
                             {permissions.map(({ signer }, index) => (
-                                <li key={index} className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600">
+                                <li
+                                    key={index}
+                                    data-testid={`delegated-signer-item-${index}`}
+                                    className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
+                                >
                                     {signer}
                                 </li>
                             ))}
