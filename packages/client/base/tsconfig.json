@@ -7,5 +7,6 @@
             "@/*": ["src/*"]
         }
     },
+    "references": [{ "path": "../window" }, { "path": "../../common/base" }],
     "include": ["src/**/*"]
 }
