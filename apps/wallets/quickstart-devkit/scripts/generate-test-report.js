@@ -34,26 +34,6 @@ if (!results) {
     process.exit(1);
 }
 
-// Debug: log the structure to understand the format
-if (process.env.DEBUG) {
-    console.error("Results structure:", JSON.stringify(Object.keys(results), null, 2));
-    if (results.suites) {
-        console.error("Number of suites:", results.suites.length);
-        if (results.suites[0]) {
-            console.error("First suite keys:", Object.keys(results.suites[0]));
-            if (results.suites[0].specs) {
-                console.error("Number of specs in first suite:", results.suites[0].specs.length);
-                if (results.suites[0].specs[0]) {
-                    console.error("First spec keys:", Object.keys(results.suites[0].specs[0]));
-                    if (results.suites[0].specs[0].tests) {
-                        console.error("Number of tests in first spec:", results.suites[0].specs[0].tests.length);
-                    }
-                }
-            }
-        }
-    }
-}
-
 // Playwright JSON reporter outputs: { suites: [...] }
 // Each suite can have either:
 //   - { specs: [...] } (nested structure)

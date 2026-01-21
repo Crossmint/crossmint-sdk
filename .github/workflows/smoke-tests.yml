@@ -49,7 +49,7 @@ jobs:
               working-directory: apps/wallets/quickstart-devkit
               env:
                   NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
-                  NEXT_PUBLIC_EVM_CHAIN: "optimism-sepolia"
+                  NEXT_PUBLIC_EVM_CHAIN: "base-sepolia"
                   TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY_SMOKE_TESTS }}
                   MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}

@@ -196,7 +196,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 }
 
 export async function handleSignerConfirmation(page: Page, signerType?: SignerType): Promise<void> {
-    if (!signerType) {
+    if (signerType == null) {
         try {
             const url = new URL(page.url());
             signerType = url.searchParams.get("signer") as SignerType;

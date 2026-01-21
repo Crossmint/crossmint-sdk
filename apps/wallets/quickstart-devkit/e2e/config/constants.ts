@@ -24,12 +24,12 @@ if (
 // Test configurations for different provider/chain/signer combinations
 export const TEST_CONFIGURATIONS = [
     // EVM Configurations
-    { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia", alias: undefined },
+    { provider: "crossmint", chain: "evm", signer: "email", chainId: "base-sepolia", alias: undefined },
     {
         provider: "crossmint",
         chain: "evm",
         signer: "phone",
-        chainId: "optimism-sepolia",
+        chainId: "base-sepolia",
         phoneNumber: AUTH_CONFIG.mailosaurPhoneNumber,
         alias: undefined,
     },
