@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.18
+
+### Patch Changes
+
+- 4eb0dc6: Add configurable consoleLogLevel prop to CrossmintProvider for filtering console output while maintaining full Datadog logging
+- Updated dependencies [4eb0dc6]
+  - @crossmint/client-sdk-react-base@1.0.1
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/client-sdk-auth@1.2.46
+  - @crossmint/client-sdk-base@1.7.13
+  - @crossmint/common-sdk-auth@1.0.68
+  - @crossmint/wallets-sdk@0.18.15
+
 ## 0.13.17
 
 ### Patch Changes
