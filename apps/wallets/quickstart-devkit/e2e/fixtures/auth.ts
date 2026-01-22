@@ -14,7 +14,7 @@ type AuthFixtures = {
 
 export const test = base.extend<AuthFixtures>({
     testConfig: [
-        { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia" } as TestConfiguration,
+        { provider: "crossmint", chain: "evm", signer: "email", chainId: "base-sepolia" } as TestConfiguration,
         { option: true },
     ],
 

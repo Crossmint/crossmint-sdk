@@ -3,8 +3,16 @@ import { handleSignerConfirmation } from "./auth";
 
 export async function getWalletAddress(page: Page): Promise<string> {
     const addressElement = page.locator('[data-testid^="wallet-address:"]').first();
+    // Wait for element to be visible before accessing attribute
+    await addressElement.waitFor({ state: "visible", timeout: 30000 });
     const dataTestId = await addressElement.getAttribute("data-testid");
-    const walletAddress = dataTestId?.split(":")[1] || "";
+    if (!dataTestId) {
+        throw new Error("Wallet address element found but data-testid attribute is missing");
+    }
+    const walletAddress = dataTestId.split(":")[1] || "";
+    if (!walletAddress) {
+        throw new Error(`Could not extract wallet address from data-testid: ${dataTestId}`);
+    }
     console.log(`📋 Wallet address from data-testid: ${walletAddress}`);
     return walletAddress;
 }
@@ -26,7 +34,12 @@ export async function getWalletBalance(page: Page): Promise<string> {
         console.log("✅ Failed to get wallet balance, retrying...");
     }
 
-    const balanceElement = page.locator('[data-testid="usdc-balance"]').first();
+    // Check if it's Stellar (uses USDXM) or EVM/Solana (uses USDC)
+    const url = page.url();
+    const isStellar = url.includes("chain=stellar") || url.includes("chainId=stellar");
+    
+    const balanceTestId = isStellar ? "usdxm-balance" : "usdc-balance";
+    const balanceElement = page.locator(`[data-testid="${balanceTestId}"]`).first();
     const balanceText = await balanceElement.textContent();
     return balanceText?.replace(/[^0-9.]/g, "").trim() || "0";
 }
@@ -46,10 +59,16 @@ export async function getWalletBalances(page: Page): Promise<{
     await nativeTokenBalanceElement.waitFor({ state: "visible", timeout });
     console.log("✅ Native token balance element is visible");
 
-    // Wait for the USDC balance element to be visible
-    const usdcBalanceElement = page.locator('[data-testid="usdc-balance"]').first();
-    await usdcBalanceElement.waitFor({ state: "visible", timeout });
-    console.log("✅ USDC balance element is visible");
+    // Check if it's Stellar (uses USDXM) or EVM/Solana (uses USDC)
+    const url = page.url();
+    const isStellar = url.includes("chain=stellar") || url.includes("chainId=stellar");
+    const stablecoinTestId = isStellar ? "usdxm-balance" : "usdc-balance";
+    const stablecoinSymbol = isStellar ? "usdxm" : "usdc";
+
+    // Wait for the stablecoin balance element to be visible
+    const stablecoinBalanceElement = page.locator(`[data-testid="${stablecoinTestId}"]`).first();
+    await stablecoinBalanceElement.waitFor({ state: "visible", timeout });
+    console.log(`✅ ${stablecoinSymbol.toUpperCase()} balance element is visible`);
 
     // Extract native token balance and symbol
     const nativeTokenText = await nativeTokenBalanceElement.textContent();
@@ -57,11 +76,11 @@ export async function getWalletBalances(page: Page): Promise<{
     const nativeTokenAmount = nativeTokenMatch?.[1] || "0";
     const nativeTokenSymbol = nativeTokenMatch?.[2]?.toLowerCase() || "eth";
 
-    // Extract USDC balance (displayed as "$ 0.00" format)
-    const usdcText = await usdcBalanceElement.textContent();
-    const usdcAmount = usdcText?.replace(/[^0-9.]/g, "").trim() || "0";
+    // Extract stablecoin balance (displayed as "$ 0.00" format)
+    const stablecoinText = await stablecoinBalanceElement.textContent();
+    const stablecoinAmount = stablecoinText?.replace(/[^0-9.]/g, "").trim() || "0";
 
-    console.log(`✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, USDC: ${usdcAmount}`);
+    console.log(`✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, ${stablecoinSymbol.toUpperCase()}: ${stablecoinAmount}`);
 
     return {
         nativeToken: {
@@ -69,8 +88,8 @@ export async function getWalletBalances(page: Page): Promise<{
             symbol: nativeTokenSymbol,
         },
         usdc: {
-            amount: usdcAmount,
-            symbol: "usdc",
+            amount: stablecoinAmount,
+            symbol: stablecoinSymbol,
         },
         tokens: [], // Other tokens are not displayed in the UI, so we return empty array
     };
@@ -136,16 +155,34 @@ export async function transferFunds(
     signerType?: string
 ): Promise<void> {
     try {
-        await page.locator('label:has-text("USDC") input[type="radio"]').click();
-        const amountInput = page.locator('input[data-testid="amount"]').first();
+        // Scope to the Transfer funds section only
+        const transferSection = page.locator("h2:has-text('Transfer funds')").first();
+        await transferSection.waitFor({ timeout: 10000 });
+        await transferSection.scrollIntoViewIfNeeded();
+
+        // Find the parent container of the Transfer funds section
+        const transferContainer = transferSection.locator("..").locator("..");
+
+        // Check if it's Stellar (uses USDXM) or EVM/Solana (uses USDC)
+        const url = page.url();
+        const isStellar = url.includes("chain=stellar") || url.includes("chainId=stellar");
+        const tokenLabel = isStellar ? "USDXM" : "USDC";
+        
+        // Find token radio within the transfer section only
+        await transferContainer.locator(`label:has-text("${tokenLabel}") input[type="radio"]`).click();
+        
+        // Find amount input within the transfer section only
+        const amountInput = transferContainer.locator('input[data-testid="amount"]').first();
         await amountInput.waitFor({ timeout: 10000 });
         await amountInput.fill(amount);
 
-        const recipientInput = page.locator('input[data-testid="recipient-wallet-address"]').first();
+        // Find recipient input within the transfer section only
+        const recipientInput = transferContainer.locator('input[data-testid="recipient-wallet-address"]').first();
         await recipientInput.waitFor({ timeout: 10000 });
         await recipientInput.fill(recipientAddress);
 
-        const transferButton = page
+        // Find transfer button within the transfer section only
+        const transferButton = transferContainer
             .locator('button:has-text("Transfer"), button[data-testid="transfer-button"]')
             .first();
         await transferButton.waitFor({ timeout: 10000 });
@@ -191,7 +228,7 @@ export async function createPreparedTransaction(
     page: Page,
     recipientAddress: string,
     amount: string,
-    token: "eth" | "usdc" = "usdc",
+    token: "eth" | "usdc" | "usdxm" = "usdc",
     signerType?: string
 ): Promise<string> {
     try {

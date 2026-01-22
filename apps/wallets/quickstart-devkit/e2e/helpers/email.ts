@@ -18,7 +18,7 @@ export async function getEmailOTPCode(
     receivedAfter?: Date
 ): Promise<string> {
     try {
-        const sentFrom = expectedType === "login" ? "login@auth.crossmint.io" : "hello@crossmint.io";
+        const sentFrom = expectedType === "login" ? "login@auth.crossmint.io" : "hello@crossmint.com";
         const searchCriteria: any = {
             sentTo: email,
         };

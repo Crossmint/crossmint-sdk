@@ -24,12 +24,12 @@ if (
 // Test configurations for different provider/chain/signer combinations
 export const TEST_CONFIGURATIONS = [
     // EVM Configurations
-    { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia", alias: undefined },
+    { provider: "crossmint", chain: "evm", signer: "email", chainId: "base-sepolia", alias: undefined },
     {
         provider: "crossmint",
         chain: "evm",
         signer: "phone",
-        chainId: "optimism-sepolia",
+        chainId: "base-sepolia",
         phoneNumber: AUTH_CONFIG.mailosaurPhoneNumber,
         alias: undefined,
     },
@@ -67,9 +67,9 @@ export const SIGNER_EMAIL_MAPPING: Record<SignerType, string> = {
 
 // Test wallet addresses to transfer test funds to
 export const TEST_RECIPIENT_WALLET_ADDRESSES = {
-    evm: "0xDF8b5F9c19E187f1Ea00730a1e46180152244315",
-    solana: "AsBWK4STzydYZHvacHFuFSSongkeBzZx7Bk8rCbDeH4d",
-    stellar: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+    evm: "0x4DA90A5d86972E5129C5CEa24c4b019B8f85Ae8e",
+    solana: "61Y4H6d2SUnuJNeJVHazVCm1Btf6CK2g2iags5oV44v7",
+    stellar: "CANKOZR2XAFXTUT7JX6ZPKKDNOQQ2XS5RGVC6ZU57VLDNDYRJPXUK2SJ",
 };
 
 // Generate email address for a specific signer type
