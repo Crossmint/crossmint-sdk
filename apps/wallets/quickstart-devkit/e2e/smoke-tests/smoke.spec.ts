@@ -14,7 +14,7 @@ const SMOKE_TEST_CONFIG = {
     provider: "crossmint",
     chain: "evm",
     signer: "email",
-    chainId: "optimism-sepolia",
+    chainId: "base-sepolia",
     alias: undefined,
 } as const;
 

@@ -24,12 +24,12 @@ export async function getEmailOTPCode(
         };
 
         // Only filter by sender if we know it, otherwise try to find any email
-        if (sentFrom) {
+        if (sentFrom != null) {
             searchCriteria.sentFrom = sentFrom;
         }
 
         // Only look for emails received after the specified time
-        if (receivedAfter) {
+        if (receivedAfter != null) {
             searchCriteria.receivedAfter = receivedAfter;
         }
 
@@ -47,7 +47,7 @@ export async function getEmailOTPCode(
                 const fallbackCriteria: any = {
                     sentTo: email,
                 };
-                if (receivedAfter) {
+                if (receivedAfter != null) {
                     fallbackCriteria.receivedAfter = receivedAfter;
                 }
                 try {
@@ -96,7 +96,7 @@ export async function getPhoneOTPCode(receivedAfter?: Date): Promise<string> {
         };
 
         // Only look for messages received after the specified time
-        if (receivedAfter) {
+        if (receivedAfter != null) {
             searchCriteria.receivedAfter = receivedAfter;
         }
 
