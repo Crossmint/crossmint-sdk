@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.16
+
+### Patch Changes
+
+- 4eb0dc6: Add configurable consoleLogLevel prop to CrossmintProvider for filtering console output while maintaining full Datadog logging
+
 ## 0.9.15
 
 ### Patch Changes
