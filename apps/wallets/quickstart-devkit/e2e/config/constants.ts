@@ -58,7 +58,7 @@ export type SignerType = TestConfiguration["signer"];
 // Email aliases for different signer types
 // TODO: comment these out and remember to update the TEST_CONFIGURATIONS when adding new signer types
 export const SIGNER_EMAIL_MAPPING: Record<SignerType, string> = {
-    email: "email",
+    email: "email1", // Changed from "email" to "email1" to avoid blocked email address
     phone: "phone1",
     // passkey: "passkey",
     // "api-key": "apikey",

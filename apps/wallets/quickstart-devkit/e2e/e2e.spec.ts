@@ -12,6 +12,7 @@ import { TEST_RECIPIENT_WALLET_ADDRESSES } from "./config/constants";
 test.describe("Crossmint Wallet E2E Tests", () => {
     for (const config of TEST_CONFIGURATIONS) {
         test.describe(`${config.provider} - ${config.chain} - ${config.signer}`, () => {
+            test.describe.configure({ mode: "serial" });
             test.use({ testConfig: config });
 
             test("should authenticate and fetch wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
