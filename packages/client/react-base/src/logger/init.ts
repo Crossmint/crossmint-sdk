@@ -1,4 +1,4 @@
-import { SdkLogger, detectPlatform, validateAPIKey } from "@crossmint/common-sdk-base";
+import { SdkLogger, detectPlatform, validateAPIKey, type LogLevel } from "@crossmint/common-sdk-base";
 import { BrowserDatadogSink, ServerDatadogSink } from "@crossmint/common-sdk-base";
 /**
  * Initialize the SDK logger for the React Base SDK
@@ -11,9 +11,17 @@ import { BrowserDatadogSink, ServerDatadogSink } from "@crossmint/common-sdk-bas
  * instances to coexist without conflicts.
  *
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @param packageName - Name of the package using the logger
+ * @param packageVersion - Version of the package using the logger
+ * @param consoleLogLevel - Minimum log level for console output (defaults to "debug" for backward compatibility)
  * @returns The initialized logger instance
  */
-export function initReactLogger(apiKey: string, packageName: string, packageVersion: string): SdkLogger {
+export function initReactLogger(
+    apiKey: string,
+    packageName: string,
+    packageVersion: string,
+    consoleLogLevel?: LogLevel
+): SdkLogger {
     const validationResult = validateAPIKey(apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);
@@ -24,6 +32,7 @@ export function initReactLogger(apiKey: string, packageName: string, packageVers
         packageVersion,
         environment,
         projectId,
+        consoleLogLevel,
     });
 
     const platform = detectPlatform();

@@ -1,4 +1,4 @@
-import { SdkLogger, ReactNativeDatadogSink, validateAPIKey } from "@crossmint/common-sdk-base";
+import { SdkLogger, ReactNativeDatadogSink, validateAPIKey, type LogLevel } from "@crossmint/common-sdk-base";
 import { AppState } from "react-native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -9,11 +9,11 @@ import packageJson from "../../package.json";
  * Should be called once when the SDK is initialized (typically in CrossmintProvider)
  * This handles React Native-specific Datadog sink initialization
  *
- *
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
+ * @param consoleLogLevel - Minimum log level for console output (defaults to "debug" for backward compatibility)
  * @returns The initialized logger instance
  */
-export function initReactNativeLogger(apiKey: string): SdkLogger {
+export function initReactNativeLogger(apiKey: string, consoleLogLevel?: LogLevel): SdkLogger {
     const validationResult = validateAPIKey(apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);
@@ -25,6 +25,7 @@ export function initReactNativeLogger(apiKey: string): SdkLogger {
         environment,
         projectId,
         platform: "react-native",
+        consoleLogLevel,
     });
 
     // Get app bundle ID to use as service name in Datadog logs
