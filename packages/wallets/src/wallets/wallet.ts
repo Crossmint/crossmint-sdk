@@ -103,8 +103,8 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the wallet balances - always includes USDC and native token (ETH/SOL)
-     * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
+     * Get the wallet balances - always includes stablecoin (USDXM for Solana, USDC for others) and native token (ETH/SOL)
+     * @param {string[]} tokens - Additional tokens to request (optional: native token and stablecoin are always included)
      * @returns {Promise<Balances<C>>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
@@ -119,18 +119,22 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.balances.start");
 
         let nativeToken: string;
+        let stablecoin: string;
         switch (this.chain) {
             case "solana":
                 nativeToken = "sol";
+                stablecoin = "usdxm";
                 break;
             case "stellar":
                 nativeToken = "xlm";
+                stablecoin = "usdc";
                 break;
             default:
                 nativeToken = "eth";
+                stablecoin = "usdc";
                 break;
         }
-        const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
+        const allTokens = [nativeToken, stablecoin, ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
             chains: [this.chain],

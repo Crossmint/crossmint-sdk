@@ -88,14 +88,14 @@ describe("Wallet - balances()", () => {
                     },
                 },
                 {
-                    symbol: "usdc",
-                    name: "USD Coin",
+                    symbol: "usdxm",
+                    name: "USDXM",
                     amount: "50.0",
                     rawAmount: "50000000",
                     decimals: 6,
                     chains: {
                         solana: {
-                            locator: "solana:usdc",
+                            locator: "solana:usdxm",
                             amount: "50.0",
                             rawAmount: "50000000",
                             mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
@@ -112,7 +112,7 @@ describe("Wallet - balances()", () => {
             expect(balances.nativeToken.amount).toBe("10.5");
             expect(mockApiClient.getBalance).toHaveBeenCalledWith(solanaWallet.address, {
                 chains: ["solana"],
-                tokens: ["sol", "usdc"],
+                tokens: ["sol", "usdxm"],
             });
         });
 

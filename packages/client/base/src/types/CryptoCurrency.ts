@@ -21,7 +21,7 @@ export const Erc20Currency = {
 export type Erc20Currency = ObjectValues<typeof Erc20Currency>;
 
 export const SplTokenCurrency = {
-    USDC: "usdc",
+    USDXM: "usdxm",
     BONK: "bonk",
     WIF: "wif",
     MOTHER: "mother",
