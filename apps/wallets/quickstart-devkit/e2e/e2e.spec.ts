@@ -40,7 +40,9 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     expectAuth(walletAddress.length).toBe(56);
                 }
 
-                const addressElement = authenticatedPage.locator(`[data-testid^="wallet-address:${walletAddress}"]`).first();
+                const addressElement = authenticatedPage
+                    .locator(`[data-testid^="wallet-address:${walletAddress}"]`)
+                    .first();
                 await expectAuth(addressElement).toBeVisible();
 
                 console.log(`✅ ${testConfig.chain}:${testConfig.signer}:${walletAddress} retrieved`);
@@ -99,26 +101,26 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 } else {
                     recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
                 }
-                
+
                 const transferAmount = "0.0001";
                 const walletAddress = await getWalletAddress(authenticatedPage);
-        
+
                 // Check wallet balance and log warning if 0
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
-        
+
                 if (initialBalanceNum === 0) {
                     console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
                     console.log(`💡 Please fund wallet: ${walletAddress} with some USDC for successful transaction`);
                 }
-        
+
                 const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();
                 await approvalTestHeading.scrollIntoViewIfNeeded();
                 await expectAuth(approvalTestHeading).toBeVisible();
-        
+
                 // Use appropriate token based on chain
                 const token = testConfig.chain === "stellar" ? "usdxm" : "usdc";
-                
+
                 const transactionId = await createPreparedTransaction(
                     authenticatedPage,
                     recipientAddress,
@@ -126,20 +128,20 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     token,
                     testConfig.signer
                 );
-        
+
                 expectAuth(transactionId).toBeTruthy();
                 expectAuth(typeof transactionId).toBe("string");
                 expectAuth(transactionId.length).toBeGreaterThan(0);
                 expectAuth(transactionId.startsWith("txn-") || transactionId.length > 10).toBe(true);
-        
+
                 const transactionIdDisplay = authenticatedPage.locator(`text=/Prepared Transaction ID:/i`).first();
                 await expectAuth(transactionIdDisplay).toBeVisible();
-        
+
                 await approveTransactionById(authenticatedPage, transactionId, testConfig.signer);
-        
+
                 const approvalResult = authenticatedPage.locator("text=/Approval Result/i").first();
                 await expectAuth(approvalResult).toBeVisible();
-        
+
                 const resultSection = approvalResult.locator("..");
                 const resultText = await resultSection.textContent();
                 expectAuth(resultText).toBeTruthy();

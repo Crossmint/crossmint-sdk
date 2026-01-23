@@ -37,7 +37,7 @@ export async function getWalletBalance(page: Page): Promise<string> {
     // Check if it's Stellar (uses USDXM) or EVM/Solana (uses USDC)
     const url = page.url();
     const isStellar = url.includes("chain=stellar") || url.includes("chainId=stellar");
-    
+
     const balanceTestId = isStellar ? "usdxm-balance" : "usdc-balance";
     const balanceElement = page.locator(`[data-testid="${balanceTestId}"]`).first();
     const balanceText = await balanceElement.textContent();
@@ -80,7 +80,9 @@ export async function getWalletBalances(page: Page): Promise<{
     const stablecoinText = await stablecoinBalanceElement.textContent();
     const stablecoinAmount = stablecoinText?.replace(/[^0-9.]/g, "").trim() || "0";
 
-    console.log(`✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, ${stablecoinSymbol.toUpperCase()}: ${stablecoinAmount}`);
+    console.log(
+        `✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, ${stablecoinSymbol.toUpperCase()}: ${stablecoinAmount}`
+    );
 
     return {
         nativeToken: {
@@ -167,10 +169,10 @@ export async function transferFunds(
         const url = page.url();
         const isStellar = url.includes("chain=stellar") || url.includes("chainId=stellar");
         const tokenLabel = isStellar ? "USDXM" : "USDC";
-        
+
         // Find token radio within the transfer section only
         await transferContainer.locator(`label:has-text("${tokenLabel}") input[type="radio"]`).click();
-        
+
         // Find amount input within the transfer section only
         const amountInput = transferContainer.locator('input[data-testid="amount"]').first();
         await amountInput.waitFor({ timeout: 10000 });
