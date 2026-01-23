@@ -10,7 +10,7 @@ import { isAddress } from "viem";
 /* ============================================================ */
 export function EVMTransferFunds() {
     const { wallet } = useWallet();
-    const [token, setToken] = useState<"eth" | "usdc" | null>(null);
+    const [token, setToken] = useState<"eth" | "usdc" | "usdxm" | null>(null);
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -66,8 +66,8 @@ export function EVMTransferFunds() {
                                     type="radio"
                                     name="usdc"
                                     className="h-4 w-4"
-                                    checked={token === "usdc"}
-                                    onChange={() => setToken("usdc")}
+                                    checked={token === "usdxm"}
+                                    onChange={() => setToken("usdxm")}
                                 />
                                 <span>USDC</span>
                             </label>
@@ -129,7 +129,7 @@ export function EVMTransferFunds() {
 /* ============================================================ */
 export function SolanaTransferFunds() {
     const { wallet } = useWallet();
-    const [token, setToken] = useState<"sol" | "usdc" | null>("sol");
+    const [token, setToken] = useState<"sol" | "usdc" | "usdxm" | null>("sol");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -184,8 +184,8 @@ export function SolanaTransferFunds() {
                                     type="radio"
                                     name="token"
                                     className="h-4 w-4"
-                                    checked={token === "usdc"}
-                                    onChange={() => setToken("usdc")}
+                                    checked={token === "usdxm"}
+                                    onChange={() => setToken("usdxm")}
                                 />
                                 <span>USDC</span>
                             </label>
