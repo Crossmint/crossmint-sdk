@@ -1,21 +1,21 @@
 import { PublicKey } from "@solana/web3.js";
-import { ShadowSigner } from "./shadow-signer";
+import { DeviceSigner } from "./device-signer";
 import type { SolanaChain } from "@/chains/chains";
 import type { ExternalWalletInternalSignerConfig } from "../types";
-import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
+import type { DeviceSignerData, DeviceSignerStorage } from "./utils";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 
-export class SolanaShadowSigner extends ShadowSigner<SolanaChain> {
+export class SolanaDeviceSigner extends DeviceSigner<SolanaChain> {
     protected getExternalWalletSignerClass(): new (
         config: ExternalWalletInternalSignerConfig<SolanaChain>,
         walletAddress?: string,
-        shadowSignerEnabled?: boolean,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerEnabled?: boolean,
+        deviceSignerStorage?: DeviceSignerStorage
     ) => SolanaExternalWalletSigner {
         return SolanaExternalWalletSigner;
     }
 
-    getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<SolanaChain> {
+    getDeviceSignerConfig(shadowData: DeviceSignerData): ExternalWalletInternalSignerConfig<SolanaChain> {
         return {
             type: "external-wallet",
             address: shadowData.publicKey,

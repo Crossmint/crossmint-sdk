@@ -1,19 +1,19 @@
-import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
+import type { DeviceSignerData, DeviceSignerStorage } from "./utils";
 
-export class BrowserShadowSignerStorage implements ShadowSignerStorage {
-    private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
-    private readonly SHADOW_SIGNER_DB_STORE = "keys";
-    private readonly SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
+export class BrowserDeviceSignerStorage implements DeviceSignerStorage {
+    private readonly DEVICE_SIGNER_DB_NAME = "crossmint_shadow_keys";
+    private readonly DEVICE_SIGNER_DB_STORE = "keys";
+    private readonly DEVICE_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
 
     private async openDB(): Promise<IDBDatabase> {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.SHADOW_SIGNER_DB_NAME, 1);
+            const request = indexedDB.open(this.DEVICE_SIGNER_DB_NAME, 1);
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(request.result);
             request.onupgradeneeded = (event) => {
                 const db = (event.target as IDBOpenDBRequest).result;
-                if (!db.objectStoreNames.contains(this.SHADOW_SIGNER_DB_STORE)) {
-                    db.createObjectStore(this.SHADOW_SIGNER_DB_STORE);
+                if (!db.objectStoreNames.contains(this.DEVICE_SIGNER_DB_STORE)) {
+                    db.createObjectStore(this.DEVICE_SIGNER_DB_STORE);
                 }
             };
         });
@@ -55,8 +55,8 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         }
 
         const db = await this.openDB();
-        const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
-        const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
+        const tx = db.transaction([this.DEVICE_SIGNER_DB_STORE], "readwrite");
+        const store = tx.objectStore(this.DEVICE_SIGNER_DB_STORE);
         store.put(privateKey, publicKey);
 
         return new Promise<void>((resolve, reject) => {
@@ -72,8 +72,8 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
 
         try {
             const db = await this.openDB();
-            const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readonly");
-            const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
+            const tx = db.transaction([this.DEVICE_SIGNER_DB_STORE], "readonly");
+            const store = tx.objectStore(this.DEVICE_SIGNER_DB_STORE);
             const request = store.get(publicKey);
 
             return new Promise((resolve, reject) => {
@@ -86,22 +86,22 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         }
     }
 
-    storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void> {
+    storeMetadata(walletAddress: string, data: DeviceSignerData): Promise<void> {
         if (typeof localStorage === "undefined") {
             return Promise.resolve();
         }
 
-        localStorage.setItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
+        localStorage.setItem(`${this.DEVICE_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
         return Promise.resolve();
     }
 
-    getMetadata(walletAddress: string): Promise<ShadowSignerData | null> {
+    getMetadata(walletAddress: string): Promise<DeviceSignerData | null> {
         if (typeof localStorage === "undefined") {
             return Promise.resolve(null);
         }
 
         try {
-            const stored = localStorage.getItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
+            const stored = localStorage.getItem(`${this.DEVICE_SIGNER_STORAGE_KEY}_${walletAddress}`);
             return Promise.resolve(stored ? JSON.parse(stored) : null);
         } catch (error) {
             console.warn("Failed to retrieve metadata from localStorage:", error);

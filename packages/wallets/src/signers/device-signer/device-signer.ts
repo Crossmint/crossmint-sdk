@@ -2,23 +2,23 @@ import type { Chain } from "@/chains/chains";
 import type { ExternalWalletInternalSignerConfig } from "../types";
 import type { ExternalWalletSigner } from "../external-wallet-signer";
 import {
-    getShadowSigner,
+    getDeviceSigner,
     getStorage,
-    hasShadowSigner as checkStorageForShadowSigner,
-    type ShadowSignerData,
-    type ShadowSignerStorage,
+    hasDeviceSigner as checkStorageForDeviceSigner,
+    type DeviceSignerData,
+    type DeviceSignerStorage,
 } from "./utils";
 
-export abstract class ShadowSigner<C extends Chain> {
-    protected storage: ShadowSignerStorage;
+export abstract class DeviceSigner<C extends Chain> {
+    protected storage: DeviceSignerStorage;
     protected signer: ExternalWalletSigner<C> | null = null;
 
-    constructor(walletAddress?: string, storage?: ShadowSignerStorage, enabled = true) {
+    constructor(walletAddress?: string, storage?: DeviceSignerStorage, enabled = true) {
         this.storage = storage ?? getStorage();
         this.initialize(walletAddress, enabled);
     }
 
-    abstract getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<C>;
+    abstract getDeviceSignerConfig(shadowData: DeviceSignerData): ExternalWalletInternalSignerConfig<C>;
 
     protected abstract getExternalWalletSignerClass(): new (
         config: ExternalWalletInternalSignerConfig<C>
@@ -29,37 +29,37 @@ export abstract class ShadowSigner<C extends Chain> {
             return;
         }
 
-        if (await checkStorageForShadowSigner(walletAddress, this.storage)) {
-            const shadowData = await getShadowSigner(walletAddress, this.storage);
+        if (await checkStorageForDeviceSigner(walletAddress, this.storage)) {
+            const shadowData = await getDeviceSigner(walletAddress, this.storage);
             if (shadowData != null) {
-                const config = this.getShadowSignerConfig(shadowData);
+                const config = this.getDeviceSignerConfig(shadowData);
                 const ExternalWalletSignerClass = this.getExternalWalletSignerClass();
                 this.signer = new ExternalWalletSignerClass(config);
             }
         }
     }
 
-    hasShadowSigner(): this is { signer: ExternalWalletSigner<C> } {
+    hasDeviceSigner(): this is { signer: ExternalWalletSigner<C> } {
         return this.signer != null;
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        if (!this.hasShadowSigner()) {
-            throw new Error("Shadow signer not initialized");
+        if (!this.hasDeviceSigner()) {
+            throw new Error("Device signer not initialized");
         }
         return await this.signer.signTransaction(transaction);
     }
 
     locator(): string {
-        if (!this.hasShadowSigner()) {
-            throw new Error("Shadow signer not initialized");
+        if (!this.hasDeviceSigner()) {
+            throw new Error("Device signer not initialized");
         }
         return `device:${this.address()}`;
     }
 
     address(): string {
-        if (!this.hasShadowSigner()) {
-            throw new Error("Shadow signer not initialized");
+        if (!this.hasDeviceSigner()) {
+            throw new Error("Device signer not initialized");
         }
         return this.signer.address();
     }

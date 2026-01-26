@@ -5,7 +5,7 @@ export { createCrossmint, CrossmintWallets } from "./sdk";
 export { ApiClient as WalletsApiClient } from "./api";
 
 // Types
-export type { ShadowSignerStorage, ShadowSignerData } from "./signers/shadow-signer/utils";
+export type { DeviceSignerStorage, DeviceSignerData } from "./signers/device-signer/utils";
 
 // Wallets
 export { Wallet } from "./wallets/wallet";

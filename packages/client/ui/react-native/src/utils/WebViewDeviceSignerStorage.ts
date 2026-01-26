@@ -1,11 +1,11 @@
-import type { ShadowSignerStorage, ShadowSignerData } from "@crossmint/wallets-sdk";
+import type { DeviceSignerStorage, DeviceSignerData } from "@crossmint/wallets-sdk";
 import { SecureStorage } from "./SecureStorage";
 import type { RefObject } from "react";
 import type { WebView } from "react-native-webview";
 import * as SecureStore from "expo-secure-store";
 
-export class WebViewShadowSignerStorage implements ShadowSignerStorage {
-    private readonly SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
+export class WebViewDeviceSignerStorage implements DeviceSignerStorage {
+    private readonly DEVICE_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
     private secureStorage = new SecureStorage();
     private webViewRef: RefObject<WebView | null> | null = null;
     private sendCommandViaHash: ((hash: string) => void) | null = null;
@@ -53,7 +53,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
                 error?: string;
             };
 
-            if (message.type === "SHADOW_SIGNER_RESPONSE" && message.id) {
+            if (message.type === "DEVICE_SIGNER_RESPONSE" && message.id) {
                 const pending = this.pendingRequests.get(message.id);
                 if (pending) {
                     clearTimeout(pending.timeout);
@@ -76,7 +76,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         params: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
         if (this.sendCommandViaHash == null) {
-            throw new Error("Shadow signer command channel not initialized");
+            throw new Error("Device signer command channel not initialized");
         }
         const send = this.sendCommandViaHash;
 
@@ -97,10 +97,10 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void> {
+    async storeMetadata(walletAddress: string, data: DeviceSignerData): Promise<void> {
         try {
             await this.secureStorage.set(
-                `${this.SHADOW_SIGNER_STORAGE_KEY}_meta_${walletAddress}`,
+                `${this.DEVICE_SIGNER_STORAGE_KEY}_meta_${walletAddress}`,
                 JSON.stringify(data)
             );
         } catch (error) {
@@ -109,39 +109,39 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         }
     }
 
-    async getMetadata(walletAddress: string): Promise<ShadowSignerData | null> {
+    async getMetadata(walletAddress: string): Promise<DeviceSignerData | null> {
         try {
-            const key = `${this.SHADOW_SIGNER_STORAGE_KEY}_meta_${walletAddress}`;
-            console.log("[WebViewShadowSignerStorage] Getting metadata for key:", key);
+            const key = `${this.DEVICE_SIGNER_STORAGE_KEY}_meta_${walletAddress}`;
+            console.log("[WebViewDeviceSignerStorage] Getting metadata for key:", key);
 
             const stored = await SecureStore.getItemAsync(key);
 
-            console.log("[WebViewShadowSignerStorage] Retrieved raw metadata:", stored);
+            console.log("[WebViewDeviceSignerStorage] Retrieved raw metadata:", stored);
 
             if (stored == null) {
                 return null;
             }
 
             const parsed = JSON.parse(stored);
-            console.log("[WebViewShadowSignerStorage] Parsed metadata:", parsed);
+            console.log("[WebViewDeviceSignerStorage] Parsed metadata:", parsed);
 
             return parsed;
         } catch (error) {
-            console.error("[WebViewShadowSignerStorage] Failed to retrieve metadata from SecureStorage:", error);
+            console.error("[WebViewDeviceSignerStorage] Failed to retrieve metadata from SecureStorage:", error);
             return null;
         }
     }
 
-    async keyGenerator(chain: string): Promise<string> {
-        return await this.generateKeyInWebView(chain);
+    async keyGenerator(): Promise<string> {
+        return await this.generateKeyInWebView();
     }
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
         return await this.signInWebView(publicKeyBase64, data);
     }
 
-    private async generateKeyInWebView(chain: string): Promise<string> {
-        return (await this.callWebViewFunction("generate", { chain })).publicKeyBase64 as string;
+    private async generateKeyInWebView(): Promise<string> {
+        return (await this.callWebViewFunction("generate", {})).publicKeyBase64 as string;
     }
 
     private async signInWebView(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {

@@ -1,10 +1,10 @@
 import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
-import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
-import type { ShadowSignerConfig } from "../types";
+import { BrowserDeviceSignerStorage } from "./device-signer-storage-browser";
+import type { DeviceSignerConfig } from "../types";
 
-export type ShadowSignerData = {
+export type DeviceSignerData = {
     chain: Chain;
     walletAddress: string;
     publicKey: string;
@@ -12,33 +12,33 @@ export type ShadowSignerData = {
     createdAt: number;
 };
 
-export type ShadowSignerResult = {
-    shadowSigner: ShadowSignerConfig;
+export type DeviceSignerResult = {
+    deviceSigner: DeviceSignerConfig;
     publicKeyBase64: string;
 };
 
-export interface ShadowSignerStorage {
+export interface DeviceSignerStorage {
     keyGenerator(): Promise<string>;
     sign(publicKey: string, data: Uint8Array): Promise<Uint8Array>;
-    storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void>;
-    getMetadata(walletAddress: string): Promise<ShadowSignerData | null>;
+    storeMetadata(walletAddress: string, data: DeviceSignerData): Promise<void>;
+    getMetadata(walletAddress: string): Promise<DeviceSignerData | null>;
 }
 
-export function getStorage(): ShadowSignerStorage {
+export function getStorage(): DeviceSignerStorage {
     const isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
     const isExpo = typeof global !== "undefined" && (global as { expo?: unknown }).expo;
 
     if (isReactNative || isExpo) {
-        throw new Error("ReactNativeShadowSignerStorage must be provided explicitly for React Native environments");
+        throw new Error("ReactNativeDeviceSignerStorage must be provided explicitly for React Native environments");
     } else {
-        return new BrowserShadowSignerStorage();
+        return new BrowserDeviceSignerStorage();
     }
 }
 
-export async function generateShadowSigner<C extends Chain>(
+export async function generateDeviceSigner<C extends Chain>(
     chain: C,
-    storage?: ShadowSignerStorage
-): Promise<ShadowSignerResult> {
+    storage?: DeviceSignerStorage
+): Promise<DeviceSignerResult> {
     const storageInstance = storage ?? getStorage();
     if (chain === "solana" || chain === "stellar") {
         const publicKeyBase64 = await storageInstance.keyGenerator();
@@ -55,7 +55,7 @@ export async function generateShadowSigner<C extends Chain>(
         }
 
         return {
-            shadowSigner: {
+            deviceSigner: {
                 type: "device",
                 address: encodedPublicKey,
             },
@@ -68,18 +68,18 @@ export async function generateShadowSigner<C extends Chain>(
     throw new Error("Unsupported chain");
 }
 
-export async function storeShadowSigner(
+export async function storeDeviceSigner(
     walletAddress: string,
     chain: Chain,
     publicKey: string,
     publicKeyBase64: string,
-    storage?: ShadowSignerStorage
+    storage?: DeviceSignerStorage
 ): Promise<void> {
     const storageInstance = storage ?? getStorage();
     try {
-        console.log("[storeShadowSigner] Storing metadata for wallet:", walletAddress, "publicKey:", publicKey);
+        console.log("[storeDeviceSigner] Storing metadata for wallet:", walletAddress, "publicKey:", publicKey);
 
-        const data: ShadowSignerData = {
+        const data: DeviceSignerData = {
             chain,
             walletAddress,
             publicKey,
@@ -88,30 +88,30 @@ export async function storeShadowSigner(
         };
 
         await storageInstance.storeMetadata(walletAddress, data);
-        console.log("[storeShadowSigner] Metadata stored successfully");
+        console.log("[storeDeviceSigner] Metadata stored successfully");
     } catch (error) {
         console.error("Failed to store shadow signer metadata:", error);
         throw error;
     }
 }
 
-export async function getShadowSigner(
+export async function getDeviceSigner(
     walletAddress: string,
-    storage?: ShadowSignerStorage
-): Promise<ShadowSignerData | null> {
+    storage?: DeviceSignerStorage
+): Promise<DeviceSignerData | null> {
     const storageInstance = storage ?? getStorage();
     try {
-        console.log("[getShadowSigner] Getting shadow signer for wallet:", walletAddress);
+        console.log("[getDeviceSigner] Getting shadow signer for wallet:", walletAddress);
         const result = await storageInstance.getMetadata(walletAddress);
-        console.log("[getShadowSigner] Result:", result ? "found" : "not found");
+        console.log("[getDeviceSigner] Result:", result ? "found" : "not found");
         return result;
     } catch (error) {
-        console.warn("[getShadowSigner] Failed to get shadow signer:", error);
+        console.warn("[getDeviceSigner] Failed to get shadow signer:", error);
         return null;
     }
 }
 
-export async function hasShadowSigner(walletAddress: string, storage?: ShadowSignerStorage): Promise<boolean> {
-    const shadowSigner = await getShadowSigner(walletAddress, storage);
-    return shadowSigner !== null;
+export async function hasDeviceSigner(walletAddress: string, storage?: DeviceSignerStorage): Promise<boolean> {
+    const deviceSigner = await getDeviceSigner(walletAddress, storage);
+    return deviceSigner !== null;
 }

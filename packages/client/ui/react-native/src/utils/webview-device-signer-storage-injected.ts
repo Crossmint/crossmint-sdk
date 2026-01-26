@@ -1,12 +1,12 @@
 /**
- * WebView injection script for BrowserShadowSignerStorage
+ * WebView injection script for BrowserDeviceSignerStorage
  *
  * This file creates the complete webview injection script by:
- * 1. Importing the compiled BrowserShadowSignerStorage class from @crossmint/wallets-sdk
+ * 1. Importing the compiled BrowserDeviceSignerStorage class from @crossmint/wallets-sdk
  * 2. Wrapping it with the React Native WebView API
  *
  * The storage class comes from:
- * @crossmint/wallets-sdk/src/signers/shadow-signer/shadow-signer-storage-browser.ts
+ * @crossmint/wallets-sdk/src/signers/device-signer/device-signer-storage-browser.ts
  *
  * To rebuild the storage class: pnpm build in packages/wallets
  *
@@ -14,19 +14,19 @@
  * The file is auto-generated during the wallets package build process.
  */
 
-import { BROWSER_SHADOW_SIGNER_STORAGE_SCRIPT } from "@crossmint/wallets-sdk/dist/injected/shadow-signer-storage-browser-script";
+import { BROWSER_DEVICE_SIGNER_STORAGE_SCRIPT } from "@crossmint/wallets-sdk/dist/injected/device-signer-storage-browser-script";
 
 // Create the complete webview injection script
-export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
+export const DEVICE_SIGNER_STORAGE_INJECTED_JS = `
 (function() {
-    console.log("[CrossmintShadowSigner] Starting injection...");
+    console.log("[CrossmintDeviceSigner] Starting injection...");
     
-    // Inject the compiled BrowserShadowSignerStorage class
-    ${BROWSER_SHADOW_SIGNER_STORAGE_SCRIPT}
+    // Inject the compiled BrowserDeviceSignerStorage class
+    ${BROWSER_DEVICE_SIGNER_STORAGE_SCRIPT}
     
     // Create storage instance
-    var storage = new CrossmintBrowserStorage.BrowserShadowSignerStorage();
-    console.log("[CrossmintShadowSigner] Storage instance created");
+    var storage = new CrossmintBrowserStorage.BrowserDeviceSignerStorage();
+    console.log("[CrossmintDeviceSigner] Storage instance created");
 
     // Hash-based command channel: #cmShadow=<base64(JSON({ id, operation, params }))>
     function decodeBase64ToJson(b64) {
@@ -47,31 +47,31 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
             var result;
             switch (operation) {
                 case "generate":
-                    console.log("[CrossmintShadowSigner] Generating new Ed25519 key pair (non-extractable)...");
-                    var publicKeyBase64 = await storage.keyGenerator(params.chain);
-                    console.log("[CrossmintShadowSigner] ✅ Key generation complete");
+                    console.log("[CrossmintDeviceSigner] Generating new Ed25519 key pair (non-extractable)...");
+                    var publicKeyBase64 = await storage.keyGenerator();
+                    console.log("[CrossmintDeviceSigner] ✅ Key generation complete");
                     result = { publicKeyBase64 };
                     break;
                 case "sign":
                     if (params == null) { throw new Error("Sign operation requires params"); }
                     var publicKey = params.publicKey;
                     var messageBytes = params.messageBytes;
-                    console.log("[CrossmintShadowSigner] Signing...");
+                    console.log("[CrossmintDeviceSigner] Signing...");
                     var signatureBytes = await storage.sign(publicKey, new Uint8Array(messageBytes));
-                    console.log("[CrossmintShadowSigner] ✅ Signing complete");
+                    console.log("[CrossmintDeviceSigner] ✅ Signing complete");
                     result = { signatureBytes: Array.from(signatureBytes) };
                     break;
                 default:
                     throw new Error("Unknown operation: " + operation);
             }
             window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'SHADOW_SIGNER_RESPONSE',
+                type: 'DEVICE_SIGNER_RESPONSE',
                 id: id,
                 result: result
             }));
         } catch (error) {
             window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'SHADOW_SIGNER_RESPONSE',
+                type: 'DEVICE_SIGNER_RESPONSE',
                 id: id,
                 error: (error && (error.message || String(error))) || 'Unknown error'
             }));
@@ -91,7 +91,7 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
     parseAndHandleHash();
     window.addEventListener('hashchange', parseAndHandleHash, false);
 
-    console.log("[CrossmintShadowSigner] Storage handler installed in WebView");
+    console.log("[CrossmintDeviceSigner] Storage handler installed in WebView");
 })();
 true;
 `;

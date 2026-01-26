@@ -11,10 +11,10 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs"
         },
-        "./dist/injected/shadow-signer-storage-browser-script": {
-            "import": "./dist/injected/shadow-signer-storage-browser-script.js",
-            "require": "./dist/injected/shadow-signer-storage-browser-script.js",
-            "types": "./dist/injected/shadow-signer-storage-browser-script.d.ts"
+        "./dist/injected/device-signer-storage-browser-script": {
+            "import": "./dist/injected/device-signer-storage-browser-script.js",
+            "require": "./dist/injected/device-signer-storage-browser-script.js",
+            "types": "./dist/injected/device-signer-storage-browser-script.d.ts"
         }
     },
     "main": "./dist/index.cjs",

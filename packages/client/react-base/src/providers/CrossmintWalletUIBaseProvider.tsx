@@ -1,12 +1,6 @@
 import type { ReactNode, MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
-import { useCrossmint } from "@/hooks/useCrossmint";
-import { useSignerAuth } from "@/hooks/useSignerAuth";
-import type { CreateOnLogin } from "@/types";
-import type { ShadowSignerStorage } from "@crossmint/wallets-sdk";
+
 import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
 
 import type { PasskeyPromptState } from "./CrossmintWalletBaseProvider";

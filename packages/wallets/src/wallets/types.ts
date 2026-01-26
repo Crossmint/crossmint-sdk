@@ -6,7 +6,7 @@ import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
-import type { ShadowSignerStorage } from "../signers/shadow-signer";
+import type { DeviceSignerStorage } from "../signers/device-signer";
 
 export type { Activity } from "../api/types";
 
@@ -118,8 +118,8 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    shadowSignerStorage?: ShadowSignerStorage;
-    shadowSignerEnabled?: boolean;
+    deviceSignerStorage?: DeviceSignerStorage;
+    deviceSignerEnabled?: boolean;
 };
 
 export type WalletArgsFor<C extends Chain> = {

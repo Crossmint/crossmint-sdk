@@ -9,7 +9,7 @@ import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
-import { getStorage, type ShadowSignerStorage, type ShadowSigner } from "../shadow-signer";
+import { getStorage, type DeviceSignerStorage, type DeviceSigner } from "../device-signer";
 import type { Chain } from "../../chains/chains";
 import { walletsLogger } from "../../logger";
 
@@ -22,31 +22,31 @@ export abstract class NonCustodialSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
-    protected shadowSigner?: ShadowSigner<Chain>;
-    protected shadowSignerStorage?: ShadowSignerStorage;
+    protected deviceSigner?: DeviceSigner<Chain>;
+    protected deviceSignerStorage?: DeviceSignerStorage;
 
     constructor(
         protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerStorage?: DeviceSignerStorage
     ) {
         // Only initialize the signer if running client-side
         if (typeof window !== "undefined") {
-            this.shadowSignerStorage = shadowSignerStorage ?? getStorage();
+            this.deviceSignerStorage = deviceSignerStorage ?? getStorage();
             this.initialize();
         }
         this.type = this.config.type;
     }
 
     locator() {
-        if (this.shadowSigner?.hasShadowSigner()) {
-            return this.shadowSigner.locator();
+        if (this.deviceSigner?.hasDeviceSigner()) {
+            return this.deviceSigner.locator();
         }
         return this.config.locator;
     }
 
     address() {
-        if (this.shadowSigner?.hasShadowSigner()) {
-            return this.shadowSigner.address();
+        if (this.deviceSigner?.hasDeviceSigner()) {
+            return this.deviceSigner.address();
         }
         return this.config.address;
     }
@@ -121,7 +121,7 @@ export abstract class NonCustodialSigner implements Signer {
         methodName: "handleAuthRequired",
     })
     protected async handleAuthRequired() {
-        if (this.shadowSigner?.hasShadowSigner()) {
+        if (this.deviceSigner?.hasDeviceSigner()) {
             return;
         }
 

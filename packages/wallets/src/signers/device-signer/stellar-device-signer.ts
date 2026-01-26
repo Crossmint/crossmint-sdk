@@ -1,20 +1,20 @@
-import { ShadowSigner } from "./shadow-signer";
+import { DeviceSigner } from "./device-signer";
 import type { StellarChain } from "@/chains/chains";
 import type { ExternalWalletInternalSignerConfig } from "../types";
-import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
+import type { DeviceSignerData, DeviceSignerStorage } from "./utils";
 import { StellarExternalWalletSigner } from "../stellar-external-wallet";
 
-export class StellarShadowSigner extends ShadowSigner<StellarChain> {
+export class StellarDeviceSigner extends DeviceSigner<StellarChain> {
     protected getExternalWalletSignerClass(): new (
         config: ExternalWalletInternalSignerConfig<StellarChain>,
         walletAddress?: string,
-        shadowSignerEnabled?: boolean,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerEnabled?: boolean,
+        deviceSignerStorage?: DeviceSignerStorage
     ) => StellarExternalWalletSigner {
         return StellarExternalWalletSigner;
     }
 
-    getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<StellarChain> {
+    getDeviceSignerConfig(shadowData: DeviceSignerData): ExternalWalletInternalSignerConfig<StellarChain> {
         return {
             type: "external-wallet",
             address: shadowData.publicKey,

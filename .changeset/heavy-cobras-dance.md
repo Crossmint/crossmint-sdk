@@ -4,4 +4,4 @@
 "@crossmint/wallets-sdk": minor
 ---
 
-Support of Shadow Signers in React Native
+Support of Device Signers in React Native

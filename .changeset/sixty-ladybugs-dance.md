@@ -4,4 +4,4 @@
 "@crossmint/wallets-sdk": minor
 ---
 
-Added Shadow Signers for avoiding redundant OTP Verification
+Added Device Signers for avoiding redundant OTP Verification

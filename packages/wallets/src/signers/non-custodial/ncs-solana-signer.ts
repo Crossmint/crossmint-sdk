@@ -2,17 +2,17 @@ import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { SolanaShadowSigner, type ShadowSignerStorage } from "../shadow-signer";
+import { SolanaDeviceSigner, type DeviceSignerStorage } from "../device-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         walletAddress: string,
-        shadowSignerEnabled: boolean,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerEnabled: boolean,
+        deviceSignerStorage?: DeviceSignerStorage
     ) {
-        super(config, shadowSignerStorage);
-        this.shadowSigner = new SolanaShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
+        super(config, deviceSignerStorage);
+        this.deviceSigner = new SolanaDeviceSigner(walletAddress, this.deviceSignerStorage, deviceSignerEnabled);
     }
 
     async signMessage() {
@@ -20,8 +20,8 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        if (this.shadowSigner?.hasShadowSigner()) {
-            return await this.shadowSigner.signTransaction(transaction);
+        if (this.deviceSigner?.hasDeviceSigner()) {
+            return await this.deviceSigner.signTransaction(transaction);
         }
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();

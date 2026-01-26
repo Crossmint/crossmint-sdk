@@ -4,23 +4,23 @@ import type { ExternalWalletInternalSignerConfig } from "./types";
 import { TransactionFailedError } from "../utils/errors";
 import type { SolanaChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
-import { SolanaShadowSigner, type ShadowSignerStorage } from "./shadow-signer";
+import { SolanaDeviceSigner, type DeviceSignerStorage } from "./device-signer";
 
 export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
     onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
-    protected shadowSigner?: SolanaShadowSigner;
-    protected shadowSignerStorage?: ShadowSignerStorage;
+    protected deviceSigner?: SolanaDeviceSigner;
+    protected deviceSignerStorage?: DeviceSignerStorage;
 
     constructor(
         config: ExternalWalletInternalSignerConfig<SolanaChain>,
         walletAddress?: string,
-        shadowSignerEnabled?: boolean,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerEnabled?: boolean,
+        deviceSignerStorage?: DeviceSignerStorage
     ) {
         super(config);
         this.onSignTransaction = config.onSignTransaction;
-        this.shadowSignerStorage = shadowSignerStorage;
-        this.shadowSigner = new SolanaShadowSigner(walletAddress, this.shadowSignerStorage, shadowSignerEnabled);
+        this.deviceSignerStorage = deviceSignerStorage;
+        this.deviceSigner = new SolanaDeviceSigner(walletAddress, this.deviceSignerStorage, deviceSignerEnabled);
     }
 
     async signMessage() {
@@ -28,8 +28,8 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     }
 
     async signTransaction(transaction: string) {
-        if (this.shadowSigner?.hasShadowSigner()) {
-            return await this.shadowSigner.signTransaction(transaction);
+        if (this.deviceSigner?.hasDeviceSigner()) {
+            return await this.deviceSigner.signTransaction(transaction);
         }
         if (this.onSignTransaction == null) {
             return await Promise.reject(

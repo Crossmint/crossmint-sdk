@@ -7,14 +7,14 @@ import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 import type { EVMChain } from "../../chains/chains";
-import type { ShadowSignerStorage } from "../shadow-signer";
+import type { DeviceSignerStorage } from "../device-signer";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
-        shadowSignerStorage?: ShadowSignerStorage
+        deviceSignerStorage?: DeviceSignerStorage
     ) {
-        super(config, shadowSignerStorage);
+        super(config, deviceSignerStorage);
     }
 
     async signMessage(message: string) {
@@ -74,8 +74,8 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         }
     }
 
-    protected getShadowSignerConfig(): ExternalWalletInternalSignerConfig<EVMChain> {
-        throw new Error("Shadow signer not implemented for EVM chains");
+    protected getDeviceSignerConfig(): ExternalWalletInternalSignerConfig<EVMChain> {
+        throw new Error("Device signer not implemented for EVM chains");
     }
 
     protected getChainKeyParams(): { scheme: "secp256k1"; encoding: "hex" } {
