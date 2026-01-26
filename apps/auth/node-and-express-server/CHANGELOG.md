@@ -1,5 +1,69 @@
 # crossmint-auth-node
 
+## 1.1.69
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.58
+
+## 1.1.68
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.57
+
+## 1.1.67
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.56
+
+## 1.1.66
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.55
+
+## 1.1.65
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.54
+
+## 1.1.64
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.53
+
+## 1.1.63
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.52
+
+## 1.1.62
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [25ad566]
+  - @crossmint/server-sdk@1.2.51
+
+## 1.1.61
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/server-sdk@1.2.50
+
+## 1.1.60
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.49
+
 ## 1.1.59
 
 ### Patch Changes

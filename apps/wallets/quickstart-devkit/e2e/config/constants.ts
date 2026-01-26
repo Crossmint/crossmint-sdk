@@ -24,12 +24,12 @@ if (
 // Test configurations for different provider/chain/signer combinations
 export const TEST_CONFIGURATIONS = [
     // EVM Configurations
-    { provider: "crossmint", chain: "evm", signer: "email", chainId: "optimism-sepolia", alias: undefined },
+    { provider: "crossmint", chain: "evm", signer: "email", chainId: "base-sepolia", alias: undefined },
     {
         provider: "crossmint",
         chain: "evm",
         signer: "phone",
-        chainId: "optimism-sepolia",
+        chainId: "base-sepolia",
         phoneNumber: AUTH_CONFIG.mailosaurPhoneNumber,
         alias: undefined,
     },
@@ -58,7 +58,7 @@ export type SignerType = TestConfiguration["signer"];
 // Email aliases for different signer types
 // TODO: comment these out and remember to update the TEST_CONFIGURATIONS when adding new signer types
 export const SIGNER_EMAIL_MAPPING: Record<SignerType, string> = {
-    email: "email",
+    email: "email1",
     phone: "phone1",
     // passkey: "passkey",
     // "api-key": "apikey",

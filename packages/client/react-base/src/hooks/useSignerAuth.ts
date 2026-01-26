@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, type MutableRefObject } from "react";
-import type { CreateOnLogin } from "@/types";
+import type { Signer } from "@crossmint/wallets-sdk";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -43,7 +43,7 @@ export interface SignerAuthHandlers {
     ) => Promise<void>;
 }
 
-export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & SignerAuthHandlers {
+export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHandlers {
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
@@ -117,13 +117,14 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
     }, []);
 
     const onAuthRequired = useCallback(
-        async (
+        (
             needsAuth: boolean,
             sendMessageWithOtp: () => Promise<void>,
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
-        ): Promise<void> => {
-            if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
+        ) => {
+            const signerValue = signer?.locator().split(":")[1];
+            if (signer?.type === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
                 sendPhoneWithOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
@@ -133,8 +134,9 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
                 verifyOtpRef.current = verifyOtp;
             }
             rejectRef.current = reject;
+            return Promise.resolve();
         },
-        [createOnLogin?.signer.type, createOnLogin?.signer]
+        [signer]
     );
 
     return {

@@ -1,5 +1,104 @@
 # @crossmint/client-sdk-smart-wallet-next-starter
 
+## 0.1.201
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/client-sdk-react-ui@2.6.16
+
+## 0.1.200
+
+### Patch Changes
+
+- Updated dependencies [38b9087]
+  - @crossmint/client-sdk-react-ui@2.6.15
+
+## 0.1.199
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.14
+
+## 0.1.198
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.13
+
+## 0.1.197
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.12
+
+## 0.1.196
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.11
+
+## 0.1.195
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.10
+
+## 0.1.194
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.9
+
+## 0.1.193
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.8
+
+## 0.1.192
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.7
+
+## 0.1.191
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-react-ui@2.6.6
+
+## 0.1.190
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-react-ui@2.6.5
+
+## 0.1.189
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.6.4
+
+## 0.1.188
+
+### Patch Changes
+
+- Updated dependencies [dcbfab4]
+  - @crossmint/client-sdk-react-ui@2.6.3
+
+## 0.1.187
+
+### Patch Changes
+
+- Updated dependencies [cc7ffd4]
+  - @crossmint/client-sdk-react-ui@2.6.2
+
 ## 0.1.186
 
 ### Patch Changes

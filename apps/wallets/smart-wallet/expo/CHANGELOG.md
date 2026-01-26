@@ -1,5 +1,172 @@
 # expo-demo
 
+## 1.1.119
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/client-sdk-react-native-ui@0.13.18
+  - @crossmint/wallets-sdk@0.18.15
+
+## 1.1.118
+
+### Patch Changes
+
+- Updated dependencies [38b9087]
+- Updated dependencies [38b9087]
+  - @crossmint/client-sdk-react-native-ui@0.13.17
+  - @crossmint/wallets-sdk@0.18.14
+
+## 1.1.117
+
+### Patch Changes
+
+- Updated dependencies [dbb338a]
+- Updated dependencies [c0e68b2]
+  - @crossmint/wallets-sdk@0.18.13
+  - @crossmint/client-sdk-react-native-ui@0.13.16
+
+## 1.1.116
+
+### Patch Changes
+
+- Updated dependencies [0f31420]
+  - @crossmint/client-sdk-react-native-ui@0.13.15
+
+## 1.1.115
+
+### Patch Changes
+
+- Updated dependencies [e8e63c0]
+  - @crossmint/client-sdk-react-native-ui@0.13.14
+  - @crossmint/wallets-sdk@0.18.12
+
+## 1.1.114
+
+### Patch Changes
+
+- @crossmint/client-sdk-rn-window@0.3.14
+- @crossmint/wallets-sdk@0.18.11
+- @crossmint/client-sdk-react-native-ui@0.13.13
+
+## 1.1.113
+
+### Patch Changes
+
+- Updated dependencies [9924b76]
+  - @crossmint/client-sdk-react-native-ui@0.13.12
+
+## 1.1.112
+
+### Patch Changes
+
+- Updated dependencies [d5ddafa]
+  - @crossmint/client-sdk-react-native-ui@0.13.11
+
+## 1.1.111
+
+### Patch Changes
+
+- Updated dependencies [aaad402]
+  - @crossmint/client-sdk-react-native-ui@0.13.10
+
+## 1.1.110
+
+### Patch Changes
+
+- Updated dependencies [19f61d9]
+- Updated dependencies [fbedd6e]
+  - @crossmint/client-sdk-rn-window@0.3.13
+  - @crossmint/client-sdk-react-native-ui@0.13.9
+
+## 1.1.109
+
+### Patch Changes
+
+- Updated dependencies [a4dee5e]
+  - @crossmint/wallets-sdk@0.18.10
+  - @crossmint/client-sdk-react-native-ui@0.13.8
+
+## 1.1.108
+
+### Patch Changes
+
+- Updated dependencies [b6e4d15]
+  - @crossmint/wallets-sdk@0.18.9
+  - @crossmint/client-sdk-react-native-ui@0.13.7
+
+## 1.1.107
+
+### Patch Changes
+
+- Updated dependencies [affbfc7]
+- Updated dependencies [be241bd]
+  - @crossmint/client-sdk-react-native-ui@0.13.6
+  - @crossmint/wallets-sdk@0.18.8
+
+## 1.1.106
+
+### Patch Changes
+
+- Updated dependencies [a07545f]
+- Updated dependencies [a5f64e2]
+  - @crossmint/client-sdk-react-native-ui@0.13.5
+  - @crossmint/wallets-sdk@0.18.7
+
+## 1.1.105
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-react-native-ui@0.13.4
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-sdk-rn-window@0.3.12
+  - @crossmint/client-signers@0.1.2
+
+## 1.1.104
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-rn-window@0.3.11
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-react-native-ui@0.13.3
+  - @crossmint/wallets-sdk@0.18.5
+
+## 1.1.103
+
+### Patch Changes
+
+- Updated dependencies [da7fbb1]
+- Updated dependencies [9ece4b2]
+  - @crossmint/wallets-sdk@0.18.4
+  - @crossmint/client-sdk-react-native-ui@0.13.2
+
+## 1.1.102
+
+### Patch Changes
+
+- Updated dependencies [8315976]
+  - @crossmint/wallets-sdk@0.18.3
+  - @crossmint/client-sdk-react-native-ui@0.13.1
+
+## 1.1.101
+
+### Patch Changes
+
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-sdk-react-native-ui@0.13.0
+  - @crossmint/client-sdk-rn-window@0.3.10
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/wallets-sdk@0.18.2
+
 ## 1.1.100
 
 ### Patch Changes

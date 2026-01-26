@@ -1,5 +1,225 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.18
+
+### Patch Changes
+
+- 4eb0dc6: Add configurable consoleLogLevel prop to CrossmintProvider for filtering console output while maintaining full Datadog logging
+- Updated dependencies [4eb0dc6]
+  - @crossmint/client-sdk-react-base@1.0.1
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/client-sdk-auth@1.2.46
+  - @crossmint/client-sdk-base@1.7.13
+  - @crossmint/common-sdk-auth@1.0.68
+  - @crossmint/wallets-sdk@0.18.15
+
+## 0.13.17
+
+### Patch Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+- Updated dependencies [38b9087]
+- Updated dependencies [38b9087]
+  - @crossmint/client-sdk-react-base@1.0.0
+  - @crossmint/wallets-sdk@0.18.14
+
+## 0.13.16
+
+### Patch Changes
+
+- Updated dependencies [dbb338a]
+- Updated dependencies [c0e68b2]
+- Updated dependencies [944f239]
+  - @crossmint/wallets-sdk@0.18.13
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/client-sdk-react-base@0.7.15
+  - @crossmint/client-sdk-auth@1.2.45
+  - @crossmint/client-sdk-base@1.7.12
+  - @crossmint/common-sdk-auth@1.0.67
+
+## 0.13.15
+
+### Patch Changes
+
+- 0f31420: Add lodash.clonedeep and lodash.isequal as direct dependencies to fix pnpm strict dependency resolution issues on fresh installs
+
+## 0.13.14
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+- Updated dependencies [e8e63c0]
+  - @crossmint/client-sdk-react-base@0.7.14
+  - @crossmint/common-sdk-base@0.9.14
+  - @crossmint/wallets-sdk@0.18.12
+  - @crossmint/client-sdk-auth@1.2.44
+  - @crossmint/client-sdk-base@1.7.11
+  - @crossmint/common-sdk-auth@1.0.66
+
+## 0.13.13
+
+### Patch Changes
+
+- Updated dependencies [74009b1]
+  - @crossmint/client-sdk-base@1.7.10
+  - @crossmint/client-sdk-react-base@0.7.13
+  - @crossmint/client-sdk-rn-window@0.3.14
+  - @crossmint/wallets-sdk@0.18.11
+  - @crossmint/client-sdk-auth@1.2.43
+  - @crossmint/common-sdk-auth@1.0.65
+
+## 0.13.12
+
+### Patch Changes
+
+- 9924b76: Makes DD sdk version flexible to avoid compatibility issues
+
+## 0.13.11
+
+### Patch Changes
+
+- d5ddafa: Makes DD sdk version flexible to avoid compatibility issues
+
+## 0.13.10
+
+### Patch Changes
+
+- aaad402: feat: push RN WebView console logs to Datadog logger
+
+  Captures console logs from the WebView iframe and forwards them to the Datadog logger for debugging purposes. This enables better observability of WebView behavior in production React Native apps.
+
+## 0.13.9
+
+### Patch Changes
+
+- Updated dependencies [19f61d9]
+- Updated dependencies [fbedd6e]
+  - @crossmint/client-sdk-react-base@0.7.12
+  - @crossmint/client-sdk-rn-window@0.3.13
+
+## 0.13.8
+
+### Patch Changes
+
+- Updated dependencies [a4dee5e]
+  - @crossmint/common-sdk-base@0.9.13
+  - @crossmint/wallets-sdk@0.18.10
+  - @crossmint/client-sdk-auth@1.2.42
+  - @crossmint/client-sdk-base@1.7.9
+  - @crossmint/client-sdk-react-base@0.7.11
+  - @crossmint/common-sdk-auth@1.0.64
+
+## 0.13.7
+
+### Patch Changes
+
+- Updated dependencies [b6e4d15]
+  - @crossmint/common-sdk-base@0.9.12
+  - @crossmint/wallets-sdk@0.18.9
+  - @crossmint/client-sdk-auth@1.2.41
+  - @crossmint/client-sdk-base@1.7.8
+  - @crossmint/client-sdk-react-base@0.7.10
+  - @crossmint/common-sdk-auth@1.0.63
+
+## 0.13.6
+
+### Patch Changes
+
+- affbfc7: Reset handshake retry time
+- Updated dependencies [affbfc7]
+- Updated dependencies [be241bd]
+  - @crossmint/wallets-sdk@0.18.8
+  - @crossmint/common-sdk-base@0.9.11
+  - @crossmint/client-sdk-react-base@0.7.9
+  - @crossmint/client-sdk-auth@1.2.40
+  - @crossmint/client-sdk-base@1.7.7
+  - @crossmint/common-sdk-auth@1.0.62
+
+## 0.13.5
+
+### Patch Changes
+
+- a07545f: Modify handshake options for react native
+- Updated dependencies [a5f64e2]
+  - @crossmint/wallets-sdk@0.18.7
+  - @crossmint/client-sdk-react-base@0.7.8
+
+## 0.13.4
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/client-sdk-react-base@0.7.7
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/wallets-sdk@0.18.6
+  - @crossmint/client-sdk-rn-window@0.3.12
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-auth@1.2.39
+  - @crossmint/client-sdk-base@1.7.6
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 0.13.3
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+- Updated dependencies [de77241]
+  - @crossmint/client-sdk-auth@1.2.38
+  - @crossmint/client-sdk-base@1.7.5
+  - @crossmint/client-sdk-react-base@0.7.6
+  - @crossmint/client-sdk-rn-window@0.3.11
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+  - @crossmint/wallets-sdk@0.18.5
+
+## 0.13.2
+
+### Patch Changes
+
+- Updated dependencies [da7fbb1]
+- Updated dependencies [9ece4b2]
+  - @crossmint/wallets-sdk@0.18.4
+  - @crossmint/client-sdk-react-base@0.7.5
+
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [8315976]
+- Updated dependencies [dcbfab4]
+  - @crossmint/wallets-sdk@0.18.3
+  - @crossmint/client-sdk-base@1.7.4
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/client-sdk-react-base@0.7.4
+  - @crossmint/client-sdk-auth@1.2.37
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 0.13.0
+
+### Minor Changes
+
+- cc7ffd4: Added new built-in UI for email and phone signers, can use 'headlessSigningFlow' to disable.
+
+### Patch Changes
+
+- 9386174: Add IndexedDB fatal error recovery with automatic WebView reload and retry. Implements typed error codes (SignerErrorCode.IndexedDbFatal) and opt-in recovery options in WebViewParent for handling fatal IndexedDB errors.
+- 9386174: Add IndexedDB error recovery for React Native WebView: automatically detect 'indexeddb-fatal' error responses, reload the WebView, re-establish handshake, and retry the operation once. Also enforce a 15s minimum timeout during recovery to allow sufficient time for WebView reload and handshake completion.
+- Updated dependencies [9386174]
+- Updated dependencies [cc7ffd4]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-sdk-rn-window@0.3.10
+  - @crossmint/client-signers@0.1.0
+  - @crossmint/client-sdk-react-base@0.7.3
+  - @crossmint/wallets-sdk@0.18.2
+
 ## 0.12.1
 
 ### Patch Changes

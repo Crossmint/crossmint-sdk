@@ -1,5 +1,82 @@
 # @crossmint/client-sdk-base
 
+## 1.7.13
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+
+## 1.7.12
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+
+## 1.7.11
+
+### Patch Changes
+
+- Updated dependencies [e8e63c0]
+  - @crossmint/common-sdk-base@0.9.14
+
+## 1.7.10
+
+### Patch Changes
+
+- 74009b1: Update @datadog/browser-logs from 4.42.2 to 6.24.1 and update sampleRate to sessionSampleRate for v6 compatibility
+- Updated dependencies [cdcec95]
+  - @crossmint/client-sdk-window@1.0.8
+
+## 1.7.9
+
+### Patch Changes
+
+- Updated dependencies [a4dee5e]
+  - @crossmint/common-sdk-base@0.9.13
+
+## 1.7.8
+
+### Patch Changes
+
+- Updated dependencies [b6e4d15]
+  - @crossmint/common-sdk-base@0.9.12
+
+## 1.7.7
+
+### Patch Changes
+
+- Updated dependencies [be241bd]
+  - @crossmint/common-sdk-base@0.9.11
+
+## 1.7.6
+
+### Patch Changes
+
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/client-sdk-window@1.0.7
+
+## 1.7.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- Updated dependencies [978420c]
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-base@0.9.9
+
+## 1.7.4
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+
 ## 1.7.3
 
 ### Patch Changes

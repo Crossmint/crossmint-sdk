@@ -1,5 +1,60 @@
 # @crossmint/common-sdk-base
 
+## 0.9.16
+
+### Patch Changes
+
+- 4eb0dc6: Add configurable consoleLogLevel prop to CrossmintProvider for filtering console output while maintaining full Datadog logging
+
+## 0.9.15
+
+### Patch Changes
+
+- 944f239: Add logging to WithLoggerContext decorator: logs parameters before function call, result on success, and error before throwing
+
+## 0.9.14
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+
+## 0.9.13
+
+### Patch Changes
+
+- a4dee5e: change tempo currency
+
+## 0.9.12
+
+### Patch Changes
+
+- b6e4d15: Support tempo testnet
+
+## 0.9.11
+
+### Patch Changes
+
+- be241bd: Supporting arc testnet
+
+## 0.9.10
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+
+## 0.9.9
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+
+## 0.9.8
+
+### Patch Changes
+
+- dcbfab4: bump for payment method management
+
 ## 0.9.7
 
 ### Patch Changes

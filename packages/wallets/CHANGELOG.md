@@ -1,5 +1,133 @@
 # @crossmint/wallets-sdk
 
+## 0.18.15
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/common-sdk-auth@1.0.68
+
+## 0.18.14
+
+### Patch Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+- 38b9087: Adds logs for email signer otp modal flow
+
+## 0.18.13
+
+### Patch Changes
+
+- dbb338a: Remove chains parameter from balances() method - the wallet's default chain is now always used for balance queries, fixing a bug where passed chains were ignored during response processing.
+- c0e68b2: Fix approval signer locator bug: use correct signer's locator in approval submissions instead of always using this.signer.locator(). This makes the additionalSigners option work correctly for delegated signers.
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/common-sdk-auth@1.0.67
+
+## 0.18.12
+
+### Patch Changes
+
+- e8e63c0: Use datadog logger through http request instead of specific platform library
+- Updated dependencies [e8e63c0]
+  - @crossmint/common-sdk-base@0.9.14
+  - @crossmint/common-sdk-auth@1.0.66
+
+## 0.18.11
+
+### Patch Changes
+
+- Updated dependencies [cdcec95]
+  - @crossmint/client-sdk-window@1.0.8
+  - @crossmint/common-sdk-auth@1.0.65
+
+## 0.18.10
+
+### Patch Changes
+
+- a4dee5e: change tempo currency
+- Updated dependencies [a4dee5e]
+  - @crossmint/common-sdk-base@0.9.13
+  - @crossmint/common-sdk-auth@1.0.64
+
+## 0.18.9
+
+### Patch Changes
+
+- b6e4d15: Support tempo testnet
+- Updated dependencies [b6e4d15]
+  - @crossmint/common-sdk-base@0.9.12
+  - @crossmint/common-sdk-auth@1.0.63
+
+## 0.18.8
+
+### Patch Changes
+
+- affbfc7: Reset handshake retry time
+- be241bd: Supporting arc testnet
+- Updated dependencies [be241bd]
+  - @crossmint/common-sdk-base@0.9.11
+  - @crossmint/common-sdk-auth@1.0.62
+
+## 0.18.7
+
+### Patch Changes
+
+- a5f64e2: Modify retry policy
+
+## 0.18.6
+
+### Patch Changes
+
+- e973bc2: Added SDK Datadog Logger
+- 25ad566: Updates dependencies
+- Updated dependencies [e973bc2]
+- Updated dependencies [25ad566]
+  - @crossmint/common-sdk-base@0.9.10
+  - @crossmint/client-signers@0.1.2
+  - @crossmint/client-sdk-window@1.0.7
+  - @crossmint/common-sdk-auth@1.0.61
+
+## 0.18.5
+
+### Patch Changes
+
+- 978420c: Updates React to patched version
+- de77241: Fix owner comparison when email has a dot
+- Updated dependencies [978420c]
+  - @crossmint/client-signers@0.1.1
+  - @crossmint/client-sdk-window@1.0.6
+  - @crossmint/common-sdk-auth@1.0.60
+  - @crossmint/common-sdk-base@0.9.9
+
+## 0.18.4
+
+### Patch Changes
+
+- da7fbb1: Fix Non-custodial signer initialization when running in server-side environments
+- 9ece4b2: Disable minification to prevent entire source code from being dumped in error stack traces, improving error readability.
+
+## 0.18.3
+
+### Patch Changes
+
+- 8315976: Expose a wallet fund method
+- Updated dependencies [dcbfab4]
+  - @crossmint/common-sdk-base@0.9.8
+  - @crossmint/common-sdk-auth@1.0.59
+
+## 0.18.2
+
+### Patch Changes
+
+- Updated dependencies [9386174]
+- Updated dependencies [25fbcf1]
+  - @crossmint/client-signers@0.1.0
+
 ## 0.18.1
 
 ### Patch Changes

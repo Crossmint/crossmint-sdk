@@ -3,6 +3,7 @@
         "target": "ES6",
         "moduleResolution": "node",
         "strict": true,
+        "experimentalDecorators": true,
         "esModuleInterop": true,
         "isolatedModules": true,
         "resolveJsonModule": true,

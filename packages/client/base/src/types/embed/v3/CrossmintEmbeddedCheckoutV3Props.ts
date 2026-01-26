@@ -6,6 +6,7 @@ import type { BlockchainIncludingTestnet, PayerSupportedBlockchains, JSONObject 
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
     payment: EmbeddedCheckoutV3Payment;
+    jwt?: string;
 }
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {

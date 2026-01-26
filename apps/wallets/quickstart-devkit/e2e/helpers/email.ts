@@ -12,19 +12,57 @@ export async function clearEmailsForAddress(_email: string): Promise<void> {
     }
 }
 
-export async function getEmailOTPCode(email: string, expectedType?: "login" | "signer"): Promise<string> {
+export async function getEmailOTPCode(
+    email: string,
+    expectedType?: "login" | "signer",
+    receivedAfter?: Date
+): Promise<string> {
     try {
-        const sentFrom = expectedType === "login" ? "login@auth.crossmint.io" : "hello@crossmint.io";
-        const message = await mailosaur.messages.get(
-            AUTH_CONFIG.mailosaurServerId,
-            {
-                sentTo: email,
-                sentFrom,
-            },
-            {
+        const sentFrom = expectedType === "login" ? "login@auth.crossmint.io" : "hello@crossmint.com";
+        const searchCriteria: any = {
+            sentTo: email,
+        };
+
+        // Only filter by sender if we know it, otherwise try to find any email
+        if (sentFrom != null) {
+            searchCriteria.sentFrom = sentFrom;
+        }
+
+        // Only look for emails received after the specified time
+        if (receivedAfter != null) {
+            searchCriteria.receivedAfter = receivedAfter;
+        }
+
+        console.log(`🔍 Searching for email with criteria: ${JSON.stringify(searchCriteria)}`);
+
+        let message;
+        try {
+            message = await mailosaur.messages.get(AUTH_CONFIG.mailosaurServerId, searchCriteria, {
                 timeout: AUTH_CONFIG.emailTimeout,
+            });
+        } catch (error: any) {
+            // If we couldn't find email with sender filter, try without it as fallback
+            if (error.errorType === "search_timeout" && sentFrom) {
+                console.warn(`⚠️ Could not find email from ${sentFrom}, trying without sender filter...`);
+                const fallbackCriteria: any = {
+                    sentTo: email,
+                };
+                if (receivedAfter != null) {
+                    fallbackCriteria.receivedAfter = receivedAfter;
+                }
+                try {
+                    message = await mailosaur.messages.get(AUTH_CONFIG.mailosaurServerId, fallbackCriteria, {
+                        timeout: AUTH_CONFIG.emailTimeout,
+                    });
+                    console.log(`✅ Found email from: ${message.from?.[0]?.email} (different sender than expected)`);
+                } catch (fallbackError) {
+                    console.error("❌ Could not find email even without sender filter");
+                    throw error; // Throw original error
+                }
+            } else {
+                throw error;
             }
-        );
+        }
 
         let otpCode: string | undefined;
         const codes = message.text?.codes || [];
@@ -51,17 +89,20 @@ export async function getEmailOTPCode(email: string, expectedType?: "login" | "s
     }
 }
 
-export async function getPhoneOTPCode(): Promise<string> {
+export async function getPhoneOTPCode(receivedAfter?: Date): Promise<string> {
     try {
-        const message = await mailosaur.messages.get(
-            AUTH_CONFIG.mailosaurServerId,
-            {
-                sentTo: AUTH_CONFIG.mailosaurPhoneNumber,
-            },
-            {
-                timeout: AUTH_CONFIG.emailTimeout,
-            }
-        );
+        const searchCriteria: any = {
+            sentTo: AUTH_CONFIG.mailosaurPhoneNumber,
+        };
+
+        // Only look for messages received after the specified time
+        if (receivedAfter != null) {
+            searchCriteria.receivedAfter = receivedAfter;
+        }
+
+        const message = await mailosaur.messages.get(AUTH_CONFIG.mailosaurServerId, searchCriteria, {
+            timeout: AUTH_CONFIG.emailTimeout,
+        });
 
         let otpCode: string | undefined;
         const codes = message.text?.codes || [];

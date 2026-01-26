@@ -3,8 +3,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     test: {
-        // This is needed because we are using the @ symbol to import from the src folder.
-        // Otherwise, Vitest will yell at us.
+        environment: "node",
+        include: ["**/*.test.{ts,tsx}"],
+        exclude: ["node_modules"],
+        globals: true,
+        setupFiles: [resolve(__dirname, "./src/wallets/__tests__/setup.ts")],
+        // Resolves @ imports to the src directory for Vitest
         alias: [{ find: "@", replacement: resolve(__dirname, "./src") }],
     },
 });

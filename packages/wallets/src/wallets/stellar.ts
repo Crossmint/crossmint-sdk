@@ -1,4 +1,4 @@
-import { isValidStellarAddress } from "@crossmint/common-sdk-base";
+import { isValidStellarAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
@@ -10,6 +10,7 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { walletsLogger } from "../logger";
 
 export class StellarWallet extends Wallet<StellarChain> {
     constructor(wallet: Wallet<StellarChain>) {
@@ -34,13 +35,25 @@ export class StellarWallet extends Wallet<StellarChain> {
         return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "stellarWallet.sendTransaction",
+        buildContext(thisArg: StellarWallet) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        walletsLogger.info("stellarWallet.sendTransaction.start");
+
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {
+            walletsLogger.info("stellarWallet.sendTransaction.prepared", {
+                transactionId: createdTransaction.id,
+            });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -50,7 +63,12 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         const options: ApproveOptions = {};
 
-        return await this.approveTransactionAndWait(createdTransaction.id, options);
+        const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        walletsLogger.info("stellarWallet.sendTransaction.success", {
+            transactionId: createdTransaction.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {

@@ -16,7 +16,7 @@ const config: Options = {
         await build({
             entryPoints: ["./src/signers/shadow-signer/shadow-signer-storage-browser.ts"],
             bundle: true,
-            minify: true,
+            minify: false, // Disable minification for less-verbose error logs
             format: "iife",
             globalName: "CrossmintBrowserStorage",
             platform: "browser",
@@ -36,7 +36,7 @@ const config: Options = {
                 loader: "ts",
             },
             bundle: true,
-            minify: true,
+            minify: false, // Disable minification for less-verbose error logs
             format: "iife",
             platform: "browser",
             target: "es2020",

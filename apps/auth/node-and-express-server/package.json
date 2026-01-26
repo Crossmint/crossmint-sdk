@@ -1,9 +1,10 @@
 {
     "name": "crossmint-auth-node",
-    "version": "1.1.59",
+    "version": "1.1.69",
     "description": "",
     "main": "index.js",
     "type": "module",
+    "private": true,
     "keywords": [],
     "author": "",
     "license": "ISC",

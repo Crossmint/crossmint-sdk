@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useState, type MutableRefObject } from "react";
+import type { ReactNode, MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -7,21 +7,19 @@ import { useCrossmint } from "@/hooks/useCrossmint";
 import { useSignerAuth } from "@/hooks/useSignerAuth";
 import type { CreateOnLogin } from "@/types";
 import type { ShadowSignerStorage } from "@crossmint/wallets-sdk";
+import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
+
+import type { PasskeyPromptState } from "./CrossmintWalletBaseProvider";
+import { useWallet } from "@/hooks/useWallet";
 
 export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
     appearance?: UIConfig;
-    createOnLogin?: CreateOnLogin;
     headlessSigningFlow?: boolean;
     showPasskeyHelpers?: boolean;
-    callbacks?: {
-        onWalletCreationStart?: () => Promise<void>;
-        onTransactionStart?: () => Promise<void>;
-    };
-    initializeWebView?: () => Promise<void>;
     renderUI?: (props: UIRenderProps) => ReactNode;
-    clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    shadowSignerStorage?: ShadowSignerStorage;
+    passkeyPromptState: PasskeyPromptState;
+    signerAuth: SignerAuthState & SignerAuthHandlers;
 }
 
 export interface UIRenderProps {
@@ -50,96 +48,28 @@ export interface UIRenderProps {
     };
 
     passkeyPromptProps?: {
-        state: {
-            open: boolean;
-            type?: ValidPasskeyPromptType;
-            primaryActionOnClick?: () => void;
-            secondaryActionOnClick?: () => void;
-        };
+        state: PasskeyPromptState;
         appearance?: UIConfig;
     };
 }
 
-type ValidPasskeyPromptType =
-    | "create-wallet"
-    | "transaction"
-    | "not-supported"
-    | "create-wallet-error"
-    | "transaction-error";
-
-type PasskeyPromptState = {
-    open: boolean;
-    type?: ValidPasskeyPromptType;
-    primaryActionOnClick?: () => void;
-    secondaryActionOnClick?: () => void;
-};
-
 export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
-    createOnLogin,
     headlessSigningFlow,
-    showPasskeyHelpers = true,
-    callbacks,
-    initializeWebView,
     renderUI,
-    clientTEEConnection,
-    shadowSignerStorage,
+    passkeyPromptState,
+    signerAuth,
 }: CrossmintWalletUIBaseProviderProps) {
-    const { experimental_customAuth } = useCrossmint();
-    const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const { wallet } = useWallet();
 
-    const signerAuth = useSignerAuth(createOnLogin);
-
-    const email =
-        createOnLogin?.signer.type === "email" && createOnLogin?.signer.email != null
-            ? createOnLogin.signer.email
-            : experimental_customAuth?.email;
-
-    const phoneNumber =
-        createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
-            ? createOnLogin.signer.phone
-            : experimental_customAuth?.phone;
-
-    const createPasskeyPrompt = useCallback(
-        (type: ValidPasskeyPromptType) => () =>
-            new Promise<void>((resolve) => {
-                if (!showPasskeyHelpers) {
-                    resolve();
-                    return;
-                }
-                setPasskeyPromptState({
-                    type,
-                    open: true,
-                    primaryActionOnClick: () => {
-                        setPasskeyPromptState({ open: false });
-                        resolve();
-                    },
-                    secondaryActionOnClick: () => {
-                        setPasskeyPromptState({ open: false });
-                        resolve();
-                    },
-                });
-            }),
-        [showPasskeyHelpers]
-    );
-
-    const getCallbacks = useCallback(() => {
-        let onWalletCreationStart = callbacks?.onWalletCreationStart;
-        let onTransactionStart = callbacks?.onTransactionStart;
-
-        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
-            onWalletCreationStart = createPasskeyPrompt("create-wallet");
-            onTransactionStart = createPasskeyPrompt("transaction");
-        }
-
-        return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.signer.type, showPasskeyHelpers, createPasskeyPrompt]);
+    const signerType = wallet?.signer.type;
+    const signerValue = wallet?.signer.locator().split(":")[1];
 
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
-            email,
-            open: signerAuth.emailSignerDialogOpen && email != null,
+            email: signerType === "email" ? signerValue : undefined,
+            open: signerAuth.emailSignerDialogOpen && signerType === "email" && signerValue != null,
             setOpen: signerAuth.setEmailSignerDialogOpen,
             step: signerAuth.emailSignerDialogStep,
             onSubmitOTP: signerAuth.emailsigners_handleOTPSubmit,
@@ -149,8 +79,8 @@ export function CrossmintWalletUIBaseProvider({
             appearance,
         },
         phoneSignerProps: {
-            phone: phoneNumber,
-            open: signerAuth.phoneSignerDialogOpen && phoneNumber != null,
+            phone: signerType === "phone" ? signerValue : undefined,
+            open: signerAuth.phoneSignerDialogOpen && signerType === "phone" && signerValue != null,
             setOpen: signerAuth.setPhoneSignerDialogOpen,
             step: signerAuth.phoneSignerDialogStep,
             onSubmitOTP: signerAuth.phonesigners_handleOTPSubmit,
@@ -166,16 +96,9 @@ export function CrossmintWalletUIBaseProvider({
     };
 
     return (
-        <CrossmintWalletBaseProvider
-            createOnLogin={createOnLogin}
-            onAuthRequired={signerAuth.onAuthRequired}
-            initializeWebView={initializeWebView}
-            callbacks={getCallbacks()}
-            clientTEEConnection={clientTEEConnection}
-            shadowSignerStorage={shadowSignerStorage}
-        >
+        <>
             {children}
             {!headlessSigningFlow && renderUI != null && renderUI(uiRenderProps)}
-        </CrossmintWalletBaseProvider>
+        </>
     );
 }

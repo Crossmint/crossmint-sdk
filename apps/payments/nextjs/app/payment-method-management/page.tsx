@@ -1,7 +1,7 @@
 "use client";
 
+import { AuthButton } from "../../components/common/AuthButton";
 import { ClientProviders } from "./components/ClientProviders";
-import { AuthButton } from "./components/AuthButton";
 import { useCrossmintAuth, CrossmintPaymentMethodManagement } from "@crossmint/client-sdk-react-ui";
 
 export default function PaymentMethodManagementPage() {

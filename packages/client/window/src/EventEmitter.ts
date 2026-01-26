@@ -62,7 +62,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
-        console.log("[EventEmitter] send() - Data to send:", data);
+        console.log("[EventEmitter] send() - Data to send:", JSON.stringify(data, null, 2));
 
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {

@@ -7,10 +7,11 @@ import type {
 } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
-import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { getStorage, type ShadowSignerStorage, type ShadowSigner } from "../shadow-signer";
 import type { Chain } from "../../chains/chains";
+import { walletsLogger } from "../../logger";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -28,8 +29,11 @@ export abstract class NonCustodialSigner implements Signer {
         protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
-        this.shadowSignerStorage = shadowSignerStorage ?? getStorage();
-        this.initialize();
+        // Only initialize the signer if running client-side
+        if (typeof window !== "undefined") {
+            this.shadowSignerStorage = shadowSignerStorage ?? getStorage();
+            this.initialize();
+        }
         this.type = this.config.type;
     }
 
@@ -56,7 +60,9 @@ export abstract class NonCustodialSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+            const iframeManager = new NcsIframeManager({
+                environment: parsedAPIKey.environment,
+            });
             this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }
@@ -98,7 +104,9 @@ export abstract class NonCustodialSigner implements Signer {
         if (!parsedAPIKey.isValid) {
             throw new Error("Invalid API key");
         }
-        const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+        const iframeManager = new NcsIframeManager({
+            environment: parsedAPIKey.environment,
+        });
         this.config.clientTEEConnection = await iframeManager.initialize();
 
         if (this.config.clientTEEConnection == null) {
@@ -108,6 +116,10 @@ export abstract class NonCustodialSigner implements Signer {
         console.log("TEE connection initialized successfully");
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "handleAuthRequired",
+    })
     protected async handleAuthRequired() {
         if (this.shadowSigner?.hasShadowSigner()) {
             return;
@@ -134,10 +146,7 @@ export abstract class NonCustodialSigner implements Signer {
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 5,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (signerResponse?.status !== "success") {
@@ -151,6 +160,10 @@ export abstract class NonCustodialSigner implements Signer {
             this._needsAuth = true;
         }
 
+        walletsLogger.info("Handling auth required", { signerResponse });
+        walletsLogger.info("Needs auth", { needsAuth: this._needsAuth });
+        walletsLogger.info("Config onAuthRequired", { onAuthRequired: this.config.onAuthRequired });
+
         const { promise, resolve, reject } = this.createAuthPromise();
         this._authPromise = { promise, resolve, reject };
 
@@ -161,6 +174,7 @@ export abstract class NonCustodialSigner implements Signer {
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
                     async () => {
+                        walletsLogger.info("Auth rejected", { authRejected: true });
                         this._needsAuth = false;
                         // We call onAuthRequired again so the needsAuth state is updated for the dev
                         if (this.config.onAuthRequired != null) {
@@ -175,6 +189,7 @@ export abstract class NonCustodialSigner implements Signer {
                     }
                 );
             } catch (error) {
+                walletsLogger.error("handleAuthRequired error", { error });
                 reject(error as Error);
             }
         }
@@ -182,6 +197,7 @@ export abstract class NonCustodialSigner implements Signer {
         try {
             await promise;
         } catch (error) {
+            walletsLogger.error("handleAuthRequired promise error", { error });
             throw error;
         }
     }
@@ -198,7 +214,11 @@ export abstract class NonCustodialSigner implements Signer {
         return jwt;
     }
 
-    private createAuthPromise(): { promise: Promise<void>; resolve: () => void; reject: (error: Error) => void } {
+    private createAuthPromise(): {
+        promise: Promise<void>;
+        resolve: () => void;
+        reject: (error: Error) => void;
+    } {
         let resolvePromise!: () => void;
         let rejectPromise!: (error: Error) => void;
 
@@ -223,10 +243,7 @@ export abstract class NonCustodialSigner implements Signer {
                 },
                 data: { authId },
             },
-            options: {
-                ...DEFAULT_EVENT_OPTIONS,
-                maxRetries: 3,
-            },
+            options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
@@ -263,10 +280,7 @@ export abstract class NonCustodialSigner implements Signer {
                         onboardingAuthentication: { encryptedOtp },
                     },
                 },
-                options: {
-                    ...DEFAULT_EVENT_OPTIONS,
-                    maxRetries: 3,
-                },
+                options: DEFAULT_EVENT_OPTIONS,
             });
         } catch (err) {
             console.error("[verifyOtp] Error sending OTP validation request:", err);
@@ -290,7 +304,7 @@ export abstract class NonCustodialSigner implements Signer {
             return;
         }
 
-        console.error("[verifyOtp] Failed to validate OTP:", response);
+        console.error("[verifyOtp] Failed to validate OTP:", JSON.stringify(response, null, 2));
         this._needsAuth = true;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);
@@ -333,10 +347,12 @@ export abstract class NonCustodialSigner implements Signer {
      * Get the appropriate scheme and encoding based on the chain
      * Must be implemented by concrete classes
      */
-    protected abstract getChainKeyParams(): { scheme: "secp256k1" | "ed25519"; encoding: "base58" | "hex" | "strkey" };
+    protected abstract getChainKeyParams(): {
+        scheme: "secp256k1" | "ed25519";
+        encoding: "base58" | "hex" | "strkey";
+    };
 }
 
 export const DEFAULT_EVENT_OPTIONS = {
-    timeoutMs: 10_000,
-    intervalMs: 5_000,
+    timeoutMs: 30_000,
 };

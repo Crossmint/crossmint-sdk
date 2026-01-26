@@ -4,13 +4,17 @@ import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
+import { initWalletsLogger, walletsLogger } from "./logger";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
 
     private constructor(crossmint: Crossmint) {
+        initWalletsLogger(crossmint.apiKey);
         const apiClient = new ApiClient(crossmint);
         this.walletFactory = new WalletFactory(apiClient);
+
+        walletsLogger.info("wallets.sdk.initialized");
     }
 
     /**

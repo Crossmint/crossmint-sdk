@@ -1,4 +1,4 @@
-import { isValidAddress } from "@crossmint/common-sdk-base";
+import { isValidAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type {
     Activity,
     ApiClient,
@@ -8,6 +8,7 @@ import type {
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
+    FundWalletResponse,
 } from "../api";
 import type {
     AddDelegatedSignerOptions,
@@ -45,6 +46,7 @@ import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { walletsLogger } from "../logger";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -103,11 +105,19 @@ export class Wallet<C extends Chain> {
     /**
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
-     * @param {Chain[]} chains - The chains (optional)
      * @returns {Promise<Balances<C>>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.balances",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async balances(tokens?: string[]): Promise<Balances<C>> {
+        walletsLogger.info("wallet.balances.start");
+
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -123,15 +133,52 @@ export class Wallet<C extends Chain> {
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
-            chains: chains ?? [this.chain],
+            chains: [this.chain],
             tokens: allTokens,
         });
 
         if ("error" in response) {
+            walletsLogger.error("wallet.balances.error", { error: response });
             throw new Error(`Failed to get balances for wallet: ${JSON.stringify(response.message)}`);
         }
 
+        walletsLogger.info("wallet.balances.success");
         return this.transformBalanceResponse(response, nativeToken, tokens);
+    }
+
+    /**
+     * Funds the wallet with Crossmint's stablecoin (USDXM).
+     *
+     * **Note:** This method is only available in staging environments and exclusively supports USDXM tokens.
+     * It cannot be used in production environments.
+     * @param amount - The amount of USDXM to fund the wallet with
+     * @param chain - Optional chain to fund on. If not provided, uses the wallet's default chain
+     * @returns The funding response
+     * @throws {Error} If the funding operation fails or if called in a production environment
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.stagingFund",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async stagingFund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
+        walletsLogger.info("wallet.stagingFund.start", { amount, chain: chain ?? this.chain });
+
+        const response = await this.apiClient.fundWallet(this.address, {
+            amount,
+            token: "usdxm",
+            // Type casting is necessary here due to a type mismatch between our DTO schema and server-side types
+            // (which only contains 10 testnet chains. Variable in main server is called EvmUsdcEnabledTestnetChains for reference).
+            chain: chain ?? (this.chain as any),
+        });
+        if ("error" in response) {
+            walletsLogger.error("wallet.stagingFund.error", { error: response });
+            throw new Error(`Failed to fund wallet: ${JSON.stringify(response.message)}`);
+        }
+        walletsLogger.info("wallet.stagingFund.success");
+        return response;
     }
 
     /**
@@ -271,15 +318,25 @@ export class Wallet<C extends Chain> {
      * @param {TransactionInputOptions} options - The options for the transaction
      * @returns {Transaction} The transaction
      */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.send",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async send<T extends TransactionInputOptions | undefined = undefined>(
         to: string | UserLocator,
         token: string,
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        await this.preAuthIfNeeded();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
+
+        walletsLogger.info("wallet.send.start", { recipient, token: tokenLocator, amount });
+
+        await this.preAuthIfNeeded();
         const sendParams = {
             recipient,
             amount,
@@ -290,12 +347,14 @@ export class Wallet<C extends Chain> {
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
         if ("message" in transactionCreationResponse) {
+            walletsLogger.error("wallet.send.error", { error: transactionCreationResponse });
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
         }
 
         if (options?.experimental_prepareOnly) {
+            walletsLogger.info("wallet.send.prepared", { transactionId: transactionCreationResponse.id });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -303,7 +362,12 @@ export class Wallet<C extends Chain> {
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
-        return await this.approveTransactionAndWait(transactionCreationResponse.id);
+        const result = await this.approveTransactionAndWait(transactionCreationResponse.id);
+        walletsLogger.info("wallet.send.success", {
+            transactionId: transactionCreationResponse.id,
+            hash: result.hash,
+        });
+        return result;
     }
 
     /**
@@ -334,14 +398,35 @@ export class Wallet<C extends Chain> {
      * @param params.options.additionalSigners - The additional signers
      * @returns The transaction or signature
      */
-
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.approve",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+        walletsLogger.info("wallet.approve.start", {
+            transactionId: params.transactionId,
+            signatureId: params.signatureId,
+        });
+
         if (params.transactionId != null) {
-            return (await this.approveTransactionAndWait(params.transactionId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveTransactionAndWait(
+                params.transactionId,
+                params.options
+            )) as ApproveResult<T>;
+            walletsLogger.info("wallet.approve.success", { transactionId: params.transactionId });
+            return result;
         }
         if (params.signatureId != null) {
-            return (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            walletsLogger.info("wallet.approve.success", { signatureId: params.signatureId });
+            return result;
         }
+        walletsLogger.error("wallet.approve.error", {
+            error: "Either transactionId or signatureId must be provided",
+        });
         throw new Error("Either transactionId or signatureId must be provided");
     }
 
@@ -351,35 +436,53 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.addDelegatedSigner",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
         signer: string | RegisterSignerPasskeyParams;
         options?: T;
     }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
+        walletsLogger.info("wallet.addDelegatedSigner.start");
+
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
         });
 
         if ("error" in response) {
+            walletsLogger.error("wallet.addDelegatedSigner.error", { error: response });
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
         if (this.chain === "solana" || this.chain === "stellar") {
             if (!("transaction" in response) || response.transaction == null) {
+                walletsLogger.error("wallet.addDelegatedSigner.error", {
+                    error: "Expected transaction in response for Solana/Stellar chain",
+                });
                 throw new Error("Expected transaction in response for Solana/Stellar chain");
             }
 
             const transactionId = response.transaction.id;
 
             if (params.options?.experimental_prepareOnly) {
+                walletsLogger.info("wallet.addDelegatedSigner.prepared", { transactionId });
                 return { transactionId } as any;
             }
 
             await this.approveTransactionAndWait(transactionId);
+            walletsLogger.info("wallet.addDelegatedSigner.success", { transactionId });
             return undefined as any;
         }
 
         if (!("chains" in response)) {
+            walletsLogger.error("wallet.addDelegatedSigner.error", {
+                error: "Expected chains in response for EVM chain",
+            });
             throw new Error("Expected chains in response for EVM chain");
         }
 
@@ -387,24 +490,38 @@ export class Wallet<C extends Chain> {
 
         if (params.options?.experimental_prepareOnly) {
             const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
+            walletsLogger.info("wallet.addDelegatedSigner.prepared", { signatureId });
             return { signatureId } as any;
         }
 
         if (chainResponse?.status === "awaiting-approval") {
             await this.approveSignatureAndWait(chainResponse.id);
+            walletsLogger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
             return undefined as any;
         }
         if (chainResponse?.status === "pending") {
             await this.waitForSignature(chainResponse.id);
+            walletsLogger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
             return undefined as any;
         }
 
+        walletsLogger.info("wallet.addDelegatedSigner.success");
         return undefined as any;
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.delegatedSigners",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
     public async delegatedSigners(): Promise<DelegatedSigner[]> {
+        walletsLogger.info("wallet.delegatedSigners.start");
+
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
+            walletsLogger.error("wallet.delegatedSigners.error", { error: walletResponse });
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
@@ -414,11 +531,14 @@ export class Wallet<C extends Chain> {
                 walletResponse.chainType !== "solana" &&
                 walletResponse.chainType !== "stellar")
         ) {
+            walletsLogger.error("wallet.delegatedSigners.error", {
+                error: `Wallet type ${walletResponse.type} not supported`,
+            });
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
         // Map wallet-type to simply wallet
-        return (
+        const signers =
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
                 // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
@@ -426,8 +546,10 @@ export class Wallet<C extends Chain> {
                 return {
                     signer: `external-wallet:${address}`,
                 };
-            }) ?? []
-        );
+            }) ?? [];
+
+        walletsLogger.info("wallet.delegatedSigners.success", { count: signers.length });
+        return signers;
     }
 
     protected get walletLocator(): WalletLocator {
@@ -516,23 +638,20 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), this.signer];
 
-        const signedApprovals = await Promise.all(
-            pendingApprovals.map((pendingApproval) => {
+        const approvals = await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
-                return signer.signMessage(pendingApproval.message);
+                const signature = await signer.signMessage(pendingApproval.message);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
             })
         );
-
-        const approvals = signedApprovals.map((signature) => {
-            return {
-                ...signature,
-                signer: this.signer.locator(),
-            };
-        });
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -566,8 +685,8 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), this.signer];
 
-        const signedApprovals = await Promise.all(
-            pendingApprovals.map((pendingApproval) => {
+        const approvals = await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
@@ -578,16 +697,13 @@ export class Wallet<C extends Chain> {
                         ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
                         : pendingApproval.message;
 
-                return signer.signTransaction(transactionToSign);
+                const signature = await signer.signTransaction(transactionToSign);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
             })
         );
-
-        const approvals = signedApprovals.map((signature) => {
-            return {
-                ...signature,
-                signer: this.signer.locator(),
-            };
-        });
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }

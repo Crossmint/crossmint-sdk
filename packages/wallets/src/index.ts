@@ -41,4 +41,5 @@ export type {
     StellarExternalWalletSignerConfig,
     ExportableSigner,
     ExportSignerTEEConnection,
+    Signer,
 } from "./signers/types";

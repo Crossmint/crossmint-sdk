@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 const USE_CUSTOM_RENDERING = false;
 
-export function EmbeddedCheckoutV3Content() {
+export function EmbeddedCheckoutV3Content({ jwt }: { jwt?: string }) {
     const { order } = useCrossmintCheckout();
 
     useEffect(() => {
@@ -28,20 +28,20 @@ function CrossmintEmbeddedCheckoutWrapper() {
     return (
         <CrossmintEmbeddedCheckout
             recipient={{
-                // email: "maxwell@paella.dev",
-                walletAddress: "0x8b821dd648599B0D093F55B5BaAA48c709ec455A",
+                walletAddress: "maxfQWBno84Zfu4sXgmjYvsvLn4LzGFSgSkFMFuzved",
             }}
             lineItems={{
-                collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
-                callData: {
-                    totalPrice: "0.001",
-                    quantity: 1,
+                tokenLocator: "solana:7EivYFyNfgGj8xbUymR7J4LuxUHLKRzpLaERHLvi7Dgu",
+                executionParameters: {
+                    mode: "exact-in",
+                    amount: "1",
+                    maxSlippageBps: "500",
                 },
             }}
             payment={{
                 receiptEmail: "maxwell@paella.dev",
                 crypto: {
-                    enabled: true,
+                    enabled: false,
                 },
                 fiat: {
                     enabled: true,
