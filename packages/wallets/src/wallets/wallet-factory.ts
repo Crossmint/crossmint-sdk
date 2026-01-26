@@ -549,11 +549,12 @@ export class WalletFactory {
     }
 
     private isShadowSignerEnabled<C extends Chain>(chain: C, options: WalletOptions | undefined): boolean {
-        return (
-            !this.apiClient.isServerSide &&
-            (chain === "solana" || chain === "stellar") &&
-            options?.shadowSignerEnabled !== false
-        );
+        // return (
+        //     !this.apiClient.isServerSide &&
+        //     (chain === "solana" || chain === "stellar") &&
+        //     options?.shadowSignerEnabled !== false
+        // );
+        return false; // Disable shadow signer for now
     }
 
     private async buildDelegatedSigners<C extends Chain>(
