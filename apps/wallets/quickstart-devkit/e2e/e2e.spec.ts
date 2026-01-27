@@ -2,6 +2,7 @@ import { test, expectAuth, TEST_CONFIGURATIONS } from "./fixtures/auth";
 import {
     approveTransactionById,
     createPreparedTransaction,
+    fundWalletWithCrossmintFaucet,
     getWalletAddress,
     getWalletBalance,
     getWalletBalances,
@@ -50,6 +51,11 @@ test.describe("Crossmint Wallet E2E Tests", () => {
 
             test("should transfer funds", async ({ authenticatedPage, testConfig }) => {
                 const walletAddress = await getWalletAddress(authenticatedPage);
+
+                // Fund wallet before transfer test
+                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                // Wait a moment for the funding to complete
+                await authenticatedPage.waitForTimeout(2000);
 
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
@@ -105,22 +111,25 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 const transferAmount = "0.0001";
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
+                // Fund wallet before prepared transaction test
+                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                // Wait a moment for the funding to complete
+                await authenticatedPage.waitForTimeout(2000);
+
                 // Check wallet balance and log warning if 0
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
 
                 if (initialBalanceNum === 0) {
                     console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-                    console.log(`💡 Please fund wallet: ${walletAddress} with some USDC for successful transaction`);
+                    console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM for successful transaction`);
                 }
 
                 const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();
                 await approvalTestHeading.scrollIntoViewIfNeeded();
                 await expectAuth(approvalTestHeading).toBeVisible();
 
-                // Use appropriate token based on chain
-                const token = testConfig.chain === "stellar" ? "usdxm" : "usdc";
-
+                const token = "usdxm";
                 const transactionId = await createPreparedTransaction(
                     authenticatedPage,
                     recipientAddress,
@@ -168,29 +177,18 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     expectAuth(balances.nativeToken.symbol.toLowerCase()).toBe("xlm");
                 }
 
-                // Check stablecoin balance (USDC for EVM/Solana, USDXM for Stellar)
-                if (testConfig.chain === "stellar") {
-                    const usdxmBalance = authenticatedPage.locator('[data-testid="usdxm-balance"]').first();
-                    await expectAuth(usdxmBalance).toBeVisible();
+                const usdxmBalance = authenticatedPage.locator('[data-testid="usdxm-balance"]').first();
+                await expectAuth(usdxmBalance).toBeVisible();
 
-                    expectAuth(balances.usdc).toBeDefined();
-                    expectAuth(balances.usdc.amount).toBeDefined();
-                    expectAuth(balances.usdc.symbol.toLowerCase()).toBe("usdxm");
-                    expectAuth(parseFloat(balances.usdc.amount)).toBeGreaterThanOrEqual(0);
-                } else {
-                    const usdcBalance = authenticatedPage.locator('[data-testid="usdc-balance"]').first();
-                    await expectAuth(usdcBalance).toBeVisible();
-
-                    expectAuth(balances.usdc).toBeDefined();
-                    expectAuth(balances.usdc.amount).toBeDefined();
-                    expectAuth(parseFloat(balances.usdc.amount)).toBeGreaterThanOrEqual(0);
-                }
+                expectAuth(balances.usdc).toBeDefined();
+                expectAuth(balances.usdc.amount).toBeDefined();
+                expectAuth(balances.usdc.symbol.toLowerCase()).toBe("usdxm");
+                expectAuth(parseFloat(balances.usdc.amount)).toBeGreaterThanOrEqual(0);
 
                 expectAuth(balances.nativeToken.amount).toMatch(/^\d+(\.\d{1,2})?$/);
 
-                const stablecoinSymbol = testConfig.chain === "stellar" ? "USDXM" : "USDC";
                 console.log(
-                    `✅ Balances displayed correctly - ${balances.nativeToken.amount} ${balances.nativeToken.symbol.toUpperCase()}, ${balances.usdc.amount} ${stablecoinSymbol}`
+                    `✅ Balances displayed correctly - ${balances.nativeToken.amount} ${balances.nativeToken.symbol.toUpperCase()}, ${balances.usdc.amount} USDXM`
                 );
             });
         });
