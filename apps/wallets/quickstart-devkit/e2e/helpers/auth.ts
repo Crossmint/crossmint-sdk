@@ -198,7 +198,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 export async function handleSignerConfirmation(page: Page, signerType?: SignerType): Promise<void> {
     if (signerType == null) {
         try {
-    const url = new URL(page.url());
+            const url = new URL(page.url());
             signerType = url.searchParams.get("signer") as SignerType;
         } catch (e) {
             console.warn("⚠️ Could not parse URL to get signer type, will try to detect from modal");

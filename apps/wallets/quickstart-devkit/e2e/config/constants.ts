@@ -94,10 +94,10 @@ export function getEmailForSigner(signerType: SignerType): string {
     randomSuffixCache.set(signerType, randomSuffix);
     const alias = `${baseAlias}${randomSuffix}`;
     const email = `test-${alias}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
-    
+
     emailCache.set(signerType, email);
     console.log(`📧 Generated and cached email for ${signerType}: ${email}`);
-    
+
     return email;
 }
 

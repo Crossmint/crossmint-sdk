@@ -83,7 +83,7 @@ export function WalletBalance() {
                         <p className="font-medium">USDXM</p>
                     </div>
                     <div className="text-gray-700 font-medium" data-testid="usdxm-balance">
-                    ${" "}
+                        ${" "}
                         {formatBalance(
                             balances?.tokens?.find((t) => t.symbol?.toLowerCase() === "usdxm")?.amount ?? "0"
                         )}

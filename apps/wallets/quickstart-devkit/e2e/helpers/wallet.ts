@@ -2,14 +2,13 @@ import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
 import { AUTH_CONFIG } from "../config/constants";
 
-
 function mapChainIdToApiFormat(chainId: string): string {
     const directMapping: Record<string, string> = {
         "base-sepolia": "base-sepolia",
         "ethereum-sepolia": "ethereum-sepolia",
         "optimism-sepolia": "optimism-sepolia",
-        "solana": "solana",
-        "stellar": "stellar",
+        solana: "solana",
+        stellar: "stellar",
     };
 
     return directMapping[chainId] || chainId;
@@ -26,8 +25,8 @@ function mapChainIdToApiFormat(chainId: string): string {
 export async function fundWalletWithCrossmintFaucet(
     walletAddress: string,
     chainId: string,
-    amount: number = 10,
-    token: string = "usdxm"
+    amount = 10,
+    token = "usdxm"
 ): Promise<void> {
     const apiChainId = mapChainIdToApiFormat(chainId);
     const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
@@ -50,9 +49,7 @@ export async function fundWalletWithCrossmintFaucet(
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(
-                `Failed to fund wallet: ${response.status} ${response.statusText}. ${errorText}`
-            );
+            throw new Error(`Failed to fund wallet: ${response.status} ${response.statusText}. ${errorText}`);
         }
 
         const result = await response.json();
@@ -218,7 +215,7 @@ export async function transferFunds(
         const transferContainer = transferSection.locator("..").locator("..");
         const usdxmRadio = transferContainer.locator(`label:has-text("USDXM") input[type="radio"]`).first();
         const usdcRadio = transferContainer.locator(`label:has-text("USDC") input[type="radio"]`).first();
-        
+
         const usdxmExists = await usdxmRadio.isVisible({ timeout: 2000 }).catch(() => false);
         if (usdxmExists) {
             await usdxmRadio.click();

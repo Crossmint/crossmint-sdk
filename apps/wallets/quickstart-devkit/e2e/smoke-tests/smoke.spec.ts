@@ -35,10 +35,10 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(walletAddress).toBeTruthy();
         expectAuth(walletAddress.length).toBeGreaterThan(10);
         expectAuth(walletAddress.startsWith("0x")).toBe(true);
-        
+
         expectAuth(walletAddress.length).toBe(42);
         expectAuth(/^0x[a-fA-F0-9]{40}$/.test(walletAddress)).toBe(true);
-        
+
         const addressElement = authenticatedPage.locator(`[data-testid^="wallet-address:${walletAddress}"]`);
         await expectAuth(addressElement).toBeVisible();
     });
@@ -80,14 +80,14 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
         if (activity.events.length > 0) {
             const firstEvent = activity.events[0];
-            
+
             expectAuth(firstEvent.type).toBeTruthy();
             expectAuth(typeof firstEvent.type).toBe("string");
             expectAuth(firstEvent.timestamp).toBeTruthy();
             expectAuth(typeof firstEvent.timestamp).toBe("string");
-            
+
             expectAuth(firstEvent.timestamp.length).toBeGreaterThan(0);
-            
+
             if (firstEvent.amount) {
                 expectAuth(typeof firstEvent.amount).toBe("string");
                 expectAuth(Number.isFinite(parseFloat(firstEvent.amount))).toBe(true);
