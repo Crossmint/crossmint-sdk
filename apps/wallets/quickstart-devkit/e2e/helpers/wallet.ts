@@ -52,9 +52,8 @@ export async function fundWalletWithCrossmintFaucet(
             throw new Error(`Failed to fund wallet: ${response.status} ${response.statusText}. ${errorText}`);
         }
 
-        const result = await response.json();
+        await response.json();
         console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${apiChainId}`);
-        return result;
     } catch (error) {
         console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
         throw error;
