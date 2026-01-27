@@ -130,7 +130,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
                 : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
         }
 
-        await transferFunds(authenticatedPage, recipientAddress, "0.0001", testConfig.signer);
+        await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
 
         console.log(
             `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -139,7 +139,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
     test("should create and approve a prepared transaction", async ({ authenticatedPage, testConfig }) => {
         const recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
-        const transferAmount = "0.0001";
+        const transferAmount = "10";
         const walletAddress = await getWalletAddress(authenticatedPage);
 
         expectAuth(recipientAddress).toBeTruthy();
@@ -147,8 +147,8 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(recipientAddress.length).toBe(42);
         expectAuth(/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)).toBe(true);
 
-        // Fund wallet before prepared transaction test
-        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+        // Fund wallet before prepared transaction test with the same amount we'll transfer
+        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
         // Wait a moment for the funding to complete
         await authenticatedPage.waitForTimeout(2000);
 

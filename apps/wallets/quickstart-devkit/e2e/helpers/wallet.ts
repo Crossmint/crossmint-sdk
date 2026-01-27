@@ -2,18 +2,6 @@ import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
 import { AUTH_CONFIG } from "../config/constants";
 
-function mapChainIdToApiFormat(chainId: string): string {
-    const directMapping: Record<string, string> = {
-        "base-sepolia": "base-sepolia",
-        "ethereum-sepolia": "ethereum-sepolia",
-        "optimism-sepolia": "optimism-sepolia",
-        solana: "solana",
-        stellar: "stellar",
-    };
-
-    return directMapping[chainId] || chainId;
-}
-
 /**
  * Funds a wallet using the Crossmint faucet API
  * @param walletAddress - The wallet address to fund
@@ -28,10 +16,9 @@ export async function fundWalletWithCrossmintFaucet(
     amount = 10,
     token = "usdxm"
 ): Promise<void> {
-    const apiChainId = mapChainIdToApiFormat(chainId);
     const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
 
-    console.log(`💰 Funding wallet ${walletAddress} on ${apiChainId} with ${amount} ${token}...`);
+    console.log(`💰 Funding wallet ${walletAddress} on ${chainId} with ${amount} ${token}...`);
 
     try {
         const response = await fetch(apiUrl, {
@@ -43,7 +30,7 @@ export async function fundWalletWithCrossmintFaucet(
             body: JSON.stringify({
                 amount,
                 token,
-                chain: apiChainId,
+                chain: chainId,
             }),
         });
 
@@ -53,7 +40,7 @@ export async function fundWalletWithCrossmintFaucet(
         }
 
         await response.json();
-        console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${apiChainId}`);
+        console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
     } catch (error) {
         console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
         throw error;
@@ -92,7 +79,6 @@ export async function getWalletBalance(page: Page): Promise<string> {
         console.log("✅ Failed to get wallet balance, retrying...");
     }
 
-    // All chains now use USDXM
     const balanceElement = page.locator(`[data-testid="usdxm-balance"]`).first();
     const balanceText = await balanceElement.textContent();
     return balanceText?.replace(/[^0-9.]/g, "").trim() || "0";
@@ -113,7 +99,6 @@ export async function getWalletBalances(page: Page): Promise<{
     await nativeTokenBalanceElement.waitFor({ state: "visible", timeout });
     console.log("✅ Native token balance element is visible");
 
-    // All chains now use USDXM
     const stablecoinBalanceElement = page.locator(`[data-testid="usdxm-balance"]`).first();
     await stablecoinBalanceElement.waitFor({ state: "visible", timeout });
     console.log(`✅ USDXM balance element is visible`);
@@ -213,14 +198,8 @@ export async function transferFunds(
         // Find the parent container of the Transfer funds section
         const transferContainer = transferSection.locator("..").locator("..");
         const usdxmRadio = transferContainer.locator(`label:has-text("USDXM") input[type="radio"]`).first();
-        const usdcRadio = transferContainer.locator(`label:has-text("USDC") input[type="radio"]`).first();
-
-        const usdxmExists = await usdxmRadio.isVisible({ timeout: 2000 }).catch(() => false);
-        if (usdxmExists) {
-            await usdxmRadio.click();
-        } else {
-            await usdcRadio.click();
-        }
+        await usdxmRadio.waitFor({ timeout: 10000 });
+        await usdxmRadio.click();
 
         // Find amount input within the transfer section only
         const amountInput = transferContainer.locator('input[data-testid="amount"]').first();

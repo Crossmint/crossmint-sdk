@@ -79,7 +79,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                         : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
                 }
 
-                await transferFunds(authenticatedPage, recipientAddress, "0.0001", testConfig.signer);
+                await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
 
                 console.log(
                     `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -108,11 +108,11 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
                 }
 
-                const transferAmount = "0.0001";
+                const transferAmount = "10";
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
-                // Fund wallet before prepared transaction test
-                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                // Fund wallet before prepared transaction test with the same amount we'll transfer
+                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
                 // Wait a moment for the funding to complete
                 await authenticatedPage.waitForTimeout(2000);
 
