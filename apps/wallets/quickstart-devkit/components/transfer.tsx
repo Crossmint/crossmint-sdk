@@ -326,6 +326,7 @@ export function StellarTransferFunds() {
                         <label className="text-sm font-medium">Amount</label>
                         <input
                             type="number"
+                            data-testid="amount"
                             className="w-full px-3 py-2 border rounded-md text-sm"
                             placeholder="0.00"
                             onChange={(e) => setAmount(Number(e.target.value))}
@@ -336,6 +337,7 @@ export function StellarTransferFunds() {
                     <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
+                        data-testid="recipient-wallet-address"
                         className="w-full px-3 py-2 border rounded-md text-sm"
                         placeholder="Enter Stellar address (G...)"
                         onChange={(e) => setRecipient(e.target.value)}
@@ -349,6 +351,7 @@ export function StellarTransferFunds() {
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-accent text-white hover:bg-accent/80"
                     }`}
+                    data-testid="transfer-button"
                     onClick={handleOnTransfer}
                     disabled={isLoading}
                 >

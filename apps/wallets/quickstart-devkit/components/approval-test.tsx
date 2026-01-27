@@ -13,7 +13,7 @@ export function ApprovalTest() {
 
     // State for creating transactions that need approval
     const [prepareTransfer, setPrepareTransfer] = useState({
-        token: (isEVMWallet ? "eth" : "sol") as "eth" | "usdc" | "sol",
+        token: (isEVMWallet ? "eth" : "sol") as "eth" | "usdc" | "sol" | "usdxm",
         recipient: "",
         amount: "",
     });
@@ -198,7 +198,7 @@ export function ApprovalTest() {
                             onChange={(e) =>
                                 setPrepareTransfer((prev) => ({
                                     ...prev,
-                                    token: e.target.value as "eth" | "usdc" | "sol",
+                                    token: e.target.value as "eth" | "usdc" | "sol" | "usdxm",
                                 }))
                             }
                             className="w-full px-3 py-2 border rounded-md text-sm"
@@ -206,6 +206,7 @@ export function ApprovalTest() {
                             {isEVMWallet && <option value="eth">ETH</option>}
                             {isSolanaWallet && <option value="sol">SOL</option>}
                             <option value="usdc">USDC</option>
+                            <option value="usdxm">USDXM</option>
                         </select>
                     </div>
                     <div>
