@@ -10,8 +10,9 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: 0,
     workers: 1,
+    maxFailures: undefined, // Don't stop after a certain number of failures - run all tests
     reporter: process.env.CI ? [["json", { outputFile: "test-results/smoke-results.json" }], ["list"]] : "html",
-    timeout: 60000,
+    timeout: 120000, // 2 minutes for tests that may take longer (e.g., wallet address retrieval, funding)
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
         trace: "on-first-retry",
@@ -55,7 +56,7 @@ export default defineConfig({
         command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
         url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
-        timeout: process.env.CI ? 180000 : 60000,
+        timeout: process.env.CI ? 180000 : 300000,
         stdout: "pipe",
         stderr: "pipe",
     },
