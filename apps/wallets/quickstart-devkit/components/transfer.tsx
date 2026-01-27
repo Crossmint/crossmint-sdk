@@ -187,7 +187,7 @@ export function SolanaTransferFunds() {
                                     checked={token === "usdxm"}
                                     onChange={() => setToken("usdxm")}
                                 />
-                                <span>USDC</span>
+                                <span>USDXM</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
