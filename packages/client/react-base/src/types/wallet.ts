@@ -1,9 +1,11 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { EVMChain, SolanaChain, StellarChain, WalletCreateArgs } from "@crossmint/wallets-sdk";
+import type { ClientSideWalletCreateArgs, EVMChain, SolanaChain, StellarChain } from "@crossmint/wallets-sdk";
 
 export type {
     Balances,
     Chain,
+    ClientSideWalletArgsFor,
+    ClientSideWalletCreateArgs,
     EvmExternalWalletSignerConfig,
     DelegatedSigner,
     OnCreateConfig,
@@ -14,7 +16,10 @@ export type {
 
 export { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
 
-export type CreateOnLogin = WalletCreateArgs<SolanaChain> | WalletCreateArgs<EVMChain> | WalletCreateArgs<StellarChain>;
+export type CreateOnLogin =
+    | ClientSideWalletCreateArgs<SolanaChain>
+    | ClientSideWalletCreateArgs<EVMChain>
+    | ClientSideWalletCreateArgs<StellarChain>;
 
 export type BaseCrossmintWalletProviderProps = {
     createOnLogin?: CreateOnLogin;

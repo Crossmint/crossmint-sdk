@@ -136,6 +136,10 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     alias?: string;
 };
 
+export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;
+
+export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner">;
+
 type ChainExtras = {
     solana: { mintHash?: string };
     stellar: { contractId?: string };
