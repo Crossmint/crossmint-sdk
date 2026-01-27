@@ -101,7 +101,7 @@ export async function getWalletBalance(page: Page): Promise<string> {
 
 export async function getWalletBalances(page: Page): Promise<{
     nativeToken: { amount: string; symbol: string };
-    usdc: { amount: string; symbol: string };
+    usdxm: { amount: string; symbol: string };
     tokens: Array<{ amount: string; symbol: string }>;
 }> {
     // Increase timeout for CI environments where UI might take longer to load
@@ -138,7 +138,7 @@ export async function getWalletBalances(page: Page): Promise<{
             amount: nativeTokenAmount,
             symbol: nativeTokenSymbol,
         },
-        usdc: {
+        usdxm: {
             amount: stablecoinAmount,
             symbol: "usdxm",
         },

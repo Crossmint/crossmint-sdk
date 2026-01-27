@@ -180,15 +180,15 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 const usdxmBalance = authenticatedPage.locator('[data-testid="usdxm-balance"]').first();
                 await expectAuth(usdxmBalance).toBeVisible();
 
-                expectAuth(balances.usdc).toBeDefined();
-                expectAuth(balances.usdc.amount).toBeDefined();
-                expectAuth(balances.usdc.symbol.toLowerCase()).toBe("usdxm");
-                expectAuth(parseFloat(balances.usdc.amount)).toBeGreaterThanOrEqual(0);
+                expectAuth(balances.usdxm).toBeDefined();
+                expectAuth(balances.usdxm.amount).toBeDefined();
+                expectAuth(balances.usdxm.symbol.toLowerCase()).toBe("usdxm");
+                expectAuth(parseFloat(balances.usdxm.amount)).toBeGreaterThanOrEqual(0);
 
                 expectAuth(balances.nativeToken.amount).toMatch(/^\d+(\.\d{1,2})?$/);
 
                 console.log(
-                    `✅ Balances displayed correctly - ${balances.nativeToken.amount} ${balances.nativeToken.symbol.toUpperCase()}, ${balances.usdc.amount} USDXM`
+                    `✅ Balances displayed correctly - ${balances.nativeToken.amount} ${balances.nativeToken.symbol.toUpperCase()}, ${balances.usdxm.amount} USDXM`
                 );
             });
         });

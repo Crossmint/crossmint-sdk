@@ -49,7 +49,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(balances).toBeTruthy();
         expectAuth(typeof balances).toBe("object");
         expectAuth(balances.nativeToken).toBeTruthy();
-        expectAuth(balances.usdc).toBeTruthy();
+        expectAuth(balances.usdxm).toBeTruthy();
         expectAuth(Array.isArray(balances.tokens)).toBe(true);
 
         expectAuth(balances.nativeToken.amount).toBeTruthy();
@@ -59,14 +59,14 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(Number.isFinite(nativeAmount)).toBe(true);
         expectAuth(nativeAmount).toBeGreaterThanOrEqual(0);
 
-        expectAuth(balances.usdc.amount).toBeTruthy();
-        expectAuth(balances.usdc.symbol.toLowerCase()).toBe("usdc");
-        const usdcAmount = parseFloat(balances.usdc.amount);
-        expectAuth(Number.isFinite(usdcAmount)).toBe(true);
-        expectAuth(usdcAmount).toBeGreaterThanOrEqual(0);
+        expectAuth(balances.usdxm.amount).toBeTruthy();
+        expectAuth(balances.usdxm.symbol.toLowerCase()).toBe("usdxm");
+        const usdxmAmount = parseFloat(balances.usdxm.amount);
+        expectAuth(Number.isFinite(usdxmAmount)).toBe(true);
+        expectAuth(usdxmAmount).toBeGreaterThanOrEqual(0);
 
         expectAuth(/^\d+(\.\d+)?$/.test(balances.nativeToken.amount)).toBe(true);
-        expectAuth(/^\d+(\.\d+)?$/.test(balances.usdc.amount)).toBe(true);
+        expectAuth(/^\d+(\.\d+)?$/.test(balances.usdxm.amount)).toBe(true);
     });
 
     test("should fetch wallet activity", async ({ authenticatedPage }) => {
@@ -116,7 +116,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
         if (balanceNum === 0) {
             console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
         }
 
         let recipientAddress: string;
@@ -158,7 +158,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
         if (initialBalanceNum === 0) {
             console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
         }
 
         //check approval test heading
@@ -170,7 +170,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
             authenticatedPage,
             recipientAddress,
             transferAmount,
-            "usdc",
+            "usdxm",
             testConfig.signer
         );
 
