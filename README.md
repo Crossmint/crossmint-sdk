@@ -169,7 +169,7 @@ pnpm install
 4. A "Release packages" PR will be created automatically
 5. Merge the release PR to publish to NPM
 
-## Documentation
+## Documentation <a href="https://deepwiki.com/Crossmint/crossmint-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 
 For detailed documentation and guides, visit our [official documentation](https://docs.crossmint.com/).
 
