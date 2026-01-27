@@ -69,7 +69,7 @@ export function EVMTransferFunds() {
                                     checked={token === "usdxm"}
                                     onChange={() => setToken("usdxm")}
                                 />
-                                <span>USDC</span>
+                                <span>USDXM</span>
                             </label>
                         </div>
                     </div>
