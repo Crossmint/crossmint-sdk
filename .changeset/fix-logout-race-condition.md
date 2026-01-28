@@ -1,5 +1,7 @@
 ---
 "@crossmint/client-sdk-react-base": patch
+"@crossmint/client-sdk-react-ui": patch
+"@crossmint/client-sdk-react-native-ui": patch
 ---
 
 Fix race condition in logout flow that could expose user wallet data between sessions (WAL-8054)
