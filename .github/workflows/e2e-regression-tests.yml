@@ -11,7 +11,7 @@ permissions:
 jobs:
     e2e-regression-tests:
         name: Run E2E Regression Tests
-        runs-on: ubuntu-latest
+    reporter: process.env.CI ? [["json", { outputFile: "test-results/e2e-results.json" }], ["list"]] : "html",
         timeout-minutes: 60
 
         steps:
