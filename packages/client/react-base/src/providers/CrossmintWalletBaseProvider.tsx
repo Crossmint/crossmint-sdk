@@ -251,7 +251,6 @@ export function CrossmintWalletBaseProvider({
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: resolvedSigner,
-                    owner: args.owner,
                     plugins: args.plugins,
                     onCreateConfig: args.onCreateConfig,
                     alias: args.alias,

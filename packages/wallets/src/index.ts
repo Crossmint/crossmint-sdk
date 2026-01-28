@@ -17,6 +17,8 @@ export { StellarWallet } from "./wallets/stellar";
 export type {
     Activity,
     Balances,
+    ClientSideWalletArgsFor,
+    ClientSideWalletCreateArgs,
     DelegatedSigner,
     EVMTransactionInput,
     OnCreateConfig,

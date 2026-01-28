@@ -59,6 +59,15 @@ export class WalletFactory {
             );
         }
 
+        if (args.owner != null) {
+            walletsLogger.error("walletFactory.getOrCreateWallet.error", {
+                error: "Owner field cannot be specified in client-side getOrCreateWallet calls",
+            });
+            throw new WalletCreationError(
+                "Owner field cannot be specified in client-side getOrCreateWallet calls. Owner is determined from JWT authentication."
+            );
+        }
+
         const locator = this.getWalletLocator<C>(args);
         walletsLogger.info("walletFactory.getOrCreateWallet.start");
 
