@@ -107,11 +107,8 @@ export function CrossmintAuthBaseProvider({
     }, [jwt, triggerHasJustLoggedIn]);
 
     const logout = useCallback(async () => {
-        // Solution 3: Synchronous state clearing to prevent race condition
         setUser(undefined);
         setJwt(undefined);
-
-        // Solution 1: Return the Promise so apps can await completion
         return await crossmintAuth?.logout();
     }, [crossmintAuth]);
 
