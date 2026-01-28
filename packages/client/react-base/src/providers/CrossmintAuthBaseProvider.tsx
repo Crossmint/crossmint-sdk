@@ -6,7 +6,7 @@ import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
 
 export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextType | undefined>({
     crossmintAuth: undefined,
-    logout: () => {},
+    logout: async () => {},
     status: "initializing",
     getUser: () => {},
     login: () => {},
