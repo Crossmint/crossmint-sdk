@@ -20,7 +20,7 @@ import type { CrossmintAuthContext } from "@/hooks/useAuth";
 const defaultContextValue: CrossmintAuthContext = {
     crossmintAuth: undefined,
     login: () => {},
-    logout: () => {},
+    logout: async () => {},
     jwt: undefined,
     user: undefined,
     status: "initializing",

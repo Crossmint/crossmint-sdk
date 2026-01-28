@@ -6,7 +6,7 @@ import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
 
 export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextType | undefined>({
     crossmintAuth: undefined,
-    logout: () => {},
+    logout: async () => {},
     status: "initializing",
     getUser: () => {},
     login: () => {},
@@ -106,8 +106,10 @@ export function CrossmintAuthBaseProvider({
         }
     }, [jwt, triggerHasJustLoggedIn]);
 
-    const logout = useCallback(() => {
-        crossmintAuth?.logout();
+    const logout = useCallback(async () => {
+        setUser(undefined);
+        setJwt(undefined);
+        return await crossmintAuth?.logout();
     }, [crossmintAuth]);
 
     const getUser = useCallback(async () => {
