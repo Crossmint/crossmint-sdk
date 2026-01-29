@@ -51,10 +51,8 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
-                  PLAYWRIGHT_JSON_OUTPUT_FILE: "test-results/e2e-results.json"
               run: |
                   mkdir -p test-results
-                  # JSON reporter writes to test-results/e2e-results.json (PLAYWRIGHT_JSON_OUTPUT_FILE)
                 pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
 
             - name: Generate test report
@@ -62,7 +60,6 @@ jobs:
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
-                  # JSON results are always at test-results/e2e-results.json (PLAYWRIGHT_JSON_OUTPUT_FILE in Run step)
                   if [ -f test-results/e2e-results.json ]; then
                       echo "Found test results at test-results/e2e-results.json"
                       node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
