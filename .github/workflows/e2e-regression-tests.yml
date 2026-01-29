@@ -177,7 +177,7 @@ jobs:
                   }
                   
                   const durationInMinutes = (duration / 60000).toFixed(2);
-                  const statusEmoji = failedTests > 0 ? "ÔØî" : skippedTests > 0 ? "ÔÜá´©Å" : "Ô£à";
+                  const statusEmoji = failedTests > 0 ? "\u274C" : skippedTests > 0 ? "\u26A0\uFE0F" : "\u2705";
                   const statusText = failedTests > 0 ? "Failed" : skippedTests > 0 ? "Passed with skipped tests" : "Passed";
                   
                   const runUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
@@ -185,7 +185,7 @@ jobs:
                   
                   // Build Slack message
                   const slackMessage = {
-                      text: `E2E Regression Test Results - ${statusText}`,
+                      text: `${statusEmoji} E2E Regression Test Results - ${statusText}`,
                       blocks: [
                           {
                               type: "header",
@@ -207,15 +207,15 @@ jobs:
                                   },
                                   {
                                       type: "mrkdwn",
-                                      text: `*Passed:*\n${passedTests} Ô£à`
+                                      text: `*Passed:*\n${passedTests} \u2705`
                                   },
                                   {
                                       type: "mrkdwn",
-                                      text: `*Failed:*\n${failedTests} ${failedTests > 0 ? "ÔØî" : ""}`
+                                      text: `*Failed:*\n${failedTests} ${failedTests > 0 ? "\u274C" : ""}`
                                   },
                                   {
                                       type: "mrkdwn",
-                                      text: `*Skipped:*\n${skippedTests} ${skippedTests > 0 ? "ÔÜá´©Å" : ""}`
+                                      text: `*Skipped:*\n${skippedTests} ${skippedTests > 0 ? "\u26A0\uFE0F" : ""}`
                                   },
                                   {
                                       type: "mrkdwn",
@@ -235,7 +235,7 @@ jobs:
                   
                   // Add failed test details if any
                   if (failedTests > 0 && testDetails.length > 0) {
-                      const failedTestsText = testDetails.slice(0, 10).map(t => `ÔÇó *${t.suite}* - ${t.title}\n  \`${t.error.substring(0, 200)}${t.error.length > 200 ? '...' : ''}\``).join('\n\n');
+                      const failedTestsText = testDetails.slice(0, 10).map(t => `\u2022 *${t.suite}* - ${t.title}\n  \`${t.error.substring(0, 200)}${t.error.length > 200 ? '...' : ''}\``).join('\n\n');
                       slackMessage.blocks.push({
                           type: "section",
                           text: {
@@ -254,7 +254,7 @@ jobs:
                       type: "section",
                       text: {
                           type: "mrkdwn",
-                          text: `­ƒôè <${runUrl}|View full test report and logs>`
+                          text: `\uD83D\uDD17 <${runUrl}|View full test report and logs>`
                       }
                   });
                   
@@ -280,9 +280,9 @@ jobs:
                       });
                       res.on('end', () => {
                           if (res.statusCode === 200) {
-                              console.log('Ô£à Successfully sent message to Slack');
+                              console.log('\u2705 Successfully sent message to Slack');
                           } else {
-                              console.error(`ÔØî Failed to send message to Slack: ${res.statusCode}`);
+                              console.error(`\u274C Failed to send message to Slack: ${res.statusCode}`);
                               console.error(`Response: ${data}`);
                               process.exit(1);
                           }
@@ -290,7 +290,7 @@ jobs:
                   });
                   
                   req.on('error', (error) => {
-                      console.error(`ÔØî Error sending message to Slack: ${error.message}`);
+                      console.error(`\u274C Error sending message to Slack: ${error.message}`);
                       process.exit(1);
                   });
                   
