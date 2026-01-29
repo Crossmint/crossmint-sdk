@@ -54,6 +54,7 @@ jobs:
                   PLAYWRIGHT_JSON_OUTPUT_FILE: "test-results/e2e-results.json"
               run: |
                   mkdir -p test-results
+                  # JSON reporter writes to test-results/e2e-results.json (PLAYWRIGHT_JSON_OUTPUT_FILE)
                   pnpm exec playwright test --reporter=json --reporter=list || true
 
             - name: Generate test report
@@ -61,6 +62,7 @@ jobs:
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
+                  # JSON results are always at test-results/e2e-results.json (PLAYWRIGHT_JSON_OUTPUT_FILE in Run step)
                   if [ -f test-results/e2e-results.json ]; then
                       echo "Found test results at test-results/e2e-results.json"
                       node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
@@ -85,7 +87,7 @@ jobs:
                   
                   const webhookUrl = process.env.SLACK_WEBHOOK;
                   if (!webhookUrl) {
-                      console.error('ÔØî SLACK_WEBHOOK environment variable is not set');
+                      console.error('SLACK_WEBHOOK environment variable is not set');
                       process.exit(1);
                   }
                   
