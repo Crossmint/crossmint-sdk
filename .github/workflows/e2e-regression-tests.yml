@@ -53,8 +53,7 @@ jobs:
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
               run: |
                   mkdir -p test-results
-                pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
-
+                  mkdir -p test-results
                   pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
               if: always()
               working-directory: apps/wallets/quickstart-devkit
