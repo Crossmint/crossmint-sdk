@@ -85,7 +85,7 @@ jobs:
                       if [ "$JSON_FILE" != "test-results/e2e-results.json" ]; then
                           cp "$JSON_FILE" test-results/e2e-results.json
                       fi
-                      node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nÔÜá´©Å Failed to generate report from JSON.\n" > test-results/report.md
+                    node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || printf "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
                   else
                       echo "ÔÜá´©Å Test results JSON not found, creating placeholder report..."
                       echo "Looking for JSON files..."
