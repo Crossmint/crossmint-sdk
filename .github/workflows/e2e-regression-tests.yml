@@ -1,0 +1,299 @@
+name: E2E Regression Tests
+
+on:
+    schedule:
+        - cron: "0 7 * * *"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    e2e-regression-tests:
+        name: Run E2E Regression Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Install Playwright browsers
+              run: pnpm exec playwright install --with-deps
+              working-directory: apps/wallets/quickstart-devkit
+
+            - name: Build dependencies
+              run: pnpm build --filter=@crossmint/client-sdk-react-ui --filter=@crossmint/wallets-sdk --filter=@crossmint/client-sdk-react-base
+              working-directory: .
+            - name: Run E2E regression tests
+              id: run-tests
+              working-directory: apps/wallets/quickstart-devkit
+              env:
+                  NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+                  NEXT_PUBLIC_EVM_CHAIN: "base-sepolia"
+                  TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY_SMOKE_TESTS }}
+                  MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
+                  MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
+                  MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
+                  PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+              run: |
+                  mkdir -p test-results
+                  pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
+
+            - name: Generate test report
+              if: always()
+              working-directory: apps/wallets/quickstart-devkit
+              run: |
+                  mkdir -p test-results
+                  if [ -f test-results/e2e-results.json ]; then
+                      echo "Found test results at test-results/e2e-results.json"
+                      node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
+                  else
+                      echo "Test results file not found, creating placeholder report..."
+                      printf "# E2E Regression Test Results\n\nTest results file not found.\n" > test-results/report.md
+                  fi
+
+            - name: Parse test results and send to Slack
+              if: always()
+              working-directory: apps/wallets/quickstart-devkit
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_QA_ALERTS_WEBHOOK }}
+                  GITHUB_RUN_ID: ${{ github.run_id }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  GITHUB_SHA: ${{ github.sha }}
+              run: |
+                  node << 'EOF'
+                  const fs = require('fs');
+                  const https = require('https');
+                  const path = require('path');
+                  
+                  const webhookUrl = process.env.SLACK_WEBHOOK;
+                  if (!webhookUrl) {
+                      console.error('SLACK_WEBHOOK environment variable is not set');
+                      process.exit(1);
+                  }
+                  
+                  const resultsPath = path.join(process.cwd(), 'test-results', 'e2e-results.json');
+                  
+                  let totalTests = 0;
+                  let passedTests = 0;
+                  let failedTests = 0;
+                  let skippedTests = 0;
+                  let duration = 0;
+                  let testDetails = [];
+                  
+                  // Parse test results
+                  if (fs.existsSync(resultsPath)) {
+                      try {
+                          const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+                          
+                          if (results.suites && Array.isArray(results.suites)) {
+                              results.suites.forEach((suite) => {
+                                  if (suite.tests && Array.isArray(suite.tests)) {
+                                      suite.tests.forEach((test) => {
+                                          totalTests++;
+                                          const result = test.results && test.results[0] ? test.results[0] : null;
+                                          const status = result?.status || "unknown";
+                                          
+                                          if (status === "passed") {
+                                              passedTests++;
+                                          } else if (status === "failed") {
+                                              failedTests++;
+                                              testDetails.push({
+                                                  title: test.title || "Unknown Test",
+                                                  suite: suite.title || "Unknown Suite",
+                                                  error: result?.error?.message || "No error message"
+                                              });
+                                          } else if (status === "skipped") {
+                                              skippedTests++;
+                                          }
+                                          
+                                          if (result?.duration) {
+                                              duration += result.duration;
+                                          }
+                                      });
+                                  } else if (suite.specs && Array.isArray(suite.specs)) {
+                                      suite.specs.forEach((spec) => {
+                                          if (spec.tests && Array.isArray(spec.tests)) {
+                                              spec.tests.forEach((test) => {
+                                                  totalTests++;
+                                                  const result = test.results && test.results[0] ? test.results[0] : null;
+                                                  const status = result?.status || "unknown";
+                                                  
+                                                  if (status === "passed") {
+                                                      passedTests++;
+                                                  } else if (status === "failed") {
+                                                      failedTests++;
+                                                      testDetails.push({
+                                                          title: test.title || "Unknown Test",
+                                                          suite: spec.title || suite.title || "Unknown Suite",
+                                                          error: result?.error?.message || "No error message"
+                                                      });
+                                                  } else if (status === "skipped") {
+                                                      skippedTests++;
+                                                  }
+                                                  
+                                                  if (result?.duration) {
+                                                      duration += result.duration;
+                                                  }
+                                              });
+                                          }
+                                      });
+                                  }
+                              });
+                          }
+                          
+                          // Fallback to stats if available
+                          if (totalTests === 0 && results.stats) {
+                              passedTests = results.stats.expected || results.stats.passed || 0;
+                              failedTests = results.stats.unexpected || results.stats.failed || 0;
+                              skippedTests = results.stats.skipped || 0;
+                              const flakyTests = results.stats.flaky || 0;
+                              totalTests = passedTests + failedTests + skippedTests + flakyTests;
+                              duration = results.stats.duration || 0;
+                          }
+                      } catch (error) {
+                          console.error('Error parsing test results:', error.message);
+                      }
+                  }
+                  
+                  const durationInMinutes = (duration / 60000).toFixed(2);
+                  const statusEmoji = failedTests > 0 ? "\u274C" : skippedTests > 0 ? "\u26A0\uFE0F" : "\u2705";
+                  const statusText = failedTests > 0 ? "Failed" : skippedTests > 0 ? "Passed with skipped tests" : "Passed";
+                  
+                  const runUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+                  const commitUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/commit/${process.env.GITHUB_SHA}`;
+                  
+                  // Build Slack message
+                  const slackMessage = {
+                      text: `${statusEmoji} E2E Regression Test Results - ${statusText}`,
+                      blocks: [
+                          {
+                              type: "header",
+                              text: {
+                                  type: "plain_text",
+                                  text: `${statusEmoji} E2E Regression Test Results - ${statusText}`
+                              }
+                          },
+                          {
+                              type: "section",
+                              fields: [
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Total Tests:*\n${totalTests}`
+                                  },
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Duration:*\n${durationInMinutes} min`
+                                  },
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Passed:*\n${passedTests} \u2705`
+                                  },
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Failed:*\n${failedTests} ${failedTests > 0 ? "\u274C" : ""}`
+                                  },
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Skipped:*\n${skippedTests} ${skippedTests > 0 ? "\u26A0\uFE0F" : ""}`
+                                  },
+                                  {
+                                      type: "mrkdwn",
+                                      text: `*Success Rate:*\n${totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : 0}%`
+                                  }
+                              ]
+                          },
+                          {
+                              type: "section",
+                              text: {
+                                  type: "mrkdwn",
+                                  text: `*Workflow Run:* <${runUrl}|View Details>\n*Commit:* <${commitUrl}|${process.env.GITHUB_SHA.substring(0, 7)}>`
+                              }
+                          }
+                      ]
+                  };
+                  
+                  // Add failed test details if any
+                  if (failedTests > 0 && testDetails.length > 0) {
+                      const failedTestsText = testDetails.slice(0, 10).map(t => `\u2022 *${t.suite}* - ${t.title}\n  \`${t.error.substring(0, 200)}${t.error.length > 200 ? '...' : ''}\``).join('\n\n');
+                      slackMessage.blocks.push({
+                          type: "section",
+                          text: {
+                              type: "mrkdwn",
+                              text: `*Failed Tests (showing first ${Math.min(10, testDetails.length)}):*\n\n${failedTestsText}${testDetails.length > 10 ? `\n\n_...and ${testDetails.length - 10} more_` : ''}`
+                          }
+                      });
+                  }
+                  
+                  // Add divider and report link
+                  slackMessage.blocks.push({
+                      type: "divider"
+                  });
+                  
+                  slackMessage.blocks.push({
+                      type: "section",
+                      text: {
+                          type: "mrkdwn",
+                          text: `\uD83D\uDD17 <${runUrl}|View full test report and logs>`
+                      }
+                  });
+                  
+                  // Send to Slack
+                  const url = new URL(webhookUrl);
+                  const postData = JSON.stringify(slackMessage);
+                  
+                  const options = {
+                      hostname: url.hostname,
+                      port: 443,
+                      path: url.pathname + url.search,
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'Content-Length': Buffer.byteLength(postData)
+                      }
+                  };
+                  
+                  const req = https.request(options, (res) => {
+                      let data = '';
+                      res.on('data', (chunk) => {
+                          data += chunk;
+                      });
+                      res.on('end', () => {
+                          if (res.statusCode === 200) {
+                              console.log('\u2705 Successfully sent message to Slack');
+                          } else {
+                              console.error(`\u274C Failed to send message to Slack: ${res.statusCode}`);
+                          }
+                      });
+                  });
+                  
+                  req.on('error', (error) => {
+                      console.error(`\u274C Error sending message to Slack: ${error.message}`);
+                  });
+                  
+                  req.write(postData);
+                  req.end();
+                  EOF
+
+            - name: Upload test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: e2e-test-results
+                  path: apps/wallets/quickstart-devkit/test-results/
+                  retention-days: 30
