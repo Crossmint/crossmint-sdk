@@ -39,7 +39,6 @@ jobs:
             - name: Build dependencies
               run: pnpm build --filter=@crossmint/client-sdk-react-ui --filter=@crossmint/wallets-sdk --filter=@crossmint/client-sdk-react-base
               working-directory: .
-
             - name: Run E2E regression tests
               id: run-tests
               working-directory: apps/wallets/quickstart-devkit
@@ -53,8 +52,9 @@ jobs:
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
               run: |
                   mkdir -p test-results
-                  mkdir -p test-results
                   pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
+
+            - name: Generate test report
               if: always()
               working-directory: apps/wallets/quickstart-devkit
               run: |
