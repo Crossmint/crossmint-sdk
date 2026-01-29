@@ -51,46 +51,22 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+                  PLAYWRIGHT_JSON_OUTPUT_FILE: "test-results/e2e-results.json"
               run: |
                   mkdir -p test-results
-                  # Run tests with JSON reporter - Playwright will output to test-results/playwright-report.json
                   pnpm exec playwright test --reporter=json --reporter=list || true
-                  # Rename the output file to our expected name
-                  if [ -f test-results/playwright-report.json ]; then
-                      mv test-results/playwright-report.json test-results/e2e-results.json
-                  elif [ -f playwright-report.json ]; then
-                      mv playwright-report.json test-results/e2e-results.json
-                  fi
 
             - name: Generate test report
               if: always()
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
-                  # Find the JSON results file (Playwright might output to different locations)
-                  JSON_FILE=""
                   if [ -f test-results/e2e-results.json ]; then
-                      JSON_FILE="test-results/e2e-results.json"
-                  elif [ -f test-results/playwright-report.json ]; then
-                      JSON_FILE="test-results/playwright-report.json"
-                  elif [ -f playwright-report.json ]; then
-                      JSON_FILE="playwright-report.json"
-                  elif [ -f test-results.json ]; then
-                      JSON_FILE="test-results.json"
-                  fi
-                  
-                  if [ -n "$JSON_FILE" ]; then
-                      echo "Ô£à Found test results JSON at: $JSON_FILE"
-                      # Copy to expected location if needed
-                      if [ "$JSON_FILE" != "test-results/e2e-results.json" ]; then
-                          cp "$JSON_FILE" test-results/e2e-results.json
-                      fi
-                      node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nÔÜá´©Å Failed to generate report from JSON.\n" > test-results/report.md
+                      echo "Found test results at test-results/e2e-results.json"
+                      node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
                   else
-                      echo "ÔÜá´©Å Test results JSON not found, creating placeholder report..."
-                      echo "Looking for JSON files..."
-                      find . -name "*.json" -type f | head -10
-                      printf "# E2E Regression Test Results\n\nÔÜá´©Å Test results file not found.\n" > test-results/report.md
+                      echo "Test results file not found, creating placeholder report..."
+                      printf "# E2E Regression Test Results\n\nTest results file not found.\n" > test-results/report.md
                   fi
 
             - name: Parse test results and send to Slack
