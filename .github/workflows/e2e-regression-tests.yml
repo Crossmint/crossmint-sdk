@@ -280,16 +280,12 @@ jobs:
                               console.log('\u2705 Successfully sent message to Slack');
                           } else {
                               console.error(`\u274C Failed to send message to Slack: ${res.statusCode}`);
-                              console.error(`Response: ${data}`);
-                              console.error(`Failed to send message to Slack: ${res.statusCode}`);
-                              console.error(`Response: ${data}`);
                           }
                       });
                   });
                   
                   req.on('error', (error) => {
                       console.error(`\u274C Error sending message to Slack: ${error.message}`);
-                      console.error(`Error sending message to Slack: ${error.message}`);
                   });
                   
                   req.write(postData);
