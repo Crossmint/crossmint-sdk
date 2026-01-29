@@ -284,7 +284,8 @@ jobs:
                           } else {
                               console.error(`\u274C Failed to send message to Slack: ${res.statusCode}`);
                               console.error(`Response: ${data}`);
-                              process.exit(1);
+                              console.error(`Failed to send message to Slack: ${res.statusCode}`);
+                              console.error(`Response: ${data}`);
                           }
                       });
                   });
