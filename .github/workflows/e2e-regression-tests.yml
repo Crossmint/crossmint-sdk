@@ -291,7 +291,7 @@ jobs:
                   
                   req.on('error', (error) => {
                       console.error(`\u274C Error sending message to Slack: ${error.message}`);
-                      process.exit(1);
+                      console.error(`Error sending message to Slack: ${error.message}`);
                   });
                   
                   req.write(postData);
