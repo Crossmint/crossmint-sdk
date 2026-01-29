@@ -90,7 +90,7 @@ jobs:
                       echo "ÔÜá´©Å Test results JSON not found, creating placeholder report..."
                       echo "Looking for JSON files..."
                       find . -name "*.json" -type f | head -10
-                      printf "# E2E Regression Test Results\n\nÔÜá´©Å Test results file not found.\n" > test-results/report.md
+                    printf "# E2E Regression Test Results\n\nTest results file not found.\n" > test-results/report.md
                   fi
 
             - name: Parse test results and send to Slack
