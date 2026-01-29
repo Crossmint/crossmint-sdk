@@ -88,7 +88,6 @@ jobs:
                   }
                   
                   const resultsPath = path.join(process.cwd(), 'test-results', 'e2e-results.json');
-                  const reportPath = path.join(process.cwd(), 'test-results', 'report.md');
                   
                   let totalTests = 0;
                   let passedTests = 0;
