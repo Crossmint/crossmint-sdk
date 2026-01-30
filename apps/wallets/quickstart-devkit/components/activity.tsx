@@ -27,20 +27,28 @@ export function Activity() {
     }, [wallet]);
 
     return (
-        <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5">
+        <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5" data-testid="activity-section">
             <div>
                 <h2 className="text-lg font-medium">Recent activity</h2>
                 <p className="text-sm text-gray-500">View your recent activity</p>
             </div>
-            <div className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto border-t border-gray-100">
+            <div
+                className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto border-t border-gray-100"
+                data-testid="activity-events-container"
+            >
                 {loading ? (
-                    <div className="text-gray-500 text-center">Loading...</div>
+                    <div className="text-gray-500 text-center" data-testid="activity-loading">
+                        Loading...
+                    </div>
                 ) : !activity || activity.events.length === 0 ? (
-                    <div className="text-gray-500 text-center">No recent activity</div>
+                    <div className="text-gray-500 text-center" data-testid="activity-empty">
+                        No recent activity
+                    </div>
                 ) : (
                     activity.events.map((event, idx) => (
                         <div
                             key={event.transaction_hash + idx}
+                            data-testid={`activity-event-${idx}`}
                             className="flex justify-between items-center py-2.5 border-t border-gray-100 first:border-t-0"
                         >
                             <div>

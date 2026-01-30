@@ -1,10 +1,63 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
+import { AUTH_CONFIG } from "../config/constants";
+
+/**
+ * Funds a wallet using the Crossmint faucet API
+ * @param walletAddress - The wallet address to fund
+ * @param chainId - The chain ID (e.g., "base-sepolia", "solana", "stellar")
+ * @param amount - The amount to fund (default: 10, maximum allowed)
+ * @param token - The token to fund (default: "usdxm")
+ * @returns Promise that resolves when funding is complete
+ */
+export async function fundWalletWithCrossmintFaucet(
+    walletAddress: string,
+    chainId: string,
+    amount = 10,
+    token = "usdxm"
+): Promise<void> {
+    const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
+
+    console.log(`💰 Funding wallet ${walletAddress} on ${chainId} with ${amount} ${token}...`);
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": AUTH_CONFIG.crossmintApiKey,
+            },
+            body: JSON.stringify({
+                amount,
+                token,
+                chain: chainId,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to fund wallet: ${response.status} ${response.statusText}. ${errorText}`);
+        }
+
+        await response.json();
+        console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
+    } catch (error) {
+        console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
+        throw error;
+    }
+}
 
 export async function getWalletAddress(page: Page): Promise<string> {
     const addressElement = page.locator('[data-testid^="wallet-address:"]').first();
+    await addressElement.waitFor({ state: "visible", timeout: 60000 });
     const dataTestId = await addressElement.getAttribute("data-testid");
-    const walletAddress = dataTestId?.split(":")[1] || "";
+    if (!dataTestId) {
+        throw new Error("Wallet address element found but data-testid attribute is missing");
+    }
+    const walletAddress = dataTestId.split(":")[1] || "";
+    if (!walletAddress) {
+        throw new Error(`Could not extract wallet address from data-testid: ${dataTestId}`);
+    }
     console.log(`📋 Wallet address from data-testid: ${walletAddress}`);
     return walletAddress;
 }
@@ -26,14 +79,14 @@ export async function getWalletBalance(page: Page): Promise<string> {
         console.log("✅ Failed to get wallet balance, retrying...");
     }
 
-    const balanceElement = page.locator('[data-testid="usdc-balance"]').first();
+    const balanceElement = page.locator(`[data-testid="usdxm-balance"]`).first();
     const balanceText = await balanceElement.textContent();
     return balanceText?.replace(/[^0-9.]/g, "").trim() || "0";
 }
 
 export async function getWalletBalances(page: Page): Promise<{
     nativeToken: { amount: string; symbol: string };
-    usdc: { amount: string; symbol: string };
+    usdxm: { amount: string; symbol: string };
     tokens: Array<{ amount: string; symbol: string }>;
 }> {
     // Increase timeout for CI environments where UI might take longer to load
@@ -46,10 +99,9 @@ export async function getWalletBalances(page: Page): Promise<{
     await nativeTokenBalanceElement.waitFor({ state: "visible", timeout });
     console.log("✅ Native token balance element is visible");
 
-    // Wait for the USDC balance element to be visible
-    const usdcBalanceElement = page.locator('[data-testid="usdc-balance"]').first();
-    await usdcBalanceElement.waitFor({ state: "visible", timeout });
-    console.log("✅ USDC balance element is visible");
+    const stablecoinBalanceElement = page.locator(`[data-testid="usdxm-balance"]`).first();
+    await stablecoinBalanceElement.waitFor({ state: "visible", timeout });
+    console.log(`✅ USDXM balance element is visible`);
 
     // Extract native token balance and symbol
     const nativeTokenText = await nativeTokenBalanceElement.textContent();
@@ -57,20 +109,22 @@ export async function getWalletBalances(page: Page): Promise<{
     const nativeTokenAmount = nativeTokenMatch?.[1] || "0";
     const nativeTokenSymbol = nativeTokenMatch?.[2]?.toLowerCase() || "eth";
 
-    // Extract USDC balance (displayed as "$ 0.00" format)
-    const usdcText = await usdcBalanceElement.textContent();
-    const usdcAmount = usdcText?.replace(/[^0-9.]/g, "").trim() || "0";
+    // Extract stablecoin balance (displayed as "$ 0.00" format)
+    const stablecoinText = await stablecoinBalanceElement.textContent();
+    const stablecoinAmount = stablecoinText?.replace(/[^0-9.]/g, "").trim() || "0";
 
-    console.log(`✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, USDC: ${usdcAmount}`);
+    console.log(
+        `✅ Extracted balances - Native: ${nativeTokenAmount} ${nativeTokenSymbol}, USDXM: ${stablecoinAmount}`
+    );
 
     return {
         nativeToken: {
             amount: nativeTokenAmount,
             symbol: nativeTokenSymbol,
         },
-        usdc: {
-            amount: usdcAmount,
-            symbol: "usdc",
+        usdxm: {
+            amount: stablecoinAmount,
+            symbol: "usdxm",
         },
         tokens: [], // Other tokens are not displayed in the UI, so we return empty array
     };
@@ -136,16 +190,29 @@ export async function transferFunds(
     signerType?: string
 ): Promise<void> {
     try {
-        await page.locator('label:has-text("USDC") input[type="radio"]').click();
-        const amountInput = page.locator('input[data-testid="amount"]').first();
+        // Scope to the Transfer funds section only
+        const transferSection = page.locator("h2:has-text('Transfer funds')").first();
+        await transferSection.waitFor({ timeout: 10000 });
+        await transferSection.scrollIntoViewIfNeeded();
+
+        // Find the parent container of the Transfer funds section
+        const transferContainer = transferSection.locator("..").locator("..");
+        const usdxmRadio = transferContainer.locator(`label:has-text("USDXM") input[type="radio"]`).first();
+        await usdxmRadio.waitFor({ timeout: 10000 });
+        await usdxmRadio.click();
+
+        // Find amount input within the transfer section only
+        const amountInput = transferContainer.locator('input[data-testid="amount"]').first();
         await amountInput.waitFor({ timeout: 10000 });
         await amountInput.fill(amount);
 
-        const recipientInput = page.locator('input[data-testid="recipient-wallet-address"]').first();
+        // Find recipient input within the transfer section only
+        const recipientInput = transferContainer.locator('input[data-testid="recipient-wallet-address"]').first();
         await recipientInput.waitFor({ timeout: 10000 });
         await recipientInput.fill(recipientAddress);
 
-        const transferButton = page
+        // Find transfer button within the transfer section only
+        const transferButton = transferContainer
             .locator('button:has-text("Transfer"), button[data-testid="transfer-button"]')
             .first();
         await transferButton.waitFor({ timeout: 10000 });
@@ -172,7 +239,7 @@ export async function transferFunds(
             }
 
             // Check if transfer button is still enabled (transaction might not have started)
-            const isButtonEnabled = await transferButton.isEnabled();
+            const isButtonEnabled = await transferButton.isEnabled().catch(() => false);
             if (isButtonEnabled) {
                 throw new Error("Transaction did not start - transfer button is still enabled");
             }
@@ -191,34 +258,34 @@ export async function createPreparedTransaction(
     page: Page,
     recipientAddress: string,
     amount: string,
-    token: "eth" | "usdc" = "usdc",
+    token: "eth" | "usdc" | "usdxm" = "usdxm",
     signerType?: string
 ): Promise<string> {
     try {
         const approvalSection = page.locator("text=/1\\. Create Transaction \\(Prepare Only\\)/i").first();
         await approvalSection.scrollIntoViewIfNeeded();
-        await approvalSection.waitFor({ timeout: 10000 });
+        await approvalSection.waitFor({ timeout: 30000 });
 
         const tokenSelect = approvalSection.locator("..").locator("select").first();
-        await tokenSelect.waitFor({ timeout: 10000 });
+        await tokenSelect.waitFor({ timeout: 30000 });
         await tokenSelect.selectOption(token);
 
         const amountInput = approvalSection.locator("..").locator('input[type="number"]').first();
-        await amountInput.waitFor({ timeout: 10000 });
+        await amountInput.waitFor({ timeout: 30000 });
         await amountInput.fill(amount);
 
         const recipientInput = approvalSection
             .locator("..")
             .locator('input[placeholder*="0x" i], input[placeholder*="Base58" i]')
             .first();
-        await recipientInput.waitFor({ timeout: 10000 });
+        await recipientInput.waitFor({ timeout: 30000 });
         await recipientInput.fill(recipientAddress);
 
         const createButton = approvalSection
             .locator("..")
             .locator('button:has-text("Create Prepared Transaction")')
             .first();
-        await createButton.waitFor({ timeout: 10000 });
+        await createButton.waitFor({ timeout: 30000 });
         await createButton.click();
 
         await handleSignerConfirmation(page, signerType as any);
@@ -256,17 +323,17 @@ export async function approveTransactionById(page: Page, transactionId: string, 
     try {
         const approveSection = page.locator("text=/2\\. Approve Transaction by ID/i").first();
         await approveSection.scrollIntoViewIfNeeded();
-        await approveSection.waitFor({ timeout: 10000 });
+        await approveSection.waitFor({ timeout: 30000 });
 
         const transactionIdInput = approveSection
             .locator("..")
             .locator('input[placeholder*="transaction ID" i], input[placeholder*="Enter transaction ID" i]')
             .first();
-        await transactionIdInput.waitFor({ timeout: 10000 });
+        await transactionIdInput.waitFor({ timeout: 30000 });
         await transactionIdInput.fill(transactionId);
 
         const approveButton = approveSection.locator("..").locator('button:has-text("Approve Transaction")').first();
-        await approveButton.waitFor({ timeout: 10000 });
+        await approveButton.waitFor({ timeout: 30000 });
         await approveButton.click();
 
         await handleSignerConfirmation(page, signerType as any);

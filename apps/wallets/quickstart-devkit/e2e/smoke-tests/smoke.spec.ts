@@ -7,6 +7,7 @@ import {
     transferFunds,
     createPreparedTransaction,
     approveTransactionById,
+    fundWalletWithCrossmintFaucet,
 } from "../helpers";
 import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../config/constants";
 
@@ -48,7 +49,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(balances).toBeTruthy();
         expectAuth(typeof balances).toBe("object");
         expectAuth(balances.nativeToken).toBeTruthy();
-        expectAuth(balances.usdc).toBeTruthy();
+        expectAuth(balances.usdxm).toBeTruthy();
         expectAuth(Array.isArray(balances.tokens)).toBe(true);
 
         expectAuth(balances.nativeToken.amount).toBeTruthy();
@@ -58,14 +59,14 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(Number.isFinite(nativeAmount)).toBe(true);
         expectAuth(nativeAmount).toBeGreaterThanOrEqual(0);
 
-        expectAuth(balances.usdc.amount).toBeTruthy();
-        expectAuth(balances.usdc.symbol.toLowerCase()).toBe("usdc");
-        const usdcAmount = parseFloat(balances.usdc.amount);
-        expectAuth(Number.isFinite(usdcAmount)).toBe(true);
-        expectAuth(usdcAmount).toBeGreaterThanOrEqual(0);
+        expectAuth(balances.usdxm.amount).toBeTruthy();
+        expectAuth(balances.usdxm.symbol.toLowerCase()).toBe("usdxm");
+        const usdxmAmount = parseFloat(balances.usdxm.amount);
+        expectAuth(Number.isFinite(usdxmAmount)).toBe(true);
+        expectAuth(usdxmAmount).toBeGreaterThanOrEqual(0);
 
         expectAuth(/^\d+(\.\d+)?$/.test(balances.nativeToken.amount)).toBe(true);
-        expectAuth(/^\d+(\.\d+)?$/.test(balances.usdc.amount)).toBe(true);
+        expectAuth(/^\d+(\.\d+)?$/.test(balances.usdxm.amount)).toBe(true);
     });
 
     test("should fetch wallet activity", async ({ authenticatedPage }) => {
@@ -104,15 +105,18 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
     test("should transfer funds", async ({ authenticatedPage, testConfig }) => {
         const walletAddress = await getWalletAddress(authenticatedPage);
 
-        // Check wallet balance and skip if 0
+        // Fund wallet before transfer test
+        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+        // Wait a moment for the funding to complete
+        await authenticatedPage.waitForTimeout(2000);
+
+        // Check wallet balance and log warning if 0
         const balance = await getWalletBalance(authenticatedPage);
         const balanceNum = parseFloat(balance);
 
         if (balanceNum === 0) {
-            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Skipping transfer test.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
-            test.skip();
-            return;
+            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
         }
 
         let recipientAddress: string;
@@ -126,7 +130,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
                 : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
         }
 
-        await transferFunds(authenticatedPage, recipientAddress, "0.0001", testConfig.signer);
+        await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
 
         console.log(
             `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -135,7 +139,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
 
     test("should create and approve a prepared transaction", async ({ authenticatedPage, testConfig }) => {
         const recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
-        const transferAmount = "0.0001";
+        const transferAmount = "10";
         const walletAddress = await getWalletAddress(authenticatedPage);
 
         expectAuth(recipientAddress).toBeTruthy();
@@ -143,15 +147,18 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(recipientAddress.length).toBe(42);
         expectAuth(/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)).toBe(true);
 
-        // Check wallet balance and skip if 0
+        // Fund wallet before prepared transaction test with the same amount we'll transfer
+        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
+        // Wait a moment for the funding to complete
+        await authenticatedPage.waitForTimeout(2000);
+
+        // Check wallet balance and log warning if 0
         const initialBalance = await getWalletBalance(authenticatedPage);
         const initialBalanceNum = parseFloat(initialBalance);
 
         if (initialBalanceNum === 0) {
-            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Skipping approval test.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDC to run this test`);
-            test.skip();
-            return;
+            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
+            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
         }
 
         //check approval test heading
@@ -163,7 +170,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
             authenticatedPage,
             recipientAddress,
             transferAmount,
-            "usdc",
+            "usdxm",
             testConfig.signer
         );
 
