@@ -12,5 +12,5 @@ export const treeShakableConfig: Options = {
     entry: ["src/**/*.(ts|tsx)", "!src/**/*.test.(ts|tsx)"],
     shims: true,
     minify: process.env.NODE_ENV === "production",
-    sourcemap: process.env.NODE_ENV !== "production",
+    sourcemap: true,
 };

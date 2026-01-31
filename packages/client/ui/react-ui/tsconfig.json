@@ -8,6 +8,17 @@
         },
         "jsx": "react-jsx"
     },
+    "references": [
+        { "path": "../../../common/auth" },
+        { "path": "../../../common/base" },
+        { "path": "../../auth" },
+        { "path": "../../base" },
+        { "path": "../../react-base" },
+        { "path": "../../window" },
+        { "path": "../../signers" },
+        { "path": "../../../wallets" },
+        { "path": "../../wallets/smart-wallet" }
+    ],
     "include": ["src/**/*"],
     "exclude": ["__tests__"]
 }

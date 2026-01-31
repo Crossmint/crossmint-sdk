@@ -7,5 +7,6 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["src/**/*"]
+    "references": [{ "path": "../base" }, { "path": "../../common/base" }],
+    "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
