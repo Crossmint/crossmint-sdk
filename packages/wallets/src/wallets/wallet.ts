@@ -352,7 +352,7 @@ export class Wallet<C extends Chain> {
             recipient,
             amount,
             ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
-            ...(options?.transactionType != null ? { type: options.transactionType } : {}),
+            ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
