@@ -9,10 +9,18 @@ import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } 
 
 export type { Activity } from "../api/types";
 
-export type PrepareOnly<T extends boolean = boolean> = { experimental_prepareOnly: T };
+export type PrepareOnly<T extends boolean = boolean> = {
+    experimental_prepareOnly: T;
+};
+
+export type SendTokenTransactionType = "oncall" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
     experimental_signer?: string;
+};
+
+export type SendTokenTransactionOptions = TransactionInputOptions & {
+    transactionType: SendTokenTransactionType;
 };
 
 export type SignatureInputOptions = PrepareOnly;
@@ -33,7 +41,9 @@ export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
     options?: SignatureInputOptions;
 };
 
-export type ApproveResult<T extends ApproveParams> = T extends { transactionId: string }
+export type ApproveResult<T extends ApproveParams> = T extends {
+    transactionId: string;
+}
     ? Transaction<false>
     : T extends { signatureId: string }
       ? Signature<false>
