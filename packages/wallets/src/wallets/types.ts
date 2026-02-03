@@ -20,7 +20,7 @@ export type TransactionInputOptions = PrepareOnly & {
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
-    transactionType: SendTokenTransactionType;
+    transactionType?: SendTokenTransactionType;
 };
 
 export type SignatureInputOptions = PrepareOnly;
