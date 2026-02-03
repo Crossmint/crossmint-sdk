@@ -13,7 +13,7 @@ export type PrepareOnly<T extends boolean = boolean> = {
     experimental_prepareOnly: T;
 };
 
-export type SendTokenTransactionType = "oncall" | "regulated-transfer" | "direct";
+export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
     experimental_signer?: string;
