@@ -345,6 +345,7 @@ export class Wallet<C extends Chain> {
             recipient,
             token: tokenLocator,
             amount,
+            ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         });
 
         await this.preAuthIfNeeded();
