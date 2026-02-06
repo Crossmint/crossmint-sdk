@@ -23,7 +23,9 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly & {
+export type SignatureInputOptions = PrepareOnly;
+
+export type TypedDataSignatureInputOptions = PrepareOnly & {
     /**
      * Whether the signature corresponds to the smart wallet or to the signer.
      * Defaults to true (smart wallet signature wrapped with ERC6492).
@@ -45,7 +47,7 @@ export type SignMessageInput = {
 
 export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
     chain: EVMSmartWalletChain;
-    options?: SignatureInputOptions;
+    options?: TypedDataSignatureInputOptions;
 };
 
 export type ApproveResult<T extends ApproveParams> = T extends {
