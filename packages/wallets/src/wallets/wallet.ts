@@ -19,13 +19,13 @@ import type {
     Transaction,
     Balances,
     TokenBalance,
-    TransactionInputOptions,
     ApproveParams,
     ApproveOptions,
     Approval,
     Signature,
     ApproveResult,
     PrepareOnly,
+    SendTokenTransactionOptions,
 } from "./types";
 import {
     InvalidSignerError,
@@ -164,7 +164,10 @@ export class Wallet<C extends Chain> {
         },
     })
     public async stagingFund(amount: number, chain?: Chain): Promise<FundWalletResponse> {
-        walletsLogger.info("wallet.stagingFund.start", { amount, chain: chain ?? this.chain });
+        walletsLogger.info("wallet.stagingFund.start", {
+            amount,
+            chain: chain ?? this.chain,
+        });
 
         const response = await this.apiClient.fundWallet(this.address, {
             amount,
@@ -174,7 +177,9 @@ export class Wallet<C extends Chain> {
             chain: chain ?? (this.chain as any),
         });
         if ("error" in response) {
-            walletsLogger.error("wallet.stagingFund.error", { error: response });
+            walletsLogger.error("wallet.stagingFund.error", {
+                error: response,
+            });
             throw new Error(`Failed to fund wallet: ${JSON.stringify(response.message)}`);
         }
         walletsLogger.info("wallet.stagingFund.success");
@@ -199,7 +204,9 @@ export class Wallet<C extends Chain> {
             } else if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
                 chainSpecificField = { contractId: chainData.contractId };
             } else if (chainData != null && "contractAddress" in chainData) {
-                chainSpecificField = { contractAddress: chainData.contractAddress };
+                chainSpecificField = {
+                    contractAddress: chainData.contractAddress,
+                };
             }
 
             return {
@@ -325,7 +332,7 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async send<T extends TransactionInputOptions | undefined = undefined>(
+    public async send<T extends SendTokenTransactionOptions | undefined = undefined>(
         to: string | UserLocator,
         token: string,
         amount: string,
@@ -334,25 +341,35 @@ export class Wallet<C extends Chain> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
 
-        walletsLogger.info("wallet.send.start", { recipient, token: tokenLocator, amount });
+        walletsLogger.info("wallet.send.start", {
+            recipient,
+            token: tokenLocator,
+            amount,
+            ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
+        });
 
         await this.preAuthIfNeeded();
         const sendParams = {
             recipient,
             amount,
             ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+            ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
         if ("message" in transactionCreationResponse) {
-            walletsLogger.error("wallet.send.error", { error: transactionCreationResponse });
+            walletsLogger.error("wallet.send.error", {
+                error: transactionCreationResponse,
+            });
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
         }
 
         if (options?.experimental_prepareOnly) {
-            walletsLogger.info("wallet.send.prepared", { transactionId: transactionCreationResponse.id });
+            walletsLogger.info("wallet.send.prepared", {
+                transactionId: transactionCreationResponse.id,
+            });
             return {
                 hash: undefined,
                 explorerLink: undefined,
@@ -414,12 +431,16 @@ export class Wallet<C extends Chain> {
                 params.transactionId,
                 params.options
             )) as ApproveResult<T>;
-            walletsLogger.info("wallet.approve.success", { transactionId: params.transactionId });
+            walletsLogger.info("wallet.approve.success", {
+                transactionId: params.transactionId,
+            });
             return result;
         }
         if (params.signatureId != null) {
             const result = (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
-            walletsLogger.info("wallet.approve.success", { signatureId: params.signatureId });
+            walletsLogger.info("wallet.approve.success", {
+                signatureId: params.signatureId,
+            });
             return result;
         }
         walletsLogger.error("wallet.approve.error", {
@@ -453,7 +474,9 @@ export class Wallet<C extends Chain> {
         });
 
         if ("error" in response) {
-            walletsLogger.error("wallet.addDelegatedSigner.error", { error: response });
+            walletsLogger.error("wallet.addDelegatedSigner.error", {
+                error: response,
+            });
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
@@ -468,12 +491,16 @@ export class Wallet<C extends Chain> {
             const transactionId = response.transaction.id;
 
             if (params.options?.experimental_prepareOnly) {
-                walletsLogger.info("wallet.addDelegatedSigner.prepared", { transactionId });
+                walletsLogger.info("wallet.addDelegatedSigner.prepared", {
+                    transactionId,
+                });
                 return { transactionId } as any;
             }
 
             await this.approveTransactionAndWait(transactionId);
-            walletsLogger.info("wallet.addDelegatedSigner.success", { transactionId });
+            walletsLogger.info("wallet.addDelegatedSigner.success", {
+                transactionId,
+            });
             return undefined as any;
         }
 
@@ -488,18 +515,24 @@ export class Wallet<C extends Chain> {
 
         if (params.options?.experimental_prepareOnly) {
             const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
-            walletsLogger.info("wallet.addDelegatedSigner.prepared", { signatureId });
+            walletsLogger.info("wallet.addDelegatedSigner.prepared", {
+                signatureId,
+            });
             return { signatureId } as any;
         }
 
         if (chainResponse?.status === "awaiting-approval") {
             await this.approveSignatureAndWait(chainResponse.id);
-            walletsLogger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
+            walletsLogger.info("wallet.addDelegatedSigner.success", {
+                signatureId: chainResponse.id,
+            });
             return undefined as any;
         }
         if (chainResponse?.status === "pending") {
             await this.waitForSignature(chainResponse.id);
-            walletsLogger.info("wallet.addDelegatedSigner.success", { signatureId: chainResponse.id });
+            walletsLogger.info("wallet.addDelegatedSigner.success", {
+                signatureId: chainResponse.id,
+            });
             return undefined as any;
         }
 
@@ -519,7 +552,9 @@ export class Wallet<C extends Chain> {
 
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
-            walletsLogger.error("wallet.delegatedSigners.error", { error: walletResponse });
+            walletsLogger.error("wallet.delegatedSigners.error", {
+                error: walletResponse,
+            });
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
@@ -546,7 +581,9 @@ export class Wallet<C extends Chain> {
                 };
             }) ?? [];
 
-        walletsLogger.info("wallet.delegatedSigners.success", { count: signers.length });
+        walletsLogger.info("wallet.delegatedSigners.success", {
+            count: signers.length,
+        });
         return signers;
     }
 
