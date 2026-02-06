@@ -94,6 +94,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 message: params.message,
                 signer: this.signer.locator(),
                 chain: this.chain,
+                isSmartWalletSignature: params.options?.isSmartWalletSignature,
             },
         });
         if ("error" in signatureCreationResponse) {
@@ -158,6 +159,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 },
                 signer: this.signer.locator(),
                 chain,
+                isSmartWalletSignature: params.options?.isSmartWalletSignature,
             },
         });
         if ("error" in signatureCreationResponse) {

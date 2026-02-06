@@ -23,7 +23,14 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly;
+export type SignatureInputOptions = PrepareOnly & {
+    /**
+     * Whether the signature corresponds to the smart wallet or to the signer.
+     * Defaults to true (smart wallet signature wrapped with ERC6492).
+     * Set to false for raw signer signature (ECDSA recoverable).
+     */
+    isSmartWalletSignature?: boolean;
+};
 
 export type AddDelegatedSignerOptions = PrepareOnly;
 
