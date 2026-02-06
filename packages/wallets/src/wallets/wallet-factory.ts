@@ -10,7 +10,7 @@ import type {
     RegisterSignerPasskeyParams,
     DelegatedSigner as DelegatedSignerResponse,
 } from "../api";
-import { WalletCreationError, WalletNotAvailableError, InvalidEnvironmentError } from "../utils/errors";
+import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, type EVMSmartWalletChain, isTestnetChain, isMainnetChain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
@@ -399,25 +399,19 @@ export class WalletFactory {
         const isProduction = environment === APIKeyEnvironmentPrefix.PRODUCTION;
 
         if (isProduction && isTestnetChain(evmChain)) {
-            walletsLogger.error("walletFactory.validateChainEnvironment.error", {
+            walletsLogger.warn("walletFactory.validateChainEnvironment.mismatch", {
                 chain,
                 environment,
-                error: "Testnet chain not allowed in production",
+                message: `Chain "${chain}" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.`,
             });
-            throw new InvalidEnvironmentError(
-                `Chain "${chain}" is a testnet chain and cannot be used in production environment. Please use a mainnet chain instead.`
-            );
         }
 
         if (!isProduction && isMainnetChain(evmChain)) {
-            walletsLogger.error("walletFactory.validateChainEnvironment.error", {
+            walletsLogger.warn("walletFactory.validateChainEnvironment.mismatch", {
                 chain,
                 environment,
-                error: "Mainnet chain not allowed in non-production environment",
+                message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. Please use a testnet chain instead.`,
             });
-            throw new InvalidEnvironmentError(
-                `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Please use a testnet chain instead.`
-            );
         }
     }
 }
