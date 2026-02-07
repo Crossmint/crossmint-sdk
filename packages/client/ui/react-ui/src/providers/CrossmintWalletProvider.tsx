@@ -7,10 +7,15 @@ import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 
 export interface CrossmintWalletProviderProps {
+    /** @internal */
     children: ReactNode;
+    /** Whether to show passkey helper UI. Default: true. */
     showPasskeyHelpers?: boolean;
+    /** Appearance configuration for wallet UI components. */
     appearance?: UIConfig;
+    /** Configuration for automatic wallet creation on login. */
     createOnLogin?: CreateOnLogin;
+    /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;

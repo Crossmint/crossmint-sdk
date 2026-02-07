@@ -19,11 +19,17 @@ import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
 
 export type CrossmintWalletBaseContext = {
+    /** The current wallet instance, or undefined if no wallet is loaded. */
     wallet: Wallet<Chain> | undefined;
+    /** Current wallet status. */
     status: "not-loaded" | "in-progress" | "loaded" | "error";
+    /** Creates a new wallet or retrieves an existing one. */
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
+    /** @internal */
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
+    /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    /** @internal */
     emailSignerState: {
         needsAuth: boolean;
         sendEmailWithOtp: (() => Promise<void>) | null;
@@ -47,19 +53,28 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
 });
 
 export interface CrossmintWalletBaseProviderProps {
+    /** @internal */
     children: ReactNode;
+    /** Configuration for automatic wallet creation on login. */
     createOnLogin?: CreateOnLogin;
+    /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
+    /** @internal */
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
+    /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    /** @internal */
     initializeWebView?: () => Promise<void>;
-    // UI-related props (optional)
+    /** Appearance configuration for wallet UI components. */
     appearance?: UIConfig;
+    /** @internal */
     headlessSigningFlow?: boolean;
+    /** Whether to show passkey helper UI. Default: true. */
     showPasskeyHelpers?: boolean;
+    /** @internal */
     renderUI?: (props: UIRenderProps) => ReactNode;
 }
 
