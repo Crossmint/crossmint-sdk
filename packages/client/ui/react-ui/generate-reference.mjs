@@ -32,12 +32,7 @@ const PRODUCTS = {
         installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
         intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides React components and hooks for integrating Crossmint wallets into your application.",
         // Auto-classified: *Provider → providers page, use* → hooks page, rest → components page
-        exports: [
-            "CrossmintProvider",
-            "CrossmintWalletProvider",
-            "useWallet",
-            "ExportPrivateKeyButton",
-        ],
+        exports: ["CrossmintProvider", "CrossmintWalletProvider", "useWallet", "ExportPrivateKeyButton"],
         // Short descriptions for the provider summary list (TypeDoc rarely has these)
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
@@ -45,7 +40,8 @@ const PRODUCTS = {
         },
         walletMethods: {
             enabled: true,
-            description: "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/globals)** for complete documentation.",
+            description:
+                "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/globals)** for complete documentation.",
             baseClass: "Wallet",
             chainClasses: ["EVMWallet", "SolanaWallet", "StellarWallet"],
             docsBasePath: "/sdk-reference/wallets/classes",
@@ -191,7 +187,9 @@ function renderType(t, depth = 0) {
             const decl = t.declaration;
             if (decl?.signatures?.length) {
                 const sig = decl.signatures[0];
-                const params = (sig.parameters || []).map((p) => `${p.name}: ${renderType(p.type, depth + 1)}`).join(", ");
+                const params = (sig.parameters || [])
+                    .map((p) => `${p.name}: ${renderType(p.type, depth + 1)}`)
+                    .join(", ");
                 result = `(${params}) => ${renderType(sig.type, depth + 1)}`;
             } else if (decl?.children?.length) {
                 if (depth >= MAX_TYPE_DEPTH - 1) {
@@ -272,7 +270,10 @@ function escapeForAttr(str) {
  * @param {string} opts.expandableTitle - title for nested expandable (default: "properties")
  * @param {boolean} opts.showRequired - show "required" attribute on fields (default: true)
  */
-function buildFieldsSection(members, { skipChildren = false, expandableTitle = "properties", showRequired = true } = {}) {
+function buildFieldsSection(
+    members,
+    { skipChildren = false, expandableTitle = "properties", showRequired = true } = {}
+) {
     if (!members?.length) return "";
     const L = [];
     for (const m of members) {
@@ -328,7 +329,9 @@ function extractProps(node) {
                 allProps.push(...resolved.children);
             }
             if (!resolved && t.name) {
-                const byName = api.children.find((c) => c.name === t.name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS));
+                const byName = api.children.find(
+                    (c) => c.name === t.name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
+                );
                 if (byName?.children) {
                     allProps.push(...byName.children);
                 }
@@ -374,9 +377,7 @@ function extractWalletMethodsFromApi(config) {
             description: getComment(c) || getComment(c.signatures?.[0]) || descriptions[c.name] || "",
         }));
 
-    const baseMethodNames = new Set(
-        (baseNode.children || []).filter((c) => c.kind === KIND.METHOD).map((c) => c.name)
-    );
+    const baseMethodNames = new Set((baseNode.children || []).filter((c) => c.kind === KIND.METHOD).map((c) => c.name));
 
     const chainSpecific = [];
     for (const className of chainClasses) {
@@ -406,20 +407,78 @@ function extractWalletMethodsFromApi(config) {
  */
 const EXPANDABLE_CHILDREN = {
     createOnLogin: [
-        { name: "chain", type: { type: "reference", name: "Chain" }, comment: { summary: [{ kind: "text", text: "The blockchain to create the wallet on (e.g. \"base-sepolia\")." }] } },
-        { name: "signer", type: { type: "reference", name: "SignerConfigForChain" }, comment: { summary: [{ kind: "text", text: "The signer configuration (e.g. `{ type: \"email\" }`)." }] } },
-        { name: "owner", flags: { isOptional: true }, type: { type: "intrinsic", name: "string" }, comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] } },
-        { name: "alias", flags: { isOptional: true }, type: { type: "intrinsic", name: "string" }, comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] } },
-        { name: "plugins", flags: { isOptional: true }, type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } }, comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] } },
-        { name: "delegatedSigners", flags: { isOptional: true }, type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } }, comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] } },
+        {
+            name: "chain",
+            type: { type: "reference", name: "Chain" },
+            comment: {
+                summary: [{ kind: "text", text: 'The blockchain to create the wallet on (e.g. "base-sepolia").' }],
+            },
+        },
+        {
+            name: "signer",
+            type: { type: "reference", name: "SignerConfigForChain" },
+            comment: { summary: [{ kind: "text", text: 'The signer configuration (e.g. `{ type: "email" }`).' }] },
+        },
+        {
+            name: "owner",
+            flags: { isOptional: true },
+            type: { type: "intrinsic", name: "string" },
+            comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
+        },
+        {
+            name: "alias",
+            flags: { isOptional: true },
+            type: { type: "intrinsic", name: "string" },
+            comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] },
+        },
+        {
+            name: "plugins",
+            flags: { isOptional: true },
+            type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
+            comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
+        },
+        {
+            name: "delegatedSigners",
+            flags: { isOptional: true },
+            type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
+            comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
+        },
     ],
     getOrCreateWallet: [
-        { name: "chain", type: { type: "reference", name: "Chain" }, comment: { summary: [{ kind: "text", text: "The blockchain to create the wallet on." }] } },
-        { name: "signer", type: { type: "reference", name: "SignerConfigForChain" }, comment: { summary: [{ kind: "text", text: "The signer configuration." }] } },
-        { name: "owner", flags: { isOptional: true }, type: { type: "intrinsic", name: "string" }, comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] } },
-        { name: "alias", flags: { isOptional: true }, type: { type: "intrinsic", name: "string" }, comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] } },
-        { name: "plugins", flags: { isOptional: true }, type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } }, comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] } },
-        { name: "delegatedSigners", flags: { isOptional: true }, type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } }, comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] } },
+        {
+            name: "chain",
+            type: { type: "reference", name: "Chain" },
+            comment: { summary: [{ kind: "text", text: "The blockchain to create the wallet on." }] },
+        },
+        {
+            name: "signer",
+            type: { type: "reference", name: "SignerConfigForChain" },
+            comment: { summary: [{ kind: "text", text: "The signer configuration." }] },
+        },
+        {
+            name: "owner",
+            flags: { isOptional: true },
+            type: { type: "intrinsic", name: "string" },
+            comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
+        },
+        {
+            name: "alias",
+            flags: { isOptional: true },
+            type: { type: "intrinsic", name: "string" },
+            comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] },
+        },
+        {
+            name: "plugins",
+            flags: { isOptional: true },
+            type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
+            comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
+        },
+        {
+            name: "delegatedSigners",
+            flags: { isOptional: true },
+            type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
+            comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
+        },
     ],
 };
 
@@ -433,11 +492,56 @@ const EXPANDABLE_CHILDREN = {
  */
 const MANUAL_RETURNS = {
     useWallet: [
-        { name: "wallet", type: { type: "union", types: [{ type: "reference", name: "Wallet" }, { type: "intrinsic", name: "undefined" }] }, comment: { summary: [{ kind: "text", text: "The current wallet instance, or undefined if no wallet is loaded." }] } },
-        { name: "status", type: { type: "reference", name: "WalletStatus" }, comment: { summary: [{ kind: "text", text: "Current wallet status. Options: `not-loaded` | `in-progress` | `loaded` | `error`." }] } },
+        {
+            name: "wallet",
+            type: {
+                type: "union",
+                types: [
+                    { type: "reference", name: "Wallet" },
+                    { type: "intrinsic", name: "undefined" },
+                ],
+            },
+            comment: {
+                summary: [{ kind: "text", text: "The current wallet instance, or undefined if no wallet is loaded." }],
+            },
+        },
+        {
+            name: "status",
+            type: { type: "reference", name: "WalletStatus" },
+            comment: {
+                summary: [
+                    {
+                        kind: "text",
+                        text: "Current wallet status. Options: `not-loaded` | `in-progress` | `loaded` | `error`.",
+                    },
+                ],
+            },
+        },
         {
             name: "getOrCreateWallet",
-            type: { type: "reflection", declaration: { signatures: [{ parameters: [{ name: "args", type: { type: "reference", name: "WalletArgsFor<Chain>" } }], type: { type: "reference", name: "Promise", typeArguments: [{ type: "union", types: [{ type: "reference", name: "Wallet" }, { type: "intrinsic", name: "undefined" }] }] } }] } },
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [{ name: "args", type: { type: "reference", name: "WalletArgsFor<Chain>" } }],
+                            type: {
+                                type: "reference",
+                                name: "Promise",
+                                typeArguments: [
+                                    {
+                                        type: "union",
+                                        types: [
+                                            { type: "reference", name: "Wallet" },
+                                            { type: "intrinsic", name: "undefined" },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
             comment: { summary: [{ kind: "text", text: "Creates a new wallet or retrieves an existing one." }] },
         },
     ],
@@ -459,7 +563,9 @@ function buildGetStarted(product) {
 
     // Version shield badge
     if (product.npmUrl && product.packageName) {
-        emit(`### Latest ${product.title} version - <a href="${product.npmUrl}" target="_blank" style={{display: "inline-block", verticalAlign: "middle", textDecoration: "none", borderBottom: "none"}}><img src="https://img.shields.io/npm/v/${product.packageName}" alt="npm" style={{display: "inline-block", verticalAlign: "middle", margin: 0}} noZoom /></a>`);
+        emit(
+            `### Latest ${product.title} version - <a href="${product.npmUrl}" target="_blank" style={{display: "inline-block", verticalAlign: "middle", textDecoration: "none", borderBottom: "none"}}><img src="https://img.shields.io/npm/v/${product.packageName}" alt="npm" style={{display: "inline-block", verticalAlign: "middle", margin: 0}} noZoom /></a>`
+        );
         emit("");
     }
 
@@ -483,7 +589,9 @@ function buildGetStarted(product) {
 
     emit("## Quick Example");
     emit("");
-    emit(product.getStartedExamples.quickExampleIntro || "Once providers are set up, use hooks to interact with the SDK:");
+    emit(
+        product.getStartedExamples.quickExampleIntro || "Once providers are set up, use hooks to interact with the SDK:"
+    );
     emit(renderExample(product.getStartedExamples.quickExample));
     emit("");
 
@@ -712,9 +820,7 @@ function buildComponents(product) {
 // Generate pages for each product
 // =============================================================================
 
-const productsToGenerate = PRODUCT_FILTER
-    ? { [PRODUCT_FILTER]: PRODUCTS[PRODUCT_FILTER] }
-    : PRODUCTS;
+const productsToGenerate = PRODUCT_FILTER ? { [PRODUCT_FILTER]: PRODUCTS[PRODUCT_FILTER] } : PRODUCTS;
 
 if (PRODUCT_FILTER && !PRODUCTS[PRODUCT_FILTER]) {
     console.error(`Unknown product: "${PRODUCT_FILTER}". Available: ${Object.keys(PRODUCTS).join(", ")}`);
@@ -786,9 +892,7 @@ for (const [productName, product] of Object.entries(productsToGenerate)) {
         const { baseClass, skip = [], descriptions = {} } = product.walletMethods;
         const baseNode = findByName(baseClass, KIND.CLASS);
         if (baseNode) {
-            const methods = (baseNode.children || []).filter(
-                (c) => c.kind === KIND.METHOD && !skip.includes(c.name)
-            );
+            const methods = (baseNode.children || []).filter((c) => c.kind === KIND.METHOD && !skip.includes(c.name));
             for (const m of methods) {
                 const hasComment = getComment(m) || getComment(m.signatures?.[0]);
                 if (!hasComment && !descriptions[m.name]) {

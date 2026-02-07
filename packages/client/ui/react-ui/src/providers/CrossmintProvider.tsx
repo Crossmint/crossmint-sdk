@@ -21,11 +21,7 @@ export interface CrossmintProviderProps extends CrossmintConfig {
     consoleLogLevel?: LogLevel;
 }
 
-export function CrossmintProvider({
-    apiKey,
-    consoleLogLevel,
-    ...props
-}: CrossmintProviderProps) {
+export function CrossmintProvider({ apiKey, consoleLogLevel, ...props }: CrossmintProviderProps) {
     const logger = useMemo(() => {
         return initReactLogger(apiKey, packageJson.name, packageJson.version, consoleLogLevel);
     }, [apiKey, consoleLogLevel]);
