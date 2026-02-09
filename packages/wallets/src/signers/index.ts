@@ -8,6 +8,7 @@ import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, Signer } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 import { P256KeypairSigner } from "./p256-keypair";
+import { SolanaP256KeypairSigner } from "./solana-p256-keypair";
 import type { ShadowSignerStorage } from "./shadow-signer";
 
 export function assembleSigner<C extends Chain>(
@@ -40,6 +41,9 @@ export function assembleSigner<C extends Chain>(
             return new EVMExternalWalletSigner(config, walletAddress, shadowSignerEnabled, shadowSignerStorage);
 
         case "p256-keypair": {
+            if (chain === "solana") {
+                return new SolanaP256KeypairSigner(config);
+            }
             return new P256KeypairSigner(config);
         }
         case "passkey":

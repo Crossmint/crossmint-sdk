@@ -1,4 +1,3 @@
-import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
@@ -49,10 +48,8 @@ export async function generateShadowSigner<C extends Chain>(
     if (chain === "stellar") {
         // Stellar uses Ed25519 encoding (Base32 with version byte and checksum)
         encodedPublicKey = encodeEd25519PublicKey(publicKeyBytes);
-    } else if (chain === "solana") {
-        // Solana uses Base58 encoding
-        encodedPublicKey = encodeBase58(publicKeyBytes);
     } else {
+        // EVM and Solana both use P256 keys — address is the base64 public key
         encodedPublicKey = publicKeyBase64;
     }
 
