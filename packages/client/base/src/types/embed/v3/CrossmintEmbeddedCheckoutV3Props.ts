@@ -47,17 +47,17 @@ export type EmbeddedCheckoutV3PhysicalAddress = {
 export type EmbeddedCheckoutV3EmailRecipient = {
     email: string;
     walletAddress?: never;
-    phoneNumber?: never;
+    phone?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 export type EmbeddedCheckoutV3WalletAddressRecipient = {
     walletAddress: string;
     email?: never;
-    phoneNumber?: never;
+    phone?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 export type EmbeddedCheckoutV3PhoneRecipient = {
-    phoneNumber: string;
+    phone: string;
     email?: never;
     walletAddress?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
