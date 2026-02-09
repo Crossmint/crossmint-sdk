@@ -32,6 +32,7 @@ export type CheckoutQuoteEvents = (typeof CheckoutQuoteEvents)[keyof typeof Chec
 export const CheckoutRecipientEvents = {
     RECIPIENT_WALLET_CHANGED: "recipient:wallet.changed",
     RECIPIENT_EMAIL_CHANGED: "recipient:email.changed",
+    RECIPIENT_PHONE_CHANGED: "recipient:phone.changed",
 } as const;
 export type CheckoutRecipientEvents = (typeof CheckoutRecipientEvents)[keyof typeof CheckoutRecipientEvents];
 

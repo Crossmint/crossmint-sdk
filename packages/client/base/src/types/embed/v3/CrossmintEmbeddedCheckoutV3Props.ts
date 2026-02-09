@@ -29,7 +29,10 @@ export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
-export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
+export type EmbeddedCheckoutV3Recipient =
+    | EmbeddedCheckoutV3EmailRecipient
+    | EmbeddedCheckoutV3WalletAddressRecipient
+    | EmbeddedCheckoutV3PhoneRecipient;
 
 export type EmbeddedCheckoutV3PhysicalAddress = {
     name: string;
@@ -44,11 +47,19 @@ export type EmbeddedCheckoutV3PhysicalAddress = {
 export type EmbeddedCheckoutV3EmailRecipient = {
     email: string;
     walletAddress?: never;
+    phoneNumber?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 export type EmbeddedCheckoutV3WalletAddressRecipient = {
     walletAddress: string;
     email?: never;
+    phoneNumber?: never;
+    physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
+};
+export type EmbeddedCheckoutV3PhoneRecipient = {
+    phoneNumber: string;
+    email?: never;
+    walletAddress?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 
