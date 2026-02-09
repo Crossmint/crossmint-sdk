@@ -18,6 +18,7 @@ export interface CrossmintEventMap {
     [CrossmintEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinishedPayload;
     [CrossmintEvents.RECIPIENT_WALLET_CHANGED]: RecipientWalletChangedPayload;
     [CrossmintEvents.RECIPIENT_EMAIL_CHANGED]: RecipientEmailChangedPayload;
+    [CrossmintEvents.RECIPIENT_PHONE_CHANGED]: RecipientPhoneChangedPayload;
 }
 
 // Initial quote
@@ -103,4 +104,9 @@ interface RecipientWalletChangedPayload {
 // Recipient email changed
 interface RecipientEmailChangedPayload {
     email: string;
+}
+
+// Recipient phone changed
+interface RecipientPhoneChangedPayload {
+    phone: string;
 }
