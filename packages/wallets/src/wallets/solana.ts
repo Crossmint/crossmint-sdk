@@ -37,6 +37,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
+    /**
+     * Send a raw Solana transaction.
+     * @param params - The transaction parameters (serialized transaction or Transaction object)
+     * @returns The transaction result
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "solanaWallet.sendTransaction",

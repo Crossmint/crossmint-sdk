@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Generates Mintlify-compatible MDX reference pages from TypeDoc JSON output + curated examples.
+ * SDK Reference Docs Generator
  *
- * The full API surface is extracted from api.json (via TypeDoc), then filtered per product
- * using the PRODUCTS config below. Each product gets its own set of pages.
+ * Pipeline: TypeDoc (api.json) + examples.json → Mintlify MDX pages
  *
- * Usage:
- *   node generate-reference.mjs                        # generate all products
- *   node generate-reference.mjs --product wallets      # generate only wallets
- *   node generate-reference.mjs --api api.json --examples examples.json --outdir docs
+ * Props, methods, and descriptions are auto-extracted from source JSDoc.
+ * MANUAL_RETURNS and EXPANDABLE_CHILDREN are the only hardcoded sections —
+ * needed because TypeDoc can't resolve types across packages in our monorepo.
+ *
+ * Run: pnpm generate:docs
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
@@ -45,21 +45,7 @@ const PRODUCTS = {
             baseClass: "Wallet",
             chainClasses: ["EVMWallet", "SolanaWallet", "StellarWallet"],
             docsBasePath: "/sdk-reference/wallets/classes",
-            skip: ["approve", "approveTransaction", "stagingFund", "experimental_apiClient", "from"],
-            descriptions: {
-                send: "Send tokens to a wallet or user",
-                balances: "Get wallet balances (native token, USDC, custom tokens)",
-                addDelegatedSigner: "Add a delegated signer",
-                delegatedSigners: "List delegated signers",
-                experimental_nfts: "Get wallet NFTs",
-                experimental_activity: "Get wallet activity",
-                experimental_transaction: "Get a specific transaction",
-                experimental_transactions: "List wallet transactions",
-                sendTransaction: "Send a raw chain transaction",
-                signMessage: "Sign a message with the wallet",
-                signTypedData: "Sign EIP-712 typed data",
-                getViemClient: "Get a Viem wallet client instance",
-            },
+            skip: ["approve", "approveTransaction", "experimental_apiClient", "from"],
         },
         getStartedExamples: {
             setup: "walletProviderSetup",
@@ -361,7 +347,7 @@ function extractReturnMembers(node) {
  * Returns { methods, chainSpecific } matching the format used by buildHooks().
  */
 function extractWalletMethodsFromApi(config) {
-    const { baseClass, chainClasses, docsBasePath, skip = [], descriptions = {} } = config;
+    const { baseClass, chainClasses, docsBasePath, skip = [] } = config;
 
     const baseNode = findByName(baseClass, KIND.CLASS);
     if (!baseNode) {
@@ -374,7 +360,7 @@ function extractWalletMethodsFromApi(config) {
         .map((c) => ({
             name: `wallet.${c.name}()`,
             link: `${docsBasePath}/${baseClass}#${c.name.toLowerCase()}`,
-            description: getComment(c) || getComment(c.signatures?.[0]) || descriptions[c.name] || "",
+            description: getComment(c) || getComment(c.signatures?.[0]) || "",
         }));
 
     const baseMethodNames = new Set((baseNode.children || []).filter((c) => c.kind === KIND.METHOD).map((c) => c.name));
@@ -404,88 +390,53 @@ function extractWalletMethodsFromApi(config) {
 /**
  * Expandable sub-properties for props/returns that reference cross-package types
  * TypeDoc can't inline. Keyed by the property name within a component/hook.
+ *
+ * createOnLogin and getOrCreateWallet share the same WalletArgsFor<Chain> shape.
  */
+const WALLET_ARGS_CHILDREN = [
+    {
+        name: "chain",
+        type: { type: "reference", name: "Chain" },
+        comment: {
+            summary: [{ kind: "text", text: 'The blockchain to create the wallet on (e.g. "base-sepolia").' }],
+        },
+    },
+    {
+        name: "signer",
+        type: { type: "reference", name: "SignerConfigForChain" },
+        comment: { summary: [{ kind: "text", text: 'The signer configuration (e.g. `{ type: "email" }`).' }] },
+    },
+    {
+        name: "owner",
+        flags: { isOptional: true },
+        type: { type: "intrinsic", name: "string" },
+        comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
+    },
+    {
+        name: "alias",
+        flags: { isOptional: true },
+        type: { type: "intrinsic", name: "string" },
+        comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] },
+    },
+    {
+        name: "plugins",
+        flags: { isOptional: true },
+        type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
+        comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
+    },
+    {
+        name: "delegatedSigners",
+        flags: { isOptional: true },
+        type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
+        comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
+    },
+];
+
 const EXPANDABLE_CHILDREN = {
-    createOnLogin: [
-        {
-            name: "chain",
-            type: { type: "reference", name: "Chain" },
-            comment: {
-                summary: [{ kind: "text", text: 'The blockchain to create the wallet on (e.g. "base-sepolia").' }],
-            },
-        },
-        {
-            name: "signer",
-            type: { type: "reference", name: "SignerConfigForChain" },
-            comment: { summary: [{ kind: "text", text: 'The signer configuration (e.g. `{ type: "email" }`).' }] },
-        },
-        {
-            name: "owner",
-            flags: { isOptional: true },
-            type: { type: "intrinsic", name: "string" },
-            comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
-        },
-        {
-            name: "alias",
-            flags: { isOptional: true },
-            type: { type: "intrinsic", name: "string" },
-            comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] },
-        },
-        {
-            name: "plugins",
-            flags: { isOptional: true },
-            type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
-            comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
-        },
-        {
-            name: "delegatedSigners",
-            flags: { isOptional: true },
-            type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
-            comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
-        },
-    ],
-    getOrCreateWallet: [
-        {
-            name: "chain",
-            type: { type: "reference", name: "Chain" },
-            comment: { summary: [{ kind: "text", text: "The blockchain to create the wallet on." }] },
-        },
-        {
-            name: "signer",
-            type: { type: "reference", name: "SignerConfigForChain" },
-            comment: { summary: [{ kind: "text", text: "The signer configuration." }] },
-        },
-        {
-            name: "owner",
-            flags: { isOptional: true },
-            type: { type: "intrinsic", name: "string" },
-            comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
-        },
-        {
-            name: "alias",
-            flags: { isOptional: true },
-            type: { type: "intrinsic", name: "string" },
-            comment: { summary: [{ kind: "text", text: "Optional wallet alias." }] },
-        },
-        {
-            name: "plugins",
-            flags: { isOptional: true },
-            type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
-            comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
-        },
-        {
-            name: "delegatedSigners",
-            flags: { isOptional: true },
-            type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
-            comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
-        },
-    ],
+    createOnLogin: WALLET_ARGS_CHILDREN,
+    getOrCreateWallet: WALLET_ARGS_CHILDREN,
 };
 
-/**
- * Manual return types for hooks whose return type TypeDoc couldn't resolve
- * (e.g., external package references or variable-exported hooks).
- */
 /**
  * Manual return types for hooks whose return type TypeDoc can't resolve
  * (cross-package references). Only needed when extractReturnMembers() fails.
@@ -889,15 +840,15 @@ for (const [productName, product] of Object.entries(productsToGenerate)) {
 
     // Wallet methods: warn if any extracted method has no description
     if (product.walletMethods?.enabled) {
-        const { baseClass, skip = [], descriptions = {} } = product.walletMethods;
+        const { baseClass, skip = [] } = product.walletMethods;
         const baseNode = findByName(baseClass, KIND.CLASS);
         if (baseNode) {
             const methods = (baseNode.children || []).filter((c) => c.kind === KIND.METHOD && !skip.includes(c.name));
             for (const m of methods) {
                 const hasComment = getComment(m) || getComment(m.signatures?.[0]);
-                if (!hasComment && !descriptions[m.name]) {
+                if (!hasComment) {
                     validationWarnings.push(
-                        `[${productName}] Wallet method "${m.name}" has no JSDoc comment or description entry`
+                        `[${productName}] Wallet method "${m.name}" has no JSDoc comment`
                     );
                 }
             }

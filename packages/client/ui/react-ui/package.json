@@ -18,7 +18,7 @@
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup --watch",
         "test:vitest": "vitest run",
-        "generate:docs": "typedoc && node generate-reference.mjs"
+        "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
         "@basis-theory-ai/react": "^1.0.1-beta.9",

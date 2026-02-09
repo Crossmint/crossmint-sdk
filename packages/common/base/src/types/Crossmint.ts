@@ -18,13 +18,13 @@ export type CustomAuth = {
 export type CrossmintConfig = {
     /** Your Crossmint client-side API key. */
     apiKey: string;
-    /** @internal */
+    /** JWT token for authentication. */
     jwt?: string;
-    /** @internal */
+    /** Override the base API URL. */
     overrideBaseUrl?: string;
-    /** @internal */
+    /** Application identifier, sent as `x-app-identifier` header. */
     appId?: string;
-    /** @internal */
+    /** Extension identifier, sent as `x-extension-id` header. */
     extensionId?: string;
     /** @internal */
     experimental_customAuth?: CustomAuth;
