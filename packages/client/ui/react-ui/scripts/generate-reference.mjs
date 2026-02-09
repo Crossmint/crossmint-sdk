@@ -847,9 +847,7 @@ for (const [productName, product] of Object.entries(productsToGenerate)) {
             for (const m of methods) {
                 const hasComment = getComment(m) || getComment(m.signatures?.[0]);
                 if (!hasComment) {
-                    validationWarnings.push(
-                        `[${productName}] Wallet method "${m.name}" has no JSDoc comment`
-                    );
+                    validationWarnings.push(`[${productName}] Wallet method "${m.name}" has no JSDoc comment`);
                 }
             }
         }
