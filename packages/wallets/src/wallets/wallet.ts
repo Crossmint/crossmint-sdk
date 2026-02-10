@@ -1,4 +1,5 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
+import bs58 from "bs58";
 import type {
     Activity,
     ApiClient,
@@ -573,9 +574,14 @@ export class Wallet<C extends Chain> {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
+                if (signer.type === "p256-keypair") {
+                    const challengeHex = Buffer.from(bs58.decode(pendingApproval.message)).toString("hex");
+                    return signer.signTransaction(challengeHex);
+                }
+
                 const transactionToSign =
                     transaction.chainType === "solana" && "transaction" in transaction.onChain
-                        ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
+                        ? (transaction.onChain.transaction as string)
                         : pendingApproval.message;
 
                 return signer.signTransaction(transactionToSign);
