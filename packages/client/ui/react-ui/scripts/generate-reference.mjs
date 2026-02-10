@@ -702,7 +702,7 @@ function buildHooks(product) {
             emit("| Method | Description |");
             emit("| --- | --- |");
             for (const m of methods) {
-                emit(`| [\`${m.name}\`](${m.link}) | ${m.description} |`);
+                emit(`| [\`${m.name}\`](${m.link}) | ${escapeForTable(m.description)} |`);
             }
             emit("");
         }
