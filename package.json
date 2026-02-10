@@ -64,7 +64,8 @@
             "expo-demo>react-dom": "19.1.1",
             "@crossmint/client-sdk-react-native-ui>react": "19.1.1",
             "@crossmint/client-sdk-rn-window>react": "19.1.1",
-            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1"
+            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1",
+            "qs": "6.14.1"
         }
     }
 }
