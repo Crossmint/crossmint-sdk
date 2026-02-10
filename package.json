@@ -64,7 +64,15 @@
             "expo-demo>react-dom": "19.1.1",
             "@crossmint/client-sdk-react-native-ui>react": "19.1.1",
             "@crossmint/client-sdk-rn-window>react": "19.1.1",
-            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1"
+            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1",
+            "@isaacs/brace-expansion": "5.0.1",
+            "tar@6": "6.2.1",
+            "tar@7": "7.5.7",
+            "h3": "1.15.5",
+            "@remix-run/router": "1.23.2",
+            "@remix-run/react": "2.17.3",
+            "preact": "10.28.2",
+            "qs": "6.14.1"
         }
     }
 }
