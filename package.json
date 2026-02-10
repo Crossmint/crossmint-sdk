@@ -65,7 +65,8 @@
             "@crossmint/client-sdk-react-native-ui>react": "19.1.1",
             "@crossmint/client-sdk-rn-window>react": "19.1.1",
             "@crossmint/client-sdk-rn-window>react-dom": "19.1.1",
-            "@remix-run/router": "1.23.2"
+            "@remix-run/router": "1.23.2",
+            "preact": "10.28.2"
         }
     }
 }
