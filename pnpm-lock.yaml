@@ -25,6 +25,7 @@ overrides:
   '@crossmint/client-sdk-react-native-ui>react': 19.1.1
   '@crossmint/client-sdk-rn-window>react': 19.1.1
   '@crossmint/client-sdk-rn-window>react-dom': 19.1.1
+  '@remix-run/router': 1.23.2
 
 importers:
 
@@ -4857,8 +4858,8 @@ packages:
       typescript:
         optional: true
 
-  '@remix-run/router@1.23.0':
-    resolution: {integrity: sha512-O3rHJzAQKamUz1fvE0Qaw0xSFqsA/yafi2iqeE0pvdFtCO1viYx8QL6f3Ln/aCCTLxs68SLf0KPM9eSeM8yBnA==}
+  '@remix-run/router@1.23.2':
+    resolution: {integrity: sha512-Ic6m2U/rMjTkhERIa/0ZtXJP17QUi2CbWE7cqx4J58M8aA3QTfW+2UlQ4psvTX9IO1RfNVhK3pcpdjej7L+t2w==}
     engines: {node: '>=14.0.0'}
 
   '@remix-run/serve@2.17.2':
@@ -20389,7 +20390,7 @@ snapshots:
       '@npmcli/package-json': 4.0.1
       '@remix-run/node': 2.17.2(typescript@5.9.3)
       '@remix-run/react': 2.17.2(react-dom@19.1.2(react@19.1.2))(react@19.1.2)(typescript@5.9.3)
-      '@remix-run/router': 1.23.0
+      '@remix-run/router': 1.23.2
       '@remix-run/server-runtime': 2.17.2(typescript@5.9.3)
       '@types/mdx': 2.0.13
       '@vanilla-extract/integration': 6.5.0(@types/node@22.7.5)(babel-plugin-macros@3.1.0)(lightningcss@1.30.2)(terser@5.44.1)
@@ -20475,7 +20476,7 @@ snapshots:
 
   '@remix-run/react@2.17.2(react-dom@19.1.2(react@19.1.2))(react@19.1.2)(typescript@5.9.3)':
     dependencies:
-      '@remix-run/router': 1.23.0
+      '@remix-run/router': 1.23.2
       '@remix-run/server-runtime': 2.17.2(typescript@5.9.3)
       react: 19.1.2
       react-dom: 19.1.2(react@19.1.2)
@@ -20485,7 +20486,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  '@remix-run/router@1.23.0': {}
+  '@remix-run/router@1.23.2': {}
 
   '@remix-run/serve@2.17.2(typescript@5.9.3)':
     dependencies:
@@ -20503,7 +20504,7 @@ snapshots:
 
   '@remix-run/server-runtime@2.17.2(typescript@5.9.3)':
     dependencies:
-      '@remix-run/router': 1.23.0
+      '@remix-run/router': 1.23.2
       '@types/cookie': 0.6.0
       '@web3-storage/multipart-parser': 1.0.0
       cookie: 0.7.2
@@ -31646,14 +31647,14 @@ snapshots:
 
   react-router-dom@6.30.0(react-dom@19.1.2(react@19.1.2))(react@19.1.2):
     dependencies:
-      '@remix-run/router': 1.23.0
+      '@remix-run/router': 1.23.2
       react: 19.1.2
       react-dom: 19.1.2(react@19.1.2)
       react-router: 6.30.0(react@19.1.2)
 
   react-router@6.30.0(react@19.1.2):
     dependencies:
-      '@remix-run/router': 1.23.0
+      '@remix-run/router': 1.23.2
       react: 19.1.2
 
   react-shallow-renderer@16.15.0(react@19.1.1):
