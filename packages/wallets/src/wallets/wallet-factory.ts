@@ -57,7 +57,7 @@ export class WalletFactory {
         }
 
         walletsLogger.info("walletFactory.getOrCreateWallet.creating");
-        return this.createWallet(args);
+        return this.createWalletInternal(args);
     }
 
     @WithLoggerContext({
@@ -106,7 +106,10 @@ export class WalletFactory {
     })
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         this.validateChainEnvironment(args.chain);
+        return this.createWalletInternal(args);
+    }
 
+    private async createWalletInternal<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
