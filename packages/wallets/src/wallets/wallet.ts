@@ -574,7 +574,7 @@ export class Wallet<C extends Chain> {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
-                if (signer.type === "p256-keypair") {
+                if (signer.locator().startsWith("device:")) {
                     const challengeHex = Buffer.from(bs58.decode(pendingApproval.message)).toString("hex");
                     return signer.signTransaction(challengeHex);
                 }
