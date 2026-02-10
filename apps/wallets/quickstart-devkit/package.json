@@ -25,7 +25,7 @@
         "clsx": "2.1.1",
         "firebase": "^10.3.1",
         "firebaseui": "6.1.0",
-        "next": "15.3.8",
+        "next": "15.3.9",
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",
