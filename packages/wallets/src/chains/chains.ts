@@ -149,3 +149,11 @@ export type StellarChain = "stellar";
 export type EVMChain = EVMSmartWalletChain;
 
 export type Chain = SolanaChain | EVMChain | StellarChain;
+
+export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletTestnet {
+    return (TESTNET_AA_CHAINS as readonly string[]).includes(chain);
+}
+
+export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
+    return (PRODUCTION_AA_CHAINS as readonly string[]).includes(chain);
+}
