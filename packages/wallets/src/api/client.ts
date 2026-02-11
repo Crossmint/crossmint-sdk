@@ -193,6 +193,28 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    async deviceChallenge(params: {
+        p256PublicKey: string;
+    }): Promise<{ challenge: string; slotNumber: number; signatureMessage: string }> {
+        const response = await this.post(`${this.apiPrefix}/solana/device-challenge`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async deviceRegister(params: {
+        p256PublicKey: string;
+        signatureR: string;
+        signatureS: string;
+    }): Promise<{ passkeyAddress: string }> {
+        const response = await this.post(`${this.apiPrefix}/solana/device-register`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
     public get isServerSide() {
         return this.parsedAPIKey.usageOrigin === APIKeyUsageOrigin.SERVER;
     }

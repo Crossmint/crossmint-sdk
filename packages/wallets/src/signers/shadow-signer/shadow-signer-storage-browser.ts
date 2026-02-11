@@ -21,7 +21,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     }
 
     async keyGenerator(chain: Chain): Promise<string> {
-        if (chain === "solana" || chain === "stellar") {
+        if (chain === "stellar") {
             const keyPair = (await window.crypto.subtle.generateKey(
                 {
                     name: "Ed25519",
@@ -40,7 +40,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             return publicKeyBase64;
         }
 
-        // For EVM chains, use P256 (secp256r1)
+        // For EVM and Solana chains, use P256 (secp256r1)
         const keyPair = (await window.crypto.subtle.generateKey(
             {
                 name: "ECDSA",

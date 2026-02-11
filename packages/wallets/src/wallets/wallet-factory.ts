@@ -26,7 +26,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
-import { generateShadowSigner, storeShadowSigner } from "../signers/shadow-signer";
+import { generateShadowSigner, storeShadowSigner, getStorage } from "../signers/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -542,6 +542,10 @@ export class WalletFactory {
                     args.options?.shadowSignerStorage
                 );
 
+                if (args.chain === "solana") {
+                    await this.registerSolanaDeviceSigner(publicKeyBase64, args.options?.shadowSignerStorage);
+                }
+
                 return {
                     delegatedSigners: [...(delegatedSigners ?? []), shadowSigner as SignerConfigForChain<C>],
                     shadowSignerPublicKey: shadowSigner.address,
@@ -557,6 +561,28 @@ export class WalletFactory {
             shadowSignerPublicKey: null,
             shadowSignerPublicKeyBase64: null,
         };
+    }
+
+    private async registerSolanaDeviceSigner(
+        publicKeyBase64: string,
+        shadowSignerStorage?: import("../signers/shadow-signer").ShadowSignerStorage
+    ): Promise<void> {
+        const { signatureMessage } = await this.apiClient.deviceChallenge({
+            p256PublicKey: publicKeyBase64,
+        });
+
+        const storage = shadowSignerStorage ?? getStorage();
+        const signatureMessageBytes = new Uint8Array(Buffer.from(signatureMessage, "hex"));
+        const rawSignature = await storage.sign(publicKeyBase64, signatureMessageBytes);
+
+        const signatureR = Buffer.from(rawSignature.slice(0, 32)).toString("hex").padStart(64, "0");
+        const signatureS = Buffer.from(rawSignature.slice(32, 64)).toString("hex").padStart(64, "0");
+
+        await this.apiClient.deviceRegister({
+            p256PublicKey: publicKeyBase64,
+            signatureR,
+            signatureS,
+        });
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
