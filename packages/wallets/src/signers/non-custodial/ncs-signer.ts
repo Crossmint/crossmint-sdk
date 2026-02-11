@@ -129,7 +129,11 @@ export abstract class NonCustodialSigner implements Signer {
         const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
-            walletsLogger.error("get-status: failed", { status: signerResponse?.status, durationMs });
+            walletsLogger.error("get-status: failed", {
+                status: signerResponse?.status,
+                error: signerResponse?.error,
+                durationMs,
+            });
             throw new Error(signerResponse?.error);
         }
 

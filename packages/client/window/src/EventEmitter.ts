@@ -64,6 +64,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
+            console.info(`[EventEmitter] send: ${String(event)}`);
             this.transport.send({ event, data });
         } else {
             console.error(`[EventEmitter] send() - Validation failed for event: ${String(event)}`, result.error);
@@ -166,6 +167,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
 
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
+                this.off(responseListenerId);
                 console.error(
                     `[EventEmitter] onAction() - Timeout after ${timeoutMs / 1000}s waiting for ${String(event)}`
                 );
@@ -180,6 +182,8 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 if (options?.condition && !options.condition(data)) {
                     return;
                 }
+
+                console.info(`[EventEmitter] onAction: received ${String(event)}`);
 
                 if ("callback" in params && params.callback != null) {
                     const result = params.callback(data);
