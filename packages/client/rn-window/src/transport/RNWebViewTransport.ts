@@ -15,6 +15,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     }
 
     private handleGlobalMessage = (event: MessageEvent) => {
+        const eventName = event.data?.event;
+        if (eventName) {
+            console.info(`[RNTransport WebView] received: ${String(eventName)}`);
+        }
         this.dispatchToListeners({
             type: "message",
             data: event.data,
@@ -95,6 +99,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
                 }
 
                 const parsedData = JSON.parse(data);
+                const eventName = parsedData?.event;
+                if (eventName) {
+                    console.info(`[RNTransport RN] received from WebView: ${String(eventName)}`);
+                }
                 this.dispatchToListeners({
                     type: "message",
                     data: parsedData,
