@@ -46,6 +46,7 @@ import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { SolanaP256KeypairSigner } from "../signers/solana-p256-keypair";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -575,6 +576,13 @@ export class Wallet<C extends Chain> {
                 }
 
                 if (signer.locator().startsWith("device:")) {
+                    if (
+                        "signatureMessage" in pendingApproval &&
+                        pendingApproval.signatureMessage != null &&
+                        signer instanceof SolanaP256KeypairSigner
+                    ) {
+                        return signer.signRawMessage(pendingApproval.signatureMessage as string);
+                    }
                     const challengeHex = Buffer.from(bs58.decode(pendingApproval.message)).toString("hex");
                     return signer.signTransaction(challengeHex);
                 }
