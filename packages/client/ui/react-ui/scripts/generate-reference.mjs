@@ -515,7 +515,7 @@ function buildGetStarted(product) {
     // Version shield badge
     if (product.npmUrl && product.packageName) {
         emit(
-            `### Latest ${product.title} version - <a href="${product.npmUrl}" target="_blank" style={{display: "inline-block", verticalAlign: "middle", textDecoration: "none", borderBottom: "none"}}><img src="https://img.shields.io/npm/v/${product.packageName}" alt="npm" style={{display: "inline-block", verticalAlign: "middle", margin: 0}} noZoom /></a>`
+            `### Latest ${product.title} version - <a href="${product.npmUrl}" target="_blank" rel="noopener" style={{display: "inline-block", verticalAlign: "middle", textDecoration: "none", borderBottom: "none"}}><img src="https://img.shields.io/npm/v/${product.packageName}" alt="npm" style={{display: "inline-block", verticalAlign: "middle", margin: 0}} noZoom /></a>`
         );
         emit("");
     }
