@@ -30,14 +30,6 @@ export class SolanaP256KeypairSigner implements Signer {
         return await this.createWebAuthnSignature(transaction);
     }
 
-    async signRawMessage(signatureMessageHex: string): Promise<{ signature: string }> {
-        const signatureMessageBytes = new Uint8Array(Buffer.from(signatureMessageHex, "hex"));
-        const signatureBytes = await this.onSignTransaction(this.address(), signatureMessageBytes);
-        const rHex = Buffer.from(signatureBytes.slice(0, 32)).toString("hex").padStart(64, "0");
-        const sHex = Buffer.from(signatureBytes.slice(32, 64)).toString("hex").padStart(64, "0");
-        return { signature: rHex + sHex };
-    }
-
     private async createWebAuthnSignature(challenge: string): Promise<{ signature: string }> {
         const challengeHex = challenge.replace("0x", "");
         const challengeBase64 = Buffer.from(challengeHex, "hex").toString("base64");
