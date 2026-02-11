@@ -13,7 +13,7 @@
         "@crossmint/server-sdk": "workspace:*",
         "react": "^18",
         "react-dom": "^18",
-        "next": "14.2.35"
+        "next": "15.0.8"
     },
     "devDependencies": {
         "typescript": "^5",
