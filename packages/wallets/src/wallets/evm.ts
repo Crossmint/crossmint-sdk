@@ -40,6 +40,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         return new EVMWallet(wallet as Wallet<EVMChain>);
     }
 
+    /**
+     * Send a raw EVM transaction.
+     * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
+     * @returns The transaction result
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.sendTransaction",
@@ -75,6 +80,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         return result;
     }
 
+    /**
+     * Sign a message with the wallet's private key.
+     * @param params - The message to sign
+     * @returns The signature
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.signMessage",
@@ -116,6 +126,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         return result;
     }
 
+    /**
+     * Sign EIP-712 typed data.
+     * @param params - The typed data parameters (domain, types, message, primaryType, chain)
+     * @returns The signature
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.signTypedData",
@@ -180,6 +195,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         return result;
     }
 
+    /**
+     * Get a Viem public client instance configured for this wallet's chain.
+     * @param params - Optional transport configuration
+     * @returns A Viem public client
+     */
     public getViemClient(params?: { transport?: HttpTransport }) {
         return createPublicClient({
             transport: params?.transport ?? http(),

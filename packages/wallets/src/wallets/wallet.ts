@@ -540,6 +540,10 @@ export class Wallet<C extends Chain> {
         return undefined as any;
     }
 
+    /**
+     * List the delegated signers for this wallet.
+     * @returns {Promise<DelegatedSigner[]>} The delegated signers
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "wallet.delegatedSigners",

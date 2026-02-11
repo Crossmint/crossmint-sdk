@@ -9,12 +9,7 @@ import { useMemo, type ReactNode } from "react";
 
 export const LoggerContext = createLoggerContext();
 
-export function CrossmintProvider({
-    apiKey,
-    consoleLogLevel,
-    ...props
-}: CrossmintConfig & {
-    children: ReactNode;
+export interface CrossmintProviderProps extends CrossmintConfig {
     /**
      * Minimum log level for console output.
      * Logs below this level will not be written to the console.
@@ -22,7 +17,11 @@ export function CrossmintProvider({
      * Does not affect Datadog logging which receives all logs.
      */
     consoleLogLevel?: LogLevel;
-}) {
+    /** @internal */
+    children: ReactNode;
+}
+
+export function CrossmintProvider({ apiKey, consoleLogLevel, ...props }: CrossmintProviderProps) {
     const logger = useMemo(() => {
         return initReactLogger(apiKey, packageJson.name, packageJson.version, consoleLogLevel);
     }, [apiKey, consoleLogLevel]);
