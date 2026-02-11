@@ -126,15 +126,17 @@ export abstract class NonCustodialSigner implements Signer {
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
-        walletsLogger.info("get-status: response received", {
-            signerStatus: signerResponse?.signerStatus,
-            status: signerResponse?.status,
-            durationMs: Date.now() - startTime,
-        });
+        const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
+            walletsLogger.error("get-status: failed", { status: signerResponse?.status, durationMs });
             throw new Error(signerResponse?.error);
         }
+
+        walletsLogger.info("get-status: response received", {
+            signerStatus: signerResponse.signerStatus,
+            durationMs,
+        });
 
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
@@ -228,10 +230,10 @@ export abstract class NonCustodialSigner implements Signer {
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
+        const durationMs = Date.now() - startTime;
         walletsLogger.info("start-onboarding: response received", {
             status: response?.status,
-            signerStatus: response?.signerStatus,
-            durationMs: Date.now() - startTime,
+            durationMs,
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
