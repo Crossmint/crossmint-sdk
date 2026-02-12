@@ -1,5 +1,33 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.17
+
+### Patch Changes
+
+- 4dc0dbf: Add TypeDoc reference docs generation pipeline and JSDoc to provider interfaces
+- d31b60a: Fix race condition in logout flow that could expose user wallet data between sessions (WAL-8054)
+
+  - Make logout() return a Promise so apps can await completion
+  - Clear JWT and user state synchronously before async logout operation to prevent race conditions
+  - Maintains backward compatibility for existing code that doesn't await logout
+
+- 27194e5: Add "silent" option to consoleLogLevel to suppress all console output while maintaining Datadog logging
+- Updated dependencies [4dc0dbf]
+- Updated dependencies [4dc0dbf]
+- Updated dependencies [41ad396]
+- Updated dependencies [d31b60a]
+- Updated dependencies [a356f13]
+- Updated dependencies [27194e5]
+- Updated dependencies [ce13788]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/client-sdk-react-base@1.0.2
+  - @crossmint/wallets-sdk@0.19.0
+  - @crossmint/client-sdk-window@1.0.9
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/client-sdk-base@1.7.14
+  - @crossmint/client-sdk-auth@1.2.47
+  - @crossmint/common-sdk-auth@1.0.69
+
 ## 2.6.16
 
 ### Patch Changes

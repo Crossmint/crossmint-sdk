@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.15
+
+### Patch Changes
+
+- a356f13: Improve logging across approve/send transaction flow: remove verbose console.log noise from EventEmitter/Handshake/Transport layers, replace console.warn/error with structured walletsLogger in NCS signers, add timing for TEE operations
+- Updated dependencies [a356f13]
+  - @crossmint/client-sdk-window@1.0.9
+
 ## 0.3.14
 
 ### Patch Changes
