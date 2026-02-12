@@ -1,5 +1,12 @@
 # @crossmint/common-sdk-base
 
+## 0.9.17
+
+### Patch Changes
+
+- 27194e5: Add "silent" option to consoleLogLevel to suppress all console output while maintaining Datadog logging
+- 4dc0dbf: Add JSDoc comments to CrossmintConfig type
+
 ## 0.9.16
 
 ### Patch Changes
