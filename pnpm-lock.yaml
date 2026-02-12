@@ -762,6 +762,9 @@ importers:
       expo-web-browser:
         specifier: ~15.0.8
         version: 15.0.10(expo@54.0.27(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(bufferutil@4.0.9)(expo-router@6.0.17)(graphql@16.12.0)(react-native-webview@13.15.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)(utf-8-validate@5.0.10))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))
+      typedoc:
+        specifier: 0.28.16
+        version: 0.28.16(typescript@5.9.3)
 
   packages/client/ui/react-ui:
     dependencies:

@@ -11,7 +11,8 @@
     "files": ["dist", "app.plugin.js", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
         "@crossmint/client-sdk-auth": "workspace:*",
@@ -33,6 +34,7 @@
     },
     "devDependencies": {
         "@expo/config-plugins": "^9.0.17",
+        "typedoc": "0.28.16",
         "@types/react": "19.1.10",
         "expo-constants": "~18.0.9",
         "expo-device": "~8.0.9",

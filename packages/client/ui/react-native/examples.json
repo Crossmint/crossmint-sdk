@@ -1,0 +1,40 @@
+{
+    "_meta": {
+        "description": "Curated code examples for the React Native SDK reference pages. Keyed by export name or page section.",
+        "lastUpdated": "2026-02-11"
+    },
+    "installation": {
+        "code": "npm install @crossmint/client-sdk-react-native-ui",
+        "language": "bash"
+    },
+    "rnWalletProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    signer: { type: \"email\" },\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "rnWalletQuickExample": {
+        "code": "import { useWallet } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text } from \"react-native\";\n\nfunction WalletInfo() {\n    const { wallet, status } = useWallet();\n\n    if (status === \"in-progress\") return <Text>Loading wallet...</Text>;\n    if (!wallet) return <Text>No wallet connected</Text>;\n\n    return (\n        <View>\n            <Text>Address: {wallet.address}</Text>\n            <Text>Chain: {wallet.chain}</Text>\n        </View>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintProvider": {
+        "code": "import { CrossmintProvider } from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            {/* Your app content */}\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintWalletProvider": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    signer: { type: \"email\" },\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintWalletProvider must be nested inside CrossmintProvider."
+    },
+    "useWallet": {
+        "code": "import { useWallet } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text, TouchableOpacity } from \"react-native\";\n\nfunction WalletActions() {\n    const { wallet, status } = useWallet();\n\n    if (status === \"in-progress\") return <Text>Loading wallet...</Text>;\n    if (!wallet) return <Text>No wallet</Text>;\n\n    const handleSend = async () => {\n        const tx = await wallet.send(\"0x...\", \"usdc\", \"10\");\n        console.log(\"Transaction:\", tx.explorerLink);\n    };\n\n    const handleBalances = async () => {\n        const balances = await wallet.balances();\n        console.log(\"USDC:\", balances.usdc.amount);\n        console.log(\"Native:\", balances.nativeToken.amount);\n    };\n\n    return (\n        <View>\n            <Text>Wallet: {wallet.address}</Text>\n            <TouchableOpacity onPress={handleBalances}>\n                <Text>Check Balances</Text>\n            </TouchableOpacity>\n            <TouchableOpacity onPress={handleSend}>\n                <Text>Send USDC</Text>\n            </TouchableOpacity>\n        </View>\n    );\n}",
+        "language": "tsx"
+    },
+    "useWalletEmailSigner": {
+        "code": "import { useWalletEmailSigner } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text, TextInput, TouchableOpacity } from \"react-native\";\nimport { useState } from \"react\";\n\nfunction EmailSignerFlow() {\n    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();\n    const [otp, setOtp] = useState(\"\");\n\n    if (!needsAuth) return null;\n\n    return (\n        <View>\n            <Text>Email verification required</Text>\n            <TouchableOpacity onPress={sendEmailWithOtp}>\n                <Text>Send OTP</Text>\n            </TouchableOpacity>\n            <TextInput value={otp} onChangeText={setOtp} placeholder=\"Enter OTP\" />\n            <TouchableOpacity onPress={() => verifyOtp(otp)}>\n                <Text>Verify</Text>\n            </TouchableOpacity>\n            <TouchableOpacity onPress={() => reject(new Error(\"User cancelled\"))}>\n                <Text>Cancel</Text>\n            </TouchableOpacity>\n        </View>\n    );\n}",
+        "language": "tsx"
+    },
+    "ExportPrivateKeyButton": {
+        "code": "import { ExportPrivateKeyButton } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text } from \"react-native\";\n\nfunction WalletSettings() {\n    return (\n        <View>\n            <Text>Export Private Key</Text>\n            <ExportPrivateKeyButton\n                appearance={{\n                    colors: { border: \"#e2e8f0\" },\n                    borderRadius: \"12px\",\n                }}\n            />\n        </View>\n    );\n}",
+        "language": "tsx",
+        "note": "Only works with email and phone signers. Will not render for passkey or external wallet signers."
+    }
+}
