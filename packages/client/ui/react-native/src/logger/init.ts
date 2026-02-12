@@ -1,4 +1,4 @@
-import { SdkLogger, ReactNativeDatadogSink, validateAPIKey, type LogLevel } from "@crossmint/common-sdk-base";
+import { SdkLogger, ReactNativeDatadogSink, validateAPIKey, type ConsoleLogLevel } from "@crossmint/common-sdk-base";
 import { AppState } from "react-native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -13,7 +13,7 @@ import packageJson from "../../package.json";
  * @param consoleLogLevel - Minimum log level for console output (defaults to "debug" for backward compatibility)
  * @returns The initialized logger instance
  */
-export function initReactNativeLogger(apiKey: string, consoleLogLevel?: LogLevel): SdkLogger {
+export function initReactNativeLogger(apiKey: string, consoleLogLevel?: ConsoleLogLevel): SdkLogger {
     const validationResult = validateAPIKey(apiKey);
     if (!validationResult.isValid) {
         throw new Error(`Invalid API key: ${validationResult.message}`);

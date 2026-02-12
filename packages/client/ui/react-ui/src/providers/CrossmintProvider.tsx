@@ -3,7 +3,7 @@ import {
     initReactLogger,
     createLoggerContext,
 } from "@crossmint/client-sdk-react-base";
-import type { CrossmintConfig, LogLevel } from "@crossmint/common-sdk-base";
+import type { CrossmintConfig, ConsoleLogLevel } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 import { useMemo, type ReactNode } from "react";
 
@@ -16,7 +16,7 @@ export interface CrossmintProviderProps extends CrossmintConfig {
      * Defaults to "debug" (all logs shown) for backward compatibility.
      * Does not affect Datadog logging which receives all logs.
      */
-    consoleLogLevel?: LogLevel;
+    consoleLogLevel?: ConsoleLogLevel;
     /** @internal */
     children: ReactNode;
 }
