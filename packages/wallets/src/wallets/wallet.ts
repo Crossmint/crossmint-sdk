@@ -748,6 +748,7 @@ export class Wallet<C extends Chain> {
     }
 
     private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
+        walletsLogger.info("wallet.approve: submitting approval to API", { transactionId });
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals,
         });
@@ -809,6 +810,7 @@ export class Wallet<C extends Chain> {
             maxBackoffMs?: number;
         } = {}
     ): Promise<Transaction<false>> {
+        walletsLogger.info("wallet.approve: waiting for transaction confirmation", { transactionId, timeoutMs });
         const startTime = Date.now();
         let transactionResponse;
 

@@ -15,6 +15,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     }
 
     private handleGlobalMessage = (event: MessageEvent) => {
+        const eventName = event.data?.event;
+        if (eventName) {
+            console.info(`[RNTransport WebView] received: ${String(eventName)}`);
+        }
         this.dispatchToListeners({
             type: "message",
             data: event.data,
@@ -33,18 +37,14 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
 
     send<K extends keyof OutgoingEvents>(message: { event: K; data: z.infer<OutgoingEvents[K]> }): void {
         if (this.isWebView) {
-            console.log("[RN] isWebView");
             if ((window as any).ReactNativeWebView?.postMessage) {
                 (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
             } else {
                 console.error("[RNTransport WebView] ReactNativeWebView.postMessage not available");
             }
         } else {
-            console.log("[RN] isRN");
-            console.log("[RN] Sending message:", message);
             if (this.webviewRef?.current?.injectJavaScript) {
                 const messageStr = JSON.stringify(message);
-                console.log("[RN] Stringified message:", messageStr);
                 // The way to send message to RN is to inject a script into the WebView
                 const script = `
                     (function() {
@@ -99,6 +99,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
                 }
 
                 const parsedData = JSON.parse(data);
+                const eventName = parsedData?.event;
+                if (eventName) {
+                    console.info(`[RNTransport RN] received from WebView: ${String(eventName)}`);
+                }
                 this.dispatchToListeners({
                     type: "message",
                     data: parsedData,
@@ -119,12 +123,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
      */
     public reload(): void {
         if (this.isWebView) {
-            console.warn("[RNTransport WebView] reload() called from inside WebView - this is a no-op");
             return;
         }
 
         if (this.webviewRef?.current?.reload) {
-            console.log("[RNTransport RN] Reloading WebView");
             this.webviewRef.current.reload();
         } else {
             console.error("[RNTransport RN] WebView ref not available for reload");

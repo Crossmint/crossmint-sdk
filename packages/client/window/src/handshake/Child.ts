@@ -35,28 +35,21 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
     }
 
     async handshakeWithParent() {
-        console.log("[HandshakeChild] handshakeWithParent() called");
-
         if (this.isConnected) {
-            console.log("[HandshakeChild] Already connected to parent, skipping handshake");
             return;
         }
 
-        console.log("[HandshakeChild] Waiting for handshake request from parent");
+        console.info(`[HandshakeChild] Waiting for handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
 
         const { requestVerificationId } = await this._onAction({
             event: "handshakeRequest",
-            callback: (data) => {
-                console.log("[HandshakeChild] Received handshake request, processing data:", data);
-                return data;
-            },
+            callback: (data) => data,
             responseEvent: "handshakeResponse",
             options: {
                 timeoutMs: this.handshakeOptions.timeoutMs,
             },
         });
 
-        console.log("[HandshakeChild] Waiting for handshake complete from parent");
         await this._onAction({
             event: "handshakeComplete",
             options: {
@@ -66,14 +59,13 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
         });
 
         this.isConnected = true;
-        console.log("[HandshakeChild] Handshake completed successfully, connection established");
+        console.info("[HandshakeChild] Handshake completed");
     }
 
     // Wrap EventEmitter methods, adding handshake event types
     private async _onAction<K extends keyof HandshakeParentEvents, R extends keyof HandshakeChildEvents>(
         args: OnActionArgs<HandshakeParentEvents, HandshakeChildEvents, K, R>
     ): Promise<z.infer<IncomingEvents[K]>> {
-        console.log(`[HandshakeChild] _onAction() called - Event: ${String(args.event)}`);
         return await super.onAction({
             ...args,
             options: args.options as OnActionOptions<EventMap, keyof EventMap>, // Fixes weird TS behavior when compiling
