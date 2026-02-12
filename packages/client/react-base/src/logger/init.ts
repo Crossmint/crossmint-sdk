@@ -13,7 +13,7 @@ import { BrowserDatadogSink, ServerDatadogSink } from "@crossmint/common-sdk-bas
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
  * @param packageName - Name of the package using the logger
  * @param packageVersion - Version of the package using the logger
- * @param consoleLogLevel - Minimum log level for console output (defaults to "debug" for backward compatibility)
+ * @param consoleLogLevel - Minimum log level for console output (or "silent" to suppress all output). Defaults to "debug" for backward compatibility
  * @returns The initialized logger instance
  */
 export function initReactLogger(

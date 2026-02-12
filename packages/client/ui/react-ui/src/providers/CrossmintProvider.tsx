@@ -11,10 +11,10 @@ export const LoggerContext = createLoggerContext();
 
 export interface CrossmintProviderProps extends CrossmintConfig {
     /**
-     * Minimum log level for console output.
+     * Minimum log level for console output (or "silent" to suppress all output).
      * Logs below this level will not be written to the console.
+     * Set to "silent" to completely suppress console output.
      * Defaults to "debug" (all logs shown) for backward compatibility.
-     * Does not affect Datadog logging which receives all logs.
      */
     consoleLogLevel?: ConsoleLogLevel;
     /** @internal */
