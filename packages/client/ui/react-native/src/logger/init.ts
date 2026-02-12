@@ -10,7 +10,7 @@ import packageJson from "../../package.json";
  * This handles React Native-specific Datadog sink initialization
  *
  * @param apiKey - API key to determine environment (development/staging/production) and project ID
- * @param consoleLogLevel - Minimum log level for console output (defaults to "debug" for backward compatibility)
+ * @param consoleLogLevel - Minimum log level for console output (or "silent" to suppress all output). Defaults to "debug" for backward compatibility
  * @returns The initialized logger instance
  */
 export function initReactNativeLogger(apiKey: string, consoleLogLevel?: ConsoleLogLevel): SdkLogger {
