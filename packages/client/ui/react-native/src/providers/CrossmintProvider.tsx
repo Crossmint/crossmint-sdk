@@ -7,13 +7,7 @@ import { initReactNativeLogger } from "../logger/init";
 
 export const LoggerContext = createLoggerContext();
 
-export function CrossmintProvider({
-    children,
-    apiKey,
-    overrideBaseUrl,
-    consoleLogLevel,
-}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
-    children: ReactNode;
+export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> {
     /**
      * Minimum log level for console output (or "silent" to suppress all output).
      * Logs below this level will not be written to the console.
@@ -21,7 +15,15 @@ export function CrossmintProvider({
      * Defaults to "debug" (all logs shown) for backward compatibility.
      */
     consoleLogLevel?: ConsoleLogLevel;
-}) {
+    /** @internal */
+    children: ReactNode;
+}
+
+/**
+ * Root provider for the Crossmint SDK. Must wrap your entire application.
+ * Initializes the SDK with your API key and sets up logging.
+ */
+export function CrossmintProvider({ children, apiKey, overrideBaseUrl, consoleLogLevel }: CrossmintProviderProps) {
     const logger = useMemo(() => {
         return initReactNativeLogger(apiKey, consoleLogLevel);
     }, [apiKey, consoleLogLevel]);

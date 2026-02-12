@@ -1,0 +1,10 @@
+{
+    "entryPoints": ["src/index.ts"],
+    "tsconfig": "tsconfig.typedoc.json",
+    "json": "api.json",
+    "skipErrorChecking": true,
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "logLevel": "Error"
+}
