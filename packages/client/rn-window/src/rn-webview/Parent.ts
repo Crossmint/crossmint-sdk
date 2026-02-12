@@ -50,7 +50,6 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * Should be passed to the React Native WebView's onMessage prop to forward events into the transport
      */
     public handleMessage = (event: WebViewMessageEvent): void => {
-        console.log("[WebViewParent] handleMessage() called");
         if (this.transport instanceof RNWebViewTransport) {
             this.transport.handleMessage(event);
         } else {
@@ -66,11 +65,11 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         if (this._reconnectFlight == null) {
             this._reconnectFlight = (async () => {
                 try {
-                    console.log("[WebViewParent] Starting WebView reload and handshake");
+                    console.info("[WebViewParent] Reloading WebView and re-establishing handshake");
                     this.isConnected = false;
                     this.transport.reload();
                     await this.handshakeWithChild();
-                    console.log("[WebViewParent] WebView reload and handshake completed");
+                    console.info("[WebViewParent] WebView reload and handshake completed");
                 } finally {
                     this._reconnectFlight = undefined;
                 }
@@ -106,13 +105,8 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         const response = await super.sendAction(args);
 
         if (this.isRecoverableError(response)) {
-            console.log(
-                `[WebViewParent] Recoverable error detected (code: ${response.code}), reloading WebView and retrying`
-            );
-
+            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
             await this.reloadAndHandshake();
-
-            console.log("[WebViewParent] Retrying operation with original timeout");
             return await super.sendAction(args);
         }
 

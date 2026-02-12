@@ -15,5 +15,6 @@ export {
     type Signature,
     EVMWallet,
     SolanaWallet,
+    StellarWallet,
     Wallet,
 } from "@crossmint/wallets-sdk";

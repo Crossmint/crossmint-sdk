@@ -1,5 +1,5 @@
 import type { ISdkLogger } from "./interfaces";
-import type { LogContext, LogEntry, LogLevel, LogSink } from "./types";
+import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "./types";
 import { generateExecutionId, mergeContext, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
@@ -57,12 +57,12 @@ export interface SdkLoggerInitParams {
     platform?: Platform;
     additionalContext?: LogContext;
     /**
-     * Minimum log level for console output.
+     * Minimum log level for console output (or "silent" to suppress all output).
      * Logs below this level will not be written to the console.
+     * Set to "silent" to completely suppress console output while maintaining Datadog logging.
      * Defaults to "debug" (all logs shown) for backward compatibility.
-     * Does not affect other sinks like Datadog which receive all logs.
      */
-    consoleLogLevel?: LogLevel;
+    consoleLogLevel?: ConsoleLogLevel;
 }
 
 /**

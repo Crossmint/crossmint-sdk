@@ -2,19 +2,19 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Constants from "expo-constants";
 import { CrossmintProvider as BaseCrossmintProvider, createLoggerContext } from "@crossmint/client-sdk-react-base";
-import type { CrossmintConfig, LogLevel } from "@crossmint/common-sdk-base";
+import type { CrossmintConfig, ConsoleLogLevel } from "@crossmint/common-sdk-base";
 import { initReactNativeLogger } from "../logger/init";
 
 export const LoggerContext = createLoggerContext();
 
 export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> {
     /**
-     * Minimum log level for console output.
+     * Minimum log level for console output (or "silent" to suppress all output).
      * Logs below this level will not be written to the console.
+     * Set to "silent" to completely suppress console output.
      * Defaults to "debug" (all logs shown) for backward compatibility.
-     * Does not affect Datadog logging which receives all logs.
      */
-    consoleLogLevel?: LogLevel;
+    consoleLogLevel?: ConsoleLogLevel;
     /** @internal */
     children: ReactNode;
 }
