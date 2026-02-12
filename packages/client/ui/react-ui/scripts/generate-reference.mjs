@@ -41,7 +41,7 @@ const PRODUCTS = {
         walletMethods: {
             enabled: true,
             description:
-                "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/globals)** for complete documentation.",
+                "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/classes/Wallet)** for complete documentation.",
             baseClass: "Wallet",
             chainClasses: ["EVMWallet", "SolanaWallet", "StellarWallet"],
             docsBasePath: "/sdk-reference/wallets/classes",
@@ -359,7 +359,7 @@ function extractWalletMethodsFromApi(config) {
         .filter((c) => c.kind === KIND.METHOD && !skip.includes(c.name))
         .map((c) => ({
             name: `wallet.${c.name}()`,
-            link: `${docsBasePath}/${baseClass}#${c.name.toLowerCase()}`,
+            link: `${docsBasePath}/${baseClass}#${c.name.toLowerCase().replace(/_/g, "-")}`,
             description: getComment(c) || getComment(c.signatures?.[0]) || "",
         }));
 
@@ -555,7 +555,7 @@ function buildGetStarted(product) {
         emit(`- [Components](/${product.navPrefix}/components) — Drop-in UI components`);
     }
     if (product.walletMethods?.enabled) {
-        emit(`- [Wallets SDK Reference](/sdk-reference/wallets/globals) — Complete wallet method documentation`);
+        emit(`- [Wallets SDK Reference](/sdk-reference/wallets/classes/Wallet) — Complete wallet method documentation`);
     }
 
     return L.join("\n");
