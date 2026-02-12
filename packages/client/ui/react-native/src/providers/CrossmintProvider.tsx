@@ -23,12 +23,7 @@ export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" |
  * Root provider for the Crossmint SDK. Must wrap your entire application.
  * Initializes the SDK with your API key and sets up logging.
  */
-export function CrossmintProvider({
-    children,
-    apiKey,
-    overrideBaseUrl,
-    consoleLogLevel,
-}: CrossmintProviderProps) {
+export function CrossmintProvider({ children, apiKey, overrideBaseUrl, consoleLogLevel }: CrossmintProviderProps) {
     const logger = useMemo(() => {
         return initReactNativeLogger(apiKey, consoleLogLevel);
     }, [apiKey, consoleLogLevel]);
