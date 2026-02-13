@@ -10,8 +10,14 @@ import type {
     RegisterSignerPasskeyParams,
     DelegatedSigner as DelegatedSignerResponse,
 } from "../api";
-import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
-import { type Chain, type EVMSmartWalletChain, isTestnetChain, isMainnetChain } from "../chains/chains";
+import { InvalidEnvironmentError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import {
+    type Chain,
+    type EVMSmartWalletChain,
+    isTestnetChain,
+    isMainnetChain,
+    mainnetToTestnet,
+} from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
@@ -42,7 +48,7 @@ export class WalletFactory {
             );
         }
 
-        this.validateChainEnvironment(args.chain);
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
 
         const locator = this.getWalletLocator<C>(args);
         walletsLogger.info("walletFactory.getOrCreateWallet.start");
@@ -77,7 +83,7 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
-        this.validateChainEnvironment(args.chain);
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -105,7 +111,7 @@ export class WalletFactory {
         },
     })
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        this.validateChainEnvironment(args.chain);
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
         return this.createWalletInternal(args);
     }
 
@@ -392,9 +398,9 @@ export class WalletFactory {
         return "evm";
     }
 
-    private validateChainEnvironment<C extends Chain>(chain: C): void {
+    private validateChainEnvironment<C extends Chain>(chain: C): C {
         if (chain === "solana" || chain === "stellar") {
-            return;
+            return chain;
         }
 
         const evmChain = chain as EVMSmartWalletChain;
@@ -402,19 +408,29 @@ export class WalletFactory {
         const isProduction = environment === APIKeyEnvironmentPrefix.PRODUCTION;
 
         if (isProduction && isTestnetChain(evmChain)) {
-            walletsLogger.warn("walletFactory.validateChainEnvironment.mismatch", {
-                chain,
-                environment,
-                message: `Chain "${chain}" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.`,
-            });
+            throw new InvalidEnvironmentError(
+                `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
+            );
         }
 
         if (!isProduction && isMainnetChain(evmChain)) {
+            const testnetEquivalent = mainnetToTestnet(evmChain);
+            if (testnetEquivalent) {
+                walletsLogger.warn("walletFactory.validateChainEnvironment.autoConverted", {
+                    chain,
+                    convertedTo: testnetEquivalent,
+                    environment,
+                    message: `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Automatically converted to "${testnetEquivalent}".`,
+                });
+                return testnetEquivalent as unknown as C;
+            }
             walletsLogger.warn("walletFactory.validateChainEnvironment.mismatch", {
                 chain,
                 environment,
-                message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. Please use a testnet chain instead.`,
+                message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
             });
         }
+
+        return chain;
     }
 }

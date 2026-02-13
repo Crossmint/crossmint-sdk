@@ -157,3 +157,25 @@ export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWal
 export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
     return (PRODUCTION_AA_CHAINS as readonly string[]).includes(chain);
 }
+
+const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWalletTestnet>> = {
+    [Blockchain.ABSTRACT]: Blockchain.ABSTRACT_TESTNET,
+    [Blockchain.APECHAIN]: Blockchain.CURTIS,
+    [Blockchain.ARBITRUM]: Blockchain.ARBITRUM_SEPOLIA,
+    [Blockchain.BASE]: Blockchain.BASE_SEPOLIA,
+    [Blockchain.FLOW]: Blockchain.FLOW_TESTNET,
+    [Blockchain.MANTLE]: Blockchain.MANTLE_SEPOLIA,
+    [Blockchain.MODE]: Blockchain.MODE_SEPOLIA,
+    [Blockchain.OPTIMISM]: Blockchain.OPTIMISM_SEPOLIA,
+    [Blockchain.PLUME]: Blockchain.PLUME_TESTNET,
+    [Blockchain.POLYGON]: Blockchain.POLYGON_AMOY,
+    [Blockchain.SCROLL]: Blockchain.SCROLL_SEPOLIA,
+    [Blockchain.SEI_PACIFIC_1]: Blockchain.SEI_ATLANTIC_2_TESTNET,
+    [Blockchain.STORY]: Blockchain.STORY_TESTNET,
+    [Blockchain.WORLDCHAIN]: Blockchain.WORLD_CHAIN_SEPOLIA,
+    [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
+};
+
+export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {
+    return MAINNET_TO_TESTNET_MAP[chain];
+}
