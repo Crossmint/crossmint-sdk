@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
 import { WalletFactory } from "./wallet-factory";
-import { WalletCreationError } from "../utils/errors";
+import { InvalidEnvironmentError, WalletCreationError } from "../utils/errors";
 import { walletsLogger } from "../logger";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor } from "./types";
@@ -690,7 +690,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should log warning when using testnet chain in production environment", async () => {
+        it("should throw error when using testnet chain in production environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -701,13 +701,10 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
-                chain: "base-sepolia",
-                environment: APIKeyEnvironmentPrefix.PRODUCTION,
-                message:
-                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
-            });
+            await expect(walletFactory.getOrCreateWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
+            await expect(walletFactory.getOrCreateWallet(testnetArgs)).rejects.toThrow(
+                'Chain "base-sepolia" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.'
+            );
         });
 
         it("should allow solana chain in production environment (no validation)", async () => {
@@ -807,7 +804,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should log warning when using mainnet chain in staging environment", async () => {
+        it("should auto-convert mainnet chain to testnet equivalent in staging environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"base"> = {
@@ -819,11 +816,32 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "base",
+                convertedTo: "base-sepolia",
                 environment: APIKeyEnvironmentPrefix.STAGING,
                 message:
-                    'Chain "base" is a mainnet chain and should not be used in staging environment. Please use a testnet chain instead.',
+                    'Chain "base" is a mainnet chain and cannot be used in staging environment. Automatically converted to "base-sepolia".',
+            });
+        });
+
+        it("should warn for mainnet chain with no testnet equivalent in staging", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const mainnetArgs: WalletArgsFor<"arbitrumnova"> = {
+                chain: "arbitrumnova",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "arbitrumnova",
+                environment: APIKeyEnvironmentPrefix.STAGING,
+                message:
+                    'Chain "arbitrumnova" is a mainnet chain and should not be used in staging environment. No testnet equivalent is available. Please use a testnet chain instead.',
             });
         });
     });
@@ -858,7 +876,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should log warning when using mainnet chain in development environment", async () => {
+        it("should auto-convert mainnet chain to testnet equivalent in development environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"polygon"> = {
@@ -870,11 +888,12 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "polygon",
+                convertedTo: "polygon-amoy",
                 environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
                 message:
-                    'Chain "polygon" is a mainnet chain and should not be used in development environment. Please use a testnet chain instead.',
+                    'Chain "polygon" is a mainnet chain and cannot be used in development environment. Automatically converted to "polygon-amoy".',
             });
         });
     });
@@ -891,7 +910,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should log warning when using testnet chain in production with getWallet", async () => {
+        it("should throw error when using testnet chain in production with getWallet", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -902,13 +921,9 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getWallet("wallet-locator", testnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
-                chain: "base-sepolia",
-                environment: APIKeyEnvironmentPrefix.PRODUCTION,
-                message:
-                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
-            });
+            await expect(walletFactory.getWallet("wallet-locator", testnetArgs)).rejects.toThrow(
+                InvalidEnvironmentError
+            );
         });
 
         it("should allow mainnet chain in production with getWallet without warning", async () => {
@@ -942,7 +957,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should log warning when using testnet chain in production with createWallet", async () => {
+        it("should throw error when using testnet chain in production with createWallet", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -953,13 +968,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.createWallet(testnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
-                chain: "base-sepolia",
-                environment: APIKeyEnvironmentPrefix.PRODUCTION,
-                message:
-                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
-            });
+            await expect(walletFactory.createWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
         });
     });
 });
