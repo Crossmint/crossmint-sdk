@@ -10,7 +10,7 @@ import { isAddress } from "viem";
 /* ============================================================ */
 export function EVMTransferFunds() {
     const { wallet } = useWallet();
-    const [token, setToken] = useState<"eth" | "usdc" | null>(null);
+    const [token, setToken] = useState<"eth" | "usdc" | "usdxm" | null>(null);
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -66,10 +66,10 @@ export function EVMTransferFunds() {
                                     type="radio"
                                     name="usdc"
                                     className="h-4 w-4"
-                                    checked={token === "usdc"}
-                                    onChange={() => setToken("usdc")}
+                                    checked={token === "usdxm"}
+                                    onChange={() => setToken("usdxm")}
                                 />
-                                <span>USDC</span>
+                                <span>USDXM</span>
                             </label>
                         </div>
                     </div>
@@ -129,7 +129,7 @@ export function EVMTransferFunds() {
 /* ============================================================ */
 export function SolanaTransferFunds() {
     const { wallet } = useWallet();
-    const [token, setToken] = useState<"sol" | "usdc" | null>("sol");
+    const [token, setToken] = useState<"sol" | "usdc" | "usdxm" | null>("sol");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -184,10 +184,10 @@ export function SolanaTransferFunds() {
                                     type="radio"
                                     name="token"
                                     className="h-4 w-4"
-                                    checked={token === "usdc"}
-                                    onChange={() => setToken("usdc")}
+                                    checked={token === "usdxm"}
+                                    onChange={() => setToken("usdxm")}
                                 />
-                                <span>USDC</span>
+                                <span>USDXM</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -326,6 +326,7 @@ export function StellarTransferFunds() {
                         <label className="text-sm font-medium">Amount</label>
                         <input
                             type="number"
+                            data-testid="amount"
                             className="w-full px-3 py-2 border rounded-md text-sm"
                             placeholder="0.00"
                             onChange={(e) => setAmount(Number(e.target.value))}
@@ -336,6 +337,7 @@ export function StellarTransferFunds() {
                     <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
+                        data-testid="recipient-wallet-address"
                         className="w-full px-3 py-2 border rounded-md text-sm"
                         placeholder="Enter Stellar address (G...)"
                         onChange={(e) => setRecipient(e.target.value)}
@@ -349,6 +351,7 @@ export function StellarTransferFunds() {
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-accent text-white hover:bg-accent/80"
                     }`}
+                    data-testid="transfer-button"
                     onClick={handleOnTransfer}
                     disabled={isLoading}
                 >

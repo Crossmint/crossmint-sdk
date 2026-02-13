@@ -79,11 +79,14 @@ export function WalletBalance() {
             ) : (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
-                        <p className="font-medium">USDC</p>
+                        <Image src="/usdc.svg" alt="USDXM" width={24} height={24} />
+                        <p className="font-medium">USDXM</p>
                     </div>
-                    <div className="text-gray-700 font-medium" data-testid="usdc-balance">
-                        $ {formatBalance(balances?.usdc.amount ?? "0")}
+                    <div className="text-gray-700 font-medium" data-testid="usdxm-balance">
+                        ${" "}
+                        {formatBalance(
+                            balances?.tokens?.find((t) => t.symbol?.toLowerCase() === "usdxm")?.amount ?? "0"
+                        )}
                     </div>
                 </div>
             )}
