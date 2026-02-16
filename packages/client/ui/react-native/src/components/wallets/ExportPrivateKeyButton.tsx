@@ -8,10 +8,15 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { WebViewParent, RNWebView } from "@crossmint/client-sdk-rn-window";
 
-interface ExportPrivateKeyButtonProps {
+export interface ExportPrivateKeyButtonProps {
+    /** Optional appearance configuration for styling the export button. */
     appearance?: UIConfig;
 }
 
+/**
+ * Renders a button that allows the user to export their wallet's private key.
+ * Only works with email and phone signers. Will not render for passkey or external wallet signers.
+ */
 export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();

@@ -8,7 +8,8 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { isExportableSigner } from "@crossmint/wallets-sdk";
 import { IFrameWindow, SignersWindowTransport } from "@crossmint/client-sdk-window";
 
-interface ExportPrivateKeyButtonProps {
+export interface ExportPrivateKeyButtonProps {
+    /** Optional appearance configuration for styling the export button. */
     appearance?: UIConfig;
 }
 

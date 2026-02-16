@@ -1,4 +1,5 @@
 import { vi, type MockedFunction } from "vitest";
+import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
@@ -6,6 +7,7 @@ import type { Signer } from "../../signers/types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
+    environment: APIKeyEnvironmentPrefix;
     createTransaction: MockedFunction<ApiClient["createTransaction"]>;
     createSignature: MockedFunction<ApiClient["createSignature"]>;
     getTransaction: MockedFunction<ApiClient["getTransaction"]>;
@@ -74,6 +76,7 @@ export const createMockWallet = <C extends Chain>(
 
 export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): MockedApiClient => ({
     isServerSide: false,
+    environment: APIKeyEnvironmentPrefix.STAGING,
     createTransaction: vi.fn(),
     createSignature: vi.fn(),
     getTransaction: vi.fn(),

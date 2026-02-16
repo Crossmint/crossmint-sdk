@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
 import { WalletFactory } from "./wallet-factory";
 import { WalletCreationError } from "../utils/errors";
+import { walletsLogger } from "../logger";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor } from "./types";
+import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 
 type MockedApiClient = {
     isServerSide: boolean;
     crossmint: { projectId: string };
+    environment: string;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     createWallet: MockedFunction<ApiClient["createWallet"]>;
 };
@@ -77,6 +80,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
         mockApiClient = {
             isServerSide: false,
             crossmint: { projectId: "test-project" },
+            environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
         };
@@ -293,6 +297,7 @@ describe("WalletFactory - EVM Delegated Signers Validation", () => {
         mockApiClient = {
             isServerSide: false,
             crossmint: { projectId: "test-project" },
+            environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
         };
@@ -492,6 +497,7 @@ describe("WalletFactory - Stellar Delegated Signers Validation", () => {
         mockApiClient = {
             isServerSide: false,
             crossmint: { projectId: "test-project" },
+            environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
         };
@@ -621,6 +627,339 @@ describe("WalletFactory - Stellar Delegated Signers Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(argsWithDifferentOrder)).resolves.toBeDefined();
+        });
+    });
+});
+
+describe("WalletFactory - Chain Environment Validation", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    const mockEvmWallet = {
+        chainType: "evm" as const,
+        type: "smart" as const,
+        address: "0x1234567890123456789012345678901234567890",
+        owner: "test-owner",
+        config: {
+            adminSigner: {
+                type: "external-wallet" as const,
+                address: "0xAdminSignerAddress123456789012345678901234",
+                locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+            },
+        },
+        createdAt: Date.now(),
+    } as GetWalletSuccessResponse;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        warnSpy = vi.spyOn(walletsLogger, "warn");
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("Production Environment", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: false,
+                crossmint: { projectId: "test-project" },
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should allow mainnet chain in production environment without warning", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const mainnetArgs: WalletArgsFor<"base"> = {
+                chain: "base",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+
+        it("should log warning when using testnet chain in production environment", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const testnetArgs: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "base-sepolia",
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                message:
+                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
+            });
+        });
+
+        it("should allow solana chain in production environment (no validation)", async () => {
+            const solanaWallet = {
+                chainType: "solana" as const,
+                type: "smart" as const,
+                address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "AdminSignerAddress123",
+                        locator: "external-wallet:AdminSignerAddress123",
+                    },
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(solanaWallet);
+
+            const solanaArgs: WalletArgsFor<"solana"> = {
+                chain: "solana",
+                signer: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(solanaArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+
+        it("should allow stellar chain in production environment (no validation)", async () => {
+            const stellarWallet = {
+                chainType: "stellar" as const,
+                type: "smart" as const,
+                address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
+                        locator: "external-wallet:GADMINSGNERADDRESS123456789012345678901234567890123456",
+                    },
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(stellarWallet);
+
+            const stellarArgs: WalletArgsFor<"stellar"> = {
+                chain: "stellar",
+                signer: {
+                    type: "external-wallet",
+                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(stellarArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+    });
+
+    describe("Staging Environment", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: false,
+                crossmint: { projectId: "test-project" },
+                environment: APIKeyEnvironmentPrefix.STAGING,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should allow testnet chain in staging environment without warning", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const testnetArgs: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+
+        it("should log warning when using mainnet chain in staging environment", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const mainnetArgs: WalletArgsFor<"base"> = {
+                chain: "base",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "base",
+                environment: APIKeyEnvironmentPrefix.STAGING,
+                message:
+                    'Chain "base" is a mainnet chain and should not be used in staging environment. Please use a testnet chain instead.',
+            });
+        });
+    });
+
+    describe("Development Environment", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: false,
+                crossmint: { projectId: "test-project" },
+                environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should allow testnet chain in development environment without warning", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const testnetArgs: WalletArgsFor<"polygon-amoy"> = {
+                chain: "polygon-amoy",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+
+        it("should log warning when using mainnet chain in development environment", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const mainnetArgs: WalletArgsFor<"polygon"> = {
+                chain: "polygon",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "polygon",
+                environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
+                message:
+                    'Chain "polygon" is a mainnet chain and should not be used in development environment. Please use a testnet chain instead.',
+            });
+        });
+    });
+
+    describe("Server-side getWallet", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: true,
+                crossmint: { projectId: "test-project" },
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should log warning when using testnet chain in production with getWallet", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const testnetArgs: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getWallet("wallet-locator", testnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "base-sepolia",
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                message:
+                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
+            });
+        });
+
+        it("should allow mainnet chain in production with getWallet without warning", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
+
+            const mainnetArgs: WalletArgsFor<"base"> = {
+                chain: "base",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.getWallet("wallet-locator", mainnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalledWith(
+                "walletFactory.validateChainEnvironment.mismatch",
+                expect.anything()
+            );
+        });
+    });
+
+    describe("createWallet", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: false,
+                crossmint: { projectId: "test-project" },
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should log warning when using testnet chain in production with createWallet", async () => {
+            mockApiClient.createWallet.mockResolvedValue(mockEvmWallet);
+
+            const testnetArgs: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.createWallet(testnetArgs)).resolves.toBeDefined();
+            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+                chain: "base-sepolia",
+                environment: APIKeyEnvironmentPrefix.PRODUCTION,
+                message:
+                    'Chain "base-sepolia" is a testnet chain and should not be used in production environment. Please use a mainnet chain instead.',
+            });
         });
     });
 });

@@ -21,15 +21,21 @@ import { useLogger } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
 
 export interface CrossmintWalletProviderProps {
-    children: ReactNode;
+    /** Wallet configuration for automatic creation on user login. Defines the chain and signer type for the wallet. */
     createOnLogin?: CreateOnLogin;
+    /** Optional appearance configuration for styling built-in UI components. */
     appearance?: UIConfig;
     /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
     headlessSigningFlow?: boolean;
+    /** Optional lifecycle callbacks invoked during wallet creation and transaction signing. */
     callbacks?: {
+        /** Called when a wallet creation flow begins. */
         onWalletCreationStart?: () => Promise<void>;
+        /** Called when a transaction signing flow begins. */
         onTransactionStart?: () => Promise<void>;
     };
+    /** @internal */
+    children: ReactNode;
 }
 
 function CrossmintWalletProviderInternal({
@@ -253,6 +259,10 @@ function CrossmintWalletProviderInternal({
     );
 }
 
+/**
+ * Provider for wallet creation and management. Must be nested inside {@link CrossmintProvider}.
+ * Handles secure communication with the Crossmint signer via a hidden WebView.
+ */
 export function CrossmintWalletProvider(props: CrossmintWalletProviderProps) {
     return <CrossmintWalletProviderInternal {...props} />;
 }
