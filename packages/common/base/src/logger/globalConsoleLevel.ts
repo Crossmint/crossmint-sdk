@@ -1,6 +1,5 @@
+import { LOG_LEVEL_HIERARCHY } from "./types";
 import type { ConsoleLogLevel, LogLevel } from "./types";
-
-const LOG_LEVEL_HIERARCHY: LogLevel[] = ["debug", "info", "warn", "error"];
 
 let _globalConsoleLogLevel: ConsoleLogLevel = "debug";
 
@@ -39,6 +38,6 @@ export const logToConsole = {
         if (shouldLogToConsole("error")) console.error(...args);
     },
     log(...args: unknown[]): void {
-        if (shouldLogToConsole("debug")) console.log(...args);
+        if (shouldLogToConsole("info")) console.log(...args);
     },
 };

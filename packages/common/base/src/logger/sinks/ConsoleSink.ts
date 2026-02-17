@@ -1,11 +1,6 @@
+import { LOG_LEVEL_HIERARCHY } from "../types";
 import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "../types";
 import { setGlobalConsoleLogLevel } from "../globalConsoleLevel";
-
-/**
- * Log level hierarchy for filtering
- * Lower index = less severe, higher index = more severe
- */
-const LOG_LEVEL_HIERARCHY: LogLevel[] = ["debug", "info", "warn", "error"];
 
 /**
  * Console sink that writes logs to the console
