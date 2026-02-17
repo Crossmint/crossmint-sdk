@@ -69,14 +69,14 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 }
 
                 let recipientAddress: string;
-                if (testConfig.chain === "evm" || walletAddress.startsWith("0x")) {
+                if (testConfig.chain === "evm") {
                     recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
                 } else if (testConfig.chain === "solana") {
                     recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.solana;
+                } else if (testConfig.chain === "stellar") {
+                    recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.stellar;
                 } else {
-                    recipientAddress = walletAddress.startsWith("0x")
-                        ? TEST_RECIPIENT_WALLET_ADDRESSES.evm
-                        : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
+                    throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
                 await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
@@ -105,7 +105,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     expectAuth(recipientAddress).toMatch(/^[GC][A-Z0-9]{55}$/);
                     expectAuth(recipientAddress.length).toBe(56);
                 } else {
-                    recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
+                    throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
                 const transferAmount = "10";
@@ -175,6 +175,8 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                     expectAuth(balances.nativeToken.symbol.toLowerCase()).toBe("sol");
                 } else if (testConfig.chain === "stellar") {
                     expectAuth(balances.nativeToken.symbol.toLowerCase()).toBe("xlm");
+                } else {
+                    throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
                 const usdxmBalance = authenticatedPage.locator('[data-testid="usdxm-balance"]').first();
