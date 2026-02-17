@@ -75,10 +75,10 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
 
 // Cache for email addresses per signer type to ensure consistency within a test run
 const emailCache = new Map<SignerType, string>();
-// Cache for random suffix per signer type to ensure alias consistency
-const randomSuffixCache = new Map<SignerType, number>();
+// Cache for timestamp suffix per signer type to ensure alias consistency
+const timestampSuffixCache = new Map<SignerType, number>();
 
-// Generate email address for a specific signer type with random suffix to prevent blocking
+// Generate email address for a specific signer type with timestamp-based suffix to prevent blocking
 // The email is cached per signer type to ensure consistency within a test run
 export function getEmailForSigner(signerType: SignerType): string {
     // Return cached email if it exists
@@ -88,11 +88,10 @@ export function getEmailForSigner(signerType: SignerType): string {
     }
 
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
-    // Generate a random number between 0 and 999999 to create unique email addresses
-    // Store the suffix first so it can be reused for Stellar aliases
-    const randomSuffix = Math.floor(Math.random() * 1000000);
-    randomSuffixCache.set(signerType, randomSuffix);
-    const alias = `${baseAlias}${randomSuffix}`;
+    // Use timestamp for unique email addresses (reused for Stellar alias)
+    const timestampSuffix = Date.now();
+    timestampSuffixCache.set(signerType, timestampSuffix);
+    const alias = `${baseAlias}${timestampSuffix}`;
     const email = `test-${alias}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 
     emailCache.set(signerType, email);
@@ -101,15 +100,14 @@ export function getEmailForSigner(signerType: SignerType): string {
     return email;
 }
 
-// Generate a unique alias for Stellar wallets based on the email's random suffix
+// Generate a unique alias for Stellar wallets based on the email's timestamp suffix
 // This ensures consistency - same email = same alias
 export function getStellarAlias(signerType: SignerType): string {
-    // Get the random suffix that was used for the email
-    const randomSuffix = randomSuffixCache.get(signerType) ?? Math.floor(Math.random() * 1000000);
-    if (!randomSuffixCache.has(signerType)) {
-        randomSuffixCache.set(signerType, randomSuffix);
+    const timestampSuffix = timestampSuffixCache.get(signerType) ?? Date.now();
+    if (!timestampSuffixCache.has(signerType)) {
+        timestampSuffixCache.set(signerType, timestampSuffix);
     }
-    return `stellartestingwallet${randomSuffix}`;
+    return `stellartestingwallet${timestampSuffix}`;
 }
 
 // Build URL with query parameters for testing
