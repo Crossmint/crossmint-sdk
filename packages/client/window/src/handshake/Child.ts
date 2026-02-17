@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { logToConsole } from "@crossmint/common-sdk-base";
 
 import {
     DEFAULT_HANDSHAKE_OPTIONS,
@@ -39,7 +40,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
             return;
         }
 
-        console.info(`[HandshakeChild] Waiting for handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
+        logToConsole.info(`[HandshakeChild] Waiting for handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
 
         const { requestVerificationId } = await this._onAction({
             event: "handshakeRequest",
@@ -59,7 +60,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
         });
 
         this.isConnected = true;
-        console.info("[HandshakeChild] Handshake completed");
+        logToConsole.info("[HandshakeChild] Handshake completed");
     }
 
     // Wrap EventEmitter methods, adding handshake event types

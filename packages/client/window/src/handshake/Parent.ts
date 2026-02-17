@@ -1,5 +1,6 @@
 import { generateRandomString } from "@/utils/generateRandomString";
 import type { z } from "zod";
+import { logToConsole } from "@crossmint/common-sdk-base";
 
 import {
     DEFAULT_HANDSHAKE_OPTIONS,
@@ -62,7 +63,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
             return;
         }
 
-        console.info(`[HandshakeParent] Starting handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
+        logToConsole.info(`[HandshakeParent] Starting handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
         const requestVerificationId = generateRandomString();
 
         await this._sendAction({
@@ -81,7 +82,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         });
 
         this.isConnected = true;
-        console.info("[HandshakeParent] Handshake completed");
+        logToConsole.info("[HandshakeParent] Handshake completed");
     }
 
     // Wrap EventEmitter methods, adding handshake event types

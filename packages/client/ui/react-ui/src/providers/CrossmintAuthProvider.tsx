@@ -1,6 +1,6 @@
 import type React from "react";
 import { type MouseEvent, useEffect, useMemo, useState, useCallback, createContext, useRef } from "react";
-import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { validateApiKeyAndGetCrossmintBaseUrl, logToConsole } from "@crossmint/common-sdk-base";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import {
     type AuthStatus,
@@ -84,7 +84,7 @@ function CrossmintAuthProviderContent({
     const login = useCallback(
         (defaultEmail?: string | MouseEvent) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logToConsole.log("User already logged in");
                 return;
             }
 
@@ -115,7 +115,7 @@ function CrossmintAuthProviderContent({
     const experimental_loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logToConsole.log("User already logged in");
                 return;
             }
             await loginWithOAuthRef.current?.(provider);
@@ -194,7 +194,7 @@ function AuthWrapper({
     const loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logToConsole.log("User already logged in");
                 return;
             }
             await startOAuthLogin(provider);

@@ -10,7 +10,7 @@ import {
     REFRESH_TOKEN_PREFIX,
     SESSION_PREFIX,
 } from "@crossmint/common-sdk-auth";
-import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { type Crossmint, type CrossmintApiClient, logToConsole } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
@@ -50,7 +50,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                     authClient
                         .handleRefreshAuthMaterial()
                         .catch((error) => {
-                            console.debug("Initial auth refresh failed:", error);
+                            logToConsole.debug("Initial auth refresh failed:", error);
                         })
                         .finally(() => {
                             // Reset the flag so future legitimate refreshes can happen
@@ -115,7 +115,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 await this.logoutFromDefaultRoute(oldRefreshToken);
             }
         } catch (error) {
-            console.error(error);
+            logToConsole.error(error);
         }
     }
 
@@ -147,7 +147,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.scheduleNextRefresh(authMaterial.jwt);
             return authMaterial;
         } catch (error) {
-            console.error(error);
+            logToConsole.error(error);
             await this.logout();
             return null;
         } finally {
@@ -176,7 +176,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             const data = await response.json();
             return data.oauthUrl;
         } catch (error) {
-            console.error(
+            logToConsole.error(
                 `Failed to get OAuth URL for provider ${provider}: ${error instanceof Error ? error.message : "Unknown error"}`
             );
 
