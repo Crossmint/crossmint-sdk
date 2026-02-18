@@ -52,7 +52,8 @@ jobs:
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
               run: |
                   mkdir -p test-results
-                  pnpm exec playwright test --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
+                  # Run e2e.spec.ts (regression tests) only; exclude smoke project
+                  pnpm exec playwright test e2e/e2e.spec.ts --project=chromium --project=firefox --project=webkit --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
 
             - name: Generate test report
               if: always()
