@@ -1,5 +1,15 @@
 import type React from "react";
-import { type MouseEvent, useEffect, useMemo, useState, useCallback, createContext, useRef, lazy, Suspense } from "react";
+import {
+    type MouseEvent,
+    useEffect,
+    useMemo,
+    useState,
+    useCallback,
+    createContext,
+    useRef,
+    lazy,
+    Suspense,
+} from "react";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import {
