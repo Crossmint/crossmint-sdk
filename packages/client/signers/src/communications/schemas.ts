@@ -23,9 +23,6 @@ const ReadySignerResponseSchema = z.object({
     signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
     publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
 });
-const NewDeviceSignerResponseSchema = z.object({
-    signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
-});
 
 const AuthenticatedEventRequest = z.object({
     authData: z
@@ -58,7 +55,7 @@ export const StartOnboardingPayloadSchema = {
             })
             .describe("Data needed to create a new signer"),
     }),
-    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
+    response: ResultResponse(ReadySignerResponseSchema),
 };
 
 export const CompleteOnboardingPayloadSchema = {
@@ -89,7 +86,7 @@ export const GetPublicKeyPayloadSchema = {
 
 export const GetStatusPayloadSchema = {
     request: AuthenticatedEventRequest,
-    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
+    response: ResultResponse(ReadySignerResponseSchema),
 };
 
 export const SignPayloadSchema = {

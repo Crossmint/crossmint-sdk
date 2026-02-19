@@ -2,17 +2,10 @@ import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { SolanaDeviceSigner, type DeviceSignerStorage } from "../device-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
-    constructor(
-        config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
-        walletAddress: string,
-        deviceSignerEnabled: boolean,
-        deviceSignerStorage?: DeviceSignerStorage
-    ) {
-        super(config, deviceSignerStorage);
-        this.deviceSigner = new SolanaDeviceSigner(walletAddress, this.deviceSignerStorage, deviceSignerEnabled);
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+        super(config);
     }
 
     async signMessage() {
@@ -20,9 +13,6 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        if (this.deviceSigner?.hasDeviceSigner()) {
-            return await this.deviceSigner.signTransaction(transaction);
-        }
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
