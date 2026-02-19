@@ -9,7 +9,6 @@ import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
-import type { Chain } from "../../chains/chains";
 import { walletsLogger } from "../../logger";
 
 export abstract class NonCustodialSigner implements Signer {
