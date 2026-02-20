@@ -50,19 +50,20 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+
               run: |
                   mkdir -p test-results
                   # Run e2e.spec.ts (regression tests) only; exclude smoke project
-                  pnpm exec playwright test e2e/e2e.spec.ts --project=chromium --project=firefox --project=webkit --reporter=json,outputFile=test-results/e2e-results.json --reporter=list || true
+                  pnpm exec playwright test e2e/e2e.spec.ts --project=chromium --project=firefox --project=webkit || true
 
             - name: Generate test report
               if: always()
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
-                  if [ -f test-results/e2e-results.json ]; then
-                      echo "Found test results at test-results/e2e-results.json"
-                      node scripts/generate-test-report.js test-results/e2e-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
+                  if [ -f test-results/playwright-results.json ]; then
+                      echo "Found test results at test-results/playwright-results.json"
+                      node scripts/generate-test-report.js test-results/playwright-results.json > test-results/report.md || echo "# E2E Regression Test Results\n\nFailed to generate report from JSON.\n" > test-results/report.md
                   else
                       echo "Test results file not found, creating placeholder report..."
                       printf "# E2E Regression Test Results\n\nTest results file not found.\n" > test-results/report.md
@@ -88,7 +89,7 @@ jobs:
                       process.exit(1);
                   }
                   
-                  const resultsPath = path.join(process.cwd(), 'test-results', 'e2e-results.json');
+                  const resultsPath = path.join(process.cwd(), 'test-results', 'playwright-results.json');
                   
                   let totalTests = 0;
                   let passedTests = 0;
