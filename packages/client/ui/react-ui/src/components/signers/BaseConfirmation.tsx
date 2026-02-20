@@ -3,6 +3,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import styled from "@emotion/styled";
 import { Spinner } from "@/components/common/Spinner";
 import { theme } from "@/styles";
+import { reactUiLogger } from "@/logger";
 
 interface BaseConfirmationProps {
     contactInfo: string;
@@ -111,7 +112,7 @@ export function BaseConfirmation({ contactInfo, icon, onConfirm, onCancel, appea
         try {
             await onConfirm(contactInfo);
         } catch (error) {
-            console.error(`Error sending authorization code:`, error);
+            reactUiLogger.error("Error sending authorization code:", error);
             setError("Failed to send code. Please try again.");
         } finally {
             setIsLoading(false);

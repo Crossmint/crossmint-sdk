@@ -12,6 +12,7 @@ import { SuiWalletConnectors } from "@dynamic-labs/sui";
 import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
 import { ChainNotSupportedError, dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
+import { reactUiLogger } from "@/logger";
 
 export function CryptoWalletConnectionHandler(props: {
     iframeClient: EmbeddedCheckoutV3IFrameEmitter | null;
@@ -26,28 +27,28 @@ export function CryptoWalletConnectionHandler(props: {
                 walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors, SuiWalletConnectors],
                 events: {
                     onAuthFlowCancel() {
-                        console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
+                        reactUiLogger.info("[CryptoWalletConnectionHandler] onAuthFlowCancel");
                         iframeClient?.send("crypto:connect-wallet.failed", {
                             error: "Wallet connection was cancelled",
                         });
                     },
                     onAuthFlowClose() {
-                        console.log("[CryptoWalletConnectionHandler] onAuthFlowClose");
+                        reactUiLogger.info("[CryptoWalletConnectionHandler] onAuthFlowClose");
                     },
                     onAuthFailure(data, reason) {
-                        console.error("[CryptoWalletConnectionHandler] onAuthFailure", data, reason);
+                        reactUiLogger.error("[CryptoWalletConnectionHandler] onAuthFailure", data, reason);
                     },
                     onAuthSuccess(data) {
-                        console.log("[CryptoWalletConnectionHandler] onAuthSuccess", data);
+                        reactUiLogger.info("[CryptoWalletConnectionHandler] onAuthSuccess", data);
                     },
                 },
                 handlers: {
                     handleConnectedWallet: async (wallet) => {
-                        console.log("[CryptoWalletConnectionHandler] handleConnectedWallet", wallet);
+                        reactUiLogger.info("[CryptoWalletConnectionHandler] handleConnectedWallet", wallet);
 
                         const address = wallet.address;
                         if (!address) {
-                            console.error(
+                            reactUiLogger.error(
                                 "[CryptoWalletConnectionHandler] Failed to connect wallet: Could not retrieve wallet address"
                             );
                             iframeClient?.send("crypto:connect-wallet.failed", {
@@ -73,7 +74,7 @@ export function CryptoWalletConnectionHandler(props: {
                                     });
                                     chain = defaultCrossmintChain;
                                 } catch (switchNetworkError) {
-                                    console.error(
+                                    reactUiLogger.error(
                                         `[CryptoWalletConnectionHandler] Failed to switch to default chain ${defaultChainId}`,
                                         switchNetworkError
                                     );
@@ -128,7 +129,7 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
             "crypto:send-transaction",
             async ({ chain, serializedTransaction }) => {
                 if (primaryWallet == null) {
-                    console.error("[CryptoWalletConnectionHandler] signTransaction: primaryWallet is missing");
+                    reactUiLogger.error("[CryptoWalletConnectionHandler] signTransaction: primaryWallet is missing");
                     iframeClient.send("crypto:send-transaction:failed", {
                         error: "primaryWallet is missing",
                     });
@@ -146,7 +147,7 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
 
         const signMessageListener = iframeClient.on("crypto:sign-message", async ({ message }) => {
             if (primaryWallet == null) {
-                console.error("[CryptoWalletConnectionHandler] signMessage: primaryWallet is missing");
+                reactUiLogger.error("[CryptoWalletConnectionHandler] signMessage: primaryWallet is missing");
                 iframeClient.send("crypto:sign-message:failed", {
                     error: "primaryWallet is missing",
                 });
@@ -162,7 +163,7 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
                     signature,
                 });
             } catch (error) {
-                console.error("[CryptoWalletConnectionHandler] failed to sign message", error);
+                reactUiLogger.error("[CryptoWalletConnectionHandler] failed to sign message", error);
                 iframeClient.send("crypto:sign-message:failed", { error: (error as Error).message });
             }
         });

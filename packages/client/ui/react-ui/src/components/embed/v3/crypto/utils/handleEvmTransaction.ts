@@ -7,6 +7,7 @@ import {
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import type { Wallet } from "@dynamic-labs/sdk-react-core";
 import { type TransactionSerializableEIP1559, parseTransaction } from "viem";
+import { reactUiLogger } from "@/logger";
 
 export async function handleEvmTransaction({
     primaryWallet,
@@ -25,7 +26,7 @@ export async function handleEvmTransaction({
     try {
         await connector.switchNetwork({ networkChainId: chainId });
     } catch (error) {
-        console.error(`[CryptoWalletConnectionHandler] failed to switch network to ${chainId}`, error);
+        reactUiLogger.error(`[CryptoWalletConnectionHandler] failed to switch network to ${chainId}`, error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });
@@ -43,7 +44,7 @@ export async function handleEvmTransaction({
             throw new Error(`primaryWallet.getWalletClient(${chainId}) returned undefined`);
         }
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to get wallet client", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to get wallet client", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });
@@ -54,7 +55,7 @@ export async function handleEvmTransaction({
     try {
         parsedTransaction = parseTransaction(serializedTransaction as `0x${string}`) as TransactionSerializableEIP1559;
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to parse transaction", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to parse transaction", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });
@@ -63,12 +64,12 @@ export async function handleEvmTransaction({
 
     try {
         const txId = await walletClient.sendTransaction(parsedTransaction);
-        console.log("[CryptoWalletConnectionHandler] txId", txId);
+        reactUiLogger.info("[CryptoWalletConnectionHandler] txId", txId);
         iframeClient.send("crypto:send-transaction:success", {
             txId,
         });
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to send transaction", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to send transaction", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });

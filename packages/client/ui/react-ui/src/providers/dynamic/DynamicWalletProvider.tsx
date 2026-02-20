@@ -16,6 +16,7 @@ import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 import { useCrossmintAuth } from "@/hooks";
+import { reactUiLogger } from "@/logger";
 
 type DynamicWalletProviderProps = {
     children: ReactNode;
@@ -101,7 +102,7 @@ function DynamicWalletStateProvider({
                     throw new Error("Unsupported wallet type");
                 }
             } catch (error) {
-                console.error("Failed to get admin signer", error);
+                reactUiLogger.error("Failed to get admin signer", error);
                 throw new Error("Failed to get admin signer");
             }
         }
@@ -157,19 +158,19 @@ export function DynamicWalletProvider({
                 cssOverrides,
                 events: {
                     onAuthFailure(data, reason) {
-                        console.error("[DynamicWalletProvider] onAuthFailure", data, reason);
+                        reactUiLogger.error("[DynamicWalletProvider] onAuthFailure", data, reason);
                     },
                 },
                 handlers: {
                     handleConnectedWallet: async (args) => {
                         if (!crossmintAuth) {
-                            console.error("[DynamicWalletProvider] crossmintAuth is not available");
+                            reactUiLogger.error("[DynamicWalletProvider] crossmintAuth is not available");
                             return false;
                         }
 
                         const address = args.address;
                         if (address == null) {
-                            console.error("[DynamicWalletProvider] handleConnectedWallet: address is missing");
+                            reactUiLogger.error("[DynamicWalletProvider] handleConnectedWallet: address is missing");
                             return false;
                         }
 
@@ -202,7 +203,7 @@ export function DynamicWalletProvider({
                             await crossmintAuth.handleRefreshAuthMaterial(authResponse.oneTimeSecret);
                             return true;
                         } catch (error) {
-                            console.error("[DynamicWalletProvider] Error handling wallet connection:", error);
+                            reactUiLogger.error("[DynamicWalletProvider] Error handling wallet connection:", error);
                             return false;
                         }
                     },
