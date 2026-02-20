@@ -10,7 +10,7 @@ export const authLogger = new SdkLogger();
 
 export function initAuthLogger(apiKey: string): void {
     const validationResult = validateAPIKey(apiKey);
-    if (!validationResult.isValid) {
+    if (!validationResult?.isValid) {
         return;
     }
     const { environment, projectId } = validationResult;
