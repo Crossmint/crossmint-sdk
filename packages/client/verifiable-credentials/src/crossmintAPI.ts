@@ -1,6 +1,7 @@
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
+import { credentialsLogger, initCredentialsLogger } from "./logger";
 import { type ChainRPCConfig, type VCSDKConfig, configManager } from "./verifiableCredentialsSDK";
 
 class CrossmintAPI {
@@ -69,7 +70,7 @@ class CrossmintAPI {
         } else if (typeof global !== "undefined") {
             return APIKeyUsageOrigin.SERVER;
         } else {
-            console.error("Unknown environment, cannot determine API key usage origin, be careful!");
+            credentialsLogger.error("Unknown environment, cannot determine API key usage origin, be careful!");
             return null;
         }
     }
@@ -92,16 +93,17 @@ class CrossmintAPI {
                 usageOrigin: usageOrigin,
             });
             if (!validationResult.isValid) {
-                console.warn(`API key invalid: ${validationResult.message}`);
+                credentialsLogger.warn(`API key invalid: ${validationResult.message}`);
             }
         }
 
         if (config.environment !== "prod" && config.environment !== "staging") {
-            console.warn(
+            credentialsLogger.warn(
                 `Using custom environment: ${config.environment}, you may want to use 'staging' or 'prod' instead`
             );
         }
 
+        initCredentialsLogger(apiKey);
         configManager.init(config);
     }
 }
