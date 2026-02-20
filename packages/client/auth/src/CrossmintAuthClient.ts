@@ -11,7 +11,7 @@ import {
     SESSION_PREFIX,
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { authLogger } from "./logger";
+import { authLogger, initAuthLogger } from "./logger";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
@@ -40,6 +40,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
+        initAuthLogger(crossmint.apiKey);
         const authClient = new CrossmintAuthClient(crossmint, CrossmintAuth.defaultApiClient(crossmint), config);
         // In case an instance is created on the server, we can't refresh as this stores cookies
         if (typeof window !== "undefined") {
