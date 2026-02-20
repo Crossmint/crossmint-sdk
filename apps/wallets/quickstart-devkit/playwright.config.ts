@@ -11,7 +11,7 @@ export default defineConfig({
     retries: 0,
     workers: 1,
     maxFailures: undefined, // Don't stop after a certain number of failures - run all tests
-    reporter: process.env.CI ? [["json", { outputFile: "test-results/smoke-results.json" }], ["list"]] : "html",
+    reporter: process.env.CI ? [["json", { outputFile: "test-results/playwright-results.json" }], ["list"]] : "html",
     timeout: 120000, // 2 minutes for tests that may take longer (e.g., wallet address retrieval, funding)
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
