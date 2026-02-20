@@ -103,8 +103,13 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
     ): Promise<z.infer<IncomingEvents[R]>> {
         if (!this.isConnected) {
-            console.info("[WebViewParent] Not connected, reloading and re-establishing handshake before sendAction");
-            await this.reloadAndHandshake();
+            try {
+                console.info("[WebViewParent] Not connected, attempting handshake before sendAction");
+                await this.handshakeWithChild();
+            } catch {
+                console.info("[WebViewParent] Handshake failed, reloading WebView and retrying");
+                await this.reloadAndHandshake();
+            }
         }
 
         const response = await super.sendAction(args);
