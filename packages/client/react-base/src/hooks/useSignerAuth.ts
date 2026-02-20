@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, type MutableRefObject } from "react";
 import type { Signer } from "@crossmint/wallets-sdk";
+import { useLogger } from "../providers/LoggerProvider";
+import { LoggerContext } from "../providers/CrossmintProvider";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -44,6 +46,7 @@ export interface SignerAuthHandlers {
 }
 
 export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHandlers {
+    const logger = useLogger(LoggerContext);
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
@@ -60,7 +63,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             await sendEmailWithOtpRef.current();
             setEmailSignerDialogStep("otp");
         } catch (error) {
-            console.error("Failed to send email OTP", error);
+            logger.error("Failed to send email OTP", error);
             rejectRef.current(new Error("Failed to send email OTP"));
         }
     }, []);
@@ -71,7 +74,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             setEmailSignerDialogOpen(false);
             setEmailSignerDialogStep("initial");
         } catch (error) {
-            console.error("Failed to verify OTP", error);
+            logger.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
         }
     }, []);
@@ -80,7 +83,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
         try {
             await sendEmailWithOtpRef.current();
         } catch (error) {
-            console.error("Failed to resend email OTP", error);
+            logger.error("Failed to resend email OTP", error);
             rejectRef.current(new Error("Failed to resend email OTP"));
         }
     }, []);
@@ -91,7 +94,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             await sendPhoneWithOtpRef.current();
             setPhoneSignerDialogStep("otp");
         } catch (error) {
-            console.error("Failed to send phone OTP", error);
+            logger.error("Failed to send phone OTP", error);
             rejectRef.current(new Error("Failed to send phone OTP"));
         }
     }, []);
@@ -102,7 +105,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             setPhoneSignerDialogOpen(false);
             setPhoneSignerDialogStep("initial");
         } catch (error) {
-            console.error("Failed to verify phone OTP", error);
+            logger.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
         }
     }, []);
@@ -111,7 +114,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
         try {
             await sendPhoneWithOtpRef.current();
         } catch (error) {
-            console.error("Failed to resend phone OTP", error);
+            logger.error("Failed to resend phone OTP", error);
             rejectRef.current(new Error("Failed to resend phone OTP"));
         }
     }, []);
