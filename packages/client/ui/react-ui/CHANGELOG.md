@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.18
+
+### Patch Changes
+
+- 8193771: Lazy-load DynamicWalletProvider and FarcasterProvider to reduce initial bundle size for consumers not using web3 or Farcaster auth
+- cca42de: Export ExportPrivateKeyButtonProps interface and add JSDoc so props appear in generated reference docs
+
 ## 2.6.17
 
 ### Patch Changes
