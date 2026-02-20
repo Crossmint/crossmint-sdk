@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import type { z } from "zod";
 import { RNWebViewTransport } from "../transport/RNWebViewTransport";
+import { rnWindowLogger } from "../logger";
 
 /**
  * Recovery options for handling fatal errors in WebView operations.
@@ -53,7 +54,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         if (this.transport instanceof RNWebViewTransport) {
             this.transport.handleMessage(event);
         } else {
-            console.error("[WebViewParent] Transport is not an instance of RNWebViewTransport");
+            rnWindowLogger.error("[WebViewParent] Transport is not an instance of RNWebViewTransport");
         }
     };
 
@@ -65,11 +66,11 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         if (this._reconnectFlight == null) {
             this._reconnectFlight = (async () => {
                 try {
-                    console.info("[WebViewParent] Reloading WebView and re-establishing handshake");
+                    rnWindowLogger.info("[WebViewParent] Reloading WebView and re-establishing handshake");
                     this.isConnected = false;
                     this.transport.reload();
                     await this.handshakeWithChild();
-                    console.info("[WebViewParent] WebView reload and handshake completed");
+                    rnWindowLogger.info("[WebViewParent] WebView reload and handshake completed");
                 } finally {
                     this._reconnectFlight = undefined;
                 }
@@ -105,7 +106,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
         const response = await super.sendAction(args);
 
         if (this.isRecoverableError(response)) {
-            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
+            rnWindowLogger.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
             await this.reloadAndHandshake();
             return await super.sendAction(args);
         }

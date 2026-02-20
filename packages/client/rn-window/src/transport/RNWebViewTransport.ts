@@ -4,6 +4,7 @@ import type { WebViewMessageEvent, WebView } from "react-native-webview";
 import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
+import { rnWindowLogger } from "../logger";
 
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
     private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
@@ -17,7 +18,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     private handleGlobalMessage = (event: MessageEvent) => {
         const eventName = event.data?.event;
         if (eventName) {
-            console.info(`[RNTransport WebView] received: ${String(eventName)}`);
+            rnWindowLogger.info(`[RNTransport WebView] received: ${String(eventName)}`);
         }
         this.dispatchToListeners({
             type: "message",
@@ -30,7 +31,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
             try {
                 listener(event);
             } catch (e) {
-                console.error(`[RNTransport ${this.isWebView ? "WebView" : "RN"}] Error in listener:`, e);
+                rnWindowLogger.error(`[RNTransport ${this.isWebView ? "WebView" : "RN"}] Error in listener:`, e);
             }
         }
     }
@@ -40,7 +41,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
             if ((window as any).ReactNativeWebView?.postMessage) {
                 (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
             } else {
-                console.error("[RNTransport WebView] ReactNativeWebView.postMessage not available");
+                rnWindowLogger.error("[RNTransport WebView] ReactNativeWebView.postMessage not available");
             }
         } else {
             if (this.webviewRef?.current?.injectJavaScript) {
@@ -58,7 +59,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
                 `;
                 this.webviewRef.current.injectJavaScript(script);
             } else {
-                console.warn("[RNTransport RN] WebView ref not available for injection");
+                rnWindowLogger.warn("[RNTransport RN] WebView ref not available for injection");
             }
         }
     }
@@ -101,14 +102,14 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
                 const parsedData = JSON.parse(data);
                 const eventName = parsedData?.event;
                 if (eventName) {
-                    console.info(`[RNTransport RN] received from WebView: ${String(eventName)}`);
+                    rnWindowLogger.info(`[RNTransport RN] received from WebView: ${String(eventName)}`);
                 }
                 this.dispatchToListeners({
                     type: "message",
                     data: parsedData,
                 });
             } catch (error) {
-                console.error(
+                rnWindowLogger.error(
                     "[RNTransport RN] Error parsing/handling WebView message:",
                     error instanceof Error ? error.message : String(error),
                     "Raw data:",
@@ -129,7 +130,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
         if (this.webviewRef?.current?.reload) {
             this.webviewRef.current.reload();
         } else {
-            console.error("[RNTransport RN] WebView ref not available for reload");
+            rnWindowLogger.error("[RNTransport RN] WebView ref not available for reload");
         }
     }
 }
