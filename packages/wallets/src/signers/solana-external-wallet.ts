@@ -4,23 +4,13 @@ import type { ExternalWalletInternalSignerConfig } from "./types";
 import { TransactionFailedError } from "../utils/errors";
 import type { SolanaChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
-import { SolanaDeviceSigner, type DeviceSignerStorage } from "./device-signer";
 
 export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
     onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
-    protected deviceSigner?: SolanaDeviceSigner;
-    protected deviceSignerStorage?: DeviceSignerStorage;
 
-    constructor(
-        config: ExternalWalletInternalSignerConfig<SolanaChain>,
-        walletAddress?: string,
-        deviceSignerEnabled?: boolean,
-        deviceSignerStorage?: DeviceSignerStorage
-    ) {
+    constructor(config: ExternalWalletInternalSignerConfig<SolanaChain>) {
         super(config);
         this.onSignTransaction = config.onSignTransaction;
-        this.deviceSignerStorage = deviceSignerStorage;
-        this.deviceSigner = new SolanaDeviceSigner(walletAddress, this.deviceSignerStorage, deviceSignerEnabled);
     }
 
     async signMessage() {
@@ -28,9 +18,6 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     }
 
     async signTransaction(transaction: string) {
-        if (this.deviceSigner?.hasDeviceSigner()) {
-            return await this.deviceSigner.signTransaction(transaction);
-        }
         if (this.onSignTransaction == null) {
             return await Promise.reject(
                 new Error("onSignTransaction method is required to sign transactions with a Solana external wallet")

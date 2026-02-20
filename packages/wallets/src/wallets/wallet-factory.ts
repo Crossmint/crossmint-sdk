@@ -28,7 +28,6 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
-import { generateDeviceSigner, storeDeviceSigner } from "../signers/device-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -158,8 +157,7 @@ export class WalletFactory {
         walletsLogger.info("walletFactory.createWallet.start");
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
-        const { delegatedSigners, deviceSignerPublicKey, deviceSignerPublicKeyBase64 } =
-            await this.buildDelegatedSigners(args);
+        const delegatedSigners = await this.buildDelegatedSigners(args);
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
         adminSignerConfig = tempArgs.signer;
@@ -186,15 +184,6 @@ export class WalletFactory {
             });
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
-        if (deviceSignerPublicKey != null && deviceSignerPublicKeyBase64 != null) {
-            await storeDeviceSigner(
-                walletResponse.address,
-                args.chain,
-                deviceSignerPublicKey,
-                deviceSignerPublicKeyBase64,
-                args.options?.deviceSignerStorage
-            );
-        }
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
@@ -214,13 +203,7 @@ export class WalletFactory {
                 chain: args.chain,
                 address: walletResponse.address,
                 owner: walletResponse.owner,
-                signer: assembleSigner(
-                    args.chain,
-                    signerConfig,
-                    walletResponse.address,
-                    this.isDeviceSignerEnabled(args.chain, args.options),
-                    args.options?.deviceSignerStorage
-                ),
+                signer: assembleSigner(args.chain, signerConfig, walletResponse.address),
                 options: args.options,
                 alias: args.alias,
             },
@@ -486,9 +469,6 @@ export class WalletFactory {
         if (signer.type === "api-key") {
             return "api-key";
         }
-        if (signer.type === "device") {
-            return `device:${signer.address}`;
-        }
         return signer.type;
     }
 
@@ -557,29 +537,6 @@ export class WalletFactory {
         return false;
     }
 
-    private isDeviceSignerEnabled<C extends Chain>(chain: C, options: WalletOptions | undefined): boolean {
-        // return (
-        //     !this.apiClient.isServerSide &&
-        //     (chain === "solana" || chain === "stellar") &&
-        //     options?.deviceSignerEnabled !== false
-        // );
-        return false; // Disable shadow signer for now
-    }
-
-    private async buildDelegatedSigners<C extends Chain>(
-        args: WalletCreateArgs<C>
-    ): Promise<{
-        delegatedSigners: Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>;
-        deviceSignerPublicKey: string | null;
-        deviceSignerPublicKeyBase64: string | null;
-    }> {
-        const { delegatedSigners, deviceSignerPublicKey, deviceSignerPublicKeyBase64 } =
-            await this.addDeviceSignerToDelegatedSignersIfNeeded(args, args.onCreateConfig?.delegatedSigners);
-        const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
-
-        return { delegatedSigners: registeredDelegatedSigners, deviceSignerPublicKey, deviceSignerPublicKeyBase64 };
-    }
-
     private async registerDelegatedSigners<C extends Chain>(
         delegatedSigners?: Array<SignerConfigForChain<C>>
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
@@ -598,36 +555,11 @@ export class WalletFactory {
         );
     }
 
-    private async addDeviceSignerToDelegatedSignersIfNeeded<C extends Chain>(
-        args: WalletCreateArgs<C>,
-        delegatedSigners?: Array<SignerConfigForChain<C>>
-    ): Promise<{
-        delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
-        deviceSignerPublicKey: string | null;
-        deviceSignerPublicKeyBase64: string | null;
-    }> {
-        if (this.isDeviceSignerEnabled(args.chain, args.options)) {
-            try {
-                const { deviceSigner, publicKeyBase64 } = await generateDeviceSigner(
-                    args.chain,
-                    args.options?.deviceSignerStorage
-                );
-
-                return {
-                    delegatedSigners: [...(delegatedSigners ?? []), deviceSigner as SignerConfigForChain<C>],
-                    deviceSignerPublicKey: deviceSigner.address,
-                    deviceSignerPublicKeyBase64: publicKeyBase64,
-                };
-            } catch (error) {
-                console.warn("Failed to create shadow signer:", error);
-            }
-        }
-
-        return {
-            delegatedSigners,
-            deviceSignerPublicKey: null,
-            deviceSignerPublicKeyBase64: null,
-        };
+    private async buildDelegatedSigners<C extends Chain>(
+        args: WalletCreateArgs<C>
+    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+        const delegatedSigners = args.onCreateConfig?.delegatedSigners;
+        return await this.registerDelegatedSigners(delegatedSigners);
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {

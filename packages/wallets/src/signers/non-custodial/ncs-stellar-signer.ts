@@ -1,16 +1,9 @@
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
-import { StellarDeviceSigner, type DeviceSignerStorage } from "../device-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
-    constructor(
-        config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
-        walletAddress: string,
-        deviceSignerEnabled: boolean,
-        deviceSignerStorage?: DeviceSignerStorage
-    ) {
-        super(config, deviceSignerStorage);
-        this.deviceSigner = new StellarDeviceSigner(walletAddress, this.deviceSignerStorage, deviceSignerEnabled);
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+        super(config);
     }
 
     async signMessage() {
@@ -18,9 +11,6 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(payload: string): Promise<{ signature: string }> {
-        if (this.deviceSigner?.hasDeviceSigner()) {
-            return await this.deviceSigner.signTransaction(payload);
-        }
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 

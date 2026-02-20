@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type RefObject } from "react";
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
-import { WebView as RNRawWebView } from "react-native-webview";
+
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import {
     environmentUrlConfig,
@@ -18,8 +18,6 @@ import {
 } from "@crossmint/client-sdk-react-base";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
-import { DEVICE_SIGNER_STORAGE_INJECTED_JS } from "@/utils/webview-device-signer-storage-injected";
-import { WebViewDeviceSignerStorage } from "@/utils/WebViewDeviceSignerStorage";
 import { useLogger } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
 
@@ -58,16 +56,10 @@ function CrossmintWalletProviderInternal({
         return environmentUrlConfig[parsedAPIKey.environment];
     }, [parsedAPIKey.environment]);
 
-    const deviceSignerStorage = useMemo(() => new WebViewDeviceSignerStorage(), []);
-
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
-
-    const deviceSignerWebViewRef = useRef<WebView>(null);
-    const [deviceSignerHash, setDeviceSignerHash] = useState<string>("");
-    const deviceSignerBaseUrl = "https://crossmint-device-signer.local";
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
 
@@ -112,13 +104,6 @@ function CrossmintWalletProviderInternal({
             }
         }
     }, [logger]);
-
-    const onDeviceSignerWebViewLoad = useCallback(() => {
-        if (deviceSignerStorage instanceof WebViewDeviceSignerStorage && deviceSignerWebViewRef.current) {
-            console.log("[DeviceSignerStorage] WebView loaded (pre-injected script)");
-            deviceSignerStorage.initialize(deviceSignerWebViewRef, (hash: string) => setDeviceSignerHash(hash));
-        }
-    }, [deviceSignerStorage]);
 
     const handleMessage = useCallback(
         (event: WebViewMessageEvent) => {
@@ -180,15 +165,6 @@ function CrossmintWalletProviderInternal({
         [logger]
     );
 
-    const handleDeviceSignerMessage = useCallback(
-        (event: WebViewMessageEvent) => {
-            if (deviceSignerStorage instanceof WebViewDeviceSignerStorage) {
-                deviceSignerStorage.handleMessage(event);
-            }
-        },
-        [deviceSignerStorage]
-    );
-
     const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
@@ -224,10 +200,6 @@ function CrossmintWalletProviderInternal({
             throw new Error("WebView not ready or handshake incomplete");
         }
 
-        if (deviceSignerStorage instanceof WebViewDeviceSignerStorage) {
-            console.log("[initializeWebView] Waiting for shadow signer WebView to be ready...");
-            await deviceSignerStorage.waitForReady();
-        }
         logger.info("react-native.wallet.webview.init.success", { attempts });
     };
 
@@ -238,7 +210,6 @@ function CrossmintWalletProviderInternal({
             headlessSigningFlow={headlessSigningFlow}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
-            deviceSignerStorage={deviceSignerStorage}
             renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
         >
@@ -279,38 +250,6 @@ function CrossmintWalletProviderInternal({
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
                         cacheEnabled={true}
                         cacheMode="LOAD_DEFAULT"
-                    />
-                </View>
-            )}
-            {needsWebView && (
-                <View
-                    style={{
-                        position: "absolute",
-                        width: 0,
-                        height: 0,
-                        overflow: "hidden",
-                    }}
-                >
-                    <RNRawWebView
-                        ref={deviceSignerWebViewRef}
-                        source={{
-                            html: "<html><head></head><body></body></html>",
-                            baseUrl: `${deviceSignerBaseUrl}${deviceSignerHash}`,
-                        }}
-                        onLoadEnd={onDeviceSignerWebViewLoad}
-                        onMessage={handleDeviceSignerMessage}
-                        onError={(syntheticEvent) => {
-                            console.error("[DeviceSignerStorage] WebView error:", syntheticEvent.nativeEvent);
-                        }}
-                        style={{
-                            width: 1,
-                            height: 1,
-                        }}
-                        javaScriptEnabled={true}
-                        incognito={false}
-                        cacheEnabled={true}
-                        cacheMode="LOAD_DEFAULT"
-                        injectedJavaScriptBeforeContentLoaded={DEVICE_SIGNER_STORAGE_INJECTED_JS}
                     />
                 </View>
             )}
