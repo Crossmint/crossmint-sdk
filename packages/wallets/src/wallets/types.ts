@@ -5,7 +5,14 @@ import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
+import type {
+    SignerConfigForChain,
+    Signer,
+    BaseSignResult,
+    PasskeySignResult,
+    DeviceSignResult,
+} from "../signers/types";
+import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
 export type { Activity } from "../api/types";
 
@@ -117,6 +124,7 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -199,6 +207,6 @@ export type ApproveParams = {
     options?: ApproveOptions;
 };
 
-export type Approval = (BaseSignResult | PasskeySignResult) & {
+export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
     signer: string;
 };

@@ -7,11 +7,13 @@ import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, Signer } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
+import { DeviceSigner } from "./device";
+import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
 
 export function assembleSigner<C extends Chain>(
     chain: C,
     config: InternalSignerConfig<C>,
-    walletAddress: string
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage
 ): Signer {
     switch (config.type) {
         case "email":
@@ -37,5 +39,11 @@ export function assembleSigner<C extends Chain>(
 
         case "passkey":
             return new PasskeySigner(config);
+
+        case "device":
+            if (deviceSignerKeyStorage == null) {
+                throw new Error("Device signer key storage is required for device signers");
+            }
+            return new DeviceSigner(config, deviceSignerKeyStorage);
     }
 }
