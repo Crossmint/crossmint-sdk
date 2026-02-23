@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.20
+
+### Patch Changes
+
+- cca42de: Add JSDoc comments and export interfaces for reference docs generation
+
 ## 0.13.19
 
 ### Patch Changes
