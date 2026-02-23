@@ -92,9 +92,9 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
                 style={{
                     width: "100%",
                     minWidth: "100%",
-                    height: Math.max(height, props.minHeight ?? 0),
+                    height,
                     backgroundColor: "transparent",
-                    overflow: "hidden",
+                    overflow: "visible",
                     opacity: 1,
                     padding: 0,
                     boxShadow: "none",

@@ -90,13 +90,13 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     padding: "0px",
                     width: "100%",
                     minWidth: "100%",
-                    overflow: "hidden",
+                    overflow: "visible",
                     display: "block",
                     userSelect: "none",
                     transform: "translate(0px)",
                     opacity: "1",
                     transition: "ease 0s, opacity 0.4s ease 0.1s",
-                    height: `${Math.max(height, props.minHeight ?? 0)}px`,
+                    height: `${height}px`,
                     backgroundColor: "transparent",
                 }}
             />

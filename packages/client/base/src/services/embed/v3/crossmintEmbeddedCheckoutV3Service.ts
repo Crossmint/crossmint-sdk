@@ -15,8 +15,7 @@ export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbed
         const urlWithPath = apiClient.buildUrl("/sdk/2024-03-05/embedded-checkout");
         const queryParams = new URLSearchParams();
 
-        const { minHeight: _, ...urlProps } = props;
-        appendObjectToQueryParams(queryParams, urlProps);
+        appendObjectToQueryParams(queryParams, props);
 
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(sdkMetadata));
