@@ -635,7 +635,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
     let walletFactory: WalletFactory;
     let mockApiClient: MockedApiClient;
     let warnSpy: ReturnType<typeof vi.spyOn>;
-    let debugSpy: ReturnType<typeof vi.spyOn>;
+    let debugSpy: ReturnType<typeof vi.fn>;
 
     const mockEvmWallet = {
         chainType: "evm" as const,
@@ -655,7 +655,8 @@ describe("WalletFactory - Chain Environment Validation", () => {
     beforeEach(() => {
         vi.resetAllMocks();
         warnSpy = vi.spyOn(walletsLogger, "warn");
-        debugSpy = vi.spyOn(walletsLogger, "debug");
+        debugSpy = vi.fn();
+        (walletsLogger as unknown as { debug: typeof debugSpy }).debug = debugSpy;
     });
 
     afterEach(() => {
