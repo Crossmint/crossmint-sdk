@@ -96,7 +96,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     transform: "translate(0px)",
                     opacity: "1",
                     transition: "ease 0s, opacity 0.4s ease 0.1s",
-                    height: `${height}px`,
+                    height: `${Math.max(height, props.minHeight ?? 0)}px`,
                     backgroundColor: "transparent",
                 }}
             />
