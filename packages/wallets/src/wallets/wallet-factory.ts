@@ -415,8 +415,8 @@ export class WalletFactory {
 
         if (!isProduction && isMainnetChain(evmChain)) {
             const testnetEquivalent = mainnetToTestnet(evmChain);
-            if (testnetEquivalent) {
-                walletsLogger.warn("walletFactory.validateChainEnvironment.autoConverted", {
+            if (testnetEquivalent != null) {
+                walletsLogger.debug("walletFactory.validateChainEnvironment.autoConverted", {
                     chain,
                     convertedTo: testnetEquivalent,
                     environment,
@@ -424,7 +424,7 @@ export class WalletFactory {
                 });
                 return testnetEquivalent as unknown as C;
             }
-            walletsLogger.warn("walletFactory.validateChainEnvironment.mismatch", {
+            walletsLogger.debug("walletFactory.validateChainEnvironment.mismatch", {
                 chain,
                 environment,
                 message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
