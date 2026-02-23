@@ -500,7 +500,7 @@ export function generate(config) {
         }
         if (product.walletMethods?.enabled) {
             emit(
-                `- [Wallets SDK Reference](/sdk-reference/wallets/classes/Wallet) — Complete wallet method documentation`
+                `- [Wallets SDK Reference](/sdk-reference/wallets/typescript/classes/Wallet) — Complete wallet method documentation`
             );
         }
 
