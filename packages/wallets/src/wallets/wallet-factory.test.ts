@@ -635,6 +635,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
     let walletFactory: WalletFactory;
     let mockApiClient: MockedApiClient;
     let warnSpy: ReturnType<typeof vi.spyOn>;
+    let debugSpy: ReturnType<typeof vi.spyOn>;
 
     const mockEvmWallet = {
         chainType: "evm" as const,
@@ -654,6 +655,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
     beforeEach(() => {
         vi.resetAllMocks();
         warnSpy = vi.spyOn(walletsLogger, "warn");
+        debugSpy = vi.spyOn(walletsLogger, "debug");
     });
 
     afterEach(() => {
@@ -816,7 +818,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
+            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "base",
                 convertedTo: "base-sepolia",
                 environment: APIKeyEnvironmentPrefix.STAGING,
@@ -837,7 +839,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
                 chain: "arbitrumnova",
                 environment: APIKeyEnvironmentPrefix.STAGING,
                 message:
@@ -888,7 +890,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(warnSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
+            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "polygon",
                 convertedTo: "polygon-amoy",
                 environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
