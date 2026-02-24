@@ -12,7 +12,7 @@ import type {
     RegisterSignerParams,
 } from "../api";
 import { InvalidEnvironmentError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
-import type {
+import {
     type Chain,
     type EVMSmartWalletChain,
     isTestnetChain,
