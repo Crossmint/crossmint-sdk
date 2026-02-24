@@ -159,6 +159,9 @@ export class WalletFactory {
         walletsLogger.info("walletFactory.createWallet.start");
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
+        if (adminSignerConfig.type === "device") {
+            throw new Error("Device signer cannot be used as admin signer");
+        }
         const delegatedSigners = await this.buildDelegatedSigners(args);
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);

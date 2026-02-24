@@ -11,6 +11,7 @@ import type {
     BaseSignResult,
     PasskeySignResult,
     DeviceSignResult,
+    DeviceSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -103,7 +104,7 @@ export type DelegatedSigner = {
 };
 
 export type OnCreateConfig<C extends Chain> = {
-    adminSigner: SignerConfigForChain<C>;
+    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     delegatedSigners?: Array<SignerConfigForChain<C>>;
 };
 
