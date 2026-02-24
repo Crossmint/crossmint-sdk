@@ -2,6 +2,7 @@ import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
+import { walletsLogger } from "../../logger";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -20,6 +21,8 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
         const messageData = deserializedTransaction.message.serialize();
 
+        walletsLogger.info("sign: sending request", { keyType: "ed25519" });
+        const startTime = Date.now();
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
@@ -35,6 +38,10 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
+        });
+        walletsLogger.info("sign: response received", {
+            status: res?.status,
+            durationMs: Date.now() - startTime,
         });
 
         if (res?.status === "error") {

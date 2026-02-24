@@ -17,10 +17,18 @@ import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSigner
 
 export type { Activity } from "../api/types";
 
-export type PrepareOnly<T extends boolean = boolean> = { experimental_prepareOnly: T };
+export type PrepareOnly<T extends boolean = boolean> = {
+    experimental_prepareOnly: T;
+};
+
+export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
     experimental_signer?: string;
+};
+
+export type SendTokenTransactionOptions = TransactionInputOptions & {
+    transactionType?: SendTokenTransactionType;
 };
 
 export type SignatureInputOptions = PrepareOnly;
@@ -41,7 +49,9 @@ export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
     options?: SignatureInputOptions;
 };
 
-export type ApproveResult<T extends ApproveParams> = T extends { transactionId: string }
+export type ApproveResult<T extends ApproveParams> = T extends {
+    transactionId: string;
+}
     ? Transaction<false>
     : T extends { signatureId: string }
       ? Signature<false>
@@ -129,11 +139,16 @@ export type WalletOptions = {
 };
 
 export type WalletArgsFor<C extends Chain> = {
+    /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
     chain: C;
+    /** The signer configuration (e.g. `{ type: "email" }`). */
     signer: SignerConfigForChain<C>;
+    /** Optional owner identifier. */
     owner?: string;
+    /** Optional array of wallet plugins. */
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
+    /** Optional wallet alias. */
     alias?: string;
 };
 

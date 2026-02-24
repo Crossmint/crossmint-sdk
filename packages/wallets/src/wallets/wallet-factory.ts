@@ -1,4 +1,4 @@
-import { WithLoggerContext } from "@crossmint/common-sdk-base";
+import { WithLoggerContext, APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
@@ -11,8 +11,14 @@ import type {
     DelegatedSigner as DelegatedSignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
-import type { Chain } from "../chains/chains";
+import { InvalidEnvironmentError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import type {
+    type Chain,
+    type EVMSmartWalletChain,
+    isTestnetChain,
+    isMainnetChain,
+    mainnetToTestnet,
+} from "../chains/chains";
 import type {
     ApiKeyInternalSignerConfig,
     DeviceInternalSignerConfig,
@@ -68,6 +74,7 @@ export class WalletFactory {
                 "Owner field cannot be specified in client-side getOrCreateWallet calls. Owner is determined from JWT authentication."
             );
         }
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
 
         const locator = this.getWalletLocator<C>(args);
         walletsLogger.info("walletFactory.getOrCreateWallet.start");
@@ -82,7 +89,7 @@ export class WalletFactory {
         }
 
         walletsLogger.info("walletFactory.getOrCreateWallet.creating");
-        return this.createWallet(args);
+        return this.createWalletInternal(args);
     }
 
     // Client-side
@@ -129,6 +136,8 @@ export class WalletFactory {
             walletLocator = `me:${this.getChainType(args.chain)}:smart`;
         }
 
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
+
         walletsLogger.info("walletFactory.getWallet.start");
 
         const existingWallet = await this.apiClient.getWallet(walletLocator);
@@ -155,6 +164,7 @@ export class WalletFactory {
         },
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
+        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
@@ -629,5 +639,41 @@ export class WalletFactory {
             return "stellar";
         }
         return "evm";
+    }
+
+    private validateChainEnvironment<C extends Chain>(chain: C): C {
+        if (chain === "solana" || chain === "stellar") {
+            return chain;
+        }
+
+        const evmChain = chain as EVMSmartWalletChain;
+        const environment = this.apiClient.environment;
+        const isProduction = environment === APIKeyEnvironmentPrefix.PRODUCTION;
+
+        if (isProduction && isTestnetChain(evmChain)) {
+            throw new InvalidEnvironmentError(
+                `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
+            );
+        }
+
+        if (!isProduction && isMainnetChain(evmChain)) {
+            const testnetEquivalent = mainnetToTestnet(evmChain);
+            if (testnetEquivalent != null) {
+                walletsLogger.debug("walletFactory.validateChainEnvironment.autoConverted", {
+                    chain,
+                    convertedTo: testnetEquivalent,
+                    environment,
+                    message: `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Automatically converted to "${testnetEquivalent}".`,
+                });
+                return testnetEquivalent as unknown as C;
+            }
+            walletsLogger.debug("walletFactory.validateChainEnvironment.mismatch", {
+                chain,
+                environment,
+                message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
+            });
+        }
+
+        return chain;
     }
 }
