@@ -9,6 +9,7 @@ import type { InternalSignerConfig, Signer } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 import { DeviceSigner } from "./device";
 import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
+import { WalletCreationError } from "@/utils/errors";
 
 export function assembleSigner<C extends Chain>(
     chain: C,
@@ -42,7 +43,7 @@ export function assembleSigner<C extends Chain>(
 
         case "device":
             if (deviceSignerKeyStorage == null) {
-                throw new Error("Device signer key storage is required for device signers");
+                throw new WalletCreationError("Device signer key storage is required for device signers");
             }
             return new DeviceSigner(config, deviceSignerKeyStorage);
     }
