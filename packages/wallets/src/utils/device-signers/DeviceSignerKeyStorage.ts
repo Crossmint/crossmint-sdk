@@ -3,7 +3,7 @@
  * Implementations handle key generation, persistence, retrieval, signing, and deletion.
  */
 export abstract class DeviceSignerKeyStorage {
-    constructor(private readonly apiKey: string) {}
+    constructor(protected readonly apiKey: string) {}
 
     /**
      * Generate a new P-256 key pair and persist it.
