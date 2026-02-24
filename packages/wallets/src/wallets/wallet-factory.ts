@@ -187,7 +187,7 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        this.saveDeviceSignerKey(walletResponse.address, delegatedSigners, args.options?.deviceSignerKeyStorage);
+        await this.saveDeviceSignerKey(walletResponse.address, delegatedSigners, args.options?.deviceSignerKeyStorage);
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
@@ -196,7 +196,7 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, args);
     }
 
-    private saveDeviceSignerKey(
+    private async saveDeviceSignerKey(
         address: string,
         delegatedSigners: Awaited<ReturnType<typeof this.buildDelegatedSigners>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
@@ -206,7 +206,7 @@ export class WalletFactory {
                 typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
         );
         if (deviceSigner && deviceSignerKeyStorage) {
-            deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
+            await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
         }
     }
 
