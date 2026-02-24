@@ -52,6 +52,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         };
 
         walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        walletsLogger.debug = vi.fn();
     });
 
     afterEach(() => {
