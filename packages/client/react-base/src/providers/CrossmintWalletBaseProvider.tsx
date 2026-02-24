@@ -257,6 +257,7 @@ export function CrossmintWalletBaseProvider({
                             onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
                         },
+                        deviceSignerKeyStorage: args.options?.deviceSignerKeyStorage,
                     },
                 });
                 setWallet(wallet);

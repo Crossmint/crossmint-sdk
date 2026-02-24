@@ -78,7 +78,7 @@ export class WalletFactory {
             walletsLogger.info("walletFactory.getOrCreateWallet.existing", {
                 address: existingWallet.address,
             });
-            return this.createWalletInstance(existingWallet, args);
+            return await this.createWalletInstance(existingWallet, args);
         }
 
         walletsLogger.info("walletFactory.getOrCreateWallet.creating");
@@ -143,7 +143,7 @@ export class WalletFactory {
             address: existingWallet.address,
         });
 
-        return this.createWalletInstance(existingWallet, args);
+        return await this.createWalletInstance(existingWallet, args);
     }
 
     @WithLoggerContext({
@@ -193,7 +193,7 @@ export class WalletFactory {
             address: walletResponse.address,
         });
 
-        return this.createWalletInstance(walletResponse, args);
+        return await this.createWalletInstance(walletResponse, args);
     }
 
     private saveDeviceSignerKey(
@@ -210,12 +210,12 @@ export class WalletFactory {
         }
     }
 
-    private createWalletInstance<C extends Chain>(
+    private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
-    ): Wallet<C> {
+    ): Promise<Wallet<C>> {
         this.validateExistingWalletConfig(walletResponse, args);
-        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
+        const signerConfig = await this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
                 chain: args.chain,
@@ -229,11 +229,11 @@ export class WalletFactory {
         );
     }
 
-    private toInternalSignerConfig<C extends Chain>(
+    private async toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         signerArgs: SignerConfigForChain<C>,
         options?: WalletOptions
-    ): InternalSignerConfig<C> {
+    ): Promise<InternalSignerConfig<C>> {
         if (
             !(
                 walletResponse.chainType === "evm" ||
@@ -294,7 +294,7 @@ export class WalletFactory {
                 } as EmailInternalSignerConfig;
             }
             case "device": {
-                const deviceSigner = options?.deviceSignerKeyStorage?.getKey(walletResponse.address);
+                const deviceSigner = await options?.deviceSignerKeyStorage?.getKey(walletResponse.address);
                 if (!deviceSigner) {
                     // TODO: WAL-9101 Add Device signer when not available in the device
                     throw new WalletCreationError("Device signer not found");
@@ -481,7 +481,10 @@ export class WalletFactory {
         }
 
         const delegatedSigner = delegatedSigners.find(
-            (ds) => this.isMatchingPasskeySigner(signer, ds, config) || this.getSignerLocator(signer) === ds.locator
+            (ds) =>
+                this.isMatchingPasskeySigner(signer, ds, config) ||
+                (ds.type === "device" && signer.type === "device") ||
+                this.getSignerLocator(signer) === ds.locator
         );
 
         if (delegatedSigner != null) {
@@ -538,6 +541,9 @@ export class WalletFactory {
         for (const inputSigner of inputDelegatedSigners) {
             const matchingExistingSigner = existingDelegatedSigners.find((existingSigner) => {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {
+                    return true;
+                }
+                if (existingSigner.type === "device" && inputSigner.type === "device") {
                     return true;
                 }
                 return existingSigner.locator === this.getSignerLocator(inputSigner);
