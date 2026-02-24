@@ -187,7 +187,7 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        this.saveDeviceSignerKey(walletResponse.address, delegatedSigners, args.options?.deviceSignerKeyStorage);
+        await this.saveDeviceSignerKey(walletResponse.address, delegatedSigners, args.options?.deviceSignerKeyStorage);
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
