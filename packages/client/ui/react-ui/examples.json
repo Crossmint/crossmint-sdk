@@ -1,0 +1,44 @@
+{
+    "_meta": {
+        "description": "Curated code examples for the React SDK reference pages. Keyed by export name or page section.",
+        "lastUpdated": "2026-02-05"
+    },
+    "installation": {
+        "code": "npm install @crossmint/client-sdk-react-ui",
+        "language": "bash"
+    },
+    "walletProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    signer: { type: \"email\" },\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "walletQuickExample": {
+        "code": "import { useWallet } from \"@crossmint/client-sdk-react-ui\";\n\nfunction WalletInfo() {\n    const { wallet, status } = useWallet();\n\n    if (status === \"in-progress\") return <p>Loading wallet...</p>;\n    if (!wallet) return <p>No wallet connected</p>;\n\n    return (\n        <div>\n            <p>Address: {wallet.address}</p>\n            <p>Chain: {wallet.chain}</p>\n        </div>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintProvider": {
+        "code": "import { CrossmintProvider } from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            {/* Your app content */}\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintAuthProvider": {
+        "code": "import { CrossmintAuthProvider } from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintAuthProvider\n            loginMethods={[\"email\", \"google\"]}\n            onLoginSuccess={() => console.log(\"Logged in!\")}\n            authModalTitle=\"Sign in to My App\"\n        >\n            {/* Your app content */}\n        </CrossmintAuthProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintWalletProvider": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    signer: { type: \"email\" },\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintWalletProvider must be nested inside CrossmintProvider."
+    },
+    "useAuth": {
+        "code": "import { useAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginButton() {\n    const { login, logout, user, status } = useAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
+        "language": "tsx"
+    },
+    "useWallet": {
+        "code": "import { useWallet } from \"@crossmint/client-sdk-react-ui\";\n\nfunction WalletActions() {\n    const { wallet, status } = useWallet();\n\n    if (status === \"in-progress\") return <p>Loading wallet...</p>;\n    if (!wallet) return <p>No wallet</p>;\n\n    const handleSend = async () => {\n        const tx = await wallet.send(\"0x...\", \"usdc\", \"10\");\n        console.log(\"Transaction:\", tx.explorerLink);\n    };\n\n    const handleBalances = async () => {\n        const balances = await wallet.balances();\n        console.log(\"USDC:\", balances.usdc.amount);\n        console.log(\"Native:\", balances.nativeToken.amount);\n    };\n\n    return (\n        <div>\n            <p>Wallet: {wallet.address}</p>\n            <button onClick={handleBalances}>Check Balances</button>\n            <button onClick={handleSend}>Send USDC</button>\n        </div>\n    );\n}",
+        "language": "tsx"
+    },
+    "ExportPrivateKeyButton": {
+        "code": "import { ExportPrivateKeyButton } from \"@crossmint/client-sdk-react-ui\";\n\nfunction WalletSettings() {\n    return (\n        <div>\n            <h3>Export Private Key</h3>\n            <ExportPrivateKeyButton\n                appearance={{\n                    colors: { border: \"#e2e8f0\" },\n                    borderRadius: \"12px\",\n                }}\n            />\n        </div>\n    );\n}",
+        "language": "tsx",
+        "note": "Only works with email and phone signers. Will not render for passkey or external wallet signers."
+    }
+}

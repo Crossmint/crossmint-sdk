@@ -1,4 +1,4 @@
-import type { LogContext, LogEntry, LogLevel, LogSink } from "../types";
+import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "../types";
 
 /**
  * Log level hierarchy for filtering
@@ -14,7 +14,7 @@ const LOG_LEVEL_HIERARCHY: LogLevel[] = ["debug", "info", "warn", "error"];
 export class ConsoleSink implements LogSink {
     readonly id = "console";
 
-    constructor(private minLogLevel: LogLevel = "debug") {}
+    constructor(private minLogLevel: ConsoleLogLevel = "debug") {}
 
     write(entry: LogEntry): void {
         if (!this.shouldLog(entry.level)) {
@@ -66,6 +66,9 @@ export class ConsoleSink implements LogSink {
     }
 
     private shouldLog(level: LogLevel): boolean {
+        if (this.minLogLevel === "silent") {
+            return false;
+        }
         const entryLevelIndex = LOG_LEVEL_HIERARCHY.indexOf(level);
         const minLevelIndex = LOG_LEVEL_HIERARCHY.indexOf(this.minLogLevel);
         return entryLevelIndex >= minLevelIndex;

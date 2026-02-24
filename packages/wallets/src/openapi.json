@@ -11399,6 +11399,12 @@
                         "pattern": "^\\d+(?:\\.\\d*)?$",
                         "description": "Amount of tokens to transfer (in decimal format)",
                         "example": "42.69"
+                    },
+                    "transactionType": {
+                        "default": "direct",
+                        "type": "string",
+                        "enum": ["direct", "regulated-transfer", "onramp"],
+                        "description": "Specifies the type of transaction. Choose 'direct' for standard interactions or 'regulated-transfer' for operations requiring compliance checks."
                     }
                 },
                 "required": ["recipient"]
@@ -11453,6 +11459,12 @@
                         ],
                         "description": "Memo for the transaction. Only supported for Stellar",
                         "example": { "type": "text", "value": "Hello, world!" }
+                    },
+                    "transactionType": {
+                        "default": "direct",
+                        "type": "string",
+                        "enum": ["direct", "regulated-transfer", "onramp"],
+                        "description": "Specifies the type of transaction. Choose 'direct' for standard interactions or 'regulated-transfer' for operations requiring compliance checks."
                     }
                 },
                 "required": ["recipient"],

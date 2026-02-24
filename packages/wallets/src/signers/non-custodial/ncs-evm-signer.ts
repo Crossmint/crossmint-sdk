@@ -2,6 +2,7 @@ import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../ty
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
+import { walletsLogger } from "../../logger";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -24,6 +25,8 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
 
         const hexString = raw.replace("0x", "");
 
+        walletsLogger.info("sign: sending request", { keyType: "secp256k1" });
+        const startTime = Date.now();
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
@@ -39,6 +42,10 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
+        });
+        walletsLogger.info("sign: response received", {
+            status: res?.status,
+            durationMs: Date.now() - startTime,
         });
 
         if (res?.status === "error") {

@@ -23,6 +23,7 @@ import {
 
 vi.mock("../logger/init", () => ({
     walletsLogger: {
+        debug: vi.fn(),
         info: vi.fn(),
         error: vi.fn(),
         warn: vi.fn(),

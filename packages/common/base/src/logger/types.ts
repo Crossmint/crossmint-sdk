@@ -3,6 +3,8 @@
  */
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
+export type ConsoleLogLevel = LogLevel | "silent";
+
 /**
  * Context object that can be attached to logs
  */

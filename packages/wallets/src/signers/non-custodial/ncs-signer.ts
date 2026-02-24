@@ -84,7 +84,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     private async initializeTEEConnection(): Promise<void> {
-        console.warn("TEE connection is not initialized, initializing now...");
+        walletsLogger.info("TEE connection not initialized, initializing now");
 
         const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
         if (!parsedAPIKey.isValid) {
@@ -99,7 +99,7 @@ export abstract class NonCustodialSigner implements Signer {
             throw new Error("Failed to initialize TEE connection");
         }
 
-        console.log("TEE connection initialized successfully");
+        walletsLogger.info("TEE connection initialized successfully");
     }
 
     @WithLoggerContext({
@@ -119,6 +119,8 @@ export abstract class NonCustodialSigner implements Signer {
         }
 
         // Determine if we need to authenticate the user via OTP or not
+        walletsLogger.info("get-status: sending request");
+        const startTime = Date.now();
         const signerResponse = await clientTEEConnection.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
@@ -130,10 +132,21 @@ export abstract class NonCustodialSigner implements Signer {
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
+        const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
+            walletsLogger.error("get-status: failed", {
+                status: signerResponse?.status,
+                error: signerResponse?.error,
+                durationMs,
+            });
             throw new Error(signerResponse?.error);
         }
+
+        walletsLogger.info("get-status: response received", {
+            signerStatus: signerResponse.signerStatus,
+            durationMs,
+        });
 
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
@@ -142,9 +155,7 @@ export abstract class NonCustodialSigner implements Signer {
             this._needsAuth = true;
         }
 
-        walletsLogger.info("Handling auth required", { signerResponse });
-        walletsLogger.info("Needs auth", { needsAuth: this._needsAuth });
-        walletsLogger.info("Config onAuthRequired", { onAuthRequired: this.config.onAuthRequired });
+        walletsLogger.info("Auth required, initiating OTP flow", { needsAuth: this._needsAuth });
 
         const { promise, resolve, reject } = this.createAuthPromise();
         this._authPromise = { promise, resolve, reject };
@@ -215,6 +226,8 @@ export abstract class NonCustodialSigner implements Signer {
     private async sendMessageWithOtp() {
         const handshakeParent = await this.getTEEConnection();
         const authId = this.getAuthId();
+        walletsLogger.info("start-onboarding: sending request");
+        const startTime = Date.now();
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
@@ -227,6 +240,11 @@ export abstract class NonCustodialSigner implements Signer {
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
+        const durationMs = Date.now() - startTime;
+        walletsLogger.info("start-onboarding: response received", {
+            status: response?.status,
+            durationMs,
+        });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
             this._needsAuth = false;
@@ -234,7 +252,7 @@ export abstract class NonCustodialSigner implements Signer {
         }
 
         if (response?.status === "error") {
-            console.error("[sendMessageWithOtp] Failed to send OTP:", response);
+            walletsLogger.error("start-onboarding: failed", { error: response.error });
             this._authPromise?.reject(new Error(response.error || "Failed to initiate OTP process."));
         }
     }
@@ -250,6 +268,8 @@ export abstract class NonCustodialSigner implements Signer {
         let response: SignerOutputEvent<"complete-onboarding">;
         try {
             const handshakeParent = await this.getTEEConnection();
+            walletsLogger.info("complete-onboarding: sending request");
+            const startTime = Date.now();
             response = await handshakeParent.sendAction({
                 event: "request:complete-onboarding",
                 responseEvent: "response:complete-onboarding",
@@ -264,8 +284,12 @@ export abstract class NonCustodialSigner implements Signer {
                 },
                 options: DEFAULT_EVENT_OPTIONS,
             });
+            walletsLogger.info("complete-onboarding: response received", {
+                status: response?.status,
+                durationMs: Date.now() - startTime,
+            });
         } catch (err) {
-            console.error("[verifyOtp] Error sending OTP validation request:", err);
+            walletsLogger.error("complete-onboarding: error", { error: err });
             this._needsAuth = true;
             this._authPromise?.reject(err as Error);
             throw err;
@@ -286,7 +310,7 @@ export abstract class NonCustodialSigner implements Signer {
             return;
         }
 
-        console.error("[verifyOtp] Failed to validate OTP:", JSON.stringify(response, null, 2));
+        walletsLogger.error("complete-onboarding: OTP validation failed", { status: response?.status });
         this._needsAuth = true;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);

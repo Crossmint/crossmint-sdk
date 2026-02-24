@@ -4,6 +4,7 @@ export * from "./providers";
 export * from "./types/wallet";
 
 export type { LoginMethod } from "@crossmint/client-sdk-react-base";
+export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {
     type CrossmintEvent,
@@ -11,4 +12,4 @@ export {
     CrossmintEvents,
 } from "@crossmint/client-sdk-base";
 
-export { CrossmintProvider } from "./providers/CrossmintProvider";
+export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";

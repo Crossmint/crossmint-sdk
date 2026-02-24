@@ -204,6 +204,25 @@ pnpm add @crossmint/client-sdk-react-native-ui
 NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 ```
 
+## 📖 SDK Reference Docs Generation
+
+```
+Source JSDoc → TypeDoc → api.json ─┐
+                                   ├→ generate-reference.mjs → MDX pages (docs/<product>/)
+                    examples.json ─┘
+```
+
+Run with `pnpm generate:docs` or `node scripts/generate-reference.mjs --product wallets`.
+
+**Key details for maintainers:**
+
+- **`api.json` and `docs/` are gitignored** — they're build artifacts, not checked in.
+- **Adding a new product** only requires a new entry in the `PRODUCTS` config at the top of `generate-reference.mjs`. No other script changes needed.
+- **Exports are auto-classified** by naming convention: `*Provider` → providers page, `use*` → hooks page, everything else → components page.
+- **`examples.json`** holds all code snippets, keyed by export name (e.g. `"CrossmintProvider"`, `"useWallet"`). The script validates that every export has a matching example.
+- **`MANUAL_RETURNS` / `EXPANDABLE_CHILDREN`** are escape hatches for cross-package types that TypeDoc can't resolve (e.g. wallet args, hook return types). If a new hook's return type shows as `unknown`, you likely need to add an entry here.
+- **`skipErrorChecking: true`** in the TypeDoc config is intentional — React packages have peer deps that break type resolution without it.
+
 ## 📚 Examples & Documentation
 
 - **[Quickstarts](https://www.crossmint.com/quickstarts)** - Find your quickstart for your use case.

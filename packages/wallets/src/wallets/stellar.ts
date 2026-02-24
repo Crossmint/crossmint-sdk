@@ -35,6 +35,11 @@ export class StellarWallet extends Wallet<StellarChain> {
         return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
+    /**
+     * Send a raw Stellar transaction (serialized transaction or contract call).
+     * @param params - The transaction parameters
+     * @returns The transaction result
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "stellarWallet.sendTransaction",

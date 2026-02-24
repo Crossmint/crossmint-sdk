@@ -1,5 +1,31 @@
 # @crossmint/wallets-sdk
 
+## 0.19.0
+
+### Minor Changes
+
+- 41ad396: Add chain environment validation for EVM wallets
+
+  When creating or fetching an EVM wallet, the SDK now validates that the chain matches the environment:
+
+  - Production environment: Only mainnet chains are allowed
+    This prevents accidental use of testnet chains in production or mainnet chains in non-production environments. A warning is logged with a descriptive message when there is a mismatch, but the wallet operation still completes successfully.
+
+  Category: improvements
+  Product Area: wallets
+
+### Patch Changes
+
+- 4dc0dbf: Add missing JSDoc comments to wallet methods
+- a356f13: Improve logging across approve/send transaction flow: remove verbose console.log noise from EventEmitter/Handshake/Transport layers, replace console.warn/error with structured walletsLogger in NCS signers, add timing for TEE operations
+- ce13788: Add the transactionType field
+- Updated dependencies [a356f13]
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/client-sdk-window@1.0.9
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/common-sdk-auth@1.0.69
+
 ## 0.18.15
 
 ### Patch Changes

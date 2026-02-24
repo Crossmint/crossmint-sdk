@@ -17,7 +17,7 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 const defaultContextValue: RNAuthContext = {
     crossmintAuth: undefined,
     login: () => {},
-    logout: () => {},
+    logout: async () => {},
     jwt: undefined,
     user: undefined,
     status: "initializing",
