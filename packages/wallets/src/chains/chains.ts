@@ -63,11 +63,11 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.OPTIMISM,
     Blockchain.PLUME,
     Blockchain.POLYGON,
-    Blockchain.TEMPO,
     Blockchain.SCROLL,
     Blockchain.SEI_PACIFIC_1,
     Blockchain.SHAPE,
     Blockchain.STORY,
+    Blockchain.TEMPO,
     Blockchain.WORLDCHAIN,
     Blockchain.ZORA,
 ] as const;
