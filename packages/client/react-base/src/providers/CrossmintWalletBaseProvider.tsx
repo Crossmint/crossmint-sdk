@@ -284,6 +284,7 @@ export function CrossmintWalletBaseProvider({
             updateCallbacks?.onTransactionStart,
             clientTEEConnection,
             callbacks,
+            deviceSignerKeyStorage,
         ]
     );
 
@@ -322,6 +323,7 @@ export function CrossmintWalletBaseProvider({
             initializeWebViewIfNeeded,
             clientTEEConnection,
             callbacks,
+            deviceSignerKeyStorage,
         ]
     );
 
