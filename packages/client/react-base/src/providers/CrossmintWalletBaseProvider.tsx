@@ -8,6 +8,7 @@ import {
     type WalletArgsFor,
     type WalletCreateArgs,
     type PhoneSignerConfig,
+    DeviceSignerKeyStorage,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -54,6 +55,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
 export interface CrossmintWalletBaseProviderProps {
     children: ReactNode;
     createOnLogin?: CreateOnLogin;
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
@@ -87,6 +89,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     clientTEEConnection,
+    deviceSignerKeyStorage,
     initializeWebView,
     appearance,
     headlessSigningFlow,
@@ -257,7 +260,7 @@ export function CrossmintWalletBaseProvider({
                             onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
                         },
-                        deviceSignerKeyStorage: args.options?.deviceSignerKeyStorage,
+                        deviceSignerKeyStorage,
                     },
                 });
                 setWallet(wallet);
@@ -303,6 +306,7 @@ export function CrossmintWalletBaseProvider({
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: callbacks,
+                        deviceSignerKeyStorage: deviceSignerKeyStorage,
                     },
                 });
                 return wallet;
