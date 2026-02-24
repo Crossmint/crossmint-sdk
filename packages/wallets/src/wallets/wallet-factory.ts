@@ -87,7 +87,7 @@ export class WalletFactory {
         }
 
         walletsLogger.info("walletFactory.getOrCreateWallet.creating");
-        return this.createWalletInternal(args);
+        return this.createWallet(args);
     }
 
     // Client-side
