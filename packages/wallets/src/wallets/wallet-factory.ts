@@ -307,7 +307,10 @@ export class WalletFactory {
                 } as EmailInternalSignerConfig;
             }
             case "device": {
-                const deviceSigner = await options?.deviceSignerKeyStorage?.getKey(walletResponse.address);
+                if (options?.deviceSignerKeyStorage == null) {
+                    throw new WalletCreationError("Device signer key storage is required for device signers");
+                }
+                const deviceSigner = await options.deviceSignerKeyStorage.getKey(walletResponse.address);
                 if (!deviceSigner) {
                     // TODO: WAL-9101 Add Device signer when not available in the device
                     throw new WalletCreationError("Device signer not found");
