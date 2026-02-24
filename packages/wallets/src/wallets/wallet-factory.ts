@@ -617,7 +617,7 @@ export class WalletFactory {
                     }
                     if (signer.type === "device") {
                         if (deviceSignerKeyStorage == null) {
-                            throw new Error("Device signer key storage is required for device signers");
+                            throw new WalletCreationError("Device signer key storage is required for device signers");
                         }
                         return { signer: await this.createDeviceSigner(signer, deviceSignerKeyStorage) };
                     }
