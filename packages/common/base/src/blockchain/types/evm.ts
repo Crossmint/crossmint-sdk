@@ -24,6 +24,7 @@ export const EVMBlockchain = {
     SEI_PACIFIC_1: "sei-pacific-1",
     FLOW: "flow",
     PLUME: "plume",
+    TEMPO: "tempo",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
