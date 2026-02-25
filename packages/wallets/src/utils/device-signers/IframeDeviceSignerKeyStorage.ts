@@ -98,7 +98,10 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
     private getIframe(): Promise<HTMLIFrameElement> {
         if (this.iframePromise == null) {
-            this.iframePromise = this.createIframe();
+            this.iframePromise = this.createIframe().catch((error) => {
+                this.iframePromise = null;
+                throw error;
+            });
         }
         return this.iframePromise;
     }
