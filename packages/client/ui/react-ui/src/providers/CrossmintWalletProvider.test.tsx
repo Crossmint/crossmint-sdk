@@ -5,7 +5,7 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
-        crossmint: { apiKey: "ck_staging_test-api-key" },
+        crossmint: { apiKey: "test-api-key" },
         experimental_customAuth: undefined,
     })),
     CrossmintWalletBaseProvider: ({ children }: { children: React.ReactNode }) => (
