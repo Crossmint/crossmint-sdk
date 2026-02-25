@@ -88,6 +88,12 @@ export type EmailInternalSignerConfig = EmailSignerConfig & BaseInternalSignerCo
 
 export type PhoneInternalSignerConfig = PhoneSignerConfig & BaseInternalSignerConfig;
 
+export type DeviceInternalSignerConfig = {
+    type: "device";
+    locator?: string;
+    address: string;
+};
+
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
     locator: string;
     id: string;
@@ -107,13 +113,21 @@ export type InternalSignerConfig<C extends Chain> =
     | PhoneInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
-    | ExternalWalletInternalSignerConfig<C>;
+    | ExternalWalletInternalSignerConfig<C>
+    | DeviceInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signers
 ////////////////////////////////////////////////////////////
 export type BaseSignResult = {
     signature: string;
+};
+
+export type DeviceSignResult = {
+    signature: {
+        r: string;
+        s: string;
+    };
 };
 
 export type PasskeySignResult = {
@@ -124,11 +138,15 @@ export type PasskeySignResult = {
     metadata: WebAuthnP256.SignMetadata;
 };
 
+export type DeviceSignerConfig = {
+    type: "device";
+};
+
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
+    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
-      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
+      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
@@ -139,6 +157,7 @@ type SignResultMap = {
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
     passkey: PasskeySignResult;
+    device: DeviceSignResult;
 };
 
 export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {

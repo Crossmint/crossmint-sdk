@@ -8,6 +8,7 @@ import {
     type WalletArgsFor,
     type WalletCreateArgs,
     type PhoneSignerConfig,
+    type DeviceSignerKeyStorage,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -61,6 +62,11 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
 export interface CrossmintWalletBaseProviderProps {
     /** Configuration for automatic wallet creation on login. */
     createOnLogin?: CreateOnLogin;
+    /**
+     * @internal
+     * Storage for the device signer key.
+     */
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
@@ -103,6 +109,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     clientTEEConnection,
+    deviceSignerKeyStorage,
     initializeWebView,
     appearance,
     headlessSigningFlow,
@@ -273,6 +280,7 @@ export function CrossmintWalletBaseProvider({
                             onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
                         },
+                        deviceSignerKeyStorage,
                     },
                 });
                 setWallet(wallet);
@@ -296,6 +304,7 @@ export function CrossmintWalletBaseProvider({
             updateCallbacks?.onTransactionStart,
             clientTEEConnection,
             callbacks,
+            deviceSignerKeyStorage,
         ]
     );
 
@@ -318,6 +327,7 @@ export function CrossmintWalletBaseProvider({
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: callbacks,
+                        deviceSignerKeyStorage: deviceSignerKeyStorage,
                     },
                 });
                 return wallet;
@@ -333,6 +343,7 @@ export function CrossmintWalletBaseProvider({
             initializeWebViewIfNeeded,
             clientTEEConnection,
             callbacks,
+            deviceSignerKeyStorage,
         ]
     );
 

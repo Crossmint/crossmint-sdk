@@ -9513,6 +9513,46 @@
                                             "locator": "phone:+1234567890",
                                             "address": "0x1234567890abcdef..."
                                         }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["device"],
+                                                "description": "Identifier for device signer type"
+                                            },
+                                            "publicKey": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "x": {
+                                                        "type": "string",
+                                                        "description": "X coordinate of the public key"
+                                                    },
+                                                    "y": {
+                                                        "type": "string",
+                                                        "description": "Y coordinate of the public key"
+                                                    }
+                                                },
+                                                "required": ["x", "y"],
+                                                "description": "The public key coordinates of the device signer"
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "The locator of the device signer"
+                                            }
+                                        },
+                                        "required": ["type", "publicKey", "locator"],
+                                        "title": "Device Signer",
+                                        "description": "Configuration for a P256 device signer",
+                                        "example": {
+                                            "type": "device",
+                                            "publicKey": {
+                                                "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                            },
+                                            "locator": "device:base64publickey"
+                                        }
                                     }
                                 ],
                                 "description": "Response schema for a registered signer"
@@ -11856,6 +11896,34 @@
                                     "required": ["signer", "signature"],
                                     "title": "Phone signer signature submission payload",
                                     "description": "Schema for phone signer signature submission"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "signer": {
+                                            "type": "string",
+                                            "description": "The locator for the device signer",
+                                            "example": "device:base64publickey"
+                                        },
+                                        "signature": {
+                                            "type": "object",
+                                            "properties": {
+                                                "r": {
+                                                    "type": "string",
+                                                    "description": "R component of the signature"
+                                                },
+                                                "s": {
+                                                    "type": "string",
+                                                    "description": "S component of the signature"
+                                                }
+                                            },
+                                            "required": ["r", "s"],
+                                            "description": "The signature components"
+                                        }
+                                    },
+                                    "required": ["signer", "signature"],
+                                    "title": "Device signer signature submission payload",
+                                    "description": "Schema for device signer signature submission with r,s components"
                                 }
                             ]
                         },

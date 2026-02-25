@@ -21,6 +21,7 @@ import {
 } from "../chains/chains";
 import type {
     ApiKeyInternalSignerConfig,
+    DeviceInternalSignerConfig,
     EmailInternalSignerConfig,
     EmailSignerConfig,
     InternalSignerConfig,
@@ -34,6 +35,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
+import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -83,7 +85,7 @@ export class WalletFactory {
             walletsLogger.info("walletFactory.getOrCreateWallet.existing", {
                 address: existingWallet.address,
             });
-            return this.createWalletInstance(existingWallet, args);
+            return await this.createWalletInstance(existingWallet, args);
         }
 
         walletsLogger.info("walletFactory.getOrCreateWallet.creating");
@@ -150,7 +152,7 @@ export class WalletFactory {
             address: existingWallet.address,
         });
 
-        return this.createWalletInstance(existingWallet, args);
+        return await this.createWalletInstance(existingWallet, args);
     }
 
     @WithLoggerContext({
@@ -167,6 +169,9 @@ export class WalletFactory {
         walletsLogger.info("walletFactory.createWallet.start");
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
+        if (adminSignerConfig.type === "device") {
+            throw new WalletCreationError("Device signer cannot be used as admin signer");
+        }
         const delegatedSigners = await this.buildDelegatedSigners(args);
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
@@ -195,25 +200,48 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
+        await this.saveDeviceSignerKeyIfNeeded(
+            walletResponse.address,
+            delegatedSigners,
+            args.options?.deviceSignerKeyStorage
+        );
+
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
         });
 
-        return this.createWalletInstance(walletResponse, args);
+        return await this.createWalletInstance(walletResponse, args);
     }
 
-    private createWalletInstance<C extends Chain>(
+    private async saveDeviceSignerKeyIfNeeded(
+        address: string,
+        delegatedSigners: Awaited<ReturnType<typeof this.buildDelegatedSigners>>,
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage
+    ) {
+        const deviceSigner = delegatedSigners.find(
+            (delegatedSigner): delegatedSigner is DelegatedSigner =>
+                typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
+        );
+        if (deviceSigner && deviceSignerKeyStorage == null) {
+            throw new WalletCreationError("Device signer key storage is required for device signers");
+        }
+        if (deviceSigner && deviceSignerKeyStorage) {
+            await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
+        }
+    }
+
+    private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
-    ): Wallet<C> {
+    ): Promise<Wallet<C>> {
         this.validateExistingWalletConfig(walletResponse, args);
-        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
+        const signerConfig = await this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,
                 owner: walletResponse.owner,
-                signer: assembleSigner(args.chain, signerConfig, walletResponse.address),
+                signer: assembleSigner(args.chain, signerConfig, args.options?.deviceSignerKeyStorage),
                 options: args.options,
                 alias: args.alias,
             },
@@ -221,11 +249,11 @@ export class WalletFactory {
         );
     }
 
-    private toInternalSignerConfig<C extends Chain>(
+    private async toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         signerArgs: SignerConfigForChain<C>,
         options?: WalletOptions
-    ): InternalSignerConfig<C> {
+    ): Promise<InternalSignerConfig<C>> {
         if (
             !(
                 walletResponse.chainType === "evm" ||
@@ -284,6 +312,21 @@ export class WalletFactory {
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as EmailInternalSignerConfig;
+            }
+            case "device": {
+                if (options?.deviceSignerKeyStorage == null) {
+                    throw new WalletCreationError("Device signer key storage is required for device signers");
+                }
+                const deviceSigner = await options.deviceSignerKeyStorage.getKey(walletResponse.address);
+                if (!deviceSigner) {
+                    // TODO: WAL-9101 Add Device signer when not available in the device
+                    throw new WalletCreationError("Device signer not found");
+                }
+                return {
+                    type: "device",
+                    locator: `device:${deviceSigner}`,
+                    address: walletResponse.address,
+                } as DeviceInternalSignerConfig;
             }
 
             case "phone": {
@@ -354,6 +397,19 @@ export class WalletFactory {
                 y: passkeyCredential.publicKey.y.toString(),
             },
         };
+    }
+
+    private async createDeviceSigner<C extends Chain>(
+        signer: SignerConfigForChain<C>,
+        deviceSignerKeyStorage: DeviceSignerKeyStorage
+    ): Promise<string> {
+        if (signer.type !== "device") {
+            throw new Error("Signer is not a device");
+        }
+
+        const publicKey = await deviceSignerKeyStorage.generateKey();
+
+        return `device:${publicKey}`;
     }
 
     private mutateSignerFromCustomAuth<C extends Chain>(args: WalletArgsFor<C>, isNewWalletSigner = false): void {
@@ -448,7 +504,10 @@ export class WalletFactory {
         }
 
         const delegatedSigner = delegatedSigners.find(
-            (ds) => this.isMatchingPasskeySigner(signer, ds, config) || this.getSignerLocator(signer) === ds.locator
+            (ds) =>
+                this.isMatchingPasskeySigner(signer, ds, config) ||
+                (ds.type === "device" && signer.type === "device") ||
+                this.getSignerLocator(signer) === ds.locator
         );
 
         if (delegatedSigner != null) {
@@ -507,6 +566,9 @@ export class WalletFactory {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {
                     return true;
                 }
+                if (existingSigner.type === "device" && inputSigner.type === "device") {
+                    return true;
+                }
                 return existingSigner.locator === this.getSignerLocator(inputSigner);
             });
 
@@ -548,7 +610,8 @@ export class WalletFactory {
     }
 
     private async registerDelegatedSigners<C extends Chain>(
-        delegatedSigners?: Array<SignerConfigForChain<C>>
+        delegatedSigners?: Array<SignerConfigForChain<C>>,
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
             delegatedSigners?.map(
@@ -558,6 +621,12 @@ export class WalletFactory {
                             return { signer: await this.createPasskeySigner(signer) };
                         }
                         return { signer };
+                    }
+                    if (signer.type === "device") {
+                        if (deviceSignerKeyStorage == null) {
+                            throw new WalletCreationError("Device signer key storage is required for device signers");
+                        }
+                        return { signer: await this.createDeviceSigner(signer, deviceSignerKeyStorage) };
                     }
                     return { signer: this.getSignerLocator(signer) };
                 }
@@ -569,7 +638,7 @@ export class WalletFactory {
         args: WalletCreateArgs<C>
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         const delegatedSigners = args.onCreateConfig?.delegatedSigners;
-        return await this.registerDelegatedSigners(delegatedSigners);
+        return await this.registerDelegatedSigners(delegatedSigners, args.options?.deviceSignerKeyStorage);
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
