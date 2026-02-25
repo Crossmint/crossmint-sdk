@@ -63,6 +63,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         }
 
         const id = crypto.randomUUID();
+        const expectedOrigin = new URL(this.iframeUrl).origin;
 
         return new Promise<T>((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -73,6 +74,10 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             function handler(event: MessageEvent<IframeRpcResponse>) {
                 const data = event.data;
                 if (data == null || data.id !== id) {
+                    return;
+                }
+
+                if (event.origin !== expectedOrigin) {
                     return;
                 }
 
