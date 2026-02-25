@@ -222,6 +222,9 @@ export class WalletFactory {
             (delegatedSigner): delegatedSigner is DelegatedSigner =>
                 typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
         );
+        if (deviceSigner && deviceSignerKeyStorage == null) {
+            throw new WalletCreationError("Device signer key storage is required for device signers");
+        }
         if (deviceSigner && deviceSignerKeyStorage) {
             await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
         }
