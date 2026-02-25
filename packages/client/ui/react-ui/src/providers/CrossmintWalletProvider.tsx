@@ -1,6 +1,12 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { CrossmintWalletBaseProvider, type UIRenderProps, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import {
+    CrossmintWalletBaseProvider,
+    type UIRenderProps,
+    type CreateOnLogin,
+    useCrossmint,
+} from "@crossmint/client-sdk-react-base";
+import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -39,6 +45,13 @@ export function CrossmintWalletProvider({
     createOnLogin,
     callbacks,
 }: CrossmintWalletProviderProps) {
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+
+    const deviceSignerKeyStorage = useMemo(
+        () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
+        [crossmint.apiKey]
+    );
+
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
@@ -46,6 +59,7 @@ export function CrossmintWalletProvider({
             showPasskeyHelpers={showPasskeyHelpers}
             callbacks={callbacks}
             renderUI={renderWebUI}
+            deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
         </CrossmintWalletBaseProvider>
