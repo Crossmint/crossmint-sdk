@@ -200,7 +200,11 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        await this.saveDeviceSignerKey(walletResponse.address, delegatedSigners, args.options?.deviceSignerKeyStorage);
+        await this.saveDeviceSignerKeyIfNeeded(
+            walletResponse.address,
+            delegatedSigners,
+            args.options?.deviceSignerKeyStorage
+        );
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
@@ -209,7 +213,7 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, args);
     }
 
-    private async saveDeviceSignerKey(
+    private async saveDeviceSignerKeyIfNeeded(
         address: string,
         delegatedSigners: Awaited<ReturnType<typeof this.buildDelegatedSigners>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
@@ -218,6 +222,9 @@ export class WalletFactory {
             (delegatedSigner): delegatedSigner is DelegatedSigner =>
                 typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
         );
+        if (deviceSigner && deviceSignerKeyStorage == null) {
+            throw new WalletCreationError("Device signer key storage is required for device signers");
+        }
         if (deviceSigner && deviceSignerKeyStorage) {
             await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
         }
