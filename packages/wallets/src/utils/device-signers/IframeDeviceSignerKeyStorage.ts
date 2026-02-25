@@ -53,6 +53,17 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         await this.rpc("deleteKey", { address });
     }
 
+    destroy(): void {
+        if (this.iframePromise != null) {
+            this.iframePromise
+                .then((iframe) => iframe.remove())
+                .catch(() => {
+                    /* noop */
+                });
+            this.iframePromise = null;
+        }
+    }
+
     // ── Internal helpers ─────────────────────────────────────────────
 
     private async rpc<T = unknown>(type: string, payload: Record<string, unknown>): Promise<T> {

@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletBaseProvider,
@@ -51,6 +51,10 @@ export function CrossmintWalletProvider({
         () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
         [crossmint.apiKey]
     );
+
+    useEffect(() => {
+        return () => deviceSignerKeyStorage.destroy();
+    }, [deviceSignerKeyStorage]);
 
     return (
         <CrossmintWalletBaseProvider
