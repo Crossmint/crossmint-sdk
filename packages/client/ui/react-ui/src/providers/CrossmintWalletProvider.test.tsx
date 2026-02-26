@@ -13,6 +13,12 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
     ),
 }));
 
+vi.mock("@crossmint/wallets-sdk", () => ({
+    IframeDeviceSignerKeyStorage: vi.fn(() => ({
+        destroy: vi.fn(),
+    })),
+}));
+
 vi.mock("@/components/auth/PasskeyPrompt", () => ({
     PasskeyPrompt: () => <div data-testid="passkey-prompt">Passkey Prompt</div>,
 }));

@@ -44,4 +44,4 @@ export type {
 } from "./signers/types";
 
 // Device Signer Key Storage Interface
-export { DeviceSignerKeyStorage } from "./utils/device-signers";
+export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage } from "./utils/device-signers";
