@@ -1,5 +1,18 @@
 # @crossmint/wallets-sdk
 
+## 0.20.0
+
+### Minor Changes
+
+- 454a9cc: Chain environment validation now throws an error when using testnet chains in production and automatically converts mainnet chains to their testnet equivalents in staging/development environments.
+
+### Patch Changes
+
+- f5bcec1: update tempo testnet details
+- Updated dependencies [f5bcec1]
+  - @crossmint/common-sdk-base@0.9.18
+  - @crossmint/common-sdk-auth@1.0.70
+
 ## 0.19.0
 
 ### Minor Changes
