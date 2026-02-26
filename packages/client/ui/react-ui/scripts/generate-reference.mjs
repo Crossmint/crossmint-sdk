@@ -26,10 +26,10 @@ const PRODUCTS = {
         walletMethods: {
             enabled: true,
             description:
-                "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/classes/Wallet)** for complete documentation.",
+                "The `wallet` instance returned by `useWallet()` provides methods for token transfers, balances, signing, and more.\n\nSince the React SDK wraps the Wallets SDK, see the **[Wallets SDK Reference](/sdk-reference/wallets/typescript/classes/Wallet)** for complete documentation.",
             baseClass: "Wallet",
             chainClasses: ["EVMWallet", "SolanaWallet", "StellarWallet"],
-            docsBasePath: "/sdk-reference/wallets/classes",
+            docsBasePath: "/sdk-reference/wallets/typescript/classes",
             skip: ["approve", "approveTransaction", "experimental_apiClient", "from"],
         },
         getStartedExamples: {

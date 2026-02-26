@@ -1,5 +1,4 @@
-import pkg from "typedoc-plugin-markdown";
-const { MarkdownPageEvent } = pkg;
+import { MarkdownPageEvent } from "typedoc-plugin-markdown";
 
 export function load(app) {
     app.renderer.postRenderAsyncJobs.push(async (renderer) => {
