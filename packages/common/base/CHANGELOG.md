@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.18
+
+### Patch Changes
+
+- f5bcec1: update tempo testnet details
+
 ## 0.9.17
 
 ### Patch Changes
