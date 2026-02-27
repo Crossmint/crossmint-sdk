@@ -1,4 +1,4 @@
-import { BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
 import type { Chain as ViemChain } from "viem";
 import {
     baseSepolia,
@@ -178,4 +178,51 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
 
 export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {
     return MAINNET_TO_TESTNET_MAP[chain];
+}
+
+/**
+ * Validates that a chain is appropriate for the given environment.
+ * In production, only mainnet chains are allowed - throws if a testnet chain is used.
+ * In non-production environments, mainnet chains are automatically converted to their testnet equivalent.
+ *
+ * @param chain - The chain to validate
+ * @param environment - The API key environment prefix
+ * @param logger - Optional logging callbacks for auto-conversion and mismatch warnings
+ * @returns The validated (and potentially converted) chain
+ */
+export function validateChainForEnvironment<C extends Chain>(
+    chain: C,
+    environment: APIKeyEnvironmentPrefix,
+    logger?: {
+        onAutoConverted?: (chain: C, convertedTo: string, environment: APIKeyEnvironmentPrefix) => void;
+        onMismatch?: (chain: C, environment: APIKeyEnvironmentPrefix) => void;
+        onError?: (chain: C) => never;
+    }
+): C {
+    if (chain === "solana" || chain === "stellar") {
+        return chain;
+    }
+
+    const evmChain = chain as EVMSmartWalletChain;
+    const isProductionEnv = environment === APIKeyEnvironmentPrefix.PRODUCTION;
+
+    if (isProductionEnv && isTestnetChain(evmChain)) {
+        if (logger?.onError) {
+            logger.onError(chain);
+        }
+        throw new Error(
+            `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
+        );
+    }
+
+    if (!isProductionEnv && isMainnetChain(evmChain)) {
+        const testnetEquivalent = mainnetToTestnet(evmChain);
+        if (testnetEquivalent != null) {
+            logger?.onAutoConverted?.(chain, testnetEquivalent, environment);
+            return testnetEquivalent as unknown as C;
+        }
+        logger?.onMismatch?.(chain, environment);
+    }
+
+    return chain;
 }
