@@ -258,7 +258,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
-                console.error("Failed to create wallet:", error);
+                logger.error("Failed to create wallet:", error);
                 setWallet(undefined);
                 setWalletStatus("error");
                 return undefined;
