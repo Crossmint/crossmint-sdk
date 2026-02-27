@@ -9,6 +9,7 @@ import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks";
 import { CountdownButton } from "@/components/common/CountdownButton";
 import { theme } from "@/styles";
+import { reactUiLogger } from "@/logger";
 
 const Container = styled.div`
     display: flex;
@@ -89,7 +90,7 @@ export function EmailOTPInput({
             setDialogOpen(false, true);
             setStep("initial");
         } catch (error) {
-            console.error("Error confirming email OTP", error);
+            reactUiLogger.error("Error confirming email OTP", error);
             setError("Invalid code. Please try again.");
             setHasError(true);
         } finally {

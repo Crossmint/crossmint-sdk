@@ -7,6 +7,7 @@ import { environmentUrlConfig, exportSignerInboundEvents, exportSignerOutboundEv
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { isExportableSigner } from "@crossmint/wallets-sdk";
 import { IFrameWindow, SignersWindowTransport } from "@crossmint/client-sdk-window";
+import { reactUiLogger } from "@/logger";
 
 export interface ExportPrivateKeyButtonProps {
     /** Optional appearance configuration for styling the export button. */
@@ -42,7 +43,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
                     setFrameUrl(exportUrl.toString());
                 }
             } catch (error) {
-                console.error("Failed to get TEE URL:", error);
+                reactUiLogger.error("Failed to get TEE URL:", error);
             }
         }
     }, [crossmint]);
@@ -67,7 +68,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
                 await wallet.signer._exportPrivateKey(connection);
             }
         } catch (error) {
-            console.error("Failed to export private key:", error);
+            reactUiLogger.error("Failed to export private key:", error);
         }
     }, [wallet, frameUrl]);
 

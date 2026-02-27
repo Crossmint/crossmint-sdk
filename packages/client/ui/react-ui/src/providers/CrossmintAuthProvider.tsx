@@ -17,7 +17,9 @@ import {
     useCrossmint,
     CrossmintAuthBaseProvider,
     useCrossmintAuthBase,
+    useLogger,
 } from "@crossmint/client-sdk-react-base";
+import { LoggerContext } from "./CrossmintProvider";
 import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
@@ -56,6 +58,7 @@ function CrossmintAuthProviderContent({
     loginMethods = ["email", "google"],
 }: CrossmintAuthProviderProps) {
     const baseAuth = useCrossmintAuthBase();
+    const logger = useLogger(LoggerContext);
     const { crossmint, experimental_setCustomAuth, experimental_customAuth } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
@@ -98,7 +101,7 @@ function CrossmintAuthProviderContent({
     const login = useCallback(
         (defaultEmail?: string | MouseEvent) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logger.info("User already logged in");
                 return;
             }
 
@@ -129,7 +132,7 @@ function CrossmintAuthProviderContent({
     const experimental_loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logger.info("User already logged in");
                 return;
             }
             await loginWithOAuthRef.current?.(provider);
@@ -215,11 +218,12 @@ function AuthWrapper({
 }) {
     const { startOAuthLogin } = useOAuthFlow();
     const baseAuth = useCrossmintAuthBase();
+    const logger = useLogger(LoggerContext);
 
     const loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
-                console.log("User already logged in");
+                logger.info("User already logged in");
                 return;
             }
             await startOAuthLogin(provider);
