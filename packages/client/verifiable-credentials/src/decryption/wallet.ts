@@ -1,3 +1,4 @@
+import { credentialsLogger } from "@/logger";
 import { MetamaskService } from "@/services/metamaskSign";
 import { WalletAuthService } from "@/services/walletAuth";
 import {
@@ -33,7 +34,7 @@ export class CrossmintDecrypt {
 
     private async tryDecrypt(credential: EncryptedVerifiableCredential): Promise<any> {
         const challenge = await this.authService.getChallenge(this.userAddress);
-        console.log("Waiting for signature from user");
+        credentialsLogger.info("Waiting for signature from user");
         const payload = credential.payload + challenge;
         const signature = await this.signCallback(this.userAddress, payload);
         return this.authService.decrypt(credential, challenge, signature, this.userAddress);
