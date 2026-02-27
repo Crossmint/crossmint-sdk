@@ -18,7 +18,7 @@ type BiometricRequestMessage = {
     type: "biometric-request";
     id: string;
     action: "createCredential" | "sign";
-    payload: { name: string } | { credentialId: string };
+    payload: { name: string } | { credentialId: string; challenge: string };
 };
 
 /**
@@ -168,10 +168,26 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
                 if (data.action === "createCredential") {
                     const payload = data.payload as { name: string };
                     const credential = await WebAuthnP256.createCredential({ name: payload.name });
-                    result = { id: credential.id };
+                    result = {
+                        id: credential.id,
+                        publicKey: {
+                            x: `0x${credential.publicKey.x.toString(16)}`,
+                            y: `0x${credential.publicKey.y.toString(16)}`,
+                        },
+                    };
                 } else if (data.action === "sign") {
-                    const payload = data.payload as { credentialId: string };
-                    await WebAuthnP256.sign({ credentialId: payload.credentialId, challenge: "0x0" });
+                    const payload = data.payload as { credentialId: string; challenge: string };
+                    const { signature, metadata } = await WebAuthnP256.sign({
+                        credentialId: payload.credentialId,
+                        challenge: payload.challenge as `0x${string}`,
+                    });
+                    result = {
+                        signature: {
+                            r: `0x${signature.r.toString(16)}`,
+                            s: `0x${signature.s.toString(16)}`,
+                        },
+                        metadata,
+                    };
                 }
 
                 contentWindow.postMessage({ type: "biometric-response", id: data.id, result }, this.iframeUrl);
