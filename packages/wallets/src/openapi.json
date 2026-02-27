@@ -510,6 +510,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -1444,6 +1445,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -1727,6 +1729,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -2008,6 +2011,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -3953,6 +3957,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -4769,6 +4774,7 @@
                                 "world-chain",
                                 "plume",
                                 "flow",
+                                "tempo",
                                 "solana",
                                 "stellar"
                             ],
@@ -5049,7 +5055,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -5200,7 +5207,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -5343,7 +5351,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted. Required for EVM wallets, optional for others."
                                     }
@@ -5477,7 +5486,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -5648,6 +5658,7 @@
                                     "world-chain-sepolia",
                                     "zora-sepolia",
                                     "arc-testnet",
+                                    "tempo",
                                     "tempo-testnet"
                                 ],
                                 "description": "The chain where the signer will be registered"
@@ -6117,6 +6128,7 @@
                                     "world-chain-sepolia",
                                     "zora-sepolia",
                                     "arc-testnet",
+                                    "tempo",
                                     "tempo-testnet"
                                 ],
                                 "description": "The chain where the signer will be registered"
@@ -6353,6 +6365,7 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
+                                            "tempo",
                                             "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
@@ -6560,7 +6573,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -6888,6 +6902,7 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
+                                            "tempo",
                                             "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
@@ -7040,7 +7055,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -12557,7 +12573,8 @@
                                 "abstract",
                                 "world-chain",
                                 "plume",
-                                "flow"
+                                "flow",
+                                "tempo"
                             ],
                             "description": "The blockchain chain",
                             "example": "ethereum"
@@ -12881,7 +12898,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 }
@@ -13012,7 +13030,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 },
@@ -13527,6 +13546,7 @@
                                                         "world-chain-sepolia",
                                                         "zora-sepolia",
                                                         "arc-testnet",
+                                                        "tempo",
                                                         "tempo-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
@@ -14177,7 +14197,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 }
@@ -16408,7 +16429,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -16534,7 +16556,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -17019,6 +17042,7 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
+                                            "tempo",
                                             "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
@@ -17619,7 +17643,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -19659,7 +19684,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 }
@@ -19802,7 +19828,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 },
@@ -20089,7 +20116,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -20224,7 +20252,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -20485,6 +20514,7 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
+                                            "tempo",
                                             "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
@@ -21095,7 +21125,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -21735,6 +21766,7 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
+                                            "tempo",
                                             "tempo-testnet"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
@@ -22345,7 +22377,8 @@
                                             "abstract",
                                             "world-chain",
                                             "plume",
-                                            "flow"
+                                            "flow",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -23000,6 +23033,7 @@
                                                         "world-chain-sepolia",
                                                         "zora-sepolia",
                                                         "arc-testnet",
+                                                        "tempo",
                                                         "tempo-testnet"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
@@ -23622,7 +23656,8 @@
                                                         "abstract",
                                                         "world-chain",
                                                         "plume",
-                                                        "flow"
+                                                        "flow",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 }
