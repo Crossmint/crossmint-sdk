@@ -2,16 +2,39 @@
  * Abstract storage interface for managing P-256 (secp256r1) device signer key pairs.
  * Implementations handle key generation, persistence, retrieval, signing, and deletion.
  */
+
+export type BiometricPolicy = "always" | "session" | "none";
 export abstract class DeviceSignerKeyStorage {
     constructor(protected readonly apiKey: string) {}
 
     /**
      * Generate a new P-256 key pair and persist it.
-     * @param address - Optional wallet address to associate the key with. If omitted, the key
-     *                  should be stored under a temporary identifier until {@link mapAddressToKey} is called.
+     * @param params - Key generation parameters.
+     * @param params.address - Optional wallet address to associate the key with. If omitted, the key
+     *                         should be stored under a temporary identifier until {@link mapAddressToKey} is called.
+     * @param params.biometricPolicy - Optional biometric policy to apply to the key.
+     *                                 If `"session"`, the key should be stored in a session-only manner
+     *                                 (requires `biometricExpirationTime`).
+     *                                 If `"always"`, the key should be stored in a persistent manner.
+     *                                 If `"none"`, the key should be stored in a non-biometric manner.
+     * @param params.biometricExpirationTime - Required when `biometricPolicy` is `"session"`.
+     *                                        The expiration time (in seconds) for the session-scoped key.
      * @returns The uncompressed public key encoded as a base64 string.
      */
-    abstract generateKey(address?: string): Promise<string>;
+    abstract generateKey(params: {
+        address?: string;
+        biometricPolicy?: Exclude<BiometricPolicy, "session">;
+    }): Promise<string>;
+    abstract generateKey(params: {
+        address?: string;
+        biometricPolicy: "session";
+        biometricExpirationTime: number;
+    }): Promise<string>;
+    abstract generateKey(params: {
+        address?: string;
+        biometricPolicy?: BiometricPolicy;
+        biometricExpirationTime?: number;
+    }): Promise<string>;
 
     /**
      * Associate an already-generated key pair with a wallet address.

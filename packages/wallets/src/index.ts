@@ -45,3 +45,4 @@ export type {
 
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage } from "./utils/device-signers";
+export type { BiometricRequestHandler } from "./utils/device-signers";

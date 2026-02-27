@@ -407,7 +407,13 @@ export class WalletFactory {
             throw new Error("Signer is not a device");
         }
 
-        const publicKey = await deviceSignerKeyStorage.generateKey();
+        const hasBiometricPolicy = "biometricPolicy" in signer;
+
+        const publicKey = await deviceSignerKeyStorage.generateKey({
+            ...(hasBiometricPolicy && { biometricPolicy: signer.biometricPolicy }),
+            ...(hasBiometricPolicy &&
+                signer.biometricPolicy === "session" && { biometricExpirationTime: signer.biometricExpirationTime }),
+        });
 
         return `device:${publicKey}`;
     }

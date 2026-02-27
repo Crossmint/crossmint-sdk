@@ -16,6 +16,7 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 vi.mock("@crossmint/wallets-sdk", () => ({
     IframeDeviceSignerKeyStorage: vi.fn(() => ({
         destroy: vi.fn(),
+        setBiometricRequestHandler: vi.fn(),
     })),
 }));
 
@@ -25,6 +26,10 @@ vi.mock("@/components/auth/PasskeyPrompt", () => ({
 
 vi.mock("@/components/signers/EmailSignersDialog", () => ({
     EmailSignersDialog: () => <div data-testid="email-signers-dialog">Email Signers Dialog</div>,
+}));
+
+vi.mock("@/components/signers/PhoneSignersDialog", () => ({
+    PhoneSignersDialog: () => <div data-testid="phone-signers-dialog">Phone Signers Dialog</div>,
 }));
 
 vi.mock("../logger/init", () => ({
@@ -121,5 +126,29 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+    });
+
+    it("sets biometric request handler on device signer key storage", async () => {
+        const { IframeDeviceSignerKeyStorage } = await import("@crossmint/wallets-sdk");
+
+        render(
+            <CrossmintWalletProvider>
+                <div>Test</div>
+            </CrossmintWalletProvider>
+        );
+
+        const mockInstance = (IframeDeviceSignerKeyStorage as ReturnType<typeof vi.fn>).mock.results[0].value;
+        expect(mockInstance.setBiometricRequestHandler).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    it("renders the biometric passkey prompt", () => {
+        render(
+            <CrossmintWalletProvider>
+                <div>Test</div>
+            </CrossmintWalletProvider>
+        );
+
+        // The PasskeyPrompt is rendered for biometric activation
+        expect(screen.getAllByTestId("passkey-prompt").length).toBeGreaterThanOrEqual(1);
     });
 });
