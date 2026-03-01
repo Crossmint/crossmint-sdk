@@ -56,6 +56,7 @@ function ToasterWrapper() {
                 style: {
                     backgroundColor: uiConfig.colors.backgroundSecondary,
                     color: uiConfig.colors.textPrimary,
+                    overflowWrap: "anywhere",
                 },
                 error: {
                     iconTheme: {
