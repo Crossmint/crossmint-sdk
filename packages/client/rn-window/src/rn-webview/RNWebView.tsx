@@ -32,6 +32,7 @@ const INJECTED_BRIDGE_JS = `
                     return '[Function]';
                 }
                 if (typeof arg === 'object' && arg !== null) {
+                    const seen = new Set(); // Declare before use to avoid hoisting issues
                     try {
                         // Use a replacer function to handle potential circular references
                         return JSON.stringify(arg, (key, value) => {
@@ -45,14 +46,10 @@ const INJECTED_BRIDGE_JS = `
                         }, 2); // Optional: pretty print JSON
                     } catch (e) {
                         return '[Unserializable Object]';
-                    } finally {
-                        // Clean up seen set after stringifying each top-level argument
-                        var seen = new Set(); // Use var for function scope before ES6 modules
                     }
                 }
                 return String(arg); // Convert primitive types to string directly
             });
-             var seen = new Set(); // Declare seen here for the final stringify
             const message = JSON.stringify({ type: 'console.' + type, data: serializedArgs });
             if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
                  window.ReactNativeWebView.postMessage(message);
