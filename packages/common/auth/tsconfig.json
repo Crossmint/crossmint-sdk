@@ -7,5 +7,6 @@
             "@/*": ["src/*"]
         }
     },
+    "references": [{ "path": "../base" }, { "path": "../../client/base" }],
     "include": ["src/**/*"]
 }
