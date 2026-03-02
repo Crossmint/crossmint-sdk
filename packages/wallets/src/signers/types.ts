@@ -142,9 +142,6 @@ export type PasskeySignResult = {
 export type DeviceSignerConfig =
     | {
           type: "device";
-      }
-    | {
-          type: "device";
           biometricPolicy: Exclude<BiometricPolicy, "session">;
       }
     | {

@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
+import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
@@ -128,9 +129,7 @@ describe("CrossmintWalletProvider", () => {
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 
-    it("sets biometric request handler on device signer key storage", async () => {
-        const { IframeDeviceSignerKeyStorage } = await import("@crossmint/wallets-sdk");
-
+    it("sets biometric request handler on device signer key storage", () => {
         render(
             <CrossmintWalletProvider>
                 <div>Test</div>

@@ -213,7 +213,6 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private createIframe(): Promise<HTMLIFrameElement> {
         const iframe = document.createElement("iframe");
         iframe.src = this.iframeUrl;
-        iframe.allow = "publickey-credentials-create; publickey-credentials-get";
 
         // Invisible but functional — follows the pattern from NcsIframeManager
         Object.assign(iframe.style, {
