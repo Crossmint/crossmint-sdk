@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletBaseProvider,
@@ -52,6 +52,32 @@ export function CrossmintWalletProvider({
         [crossmint.apiKey]
     );
 
+    // ── Biometric prompt state ──────────────────────────────────────
+    const [biometricPromptState, setBiometricPromptState] = useState<{
+        open: boolean;
+        type: "create-wallet" | "transaction";
+        primaryActionOnClick?: () => void;
+    }>({ open: false, type: "create-wallet" });
+
+    const biometricRequestHandler = useCallback(
+        (action: "createCredential" | "sign") =>
+            new Promise<void>((resolve) => {
+                setBiometricPromptState({
+                    open: true,
+                    type: action === "createCredential" ? "create-wallet" : "transaction",
+                    primaryActionOnClick: () => {
+                        setBiometricPromptState((prev) => ({ ...prev, open: false }));
+                        resolve();
+                    },
+                });
+            }),
+        []
+    );
+
+    useEffect(() => {
+        deviceSignerKeyStorage.setBiometricRequestHandler(biometricRequestHandler);
+    }, [deviceSignerKeyStorage, biometricRequestHandler]);
+
     useEffect(() => {
         return () => deviceSignerKeyStorage.destroy();
     }, [deviceSignerKeyStorage]);
@@ -66,6 +92,14 @@ export function CrossmintWalletProvider({
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
+            <PasskeyPrompt
+                state={{
+                    open: biometricPromptState.open,
+                    type: biometricPromptState.type,
+                    primaryActionOnClick: biometricPromptState.primaryActionOnClick,
+                }}
+                appearance={appearance}
+            />
         </CrossmintWalletBaseProvider>
     );
 }

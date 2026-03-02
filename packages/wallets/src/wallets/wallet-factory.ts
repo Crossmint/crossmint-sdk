@@ -22,6 +22,7 @@ import {
 import type {
     ApiKeyInternalSignerConfig,
     DeviceInternalSignerConfig,
+    DeviceSignerConfig,
     EmailInternalSignerConfig,
     EmailSignerConfig,
     InternalSignerConfig,
@@ -399,15 +400,14 @@ export class WalletFactory {
         };
     }
 
-    private async createDeviceSigner<C extends Chain>(
-        signer: SignerConfigForChain<C>,
+    private async createDeviceSigner(
+        signer: DeviceSignerConfig,
         deviceSignerKeyStorage: DeviceSignerKeyStorage
     ): Promise<string> {
-        if (signer.type !== "device") {
-            throw new Error("Signer is not a device");
-        }
-
-        const publicKey = await deviceSignerKeyStorage.generateKey();
+        const publicKey = await deviceSignerKeyStorage.generateKey({
+            biometricPolicy: signer.biometricPolicy,
+            ...(signer.biometricPolicy === "session" && { biometricExpirationTime: signer.biometricExpirationTime }),
+        });
 
         return `device:${publicKey}`;
     }
