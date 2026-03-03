@@ -191,10 +191,7 @@ function CrossmintWalletProviderInternal({
         setNeedsWebView(true);
         let attempts = 0;
         const maxAttempts = 600; // 30 seconds total with 50ms intervals
-        while (
-            (webViewParentRef.current == null || !webViewParentRef.current.isConnected) &&
-            attempts < maxAttempts
-        ) {
+        while ((webViewParentRef.current == null || !webViewParentRef.current.isConnected) && attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
         }
