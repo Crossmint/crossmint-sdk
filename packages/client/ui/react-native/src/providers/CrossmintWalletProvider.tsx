@@ -189,20 +189,38 @@ function CrossmintWalletProviderInternal({
     const initializeWebView = async () => {
         logger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
-        let attempts = 0;
-        const maxAttempts = 100; // 5 seconds total with 50ms intervals
-        while (webViewParentRef.current == null && attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            attempts++;
+
+        const pollForConnection = async (maxMs: number): Promise<boolean> => {
+            const maxPolls = maxMs / 50;
+            let polls = 0;
+            while ((webViewParentRef.current == null || !webViewParentRef.current.isConnected) && polls < maxPolls) {
+                await new Promise((resolve) => setTimeout(resolve, 50));
+                polls++;
+            }
+            return webViewParentRef.current != null && webViewParentRef.current.isConnected;
+        };
+
+        // First attempt: wait for WebView load + handshake
+        if (await pollForConnection(30_000)) {
+            logger.info("react-native.wallet.webview.init.success");
+            return;
         }
 
-        if (webViewParentRef.current == null) {
-            logger.error("react-native.wallet.webview.init.timeout", {
-                attempts,
-            });
-            throw new Error("WebView not ready or handshake incomplete");
+        // Retry: reload WebView and wait for re-handshake (onWebViewLoad will trigger it)
+        if (webViewParentRef.current != null) {
+            logger.info("react-native.wallet.webview.init.retrying");
+            webviewRef.current?.reload();
+            if (await pollForConnection(30_000)) {
+                logger.info("react-native.wallet.webview.init.success", { retried: true });
+                return;
+            }
         }
-        logger.info("react-native.wallet.webview.init.success", { attempts });
+
+        logger.error("react-native.wallet.webview.init.timeout", {
+            hasRef: webViewParentRef.current != null,
+            isConnected: webViewParentRef.current?.isConnected ?? false,
+        });
+        throw new Error("WebView not ready or handshake incomplete");
     };
 
     return (

@@ -96,20 +96,59 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     }
 
     /**
-     * Override sendAction to add automatic recovery for fatal errors.
-     * When a recoverable error is detected, reloads WebView and retries once with the original timeout.
+     * Override sendAction to add automatic recovery for disconnections, timeouts, and fatal errors.
+     * - If not connected, waits for ongoing handshake or triggers reload before sending
+     * - On timeout or recoverable error, reloads WebView and retries exactly once
      */
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
     ): Promise<z.infer<IncomingEvents[R]>> {
-        const response = await super.sendAction(args);
+        if (!this.isConnected) {
+            await this.ensureConnected();
+        }
+
+        const response = await this.sendActionWithTimeoutRecovery(args);
 
         if (this.isRecoverableError(response)) {
-            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
+            console.info(`[WebViewParent] Recoverable error (code: ${(response as any).code}), reloading and retrying`);
             await this.reloadAndHandshake();
             return await super.sendAction(args);
         }
 
         return response;
+    }
+
+    /**
+     * Calls super.sendAction and, on timeout, reloads the WebView and retries exactly once.
+     * The retry is NOT wrapped in another try-catch, so a second timeout propagates to the caller.
+     */
+    private async sendActionWithTimeoutRecovery<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
+        args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
+    ): Promise<z.infer<IncomingEvents[R]>> {
+        try {
+            return await super.sendAction(args);
+        } catch (error) {
+            if (typeof error === "string" && error.includes("Timed out")) {
+                console.info("[WebViewParent] sendAction timed out, reloading WebView and retrying");
+                await this.reloadAndHandshake();
+                return await super.sendAction(args);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Ensures the WebView is connected before sending actions.
+     * Joins an existing handshake via single-flight pattern if one is in progress,
+     * falls back to full reload if handshake fails.
+     */
+    private async ensureConnected(): Promise<void> {
+        try {
+            console.info("[WebViewParent] Not connected, awaiting handshake before sendAction");
+            await this.handshakeWithChild();
+        } catch {
+            console.info("[WebViewParent] Handshake failed, reloading WebView");
+            await this.reloadAndHandshake();
+        }
     }
 }

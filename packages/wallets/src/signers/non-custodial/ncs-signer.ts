@@ -124,7 +124,7 @@ export abstract class NonCustodialSigner implements Signer {
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
-            options: DEFAULT_EVENT_OPTIONS,
+            options: POLLING_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
 
@@ -355,4 +355,10 @@ export abstract class NonCustodialSigner implements Signer {
 
 export const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 30_000,
+};
+
+/** Event options for idempotent read operations (e.g. get-status) that are safe to retry periodically. */
+export const POLLING_EVENT_OPTIONS = {
+    timeoutMs: 30_000,
+    intervalMs: 3_000,
 };
