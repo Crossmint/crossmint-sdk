@@ -9,7 +9,6 @@ import {
     type WalletCreateArgs,
     type PhoneSignerConfig,
     type DeviceSignerKeyStorage,
-    Signer,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -124,8 +123,7 @@ export function CrossmintWalletBaseProvider({
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
-    const [signer, setSigner] = useState<Signer | undefined>(undefined);
-    const signerAuth = useSignerAuth(signer);
+    const signerAuth = useSignerAuth(wallet?.signer);
     const { onAuthRequired } = signerAuth;
 
     const [emailSignerState, setEmailSignerState] = useState({
@@ -134,10 +132,6 @@ export function CrossmintWalletBaseProvider({
         verifyOtp: null as ((otp: string) => Promise<void>) | null,
         reject: null as ((error?: Error) => void) | null,
     });
-
-    useEffect(() => {
-        setSigner(wallet?.signer);
-    }, [wallet]);
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -290,7 +284,6 @@ export function CrossmintWalletBaseProvider({
                                 const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
                                     deviceSignerKeyStorage,
                                 });
-                                setSigner(assembledSigner);
                                 wallet.signer = assembledSigner;
                             },
                         },
