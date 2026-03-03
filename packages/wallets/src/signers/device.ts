@@ -1,10 +1,6 @@
 import type { DeviceInternalSignerConfig, DeviceSignResult } from "./types";
 import type { Signer } from "./types";
 import type { BiometricPolicy, DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
-
-export const isDeviceSigner = (signer: Signer): signer is DeviceSigner => {
-    return signer.type === "device";
-};
 export class DeviceSigner implements Signer<"device"> {
     private readonly config: DeviceInternalSignerConfig;
     private readonly deviceSignerKeyStorage: DeviceSignerKeyStorage;

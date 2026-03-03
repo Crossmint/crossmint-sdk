@@ -47,7 +47,7 @@ import type { Chain } from "../chains/chains";
 import type { Signer, SignerConfigForChain } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
-import { isDeviceSigner } from "@/signers/device";
+import { DeviceSigner } from "@/signers/device";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -353,7 +353,6 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        await this.ensureDeviceSignerReady();
 
         const sendParams = {
             recipient,
@@ -625,10 +624,13 @@ export class Wallet<C extends Chain> {
         if (this.signer instanceof NonCustodialSigner) {
             await this.signer.ensureAuthenticated();
         }
+        if (this.signer instanceof DeviceSigner) {
+            await this.ensureDeviceSignerReady();
+        }
     }
 
     private async ensureDeviceSignerReady(): Promise<void> {
-        if (!isDeviceSigner(this.signer)) {
+        if (!(this.signer instanceof DeviceSigner)) {
             return;
         }
 
@@ -654,8 +656,8 @@ export class Wallet<C extends Chain> {
         const isRegistered = signers.some((s) => s.signer === signerLocator);
 
         if (!isRegistered) {
-            // We need to use the admin signer to register the device signer
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
+            // We need to use the admin signer to register the device signer
             await this.options?.experimental_callbacks?.onChangeSigner?.(this.adminSigner);
             await this.addDelegatedSigner({ signer: signerLocator });
         }
