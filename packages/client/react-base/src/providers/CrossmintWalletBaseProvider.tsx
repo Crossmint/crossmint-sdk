@@ -9,6 +9,7 @@ import {
     type WalletCreateArgs,
     type PhoneSignerConfig,
     type DeviceSignerKeyStorage,
+    Signer,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -123,7 +124,8 @@ export function CrossmintWalletBaseProvider({
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
-    const signerAuth = useSignerAuth(wallet?.signer);
+    const [signer, setSigner] = useState<Signer | undefined>(undefined);
+    const signerAuth = useSignerAuth(signer);
     const { onAuthRequired } = signerAuth;
 
     const [emailSignerState, setEmailSignerState] = useState({
@@ -132,6 +134,10 @@ export function CrossmintWalletBaseProvider({
         verifyOtp: null as ((otp: string) => Promise<void>) | null,
         reject: null as ((error?: Error) => void) | null,
     });
+
+    useEffect(() => {
+        setSigner(wallet?.signer);
+    }, [wallet]);
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -279,6 +285,12 @@ export function CrossmintWalletBaseProvider({
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                            onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
+                                const resolvedSignerConfig = resolveSignerConfig(signerConfig);
+                                const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig);
+                                setSigner(assembledSigner);
+                                wallet.signer = assembledSigner;
+                            },
                         },
                         deviceSignerKeyStorage,
                     },

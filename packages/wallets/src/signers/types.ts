@@ -93,6 +93,8 @@ export type DeviceInternalSignerConfig = {
     type: "device";
     locator?: string;
     address: string;
+    biometricPolicy?: BiometricPolicy;
+    biometricExpirationTime?: number;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {

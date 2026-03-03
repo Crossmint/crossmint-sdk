@@ -33,7 +33,9 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly;
 
-export type AddDelegatedSignerOptions = PrepareOnly;
+export type AddDelegatedSignerOptions = PrepareOnly & {
+    additionalSigners?: Signer[];
+};
 
 export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
@@ -126,6 +128,7 @@ export type PendingApproval = NonNullable<
 export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
+    onChangeSigner?: <C extends Chain>(signerConfig: SignerConfigForChain<C>) => Promise<void>;
 };
 
 export type StellarWalletPlugin = string;

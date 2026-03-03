@@ -214,6 +214,24 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, args);
     }
 
+    public async assembleSigner<C extends Chain>(
+        args: WalletArgsFor<C>,
+        signerConfig: SignerConfigForChain<C>,
+        options?: WalletOptions
+    ) {
+        const locator = this.getWalletLocator<C>(args);
+        walletsLogger.info("walletFactory.getOrCreateWallet.start");
+
+        const existingWallet = await this.apiClient.getWallet(locator);
+        if ("error" in existingWallet) {
+            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
+        }
+
+        const internalSignerConfig = await this.toInternalSignerConfig(existingWallet, signerConfig, options);
+
+        return assembleSigner(args.chain, internalSignerConfig, options?.deviceSignerKeyStorage);
+    }
+
     private async saveDeviceSignerKeyIfNeeded(
         address: string,
         delegatedSigners: Awaited<ReturnType<typeof this.buildDelegatedSigners>>,
@@ -245,6 +263,7 @@ export class WalletFactory {
                 signer: assembleSigner(args.chain, signerConfig, args.options?.deviceSignerKeyStorage),
                 options: args.options,
                 alias: args.alias,
+                adminSigner: (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>,
             },
             this.apiClient
         );
@@ -320,8 +339,13 @@ export class WalletFactory {
                 }
                 const deviceSigner = await options.deviceSignerKeyStorage.getKey(walletResponse.address);
                 if (!deviceSigner) {
-                    // TODO: WAL-9101 Add Device signer when not available in the device
-                    throw new WalletCreationError("Device signer not found");
+                    return {
+                        type: "device",
+                        address: walletResponse.address,
+                        biometricPolicy: signerArgs.biometricPolicy,
+                        biometricExpirationTime:
+                            signerArgs.biometricPolicy === "session" ? signerArgs.biometricExpirationTime : undefined,
+                    };
                 }
                 return {
                     type: "device",
@@ -492,6 +516,11 @@ export class WalletFactory {
         const adminSigner = config?.adminSigner;
         const delegatedSigners = config?.delegatedSigners || [];
 
+        // Device signer is always allowed as it can be added during transaction creation
+        if (signer.type === "device") {
+            return;
+        }
+
         if (
             adminSigner != null &&
             (this.isMatchingPasskeySigner(signer, adminSigner, config) ||
@@ -504,10 +533,7 @@ export class WalletFactory {
         }
 
         const delegatedSigner = delegatedSigners.find(
-            (ds) =>
-                this.isMatchingPasskeySigner(signer, ds, config) ||
-                (ds.type === "device" && signer.type === "device") ||
-                this.getSignerLocator(signer) === ds.locator
+            (ds) => this.isMatchingPasskeySigner(signer, ds, config) || this.getSignerLocator(signer) === ds.locator
         );
 
         if (delegatedSigner != null) {

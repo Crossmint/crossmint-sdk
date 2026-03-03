@@ -3,7 +3,7 @@ import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { Signer } from "../../signers/types";
+import type { Signer, SignerConfigForChain } from "../../signers/types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -69,6 +69,7 @@ export const createMockWallet = <C extends Chain>(
             chain,
             address: getChainAddress(chain),
             signer,
+            adminSigner: { type: "api-key" } as SignerConfigForChain<C>,
         },
         mockApiClient as unknown as ApiClient
     );
