@@ -98,8 +98,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     /**
      * Override sendAction to add automatic recovery for disconnections, timeouts, and fatal errors.
      * - If not connected, waits for ongoing handshake or triggers reload before sending
-     * - On timeout, reloads WebView and retries once
-     * - On recoverable error codes, reloads WebView and retries once
+     * - On timeout or recoverable error, reloads WebView and retries exactly once
      */
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
@@ -108,18 +107,26 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
             await this.ensureConnected();
         }
 
+        const response = await this.sendActionWithTimeoutRecovery(args);
+
+        if (this.isRecoverableError(response)) {
+            console.info(`[WebViewParent] Recoverable error (code: ${(response as any).code}), reloading and retrying`);
+            await this.reloadAndHandshake();
+            return await super.sendAction(args);
+        }
+
+        return response;
+    }
+
+    /**
+     * Calls super.sendAction and, on timeout, reloads the WebView and retries exactly once.
+     * The retry is NOT wrapped in another try-catch, so a second timeout propagates to the caller.
+     */
+    private async sendActionWithTimeoutRecovery<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
+        args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
+    ): Promise<z.infer<IncomingEvents[R]>> {
         try {
-            const response = await super.sendAction(args);
-
-            if (this.isRecoverableError(response)) {
-                console.info(
-                    `[WebViewParent] Recoverable error (code: ${(response as any).code}), reloading and retrying`
-                );
-                await this.reloadAndHandshake();
-                return await super.sendAction(args);
-            }
-
-            return response;
+            return await super.sendAction(args);
         } catch (error) {
             if (typeof error === "string" && error.includes("Timed out")) {
                 console.info("[WebViewParent] sendAction timed out, reloading WebView and retrying");
