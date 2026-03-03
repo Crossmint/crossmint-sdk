@@ -67,7 +67,7 @@ export class Wallet<C extends Chain> {
     signer: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
-    adminSigner: SignerConfigForChain<C>;
+    #adminSigner: SignerConfigForChain<C>;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const { chain, address, owner, signer, options, alias, adminSigner } = args;
@@ -78,7 +78,7 @@ export class Wallet<C extends Chain> {
         this.signer = signer;
         this.#options = options;
         this.alias = alias;
-        this.adminSigner = adminSigner;
+        this.#adminSigner = adminSigner;
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -87,6 +87,10 @@ export class Wallet<C extends Chain> {
 
     protected static getOptions<C extends Chain>(wallet: Wallet<C>): WalletOptions | undefined {
         return wallet.options;
+    }
+
+    protected static getAdminSigner<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
+        return wallet.#adminSigner;
     }
 
     protected get apiClient(): ApiClient {
@@ -657,8 +661,11 @@ export class Wallet<C extends Chain> {
 
         if (!isRegistered) {
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
+            if (this.options?.experimental_callbacks?.onChangeSigner == null) {
+                throw new Error("onChangeSigner callback is required to register a new device signer");
+            }
             // We need to use the admin signer to register the device signer
-            await this.options?.experimental_callbacks?.onChangeSigner?.(this.adminSigner);
+            await this.options.experimental_callbacks.onChangeSigner(this.#adminSigner);
             await this.addDelegatedSigner({ signer: signerLocator });
         }
 
