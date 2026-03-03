@@ -214,13 +214,20 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, args);
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "walletFactory.assembleSigner",
+        buildContext(_thisArg: WalletFactory, args: unknown[]) {
+            const walletArgs = args[0] as WalletArgsFor<Chain>;
+            return { chain: walletArgs.chain, signer: args[1] };
+        },
+    })
     public async assembleSigner<C extends Chain>(
         args: WalletArgsFor<C>,
         signerConfig: SignerConfigForChain<C>,
         options?: WalletOptions
     ) {
         const locator = this.getWalletLocator<C>(args);
-        walletsLogger.info("walletFactory.getOrCreateWallet.start");
 
         const existingWallet = await this.apiClient.getWallet(locator);
         if ("error" in existingWallet) {
