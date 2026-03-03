@@ -10,7 +10,7 @@ import type {
     RegisterSignerPasskeyParams,
     DelegatedSigner as DelegatedSignerResponse,
 } from "../api";
-import { InvalidEnvironmentError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
@@ -393,28 +393,6 @@ export class WalletFactory {
     }
 
     private validateChainEnvironment<C extends Chain>(chain: C): C {
-        const environment = this.apiClient.environment;
-        return validateChainForEnvironment(chain, environment, {
-            onAutoConverted: (chain, convertedTo, env) => {
-                walletsLogger.debug("walletFactory.validateChainEnvironment.autoConverted", {
-                    chain,
-                    convertedTo,
-                    environment: env,
-                    message: `Chain "${chain}" is a mainnet chain and cannot be used in ${env} environment. Automatically converted to "${convertedTo}".`,
-                });
-            },
-            onMismatch: (chain, env) => {
-                walletsLogger.debug("walletFactory.validateChainEnvironment.mismatch", {
-                    chain,
-                    environment: env,
-                    message: `Chain "${chain}" is a mainnet chain and should not be used in ${env} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
-                });
-            },
-            onError: (chain) => {
-                throw new InvalidEnvironmentError(
-                    `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
-                );
-            },
-        });
+        return validateChainForEnvironment(chain, this.apiClient.environment);
     }
 }

@@ -1,4 +1,6 @@
 import { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+import { walletsLogger } from "../logger";
+import { InvalidEnvironmentError } from "../utils/errors";
 import type { Chain as ViemChain } from "viem";
 import {
     baseSepolia,
@@ -187,18 +189,9 @@ export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTe
  *
  * @param chain - The chain to validate
  * @param environment - The API key environment prefix
- * @param logger - Optional logging callbacks for auto-conversion and mismatch warnings
  * @returns The validated (and potentially converted) chain
  */
-export function validateChainForEnvironment<C extends Chain>(
-    chain: C,
-    environment: APIKeyEnvironmentPrefix,
-    logger?: {
-        onAutoConverted?: (chain: C, convertedTo: string, environment: APIKeyEnvironmentPrefix) => void;
-        onMismatch?: (chain: C, environment: APIKeyEnvironmentPrefix) => void;
-        onError?: (chain: C) => never;
-    }
-): C {
+export function validateChainForEnvironment<C extends Chain>(chain: C, environment: APIKeyEnvironmentPrefix): C {
     if (chain === "solana" || chain === "stellar") {
         return chain;
     }
@@ -207,10 +200,7 @@ export function validateChainForEnvironment<C extends Chain>(
     const isProductionEnv = environment === APIKeyEnvironmentPrefix.PRODUCTION;
 
     if (isProductionEnv && isTestnetChain(evmChain)) {
-        if (logger?.onError) {
-            logger.onError(chain);
-        }
-        throw new Error(
+        throw new InvalidEnvironmentError(
             `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
         );
     }
@@ -218,10 +208,19 @@ export function validateChainForEnvironment<C extends Chain>(
     if (!isProductionEnv && isMainnetChain(evmChain)) {
         const testnetEquivalent = mainnetToTestnet(evmChain);
         if (testnetEquivalent != null) {
-            logger?.onAutoConverted?.(chain, testnetEquivalent, environment);
+            walletsLogger.debug("validateChainForEnvironment.autoConverted", {
+                chain,
+                convertedTo: testnetEquivalent,
+                environment,
+                message: `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Automatically converted to "${testnetEquivalent}".`,
+            });
             return testnetEquivalent as unknown as C;
         }
-        logger?.onMismatch?.(chain, environment);
+        walletsLogger.debug("validateChainForEnvironment.mismatch", {
+            chain,
+            environment,
+            message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
+        });
     }
 
     return chain;

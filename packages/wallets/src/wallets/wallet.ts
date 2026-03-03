@@ -28,7 +28,6 @@ import type {
     SendTokenTransactionOptions,
 } from "./types";
 import {
-    InvalidEnvironmentError,
     InvalidSignerError,
     SignatureFailedError,
     SignatureNotAvailableError,
@@ -628,28 +627,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected resolveChainForEnvironment(): C {
-        const resolvedChain = validateChainForEnvironment(this.chain, this.#apiClient.environment, {
-            onAutoConverted: (chain, convertedTo, environment) => {
-                walletsLogger.debug("wallet.resolveChainForEnvironment.autoConverted", {
-                    chain,
-                    convertedTo,
-                    environment,
-                    message: `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Automatically converted to "${convertedTo}".`,
-                });
-            },
-            onMismatch: (chain, environment) => {
-                walletsLogger.debug("wallet.resolveChainForEnvironment.mismatch", {
-                    chain,
-                    environment,
-                    message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
-                });
-            },
-            onError: (chain) => {
-                throw new InvalidEnvironmentError(
-                    `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
-                );
-            },
-        });
+        const resolvedChain = validateChainForEnvironment(this.chain, this.#apiClient.environment);
 
         if (resolvedChain !== this.chain) {
             this.chain = resolvedChain as C;
