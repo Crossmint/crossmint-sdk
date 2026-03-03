@@ -33,9 +33,7 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly;
 
-export type AddDelegatedSignerOptions = PrepareOnly & {
-    additionalSigners?: Signer[];
-};
+export type AddDelegatedSignerOptions = PrepareOnly;
 
 export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }

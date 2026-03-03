@@ -530,7 +530,7 @@ export class Wallet<C extends Chain> {
         }
 
         if (chainResponse?.status === "awaiting-approval") {
-            await this.approveSignatureAndWait(chainResponse.id, params.options);
+            await this.approveSignatureAndWait(chainResponse.id);
             walletsLogger.info("wallet.addDelegatedSigner.success", {
                 signatureId: chainResponse.id,
             });
@@ -656,17 +656,12 @@ export class Wallet<C extends Chain> {
         if (!isRegistered) {
             // We need to use the admin signer to register the device signer
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
-            this.options?.experimental_callbacks?.onChangeSigner?.(this.adminSigner);
-            await this.addDelegatedSigner({
-                signer: signerLocator,
-                options: {
-                    experimental_prepareOnly: false,
-                },
-            });
+            await this.options?.experimental_callbacks?.onChangeSigner?.(this.adminSigner);
+            await this.addDelegatedSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
-            this.options?.experimental_callbacks?.onChangeSigner?.({
+            await this.options?.experimental_callbacks?.onChangeSigner?.({
                 type: "device",
                 biometricPolicy,
                 biometricExpirationTime,
