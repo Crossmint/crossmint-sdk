@@ -190,15 +190,20 @@ function CrossmintWalletProviderInternal({
         logger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
         let attempts = 0;
-        const maxAttempts = 100; // 5 seconds total with 50ms intervals
-        while (webViewParentRef.current == null && attempts < maxAttempts) {
+        const maxAttempts = 600; // 30 seconds total with 50ms intervals
+        while (
+            (webViewParentRef.current == null || !webViewParentRef.current.isConnected) &&
+            attempts < maxAttempts
+        ) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
         }
 
-        if (webViewParentRef.current == null) {
+        if (webViewParentRef.current == null || !webViewParentRef.current.isConnected) {
             logger.error("react-native.wallet.webview.init.timeout", {
                 attempts,
+                hasRef: webViewParentRef.current != null,
+                isConnected: webViewParentRef.current?.isConnected ?? false,
             });
             throw new Error("WebView not ready or handshake incomplete");
         }

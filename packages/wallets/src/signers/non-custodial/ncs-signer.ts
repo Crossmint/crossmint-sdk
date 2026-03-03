@@ -355,4 +355,5 @@ export abstract class NonCustodialSigner implements Signer {
 
 export const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 30_000,
+    intervalMs: 3_000,
 };
