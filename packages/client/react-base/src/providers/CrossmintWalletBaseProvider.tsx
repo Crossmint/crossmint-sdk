@@ -279,6 +279,13 @@ export function CrossmintWalletBaseProvider({
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                            onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
+                                const resolvedSignerConfig = resolveSignerConfig(signerConfig);
+                                const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
+                                    deviceSignerKeyStorage,
+                                });
+                                wallet.signer = assembledSigner;
+                            },
                         },
                         deviceSignerKeyStorage,
                     },

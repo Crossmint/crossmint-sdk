@@ -93,6 +93,8 @@ export type DeviceInternalSignerConfig = {
     type: "device";
     locator?: string;
     address: string;
+    biometricPolicy?: BiometricPolicy;
+    biometricExpirationTime?: number;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
@@ -142,7 +144,7 @@ export type PasskeySignResult = {
 export type DeviceSignerConfig =
     | {
           type: "device";
-          biometricPolicy: Exclude<BiometricPolicy, "session">;
+          biometricPolicy?: Exclude<BiometricPolicy, "session">;
       }
     | {
           type: "device";

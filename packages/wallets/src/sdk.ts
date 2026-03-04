@@ -3,8 +3,9 @@ import { ApiClient } from "./api";
 import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
-import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
+import type { WalletArgsFor, WalletCreateArgs, WalletOptions } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
+import { SignerConfigForChain } from "./signers/types";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -67,6 +68,17 @@ export class CrossmintWallets {
      */
     public async createWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
         return await this.walletFactory.createWallet(options);
+    }
+
+    /**
+     * @internal
+     */
+    async assembleSigner(
+        args: WalletArgsFor<Chain>,
+        signerConfig: SignerConfigForChain<Chain>,
+        options?: WalletOptions
+    ) {
+        return await this.walletFactory.assembleSigner(args, signerConfig, options);
     }
 }
 

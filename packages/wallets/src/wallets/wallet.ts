@@ -44,9 +44,10 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
-import type { Signer } from "../signers/types";
+import type { Signer, SignerConfigForChain } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
+import { DeviceSigner } from "@/signers/device";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -55,6 +56,7 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     signer: Signer;
     options?: WalletOptions;
+    adminSigner: SignerConfigForChain<C>;
 };
 
 export class Wallet<C extends Chain> {
@@ -65,9 +67,10 @@ export class Wallet<C extends Chain> {
     signer: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
+    #adminSigner: SignerConfigForChain<C>;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, signer, options, alias } = args;
+        const { chain, address, owner, signer, options, alias, adminSigner } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -75,6 +78,7 @@ export class Wallet<C extends Chain> {
         this.signer = signer;
         this.#options = options;
         this.alias = alias;
+        this.#adminSigner = adminSigner;
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -83,6 +87,10 @@ export class Wallet<C extends Chain> {
 
     protected static getOptions<C extends Chain>(wallet: Wallet<C>): WalletOptions | undefined {
         return wallet.options;
+    }
+
+    protected static getAdminSigner<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
+        return wallet.#adminSigner;
     }
 
     protected get apiClient(): ApiClient {
@@ -349,6 +357,7 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
+
         const sendParams = {
             recipient,
             amount,
@@ -580,10 +589,11 @@ export class Wallet<C extends Chain> {
         const signers =
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
-                // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
-                const address = colonIndex >= 0 ? signer.locator.slice(colonIndex + 1) : signer.locator;
+                if (colonIndex !== -1) {
+                    return { signer: signer.locator };
+                }
                 return {
-                    signer: `external-wallet:${address}`,
+                    signer: `external-wallet:${signer.locator}`,
                 };
             }) ?? [];
 
@@ -617,6 +627,58 @@ export class Wallet<C extends Chain> {
     protected async preAuthIfNeeded(): Promise<void> {
         if (this.signer instanceof NonCustodialSigner) {
             await this.signer.ensureAuthenticated();
+        }
+        if (this.signer instanceof DeviceSigner) {
+            await this.ensureDeviceSignerReady();
+        }
+    }
+
+    private async ensureDeviceSignerReady(): Promise<void> {
+        if (!(this.signer instanceof DeviceSigner)) {
+            return;
+        }
+
+        const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
+        if (deviceSignerKeyStorage == null) {
+            throw new Error("Device signer key storage is required to create a device signer");
+        }
+
+        const biometricPolicy = this.signer.getBiometricPolicy();
+        const biometricExpirationTime = this.signer.getBiometricExpirationTime();
+
+        let signerLocator = this.signer.locator();
+        if (signerLocator == null || signerLocator === "") {
+            const publicKey = await deviceSignerKeyStorage.generateKey({
+                address: this.address,
+                biometricPolicy,
+                biometricExpirationTime,
+            });
+            signerLocator = `device:${publicKey}`;
+        }
+
+        const signers = await this.delegatedSigners();
+        const isRegistered = signers.some((s) => s.signer === signerLocator);
+
+        if (!isRegistered) {
+            walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
+            if (this.options?.experimental_callbacks?.onChangeSigner == null) {
+                throw new Error("onChangeSigner callback is required to register a new device signer");
+            }
+            // We need to use the admin signer to register the device signer
+            await this.options.experimental_callbacks.onChangeSigner(this.#adminSigner);
+            await this.addDelegatedSigner({ signer: signerLocator });
+        }
+
+        if (this.signer.locator() !== signerLocator) {
+            await this.options?.experimental_callbacks?.onChangeSigner?.({
+                type: "device",
+                biometricPolicy,
+                biometricExpirationTime,
+            });
+
+            walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
+                signerLocator,
+            });
         }
     }
 
