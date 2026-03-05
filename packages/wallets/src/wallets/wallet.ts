@@ -795,9 +795,13 @@ export class Wallet<C extends Chain> {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
+                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
+                // over the keccak256 hash, which is provided in pendingApproval.message.
+                // For other Solana signers (ed25519), the full serialized transaction is signed.
+                const isDeviceSigner = signer.type === "device";
                 const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain
-                        ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
+                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
+                        ? (transaction.onChain.transaction as string)
                         : pendingApproval.message;
 
                 const signature = await signer.signTransaction(transactionToSign);
