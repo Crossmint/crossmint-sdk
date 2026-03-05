@@ -4,8 +4,8 @@ import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
     [APIKeyEnvironmentPrefix.DEVELOPMENT]: "http://localhost:3002",
-    [APIKeyEnvironmentPrefix.STAGING]: "https://device-signer.crossmint.com",
-    [APIKeyEnvironmentPrefix.PRODUCTION]: "https://device-signer.crossmint.com",
+    [APIKeyEnvironmentPrefix.STAGING]: "http://localhost:3002",
+    [APIKeyEnvironmentPrefix.PRODUCTION]: "http://localhost:3002",
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
