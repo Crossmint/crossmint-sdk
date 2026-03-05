@@ -1,6 +1,7 @@
-import { getEnvironmentForKey, APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { getEnvironmentForKey, APIKeyEnvironmentPrefix, WithLoggerContext } from "@crossmint/common-sdk-base";
 import { WebAuthnP256 } from "ox";
 import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
+import { walletsLogger } from "../../logger";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
     [APIKeyEnvironmentPrefix.DEVELOPMENT]: "http://localhost:3002",
@@ -56,6 +57,10 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         this.biometricRequestHandler = handler;
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.generateKey",
+    })
     async generateKey(
         params: Parameters<DeviceSignerKeyStorage["generateKey"]>[0] = { biometricPolicy: "none" }
     ): Promise<string> {
@@ -63,19 +68,35 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         return result.publicKeyBase64;
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.mapAddressToKey",
+    })
     async mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
         await this.rpc("mapAddressToKey", { address, publicKeyBase64 });
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.getKey",
+    })
     async getKey(address: string): Promise<string | null> {
         const result = await this.rpc<{ publicKeyBase64: string | null }>("getKey", { address });
         return result.publicKeyBase64;
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.signMessage",
+    })
     async signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
         return await this.rpc<{ r: string; s: string }>("signMessage", { address, message });
     }
 
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.deleteKey",
+    })
     async deleteKey(address: string): Promise<void> {
         await this.rpc("deleteKey", { address });
     }
