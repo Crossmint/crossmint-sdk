@@ -172,12 +172,10 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
                 clearTimeout(timeout);
                 window.removeEventListener("message", handler);
 
-                if (data.type === "error") {
-                    if (data.code === INDEXEDDB_FATAL_CODE) {
-                        resolve({ fatal: true });
-                    } else {
-                        reject(new Error(data.error));
-                    }
+                if (data.type === "error" && data.code === INDEXEDDB_FATAL_CODE) {
+                    resolve({ fatal: true });
+                } else if (data.type === "error") {
+                    reject(new Error(data.error));
                 } else {
                     resolve({ value: data.result as T, fatal: false });
                 }
