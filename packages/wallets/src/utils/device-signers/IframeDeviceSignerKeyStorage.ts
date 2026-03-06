@@ -143,7 +143,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private async sendRpc<T = unknown>(
         type: string,
         payload: Record<string, unknown>
-    ): Promise<{ value: T; fatal: false } | { value: T; fatal: true }> {
+    ): Promise<{ value: T; fatal: false } | { fatal: true }> {
         const iframe = await this.getIframe();
         const contentWindow = iframe.contentWindow;
         if (contentWindow == null) {
@@ -174,7 +174,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
                 if (data.type === "error") {
                     if (data.code === INDEXEDDB_FATAL_CODE) {
-                        resolve({ value: undefined as unknown as T, fatal: true });
+                        resolve({ fatal: true });
                     } else {
                         reject(new Error(data.error));
                     }
