@@ -4,9 +4,9 @@ import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
-    [APIKeyEnvironmentPrefix.DEVELOPMENT]: "http://localhost:3002",
-    [APIKeyEnvironmentPrefix.STAGING]: "http://localhost:3002",
-    [APIKeyEnvironmentPrefix.PRODUCTION]: "http://localhost:3002",
+    [APIKeyEnvironmentPrefix.DEVELOPMENT]: "http://localhost:3002", // "https://development.devicekey.store"
+    [APIKeyEnvironmentPrefix.STAGING]: "https://staging.devicekey.store",
+    [APIKeyEnvironmentPrefix.PRODUCTION]: "https://devicekey.store",
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
