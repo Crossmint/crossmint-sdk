@@ -44,12 +44,12 @@ export const useFirebaseConnector = (chain: Chain) => {
         const email = firebaseUser.email;
         const phone = firebaseUser.phoneNumber;
 
-        if (email) {
+        if (email != null) {
             getOrCreateWallet({
                 chain,
                 signer: { type: "email", email },
             });
-        } else if (phone) {
+        } else if (phone != null) {
             getOrCreateWallet({
                 chain,
                 signer: { type: "phone", phone },
