@@ -3,13 +3,12 @@
 import { useEffect } from "react";
 import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import { usePrivy, useSolanaWallets, useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import type { VersionedTransaction } from "@solana/web3.js";
 
 /* ============================================================ */
 /*                    EVM PRIVY CONNECTOR                       */
 /* ============================================================ */
 export const useEVMPrivyConnector = () => {
-    const { experimental_setCustomAuth } = useCrossmint();
+    const { setJwt } = useCrossmint();
     const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
 
     const { ready, authenticated, getAccessToken, user } = usePrivy();
@@ -20,21 +19,11 @@ export const useEVMPrivyConnector = () => {
         const syncPrivyJwt = async () => {
             try {
                 const privyJwt = await getAccessToken();
-                const privyProvider = await privyEmbeddedWallet?.getEthereumProvider();
                 if (privyJwt != null) {
-                    experimental_setCustomAuth({
-                        jwt: privyJwt,
-                        email: user?.email?.address ?? user?.google?.email,
-                        phone: user?.phone?.number,
-                        externalWalletSigner: {
-                            type: "external-wallet",
-                            address: privyEmbeddedWallet?.address,
-                            provider: privyProvider,
-                        },
-                    });
+                    setJwt(privyJwt);
                 }
             } catch (error) {
-                experimental_setCustomAuth(undefined);
+                setJwt(undefined);
                 console.error("Failed to get Privy JWT:", error);
             }
         };
@@ -42,7 +31,7 @@ export const useEVMPrivyConnector = () => {
         if (ready && authenticated && privyEmbeddedWallet) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth, privyEmbeddedWallet, user]);
+    }, [ready, authenticated, getAccessToken, setJwt, privyEmbeddedWallet, user]);
 
     return {
         privyEmbeddedWallet,
@@ -56,7 +45,7 @@ export const useEVMPrivyConnector = () => {
 /*                    SOLANA PRIVY CONNECTOR                    */
 /* ============================================================ */
 export const useSolanaPrivyConnector = () => {
-    const { experimental_setCustomAuth } = useCrossmint();
+    const { setJwt } = useCrossmint();
     const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
 
     const { ready, authenticated, getAccessToken, user } = usePrivy();
@@ -68,20 +57,10 @@ export const useSolanaPrivyConnector = () => {
             try {
                 const privyJwt = await getAccessToken();
                 if (privyJwt != null && privyEmbeddedWallet) {
-                    experimental_setCustomAuth({
-                        jwt: privyJwt,
-                        email: user?.email?.address ?? user?.google?.email,
-                        externalWalletSigner: {
-                            type: "external-wallet",
-                            address: privyEmbeddedWallet?.address,
-                            onSignTransaction: (transaction: VersionedTransaction) => {
-                                return privyEmbeddedWallet?.signTransaction(transaction);
-                            },
-                        },
-                    });
+                    setJwt(privyJwt);
                 }
             } catch (error) {
-                experimental_setCustomAuth(undefined);
+                setJwt(undefined);
                 console.error("Failed to get Privy JWT:", error);
             }
         };
@@ -89,7 +68,7 @@ export const useSolanaPrivyConnector = () => {
         if (ready && authenticated && privyEmbeddedWallet) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth, privyEmbeddedWallet, user]);
+    }, [ready, authenticated, getAccessToken, setJwt, privyEmbeddedWallet, user]);
 
     return {
         privyEmbeddedWallet,

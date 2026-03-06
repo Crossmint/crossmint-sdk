@@ -4,9 +4,9 @@ import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
 export function HeadlessSigning() {
     const { user } = useAuth();
-    const { experimental_customAuth } = useCrossmint();
+    const { crossmint } = useCrossmint();
     const { getOrCreateWallet } = useWallet();
-    const loggedInUserEmail = experimental_customAuth?.email ?? null;
+    const loggedInUserEmail = user?.email ?? null;
     const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
