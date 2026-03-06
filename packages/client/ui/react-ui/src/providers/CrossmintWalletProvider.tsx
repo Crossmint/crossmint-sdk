@@ -52,29 +52,31 @@ export function CrossmintWalletProvider({
     // When using createOnLogin, we need to set the signer email/externalWalletSigner from Crossmint Auth
     const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
-        const processCreateOnLogin = async () => {
+        const processCreateOnLogin = () => {
             if (createOnLogin == null) {
                 setProcessedCreateOnLogin(undefined);
                 return;
             }
 
             if (createOnLogin.signer.type === "email") {
-                // For email signers using createOnLogin, we must populate createOnLogin.signer.email with the email of the user
+                // For email signers using createOnLogin, we must populate createOnLogin.signer.email with the email of the user.
                 // If not, processedCreateOnLogin will be undefined and the wallet will not be created.
                 if (authContext?.user == null) {
                     return;
                 }
                 if (authContext.user.email == null) {
-                    await authContext.getUser();
+                    // Trigger a user fetch; when authContext.user.email updates,
+                    // this effect will re-run via the dependency array.
+                    authContext.getUser();
+                    return;
                 }
-                const processed = {
+                setProcessedCreateOnLogin({
                     ...createOnLogin,
                     signer: {
                         ...createOnLogin.signer,
                         email: authContext.user.email,
                     },
-                };
-                setProcessedCreateOnLogin(processed as CreateOnLogin);
+                } as CreateOnLogin);
                 return;
             }
 
