@@ -108,8 +108,8 @@ export const useSolanaDynamicConnector = () => {
                 console.error("Failed to create Crossmint wallet:", error);
             }
         };
-
         fetchWallet();
+    }, [crossmint.jwt, dynamicPrimaryWallet, getOrCreateWallet]);
     });
 
     return {
