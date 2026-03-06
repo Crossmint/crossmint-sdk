@@ -110,7 +110,6 @@ export const useSolanaDynamicConnector = () => {
         };
         fetchWallet();
     }, [crossmint.jwt, dynamicPrimaryWallet, getOrCreateWallet]);
-    });
 
     return {
         dynamicPrimaryWallet,
