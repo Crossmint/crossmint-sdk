@@ -169,14 +169,11 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
+        const adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
         if (adminSignerConfig.type === "device") {
             throw new WalletCreationError("Device signer cannot be used as admin signer");
         }
         const delegatedSigners = await this.buildDelegatedSigners(args);
-        const tempArgs = { ...args, signer: adminSignerConfig };
-        this.mutateSignerFromCustomAuth(tempArgs, true);
-        adminSignerConfig = tempArgs.signer;
         const adminSigner =
             adminSignerConfig.type === "passkey" && adminSignerConfig.id == null
                 ? await this.createPasskeySigner(adminSignerConfig)
@@ -443,25 +440,6 @@ export class WalletFactory {
         return `device:${publicKey}`;
     }
 
-    private mutateSignerFromCustomAuth<C extends Chain>(args: WalletArgsFor<C>, isNewWalletSigner = false): void {
-        const { experimental_customAuth } = this.apiClient.crossmint;
-        if (args.signer.type === "email" && experimental_customAuth?.email != null) {
-            args.signer.email = args.signer.email ?? experimental_customAuth.email;
-        }
-        if (args.signer.type === "phone" && experimental_customAuth?.phone != null) {
-            args.signer.phone = args.signer.phone ?? experimental_customAuth.phone;
-        }
-        if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
-            args.signer = isNewWalletSigner
-                ? ({
-                      type: "external-wallet",
-                      address: experimental_customAuth.externalWalletSigner.address,
-                  } as SignerConfigForChain<C>)
-                : (experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>);
-        }
-        return;
-    }
-
     private validateExistingWalletConfig<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C> | WalletCreateArgs<C>
@@ -490,13 +468,9 @@ export class WalletFactory {
         }
 
         if ("onCreateConfig" in args && args.onCreateConfig != null) {
-            let expectedAdminSigner = args.onCreateConfig?.adminSigner ?? args.signer;
+            const expectedAdminSigner = args.onCreateConfig?.adminSigner ?? args.signer;
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigner = config?.adminSigner;
-
-            const tempArgs = { ...args, signer: expectedAdminSigner };
-            this.mutateSignerFromCustomAuth(tempArgs);
-            expectedAdminSigner = tempArgs.signer;
 
             if (expectedAdminSigner != null && existingWalletSigner != null) {
                 if (expectedAdminSigner.type !== existingWalletSigner.type) {
@@ -593,7 +567,6 @@ export class WalletFactory {
             );
         }
 
-        inputDelegatedSigners.forEach((s) => this.mutateSignerFromCustomAuth({ signer: s } as WalletArgsFor<C>));
         for (const inputSigner of inputDelegatedSigners) {
             const matchingExistingSigner = existingDelegatedSigners.find((existingSigner) => {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {

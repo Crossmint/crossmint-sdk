@@ -29,20 +29,12 @@ const defaultContextValue: RNAuthContext = {
 export const AuthContext = createContext<RNAuthContext>(defaultContextValue);
 
 function CrossmintAuthSync({ children }: { children: ReactNode }) {
-    const { experimental_setCustomAuth, experimental_customAuth } = useCrossmint();
-    const { user, jwt } = useAuth();
+    const { setJwt } = useCrossmint();
+    const { jwt } = useAuth();
 
     useEffect(() => {
-        if (jwt == null && experimental_customAuth?.jwt != null) {
-            experimental_setCustomAuth(undefined);
-        }
-        if (jwt != null) {
-            experimental_setCustomAuth({
-                jwt,
-                email: user?.email,
-            });
-        }
-    }, [experimental_setCustomAuth, jwt, user]);
+        setJwt(jwt);
+    }, [setJwt, jwt]);
 
     return children;
 }
