@@ -343,6 +343,15 @@ export function CrossmintWalletBaseProvider({
 
     useEffect(() => {
         if (createOnLogin != null) {
+            // Guard: don't attempt wallet creation if required signer fields are missing.
+            // For email signers, email must be explicitly set (populated by CrossmintWalletProvider from auth context).
+            // For external-wallet signers, address must be explicitly set.
+            if (createOnLogin.signer.type === "email" && createOnLogin.signer.email == null) {
+                return;
+            }
+            if (createOnLogin.signer.type === "external-wallet" && createOnLogin.signer.address == null) {
+                return;
+            }
             getOrCreateWallet(createOnLogin);
         }
     }, [createOnLogin, getOrCreateWallet, crossmint.jwt]);
