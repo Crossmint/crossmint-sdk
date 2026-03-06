@@ -290,6 +290,7 @@ export function CrossmintWalletBaseProvider({
         },
         [
             crossmint,
+            crossmint.jwt,
             walletStatus,
             wallet,
             resolveSignerConfig,
@@ -344,7 +345,7 @@ export function CrossmintWalletBaseProvider({
         if (createOnLogin != null) {
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet]);
+    }, [createOnLogin, getOrCreateWallet, crossmint.jwt]);
 
     useEffect(() => {
         if (crossmint.jwt == null && walletStatus !== "not-loaded") {
