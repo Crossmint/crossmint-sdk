@@ -197,7 +197,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             return this.reloading;
         }
 
-        this.reloading = (async () => {
+        const reload = (async () => {
             try {
                 this.destroy();
                 await this.getIframe();
@@ -206,7 +206,8 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             }
         })();
 
-        return this.reloading;
+        this.reloading = reload;
+        return reload;
     }
 
     private setupBiometricListener(iframe: HTMLIFrameElement): void {
