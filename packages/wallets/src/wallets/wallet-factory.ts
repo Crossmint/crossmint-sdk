@@ -391,5 +391,4 @@ export class WalletFactory {
         }
         return "evm";
     }
-
 }
