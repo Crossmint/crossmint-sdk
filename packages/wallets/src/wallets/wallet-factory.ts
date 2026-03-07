@@ -42,7 +42,7 @@ export class WalletFactory {
             );
         }
 
-        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
+        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
 
         const locator = this.getWalletLocator<C>(args);
         walletsLogger.info("walletFactory.getOrCreateWallet.start");
@@ -77,7 +77,7 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
-        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
+        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -105,7 +105,7 @@ export class WalletFactory {
         },
     })
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        args = { ...args, chain: this.validateChainEnvironment(args.chain) };
+        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
         return this.createWalletInternal(args);
     }
 
@@ -392,7 +392,4 @@ export class WalletFactory {
         return "evm";
     }
 
-    private validateChainEnvironment<C extends Chain>(chain: C): C {
-        return validateChainForEnvironment(chain, this.apiClient.environment);
-    }
 }
