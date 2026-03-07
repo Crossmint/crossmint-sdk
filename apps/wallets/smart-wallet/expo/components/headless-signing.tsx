@@ -31,13 +31,13 @@ export function HeadlessSigning() {
     };
 
     async function initWallet() {
-        if (user == null) {
-            console.log("User not logged in");
+        if (user == null || user.email == null) {
+            console.log("User not logged in or email not available");
             return;
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email", email: user.email } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
