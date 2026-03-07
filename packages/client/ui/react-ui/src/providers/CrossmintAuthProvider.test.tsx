@@ -5,7 +5,8 @@ import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
 
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
-        experimental_setCustomAuth: vi.fn(),
+        crossmint: { apiKey: "test-api-key" },
+        setJwt: vi.fn(),
     })),
 }));
 

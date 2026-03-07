@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletBaseProvider,
@@ -11,6 +11,7 @@ import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { AuthContext } from "./CrossmintAuthProvider";
 
 export interface CrossmintWalletProviderProps {
     /** Configuration for automatic wallet creation on login. */
@@ -46,6 +47,57 @@ export function CrossmintWalletProvider({
     callbacks,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const authContext = useContext(AuthContext);
+
+    // When using createOnLogin, we need to set the signer email/externalWalletSigner from Crossmint Auth
+    const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
+    useEffect(() => {
+        const processCreateOnLogin = () => {
+            if (createOnLogin == null) {
+                setProcessedCreateOnLogin(undefined);
+                return;
+            }
+
+            if (createOnLogin.signer.type === "email") {
+                // For email signers using createOnLogin, we must populate createOnLogin.signer.email with the email of the user.
+                // If not, processedCreateOnLogin will be undefined and the wallet will not be created.
+                if (authContext?.user == null) {
+                    return;
+                }
+                if (authContext.user.email == null) {
+                    // Trigger a user fetch; when authContext.user.email updates,
+                    // this effect will re-run via the dependency array.
+                    authContext.getUser();
+                    return;
+                }
+                setProcessedCreateOnLogin({
+                    ...createOnLogin,
+                    signer: {
+                        ...createOnLogin.signer,
+                        email: authContext.user.email,
+                    },
+                } as CreateOnLogin);
+                return;
+            }
+
+            if (createOnLogin.signer.type === "external-wallet" && createOnLogin.signer.address == null) {
+                // For external-wallet signers without an explicit address, use the auth context's externalWalletSigner
+                if (authContext?.experimental_externalWalletSigner == null) {
+                    return;
+                }
+                setProcessedCreateOnLogin({
+                    ...createOnLogin,
+                    signer: authContext.experimental_externalWalletSigner,
+                } as CreateOnLogin);
+                return;
+            }
+
+            // For other signer types (passkey, phone with explicit phone, etc.), pass through as-is
+            setProcessedCreateOnLogin(createOnLogin);
+        };
+
+        processCreateOnLogin();
+    }, [createOnLogin, authContext?.user, authContext?.user?.email, authContext?.experimental_externalWalletSigner]);
 
     const deviceSignerKeyStorage = useMemo(
         () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
@@ -84,7 +136,7 @@ export function CrossmintWalletProvider({
 
     return (
         <CrossmintWalletBaseProvider
-            createOnLogin={createOnLogin}
+            createOnLogin={processedCreateOnLogin}
             appearance={appearance}
             showPasskeyHelpers={showPasskeyHelpers}
             callbacks={callbacks}

@@ -4,9 +4,9 @@ import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
 export function HeadlessSigning() {
     const { user } = useAuth();
-    const { experimental_customAuth } = useCrossmint();
+    const { crossmint } = useCrossmint();
     const { getOrCreateWallet } = useWallet();
-    const loggedInUserEmail = experimental_customAuth?.email ?? null;
+    const loggedInUserEmail = user?.email ?? null;
     const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -31,13 +31,13 @@ export function HeadlessSigning() {
     };
 
     async function initWallet() {
-        if (user == null) {
-            console.log("User not logged in");
+        if (user == null || user.email == null) {
+            console.log("User not logged in or email not available");
             return;
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email", email: user.email } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {

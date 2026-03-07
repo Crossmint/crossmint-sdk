@@ -126,7 +126,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:get-status",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
@@ -200,7 +200,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected getJwtOrThrow() {
-        const jwt = this.config.crossmint.experimental_customAuth?.jwt;
+        const jwt = this.config.crossmint.jwt;
         if (jwt == null) {
             throw new Error("JWT is required");
         }
@@ -233,7 +233,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:start-onboarding",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: { authId },
@@ -275,7 +275,7 @@ export abstract class NonCustodialSigner implements Signer {
                 responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
-                        jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                        jwt: this.config.crossmint.jwt ?? "",
                         apiKey: this.config.crossmint.apiKey,
                     },
                     data: {

@@ -1,36 +1,54 @@
 "use client";
 
 import { useEffect } from "react";
-import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
+import { type Chain, useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import type { VersionedTransaction } from "@solana/web3.js";
 
+const chain = process.env.NEXT_PUBLIC_EVM_CHAIN as Chain;
+
 /* ============================================================ */
 /*                    EVM DYNAMIC CONNECTOR                     */
 /* ============================================================ */
 export const useEVMDynamicConnector = () => {
-    const { experimental_setCustomAuth } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
+    const { setJwt, crossmint } = useCrossmint();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
 
     const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
     const dynamicJwt = getAuthToken();
 
     useEffect(() => {
-        const fetchCrossmintWallet = async () => {
-            if (!isAuthenticated || !dynamicPrimaryWallet || !isEthereumWallet(dynamicPrimaryWallet)) {
-                return null;
-            }
+        if (!isAuthenticated) {
+            return;
+        }
+        setJwt(dynamicJwt);
+    }, [setJwt, isAuthenticated, dynamicJwt]);
+
+    useEffect(() => {
+        if (
+            crossmint.jwt == null ||
+            !dynamicPrimaryWallet ||
+            !isEthereumWallet(dynamicPrimaryWallet) ||
+            chain == null
+        ) {
+            return;
+        }
+
+        const fetchWallet = async () => {
             try {
                 const dynamicClient = await dynamicPrimaryWallet.getWalletClient();
-                experimental_setCustomAuth({
-                    jwt: dynamicJwt,
-                    externalWalletSigner: {
+                if (dynamicClient.account == null) {
+                    return;
+                }
+
+                getOrCreateWallet({
+                    chain,
+                    signer: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
-                        // @ts-ignore not sure why type is wrong
                         viemAccount: dynamicClient.account,
                     },
                 });
@@ -39,8 +57,8 @@ export const useEVMDynamicConnector = () => {
             }
         };
 
-        fetchCrossmintWallet();
-    }, [dynamicJwt, isAuthenticated, dynamicPrimaryWallet]);
+        fetchWallet();
+    });
 
     return {
         dynamicPrimaryWallet,
@@ -54,23 +72,31 @@ export const useEVMDynamicConnector = () => {
 /*                    SOLANA DYNAMIC CONNECTOR                  */
 /* ============================================================ */
 export const useSolanaDynamicConnector = () => {
-    const { experimental_setCustomAuth } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
+    const { setJwt, crossmint } = useCrossmint();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
 
     const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
     const dynamicJwt = getAuthToken();
 
     useEffect(() => {
-        const fetchCrossmintWallet = async () => {
-            if (!isAuthenticated || !dynamicPrimaryWallet || !isSolanaWallet(dynamicPrimaryWallet)) {
-                return null;
-            }
+        if (!isAuthenticated) {
+            return;
+        }
+        setJwt(dynamicJwt);
+    }, [setJwt, isAuthenticated, dynamicJwt]);
+
+    useEffect(() => {
+        if (crossmint.jwt == null || !dynamicPrimaryWallet || !isSolanaWallet(dynamicPrimaryWallet)) {
+            return;
+        }
+
+        const fetchWallet = async () => {
             try {
                 const dynamicSigner = await dynamicPrimaryWallet.getSigner();
-                experimental_setCustomAuth({
-                    jwt: dynamicJwt,
-                    externalWalletSigner: {
+                getOrCreateWallet({
+                    chain: "solana",
+                    signer: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         onSignTransaction: async (transaction: VersionedTransaction) => {
@@ -82,8 +108,8 @@ export const useSolanaDynamicConnector = () => {
                 console.error("Failed to create Crossmint wallet:", error);
             }
         };
-        fetchCrossmintWallet();
-    }, [dynamicJwt, isAuthenticated, dynamicPrimaryWallet]);
+        fetchWallet();
+    }, [crossmint.jwt, dynamicPrimaryWallet, getOrCreateWallet]);
 
     return {
         dynamicPrimaryWallet,
