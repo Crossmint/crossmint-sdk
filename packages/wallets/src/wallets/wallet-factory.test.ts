@@ -819,7 +819,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
+            expect(debugSpy).toHaveBeenCalledWith("validateChainForEnvironment.autoConverted", {
                 chain: "base",
                 convertedTo: "base-sepolia",
                 environment: APIKeyEnvironmentPrefix.STAGING,
@@ -840,7 +840,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
+            expect(debugSpy).toHaveBeenCalledWith("validateChainForEnvironment.mismatch", {
                 chain: "arbitrumnova",
                 environment: APIKeyEnvironmentPrefix.STAGING,
                 message:
@@ -891,7 +891,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
-            expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
+            expect(debugSpy).toHaveBeenCalledWith("validateChainForEnvironment.autoConverted", {
                 chain: "polygon",
                 convertedTo: "polygon-amoy",
                 environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
