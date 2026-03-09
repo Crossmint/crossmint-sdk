@@ -43,7 +43,12 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
 
     const handleWebViewLoadEnd = useCallback(
         async (syntheticEvent: { nativeEvent: { loading: boolean } }) => {
-            if (wallet == null || webViewRef.current == null || syntheticEvent.nativeEvent.loading) {
+            if (
+                wallet == null ||
+                wallet.signer == null ||
+                webViewRef.current == null ||
+                syntheticEvent.nativeEvent.loading
+            ) {
                 return;
             }
 
@@ -77,7 +82,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, []);
 
-    if (frameUrl === "" || wallet == null || !isExportableSigner(wallet.signer)) {
+    if (frameUrl === "" || wallet == null || wallet.signer == null || !isExportableSigner(wallet.signer)) {
         return null;
     }
 

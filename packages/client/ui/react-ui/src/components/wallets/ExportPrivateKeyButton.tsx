@@ -48,7 +48,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
     }, [crossmint]);
 
     const handleIframeLoad = useCallback(async () => {
-        if (wallet == null || iframeRef.current == null) {
+        if (wallet == null || wallet.signer == null || iframeRef.current == null) {
             return;
         }
 
@@ -71,7 +71,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, [wallet, frameUrl]);
 
-    if (frameUrl.toString() === "" || wallet == null || !isExportableSigner(wallet.signer)) {
+    if (frameUrl.toString() === "" || wallet == null || wallet.signer == null || !isExportableSigner(wallet.signer)) {
         return null;
     }
 
