@@ -238,8 +238,24 @@ function CrossmintWalletProviderInternal({
                         onHttpError={(syntheticEvent) => {
                             console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
                         }}
-                        onContentProcessDidTerminate={() => webviewRef.current?.reload()}
-                        onRenderProcessGone={() => webviewRef.current?.reload()}
+                        onContentProcessDidTerminate={() => {
+                            // Reset connection state so sendAction doesn't inject into a dead WebView
+                            // See: https://github.com/react-native-webview/react-native-webview/issues/2559
+                            logger.warn("react-native.wallet.webview.process.terminated");
+                            if (webViewParentRef.current != null) {
+                                webViewParentRef.current.isConnected = false;
+                            }
+                            webviewRef.current?.reload();
+                        }}
+                        onRenderProcessGone={() => {
+                            // Android: OS killed WebView renderer (low memory, background, etc.)
+                            // See: https://github.com/react-native-webview/react-native-webview/issues/3359
+                            logger.warn("react-native.wallet.webview.render.gone");
+                            if (webViewParentRef.current != null) {
+                                webViewParentRef.current.isConnected = false;
+                            }
+                            webviewRef.current?.reload();
+                        }}
                         style={{
                             width: 1,
                             height: 1,

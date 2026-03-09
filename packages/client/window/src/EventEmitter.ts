@@ -111,10 +111,14 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 console.error(
                     `[EventEmitter] sendAction: timeout after ${timeoutMs / 1000}s waiting for ${String(responseEvent)}`
                 );
+                // Reject with Error object for proper stack traces in RN
+                // See: https://github.com/Crossmint/crossmint-sdk/pull/1610
                 reject(
-                    `Timed out waiting for ${String(responseEvent)} event${
-                        options?.condition ? ", with condition," : ""
-                    } after ${timeoutMs / 1000}s`
+                    new Error(
+                        `Timed out waiting for ${String(responseEvent)} event${
+                            options?.condition ? ", with condition," : ""
+                        } after ${timeoutMs / 1000}s`
+                    )
                 );
             }, timeoutMs);
 
@@ -144,9 +148,11 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                             `[EventEmitter] sendAction: max retries (${maxRetries}) reached for ${String(event)}`
                         );
                         reject(
-                            `Max retries (${maxRetries}) reached waiting for ${String(responseEvent)} event${
-                                options?.condition ? ", with condition" : ""
-                            }`
+                            new Error(
+                                `Max retries (${maxRetries}) reached waiting for ${String(responseEvent)} event${
+                                    options?.condition ? ", with condition" : ""
+                                }`
+                            )
                         );
                         return;
                     }
@@ -171,10 +177,13 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 console.error(
                     `[EventEmitter] onAction() - Timeout after ${timeoutMs / 1000}s waiting for ${String(event)}`
                 );
+                // Reject with Error object for proper stack traces in RN
                 reject(
-                    `Timed out waiting for ${String(event)} event${
-                        options?.condition ? ", with condition," : ""
-                    } after ${timeoutMs / 1000}s`
+                    new Error(
+                        `Timed out waiting for ${String(event)} event${
+                            options?.condition ? ", with condition," : ""
+                        } after ${timeoutMs / 1000}s`
+                    )
                 );
             }, timeoutMs);
 
