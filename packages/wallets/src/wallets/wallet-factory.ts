@@ -151,9 +151,7 @@ export class WalletFactory {
 
         let adminSignerConfig = args.adminSigner ?? (args.signer as typeof args.adminSigner);
         if (adminSignerConfig == null) {
-            throw new WalletCreationError(
-                "Either adminSigner or signer must be provided when creating a wallet"
-            );
+            throw new WalletCreationError("Either adminSigner or signer must be provided when creating a wallet");
         }
         if ((adminSignerConfig as { type: string }).type === "device") {
             throw new WalletCreationError("Device signer cannot be used as admin signer");
