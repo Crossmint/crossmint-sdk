@@ -67,6 +67,7 @@ function CrossmintWalletProviderInternal({
     );
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
+    const handshakePromise = useRef<Promise<void> | null>(null);
     const handshakeDeferred = useRef<{
         resolve: () => void;
         reject: (err: Error) => void;
@@ -202,10 +203,19 @@ function CrossmintWalletProviderInternal({
             return;
         }
 
+        if (handshakePromise.current != null) {
+            logger.info("react-native.wallet.webview.init.awaiting-existing");
+            await handshakePromise.current;
+            return;
+        }
+
         const promise = new Promise<void>((resolve, reject) => {
             handshakeDeferred.current = { resolve, reject };
+        }).finally(() => {
+            handshakePromise.current = null;
         });
 
+        handshakePromise.current = promise;
         setNeedsWebView(true);
 
         await promise;
