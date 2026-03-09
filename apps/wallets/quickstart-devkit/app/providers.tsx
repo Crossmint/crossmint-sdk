@@ -9,7 +9,7 @@ import { PrivyProvider } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 
 const walletAlias = process.env.NEXT_PUBLIC_WALLET_ALIAS;
-const aliasConfig = walletAlias != null ? { alias: walletAlias } : {};
+const aliasConfig: { alias?: string } = walletAlias != null ? { alias: walletAlias } : {};
 
 const crossmintApiKey = process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? "";
 if (!crossmintApiKey) {
