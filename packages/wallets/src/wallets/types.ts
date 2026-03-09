@@ -164,11 +164,8 @@ export type WalletCreateArgs<C extends Chain> = {
      * Optional — if not set, the wallet returned is read-only (non-operational).
      */
     signer?: SignerConfigForChain<C>;
-    /**
-     * The admin signer for the wallet. Cannot be a device signer.
-     * Optional on client-side — defaults to the `signer` if not specified.
-     */
-    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** The admin signer for the wallet. Cannot be a device signer. */
+    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     /**
      * Optional delegated signers to register on the wallet at creation time.
      * Device signers created server-side must include a `publicKey` (from `createDeviceSigner`).

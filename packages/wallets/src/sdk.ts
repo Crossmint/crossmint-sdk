@@ -33,6 +33,8 @@ export class CrossmintWallets {
      * The returned object is serializable and can be sent to the server
      * to be included in `delegatedSigners` when creating a wallet server-side.
      *
+     * For browser usage, you can use the SDK's `IframeDeviceSignerKeyStorage` as the storage parameter.
+     *
      * @param config - Device signer configuration with biometric policy
      * @param deviceSignerKeyStorage - Storage for device signer keys
      * @returns A `CreatedDeviceSigner` that can be sent to the server
@@ -41,10 +43,12 @@ export class CrossmintWallets {
         config: DeviceSignerConfig,
         deviceSignerKeyStorage: DeviceSignerKeyStorage
     ): Promise<CreatedDeviceSigner> {
-        const publicKey = await deviceSignerKeyStorage.generateKey({
+        const publicKeyBase64 = await deviceSignerKeyStorage.generateKey({
             biometricPolicy: config.biometricPolicy,
             ...(config.biometricPolicy === "session" && { biometricExpirationTime: config.biometricExpirationTime }),
         });
+
+        const publicKey = parseUncompressedP256PublicKey(publicKeyBase64);
 
         return {
             type: "device",
@@ -58,9 +62,6 @@ export class CrossmintWallets {
 
     /**
      * Get an existing wallet
-     * Can be called on the client side or server side
-     * If called on the client side, just the wallet options must be provided
-     * If called on the server side, the wallet locator and options must be provided
      * @param argsOrLocator - Wallet locator or wallet options
      * @param maybeArgs - Wallet options
      * @returns A wallet if found, throws WalletNotAvailableError if not found
@@ -81,14 +82,9 @@ export class CrossmintWallets {
     }
 
     /**
-     * Create a new wallet.
-     * - **Client-side**: If a wallet already exists, returns the existing wallet (idempotent).
-     *   Pass an optional `signer` to make the wallet operational, or omit it for a read-only wallet.
-     * - **Server-side**: Creates a new wallet with the given admin signer and optional delegated signers.
-     *   Device signers must include a `publicKey` (from `createDeviceSigner`).
-     *
+     * Create a new wallet
      * @param options - Wallet creation options
-     * @returns A new or existing wallet
+     * @returns A new wallet
      */
     public async createWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
         return await this.walletFactory.createWallet(options);
@@ -104,6 +100,32 @@ export class CrossmintWallets {
     ) {
         return await this.walletFactory.assembleSigner(args, signerConfig, options);
     }
+}
+
+/**
+ * Parse an uncompressed P-256 public key from base64 into {x, y} hex coordinates.
+ * Uncompressed format: 0x04 || X (32 bytes) || Y (32 bytes) = 65 bytes total.
+ */
+function parseUncompressedP256PublicKey(base64: string): { x: string; y: string } {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    if (bytes.length !== 65 || bytes[0] !== 0x04) {
+        throw new Error("Invalid uncompressed P-256 public key");
+    }
+
+    const toHex = (slice: Uint8Array) =>
+        Array.from(slice)
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
+
+    return {
+        x: `0x${toHex(bytes.slice(1, 33))}`,
+        y: `0x${toHex(bytes.slice(33, 65))}`,
+    };
 }
 
 export { Crossmint };

@@ -56,6 +56,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async sendTransaction<T extends EVMTransactionInput>(
         params: T
     ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>> {
+        this.requireSigner();
         walletsLogger.info("evmWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
@@ -96,6 +97,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signMessage<T extends SignMessageInput>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+        const signer = this.requireSigner();
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
@@ -103,7 +105,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             type: "message",
             params: {
                 message: params.message,
-                signer: this.requireSigner().locator(),
+                signer: signer.locator(),
                 chain: this.chain,
             },
         });
@@ -142,6 +144,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signTypedData<T extends SignTypedDataInput>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+        const signer = this.requireSigner();
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
@@ -172,7 +175,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: this.requireSigner().locator(),
+                signer: signer.locator(),
                 chain,
             },
         });

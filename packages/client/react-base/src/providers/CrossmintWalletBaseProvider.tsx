@@ -286,12 +286,8 @@ export function CrossmintWalletBaseProvider({
                             onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
                                 const resolvedSignerConfig = resolveSignerConfig(signerConfig);
                                 if (resolvedSigner != null) {
-                                    const walletArgs = {
-                                        chain: args.chain,
-                                        signer: resolvedSigner,
-                                    } as unknown as WalletArgsFor<C>;
                                     const assembledSigner = await wallets.assembleSigner(
-                                        walletArgs,
+                                        args as unknown as WalletArgsFor<C>,
                                         resolvedSignerConfig,
                                         {
                                             deviceSignerKeyStorage,
@@ -351,6 +347,8 @@ export function CrossmintWalletBaseProvider({
                         deviceSignerKeyStorage: deviceSignerKeyStorage,
                     },
                 });
+                setWallet(wallet);
+                setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 console.error("Failed to get wallet:", error);

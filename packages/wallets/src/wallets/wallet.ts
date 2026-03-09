@@ -346,6 +346,7 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        const signer = this.requireSigner();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
 
@@ -363,7 +364,7 @@ export class Wallet<C extends Chain> {
             amount,
             ...(options?.experimental_signer != null
                 ? { signer: options.experimental_signer }
-                : { signer: this.requireSigner().locator() }),
+                : { signer: signer.locator() }),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -726,6 +727,8 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
+        const signer = this.requireSigner();
+
         if (this.isSolanaWallet) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
@@ -735,8 +738,6 @@ export class Wallet<C extends Chain> {
         if ("error" in signature) {
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
-
-        const signer = this.requireSigner();
 
         // API key signers approve automatically
         if (signer.type === "api-key") {
@@ -777,6 +778,8 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
+        const signer = this.requireSigner();
+
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -784,8 +787,6 @@ export class Wallet<C extends Chain> {
         }
 
         await this.#options?.experimental_callbacks?.onTransactionStart?.();
-
-        const signer = this.requireSigner();
 
         // API key signers approve automatically
         if (signer.type === "api-key") {

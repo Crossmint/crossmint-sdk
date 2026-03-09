@@ -145,13 +145,13 @@ export type DeviceSignerConfig =
     | {
           type: "device";
           biometricPolicy?: Exclude<BiometricPolicy, "session">;
-          publicKey?: string;
+          publicKey?: { x: string; y: string };
       }
     | {
           type: "device";
           biometricPolicy: "session";
           biometricExpirationTime?: number;
-          publicKey?: string;
+          publicKey?: { x: string; y: string };
       };
 
 /**
@@ -160,7 +160,7 @@ export type DeviceSignerConfig =
  */
 export type CreatedDeviceSigner = {
     type: "device";
-    publicKey: string;
+    publicKey: { x: string; y: string };
     biometricPolicy?: BiometricPolicy;
     biometricExpirationTime?: number;
 };

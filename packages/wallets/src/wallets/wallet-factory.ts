@@ -23,7 +23,6 @@ import type {
     ApiKeyInternalSignerConfig,
     DeviceInternalSignerConfig,
     DeviceSignerConfig,
-    CreatedDeviceSigner,
     EmailInternalSignerConfig,
     EmailSignerConfig,
     InternalSignerConfig,
@@ -128,32 +127,14 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         args = { ...args, chain: this.validateChainEnvironment(args.chain) };
 
-        // Client-side: if wallet already exists, return it (idempotent, safe for React dev mode double-runs)
-        if (!this.apiClient.isServerSide) {
-            if (args.owner != null) {
-                throw new WalletCreationError(
-                    "Owner field cannot be specified in client-side createWallet calls. Owner is determined from JWT authentication."
-                );
-            }
-            const locator = this.getCreateWalletLocator<C>(args);
-            const existingWallet = await this.apiClient.getWallet(locator);
-            if (existingWallet != null && !("error" in existingWallet)) {
-                walletsLogger.info("walletFactory.createWallet.existing", {
-                    address: existingWallet.address,
-                });
-                this.validateExistingWalletConfig(existingWallet, args);
-                return await this.createWalletInstanceFromCreateArgs(existingWallet, args);
-            }
-        }
-
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let adminSignerConfig = args.adminSigner ?? (args.signer as typeof args.adminSigner);
+        let adminSignerConfig = args.adminSigner;
         if (adminSignerConfig == null) {
-            throw new WalletCreationError("Either adminSigner or signer must be provided when creating a wallet");
+            throw new WalletCreationError("adminSigner must be provided when creating a wallet");
         }
-        if ((adminSignerConfig as { type: string }).type === "device") {
+        if (adminSignerConfig.type === "device") {
             throw new WalletCreationError("Device signer cannot be used as admin signer");
         }
         const delegatedSigners = await this.buildDelegatedSigners(args);
@@ -165,9 +146,6 @@ export class WalletFactory {
                 ? await this.createPasskeySigner(adminSignerConfig)
                 : adminSignerConfig;
 
-        // Extract biometric policy from device signers to send at wallet config level
-        const deviceSignerConfig = this.extractDeviceSignerConfig(args);
-
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
             chainType: this.getChainType(args.chain),
@@ -175,7 +153,6 @@ export class WalletFactory {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
                 ...(delegatedSigners != null ? { delegatedSigners } : {}),
-                ...(deviceSignerConfig != null ? { deviceSignerConfig } : {}),
             },
             owner: args.owner ?? undefined,
             alias: args.alias ?? undefined,
@@ -188,11 +165,13 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        await this.saveDeviceSignerKeyIfNeeded(
-            walletResponse.address,
-            delegatedSigners,
-            args.options?.deviceSignerKeyStorage
-        );
+        if (!this.apiClient.isServerSide) {
+            await this.saveDeviceSignerKeyIfNeeded(
+                walletResponse.address,
+                delegatedSigners,
+                args.options?.deviceSignerKeyStorage
+            );
+        }
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
@@ -235,12 +214,10 @@ export class WalletFactory {
             (delegatedSigner): delegatedSigner is DelegatedSigner =>
                 typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
         );
-        if (deviceSigner && deviceSignerKeyStorage == null) {
-            throw new WalletCreationError("Device signer key storage is required for device signers");
+        if (deviceSigner == null || deviceSignerKeyStorage == null) {
+            return;
         }
-        if (deviceSigner && deviceSignerKeyStorage) {
-            await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
-        }
+        await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
     }
 
     /**
@@ -312,7 +289,7 @@ export class WalletFactory {
             throw new WalletCreationError(`Wallet type ${walletResponse.chainType} is not supported`);
         }
 
-        if (signerArgs == null && walletResponse.config?.adminSigner == null) {
+        if (signerArgs == null) {
             throw new WalletCreationError("Signer is required to create a wallet");
         }
 
@@ -703,11 +680,11 @@ export class WalletFactory {
                                         "Use CrossmintWallets.createDeviceSigner() on the client first, then send the result to the server."
                                 );
                             }
-                            return { signer: `device:${signer.publicKey}` };
+                            return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
                         }
                         // Client-side: auto-generate key if none provided
                         if (signer.publicKey != null) {
-                            return { signer: `device:${signer.publicKey}` };
+                            return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
                         }
                         if (deviceSignerKeyStorage == null) {
                             throw new WalletCreationError("Device signer key storage is required for device signers");
@@ -729,38 +706,6 @@ export class WalletFactory {
             args.options?.deviceSignerKeyStorage,
             this.apiClient.isServerSide
         );
-    }
-
-    /**
-     * Extract biometric policy from the first device signer in delegatedSigners
-     * to send at the wallet config level (not inside individual delegated signers).
-     */
-    private extractDeviceSignerConfig<C extends Chain>(
-        args: WalletCreateArgs<C>
-    ): { biometricPolicy: string; expirationTime?: number } | undefined {
-        const deviceSigner = args.delegatedSigners?.find((s) => s.type === "device") as
-            | DeviceSignerConfig
-            | CreatedDeviceSigner
-            | undefined;
-        if (deviceSigner == null) {
-            return undefined;
-        }
-        const policy = deviceSigner.biometricPolicy ?? "none";
-        return {
-            biometricPolicy: policy,
-            ...(policy === "session" &&
-            "biometricExpirationTime" in deviceSigner &&
-            deviceSigner.biometricExpirationTime != null
-                ? { expirationTime: deviceSigner.biometricExpirationTime }
-                : {}),
-        };
-    }
-
-    /**
-     * Build wallet locator for createWallet idempotency check (client-side only).
-     */
-    private getCreateWalletLocator<C extends Chain>(args: WalletCreateArgs<C>): string {
-        return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
