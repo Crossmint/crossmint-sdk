@@ -182,7 +182,10 @@ export type WalletCreateArgs<C extends Chain> = {
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;
 
-export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner">;
+export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner"> & {
+    /** On client-side, adminSigner is optional — defaults to the signer if not specified. */
+    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+};
 
 type ChainExtras = {
     solana: { mintHash?: string };
