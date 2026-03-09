@@ -289,7 +289,7 @@ export function CrossmintWalletBaseProvider({
                                     const walletArgs = {
                                         chain: args.chain,
                                         signer: resolvedSigner,
-                                    } as WalletArgsFor<C>;
+                                    } as unknown as WalletArgsFor<C>;
                                     const assembledSigner = await wallets.assembleSigner(
                                         walletArgs,
                                         resolvedSignerConfig,
