@@ -93,6 +93,9 @@ function CrossmintWalletProviderInternal({
         }
     }, [needsWebView, logger]);
 
+    const handshakeAttemptsRef = useRef(0);
+    const maxHandshakeRetries = 2;
+
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
         if (parent != null) {
@@ -100,12 +103,18 @@ function CrossmintWalletProviderInternal({
                 logger.info("react-native.wallet.webview.handshake.start");
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
+                handshakeAttemptsRef.current = 0;
                 logger.info("react-native.wallet.webview.handshake.success");
             } catch (e) {
+                handshakeAttemptsRef.current++;
                 logger.error("react-native.wallet.webview.handshake.error", {
                     error: e instanceof Error ? e.message : String(e),
+                    attempt: handshakeAttemptsRef.current,
                 });
-                console.error("[CrossmintWalletProvider] Handshake error:", e);
+                if (handshakeAttemptsRef.current < maxHandshakeRetries) {
+                    logger.info("react-native.wallet.webview.handshake.retrying");
+                    webviewRef.current?.reload();
+                }
             }
         }
     }, [logger]);
@@ -171,7 +180,7 @@ function CrossmintWalletProviderInternal({
     );
 
     const getClientTEEConnection = () => {
-        if (webViewParentRef.current == null) {
+        if (webViewParentRef.current == null || !webViewParentRef.current.isConnected) {
             throw new Error("WebView not ready or handshake incomplete");
         }
         return webViewParentRef.current;
@@ -190,15 +199,20 @@ function CrossmintWalletProviderInternal({
         logger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
         let attempts = 0;
-        const maxAttempts = 100; // 5 seconds total with 50ms intervals
-        while (webViewParentRef.current == null && attempts < maxAttempts) {
+        const maxAttempts = 1200; // 60s total with 50ms intervals (exceeds 30s handshake timeout + WebView load time)
+        while (
+            (webViewParentRef.current == null || !webViewParentRef.current.isConnected) &&
+            attempts < maxAttempts
+        ) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
         }
 
-        if (webViewParentRef.current == null) {
+        if (webViewParentRef.current == null || !webViewParentRef.current.isConnected) {
             logger.error("react-native.wallet.webview.init.timeout", {
                 attempts,
+                hasRef: webViewParentRef.current != null,
+                isConnected: webViewParentRef.current?.isConnected ?? false,
             });
             throw new Error("WebView not ready or handshake incomplete");
         }
