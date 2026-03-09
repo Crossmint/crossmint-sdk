@@ -71,6 +71,7 @@ function CrossmintWalletProviderInternal({
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
     const handshakePromise = useRef<Promise<void> | null>(null);
+    const handshakeFailed = useRef(false);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -106,10 +107,12 @@ function CrossmintWalletProviderInternal({
         if (parent != null) {
             try {
                 logger.info("react-native.wallet.webview.handshake.start");
+                handshakeFailed.current = false;
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
                 logger.info("react-native.wallet.webview.handshake.success");
             } catch (e) {
+                handshakeFailed.current = true;
                 const error = e instanceof Error ? e : new Error(String(e));
                 logger.error("react-native.wallet.webview.handshake.error", {
                     error: error.message,
@@ -212,6 +215,7 @@ function CrossmintWalletProviderInternal({
             return;
         }
 
+        handshakeFailed.current = false;
         handshakePromise.current = (async () => {
             if (needsWebView) {
                 webviewRef.current?.reload();
@@ -222,9 +226,14 @@ function CrossmintWalletProviderInternal({
             // Wait for the actual handshake, not just for the WebView ref to exist.
             let attempts = 0;
             const maxAttempts = Math.ceil(WEBVIEW_INIT_TIMEOUT_MS / WEBVIEW_INIT_POLL_INTERVAL_MS);
-            while (!webViewParentRef.current?.isConnected && attempts < maxAttempts) {
+            while (!webViewParentRef.current?.isConnected && !handshakeFailed.current && attempts < maxAttempts) {
                 await new Promise((resolve) => setTimeout(resolve, WEBVIEW_INIT_POLL_INTERVAL_MS));
                 attempts++;
+            }
+
+            if (handshakeFailed.current) {
+                logger.error("react-native.wallet.webview.init.handshake-failed");
+                throw new Error("WebView handshake failed");
             }
 
             if (!webViewParentRef.current?.isConnected) {
