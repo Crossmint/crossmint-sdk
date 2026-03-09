@@ -13,7 +13,7 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import { BiometricPolicy } from "@/utils/device-signers/DeviceSignerKeyStorage";
+import type { BiometricPolicy } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -145,12 +145,25 @@ export type DeviceSignerConfig =
     | {
           type: "device";
           biometricPolicy?: Exclude<BiometricPolicy, "session">;
+          publicKey?: string;
       }
     | {
           type: "device";
           biometricPolicy: "session";
           biometricExpirationTime?: number;
+          publicKey?: string;
       };
+
+/**
+ * Return type of `CrossmintWallets.createDeviceSigner`.
+ * This object is serializable and can be sent from client to server.
+ */
+export type CreatedDeviceSigner = {
+    type: "device";
+    publicKey: string;
+    biometricPolicy?: BiometricPolicy;
+    biometricExpirationTime?: number;
+};
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig

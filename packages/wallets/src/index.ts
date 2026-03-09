@@ -41,6 +41,8 @@ export type {
     ExportableSigner,
     ExportSignerTEEConnection,
     Signer,
+    DeviceSignerConfig,
+    CreatedDeviceSigner,
 } from "./signers/types";
 
 // Device Signer Key Storage Interface

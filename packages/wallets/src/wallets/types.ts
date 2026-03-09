@@ -113,6 +113,9 @@ export type DelegatedSigner = {
     signer: string;
 };
 
+/**
+ * @deprecated Use `adminSigner` and `delegatedSigners` directly on `WalletCreateArgs` instead.
+ */
 export type OnCreateConfig<C extends Chain> = {
     adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     delegatedSigners?: Array<SignerConfigForChain<C>>;
@@ -142,7 +145,7 @@ export type WalletOptions = {
 export type WalletArgsFor<C extends Chain> = {
     /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
     chain: C;
-    /** The signer configuration (e.g. `{ type: "email" }`). */
+    /** The signer configuration (e.g. `{ type: "email" }` or `{ type: "device" }`). */
     signer: SignerConfigForChain<C>;
     /** Optional owner identifier. */
     owner?: string;
@@ -153,8 +156,27 @@ export type WalletArgsFor<C extends Chain> = {
     alias?: string;
 };
 
-export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    onCreateConfig?: OnCreateConfig<C>;
+export type WalletCreateArgs<C extends Chain> = {
+    /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
+    chain: C;
+    /**
+     * The signer to use for wallet operations.
+     * Optional — if not set, the wallet returned is read-only (non-operational).
+     */
+    signer?: SignerConfigForChain<C>;
+    /** The admin signer for the wallet. Cannot be a device signer. */
+    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /**
+     * Optional delegated signers to register on the wallet at creation time.
+     * Device signers created server-side must include a `publicKey` (from `createDeviceSigner`).
+     */
+    delegatedSigners?: Array<SignerConfigForChain<C>>;
+    /** Optional owner identifier. */
+    owner?: string;
+    /** Optional array of wallet plugins. */
+    plugins?: WalletPlugin<C>[];
+    options?: WalletOptions;
+    /** Optional wallet alias. */
     alias?: string;
 };
 

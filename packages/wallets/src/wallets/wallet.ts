@@ -54,7 +54,7 @@ type WalletContructorType<C extends Chain> = {
     address: string;
     owner?: string;
     alias?: string;
-    signer: Signer;
+    signer?: Signer;
     options?: WalletOptions;
     adminSigner: SignerConfigForChain<C>;
 };
@@ -64,7 +64,7 @@ export class Wallet<C extends Chain> {
     address: string;
     owner?: string;
     alias?: string;
-    signer: Signer;
+    signer?: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
     #adminSigner: SignerConfigForChain<C>;
@@ -363,7 +363,7 @@ export class Wallet<C extends Chain> {
             amount,
             ...(options?.experimental_signer != null
                 ? { signer: options.experimental_signer }
-                : { signer: this.signer.locator() }),
+                : { signer: this.requireSigner().locator() }),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -624,11 +624,26 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    protected async preAuthIfNeeded(): Promise<void> {
-        if (this.signer instanceof NonCustodialSigner) {
-            await this.signer.ensureAuthenticated();
+    /**
+     * Ensure the wallet has a signer for operational methods.
+     * @throws {Error} If no signer is available (read-only wallet).
+     */
+    private requireSigner(): Signer {
+        if (this.signer == null) {
+            throw new Error(
+                "This wallet is read-only. No signer was provided during creation. " +
+                    "Pass a `signer` option to `createWallet` or use `getWallet` with a signer to enable operations."
+            );
         }
-        if (this.signer instanceof DeviceSigner) {
+        return this.signer;
+    }
+
+    protected async preAuthIfNeeded(): Promise<void> {
+        const signer = this.requireSigner();
+        if (signer instanceof NonCustodialSigner) {
+            await signer.ensureAuthenticated();
+        }
+        if (signer instanceof DeviceSigner) {
             await this.ensureDeviceSignerReady();
         }
     }
@@ -721,8 +736,10 @@ export class Wallet<C extends Chain> {
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
 
+        const signer = this.requireSigner();
+
         // API key signers approve automatically
-        if (this.signer.type === "api-key") {
+        if (signer.type === "api-key") {
             return signature;
         }
 
@@ -739,7 +756,7 @@ export class Wallet<C extends Chain> {
             return signature;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), signer];
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
@@ -768,8 +785,10 @@ export class Wallet<C extends Chain> {
 
         await this.#options?.experimental_callbacks?.onTransactionStart?.();
 
+        const signer = this.requireSigner();
+
         // API key signers approve automatically
-        if (this.signer.type === "api-key") {
+        if (signer.type === "api-key") {
             return transaction;
         }
 
@@ -786,7 +805,7 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), signer];
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {

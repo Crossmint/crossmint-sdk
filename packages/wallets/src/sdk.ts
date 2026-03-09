@@ -5,7 +5,8 @@ import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs, WalletOptions } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
-import { SignerConfigForChain } from "./signers/types";
+import type { SignerConfigForChain, DeviceSignerConfig, CreatedDeviceSigner } from "./signers/types";
+import type { DeviceSignerKeyStorage } from "./utils/device-signers/DeviceSignerKeyStorage";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -28,13 +29,31 @@ export class CrossmintWallets {
     }
 
     /**
-     * Get or create a wallet, can only be called on the client side
-     * @param args - Wallet data
-     * @param options - Wallet options
-     * @returns An existing wallet or a new wallet
+     * Create a device signer configuration on the client.
+     * The returned object is serializable and can be sent to the server
+     * to be included in `delegatedSigners` when creating a wallet server-side.
+     *
+     * @param config - Device signer configuration with biometric policy
+     * @param deviceSignerKeyStorage - Storage for device signer keys
+     * @returns A `CreatedDeviceSigner` that can be sent to the server
      */
-    public async getOrCreateWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        return await this.walletFactory.getOrCreateWallet(options);
+    public async createDeviceSigner(
+        config: DeviceSignerConfig,
+        deviceSignerKeyStorage: DeviceSignerKeyStorage
+    ): Promise<CreatedDeviceSigner> {
+        const publicKey = await deviceSignerKeyStorage.generateKey({
+            biometricPolicy: config.biometricPolicy,
+            ...(config.biometricPolicy === "session" && { biometricExpirationTime: config.biometricExpirationTime }),
+        });
+
+        return {
+            type: "device",
+            publicKey,
+            biometricPolicy: config.biometricPolicy,
+            ...(config.biometricPolicy === "session" && config.biometricExpirationTime != null
+                ? { biometricExpirationTime: config.biometricExpirationTime }
+                : {}),
+        };
     }
 
     /**
@@ -62,9 +81,14 @@ export class CrossmintWallets {
     }
 
     /**
-     * Create a new wallet, can only be called on the server side
-     * @param options - Wallet options
-     * @returns A new wallet
+     * Create a new wallet.
+     * - **Client-side**: If a wallet already exists, returns the existing wallet (idempotent).
+     *   Pass an optional `signer` to make the wallet operational, or omit it for a read-only wallet.
+     * - **Server-side**: Creates a new wallet with the given admin signer and optional delegated signers.
+     *   Device signers must include a `publicKey` (from `createDeviceSigner`).
+     *
+     * @param options - Wallet creation options
+     * @returns A new or existing wallet
      */
     public async createWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
         return await this.walletFactory.createWallet(options);
