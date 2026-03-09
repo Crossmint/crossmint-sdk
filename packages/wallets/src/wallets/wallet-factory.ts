@@ -37,6 +37,7 @@ import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
+import { publicKeyToBase64 } from "../utils/device-signers/publicKeyToBase64";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -676,7 +677,7 @@ export class WalletFactory {
                             return { signer: signer.locator };
                         }
                         if (signer.publicKey != null) {
-                            return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
+                            return { signer: `device:${publicKeyToBase64(signer.publicKey)}` };
                         }
                         if (deviceSignerKeyStorage == null) {
                             throw new WalletCreationError(
