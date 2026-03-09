@@ -43,7 +43,7 @@ import {
     WalletTypeNotSupportedError,
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
-import type { Chain } from "../chains/chains";
+import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
@@ -118,6 +118,8 @@ export class Wallet<C extends Chain> {
     public async balances(tokens?: string[]): Promise<Balances<C>> {
         walletsLogger.info("wallet.balances.start");
 
+        const resolvedChain = this.resolveChainForEnvironment();
+
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -133,7 +135,7 @@ export class Wallet<C extends Chain> {
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
-            chains: [this.chain],
+            chains: [resolvedChain],
             tokens: allTokens,
         });
 
@@ -310,7 +312,8 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the activity cannot be retrieved
      */
     public async experimental_activity(): Promise<Activity> {
-        const response = await this.apiClient.experimental_activity(this.walletLocator, { chain: this.chain });
+        const resolvedChain = this.resolveChainForEnvironment();
+        const response = await this.apiClient.experimental_activity(this.walletLocator, { chain: resolvedChain });
         if ("error" in response) {
             throw new Error(`Failed to get activity: ${JSON.stringify(response.message)}`);
         }
@@ -338,8 +341,9 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        const resolvedChain = this.resolveChainForEnvironment();
         const recipient = toRecipientLocator(to);
-        const tokenLocator = toTokenLocator(token, this.chain);
+        const tokenLocator = toTokenLocator(token, resolvedChain);
 
         walletsLogger.info("wallet.send.start", {
             recipient,
@@ -620,6 +624,16 @@ export class Wallet<C extends Chain> {
 
     protected get isSolanaWallet(): boolean {
         return this.chain === "solana";
+    }
+
+    protected resolveChainForEnvironment(): C {
+        const resolvedChain = validateChainForEnvironment(this.chain, this.#apiClient.environment);
+
+        if (resolvedChain !== this.chain) {
+            this.chain = resolvedChain as C;
+        }
+
+        return this.chain;
     }
 
     protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
