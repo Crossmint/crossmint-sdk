@@ -72,10 +72,15 @@ function CrossmintWalletProviderInternal({
         resolve: () => void;
         reject: (err: Error) => void;
     } | null>(null);
+    const handshakeTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Reject the deferred on unmount to prevent callers from hanging forever
+    // Reject the deferred and clear timers on unmount to prevent callers from hanging forever
     useEffect(() => {
         return () => {
+            if (handshakeTimeoutId.current != null) {
+                clearTimeout(handshakeTimeoutId.current);
+                handshakeTimeoutId.current = null;
+            }
             handshakeDeferred.current?.reject(new Error("Component unmounted"));
             handshakeDeferred.current = null;
         };
@@ -224,8 +229,15 @@ function CrossmintWalletProviderInternal({
 
         const promise = new Promise<void>((resolve, reject) => {
             handshakeDeferred.current = { resolve, reject };
-            setTimeout(() => reject(new Error("WebView initialization timed out")), 45_000);
+            handshakeTimeoutId.current = setTimeout(
+                () => reject(new Error("WebView initialization timed out")),
+                45_000
+            );
         }).finally(() => {
+            if (handshakeTimeoutId.current != null) {
+                clearTimeout(handshakeTimeoutId.current);
+                handshakeTimeoutId.current = null;
+            }
             handshakePromise.current = null;
         });
 
