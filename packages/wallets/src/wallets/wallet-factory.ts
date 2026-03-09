@@ -150,7 +150,7 @@ export class WalletFactory {
         walletsLogger.info("walletFactory.createWallet.start");
 
         let adminSignerConfig = args.adminSigner;
-        if (adminSignerConfig.type === "device") {
+        if ((adminSignerConfig as { type: string }).type === "device") {
             throw new WalletCreationError("Device signer cannot be used as admin signer");
         }
         const delegatedSigners = await this.buildDelegatedSigners(args);
@@ -735,9 +735,10 @@ export class WalletFactory {
     private extractDeviceSignerConfig<C extends Chain>(
         args: WalletCreateArgs<C>
     ): { biometricPolicy: string; expirationTime?: number } | undefined {
-        const deviceSigner = args.delegatedSigners?.find(
-            (s): s is DeviceSignerConfig | CreatedDeviceSigner => s.type === "device"
-        );
+        const deviceSigner = args.delegatedSigners?.find((s) => s.type === "device") as
+            | DeviceSignerConfig
+            | CreatedDeviceSigner
+            | undefined;
         if (deviceSigner == null) {
             return undefined;
         }

@@ -628,7 +628,7 @@ export class Wallet<C extends Chain> {
      * Ensure the wallet has a signer for operational methods.
      * @throws {Error} If no signer is available (read-only wallet).
      */
-    private requireSigner(): Signer {
+    protected requireSigner(): Signer {
         if (this.signer == null) {
             throw new Error(
                 "This wallet is read-only. No signer was provided during creation. " +

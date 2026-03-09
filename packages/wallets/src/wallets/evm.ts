@@ -103,7 +103,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             type: "message",
             params: {
                 message: params.message,
-                signer: this.signer.locator(),
+                signer: this.requireSigner().locator(),
                 chain: this.chain,
             },
         });
@@ -172,7 +172,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: this.signer.locator(),
+                signer: this.requireSigner().locator(),
                 chain,
             },
         });
@@ -212,7 +212,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        const signer = options?.experimental_signer ?? this.requireSigner().locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,
