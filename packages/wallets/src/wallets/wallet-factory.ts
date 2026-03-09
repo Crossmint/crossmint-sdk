@@ -130,8 +130,7 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let adminSignerConfig =
-            args.adminSigner ?? (args.signer != null ? (args.signer as typeof args.adminSigner) : undefined);
+        let adminSignerConfig = args.adminSigner ?? (args.signer != null ? args.signer : undefined);
         if (adminSignerConfig == null) {
             throw new WalletCreationError("Either adminSigner or signer must be provided when creating a wallet");
         }
