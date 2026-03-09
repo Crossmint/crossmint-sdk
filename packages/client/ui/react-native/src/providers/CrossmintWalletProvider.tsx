@@ -113,27 +113,32 @@ function CrossmintWalletProviderInternal({
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
+        const deferred = handshakeDeferred.current;
         if (parent != null) {
             try {
                 logger.info("react-native.wallet.webview.handshake.start");
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
                 logger.info("react-native.wallet.webview.handshake.success");
-                handshakeDeferred.current?.resolve();
-                handshakeDeferred.current = null;
+                deferred?.resolve();
             } catch (e) {
                 const error = e instanceof Error ? e : new Error(String(e));
                 logger.error("react-native.wallet.webview.handshake.error", {
                     error: error.message,
                 });
-                handshakeDeferred.current?.reject(error);
-                handshakeDeferred.current = null;
+                deferred?.reject(error);
+            } finally {
+                if (handshakeDeferred.current === deferred) {
+                    handshakeDeferred.current = null;
+                }
             }
         } else {
             const error = new Error("WebView parent not initialized when onLoadEnd fired");
             logger.error("react-native.wallet.webview.handshake.no-parent");
-            handshakeDeferred.current?.reject(error);
-            handshakeDeferred.current = null;
+            deferred?.reject(error);
+            if (handshakeDeferred.current === deferred) {
+                handshakeDeferred.current = null;
+            }
         }
     }, [logger]);
 
