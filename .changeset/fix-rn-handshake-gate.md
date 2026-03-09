@@ -5,4 +5,4 @@
 Category: bug fix
 Product Area: wallets
 
-Fix RN wallet timeout on low-end devices by awaiting handshake completion directly instead of polling for ref existence.
+Fix RN wallet timeout on low-end devices by waiting for the WebView handshake to complete before using the signer connection.

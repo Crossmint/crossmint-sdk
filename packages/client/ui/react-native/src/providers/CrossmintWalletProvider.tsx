@@ -20,6 +20,9 @@ import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
 
+const WEBVIEW_INIT_TIMEOUT_MS = 60_000;
+const WEBVIEW_INIT_POLL_INTERVAL_MS = 50;
+
 export interface CrossmintWalletProviderProps {
     /** Wallet configuration for automatic creation on user login. Defines the chain and signer type for the wallet. */
     createOnLogin?: CreateOnLogin;
@@ -68,23 +71,6 @@ function CrossmintWalletProviderInternal({
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
     const handshakePromise = useRef<Promise<void> | null>(null);
-    const handshakeDeferred = useRef<{
-        resolve: () => void;
-        reject: (err: Error) => void;
-    } | null>(null);
-    const handshakeTimeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Reject the deferred and clear timers on unmount to prevent callers from hanging forever
-    useEffect(() => {
-        return () => {
-            if (handshakeTimeoutId.current != null) {
-                clearTimeout(handshakeTimeoutId.current);
-                handshakeTimeoutId.current = null;
-            }
-            handshakeDeferred.current?.reject(new Error("Component unmounted"));
-            handshakeDeferred.current = null;
-        };
-    }, []);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -94,6 +80,10 @@ function CrossmintWalletProviderInternal({
     }, [appId]);
 
     useEffect(() => {
+        if (!needsWebView) {
+            return;
+        }
+
         if (webviewRef.current != null && webViewParentRef.current == null) {
             logger.info("react-native.wallet.webview.initializing");
             webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
@@ -113,32 +103,20 @@ function CrossmintWalletProviderInternal({
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
-        const deferred = handshakeDeferred.current;
         if (parent != null) {
             try {
                 logger.info("react-native.wallet.webview.handshake.start");
                 parent.isConnected = false;
                 await parent.handshakeWithChild();
                 logger.info("react-native.wallet.webview.handshake.success");
-                deferred?.resolve();
             } catch (e) {
                 const error = e instanceof Error ? e : new Error(String(e));
                 logger.error("react-native.wallet.webview.handshake.error", {
                     error: error.message,
                 });
-                deferred?.reject(error);
-            } finally {
-                if (handshakeDeferred.current === deferred) {
-                    handshakeDeferred.current = null;
-                }
             }
         } else {
-            const error = new Error("WebView parent not initialized when onLoadEnd fired");
             logger.error("react-native.wallet.webview.handshake.no-parent");
-            deferred?.reject(error);
-            if (handshakeDeferred.current === deferred) {
-                handshakeDeferred.current = null;
-            }
         }
     }, [logger]);
 
@@ -195,7 +173,9 @@ function CrossmintWalletProviderInternal({
                     }
                     return;
                 }
-            } catch {}
+            } catch {
+                // Ignore non-JSON messages and let the transport handle them below.
+            }
 
             parent.handleMessage(event);
         },
@@ -232,30 +212,35 @@ function CrossmintWalletProviderInternal({
             return;
         }
 
-        const promise = new Promise<void>((resolve, reject) => {
-            handshakeDeferred.current = { resolve, reject };
-            handshakeTimeoutId.current = setTimeout(
-                () => reject(new Error("WebView initialization timed out")),
-                45_000
-            );
-        }).finally(() => {
-            if (handshakeTimeoutId.current != null) {
-                clearTimeout(handshakeTimeoutId.current);
-                handshakeTimeoutId.current = null;
+        handshakePromise.current = (async () => {
+            if (needsWebView) {
+                webviewRef.current?.reload();
+            } else {
+                setNeedsWebView(true);
             }
+
+            // Wait for the actual handshake, not just for the WebView ref to exist.
+            let attempts = 0;
+            const maxAttempts = Math.ceil(WEBVIEW_INIT_TIMEOUT_MS / WEBVIEW_INIT_POLL_INTERVAL_MS);
+            while (!webViewParentRef.current?.isConnected && attempts < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, WEBVIEW_INIT_POLL_INTERVAL_MS));
+                attempts++;
+            }
+
+            if (!webViewParentRef.current?.isConnected) {
+                logger.error("react-native.wallet.webview.init.timeout", {
+                    attempts,
+                    timeoutMs: WEBVIEW_INIT_TIMEOUT_MS,
+                });
+                throw new Error("WebView not ready or handshake incomplete");
+            }
+
+            logger.info("react-native.wallet.webview.init.success", { attempts });
+        })().finally(() => {
             handshakePromise.current = null;
         });
 
-        handshakePromise.current = promise;
-
-        if (needsWebView) {
-            webviewRef.current?.reload();
-        } else {
-            setNeedsWebView(true);
-        }
-
-        await promise;
-        logger.info("react-native.wallet.webview.init.success");
+        await handshakePromise.current;
     };
 
     return (
@@ -286,16 +271,14 @@ function CrossmintWalletProviderInternal({
                         onLoadEnd={onWebViewLoad}
                         onMessage={handleMessage}
                         onError={(syntheticEvent) => {
-                            const error = new Error(`WebView error: ${syntheticEvent.nativeEvent.description}`);
-                            logger.error("react-native.wallet.webview.error", { error: error.message });
-                            handshakeDeferred.current?.reject(error);
-                            handshakeDeferred.current = null;
+                            logger.error("react-native.wallet.webview.error", {
+                                error: syntheticEvent.nativeEvent.description,
+                            });
                         }}
                         onHttpError={(syntheticEvent) => {
-                            const error = new Error(`WebView HTTP error: ${syntheticEvent.nativeEvent.statusCode}`);
-                            logger.error("react-native.wallet.webview.http-error", { error: error.message });
-                            handshakeDeferred.current?.reject(error);
-                            handshakeDeferred.current = null;
+                            logger.error("react-native.wallet.webview.http-error", {
+                                error: String(syntheticEvent.nativeEvent.statusCode),
+                            });
                         }}
                         onContentProcessDidTerminate={() => webviewRef.current?.reload()}
                         onRenderProcessGone={() => webviewRef.current?.reload()}
