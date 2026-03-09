@@ -15,7 +15,6 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
     contents: write
     pull-requests: write
-    id-token: write
 
 jobs:
     build-and-test:
@@ -47,21 +46,31 @@ jobs:
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
 
+            - name: Create Release Pull Request or Publish
+              id: changesets
+              uses: changesets/action@v1.5.3
+              with:
+                  commit: "Release packages"
+                  title: "Release packages"
+                  version: pnpm change:version
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build libs for production
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              run: pnpm build:libs:prod
+
             - name: Setup Node.js 24 for OIDC trusted publishing
+              if: steps.changesets.outputs.hasChangesets == 'false'
               uses: actions/setup-node@v4
               with:
                   node-version: "24"
                   registry-url: "https://registry.npmjs.org"
 
             - name: Update npm for OIDC trusted publishing
+              if: steps.changesets.outputs.hasChangesets == 'false'
               run: npm install -g npm@11.6.2
 
-            - name: Create Release Pull Request or Publish
-              uses: changesets/action@v1.5.3
-              with:
-                  commit: "Release packages"
-                  title: "Release packages"
-                  publish: pnpm change:publish
-                  version: pnpm change:version
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Publish packages to NPM
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              run: pnpm changeset publish --no-git-tag
