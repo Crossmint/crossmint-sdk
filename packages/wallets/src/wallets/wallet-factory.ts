@@ -672,6 +672,9 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
+                        if ("locator" in signer && typeof signer.locator === "string") {
+                            return { signer: signer.locator };
+                        }
                         if (signer.publicKey != null) {
                             return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
                         }
