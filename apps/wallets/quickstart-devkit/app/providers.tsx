@@ -8,12 +8,7 @@ import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 
-const ALIAS_CONFIG =
-    process.env.NEXT_PUBLIC_WALLET_ALIAS != null
-        ? {
-              alias: process.env.NEXT_PUBLIC_WALLET_ALIAS,
-          }
-        : {};
+const walletAlias = process.env.NEXT_PUBLIC_WALLET_ALIAS ?? undefined;
 
 const crossmintApiKey = process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? "";
 if (!crossmintApiKey) {
@@ -63,7 +58,7 @@ function EVMCrossmintAuthProvider({
                             : {
                                   chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                                   signer: { type: "email" },
-                                  ...ALIAS_CONFIG,
+                                  alias: walletAlias,
                               }
                     }
                 >
@@ -102,7 +97,7 @@ function EVMPrivyProvider({
                     createOnLogin={{
                         chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                         signer: { type: "email" },
-                        ...ALIAS_CONFIG,
+                        alias: walletAlias,
                     }}
                 >
                     {children}
@@ -153,7 +148,7 @@ function EVMFirebaseProvider({
                 createOnLogin={{
                     chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                     signer: { type: "email" },
-                    ...ALIAS_CONFIG,
+                    alias: walletAlias,
                 }}
             >
                 {children}
@@ -188,7 +183,7 @@ function SolanaCrossmintAuthProvider({
                             : {
                                   chain: "solana",
                                   signer: { type: "email" },
-                                  ...ALIAS_CONFIG,
+                                  alias: walletAlias,
                               }
                     }
                 >
@@ -227,7 +222,7 @@ function SolanaPrivyProvider({
                     createOnLogin={{
                         chain: "solana",
                         signer: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
+                        alias: walletAlias,
                     }}
                 >
                     {children}
@@ -259,7 +254,7 @@ function SolanaDynamicLabsProvider({
                     createOnLogin={{
                         chain: "solana",
                         signer: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
+                        alias: walletAlias,
                     }}
                 >
                     {children}
@@ -282,7 +277,7 @@ function SolanaFirebaseProvider({
                 createOnLogin={{
                     chain: "solana",
                     signer: { type: "email" },
-                    ...ALIAS_CONFIG,
+                    alias: walletAlias,
                 }}
             >
                 {children}
@@ -314,16 +309,14 @@ function StellarCrossmintAuthProvider({
                             : {
                                   chain: "stellar",
                                   signer: { type: "email" },
-                                  ...ALIAS_CONFIG,
-                                  onCreateConfig: {
-                                      adminSigner: { type: "email" },
-                                      delegatedSigners: [
-                                          {
-                                              type: "external-wallet",
-                                              address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
-                                          },
-                                      ],
-                                  },
+                                  alias: walletAlias,
+                                  adminSigner: { type: "email" },
+                                  delegatedSigners: [
+                                      {
+                                          type: "external-wallet",
+                                          address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                      },
+                                  ],
                               }
                     }
                 >
@@ -360,7 +353,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 const createOnLogin: any = {
                     chain: chainId,
                     signer: { type: signerType },
-                    ...(alias != null ? { alias } : {}),
+                    alias,
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = {
@@ -387,7 +380,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 const createOnLogin: any = {
                     chain: "solana",
                     signer: { type: signerType },
-                    ...(alias != null ? { alias } : {}),
+                    alias,
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = {
@@ -405,7 +398,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
         const createOnLogin: any = {
             chain: "stellar",
             signer: { type: signerType },
-            ...(alias != null ? { alias } : {}),
+            alias,
         };
         if (signerType === "phone" && phoneNumber != null) {
             createOnLogin.signer = {
