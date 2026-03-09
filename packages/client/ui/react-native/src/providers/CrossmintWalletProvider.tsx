@@ -73,6 +73,14 @@ function CrossmintWalletProviderInternal({
         reject: (err: Error) => void;
     } | null>(null);
 
+    // Reject the deferred on unmount to prevent callers from hanging forever
+    useEffect(() => {
+        return () => {
+            handshakeDeferred.current?.reject(new Error("Component unmounted"));
+            handshakeDeferred.current = null;
+        };
+    }, []);
+
     const secureGlobals = useMemo(() => {
         if (appId != null) {
             return { crossmintAppId: appId };
@@ -116,6 +124,11 @@ function CrossmintWalletProviderInternal({
                 handshakeDeferred.current?.reject(error);
                 handshakeDeferred.current = null;
             }
+        } else {
+            const error = new Error("WebView parent not initialized when onLoadEnd fired");
+            logger.error("react-native.wallet.webview.handshake.no-parent");
+            handshakeDeferred.current?.reject(error);
+            handshakeDeferred.current = null;
         }
     }, [logger]);
 
@@ -211,12 +224,18 @@ function CrossmintWalletProviderInternal({
 
         const promise = new Promise<void>((resolve, reject) => {
             handshakeDeferred.current = { resolve, reject };
+            setTimeout(() => reject(new Error("WebView initialization timed out")), 45_000);
         }).finally(() => {
             handshakePromise.current = null;
         });
 
         handshakePromise.current = promise;
-        setNeedsWebView(true);
+
+        if (needsWebView) {
+            webviewRef.current?.reload();
+        } else {
+            setNeedsWebView(true);
+        }
 
         await promise;
         logger.info("react-native.wallet.webview.init.success");
@@ -250,10 +269,20 @@ function CrossmintWalletProviderInternal({
                         onLoadEnd={onWebViewLoad}
                         onMessage={handleMessage}
                         onError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                            const error = new Error(
+                                `WebView error: ${syntheticEvent.nativeEvent.description}`
+                            );
+                            logger.error("react-native.wallet.webview.error", { error: error.message });
+                            handshakeDeferred.current?.reject(error);
+                            handshakeDeferred.current = null;
                         }}
                         onHttpError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
+                            const error = new Error(
+                                `WebView HTTP error: ${syntheticEvent.nativeEvent.statusCode}`
+                            );
+                            logger.error("react-native.wallet.webview.http-error", { error: error.message });
+                            handshakeDeferred.current?.reject(error);
+                            handshakeDeferred.current = null;
                         }}
                         onContentProcessDidTerminate={() => webviewRef.current?.reload()}
                         onRenderProcessGone={() => webviewRef.current?.reload()}
