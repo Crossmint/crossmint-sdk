@@ -8,7 +8,7 @@ import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 
-const ALIAS_CONFIG: { alias?: string } =
+const ALIAS_CONFIG =
     process.env.NEXT_PUBLIC_WALLET_ALIAS != null
         ? {
               alias: process.env.NEXT_PUBLIC_WALLET_ALIAS,

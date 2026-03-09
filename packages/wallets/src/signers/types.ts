@@ -161,6 +161,7 @@ export type DeviceSignerConfig =
 export type CreatedDeviceSigner = {
     type: "device";
     publicKey: { x: string; y: string };
+    locator: string;
     biometricPolicy?: BiometricPolicy;
     biometricExpirationTime?: number;
 };

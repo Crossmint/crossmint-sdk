@@ -53,6 +53,7 @@ export class CrossmintWallets {
         return {
             type: "device",
             publicKey,
+            locator: `device:${publicKeyBase64}`,
             biometricPolicy: config.biometricPolicy,
             ...(config.biometricPolicy === "session" && config.biometricExpirationTime != null
                 ? { biometricExpirationTime: config.biometricExpirationTime }

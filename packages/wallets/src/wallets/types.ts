@@ -164,8 +164,8 @@ export type WalletCreateArgs<C extends Chain> = {
      * Optional — if not set, the wallet returned is read-only (non-operational).
      */
     signer?: SignerConfigForChain<C>;
-    /** The admin signer for the wallet. Cannot be a device signer. */
-    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** The admin signer for the wallet. Cannot be a device signer. Defaults to `signer` if not provided. */
+    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     /**
      * Optional delegated signers to register on the wallet at creation time.
      * Device signers created server-side must include a `publicKey` (from `createDeviceSigner`).
@@ -182,10 +182,7 @@ export type WalletCreateArgs<C extends Chain> = {
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;
 
-export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner" | "adminSigner"> & {
-    /** On client-side, adminSigner is optional — defaults to the signer if not specified. */
-    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
-};
+export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner">;
 
 type ChainExtras = {
     solana: { mintHash?: string };

@@ -130,9 +130,10 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let adminSignerConfig = args.adminSigner;
+        let adminSignerConfig =
+            args.adminSigner ?? (args.signer != null ? (args.signer as typeof args.adminSigner) : undefined);
         if (adminSignerConfig == null) {
-            throw new WalletCreationError("adminSigner must be provided when creating a wallet");
+            throw new WalletCreationError("Either adminSigner or signer must be provided when creating a wallet");
         }
         if ((adminSignerConfig as { type: string }).type === "device") {
             throw new WalletCreationError("Device signer cannot be used as admin signer");
@@ -165,13 +166,11 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        if (!this.apiClient.isServerSide) {
-            await this.saveDeviceSignerKeyIfNeeded(
-                walletResponse.address,
-                delegatedSigners,
-                args.options?.deviceSignerKeyStorage
-            );
-        }
+        await this.saveDeviceSignerKeyIfNeeded(
+            walletResponse.address,
+            delegatedSigners,
+            args.options?.deviceSignerKeyStorage
+        );
 
         walletsLogger.info("walletFactory.createWallet.success", {
             address: walletResponse.address,
@@ -210,11 +209,14 @@ export class WalletFactory {
         delegatedSigners: Awaited<ReturnType<typeof this.buildDelegatedSigners>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ) {
+        if (deviceSignerKeyStorage == null) {
+            return;
+        }
         const deviceSigner = delegatedSigners.find(
             (delegatedSigner): delegatedSigner is DelegatedSigner =>
                 typeof delegatedSigner.signer === "string" && delegatedSigner.signer.startsWith("device:")
         );
-        if (deviceSigner == null || deviceSignerKeyStorage == null) {
+        if (deviceSigner == null) {
             return;
         }
         await deviceSignerKeyStorage.mapAddressToKey(address, deviceSigner.signer.split(":")[1]);
@@ -659,8 +661,7 @@ export class WalletFactory {
 
     private async registerDelegatedSigners<C extends Chain>(
         delegatedSigners?: Array<SignerConfigForChain<C>>,
-        deviceSignerKeyStorage?: DeviceSignerKeyStorage,
-        isServerSide?: boolean
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
             delegatedSigners?.map(
@@ -672,22 +673,14 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
-                        // Server-side: device signer must already have a publicKey
-                        if (isServerSide) {
-                            if (signer.publicKey == null) {
-                                throw new WalletCreationError(
-                                    "Device signer created server-side must include a publicKey. " +
-                                        "Use CrossmintWallets.createDeviceSigner() on the client first, then send the result to the server."
-                                );
-                            }
-                            return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
-                        }
-                        // Client-side: auto-generate key if none provided
                         if (signer.publicKey != null) {
                             return { signer: `device:${signer.publicKey.x}:${signer.publicKey.y}` };
                         }
                         if (deviceSignerKeyStorage == null) {
-                            throw new WalletCreationError("Device signer key storage is required for device signers");
+                            throw new WalletCreationError(
+                                "Device signer requires either a publicKey or deviceSignerKeyStorage. " +
+                                    "Use CrossmintWallets.createDeviceSigner() to generate one, or provide deviceSignerKeyStorage."
+                            );
                         }
                         return { signer: await this.createDeviceSigner(signer, deviceSignerKeyStorage) };
                     }
@@ -701,11 +694,7 @@ export class WalletFactory {
         args: WalletCreateArgs<C>
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         const delegatedSigners = args.delegatedSigners;
-        return await this.registerDelegatedSigners(
-            delegatedSigners,
-            args.options?.deviceSignerKeyStorage,
-            this.apiClient.isServerSide
-        );
+        return await this.registerDelegatedSigners(delegatedSigners, args.options?.deviceSignerKeyStorage);
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
