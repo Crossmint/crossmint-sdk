@@ -15,13 +15,14 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
     contents: write
     pull-requests: write
+    id-token: write
 
 jobs:
     build-and-test:
         name: Build & Test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
@@ -39,19 +40,38 @@ jobs:
         permissions:
             contents: write
             pull-requests: write
+            id-token: write
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
 
             - name: Create Release Pull Request or Publish
+              id: changesets
               uses: changesets/action@v1.5.3
               with:
                   commit: "Release packages"
                   title: "Release packages"
-                  publish: pnpm change:publish
                   version: pnpm change:version
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Build libs for production
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              run: pnpm build:libs:prod
+
+            - name: Setup Node.js 24 for OIDC trusted publishing
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Update npm for OIDC trusted publishing
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              run: npm install -g npm@11.6.2
+
+            - name: Publish packages to NPM
+              if: steps.changesets.outputs.hasChangesets == 'false'
+              run: bash scripts/publish-oidc.sh
