@@ -160,13 +160,13 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
+        if (createOnLogin?.signer?.type === "passkey" && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.signer.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, createOnLogin?.signer?.type, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -264,15 +264,19 @@ export function CrossmintWalletBaseProvider({
                 const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
-                const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
+                const resolvedSigner =
+                    args.signer != null ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>) : undefined;
 
-                await initializeWebViewIfNeeded(resolvedSigner);
+                if (resolvedSigner != null) {
+                    await initializeWebViewIfNeeded(resolvedSigner);
+                }
 
-                const wallet = await wallets.getOrCreateWallet<C>({
+                const wallet = await wallets.createWallet<C>({
                     chain: args.chain,
                     signer: resolvedSigner,
+                    adminSigner: args.adminSigner,
+                    delegatedSigners: args.delegatedSigners,
                     plugins: args.plugins,
-                    onCreateConfig: args.onCreateConfig,
                     alias: args.alias,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
@@ -281,10 +285,20 @@ export function CrossmintWalletBaseProvider({
                             onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
                             onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
                                 const resolvedSignerConfig = resolveSignerConfig(signerConfig);
-                                const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
-                                    deviceSignerKeyStorage,
-                                });
-                                wallet.signer = assembledSigner;
+                                if (resolvedSigner != null) {
+                                    const walletArgs = {
+                                        chain: args.chain,
+                                        signer: resolvedSigner,
+                                    } as WalletArgsFor<C>;
+                                    const assembledSigner = await wallets.assembleSigner(
+                                        walletArgs,
+                                        resolvedSignerConfig,
+                                        {
+                                            deviceSignerKeyStorage,
+                                        }
+                                    );
+                                    wallet.signer = assembledSigner;
+                                }
                             },
                         },
                         deviceSignerKeyStorage,
@@ -357,10 +371,10 @@ export function CrossmintWalletBaseProvider({
     useEffect(() => {
         if (createOnLogin != null) {
             if (
-                (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
-                (createOnLogin.signer.type === "external-wallet" &&
+                (createOnLogin.signer?.type === "email" && experimental_customAuth?.email == null) ||
+                (createOnLogin.signer?.type === "external-wallet" &&
                     experimental_customAuth?.externalWalletSigner == null &&
-                    createOnLogin.signer.address == null)
+                    (createOnLogin.signer as { address?: string })?.address == null)
             ) {
                 return;
             }

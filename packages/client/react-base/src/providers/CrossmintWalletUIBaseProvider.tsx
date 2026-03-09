@@ -57,8 +57,8 @@ export function CrossmintWalletUIBaseProvider({
 }: CrossmintWalletUIBaseProviderProps) {
     const { wallet } = useWallet();
 
-    const signerType = wallet?.signer.type;
-    const signerValue = wallet?.signer.locator().split(":")[1];
+    const signerType = wallet?.signer?.type;
+    const signerValue = wallet?.signer?.locator().split(":")[1];
 
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
