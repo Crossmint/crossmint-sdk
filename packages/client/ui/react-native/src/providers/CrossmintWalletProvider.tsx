@@ -281,17 +281,13 @@ function CrossmintWalletProviderInternal({
                         onLoadEnd={onWebViewLoad}
                         onMessage={handleMessage}
                         onError={(syntheticEvent) => {
-                            const error = new Error(
-                                `WebView error: ${syntheticEvent.nativeEvent.description}`
-                            );
+                            const error = new Error(`WebView error: ${syntheticEvent.nativeEvent.description}`);
                             logger.error("react-native.wallet.webview.error", { error: error.message });
                             handshakeDeferred.current?.reject(error);
                             handshakeDeferred.current = null;
                         }}
                         onHttpError={(syntheticEvent) => {
-                            const error = new Error(
-                                `WebView HTTP error: ${syntheticEvent.nativeEvent.statusCode}`
-                            );
+                            const error = new Error(`WebView HTTP error: ${syntheticEvent.nativeEvent.statusCode}`);
                             logger.error("react-native.wallet.webview.http-error", { error: error.message });
                             handshakeDeferred.current?.reject(error);
                             handshakeDeferred.current = null;
