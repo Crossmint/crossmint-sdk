@@ -6,9 +6,8 @@ import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs, WalletOptions } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
 import type { SignerConfigForChain } from "./signers/types";
-import { createDeviceSigner, DeviceSignerKeyStorage } from "./utils/device-signers";
-import { BiometricPolicy } from "./utils/device-signers/DeviceSignerKeyStorage";
-import { CreateDeviceSignerOptions } from "./utils/device-signers/createDeviceSigner";
+import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import type { CreateDeviceSignerOptions } from "./utils/device-signers/createDeviceSigner";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
