@@ -147,14 +147,8 @@ export type DeviceSignerConfig =
           publicKey?: { x: string; y: string };
           locator?: string;
           biometricPolicy?: Exclude<BiometricPolicy, "session">;
-      }
-    | {
-          type: "device";
-          publicKey?: { x: string; y: string };
-          locator?: string;
           biometricPolicy: "session";
-          biometricExpirationTime?: number;
-      };
+          biometricExpirationTime: number;
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
