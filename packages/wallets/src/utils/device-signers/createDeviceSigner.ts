@@ -1,6 +1,14 @@
 import type { BiometricPolicy, DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import type { DeviceSignerDescriptor } from "../../wallets/types";
 
+export type CreateDeviceSignerOptions =
+    | {
+          biometricPolicy?: Exclude<BiometricPolicy, "session">;
+      }
+    | {
+          biometricPolicy: "session";
+          biometricExpirationTime: number;
+      };
 /**
  * Creates a device signer by generating a new P-256 key pair via the provided key storage.
  *
@@ -16,14 +24,7 @@ import type { DeviceSignerDescriptor } from "../../wallets/types";
  */
 export async function createDeviceSigner(
     deviceKeyStorage: DeviceSignerKeyStorage,
-    options?:
-        | {
-              biometricPolicy?: Exclude<BiometricPolicy, "session">;
-          }
-        | {
-              biometricPolicy: "session";
-              biometricExpirationTime: number;
-          }
+    options?: CreateDeviceSignerOptions
 ): Promise<DeviceSignerDescriptor> {
     const publicKeyBase64 = await deviceKeyStorage.generateKey(options ?? { biometricPolicy: "none" });
 
