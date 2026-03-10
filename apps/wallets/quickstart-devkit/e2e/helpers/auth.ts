@@ -195,6 +195,31 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
     }
 }
 
+async function handlePhoneSignerViaWindowCallbacks(page: Page): Promise<void> {
+    console.log("📱 Phone signer: waiting for OTP callbacks to be set via window...");
+    const beforeSendTime = new Date();
+
+    // Wait for NCS to call onAuthRequired and set window.__crossmintPhoneOtpCallbacks
+    const callbacksAvailable = await page
+        .waitForFunction(() => (window as any).__crossmintPhoneOtpCallbacks != null, { timeout: 30000 })
+        .catch(() => null);
+
+    if (callbacksAvailable == null) {
+        console.log("✅ No OTP callbacks appeared — device may already be registered, skipping phone OTP");
+        return;
+    }
+
+    console.log("📱 OTP callbacks available, triggering SMS send...");
+    await page.evaluate(() => (window as any).__crossmintPhoneOtpCallbacks.sendOtp());
+    console.log("📧 Called sendOtp, waiting for SMS from Mailosaur...");
+
+    const otpCode = await getPhoneOTPCode(beforeSendTime);
+    console.log(`🔐 Retrieved phone OTP code: ${otpCode}`);
+
+    await page.evaluate((otp: string) => (window as any).__crossmintPhoneOtpCallbacks.verifyOtp(otp), otpCode);
+    console.log("✅ Phone OTP submitted via window callback");
+}
+
 export async function handleSignerConfirmation(page: Page, signerType?: SignerType): Promise<void> {
     if (signerType == null) {
         try {
@@ -207,7 +232,9 @@ export async function handleSignerConfirmation(page: Page, signerType?: SignerTy
 
     console.log(`🔐 Signer type: ${signerType || "unknown"}`);
 
-    if (signerType === "email" || signerType === "phone") {
+    if (signerType === "phone") {
+        await handlePhoneSignerViaWindowCallbacks(page);
+    } else if (signerType === "email") {
         await handleEmailPhoneSignerFlow(page, signerType);
     } else {
         const modal = page.locator("div[role='dialog']").first();

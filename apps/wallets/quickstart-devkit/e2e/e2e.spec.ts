@@ -7,6 +7,7 @@ import {
     getWalletBalance,
     getWalletBalances,
     transferFunds,
+    waitForWalletReady,
 } from "./helpers";
 import { TEST_RECIPIENT_WALLET_ADDRESSES } from "./config/constants";
 
@@ -54,8 +55,9 @@ test.describe("Crossmint Wallet E2E Tests", () => {
 
                 // Fund wallet before transfer test
                 await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
+                // Reload page so the UI fetches the updated balance from the chain
+                await authenticatedPage.reload();
+                await waitForWalletReady(authenticatedPage);
 
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
@@ -113,8 +115,9 @@ test.describe("Crossmint Wallet E2E Tests", () => {
 
                 // Fund wallet before prepared transaction test with the same amount we'll transfer
                 await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
+                // Reload page so the UI fetches the updated balance from the chain
+                await authenticatedPage.reload();
+                await waitForWalletReady(authenticatedPage);
 
                 // Check wallet balance and log warning if 0
                 const initialBalance = await getWalletBalance(authenticatedPage);

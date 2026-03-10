@@ -60,7 +60,7 @@ export type SignerType = TestConfiguration["signer"];
 export const TEST_RECIPIENT_WALLET_ADDRESSES = {
     evm: "0x4DA90A5d86972E5129C5CEa24c4b019B8f85Ae8e",
     solana: "61Y4H6d2SUnuJNeJVHazVCm1Btf6CK2g2iags5oV44v7",
-    stellar: "CANKOZR2XAFXTUT7JX6ZPKKDNOQQ2XS5RGVC6ZU57VLDNDYRJPXUK2SJ",
+    stellar: "CCLPYGZ2GLWE6RZLGQ2ADYJ3B3XAQZSMVBPQD5VFBJXYIGAJGTBX3RMB",
 };
 
 // Base email aliases for different signer types

@@ -223,29 +223,10 @@ export async function transferFunds(
 
         await handleSignerConfirmation(page, signerType as any);
 
-        try {
-            await page.locator('a[data-testid="successful-tx-link"]').waitFor({
-                state: "visible",
-                timeout: 120000, // 2 minutes for transaction to complete
-            });
-        } catch (error) {
-            // If success link doesn't appear, check for error messages
-            const errorMessage = page.locator("text=/error/i, text=/failed/i").first();
-            const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false);
-
-            if (hasError) {
-                const errorText = await errorMessage.textContent();
-                throw new Error(`Transaction failed: ${errorText}`);
-            }
-
-            // Check if transfer button is still enabled (transaction might not have started)
-            const isButtonEnabled = await transferButton.isEnabled().catch(() => false);
-            if (isButtonEnabled) {
-                throw new Error("Transaction did not start - transfer button is still enabled");
-            }
-
-            throw new Error(`Transaction timeout: Success link did not appear within 2 minutes. ${error}`);
-        }
+        await page.locator('a[data-testid="successful-tx-link"]').waitFor({
+            state: "visible",
+            timeout: 90000,
+        });
 
         console.log(`✅ Transfer of ${amount} completed successfully`);
     } catch (error) {
