@@ -395,11 +395,12 @@ export function CrossmintWalletBaseProvider({
 
     useEffect(() => {
         if (createOnLogin != null) {
+            const signer = createOnLogin.signer;
             if (
-                (createOnLogin.signer?.type === "email" && experimental_customAuth?.email == null) ||
-                (createOnLogin.signer?.type === "external-wallet" &&
+                (signer?.type === "email" && experimental_customAuth?.email == null) ||
+                (signer?.type === "external-wallet" &&
                     experimental_customAuth?.externalWalletSigner == null &&
-                    (createOnLogin.signer as any)?.address == null)
+                    signer.address == null)
             ) {
                 return;
             }
