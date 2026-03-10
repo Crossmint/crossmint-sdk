@@ -1,10 +1,14 @@
 import type { EmbeddedCheckoutV3Appearance } from "../embed";
+import type { VerificationConfig } from "./OrderIntents";
 
 export interface CrossmintPaymentMethodManagementProps {
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
-    onAgenticEnrollmentCreated?: (agentEnrollment: AgenticEnrollment) => void | Promise<void>;
+    onAgenticEnrollmentCreated?: (
+        agentEnrollment: AgenticEnrollment,
+        verificationConfig: VerificationConfig
+    ) => void | Promise<void>;
 }
 
 export type AgenticEnrollment = {
