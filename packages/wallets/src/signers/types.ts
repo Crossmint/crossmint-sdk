@@ -141,14 +141,19 @@ export type PasskeySignResult = {
     metadata: WebAuthnP256.SignMetadata;
 };
 
-export type DeviceSignerConfig =
+export type DeviceSignerConfig = {
+    type: "device";
+    publicKey?: { x: string; y: string };
+    locator?: string;
+} & (
     | {
-          type: "device";
-          publicKey?: { x: string; y: string };
-          locator?: string;
           biometricPolicy?: Exclude<BiometricPolicy, "session">;
+      }
+    | {
           biometricPolicy: "session";
           biometricExpirationTime: number;
+      }
+);
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
