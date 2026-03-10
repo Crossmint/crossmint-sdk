@@ -451,6 +451,12 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Promise<WalletArgsFor<C>> {
+        // If the caller already provided a fully-resolved locator, skip resolution
+        const deviceSignerArgs = args.signer as DeviceSignerConfig;
+        if (deviceSignerArgs?.locator != null) {
+            return args;
+        }
+
         const deviceSignerKeyStorage = args.options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
             return args;
@@ -494,6 +500,9 @@ export class WalletFactory {
         }
 
         // Step 3: No matching device signer on device - leave signer empty (read-only)
+        walletsLogger.warn("walletFactory.resolveDeviceSignerForGetWallet.noDeviceSignerFound", {
+            address: walletResponse.address,
+        });
         return { ...args, signer: undefined };
     }
 
