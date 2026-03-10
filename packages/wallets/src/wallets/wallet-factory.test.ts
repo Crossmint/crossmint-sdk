@@ -237,9 +237,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     },
                 };
 
-                await expect(
-                    walletFactory.getWallet("email:user@example.com:solana:smart", args)
-                ).rejects.toThrow(
+                await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow(
                     "getWallet with walletLocator is only available on the server side. Use getWallet(args) instead."
                 );
             });
