@@ -33,14 +33,14 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
         }
         iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
         iframeClient.on("payment-method:selected", (data) => props.onPaymentMethodSelected?.(data));
-        iframeClient.on("order-intent:created", (data) => {
-            props.onOrderIntentCreated?.(data.orderIntent, data.verificationConfig);
-        });
+        iframeClient.on("agentic-enrollment:created", (data) =>
+            props.onAgenticEnrollmentCreated?.(data.agenticEnrollment, data.verificationConfig)
+        );
 
         return () => {
             iframeClient.off("ui:height.changed");
             iframeClient.off("payment-method:selected");
-            iframeClient.off("order-intent:created");
+            iframeClient.off("agentic-enrollment:created");
         };
     }, [iframeClient]);
 
