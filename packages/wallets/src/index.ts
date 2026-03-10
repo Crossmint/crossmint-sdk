@@ -17,6 +17,7 @@ export type {
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
     DelegatedSigner,
+    DeviceSignerDescriptor,
     EVMTransactionInput,
     OnCreateConfig,
     Transaction,
@@ -44,5 +45,5 @@ export type {
 } from "./signers/types";
 
 // Device Signer Key Storage Interface
-export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage } from "./utils/device-signers";
+export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
 export type { BiometricRequestHandler } from "./utils/device-signers";

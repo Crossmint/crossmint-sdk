@@ -87,6 +87,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
     @WithLoggerContext({
         logger: walletsLogger,
+        methodName: "deviceSignerKeyStorage.hasKey",
+    })
+    async hasKey(publicKeyBase64: string): Promise<boolean> {
+        const result = await this.rpc<{ exists: boolean }>("hasKey", { publicKeyBase64 });
+        return result.exists;
+    }
+
+    @WithLoggerContext({
+        logger: walletsLogger,
         methodName: "deviceSignerKeyStorage.signMessage",
     })
     async signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
