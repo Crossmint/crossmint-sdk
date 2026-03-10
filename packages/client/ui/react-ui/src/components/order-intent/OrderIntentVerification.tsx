@@ -11,34 +11,33 @@ export interface OrderIntentVerificationProps {
 
 export function OrderIntentVerification(props: OrderIntentVerificationProps) {
     return (
-        <BasisTheoryAIProvider jwt={props.config.btJwt} environment={props.config.environment}>
+        <BasisTheoryAIProvider apiKey={props.config.btApiKey} environment={props.config.environment}>
             <OrderIntentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
 }
 
 function OrderIntentVerificationContent({
-    config,
     orderIntent,
     onVerificationComplete,
     onVerificationError,
 }: OrderIntentVerificationProps) {
-    const { verifyPurchaseIntent } = useBasisTheoryAI();
+    const { verifyInstruction } = useBasisTheoryAI();
 
     const handleVerification = useCallback(async () => {
         try {
-            const paymentIntent = await verifyPurchaseIntent(
-                config.btProjectId,
-                orderIntent.payment.externalOrderIntentId
+            const instruction = await verifyInstruction(
+                orderIntent.payment.btAgentId,
+                orderIntent.payment.btInstructionId
             );
-            onVerificationComplete?.(paymentIntent);
+            onVerificationComplete?.(instruction);
         } catch (error) {
             onVerificationError?.(error as Error);
         }
     }, [
-        verifyPurchaseIntent,
-        config.btProjectId,
-        orderIntent.orderIntentId,
+        verifyInstruction,
+        orderIntent.payment.btAgentId,
+        orderIntent.payment.btInstructionId,
         onVerificationComplete,
         onVerificationError,
     ]);

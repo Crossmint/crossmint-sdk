@@ -758,8 +758,8 @@ importers:
   packages/client/ui/react-ui:
     dependencies:
       '@basis-theory-ai/react':
-        specifier: ^1.0.1-beta.9
-        version: 1.0.1-beta.16(react-dom@19.1.2(react@19.1.2))(react@19.1.2)
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
       '@crossmint/client-sdk-auth':
         specifier: workspace:*
         version: link:../../auth
@@ -1668,11 +1668,8 @@ packages:
   '@base-org/account@2.4.0':
     resolution: {integrity: sha512-A4Umpi8B9/pqR78D1Yoze4xHyQaujioVRqqO3d6xuDFw9VRtjg6tK3bPlwE0aW+nVH/ntllCpPa2PbI8Rnjcug==}
 
-  '@basis-theory-ai/react@1.0.1-beta.16':
-    resolution: {integrity: sha512-ghB6muaC6I1rniLtvckhFTg7YP8k/F7fYRkvbyseAcVahQtncCO5Mjoqvn7GErm/jgS87g5acXr7O8v4jXg4Eg==}
-    peerDependencies:
-      react: 19.1.2
-      react-dom: 19.1.2
+  '@basis-theory-ai/react@2.0.0-beta.3':
+    resolution: {integrity: sha512-f8lfJpO8PqymSJAgn6PYUCf48iH4435MpuA7MLtIR5ZxJZQY5smeH+Znag5qg5dCmCTj7lStfrodVN/nPfL7MQ==}
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
@@ -14393,7 +14390,7 @@ snapshots:
       - zod
     optional: true
 
-  '@basis-theory-ai/react@1.0.1-beta.16(react-dom@19.1.2(react@19.1.2))(react@19.1.2)':
+  '@basis-theory-ai/react@2.0.0-beta.3':
     dependencies:
       react: 19.1.2
       react-dom: 19.1.2(react@19.1.2)
