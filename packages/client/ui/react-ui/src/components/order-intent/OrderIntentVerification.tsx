@@ -5,7 +5,7 @@ import { useEffect, useCallback } from "react";
 export interface OrderIntentVerificationProps {
     config: VerificationConfig;
     orderIntent: OrderIntent;
-    onVerificationComplete?: (paymentIntent: unknown) => void;
+    onVerificationComplete?: (instruction: unknown) => void;
     onVerificationError?: (error: Error) => void;
 }
 
