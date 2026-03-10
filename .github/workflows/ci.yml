@@ -13,7 +13,7 @@ on:
 jobs:
     build-and-test:
         name: build & test
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-latest-4-cores  # 16GB RAM for Next.js builds
         steps:
             - name: Checkout
               uses: actions/checkout@v4
