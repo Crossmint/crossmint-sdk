@@ -1,6 +1,9 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
+// Errors
+export { WalletNotAvailableError } from "./utils/errors";
+
 // API
 export { ApiClient as WalletsApiClient } from "./api";
 

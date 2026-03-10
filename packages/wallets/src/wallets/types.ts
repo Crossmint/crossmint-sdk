@@ -113,6 +113,7 @@ export type DelegatedSigner = {
     signer: string;
 };
 
+/** @deprecated Use `adminSigner` and `delegatedSigners` directly on `WalletCreateArgs` instead. */
 export type OnCreateConfig<C extends Chain> = {
     adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     delegatedSigners?: Array<SignerConfigForChain<C>>;
@@ -154,7 +155,10 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    onCreateConfig?: OnCreateConfig<C>;
+    /** Admin signer for wallet creation. If not provided, the main `signer` is used as admin. Device signers cannot be admin signers. */
+    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Delegated signers to register on the wallet during creation. */
+    delegatedSigners?: Array<SignerConfigForChain<C>>;
     alias?: string;
 };
 

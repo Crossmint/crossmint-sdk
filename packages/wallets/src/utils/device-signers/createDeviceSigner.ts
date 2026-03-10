@@ -1,10 +1,11 @@
-import type { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
+import type { BiometricPolicy, DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import type { DeviceSignerDescriptor } from "../../wallets/types";
 
 /**
  * Creates a device signer by generating a new P-256 key pair via the provided key storage.
  *
  * @param deviceKeyStorage - The device key storage implementation to use for key generation.
+ * @param options - Optional biometric policy configuration. Defaults to `{ biometricPolicy: "none" }`.
  * @returns A device signer descriptor containing the type, public key coordinates, and locator.
  *
  * @example
@@ -13,8 +14,18 @@ import type { DeviceSignerDescriptor } from "../../wallets/types";
  * // signer = { type: "device", publicKey: { x, y }, locator: "device:<pubkey64>" }
  * ```
  */
-export async function createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage): Promise<DeviceSignerDescriptor> {
-    const publicKeyBase64 = await deviceKeyStorage.generateKey({ biometricPolicy: "none" });
+export async function createDeviceSigner(
+    deviceKeyStorage: DeviceSignerKeyStorage,
+    options?:
+        | {
+              biometricPolicy?: Exclude<BiometricPolicy, "session">;
+          }
+        | {
+              biometricPolicy: "session";
+              biometricExpirationTime: number;
+          }
+): Promise<DeviceSignerDescriptor> {
+    const publicKeyBase64 = await deviceKeyStorage.generateKey(options ?? { biometricPolicy: "none" });
 
     // The public key is an uncompressed P-256 key (65 bytes: 0x04 prefix + 32 bytes x + 32 bytes y)
     // encoded as base64. We need to extract the x and y coordinates.

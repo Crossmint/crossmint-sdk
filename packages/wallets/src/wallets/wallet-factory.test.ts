@@ -59,8 +59,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         vi.restoreAllMocks();
     });
 
-    describe("createWallet with onCreateConfig", () => {
-        it("should create wallet with onCreateConfig admin signer", async () => {
+    describe("createWallet with adminSigner and delegatedSigners", () => {
+        it("should create wallet with top-level adminSigner", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletCreateArgs<"solana"> = {
@@ -69,13 +69,11 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     type: "external-wallet",
                     address: "DelegatedSignerAddress456",
                 },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                adminSigner: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
                 },
+                delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
             };
 
             await walletFactory.createWallet(args);
@@ -102,8 +100,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         });
     });
 
-    describe("getWallet with onCreateConfig validation", () => {
-        it("should validate existing wallet against onCreateConfig admin signer", async () => {
+    describe("getWallet validation", () => {
+        it("should validate existing wallet against signer", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletArgsFor<"solana"> = {
@@ -230,9 +228,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:stellar:smart");
             });
 
-            it("should allow walletLocator parameter on client side", async () => {
-                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
+            it("should throw when walletLocator parameter is used on client side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
                     signer: {
@@ -241,9 +237,11 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     },
                 };
 
-                const wallet = await walletFactory.getWallet("email:user@example.com:solana:smart", args);
-                expect(wallet).toBeDefined();
-                expect(mockApiClient.getWallet).toHaveBeenCalledWith("email:user@example.com:solana:smart");
+                await expect(
+                    walletFactory.getWallet("email:user@example.com:solana:smart", args)
+                ).rejects.toThrow(
+                    "getWallet with walletLocator is only available on the server side. Use getWallet(args) instead."
+                );
             });
 
             it("should throw error when wallet not found", async () => {

@@ -9,6 +9,7 @@ import {
     type WalletCreateArgs,
     type PhoneSignerConfig,
     type DeviceSignerKeyStorage,
+    WalletNotAvailableError,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -290,9 +291,13 @@ export function CrossmintWalletBaseProvider({
                     wallet = await wallets.getWallet<C>({
                         chain: args.chain,
                         signer: resolvedSigner,
+                        alias: args.alias,
                         options: walletOptions,
                     });
-                } catch {
+                } catch (error) {
+                    if (!(error instanceof WalletNotAvailableError)) {
+                        throw error;
+                    }
                     // Wallet doesn't exist yet, create it
                 }
 
@@ -301,7 +306,8 @@ export function CrossmintWalletBaseProvider({
                         chain: args.chain,
                         signer: resolvedSigner,
                         plugins: args.plugins,
-                        onCreateConfig: args.onCreateConfig,
+                        adminSigner: args.adminSigner,
+                        delegatedSigners: args.delegatedSigners,
                         alias: args.alias,
                         options: walletOptions,
                     });
