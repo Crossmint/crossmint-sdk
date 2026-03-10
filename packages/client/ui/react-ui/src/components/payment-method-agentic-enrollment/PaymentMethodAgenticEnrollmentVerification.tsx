@@ -5,7 +5,7 @@ import { useEffect, useCallback } from "react";
 export interface PaymentMethodAgenticEnrollmentVerificationProps {
     config: VerificationConfig;
     agentEnrollmentId: string;
-    onVerificationComplete?: (paymentIntent: unknown) => void;
+    onVerificationComplete?: (enrollment: unknown) => void;
     onVerificationError?: (error: Error) => void;
 }
 
