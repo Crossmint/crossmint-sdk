@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-base
 
+## 2.0.0
+
+### Major Changes
+
+- 25e989f: vic: verification migration
+
+### Patch Changes
+
+- Updated dependencies [f5bcec1]
+  - @crossmint/common-sdk-base@0.9.18
+
 ## 1.7.14
 
 ### Patch Changes

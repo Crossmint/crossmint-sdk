@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-react-ui
 
+## 3.0.0
+
+### Major Changes
+
+- 25e989f: vic: verification migration
+
+### Patch Changes
+
+- Updated dependencies [454a9cc]
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+- Updated dependencies [f969a28]
+  - @crossmint/wallets-sdk@0.20.0
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+  - @crossmint/client-sdk-react-base@1.0.3
+  - @crossmint/client-sdk-auth@1.2.48
+  - @crossmint/common-sdk-auth@1.0.70
+
 ## 2.6.18
 
 ### Patch Changes

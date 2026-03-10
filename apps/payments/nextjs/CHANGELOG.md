@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 2.0.0
+
+### Major Changes
+
+- 25e989f: vic: verification migration
+
+### Patch Changes
+
+- Updated dependencies [25e989f]
+  - @crossmint/client-sdk-react-ui@3.0.0
+  - @crossmint/client-sdk-base@2.0.0
+
 ## 1.5.45
 
 ### Patch Changes
