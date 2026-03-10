@@ -160,13 +160,13 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
+        if (createOnLogin?.signer?.type === "passkey" && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.signer.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, createOnLogin?.signer?.type, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -264,11 +264,15 @@ export function CrossmintWalletBaseProvider({
                 const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
-                const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
+                const resolvedSigner = args.signer
+                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
+                    : undefined;
 
-                await initializeWebViewIfNeeded(resolvedSigner);
+                if (resolvedSigner) {
+                    await initializeWebViewIfNeeded(resolvedSigner);
+                }
 
-                const wallet = await wallets.getOrCreateWallet<C>({
+                const wallet = await wallets.createWallet<C>({
                     chain: args.chain,
                     signer: resolvedSigner,
                     plugins: args.plugins,
@@ -284,7 +288,9 @@ export function CrossmintWalletBaseProvider({
                                 const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
                                     deviceSignerKeyStorage,
                                 });
-                                wallet.signer = assembledSigner;
+                                if (assembledSigner != null) {
+                                    wallet.signer = assembledSigner;
+                                }
                             },
                         },
                         deviceSignerKeyStorage,
@@ -324,9 +330,13 @@ export function CrossmintWalletBaseProvider({
             try {
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
+                const resolvedSigner = args.signer
+                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
+                    : undefined;
 
-                await initializeWebViewIfNeeded(resolvedSigner);
+                if (resolvedSigner) {
+                    await initializeWebViewIfNeeded(resolvedSigner);
+                }
 
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
@@ -357,10 +367,10 @@ export function CrossmintWalletBaseProvider({
     useEffect(() => {
         if (createOnLogin != null) {
             if (
-                (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
-                (createOnLogin.signer.type === "external-wallet" &&
+                (createOnLogin.signer?.type === "email" && experimental_customAuth?.email == null) ||
+                (createOnLogin.signer?.type === "external-wallet" &&
                     experimental_customAuth?.externalWalletSigner == null &&
-                    createOnLogin.signer.address == null)
+                    (createOnLogin.signer as any)?.address == null)
             ) {
                 return;
             }
