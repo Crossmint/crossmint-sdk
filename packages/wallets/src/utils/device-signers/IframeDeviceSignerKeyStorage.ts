@@ -11,9 +11,11 @@ const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 
+const INDEXEDDB_FATAL_CODE = "indexeddb-fatal";
+
 type IframeRpcResponse =
     | { type: "response"; id: string; result: unknown }
-    | { type: "error"; id: string; error: string };
+    | { type: "error"; id: string; error: string; code?: string };
 
 type BiometricRequestMessage = {
     type: "biometric-request";
@@ -36,6 +38,7 @@ export type BiometricRequestHandler = (action: "createCredential" | "sign") => P
  */
 export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private iframePromise: Promise<HTMLIFrameElement> | null = null;
+    private reloading: Promise<void> | null = null;
     private readonly iframeUrl: string;
     private biometricRequestHandler: BiometricRequestHandler | null = null;
     private biometricListener: ((event: MessageEvent) => void) | null = null;
@@ -120,6 +123,27 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     // ── Internal helpers ─────────────────────────────────────────────
 
     private async rpc<T = unknown>(type: string, payload: Record<string, unknown>): Promise<T> {
+        const response = await this.sendRpc<T>(type, payload);
+
+        if (response.fatal) {
+            walletsLogger.warn(
+                `[IframeDeviceSignerKeyStorage] Recoverable IDB error on "${type}", reloading iframe and retrying`
+            );
+            await this.reloadIframe();
+            const retry = await this.sendRpc<T>(type, payload);
+            if (retry.fatal) {
+                throw new Error(`Device signer IDB fatal error on "${type}" persisted after iframe reload`);
+            }
+            return retry.value;
+        }
+
+        return response.value;
+    }
+
+    private async sendRpc<T = unknown>(
+        type: string,
+        payload: Record<string, unknown>
+    ): Promise<{ value: T; fatal: false } | { fatal: true }> {
         const iframe = await this.getIframe();
         const contentWindow = iframe.contentWindow;
         if (contentWindow == null) {
@@ -129,7 +153,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         const id = crypto.randomUUID();
         const expectedOrigin = new URL(this.iframeUrl).origin;
 
-        return new Promise<T>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 window.removeEventListener("message", handler);
                 reject(new Error(`Device signer RPC "${type}" timed out after ${DEFAULT_TIMEOUT_MS}ms`));
@@ -148,16 +172,40 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
                 clearTimeout(timeout);
                 window.removeEventListener("message", handler);
 
-                if (data.type === "error") {
+                if (data.type === "error" && data.code === INDEXEDDB_FATAL_CODE) {
+                    resolve({ fatal: true });
+                } else if (data.type === "error") {
                     reject(new Error(data.error));
                 } else {
-                    resolve(data.result as T);
+                    resolve({ value: data.result as T, fatal: false });
                 }
             }
 
             window.addEventListener("message", handler);
             contentWindow.postMessage({ type, id, payload }, this.iframeUrl);
         });
+    }
+
+    /**
+     * Destroy the current iframe and create a fresh one.
+     * Uses a single-flight pattern to prevent concurrent reloads.
+     */
+    private async reloadIframe(): Promise<void> {
+        if (this.reloading != null) {
+            return this.reloading;
+        }
+
+        const reload = (async () => {
+            try {
+                this.destroy();
+                await this.getIframe();
+            } finally {
+                this.reloading = null;
+            }
+        })();
+
+        this.reloading = reload;
+        return reload;
     }
 
     private setupBiometricListener(iframe: HTMLIFrameElement): void {
