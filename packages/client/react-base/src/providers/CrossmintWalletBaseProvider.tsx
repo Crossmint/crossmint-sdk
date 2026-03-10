@@ -272,30 +272,53 @@ export function CrossmintWalletBaseProvider({
                     await initializeWebViewIfNeeded(resolvedSigner);
                 }
 
-                const wallet = await wallets.createWallet<C>({
-                    chain: args.chain,
-                    signer: resolvedSigner,
-                    plugins: args.plugins,
-                    onCreateConfig: args.onCreateConfig,
-                    alias: args.alias,
-                    options: {
-                        clientTEEConnection: clientTEEConnection?.(),
-                        experimental_callbacks: {
-                            onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
-                            onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                            onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
-                                const resolvedSignerConfig = resolveSignerConfig(signerConfig);
-                                const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
-                                    deviceSignerKeyStorage,
-                                });
-                                if (assembledSigner != null) {
-                                    wallet.signer = assembledSigner;
-                                }
-                            },
-                        },
-                        deviceSignerKeyStorage,
+                const walletOptions = {
+                    clientTEEConnection: clientTEEConnection?.(),
+                    experimental_callbacks: {
+                        onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
+                        onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                        onChangeSigner: undefined as
+                            | (<C2 extends Chain>(signerConfig: SignerConfigForChain<C2>) => Promise<void>)
+                            | undefined,
                     },
-                });
+                    deviceSignerKeyStorage,
+                };
+
+                // Try to get existing wallet first, then create if not found
+                let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
+                try {
+                    wallet = await wallets.getWallet<C>({
+                        chain: args.chain,
+                        signer: resolvedSigner,
+                        options: walletOptions,
+                    });
+                } catch {
+                    // Wallet doesn't exist yet, create it
+                }
+
+                if (wallet == null) {
+                    wallet = await wallets.createWallet<C>({
+                        chain: args.chain,
+                        signer: resolvedSigner,
+                        plugins: args.plugins,
+                        onCreateConfig: args.onCreateConfig,
+                        alias: args.alias,
+                        options: walletOptions,
+                    });
+                }
+
+                // Set up the onChangeSigner callback now that wallet is available
+                walletOptions.experimental_callbacks.onChangeSigner = async <C2 extends Chain>(
+                    signerConfig: SignerConfigForChain<C2>
+                ) => {
+                    const resolvedSignerConfig = resolveSignerConfig(signerConfig);
+                    const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
+                        deviceSignerKeyStorage,
+                    });
+                    if (assembledSigner != null) {
+                        wallet.signer = assembledSigner;
+                    }
+                };
                 setWallet(wallet);
                 setWalletStatus("loaded");
                 return wallet;

@@ -44,7 +44,8 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
-import type { Signer, SignerConfigForChain } from "../signers/types";
+import type { DeviceSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import type { BiometricPolicy } from "../utils/device-signers/DeviceSignerKeyStorage";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -686,11 +687,11 @@ export class Wallet<C extends Chain> {
         }
 
         if (this.signer.locator() !== signerLocator) {
-            await this.options?.experimental_callbacks?.onChangeSigner?.({
-                type: "device",
-                biometricPolicy,
-                biometricExpirationTime,
-            });
+            const deviceSignerConfig: DeviceSignerConfig =
+                biometricPolicy === "session" && biometricExpirationTime != null
+                    ? { type: "device", biometricPolicy, biometricExpirationTime }
+                    : { type: "device", biometricPolicy: biometricPolicy as Exclude<BiometricPolicy, "session"> };
+            await this.options?.experimental_callbacks?.onChangeSigner?.(deviceSignerConfig);
 
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
                 signerLocator,
