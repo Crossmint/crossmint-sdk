@@ -456,17 +456,8 @@ export class WalletFactory {
     ): Promise<WalletArgsFor<C>> {
         const deviceSignerArgs = args.signer as DeviceSignerConfig;
 
-        // If the caller already provided a fully-resolved locator, validate it can be used
+        // If the caller already provided a fully-resolved locator, return as-is
         if (deviceSignerArgs?.locator != null) {
-            const config = walletResponse.config as SmartWalletConfig;
-            const delegatedSigners = config?.delegatedSigners || [];
-            const matchingLocator = delegatedSigners.find((s) => s.locator === deviceSignerArgs.locator);
-            if (matchingLocator == null) {
-                walletsLogger.warn("walletFactory.resolveDeviceSignerForGetWallet.locatorNotFound", {
-                    address: walletResponse.address,
-                    locator: deviceSignerArgs.locator,
-                });
-            }
             return args;
         }
 
@@ -513,7 +504,7 @@ export class WalletFactory {
 
         // Step 3: No matching device signer on device - return signer as-is
         // Device signer creation will be handled during the first transaction
-        walletsLogger.warn("walletFactory.resolveDeviceSignerForGetWallet.noDeviceSignerFound", {
+        walletsLogger.info("walletFactory.resolveDeviceSignerForGetWallet.noDeviceSignerFound", {
             address: walletResponse.address,
         });
         return args;
@@ -546,8 +537,9 @@ export class WalletFactory {
             return;
         }
 
-        if ("adminSigner" in args || "delegatedSigners" in args) {
-            let expectedAdminSigner = args.adminSigner ?? args.signer;
+        const createArgs = args as WalletCreateArgs<C>;
+        if (createArgs.adminSigner != null || createArgs.delegatedSigners != null) {
+            let expectedAdminSigner = createArgs.adminSigner ?? args.signer;
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigner = config?.adminSigner;
 
@@ -564,8 +556,8 @@ export class WalletFactory {
                 compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
             }
 
-            if (args.delegatedSigners != null) {
-                this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+            if (createArgs.delegatedSigners != null) {
+                this.validateDelegatedSigners(existingWallet, createArgs.delegatedSigners);
             }
         }
 
@@ -582,8 +574,17 @@ export class WalletFactory {
         const adminSigner = config?.adminSigner;
         const delegatedSigners = config?.delegatedSigners || [];
 
-        // Device signer is always allowed as it can be added during transaction creation
+        // Device signer: if it has a locator, validate it's a delegated signer of this wallet
         if (signer.type === "device") {
+            const deviceSigner = signer as DeviceSignerConfig;
+            if (deviceSigner.locator != null) {
+                const isDelegated = delegatedSigners.some((ds) => ds.locator === deviceSigner.locator);
+                if (!isDelegated) {
+                    throw new WalletCreationError(
+                        `Device signer with locator "${deviceSigner.locator}" is not a delegated signer of wallet "${wallet.address}".`
+                    );
+                }
+            }
             return;
         }
 
