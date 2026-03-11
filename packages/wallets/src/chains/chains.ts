@@ -28,6 +28,7 @@ import {
 import { arcTestnet } from "./definitions/arcTestnet";
 import { story } from "./definitions/story";
 import { storyTestnet } from "./definitions/storyTestnet";
+import { tempo } from "./definitions/tempo";
 import { tempoTestnet } from "./definitions/tempoTestnet";
 
 const TESTNET_AA_CHAINS = [
@@ -68,6 +69,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.SEI_PACIFIC_1,
     Blockchain.SHAPE,
     Blockchain.STORY,
+    Blockchain.TEMPO,
     Blockchain.WORLDCHAIN,
     Blockchain.ZORA,
 ] as const;
@@ -124,6 +126,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return plume;
         case Blockchain.ARC_TESTNET:
             return arcTestnet;
+        case Blockchain.TEMPO:
+            return tempo;
         case Blockchain.TEMPO_TESTNET:
             return tempoTestnet;
         case Blockchain.ABSTRACT:
@@ -176,6 +180,7 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.STORY]: Blockchain.STORY_TESTNET,
     [Blockchain.WORLDCHAIN]: Blockchain.WORLD_CHAIN_SEPOLIA,
     [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
+    [Blockchain.TEMPO]: Blockchain.TEMPO_TESTNET,
 };
 
 export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {
