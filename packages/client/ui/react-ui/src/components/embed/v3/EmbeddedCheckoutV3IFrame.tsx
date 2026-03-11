@@ -1,5 +1,5 @@
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { lazy, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
     type CrossmintEmbeddedCheckoutV3Props,
@@ -10,13 +10,6 @@ import {
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
 import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
-
-const CryptoWalletConnectionHandler = lazy(() =>
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("./crypto/CryptoWalletConnectionHandler").then((mod) => ({
-        default: mod.CryptoWalletConnectionHandler,
-    }))
-);
 
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
@@ -106,12 +99,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                         payer={memoizedProps.current.payment.crypto.payer}
                         iframeClient={iframeClient}
                     />
-                ) : (
-                    <CryptoWalletConnectionHandler
-                        iframeClient={iframeClient}
-                        apiKeyEnvironment={apiClient["parsedAPIKey"].environment}
-                    />
-                )
+                ) : null
             ) : null}
             <span id="crossmint-focus-target" tabIndex={-1} />
         </>
