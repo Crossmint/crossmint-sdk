@@ -325,14 +325,32 @@ export class Wallet<C extends Chain> {
     /**
      * Pay via the X402 protocol
      * @param url - The payment URL
-     * @returns null on success
      * @throws {Error} If the payment fails
      * @experimental This API is experimental and may change in the future
      */
-    public async experimental_payX402(url: string): Promise<null> {
-        const solanaWallet = SolanaWallet.from(this as Wallet<Chain>);
-        await payX402(solanaWallet, url);
-        return null;
+    public async experimental_payX402(url: string) {
+        if (this.chain !== "solana") {
+            throw new Error(`x402 payments are only supported on Solana. Current chain: ${this.chain}`);
+        }
+
+        const initialResponse = await fetch(url);
+        if (initialResponse.status !== 402) {
+            return;
+        }
+
+        const body = await initialResponse.json();
+        const accepts: {
+            network: string;
+            asset: string;
+            extra?: { features?: { xSettlementAccountSupported?: boolean } };
+        }[] = body.accepts ?? [];
+
+        const settlementAccept = accepts.find((a) => a.extra?.features?.xSettlementAccountSupported === true);
+        if (settlementAccept != null) {
+            // Faremeter path
+            const solanaWallet = SolanaWallet.from(this as Wallet<Chain>);
+            return await payX402(solanaWallet, url, settlementAccept.network, settlementAccept.asset);
+        }
     }
 
     /**

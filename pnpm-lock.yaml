@@ -1101,13 +1101,16 @@ importers:
         version: 0.17.1
       '@faremeter/payment-solana':
         specifier: 0.17.1
-        version: 0.17.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        version: 0.17.1(@logtape/logtape@1.0.4)(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@faremeter/types':
         specifier: ^0.17.1
         version: 0.17.1
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
+      '@logtape/logtape':
+        specifier: 1.0.4
+        version: 1.0.4
       '@solana/web3.js':
         specifier: 1.98.4
         version: 1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -3698,6 +3701,9 @@ packages:
 
   '@lit/reactive-element@2.1.1':
     resolution: {integrity: sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg==}
+
+  '@logtape/logtape@1.0.4':
+    resolution: {integrity: sha512-YvNVrXIxVpnY528zoiEjX8PqTfr0UCtKXyssvaWL8AE+OByFTCooKuKMdPlm6g65YUI9fPXrHn4UnogSskABnA==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -17522,12 +17528,14 @@ snapshots:
       '@faremeter/types': 0.17.1
       arktype: 2.1.21
 
-  '@faremeter/logs@0.17.1': {}
+  '@faremeter/logs@0.17.1(@logtape/logtape@1.0.4)':
+    optionalDependencies:
+      '@logtape/logtape': 1.0.4
 
-  '@faremeter/payment-solana@0.17.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@faremeter/payment-solana@0.17.1(@logtape/logtape@1.0.4)(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@faremeter/info': 0.17.1
-      '@faremeter/logs': 0.17.1
+      '@faremeter/logs': 0.17.1(@logtape/logtape@1.0.4)
       '@faremeter/types': 0.17.1
       '@solana-program/compute-budget': 0.8.0(@solana/kit@2.3.0(typescript@5.9.3)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)))
       '@solana-program/memo': 0.10.0(@solana/kit@2.3.0(typescript@5.9.3)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)))
@@ -18942,6 +18950,8 @@ snapshots:
   '@lit/reactive-element@2.1.1':
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
+
+  '@logtape/logtape@1.0.4': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
