@@ -75,7 +75,9 @@ const WarpcastLink = styled.a<{ appearance?: UIConfig }>`
  * @deprecated Farcaster authentication is deprecated and will be removed in a future release.
  */
 export function FarcasterSignIn() {
-    console.warn("[DEPRECATED] FarcasterSignIn is deprecated and will be removed in a future release.");
+    useEffect(() => {
+        console.warn("[DEPRECATED] FarcasterSignIn is deprecated and will be removed in a future release.");
+    }, []);
     const { step, appearance, setStep, setError } = useAuthForm();
 
     if (step === "initial") {
