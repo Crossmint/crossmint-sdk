@@ -95,12 +95,12 @@ function CrossmintWalletProviderInternal({
     }, [needsWebView, logger]);
 
     const performHandshake = useCallback(
-        async (trigger: "frame-ready" | "onLoadEnd" | "process-recovery") => {
+        async (trigger: "frame-ready" | "onLoadEnd") => {
             if (webViewParentRef.current != null) {
                 const parent = webViewParentRef.current;
 
                 // Prevent duplicate handshakes from both frame-ready and onLoadEnd firing
-                if (trigger !== "process-recovery" && handshakeTriggeredRef.current && parent.isConnected) {
+                if (handshakeTriggeredRef.current && parent.isConnected) {
                     logger.info("react-native.wallet.webview.handshake.skip.already-connected", { trigger });
                     return;
                 }
