@@ -27,7 +27,7 @@ function TestComponent() {
 describe("AuthFormProvider", () => {
     const mockInitialState = {
         baseUrl: "https://api.example.com",
-        loginMethods: ["email", "google", "farcaster", "web3"] as LoginMethod[],
+        loginMethods: ["email", "google", "web3"] as LoginMethod[],
         setDialogOpen: vi.fn(),
         appearance: {
             colors: {
@@ -50,7 +50,7 @@ describe("AuthFormProvider", () => {
 
         expect(getByTestId("step").textContent).toBe("initial");
         expect(getByTestId("base-url").textContent).toBe("https://api.example.com");
-        expect(getByTestId("login-methods").textContent).toBe('["email","google","farcaster","web3"]');
+        expect(getByTestId("login-methods").textContent).toBe('["email","google","web3"]');
         expect(getByTestId("appearance").textContent).toBe(
             '{"colors":{"textPrimary":"#000000","textSecondary":"#A4AFB2"}}'
         );

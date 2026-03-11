@@ -37,7 +37,6 @@
         "@emotion/react": "^11.11.0",
         "@emotion/styled": "11.14.1",
         "@ethersproject/transactions": "5.7.0",
-        "@farcaster/auth-kit": "0.6.0",
         "@mysten/sui": "1.24.0",
         "@solana/web3.js": "1.98.1",
         "bs58": "5.0.0",
