@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { StatusAPIResponse } from "@farcaster/auth-kit";
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { AUTH_SDK_ROOT_ENDPOINT, type AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { CrossmintAuthClient } from "./CrossmintAuthClient";
@@ -335,44 +334,6 @@ describe("CrossmintAuthClient", () => {
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 expect.stringContaining("api/2024-09-26/session/sdk/auth/authenticate"),
                 expect.any(Object)
-            );
-        });
-    });
-
-    describe("signInWithFarcaster", () => {
-        it("should sign in with Farcaster and return oneTimeSecret", async () => {
-            const mockFarcasterData = {
-                message: "mock-message",
-                signature: "mock-signature",
-                signatureParams: { domain: "example.com" },
-            };
-            const mockOneTimeSecret = "farcaster-one-time-secret-123";
-            mockApiClient.post.mockResolvedValue({
-                json: () => Promise.resolve({ oneTimeSecret: mockOneTimeSecret }),
-                ok: true,
-            });
-
-            const result = await crossmintAuthClient.signInWithFarcaster(mockFarcasterData as StatusAPIResponse);
-
-            expect(result).toBe(mockOneTimeSecret);
-            const expectedCallbackUrl = `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/callback`;
-            const queryParams = new URLSearchParams({
-                signinAuthenticationMethod: "farcaster",
-                callbackUrl: expectedCallbackUrl,
-            });
-            expect(mockApiClient.post).toHaveBeenCalledWith(
-                expect.stringContaining(`api/2024-09-26/session/sdk/auth/authenticate?${queryParams}`),
-                expect.objectContaining({
-                    body: JSON.stringify({
-                        ...mockFarcasterData,
-                        domain: "example.com",
-                        redirect: true,
-                        callbackUrl: expectedCallbackUrl,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                })
             );
         });
     });
