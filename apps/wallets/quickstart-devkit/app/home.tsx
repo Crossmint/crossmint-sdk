@@ -10,13 +10,24 @@ import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
+// import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
 export function HomeContent() {
     // @TODO: Uncomment the connector you want to use
 
     // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useFirebaseConnector();
     // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useSolanaPrivyConnector();
+    // const {
+    //     crossmintWallet: wallet,
+    //     crossmintWalletStatus: status,
+    //     isLoading,
+    // } = useSolanaDynamicConnector();
     // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useEVMPrivyConnector();
+    // const {
+    //     crossmintWallet: wallet,
+    //     crossmintWalletStatus: status,
+    //     isLoading,
+    // } = useEVMDynamicConnector();
     const { wallet, status } = useWallet();
     const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
@@ -42,6 +53,7 @@ export function HomeContent() {
                     {/* @TODO: Uncomment the connector you want to use */}
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
+                    {/* <DynamicLabsLoginButton /> */}
                     {/* <FirebaseLoginButton authMethod="google" /> */}
                 </div>
             </div>
@@ -99,6 +111,7 @@ export function HomeContent() {
                     {/* @TODO: Uncomment the logout button you want to use */}
                     <CrossmintAuthLogoutButton />
                     {/* <PrivyLogoutButton /> */}
+                    {/* <DynamicLabsLogoutButton /> */}
                     {/* <FirebaseLogoutButton /> */}
                 </div>
                 {wallet?.chain !== "solana" && wallet?.chain !== "stellar" && <EVMTransferFunds />}
