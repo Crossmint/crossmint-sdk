@@ -69,6 +69,7 @@ function CrossmintWalletProviderInternal({
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
     const handshakeTriggeredRef = useRef<boolean>(false);
     const handshakeInProgressRef = useRef<boolean>(false);
+    const handshakeGenerationRef = useRef<number>(0);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -111,6 +112,7 @@ function CrossmintWalletProviderInternal({
                 }
 
                 handshakeInProgressRef.current = true;
+                const generation = handshakeGenerationRef.current;
                 try {
                     logger.info("react-native.wallet.webview.handshake.start", { trigger });
                     handshakeTriggeredRef.current = true;
@@ -118,14 +120,18 @@ function CrossmintWalletProviderInternal({
                     await parent.handshakeWithChild();
                     logger.info("react-native.wallet.webview.handshake.success", { trigger });
                 } catch (e) {
-                    handshakeTriggeredRef.current = false;
+                    if (generation === handshakeGenerationRef.current) {
+                        handshakeTriggeredRef.current = false;
+                    }
                     logger.error("react-native.wallet.webview.handshake.error", {
                         trigger,
                         error: e instanceof Error ? e.message : String(e),
                     });
                     console.error("[CrossmintWalletProvider] Handshake error:", e);
                 } finally {
-                    handshakeInProgressRef.current = false;
+                    if (generation === handshakeGenerationRef.current) {
+                        handshakeInProgressRef.current = false;
+                    }
                 }
             } else {
                 logger.warn("react-native.wallet.webview.handshake.skip", {
@@ -138,13 +144,9 @@ function CrossmintWalletProviderInternal({
     );
 
     const onWebViewLoad = useCallback(async () => {
-        // onLoadEnd is now a fallback — frame-ready should trigger handshake first
-        // Only start handshake from onLoadEnd if frame-ready hasn't already done it
-        if (handshakeTriggeredRef.current && webViewParentRef.current?.isConnected) {
-            logger.info("react-native.wallet.webview.onLoadEnd.skip", { reason: "already connected via frame-ready" });
-            return;
-        }
-        logger.info("react-native.wallet.webview.onLoadEnd", { alreadyTriggered: handshakeTriggeredRef.current });
+        // onLoadEnd is a fallback — frame-ready should trigger handshake first
+        // performHandshake already guards against duplicate/concurrent calls
+        logger.info("react-native.wallet.webview.onLoadEnd");
         await performHandshake("onLoadEnd");
     }, [logger, performHandshake]);
 
@@ -287,6 +289,7 @@ function CrossmintWalletProviderInternal({
                         }}
                         onContentProcessDidTerminate={() => {
                             logger.warn("react-native.wallet.webview.process.terminated");
+                            handshakeGenerationRef.current++;
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
                             if (webViewParentRef.current != null) {
@@ -297,6 +300,7 @@ function CrossmintWalletProviderInternal({
                         }}
                         onRenderProcessGone={() => {
                             logger.warn("react-native.wallet.webview.process.renderGone");
+                            handshakeGenerationRef.current++;
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
                             if (webViewParentRef.current != null) {
