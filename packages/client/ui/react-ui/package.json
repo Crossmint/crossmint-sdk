@@ -21,7 +21,7 @@
         "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
-        "@basis-theory-ai/react": "2.0.0-beta.3",
+        "@basis-theory-ai/react": "2.0.0-beta.4",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
