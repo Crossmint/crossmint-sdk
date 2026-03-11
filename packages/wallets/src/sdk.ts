@@ -6,6 +6,8 @@ import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs, WalletOptions } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
 import type { SignerConfigForChain } from "./signers/types";
+import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import type { CreateDeviceSignerOptions } from "./utils/device-signers/createDeviceSigner";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -73,6 +75,10 @@ export class CrossmintWallets {
         options?: WalletOptions
     ) {
         return await this.walletFactory.assembleSigner(args, signerConfig, options);
+    }
+
+    public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage, options?: CreateDeviceSignerOptions) {
+        return await createDeviceSigner(deviceKeyStorage, options);
     }
 }
 
