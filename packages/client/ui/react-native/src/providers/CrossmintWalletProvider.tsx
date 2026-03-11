@@ -68,6 +68,7 @@ function CrossmintWalletProviderInternal({
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
     const handshakeTriggeredRef = useRef<boolean>(false);
+    const handshakeInProgressRef = useRef<boolean>(false);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -99,12 +100,16 @@ function CrossmintWalletProviderInternal({
             if (webViewParentRef.current != null) {
                 const parent = webViewParentRef.current;
 
-                // Prevent duplicate handshakes from both frame-ready and onLoadEnd firing
-                if (handshakeTriggeredRef.current && parent.isConnected) {
-                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", { trigger });
+                // Prevent concurrent or duplicate handshakes
+                if (handshakeInProgressRef.current || (handshakeTriggeredRef.current && parent.isConnected)) {
+                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", {
+                        trigger,
+                        inProgress: handshakeInProgressRef.current,
+                    });
                     return;
                 }
 
+                handshakeInProgressRef.current = true;
                 try {
                     logger.info("react-native.wallet.webview.handshake.start", { trigger });
                     handshakeTriggeredRef.current = true;
@@ -118,6 +123,8 @@ function CrossmintWalletProviderInternal({
                         error: e instanceof Error ? e.message : String(e),
                     });
                     console.error("[CrossmintWalletProvider] Handshake error:", e);
+                } finally {
+                    handshakeInProgressRef.current = false;
                 }
             } else {
                 logger.warn("react-native.wallet.webview.handshake.skip", {
@@ -280,6 +287,7 @@ function CrossmintWalletProviderInternal({
                         onContentProcessDidTerminate={() => {
                             logger.warn("react-native.wallet.webview.process.terminated");
                             handshakeTriggeredRef.current = false;
+                            handshakeInProgressRef.current = false;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
@@ -289,6 +297,7 @@ function CrossmintWalletProviderInternal({
                         onRenderProcessGone={() => {
                             logger.warn("react-native.wallet.webview.process.renderGone");
                             handshakeTriggeredRef.current = false;
+                            handshakeInProgressRef.current = false;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
