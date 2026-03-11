@@ -39,7 +39,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
                     },
                 }}
                 authModalTitle="Sign in to Wallet Demo"
-                loginMethods={["google", "email", "farcaster", "twitter"]}
+                loginMethods={["google", "email", "twitter"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
