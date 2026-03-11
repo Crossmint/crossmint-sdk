@@ -101,11 +101,12 @@ function CrossmintWalletProviderInternal({
                 const parent = webViewParentRef.current;
 
                 // Prevent concurrent or duplicate handshakes
-                if (handshakeInProgressRef.current || (handshakeTriggeredRef.current && parent.isConnected)) {
-                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", {
-                        trigger,
-                        inProgress: handshakeInProgressRef.current,
-                    });
+                if (handshakeInProgressRef.current) {
+                    logger.info("react-native.wallet.webview.handshake.skip.in-progress", { trigger });
+                    return;
+                }
+                if (handshakeTriggeredRef.current && parent.isConnected) {
+                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", { trigger });
                     return;
                 }
 
