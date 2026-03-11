@@ -3,11 +3,7 @@
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import {
-    CrossmintAuthProvider,
-    CrossmintProvider,
-    CrossmintWalletProvider,
-} from "@crossmint/client-sdk-react-ui";
+import { CrossmintAuthProvider, CrossmintProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 import { useWalletConfig, WalletConfigProvider } from "../context/wallet-config";
 
 export function Providers({ children }: { children: ReactNode }) {
