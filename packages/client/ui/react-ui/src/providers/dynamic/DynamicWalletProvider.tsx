@@ -93,7 +93,7 @@ function DynamicWalletStateProvider({
                         type: "external-wallet",
                         address: connectedDynamicWallet.address,
                         onSignTransaction: async (transaction: VersionedTransaction) => {
-                            return await signer.signTransaction(transaction);
+                            return (await signer.signTransaction(transaction)) as VersionedTransaction;
                         },
                     } as SolanaExternalWalletSignerConfig;
                     onWalletConnected(externalWalletSigner);

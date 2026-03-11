@@ -23,7 +23,7 @@
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
-        "@solana/web3.js": "1.98.1",
+        "@solana/web3.js": "1.98.4",
         "bs58": "^5.0.0",
         "lodash.clonedeep": "4.5.0",
         "lodash.isequal": "4.5.0",

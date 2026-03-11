@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
-        "build": "next build",
+        "build": "NODE_OPTIONS='--max-old-space-size=16384' next build",
         "start": "next start",
         "lint": "next lint",
         "test": "playwright test",
@@ -20,7 +20,7 @@
         "@firebase/auth": "1.10.8",
         "@privy-io/react-auth": "2.13.0",
         "@solana/spl-token": "0.4.13",
-        "@solana/web3.js": "1.98.1",
+        "@solana/web3.js": "1.98.4",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",
         "clsx": "2.1.1",
         "firebase": "^10.3.1",

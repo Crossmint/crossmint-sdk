@@ -47,6 +47,8 @@ import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
+import { SolanaWallet } from "./solana";
+import { payX402 } from "../x402/faremeter";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -318,6 +320,19 @@ export class Wallet<C extends Chain> {
             throw new Error(`Failed to get activity: ${JSON.stringify(response.message)}`);
         }
         return response;
+    }
+
+    /**
+     * Pay via the X402 protocol
+     * @param url - The payment URL
+     * @returns null on success
+     * @throws {Error} If the payment fails
+     * @experimental This API is experimental and may change in the future
+     */
+    public async experimental_payX402(url: string): Promise<null> {
+        const solanaWallet = SolanaWallet.from(this as Wallet<Chain>);
+        await payX402(solanaWallet, url);
+        return null;
     }
 
     /**
