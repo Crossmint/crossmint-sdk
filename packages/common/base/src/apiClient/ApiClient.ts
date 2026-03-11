@@ -1,12 +1,42 @@
+export class ApiClientError extends Error {
+    constructor(
+        message: string,
+        public readonly status: number,
+        public readonly statusText: string,
+        public readonly responseBody: string | null
+    ) {
+        super(message);
+        this.name = "ApiClientError";
+    }
+}
+
 export abstract class ApiClient {
     abstract get commonHeaders(): HeadersInit;
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
-        return await fetch(this.buildUrl(path), {
+        const response = await fetch(this.buildUrl(path), {
             ...init,
             headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
         });
+
+        if (!response.ok) {
+            let responseBody: string | null = null;
+            try {
+                responseBody = await response.text();
+            } catch {
+                // If we can't read the body, that's fine
+            }
+
+            throw new ApiClientError(
+                `API request failed: ${response.status} ${response.statusText}`,
+                response.status,
+                response.statusText,
+                responseBody
+            );
+        }
+
+        return response;
     }
 
     buildUrl(path: string) {
