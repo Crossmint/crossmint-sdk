@@ -46,6 +46,7 @@ jobs:
               working-directory: .
 
             - name: Run smoke tests
+              id: run_tests
               working-directory: apps/wallets/quickstart-devkit
               env:
                   NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
@@ -59,7 +60,7 @@ jobs:
                   pnpm exec playwright test --project=smoke
 
             - name: Generate test report
-              if: always()
+              if: steps.run_tests.outcome == 'failure'
               working-directory: apps/wallets/quickstart-devkit
               run: |
                   mkdir -p test-results
@@ -93,7 +94,7 @@ jobs:
                   fi
 
             - name: Comment with test results
-              if: always()
+              if: steps.run_tests.outcome == 'failure'
               uses: actions/github-script@v7
               with:
                   script: |
