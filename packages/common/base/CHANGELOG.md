@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.19
+
+### Patch Changes
+
+- 803e351: Add Tempo mainnet chain support
+
 ## 0.9.18
 
 ### Patch Changes
