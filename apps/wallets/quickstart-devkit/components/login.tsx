@@ -2,7 +2,6 @@
 
 import { signInWithGoogle } from "@/lib/firebase";
 import { useAuth } from "@crossmint/client-sdk-react-ui";
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { usePrivy } from "@privy-io/react-auth";
 import { FirebaseUIPhoneAuth } from "./firebase-phone-auth";
 
@@ -18,17 +17,6 @@ export function CrossmintAuthLoginButton() {
         >
             Connect wallet (Crossmint Auth)
         </button>
-    );
-}
-
-/* ============================================================ */
-/*                    DYNAMIC LABS LOGIN BUTTON                  */
-/* ============================================================ */
-export function DynamicLabsLoginButton() {
-    return (
-        <div className="w-full justify-items-center">
-            <DynamicWidget />
-        </div>
     );
 }
 

@@ -2,9 +2,6 @@
 
 import { Suspense } from "react";
 import { CrossmintAuthProvider, CrossmintProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
-import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 
@@ -112,30 +109,6 @@ function EVMPrivyProvider({
     );
 }
 
-function EVMDynamicLabsProvider({
-    children,
-    apiKey,
-}: {
-    children: React.ReactNode;
-    apiKey?: string;
-}) {
-    if (!process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID) {
-        throw new Error("NEXT_PUBLIC_DYNAMIC_ENV_ID is not set");
-    }
-    return (
-        <DynamicContextProvider
-            settings={{
-                environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID,
-                walletConnectors: [EthereumWalletConnectors],
-            }}
-        >
-            <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
-            </CrossmintProvider>
-        </DynamicContextProvider>
-    );
-}
-
 function EVMFirebaseProvider({
     children,
     apiKey,
@@ -178,7 +151,7 @@ function SolanaCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
-                loginMethods={["google", "twitter", "web3:solana-only", "email"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -237,38 +210,6 @@ function SolanaPrivyProvider({
     );
 }
 
-function SolanaDynamicLabsProvider({
-    children,
-    apiKey,
-}: {
-    children: React.ReactNode;
-    apiKey?: string;
-}) {
-    if (!process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID) {
-        throw new Error("NEXT_PUBLIC_DYNAMIC_ENV_ID is not set");
-    }
-    return (
-        <DynamicContextProvider
-            settings={{
-                environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID,
-                walletConnectors: [SolanaWalletConnectors],
-            }}
-        >
-            <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    createOnLogin={{
-                        chain: "solana",
-                        signer: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
-            </CrossmintProvider>
-        </DynamicContextProvider>
-    );
-}
-
 function SolanaFirebaseProvider({
     children,
     apiKey,
@@ -304,7 +245,7 @@ function StellarCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Stellar Wallets Quickstart"
-                loginMethods={["google", "twitter", "email", "web3"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -351,8 +292,6 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
         switch (providerType) {
             case "privy":
                 return <EVMPrivyProvider>{children}</EVMPrivyProvider>;
-            case "dynamic":
-                return <EVMDynamicLabsProvider>{children}</EVMDynamicLabsProvider>;
             case "firebase":
                 return <EVMFirebaseProvider>{children}</EVMFirebaseProvider>;
             case "crossmint":
@@ -378,8 +317,6 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
         switch (providerType) {
             case "privy":
                 return <SolanaPrivyProvider>{children}</SolanaPrivyProvider>;
-            case "dynamic":
-                return <SolanaDynamicLabsProvider>{children}</SolanaDynamicLabsProvider>;
             case "firebase":
                 return <SolanaFirebaseProvider>{children}</SolanaFirebaseProvider>;
             case "crossmint":
