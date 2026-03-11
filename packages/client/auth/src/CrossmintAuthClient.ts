@@ -242,7 +242,15 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
+    /**
+     * @deprecated Farcaster authentication is deprecated and will be removed in a future release.
+     * Please migrate to an alternative login method.
+     */
     public async signInWithFarcaster(data: UseSignInData) {
+        console.warn(
+            "[DEPRECATED] signInWithFarcaster is deprecated and will be removed in a future release. " +
+                "Please migrate to an alternative login method."
+        );
         try {
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "farcaster",

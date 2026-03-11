@@ -1,3 +1,4 @@
+/** @deprecated Farcaster login is deprecated and will be removed in a future release. */
 export type FarcasterMetadata = {
     fid: string;
     username: string;
@@ -17,6 +18,7 @@ export type SDKExternalUser = {
     id: string;
     email?: string;
     phoneNumber?: string;
+    /** @deprecated Farcaster login is deprecated and will be removed in a future release. */
     farcaster?: FarcasterMetadata;
     twitter?: TwitterMetadata;
 };
