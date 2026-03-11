@@ -96,34 +96,34 @@ function CrossmintWalletProviderInternal({
 
     const performHandshake = useCallback(
         async (trigger: "frame-ready" | "onLoadEnd" | "process-recovery") => {
-            const parent = webViewParentRef.current;
-            if (parent == null) {
+            if (webViewParentRef.current != null) {
+                const parent = webViewParentRef.current;
+
+                // Prevent duplicate handshakes from both frame-ready and onLoadEnd firing
+                if (trigger !== "process-recovery" && handshakeTriggeredRef.current && parent.isConnected) {
+                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", { trigger });
+                    return;
+                }
+
+                try {
+                    logger.info("react-native.wallet.webview.handshake.start", { trigger });
+                    handshakeTriggeredRef.current = true;
+                    parent.isConnected = false;
+                    await parent.handshakeWithChild();
+                    logger.info("react-native.wallet.webview.handshake.success", { trigger });
+                } catch (e) {
+                    handshakeTriggeredRef.current = false;
+                    logger.error("react-native.wallet.webview.handshake.error", {
+                        trigger,
+                        error: e instanceof Error ? e.message : String(e),
+                    });
+                    console.error("[CrossmintWalletProvider] Handshake error:", e);
+                }
+            } else {
                 logger.warn("react-native.wallet.webview.handshake.skip", {
                     trigger,
                     reason: "parent not initialized",
                 });
-                return;
-            }
-
-            // Prevent duplicate handshakes from both frame-ready and onLoadEnd firing
-            if (trigger !== "process-recovery" && handshakeTriggeredRef.current && parent.isConnected) {
-                logger.info("react-native.wallet.webview.handshake.skip.already-connected", { trigger });
-                return;
-            }
-
-            try {
-                logger.info("react-native.wallet.webview.handshake.start", { trigger });
-                handshakeTriggeredRef.current = true;
-                parent.isConnected = false;
-                await parent.handshakeWithChild();
-                logger.info("react-native.wallet.webview.handshake.success", { trigger });
-            } catch (e) {
-                handshakeTriggeredRef.current = false;
-                logger.error("react-native.wallet.webview.handshake.error", {
-                    trigger,
-                    error: e instanceof Error ? e.message : String(e),
-                });
-                console.error("[CrossmintWalletProvider] Handshake error:", e);
             }
         },
         [logger]
