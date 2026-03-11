@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.20.1
+
+### Patch Changes
+
+- 803e351: Add Tempo mainnet chain support
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/common-sdk-auth@1.0.71
+
 ## 0.20.0
 
 ### Minor Changes

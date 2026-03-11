@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 3.0.1
+
+### Patch Changes
+
+- f97cd12: bt ai: upgrade version
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/wallets-sdk@0.20.1
+  - @crossmint/client-sdk-auth@1.2.49
+  - @crossmint/client-sdk-base@2.0.1
+  - @crossmint/client-sdk-react-base@1.0.4
+  - @crossmint/common-sdk-auth@1.0.71
+
 ## 3.0.0
 
 ### Major Changes
