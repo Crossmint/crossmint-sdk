@@ -141,7 +141,7 @@ function CrossmintWalletProviderInternal({
         // onLoadEnd is now a fallback — frame-ready should trigger handshake first
         // Only start handshake from onLoadEnd if frame-ready hasn't already done it
         if (handshakeTriggeredRef.current && webViewParentRef.current?.isConnected) {
-            logger.info("react-native.wallet.webview.onLoadEnd.skip", { reason: "already connected via frame-ready" });
+            logger.info("react-native.wallet.webview.onLoadEnd.skip", { reason: "already connected" });
             return;
         }
         logger.info("react-native.wallet.webview.onLoadEnd", { alreadyTriggered: handshakeTriggeredRef.current });
