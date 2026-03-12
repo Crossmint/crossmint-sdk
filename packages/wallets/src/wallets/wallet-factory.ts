@@ -537,13 +537,8 @@ export class WalletFactory {
         }
 
         const createArgs = args as WalletCreateArgs<C>;
-        if (
-            createArgs.recovery != null ||
-            createArgs.adminSigner != null ||
-            createArgs.signers != null ||
-            createArgs.delegatedSigners != null
-        ) {
-            let expectedAdminSigner = createArgs.recovery ?? createArgs.adminSigner ?? args.signer;
+        if (createArgs.recovery != null || createArgs.signers != null) {
+            let expectedAdminSigner = createArgs.recovery ?? args.signer;
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigner = config?.adminSigner;
 
@@ -560,7 +555,7 @@ export class WalletFactory {
                 compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
             }
 
-            const inputSigners = createArgs.signers ?? createArgs.delegatedSigners;
+            const inputSigners = createArgs.signers;
             if (inputSigners != null) {
                 this.validateSigners(existingWallet, inputSigners);
             }
