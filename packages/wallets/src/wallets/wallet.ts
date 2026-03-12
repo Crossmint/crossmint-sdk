@@ -698,9 +698,9 @@ export class Wallet<C extends Chain> {
             if (this.options?.experimental_callbacks?.onChangeSigner == null) {
                 throw new Error("onChangeSigner callback is required to register a new device signer");
             }
-            // We need to use the admin signer to register the device signer
+            // We need to use the recovery signer to register the device signer
             await this.options.experimental_callbacks.onChangeSigner(this.#recovery);
-            await this.addDelegatedSigner({ signer: signerLocator });
+            await this.addSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
