@@ -51,6 +51,17 @@ export function deriveServerSignerDetails(
     return { derivedKeyBytes, derivedAddress, alias };
 }
 
+/**
+ * Generates a throwaway admin signer for server-key wallets.
+ *
+ * The private key is intentionally discarded so that the derived delegated server signer
+ * becomes the sole axis of control. This is by design: the server key (derived deterministically
+ * from the user's secret) is the only signer that can authorise transactions.
+ *
+ * Because the admin key is irrecoverable, privileged admin operations (e.g. adding/removing
+ * signers) are permanently locked. Key "rotation" is achieved by creating a new wallet with
+ * a new secret rather than mutating the existing wallet's signer set.
+ */
 export function generateEphemeralAdminSigner(chain: Chain): { type: "external-wallet"; address: string } {
     const chainType = getChainType(chain);
     switch (chainType) {

@@ -100,9 +100,7 @@ export class WalletFactory {
             );
             walletLocator = `${this.getChainType(args.chain)}:smart:alias:${alias}`;
         } else {
-            throw new WalletCreationError(
-                "walletLocator is required for non-server signers. Use getWallet(locator, args) instead."
-            );
+            throw new Error("walletLocator is required for non-server signers. Use getWallet(locator, args) instead.");
         }
 
         walletsLogger.info("walletFactory.getWallet.start");
@@ -278,10 +276,19 @@ export class WalletFactory {
                     this.apiClient.projectId,
                     this.apiClient.environment
                 );
+                const expectedLocator = `external-wallet:${derivedAddress}`;
+                const delegatedSigners = (walletResponse.config as any)?.delegatedSigners as
+                    | Array<{ locator: string }>
+                    | undefined;
+                if (!delegatedSigners?.some((s) => s.locator === expectedLocator)) {
+                    throw new WalletCreationError(
+                        `Server signer address ${derivedAddress} is not registered as a delegated signer on this wallet`
+                    );
+                }
                 return {
                     type: "server",
                     derivedKeyBytes,
-                    locator: `external-wallet:${derivedAddress}`,
+                    locator: expectedLocator,
                     address: derivedAddress,
                 };
             }

@@ -51,6 +51,12 @@ function getAlgorithmForChain(chain: string): string {
 }
 
 function hexToBytes(hex: string): Uint8Array {
+    if (hex.length % 2 !== 0) {
+        throw new Error(`Invalid hex string: odd length (${hex.length})`);
+    }
+    if (!/^[0-9a-fA-F]+$/.test(hex)) {
+        throw new Error("Invalid hex string: contains non-hex characters");
+    }
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) {
         bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);

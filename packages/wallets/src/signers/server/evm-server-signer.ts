@@ -23,6 +23,11 @@ export class EVMServerSigner implements Signer<"server"> {
     }
 
     async signMessage(message: string) {
+        if (!message.startsWith("0x")) {
+            throw new Error(
+                `EVMServerSigner.signMessage expects a 0x-prefixed hex string, got: ${message.slice(0, 10)}...`
+            );
+        }
         const signature = await this.account.signMessage({
             message: {
                 raw: message as `0x${string}`,
