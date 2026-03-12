@@ -18,7 +18,7 @@ const SECRET_PREFIX = "xmsk1_";
  * @returns Raw 32-byte derived key
  */
 export function deriveKeyBytes(secret: string, projectId: string, environment: string, chain: string): Uint8Array {
-    const rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.slice(SECRET_PREFIX.length) : secret;
+    const rawSecret = stripAndValidateSecret(secret);
     const ikm = hexToBytes(rawSecret);
     const algorithm = getAlgorithmForChain(chain);
     const info = `${projectId}:${environment}:${chain}-${algorithm}`;
@@ -31,13 +31,25 @@ export function deriveKeyBytes(secret: string, projectId: string, environment: s
  * Uses the same derivation path so the alias is always recoverable.
  */
 export function deriveAlias(secret: string, projectId: string, environment: string, chain: string): string {
-    const rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.slice(SECRET_PREFIX.length) : secret;
+    const rawSecret = stripAndValidateSecret(secret);
     const ikm = hexToBytes(rawSecret);
     const info = `${projectId}:${environment}:${chain}-alias`;
 
     // Alias max length is 36 chars. "s-" prefix (2) + 34 hex chars = 36.
     const derived = hkdf(sha256, ikm, HKDF_SALT, info, 17);
     return `s-${bytesToHex(derived).slice(0, 34)}`;
+}
+
+const EXPECTED_SECRET_LENGTH = 64; // 32 bytes = 256 bits of entropy
+
+function stripAndValidateSecret(secret: string): string {
+    const rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.slice(SECRET_PREFIX.length) : secret;
+    if (rawSecret.length !== EXPECTED_SECRET_LENGTH) {
+        throw new Error(
+            `Invalid server signer secret: expected ${EXPECTED_SECRET_LENGTH}-char hex string (256-bit), got ${rawSecret.length} chars`
+        );
+    }
+    return rawSecret;
 }
 
 function getAlgorithmForChain(chain: string): string {
