@@ -101,7 +101,8 @@ function CrossmintWalletProviderInternal({
                 }
 
                 handshakeInProgressRef.current = true;
-                handshakeStartTimeRef.current = Date.now();
+                const handshakeStartTime = Date.now();
+                handshakeStartTimeRef.current = handshakeStartTime;
                 const generation = handshakeGenerationRef.current;
                 try {
                     logger.info("react-native.wallet.webview.handshake.start", {
@@ -112,14 +113,14 @@ function CrossmintWalletProviderInternal({
                     handshakeTriggeredRef.current = true;
                     parent.isConnected = false;
                     await parent.handshakeWithChild();
-                    const durationMs = Date.now() - handshakeStartTimeRef.current;
+                    const durationMs = Date.now() - handshakeStartTime;
                     logger.info("react-native.wallet.webview.handshake.success", {
                         trigger,
                         generation,
                         durationMs,
                     });
                 } catch (e) {
-                    const durationMs = Date.now() - handshakeStartTimeRef.current;
+                    const durationMs = Date.now() - handshakeStartTime;
                     if (generation === handshakeGenerationRef.current) {
                         handshakeTriggeredRef.current = false;
                     }
