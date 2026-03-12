@@ -35,15 +35,9 @@ export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly;
 
-/** @deprecated Use `AddSignerOptions` instead. */
-export type AddDelegatedSignerOptions = AddSignerOptions;
-
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
     : { signatureId: string };
-
-/** @deprecated Use `AddSignerReturnType` instead. */
-export type AddDelegatedSignerReturnType<C extends Chain> = AddSignerReturnType<C>;
 
 export type SignMessageInput = {
     message: string;
@@ -160,15 +154,6 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C>>;
     alias?: string;
-
-    /**
-     * @deprecated Use `recovery` instead.
-     */
-    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
-    /**
-     * @deprecated Use `signers` instead.
-     */
-    delegatedSigners?: Array<SignerConfigForChain<C>>;
 };
 
 /**

@@ -130,7 +130,7 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let recoverySignerConfig = args.recovery ?? args.adminSigner ?? args.signer;
+        let recoverySignerConfig = args.recovery ?? args.signer;
         if (recoverySignerConfig == null) {
             throw new WalletCreationError("Either a signer or recovery must be provided to create a wallet.");
         }
@@ -739,7 +739,7 @@ export class WalletFactory {
     private async buildSigners<C extends Chain>(
         args: WalletCreateArgs<C>
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
-        const signersList = args.signers ?? args.delegatedSigners;
+        const signersList = args.signers;
         return await this.registerSigners(signersList, args.options?.deviceSignerKeyStorage);
     }
 

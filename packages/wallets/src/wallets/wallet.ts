@@ -556,16 +556,6 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * @deprecated Use `addSigner` instead.
-     */
-    public async addDelegatedSigner<T extends AddSignerOptions | undefined = undefined>(params: {
-        signer: string | RegisterSignerPasskeyParams;
-        options?: T;
-    }): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
-        return this.addSigner(params);
-    }
-
-    /**
      * List the signers for this wallet.
      * @returns {Promise<DelegatedSigner[]>} The signers
      */
@@ -615,13 +605,6 @@ export class Wallet<C extends Chain> {
             count: signers.length,
         });
         return signers;
-    }
-
-    /**
-     * @deprecated Use `signers` instead.
-     */
-    public async delegatedSigners(): Promise<DelegatedSigner[]> {
-        return this.signers();
     }
 
     protected get walletLocator(): WalletLocator {
