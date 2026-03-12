@@ -3,6 +3,7 @@
  * Implementations handle key generation, persistence, retrieval, signing, and deletion.
  */
 
+export type BiometricPolicy = "always" | "session" | "none";
 export abstract class DeviceSignerKeyStorage {
     constructor(protected readonly apiKey: string) {}
 
@@ -11,10 +12,28 @@ export abstract class DeviceSignerKeyStorage {
      * @param params - Key generation parameters.
      * @param params.address - Optional wallet address to associate the key with. If omitted, the key
      *                         should be stored under a temporary identifier until {@link mapAddressToKey} is called.
+     * @param params.biometricPolicy - Optional biometric policy to apply to the key.
+     *                                 If `"session"`, the key should be stored in a session-only manner
+     *                                 (requires `biometricExpirationTime`).
+     *                                 If `"always"`, the key should be stored in a persistent manner.
+     *                                 If `"none"`, the key should be stored in a non-biometric manner.
+     * @param params.biometricExpirationTime - Required when `biometricPolicy` is `"session"`.
+     *                                        The expiration time (in seconds) for the session-scoped key.
      * @returns The uncompressed public key encoded as a base64 string.
      */
     abstract generateKey(params: {
         address?: string;
+        biometricPolicy?: Exclude<BiometricPolicy, "session">;
+    }): Promise<string>;
+    abstract generateKey(params: {
+        address?: string;
+        biometricPolicy: "session";
+        biometricExpirationTime: number;
+    }): Promise<string>;
+    abstract generateKey(params: {
+        address?: string;
+        biometricPolicy?: BiometricPolicy;
+        biometricExpirationTime?: number;
     }): Promise<string>;
 
     /**
