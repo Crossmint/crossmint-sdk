@@ -1,7 +1,7 @@
 ---
-"@crossmint/wallets-sdk": minor
-"@crossmint/client-sdk-react-base": minor
+"@crossmint/wallets-sdk": major
+"@crossmint/client-sdk-react-base": major
 ---
 
-Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged. Deprecated aliases added for backward compatibility.
+BREAKING: Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged.
 

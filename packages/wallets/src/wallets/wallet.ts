@@ -634,7 +634,7 @@ export class Wallet<C extends Chain> {
     protected requireSigner(): Signer {
         if (this.signer == null) {
             throw new Error(
-                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addDelegatedSigner, etc.) are not available."
+                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
             );
         }
         return this.signer;

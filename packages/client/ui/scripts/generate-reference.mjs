@@ -57,10 +57,10 @@ const WALLET_ARGS_CHILDREN = [
         comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
     },
     {
-        name: "delegatedSigners",
+        name: "signers",
         flags: { isOptional: true },
         type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
-        comment: { summary: [{ kind: "text", text: "Optional array of delegated signers." }] },
+        comment: { summary: [{ kind: "text", text: "Optional array of signers." }] },
     },
 ];
 
