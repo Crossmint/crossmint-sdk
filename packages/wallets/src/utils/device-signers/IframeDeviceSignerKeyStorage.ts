@@ -4,7 +4,7 @@ import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
-    [APIKeyEnvironmentPrefix.DEVELOPMENT]: "http://localhost:3002", // "https://development.devicekey.store"
+    [APIKeyEnvironmentPrefix.DEVELOPMENT]: "https://development.devicekey.store", // "http://localhost:3002"
     [APIKeyEnvironmentPrefix.STAGING]: "https://staging.devicekey.store",
     [APIKeyEnvironmentPrefix.PRODUCTION]: "https://devicekey.store",
 };

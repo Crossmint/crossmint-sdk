@@ -21,8 +21,9 @@ jobs:
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
 
+            # Serial build to avoid OOM on 7GB runner (Next.js apps are memory-heavy)
             - name: Build all
-              run: pnpm build
+              run: pnpm turbo build --concurrency=1
 
             - name: Test all
               run: pnpm test:vitest

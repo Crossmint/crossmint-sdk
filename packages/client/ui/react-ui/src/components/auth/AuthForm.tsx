@@ -64,7 +64,6 @@ export function AuthForm({ style }: { style?: React.CSSProperties }) {
 
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
-
             {loginMethods.includes("email") ? (
                 <div>
                     {loginMethods.length > 1 ? <Divider appearance={appearance} text="OR" /> : null}
