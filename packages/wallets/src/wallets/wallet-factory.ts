@@ -327,9 +327,6 @@ export class WalletFactory {
                     return {
                         type: "device",
                         address: walletResponse.address,
-                        biometricPolicy: signerArgs.biometricPolicy,
-                        biometricExpirationTime:
-                            signerArgs.biometricPolicy === "session" ? signerArgs.biometricExpirationTime : undefined,
                     };
                 }
                 return {
@@ -413,10 +410,7 @@ export class WalletFactory {
         signer: DeviceSignerConfig,
         deviceSignerKeyStorage: DeviceSignerKeyStorage
     ): Promise<string> {
-        const publicKey = await deviceSignerKeyStorage.generateKey({
-            biometricPolicy: signer.biometricPolicy,
-            ...(signer.biometricPolicy === "session" && { biometricExpirationTime: signer.biometricExpirationTime }),
-        });
+        const publicKey = await deviceSignerKeyStorage.generateKey({});
 
         return `device:${publicKey}`;
     }

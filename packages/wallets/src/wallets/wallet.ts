@@ -45,7 +45,6 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { DeviceSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
-import type { BiometricPolicy } from "../utils/device-signers/DeviceSignerKeyStorage";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -660,15 +659,10 @@ export class Wallet<C extends Chain> {
             throw new Error("Device signer key storage is required to create a device signer");
         }
 
-        const biometricPolicy = this.signer.getBiometricPolicy();
-        const biometricExpirationTime = this.signer.getBiometricExpirationTime();
-
         let signerLocator = this.signer.locator();
         if (signerLocator == null || signerLocator === "") {
             const publicKey = await deviceSignerKeyStorage.generateKey({
                 address: this.address,
-                biometricPolicy,
-                biometricExpirationTime,
             });
             signerLocator = `device:${publicKey}`;
         }
@@ -687,10 +681,7 @@ export class Wallet<C extends Chain> {
         }
 
         if (this.signer.locator() !== signerLocator) {
-            const deviceSignerConfig: DeviceSignerConfig =
-                biometricPolicy === "session" && biometricExpirationTime != null
-                    ? { type: "device", biometricPolicy, biometricExpirationTime }
-                    : { type: "device", biometricPolicy: biometricPolicy as Exclude<BiometricPolicy, "session"> };
+            const deviceSignerConfig: DeviceSignerConfig = { type: "device" };
             await this.options?.experimental_callbacks?.onChangeSigner?.(deviceSignerConfig);
 
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {

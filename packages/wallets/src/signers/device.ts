@@ -1,6 +1,6 @@
 import type { DeviceInternalSignerConfig, DeviceSignResult } from "./types";
 import type { Signer } from "./types";
-import type { BiometricPolicy, DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
+import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
 export class DeviceSigner implements Signer<"device"> {
     private readonly config: DeviceInternalSignerConfig;
     private readonly deviceSignerKeyStorage: DeviceSignerKeyStorage;
@@ -23,13 +23,5 @@ export class DeviceSigner implements Signer<"device"> {
 
     public async signTransaction(transaction: string): Promise<DeviceSignResult> {
         return await this.signMessage(transaction);
-    }
-
-    public getBiometricPolicy(): BiometricPolicy {
-        return this.config.biometricPolicy || "none";
-    }
-
-    public getBiometricExpirationTime(): number | undefined {
-        return this.config.biometricPolicy === "session" ? this.config.biometricExpirationTime : undefined;
     }
 }

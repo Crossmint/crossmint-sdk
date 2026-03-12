@@ -13,7 +13,6 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import type { BiometricPolicy } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -93,8 +92,6 @@ export type DeviceInternalSignerConfig = {
     type: "device";
     locator?: string;
     address: string;
-    biometricPolicy?: BiometricPolicy;
-    biometricExpirationTime?: number;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
@@ -145,15 +142,7 @@ export type DeviceSignerConfig = {
     type: "device";
     publicKey?: { x: string; y: string };
     locator?: string;
-} & (
-    | {
-          biometricPolicy?: Exclude<BiometricPolicy, "session">;
-      }
-    | {
-          biometricPolicy: "session";
-          biometricExpirationTime: number;
-      }
-);
+};
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
