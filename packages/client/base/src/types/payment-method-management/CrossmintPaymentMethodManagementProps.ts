@@ -1,27 +1,29 @@
 import type { EmbeddedCheckoutV3Appearance } from "../embed";
-import type { OrderIntent, VerificationConfig } from "./OrderIntents";
+import type { VerificationConfig } from "./OrderIntents";
 
 export interface CrossmintPaymentMethodManagementProps {
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
-    onOrderIntentCreated?: (orderIntent: OrderIntent, verificationConfig: VerificationConfig) => void | Promise<void>;
+    onAgenticEnrollmentCreated?: (
+        agentEnrollment: AgenticEnrollment,
+        verificationConfig: VerificationConfig
+    ) => void | Promise<void>;
 }
+
+export type AgenticEnrollment = {
+    enrollmentId: string;
+    status: "active" | "pending";
+};
 
 export type CrossmintPaymentMethod = {
     type: "card";
     paymentMethodId: string;
     card: {
-        source:
-            | {
-                  type: "basis-theory-token";
-                  id: string;
-              }
-            | {
-                  type: "basis-theory-ai-token";
-                  id: string;
-                  aiPaymentMethodId: string;
-              };
+        source: {
+            type: "basis-theory-token";
+            id: string;
+        };
         brand: string;
         last4: string;
         expiration: {

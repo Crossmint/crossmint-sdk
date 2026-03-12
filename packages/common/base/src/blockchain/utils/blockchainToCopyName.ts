@@ -51,6 +51,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     plume: "Plume",
     "plume-testnet": "Plume Testnet",
     "arc-testnet": "Arc Testnet",
+    tempo: "Tempo",
     "tempo-testnet": "Tempo Testnet",
 };
 

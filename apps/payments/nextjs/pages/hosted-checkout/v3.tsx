@@ -59,6 +59,13 @@ export default function HostedCheckoutV3Page() {
                         {createCrossmintButtonSection("crossmint", LOCALE, false, true)}
                     </div>
                 </div>
+                <div style={{ marginTop: "40px", textAlign: "center" }}>
+                    <h2 style={{ marginBottom: "16px" }}>Token / Memecoin & Onramp (tokenLocator)</h2>
+                    <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+                        {createTokenButtonSection("crossmint", true, false)}
+                        {createTokenButtonSection("dark", false, true)}
+                    </div>
+                </div>
             </HostedCheckoutV3ClientProviders>
         </div>
     );
@@ -103,6 +110,45 @@ function createCrossmintButtonSection(
                         button: buttonTheme,
                     },
                 }}
+            />
+        </div>
+    );
+}
+
+const TOKEN_LOCATOR = "solana:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+const RECEIPT_EMAIL = "[EMAIL_ADDRESS]";
+const WALLET_ADDRESS = "[WALLET_ADDRESS]";
+
+function createTokenButtonSection(
+    buttonTheme: CrossmintHostedCheckoutV3ButtonTheme,
+    fiatEnabled: boolean,
+    cryptoEnabled: boolean
+) {
+    return (
+        <div
+            style={{
+                backgroundColor: buttonTheme === "light" ? "black" : "white",
+                display: "flex",
+                justifyContent: "center",
+                padding: "20px",
+            }}
+        >
+            <CrossmintHostedCheckout
+                lineItems={{
+                    tokenLocator: TOKEN_LOCATOR,
+                    executionParameters: {
+                        mode: "exact-in",
+                        amount: "5",
+                    },
+                }}
+                payment={{
+                    fiat: { enabled: fiatEnabled },
+                    crypto: { enabled: cryptoEnabled },
+                    defaultMethod: fiatEnabled ? "fiat" : "crypto",
+                    receiptEmail: RECEIPT_EMAIL,
+                }}
+                recipient={{ walletAddress: WALLET_ADDRESS }}
+                appearance={{ theme: { button: buttonTheme } }}
             />
         </div>
     );

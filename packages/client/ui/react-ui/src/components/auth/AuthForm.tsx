@@ -82,6 +82,7 @@ export function AuthForm({ style }: { style?: React.CSSProperties }) {
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
             {loginMethods.includes("farcaster") ? (
                 <Suspense fallback={null}>
+                    {/* @deprecated Farcaster login is deprecated and will be removed in a future release. */}
                     <LazyFarcasterSection baseUrl={baseUrl} />
                 </Suspense>
             ) : null}

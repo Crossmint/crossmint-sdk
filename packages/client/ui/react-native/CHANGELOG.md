@@ -1,5 +1,52 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.24
+
+### Patch Changes
+
+- d7fc092: Start handshake eagerly on WebView init instead of waiting for onLoadEnd/frame-ready. On low-end Android devices, onLoadEnd fires 15-23s after the child JS starts, causing the child's 10s handshake timeout to expire before the parent begins polling. By starting immediately, the parent's handshakeRequest is already flowing when the child calls handshakeWithParent(). Also adds comprehensive diagnostic logging (generation counter, duration, platform, trigger source) to all handshake lifecycle events for DataDog visibility.
+
+## 0.13.23
+
+### Patch Changes
+
+- ec44b25: Fix handshake timeout race condition on low-end Android devices by triggering handshake on frame-ready signal instead of onLoadEnd. Add dead WebView recovery with handshake state reset. Throw structured ApiClientError on 5xx responses instead of crashing on HTML error pages.
+- Updated dependencies [d5ce427]
+- Updated dependencies [ec44b25]
+  - @crossmint/client-sdk-auth@1.2.50
+  - @crossmint/common-sdk-auth@1.0.72
+  - @crossmint/client-sdk-react-base@1.0.5
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/wallets-sdk@0.20.2
+  - @crossmint/client-sdk-base@2.0.2
+
+## 0.13.22
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/wallets-sdk@0.20.1
+  - @crossmint/client-sdk-auth@1.2.49
+  - @crossmint/client-sdk-base@2.0.1
+  - @crossmint/client-sdk-react-base@1.0.4
+  - @crossmint/common-sdk-auth@1.0.71
+
+## 0.13.21
+
+### Patch Changes
+
+- Updated dependencies [454a9cc]
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+- Updated dependencies [f969a28]
+  - @crossmint/wallets-sdk@0.20.0
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+  - @crossmint/client-sdk-react-base@1.0.3
+  - @crossmint/client-sdk-auth@1.2.48
+  - @crossmint/common-sdk-auth@1.0.70
+
 ## 0.13.20
 
 ### Patch Changes
