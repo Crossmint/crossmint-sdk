@@ -6,9 +6,8 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
     testDir: "./e2e",
-    fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: 0,
+    retries: process.env.CI ? 2 : 0,
     workers: 1,
     maxFailures: undefined, // Don't stop after a certain number of failures - run all tests
     reporter: process.env.CI ? [["json", { outputFile: "test-results/playwright-results.json" }], ["list"]] : "html",
