@@ -341,7 +341,8 @@ function CrossmintWalletProviderInternal({
                                 webViewParentRef.current.isConnected = false;
                             }
                             webviewRef.current?.reload();
-                            // Handshake will be re-triggered by onLoadEnd after reload
+                            // Start polling immediately — don't wait for onLoadEnd which fires 15-23s late on slow devices
+                            performHandshake("eager");
                         }}
                         onRenderProcessGone={() => {
                             const prevGeneration = handshakeGenerationRef.current;
@@ -358,7 +359,8 @@ function CrossmintWalletProviderInternal({
                                 webViewParentRef.current.isConnected = false;
                             }
                             webviewRef.current?.reload();
-                            // Handshake will be re-triggered by onLoadEnd after reload
+                            // Start polling immediately — don't wait for onLoadEnd which fires 15-23s late on slow devices
+                            performHandshake("eager");
                         }}
                         style={{
                             width: 1,
