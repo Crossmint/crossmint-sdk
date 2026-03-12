@@ -17,12 +17,7 @@ const SECRET_PREFIX = "xmsk1_";
  * @param chain - Chain identifier (e.g., "base-sepolia", "ethereum")
  * @returns Raw 32-byte derived key
  */
-export function deriveKeyBytes(
-    secret: string,
-    projectId: string,
-    environment: string,
-    chain: string
-): Uint8Array {
+export function deriveKeyBytes(secret: string, projectId: string, environment: string, chain: string): Uint8Array {
     const rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.slice(SECRET_PREFIX.length) : secret;
     const ikm = hexToBytes(rawSecret);
     const algorithm = getAlgorithmForChain(chain);
@@ -35,12 +30,7 @@ export function deriveKeyBytes(
  * Derives a deterministic wallet alias from a master secret.
  * Uses the same derivation path so the alias is always recoverable.
  */
-export function deriveAlias(
-    secret: string,
-    projectId: string,
-    environment: string,
-    chain: string
-): string {
+export function deriveAlias(secret: string, projectId: string, environment: string, chain: string): string {
     const rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.slice(SECRET_PREFIX.length) : secret;
     const ikm = hexToBytes(rawSecret);
     const info = `${projectId}:${environment}:${chain}-alias`;

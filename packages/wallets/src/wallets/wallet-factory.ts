@@ -156,10 +156,7 @@ export class WalletFactory {
 
             adminSigner = generateEphemeralAdminSigner(args.chain);
 
-            delegatedSigners = [
-                ...(delegatedSigners ?? []),
-                { signer: `external-wallet:${derivedAddress}` },
-            ];
+            delegatedSigners = [...(delegatedSigners ?? []), { signer: `external-wallet:${derivedAddress}` }];
 
             // Auto-set alias so the wallet is always recoverable from the same secret
             if (args.alias == null) {
@@ -271,7 +268,9 @@ export class WalletFactory {
 
             case "server": {
                 if (walletResponse.config?.adminSigner.type !== "external-wallet") {
-                    throw new WalletCreationError("Server signer expects an external-wallet admin signer on the wallet");
+                    throw new WalletCreationError(
+                        "Server signer expects an external-wallet admin signer on the wallet"
+                    );
                 }
                 const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
                     signerArgs as ServerSignerConfig,

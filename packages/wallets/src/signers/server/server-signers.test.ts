@@ -1,7 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { bytesToHex } from "@noble/hashes/utils";
-import { Keypair as SolanaKeypair } from "@solana/web3.js";
-import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
 import base58 from "bs58";
 
 import { deriveKeyBytes } from "../../utils/server-key-derivation";
