@@ -32,6 +32,7 @@
         "@stellar/stellar-sdk": "v14.0.0-rc.3",
         "abitype": "1.0.8",
         "bs58": "5.0.0",
+        "@noble/hashes": "1.8.0",
         "ox": "0.6.9",
         "tweetnacl": "1.0.3",
         "viem": "2.33.1"

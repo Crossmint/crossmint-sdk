@@ -1,5 +1,7 @@
 import { WithLoggerContext, APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { WebAuthnP256 } from "ox";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { bytesToHex } from "@noble/hashes/utils";
 import { walletsLogger } from "../logger";
 
 import type {
@@ -18,11 +20,12 @@ import {
     isMainnetChain,
     mainnetToTestnet,
 } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
+import type { InternalSignerConfig, SignerConfigForChain, ServerSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
+import { deriveKeyBytes, deriveAlias } from "../utils/server-key-derivation";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -66,16 +69,25 @@ export class WalletFactory {
         return this.createWalletInternal(args);
     }
 
+    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>>;
+    public async getWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "walletFactory.getWallet",
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
-            const walletLocator = args[0] as string;
-            const walletArgs = args[1] as WalletArgsFor<Chain>;
+            const walletArgs = (typeof args[0] === "string" ? args[1] : args[0]) as WalletArgsFor<Chain>;
+            const walletLocator = typeof args[0] === "string" ? args[0] : undefined;
             return { walletLocator, chain: walletArgs.chain };
         },
     })
-    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
+    public async getWallet<C extends Chain>(
+        walletLocatorOrArgs: string | WalletArgsFor<C>,
+        maybeArgs?: WalletArgsFor<C>
+    ): Promise<Wallet<C>> {
+        const isLocatorOverload = typeof walletLocatorOrArgs === "string";
+        let args = isLocatorOverload ? maybeArgs! : walletLocatorOrArgs;
+        let walletLocator: string;
+
         if (!this.apiClient.isServerSide) {
             walletsLogger.error("walletFactory.getWallet.error", {
                 error: "getWallet is not supported on client side",
@@ -84,6 +96,18 @@ export class WalletFactory {
         }
 
         args = { ...args, chain: this.validateChainEnvironment(args.chain) };
+
+        if (isLocatorOverload) {
+            walletLocator = walletLocatorOrArgs;
+        } else if (args.signer.type === "server") {
+            // Derive the alias from the secret to locate the wallet
+            const { alias } = this.deriveServerSignerDetails(args.signer, args.chain);
+            walletLocator = `${this.getChainType(args.chain)}:smart:alias:${alias}`;
+        } else {
+            throw new WalletCreationError(
+                "walletLocator is required for non-server signers. Use getWallet(locator, args) instead."
+            );
+        }
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -121,8 +145,31 @@ export class WalletFactory {
 
         this.mutateSignerFromCustomAuth(args, true);
 
-        const adminSigner =
-            args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
+        let adminSigner;
+        let delegatedSigners = args.delegatedSigners;
+
+        if (args.signer.type === "passkey") {
+            adminSigner = await this.createPasskeyAdminSigner(args.signer);
+        } else if (args.signer.type === "server") {
+            const { derivedAddress, alias } = this.deriveServerSignerDetails(args.signer, args.chain);
+
+            // Generate an ephemeral keypair as the external-wallet admin signer
+            // to satisfy the API. The actual signing is done by the server delegated signer.
+            const ephemeralAdmin = privateKeyToAccount(generatePrivateKey());
+            adminSigner = { type: "external-wallet" as const, address: ephemeralAdmin.address };
+
+            delegatedSigners = [
+                ...(delegatedSigners ?? []),
+                { signer: `external-wallet:${derivedAddress}` },
+            ];
+
+            // Auto-set alias so the wallet is always recoverable from the same secret
+            if (args.alias == null) {
+                args = { ...args, alias };
+            }
+        } else {
+            adminSigner = args.signer;
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -130,7 +177,7 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
-                ...(args.delegatedSigners != null ? { delegatedSigners: args.delegatedSigners } : {}),
+                ...(delegatedSigners != null ? { delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
             alias: args.alias ?? undefined,
@@ -156,7 +203,7 @@ export class WalletFactory {
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
 
-        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
+        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.chain, args.options);
         return new Wallet(
             {
                 chain: args.chain,
@@ -173,6 +220,7 @@ export class WalletFactory {
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         signerArgs: SignerConfigForChain<C>,
+        chain: C,
         options?: WalletOptions
     ): InternalSignerConfig<C> {
         if (
@@ -222,6 +270,22 @@ export class WalletFactory {
                     onCreatePasskey: signerArgs.onCreatePasskey,
                     onSignWithPasskey: signerArgs.onSignWithPasskey,
                 };
+
+            case "server": {
+                if (walletResponse.config?.adminSigner.type !== "external-wallet") {
+                    throw new WalletCreationError("Server signer expects an external-wallet admin signer on the wallet");
+                }
+                const { derivedKeyBytes, derivedAddress } = this.deriveServerSignerDetails(
+                    signerArgs as ServerSignerConfig,
+                    chain
+                );
+                return {
+                    type: "server",
+                    derivedKeyBytes,
+                    locator: `external-wallet:${derivedAddress}`,
+                    address: derivedAddress,
+                };
+            }
 
             case "email": {
                 if (walletResponse.config?.adminSigner.type !== "email") {
@@ -339,12 +403,16 @@ export class WalletFactory {
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
         if (adminSignerArgs != null && existingWalletSigner != null) {
-            if (adminSignerArgs.type !== existingWalletSigner.type) {
+            // server signer uses an ephemeral external-wallet as admin signer on the API side
+            const expectedApiType = adminSignerArgs.type === "server" ? "external-wallet" : adminSignerArgs.type;
+            if (expectedApiType !== existingWalletSigner.type) {
                 throw new WalletCreationError(
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-            compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+            if (adminSignerArgs.type !== "server") {
+                compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+            }
         }
 
         if (args.delegatedSigners != null) {
@@ -396,6 +464,35 @@ export class WalletFactory {
             return "stellar";
         }
         return "evm";
+    }
+
+    private deriveServerSignerDetails<C extends Chain>(
+        signer: ServerSignerConfig,
+        chain: C
+    ): { derivedKeyBytes: Uint8Array; derivedAddress: string; alias: string } {
+        const projectId = this.apiClient.projectId;
+        const environment = this.apiClient.environment;
+        const chainStr = typeof chain === "string" ? chain : String(chain);
+
+        const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
+        const derivedAddress = this.addressFromDerivedKey(derivedKeyBytes, chain);
+        const alias = deriveAlias(signer.secret, projectId, environment, chainStr);
+
+        return { derivedKeyBytes, derivedAddress, alias };
+    }
+
+    private addressFromDerivedKey<C extends Chain>(keyBytes: Uint8Array, chain: C): string {
+        const chainType = this.getChainType(chain);
+        switch (chainType) {
+            case "evm":
+                return privateKeyToAccount(`0x${bytesToHex(keyBytes)}`).address;
+            case "solana":
+            case "stellar":
+                // TODO: Implement Solana/Stellar address derivation from ed25519 keys
+                throw new WalletCreationError(
+                    `Server signer is not yet supported for ${chainType} chains. Only EVM chains are currently supported.`
+                );
+        }
     }
 
     private validateChainEnvironment<C extends Chain>(chain: C): C {

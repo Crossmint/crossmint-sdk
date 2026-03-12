@@ -37,13 +37,22 @@ export class CrossmintWallets {
     }
 
     /**
-     * Get an existing wallet by its locator, can only be called on the server side
-     * @param walletLocator - Wallet locator
+     * Get an existing wallet by its locator, can only be called on the server side.
+     * For server signers, the locator is derived automatically from the secret.
+     * @param walletLocator - Wallet locator (not needed for server signers)
      * @param options - Wallet options
      * @returns A wallet if found, throws WalletNotAvailableError if not found
      */
-    public async getWallet<C extends Chain>(walletLocator: string, options: WalletArgsFor<C>): Promise<Wallet<C>> {
-        return await this.walletFactory.getWallet(walletLocator, options);
+    public async getWallet<C extends Chain>(walletLocator: string, options: WalletArgsFor<C>): Promise<Wallet<C>>;
+    public async getWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>>;
+    public async getWallet<C extends Chain>(
+        walletLocatorOrOptions: string | WalletArgsFor<C>,
+        maybeOptions?: WalletArgsFor<C>
+    ): Promise<Wallet<C>> {
+        if (typeof walletLocatorOrOptions === "string") {
+            return await this.walletFactory.getWallet(walletLocatorOrOptions, maybeOptions!);
+        }
+        return await this.walletFactory.getWallet(walletLocatorOrOptions);
     }
 
     /**
