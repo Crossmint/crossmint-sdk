@@ -33,11 +33,17 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly;
 
-export type AddDelegatedSignerOptions = PrepareOnly;
+export type AddSignerOptions = PrepareOnly;
 
-export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
+/** @deprecated Use `AddSignerOptions` instead. */
+export type AddDelegatedSignerOptions = AddSignerOptions;
+
+export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
     : { signatureId: string };
+
+/** @deprecated Use `AddSignerReturnType` instead. */
+export type AddDelegatedSignerReturnType<C extends Chain> = AddSignerReturnType<C>;
 
 export type SignMessageInput = {
     message: string;
@@ -149,11 +155,20 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Admin signer for wallet creation. If not provided, the main `signer` is used as admin. Device signers cannot be admin signers. */
-    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
-    /** Delegated signers to register on the wallet during creation. */
-    delegatedSigners?: Array<SignerConfigForChain<C>>;
+    /** Recovery signer for wallet creation. If not provided, the main `signer` is used as recovery. Device signers cannot be recovery signers. */
+    recovery?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Signers to register on the wallet during creation. */
+    signers?: Array<SignerConfigForChain<C>>;
     alias?: string;
+
+    /**
+     * @deprecated Use `recovery` instead.
+     */
+    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /**
+     * @deprecated Use `signers` instead.
+     */
+    delegatedSigners?: Array<SignerConfigForChain<C>>;
 };
 
 /**

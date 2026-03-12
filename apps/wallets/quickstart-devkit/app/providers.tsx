@@ -315,8 +315,8 @@ function StellarCrossmintAuthProvider({
                                   chain: "stellar",
                                   signer: { type: "email" },
                                   ...ALIAS_CONFIG,
-                                  adminSigner: { type: "email" },
-                                  delegatedSigners: [
+                                  recovery: { type: "email" },
+                                  signers: [
                                       {
                                           type: "external-wallet",
                                           address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",

@@ -17,7 +17,7 @@ export function Permissions() {
     useEffect(() => {
         const fetchPermissions = async () => {
             if (wallet != null) {
-                const signers = await wallet.delegatedSigners();
+                const signers = await wallet.signers();
                 setPermissions(signers);
             }
         };
@@ -34,8 +34,8 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.addDelegatedSigner({ signer: newSigner });
-            const signers = await wallet.delegatedSigners();
+            await wallet.addSigner({ signer: newSigner });
+            const signers = await wallet.signers();
             setPermissions(signers);
         } catch (err) {
             console.error("Permissions: ", err);
