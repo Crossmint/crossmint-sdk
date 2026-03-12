@@ -13,7 +13,6 @@ vi.mock("@/hooks", () => ({
     useAuth: vi.fn(() => ({
         user: undefined,
         jwt: undefined,
-        experimental_externalWalletSigner: undefined,
     })),
 }));
 

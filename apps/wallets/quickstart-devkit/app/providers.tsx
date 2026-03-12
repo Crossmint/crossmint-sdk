@@ -178,7 +178,7 @@ function SolanaCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
-                loginMethods={["google", "twitter", "web3:solana-only", "email"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -304,7 +304,7 @@ function StellarCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Stellar Wallets Quickstart"
-                loginMethods={["google", "twitter", "email", "web3"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}

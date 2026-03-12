@@ -9,7 +9,6 @@ import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
-import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 import { theme } from "../../styles";
 import { DialogDescription, DialogTitle } from "../common/Dialog";
 
@@ -65,7 +64,6 @@ export function AuthForm({ style }: { style?: React.CSSProperties }) {
 
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
-            {loginMethods.some((method) => method.startsWith("web3")) ? <Web3AuthFlow /> : null}
 
             {loginMethods.includes("email") ? (
                 <div>

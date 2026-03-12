@@ -3,7 +3,7 @@ import type { StorageProvider } from "@crossmint/client-sdk-auth";
 import type { SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
-export type LoginMethod = "email" | "google" | "twitter" | "web3" | "web3:evm-only" | "web3:solana-only";
+export type LoginMethod = "email" | "google" | "twitter";
 
 export type CrossmintAuthBaseContextType = {
     /** Trigger the login flow. Optionally pass a default email. */
@@ -22,8 +22,6 @@ export type CrossmintAuthBaseContextType = {
     getUser: () => void;
     /** The underlying Crossmint auth client instance. */
     crossmintAuth?: any;
-    /** External wallet signer for connecting third-party wallets to Crossmint auth. */
-    experimental_externalWalletSigner?: any;
 };
 
 export type CrossmintAuthBaseProviderProps = {
