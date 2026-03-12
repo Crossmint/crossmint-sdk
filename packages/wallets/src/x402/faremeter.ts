@@ -1,7 +1,9 @@
 import { PublicKey, type VersionedTransaction, type TransactionInstruction } from "@solana/web3.js";
 import { exact } from "@faremeter/payment-solana";
-import type { SolanaWallet } from "../wallets/solana";
 import { wrap as wrapFetch } from "@faremeter/fetch";
+import type { Wallet } from "../wallets/wallet";
+import type { SolanaWallet } from "../wallets/solana";
+import type { Chain } from "@/chains/chains";
 
 interface FaremeterWallet {
     network: string;
@@ -26,14 +28,18 @@ function toFaremeterWallet(wallet: SolanaWallet, network: string): FaremeterWall
 }
 
 export async function payX402(
-    wallet: SolanaWallet,
+    wallet: Wallet<Chain>,
     url: string,
     network: string,
     mint: string,
     options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
 ) {
     const mintPubkey = new PublicKey(mint);
-    const faremeterWallet = toFaremeterWallet(wallet, network);
+    // Dynamic import breaks the static cycle: wallet.ts → faremeter.ts → solana.ts → wallet.ts
+    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
+    const { SolanaWallet } = await import("../wallets/solana");
+    const solanaWallet = SolanaWallet.from(wallet);
+    const faremeterWallet = toFaremeterWallet(solanaWallet, network);
 
     const handler = exact.createPaymentHandler(faremeterWallet, mintPubkey, undefined, {
         token: { allowOwnerOffCurve: true },

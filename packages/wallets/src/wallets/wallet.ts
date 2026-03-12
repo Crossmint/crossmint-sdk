@@ -47,7 +47,6 @@ import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
-import { SolanaWallet } from "./solana";
 import { payX402 } from "../x402/faremeter";
 
 type WalletContructorType<C extends Chain> = {
@@ -351,8 +350,7 @@ export class Wallet<C extends Chain> {
         const settlementAccept = accepts.find((a) => a.extra?.features?.xSettlementAccountSupported === true);
         if (settlementAccept != null) {
             // Faremeter path
-            const solanaWallet = SolanaWallet.from(this as Wallet<Chain>);
-            return await payX402(solanaWallet, url, settlementAccept.network, settlementAccept.asset, options);
+            return await payX402(this, url, settlementAccept.network, settlementAccept.asset, options);
         }
         throw new Error("Payment not supported");
     }
