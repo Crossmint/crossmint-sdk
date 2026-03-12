@@ -9,5 +9,4 @@ This is a breaking change that removes the ability to authenticate with crypto w
 
 - `web3`, `web3:evm-only`, and `web3:solana-only` login methods
 - `experimental_externalWalletSigner` from the auth context
-- All `@dynamic-labs/*` dependencies
-- `CryptoWalletConnectionHandler` for embedded checkout crypto wallet flows
+- All `@dynamic-labs/*` dependencies from the auth flow
