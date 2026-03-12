@@ -22,7 +22,6 @@ export type {
     DelegatedSigner,
     DeviceSignerDescriptor,
     EVMTransactionInput,
-    OnCreateConfig,
     Transaction,
     WalletArgsFor,
     WalletCreateArgs,

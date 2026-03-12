@@ -269,7 +269,7 @@ export function CrossmintWalletBaseProvider({
                     ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
                     : undefined;
 
-                if (resolvedSigner) {
+                if (resolvedSigner != null) {
                     await initializeWebViewIfNeeded(resolvedSigner);
                 }
 
@@ -363,7 +363,7 @@ export function CrossmintWalletBaseProvider({
                     ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
                     : undefined;
 
-                if (resolvedSigner) {
+                if (resolvedSigner != null) {
                     await initializeWebViewIfNeeded(resolvedSigner);
                 }
 

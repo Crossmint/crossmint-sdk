@@ -468,7 +468,7 @@ export class WalletFactory {
 
         // Step 1: Check if a device signer is already assigned to the wallet address
         const existingKey = await deviceSignerKeyStorage.getKey(walletResponse.address);
-        if (existingKey) {
+        if (existingKey != null) {
             return {
                 ...args,
                 signer: {

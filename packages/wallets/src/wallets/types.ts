@@ -113,12 +113,6 @@ export type DelegatedSigner = {
     signer: string;
 };
 
-/** @deprecated Use `adminSigner` and `delegatedSigners` directly on `WalletCreateArgs` instead. */
-export type OnCreateConfig<C extends Chain> = {
-    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
-    delegatedSigners?: Array<SignerConfigForChain<C>>;
-};
-
 // Approvals
 export type PendingApproval = NonNullable<
     NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
