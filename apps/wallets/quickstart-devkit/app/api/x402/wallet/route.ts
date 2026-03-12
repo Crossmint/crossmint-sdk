@@ -9,10 +9,7 @@ export async function POST() {
         const adminEmail = process.env.X402_ADMIN_EMAIL;
 
         if (!serverKey || !adminPrivateKey || !adminEmail) {
-            return NextResponse.json(
-                { error: "Missing CROSSMINT_SERVER_API_KEY or X402_ADMIN_PRIVATE_KEY env vars" },
-                { status: 500 }
-            );
+                { error: "Missing CROSSMINT_SERVER_API_KEY or X402_ADMIN_PRIVATE_KEY or X402_ADMIN_EMAIL env vars" },
         }
 
         const privateKeyBytes = new Uint8Array(Buffer.from(adminPrivateKey, "base64"));
