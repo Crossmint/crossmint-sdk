@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-ui
 
+## 3.0.2
+
+### Patch Changes
+
+- d5ce427: Deprecate Farcaster authentication. All Farcaster-related types, components, and methods are now marked as `@deprecated` and will emit console warnings when used. Farcaster login will be removed in a future release.
+- Updated dependencies [d5ce427]
+- Updated dependencies [ec44b25]
+  - @crossmint/client-sdk-auth@1.2.50
+  - @crossmint/common-sdk-auth@1.0.72
+  - @crossmint/client-sdk-react-base@1.0.5
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/wallets-sdk@0.20.2
+  - @crossmint/client-sdk-base@2.0.2
+
 ## 3.0.1
 
 ### Patch Changes

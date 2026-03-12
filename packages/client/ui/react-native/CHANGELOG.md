@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.23
+
+### Patch Changes
+
+- ec44b25: Fix handshake timeout race condition on low-end Android devices by triggering handshake on frame-ready signal instead of onLoadEnd. Add dead WebView recovery with handshake state reset. Throw structured ApiClientError on 5xx responses instead of crashing on HTML error pages.
+- Updated dependencies [d5ce427]
+- Updated dependencies [ec44b25]
+  - @crossmint/client-sdk-auth@1.2.50
+  - @crossmint/common-sdk-auth@1.0.72
+  - @crossmint/client-sdk-react-base@1.0.5
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/wallets-sdk@0.20.2
+  - @crossmint/client-sdk-base@2.0.2
+
 ## 0.13.22
 
 ### Patch Changes
