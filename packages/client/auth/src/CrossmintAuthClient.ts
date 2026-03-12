@@ -13,7 +13,7 @@ import {
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
-import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
+import { type StorageProvider, getScopedStorageProvider } from "./utils/storage";
 
 // Global flag to prevent multiple concurrent initial refresh calls across all instances
 let globalInitialRefreshInProgress = false;
@@ -35,7 +35,8 @@ export class CrossmintAuthClient extends CrossmintAuth {
         super(crossmint, apiClient, config);
         this.callbacks = config.callbacks ?? {};
         this.logoutRoute = config.logoutRoute ?? null;
-        this.storageProvider = config.storageProvider ?? getDefaultStorageProvider();
+        // Use scoped storage by default to prevent JWT conflicts when switching between projects
+        this.storageProvider = config.storageProvider ?? getScopedStorageProvider(crossmint.apiKey);
     }
 
     public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
