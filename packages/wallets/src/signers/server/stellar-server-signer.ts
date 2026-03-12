@@ -22,6 +22,9 @@ export class StellarServerSigner implements Signer<"server"> {
     }
 
     async signMessage(message: string) {
+        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(message)) {
+            throw new Error("StellarServerSigner.signMessage: expected a base64-encoded string");
+        }
         const messageBytes = Buffer.from(message, "base64");
         const signatureBytes = this.keypair.sign(messageBytes);
         return { signature: signatureBytes.toString("base64") };

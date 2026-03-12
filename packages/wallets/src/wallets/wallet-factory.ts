@@ -277,9 +277,9 @@ export class WalletFactory {
                     this.apiClient.environment
                 );
                 const expectedLocator = `external-wallet:${derivedAddress}`;
-                const delegatedSigners = (walletResponse.config as any)?.delegatedSigners as
-                    | Array<{ locator: string }>
-                    | undefined;
+                const delegatedSigners = (
+                    walletResponse.config as unknown as { delegatedSigners?: Array<{ locator: string }> }
+                )?.delegatedSigners;
                 if (!delegatedSigners?.some((s) => s.locator === expectedLocator)) {
                     throw new WalletCreationError(
                         `Server signer address ${derivedAddress} is not registered as a delegated signer on this wallet`
