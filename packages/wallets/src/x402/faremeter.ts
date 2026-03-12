@@ -25,7 +25,13 @@ function toFaremeterWallet(wallet: SolanaWallet, network: string): FaremeterWall
     };
 }
 
-export async function payX402(wallet: SolanaWallet, url: string, network: string, mint: string) {
+export async function payX402(
+    wallet: SolanaWallet,
+    url: string,
+    network: string,
+    mint: string,
+    options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
+) {
     const mintPubkey = new PublicKey(mint);
     const faremeterWallet = toFaremeterWallet(wallet, network);
 
@@ -40,15 +46,15 @@ export async function payX402(wallet: SolanaWallet, url: string, network: string
     });
 
     const response = await fetchWithPayer(url, {
-        method: "GET",
+        method: options?.method ?? "GET",
         headers: {
             "Content-Type": "application/json",
+            ...options?.headers,
         },
     });
     if (!response.ok) {
         throw new Error(`x402 payment failed with status ${response.status}`);
     }
     const responseBody = await response.json();
-    console.log("response", responseBody);
     return responseBody.data;
 }
