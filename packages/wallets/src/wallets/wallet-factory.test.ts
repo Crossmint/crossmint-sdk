@@ -59,8 +59,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         vi.restoreAllMocks();
     });
 
-    describe("createWallet with adminSigner and delegatedSigners", () => {
-        it("should create wallet with top-level adminSigner", async () => {
+    describe("createWallet with recovery and signers", () => {
+        it("should create wallet with top-level recovery", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletCreateArgs<"solana"> = {
@@ -69,11 +69,11 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     type: "external-wallet",
                     address: "DelegatedSignerAddress456",
                 },
-                adminSigner: {
+                recovery: {
                     type: "external-wallet",
                     address: "AdminSignerAddress123",
                 },
-                delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                signers: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
             };
 
             await walletFactory.createWallet(args);
@@ -91,7 +91,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
 
-        it("should throw error when neither signer nor adminSigner is provided", async () => {
+        it("should throw error when neither signer nor recovery is provided", async () => {
             const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
             };
@@ -128,7 +128,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await expect(walletFactory.getWallet(argsWithInvalidSigner)).rejects.toThrow(
                 new WalletCreationError(
-                    `Signer cannot use wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". The provided signer is neither the admin nor a delegated signer.`
+                    `Signer cannot use wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". The provided signer is neither the recovery signer nor a registered signer.`
                 )
             );
         });

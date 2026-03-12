@@ -69,7 +69,7 @@ export const createMockWallet = <C extends Chain>(
             chain,
             address: getChainAddress(chain),
             signer,
-            adminSigner: { type: "api-key" } as SignerConfigForChain<C>,
+            recovery: { type: "api-key" } as SignerConfigForChain<C>,
         },
         mockApiClient as unknown as ApiClient
     );

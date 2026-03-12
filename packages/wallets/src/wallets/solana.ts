@@ -24,7 +24,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
-                adminSigner: Wallet.getAdminSigner(wallet),
+                recovery: Wallet.getRecovery(wallet),
             },
             Wallet.getApiClient(wallet)
         );

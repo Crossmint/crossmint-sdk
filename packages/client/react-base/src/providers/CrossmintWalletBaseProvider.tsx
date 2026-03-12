@@ -306,8 +306,8 @@ export function CrossmintWalletBaseProvider({
                         chain: args.chain,
                         signer: resolvedSigner,
                         plugins: args.plugins,
-                        adminSigner: args.adminSigner,
-                        delegatedSigners: args.delegatedSigners,
+                        recovery: args.recovery,
+                        signers: args.signers,
                         alias: args.alias,
                         options: walletOptions,
                     });

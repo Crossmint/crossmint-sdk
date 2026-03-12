@@ -11,8 +11,8 @@ import type {
     FundWalletResponse,
 } from "../api";
 import type {
-    AddDelegatedSignerOptions,
-    AddDelegatedSignerReturnType,
+    AddSignerOptions,
+    AddSignerReturnType,
     DelegatedSigner,
     WalletOptions,
     UserLocator,
@@ -57,7 +57,7 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     signer?: Signer;
     options?: WalletOptions;
-    adminSigner: SignerConfigForChain<C>;
+    recovery: SignerConfigForChain<C>;
 };
 
 export class Wallet<C extends Chain> {
@@ -68,10 +68,10 @@ export class Wallet<C extends Chain> {
     signer?: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
-    #adminSigner: SignerConfigForChain<C>;
+    #recovery: SignerConfigForChain<C>;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, signer, options, alias, adminSigner } = args;
+        const { chain, address, owner, signer, options, alias, recovery } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -79,7 +79,7 @@ export class Wallet<C extends Chain> {
         this.signer = signer;
         this.#options = options;
         this.alias = alias;
-        this.#adminSigner = adminSigner;
+        this.#recovery = recovery;
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -90,8 +90,8 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getAdminSigner<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
-        return wallet.#adminSigner;
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
+        return wallet.#recovery;
     }
 
     protected get apiClient(): ApiClient {
@@ -468,24 +468,24 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Add a delegated signer to the wallet
+     * Add a signer to the wallet
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
      * @param options - The options for the operation
      * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
     @WithLoggerContext({
         logger: walletsLogger,
-        methodName: "wallet.addDelegatedSigner",
+        methodName: "wallet.addSigner",
         buildContext(thisArg: Wallet<Chain>) {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
+    public async addSigner<T extends AddSignerOptions | undefined = undefined>(params: {
         signer: string | RegisterSignerPasskeyParams;
         options?: T;
-    }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
+    }): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
         this.requireSigner();
-        walletsLogger.info("wallet.addDelegatedSigner.start");
+        walletsLogger.info("wallet.addSigner.start");
 
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
@@ -493,7 +493,7 @@ export class Wallet<C extends Chain> {
         });
 
         if ("error" in response) {
-            walletsLogger.error("wallet.addDelegatedSigner.error", {
+            walletsLogger.error("wallet.addSigner.error", {
                 error: response,
             });
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
@@ -501,7 +501,7 @@ export class Wallet<C extends Chain> {
 
         if (this.chain === "solana" || this.chain === "stellar") {
             if (!("transaction" in response) || response.transaction == null) {
-                walletsLogger.error("wallet.addDelegatedSigner.error", {
+                walletsLogger.error("wallet.addSigner.error", {
                     error: "Expected transaction in response for Solana/Stellar chain",
                 });
                 throw new Error("Expected transaction in response for Solana/Stellar chain");
@@ -510,21 +510,21 @@ export class Wallet<C extends Chain> {
             const transactionId = response.transaction.id;
 
             if (params.options?.experimental_prepareOnly) {
-                walletsLogger.info("wallet.addDelegatedSigner.prepared", {
+                walletsLogger.info("wallet.addSigner.prepared", {
                     transactionId,
                 });
                 return { transactionId } as any;
             }
 
             await this.approveTransactionAndWait(transactionId);
-            walletsLogger.info("wallet.addDelegatedSigner.success", {
+            walletsLogger.info("wallet.addSigner.success", {
                 transactionId,
             });
             return undefined as any;
         }
 
         if (!("chains" in response)) {
-            walletsLogger.error("wallet.addDelegatedSigner.error", {
+            walletsLogger.error("wallet.addSigner.error", {
                 error: "Expected chains in response for EVM chain",
             });
             throw new Error("Expected chains in response for EVM chain");
@@ -534,7 +534,7 @@ export class Wallet<C extends Chain> {
 
         if (params.options?.experimental_prepareOnly) {
             const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
-            walletsLogger.info("wallet.addDelegatedSigner.prepared", {
+            walletsLogger.info("wallet.addSigner.prepared", {
                 signatureId,
             });
             return { signatureId } as any;
@@ -542,40 +542,40 @@ export class Wallet<C extends Chain> {
 
         if (chainResponse?.status === "awaiting-approval") {
             await this.approveSignatureAndWait(chainResponse.id);
-            walletsLogger.info("wallet.addDelegatedSigner.success", {
+            walletsLogger.info("wallet.addSigner.success", {
                 signatureId: chainResponse.id,
             });
             return undefined as any;
         }
         if (chainResponse?.status === "pending") {
             await this.waitForSignature(chainResponse.id);
-            walletsLogger.info("wallet.addDelegatedSigner.success", {
+            walletsLogger.info("wallet.addSigner.success", {
                 signatureId: chainResponse.id,
             });
             return undefined as any;
         }
 
-        walletsLogger.info("wallet.addDelegatedSigner.success");
+        walletsLogger.info("wallet.addSigner.success");
         return undefined as any;
     }
 
     /**
-     * List the delegated signers for this wallet.
-     * @returns {Promise<DelegatedSigner[]>} The delegated signers
+     * List the signers for this wallet.
+     * @returns {Promise<DelegatedSigner[]>} The signers
      */
     @WithLoggerContext({
         logger: walletsLogger,
-        methodName: "wallet.delegatedSigners",
+        methodName: "wallet.signers",
         buildContext(thisArg: Wallet<Chain>) {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async delegatedSigners(): Promise<DelegatedSigner[]> {
-        walletsLogger.info("wallet.delegatedSigners.start");
+    public async signers(): Promise<DelegatedSigner[]> {
+        walletsLogger.info("wallet.signers.start");
 
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
-            walletsLogger.error("wallet.delegatedSigners.error", {
+            walletsLogger.error("wallet.signers.error", {
                 error: walletResponse,
             });
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
@@ -587,7 +587,7 @@ export class Wallet<C extends Chain> {
                 walletResponse.chainType !== "solana" &&
                 walletResponse.chainType !== "stellar")
         ) {
-            walletsLogger.error("wallet.delegatedSigners.error", {
+            walletsLogger.error("wallet.signers.error", {
                 error: `Wallet type ${walletResponse.type} not supported`,
             });
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
@@ -605,7 +605,7 @@ export class Wallet<C extends Chain> {
                 };
             }) ?? [];
 
-        walletsLogger.info("wallet.delegatedSigners.success", {
+        walletsLogger.info("wallet.signers.success", {
             count: signers.length,
         });
         return signers;
@@ -638,7 +638,7 @@ export class Wallet<C extends Chain> {
     protected requireSigner(): Signer {
         if (this.signer == null) {
             throw new Error(
-                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addDelegatedSigner, etc.) are not available."
+                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
             );
         }
         return this.signer;
@@ -677,7 +677,7 @@ export class Wallet<C extends Chain> {
             signerLocator = `device:${publicKey}`;
         }
 
-        const signers = await this.delegatedSigners();
+        const signers = await this.signers();
         const isRegistered = signers.some((s) => s.signer === signerLocator);
 
         if (!isRegistered) {
@@ -685,9 +685,9 @@ export class Wallet<C extends Chain> {
             if (this.options?.experimental_callbacks?.onChangeSigner == null) {
                 throw new Error("onChangeSigner callback is required to register a new device signer");
             }
-            // We need to use the admin signer to register the device signer
-            await this.options.experimental_callbacks.onChangeSigner(this.#adminSigner);
-            await this.addDelegatedSigner({ signer: signerLocator });
+            // We need to use the recovery signer to register the device signer
+            await this.options.experimental_callbacks.onChangeSigner(this.#recovery);
+            await this.addSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
