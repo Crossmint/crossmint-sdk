@@ -56,5 +56,5 @@ export async function payX402(
         throw new Error(`x402 payment failed with status ${response.status}`);
     }
     const responseBody = await response.json();
-    return responseBody.data;
+    return responseBody;
 }
