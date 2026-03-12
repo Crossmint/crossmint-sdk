@@ -5,7 +5,9 @@ import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs, WalletOptions } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
-import { SignerConfigForChain } from "./signers/types";
+import type { SignerConfigForChain } from "./signers/types";
+import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import type { CreateDeviceSignerOptions } from "./utils/device-signers/createDeviceSigner";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -28,22 +30,13 @@ export class CrossmintWallets {
     }
 
     /**
-     * Get or create a wallet, can only be called on the client side
-     * @param args - Wallet data
-     * @param options - Wallet options
-     * @returns An existing wallet or a new wallet
-     */
-    public async getOrCreateWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        return await this.walletFactory.getOrCreateWallet(options);
-    }
-
-    /**
-     * Get an existing wallet
-     * Can be called on the client side or server side
-     * If called on the client side, just the wallet options must be provided
-     * If called on the server side, the wallet locator and options must be provided
-     * @param argsOrLocator - Wallet locator or wallet options
-     * @param maybeArgs - Wallet options
+     * Get an existing wallet.
+     * Works on both client and server side.
+     * On client side, provide wallet args directly.
+     * On server side, provide the wallet locator string and wallet args.
+     * If no signer is provided, the wallet will be read-only.
+     * @param argsOrLocator - Wallet args (client) or wallet locator string (server)
+     * @param maybeArgs - Wallet args (required when using wallet locator on server side)
      * @returns A wallet if found, throws WalletNotAvailableError if not found
      */
     public async getWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>>;
@@ -62,8 +55,11 @@ export class CrossmintWallets {
     }
 
     /**
-     * Create a new wallet, can only be called on the server side
-     * @param options - Wallet options
+     * Create a new wallet.
+     * Works on both client and server side.
+     * Either a signer or adminSigner must be provided.
+     * If no signer is provided but adminSigner is set, the wallet will be read-only.
+     * @param options - Wallet creation options
      * @returns A new wallet
      */
     public async createWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
@@ -79,6 +75,10 @@ export class CrossmintWallets {
         options?: WalletOptions
     ) {
         return await this.walletFactory.assembleSigner(args, signerConfig, options);
+    }
+
+    public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage, options?: CreateDeviceSignerOptions) {
+        return await createDeviceSigner(deviceKeyStorage, options);
     }
 }
 

@@ -48,7 +48,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
             }
 
             try {
-                if (isExportableSigner(wallet.signer)) {
+                if (wallet.signer != null && isExportableSigner(wallet.signer)) {
                     const connection = new WebViewParent(webViewRef, {
                         incomingEvents: exportSignerOutboundEvents,
                         outgoingEvents: exportSignerInboundEvents,
@@ -77,7 +77,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, []);
 
-    if (frameUrl === "" || wallet == null || !isExportableSigner(wallet.signer)) {
+    if (frameUrl === "" || wallet == null || wallet.signer == null || !isExportableSigner(wallet.signer)) {
         return null;
     }
 

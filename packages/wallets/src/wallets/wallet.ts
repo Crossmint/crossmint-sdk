@@ -44,7 +44,8 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
-import type { Signer, SignerConfigForChain } from "../signers/types";
+import type { DeviceSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import type { BiometricPolicy } from "../utils/device-signers/DeviceSignerKeyStorage";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -54,7 +55,7 @@ type WalletContructorType<C extends Chain> = {
     address: string;
     owner?: string;
     alias?: string;
-    signer: Signer;
+    signer?: Signer;
     options?: WalletOptions;
     adminSigner: SignerConfigForChain<C>;
 };
@@ -64,7 +65,7 @@ export class Wallet<C extends Chain> {
     address: string;
     owner?: string;
     alias?: string;
-    signer: Signer;
+    signer?: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
     #adminSigner: SignerConfigForChain<C>;
@@ -357,13 +358,14 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
+        const signer = this.requireSigner();
 
         const sendParams = {
             recipient,
             amount,
             ...(options?.experimental_signer != null
                 ? { signer: options.experimental_signer }
-                : { signer: this.signer.locator() }),
+                : { signer: signer.locator() }),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -432,6 +434,7 @@ export class Wallet<C extends Chain> {
         },
     })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+        this.requireSigner();
         walletsLogger.info("wallet.approve.start", {
             transactionId: params.transactionId,
             signatureId: params.signatureId,
@@ -477,6 +480,7 @@ export class Wallet<C extends Chain> {
         signer: string | RegisterSignerPasskeyParams;
         options?: T;
     }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
+        this.requireSigner();
         walletsLogger.info("wallet.addDelegatedSigner.start");
 
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
@@ -624,11 +628,24 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    protected async preAuthIfNeeded(): Promise<void> {
-        if (this.signer instanceof NonCustodialSigner) {
-            await this.signer.ensureAuthenticated();
+    /**
+     * Ensures that a signer is available. Throws if the wallet is read-only.
+     */
+    protected requireSigner(): Signer {
+        if (this.signer == null) {
+            throw new Error(
+                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addDelegatedSigner, etc.) are not available."
+            );
         }
-        if (this.signer instanceof DeviceSigner) {
+        return this.signer;
+    }
+
+    protected async preAuthIfNeeded(): Promise<void> {
+        const signer = this.requireSigner();
+        if (signer instanceof NonCustodialSigner) {
+            await signer.ensureAuthenticated();
+        }
+        if (signer instanceof DeviceSigner) {
             await this.ensureDeviceSignerReady();
         }
     }
@@ -670,11 +687,11 @@ export class Wallet<C extends Chain> {
         }
 
         if (this.signer.locator() !== signerLocator) {
-            await this.options?.experimental_callbacks?.onChangeSigner?.({
-                type: "device",
-                biometricPolicy,
-                biometricExpirationTime,
-            });
+            const deviceSignerConfig: DeviceSignerConfig =
+                biometricPolicy === "session" && biometricExpirationTime != null
+                    ? { type: "device", biometricPolicy, biometricExpirationTime }
+                    : { type: "device", biometricPolicy: biometricPolicy as Exclude<BiometricPolicy, "session"> };
+            await this.options?.experimental_callbacks?.onChangeSigner?.(deviceSignerConfig);
 
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
                 signerLocator,
@@ -715,6 +732,8 @@ export class Wallet<C extends Chain> {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
+        const walletSigner = this.requireSigner();
+
         const signature = await this.#apiClient.getSignature(this.walletLocator, signatureId);
 
         if ("error" in signature) {
@@ -722,7 +741,7 @@ export class Wallet<C extends Chain> {
         }
 
         // API key signers approve automatically
-        if (this.signer.type === "api-key") {
+        if (walletSigner.type === "api-key") {
             return signature;
         }
 
@@ -739,7 +758,7 @@ export class Wallet<C extends Chain> {
             return signature;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
@@ -768,8 +787,10 @@ export class Wallet<C extends Chain> {
 
         await this.#options?.experimental_callbacks?.onTransactionStart?.();
 
+        const walletSigner = this.requireSigner();
+
         // API key signers approve automatically
-        if (this.signer.type === "api-key") {
+        if (walletSigner.type === "api-key") {
             return transaction;
         }
 
@@ -786,7 +807,7 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {

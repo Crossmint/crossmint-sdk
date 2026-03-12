@@ -59,9 +59,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         vi.restoreAllMocks();
     });
 
-    describe("getOrCreateWallet with onCreateConfig", () => {
-        it("should create wallet with onCreateConfig admin signer when wallet does not exist", async () => {
-            mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
+    describe("createWallet with adminSigner and delegatedSigners", () => {
+        it("should create wallet with top-level adminSigner", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletCreateArgs<"solana"> = {
@@ -70,16 +69,14 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     type: "external-wallet",
                     address: "DelegatedSignerAddress456",
                 },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                adminSigner: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
                 },
+                delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
             };
 
-            await walletFactory.getOrCreateWallet(args);
+            await walletFactory.createWallet(args);
 
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -94,91 +91,56 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
 
-        it("should validate existing wallet against onCreateConfig admin signer", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
+        it("should throw error when neither signer nor adminSigner is provided", async () => {
             const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "DelegatedSignerAddress456",
-                },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
-                },
             };
 
-            await expect(walletFactory.getOrCreateWallet(args)).resolves.toBeDefined();
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(WalletCreationError);
         });
+    });
 
-        it("should throw error when onCreateConfig admin signer does not match existing wallet", async () => {
+    describe("getWallet validation", () => {
+        it("should validate existing wallet against signer", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const args: WalletCreateArgs<"solana"> = {
+            const args: WalletArgsFor<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
                     address: "DelegatedSignerAddress456",
                 },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "WrongAdminAddress",
-                    },
-                },
             };
 
-            await expect(walletFactory.getOrCreateWallet(args)).rejects.toThrow(WalletCreationError);
+            await expect(walletFactory.getWallet(args)).resolves.toBeDefined();
         });
 
-        it("should validate that signer can use the wallet when onCreateConfig is provided", async () => {
+        it("should throw error when signer cannot use wallet", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithValidDelegatedSigner: WalletCreateArgs<"solana"> = {
-                chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "DelegatedSignerAddress456",
-                },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
-                },
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithValidDelegatedSigner)).resolves.toBeDefined();
-        });
-
-        it("should throw error when signer cannot use wallet with onCreateConfig", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
-            const argsWithInvalidSigner: WalletCreateArgs<"solana"> = {
+            const argsWithInvalidSigner: WalletArgsFor<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
                     address: "UnauthorizedSignerAddress",
                 },
-                onCreateConfig: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
-                },
             };
 
-            await expect(walletFactory.getOrCreateWallet(argsWithInvalidSigner)).rejects.toThrow(
+            await expect(walletFactory.getWallet(argsWithInvalidSigner)).rejects.toThrow(
                 new WalletCreationError(
                     `Signer cannot use wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". The provided signer is neither the admin nor a delegated signer.`
                 )
             );
+        });
+
+        it("should allow read-only wallet without signer", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
+
+            const args: WalletArgsFor<"solana"> = {
+                chain: "solana",
+            };
+
+            await expect(walletFactory.getWallet(args)).resolves.toBeDefined();
         });
     });
 
@@ -266,7 +228,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:stellar:smart");
             });
 
-            it("should throw error when trying to use walletLocator parameter on client side", async () => {
+            it("should throw when walletLocator parameter is used on client side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
                     signer: {
@@ -276,9 +238,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 };
 
                 await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow(
-                    new WalletCreationError(
-                        "getWallet with walletLocator is not supported on client side, use getOrCreateWallet instead"
-                    )
+                    "getWallet with walletLocator is only available on the server side. Use getWallet(args) instead."
                 );
             });
 
@@ -460,7 +420,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
             expect(warnSpy).not.toHaveBeenCalledWith(
                 "walletFactory.validateChainEnvironment.mismatch",
                 expect.anything()
@@ -478,8 +438,8 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
-            await expect(walletFactory.getOrCreateWallet(testnetArgs)).rejects.toThrow(
+            await expect(walletFactory.getWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
+            await expect(walletFactory.getWallet(testnetArgs)).rejects.toThrow(
                 'Chain "base-sepolia" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.'
             );
         });
@@ -510,7 +470,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(solanaArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(solanaArgs)).resolves.toBeDefined();
             expect(warnSpy).not.toHaveBeenCalledWith(
                 "walletFactory.validateChainEnvironment.mismatch",
                 expect.anything()
@@ -543,7 +503,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(stellarArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(stellarArgs)).resolves.toBeDefined();
             expect(warnSpy).not.toHaveBeenCalledWith(
                 "walletFactory.validateChainEnvironment.mismatch",
                 expect.anything()
@@ -574,7 +534,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(testnetArgs)).resolves.toBeDefined();
             expect(warnSpy).not.toHaveBeenCalledWith(
                 "walletFactory.validateChainEnvironment.mismatch",
                 expect.anything()
@@ -592,7 +552,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
             expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "base",
                 convertedTo: "base-sepolia",
@@ -613,7 +573,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
             expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.mismatch", {
                 chain: "arbitrumnova",
                 environment: APIKeyEnvironmentPrefix.STAGING,
@@ -646,7 +606,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(testnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(testnetArgs)).resolves.toBeDefined();
             expect(warnSpy).not.toHaveBeenCalledWith(
                 "walletFactory.validateChainEnvironment.mismatch",
                 expect.anything()
@@ -664,7 +624,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
                 },
             };
 
-            await expect(walletFactory.getOrCreateWallet(mainnetArgs)).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
             expect(debugSpy).toHaveBeenCalledWith("walletFactory.validateChainEnvironment.autoConverted", {
                 chain: "polygon",
                 convertedTo: "polygon-amoy",

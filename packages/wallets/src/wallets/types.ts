@@ -113,11 +113,6 @@ export type DelegatedSigner = {
     signer: string;
 };
 
-export type OnCreateConfig<C extends Chain> = {
-    adminSigner: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
-    delegatedSigners?: Array<SignerConfigForChain<C>>;
-};
-
 // Approvals
 export type PendingApproval = NonNullable<
     NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
@@ -142,8 +137,8 @@ export type WalletOptions = {
 export type WalletArgsFor<C extends Chain> = {
     /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
     chain: C;
-    /** The signer configuration (e.g. `{ type: "email" }`). */
-    signer: SignerConfigForChain<C>;
+    /** The signer configuration (e.g. `{ type: "email" }`). If not provided, wallet will be read-only. */
+    signer?: SignerConfigForChain<C>;
     /** Optional owner identifier. */
     owner?: string;
     /** Optional array of wallet plugins. */
@@ -154,8 +149,21 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    onCreateConfig?: OnCreateConfig<C>;
+    /** Admin signer for wallet creation. If not provided, the main `signer` is used as admin. Device signers cannot be admin signers. */
+    adminSigner?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Delegated signers to register on the wallet during creation. */
+    delegatedSigners?: Array<SignerConfigForChain<C>>;
     alias?: string;
+};
+
+/**
+ * A device signer descriptor containing the public key and locator.
+ * Returned by `createDeviceSigner`.
+ */
+export type DeviceSignerDescriptor = {
+    type: "device";
+    publicKey: { x: string; y: string };
+    locator: string;
 };
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;
