@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Keypair } from "@solana/web3.js";
-import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
+import { createCrossmint, CrossmintWallets, SolanaWallet } from "@crossmint/wallets-sdk";
 
 export async function POST(request: Request) {
     try {
@@ -36,7 +36,12 @@ export async function POST(request: Request) {
             },
         });
 
-        await wallet.experimental_payX402(paymentUrl);
+        if (chain === "solana") {
+            const solanaWallet = SolanaWallet.from(wallet);
+            await solanaWallet.experimental_payX402(paymentUrl);
+        } else {
+            throw new Error(`X402 payments are not supported for chain ${chain}`);
+        }
 
         return NextResponse.json({ success: true });
     } catch (err: any) {

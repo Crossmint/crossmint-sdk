@@ -13,6 +13,7 @@ import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
+import { payX402 } from "../x402/faremeter";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -91,6 +92,35 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             hash: result.hash,
         });
         return result;
+    }
+
+    /**
+     * Pay via the X402 protocol
+     * @param url - The payment URL
+     * @throws {Error} If the payment fails
+     * @experimental This API is experimental and may change in the future
+     */
+    public override async experimental_payX402(
+        url: string,
+        options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
+    ) {
+        const initialResponse = await fetch(url);
+        if (initialResponse.status !== 402) {
+            return;
+        }
+
+        const body = await initialResponse.json();
+        const accepts: {
+            network: string;
+            asset: string;
+            extra?: { features?: { xSettlementAccountSupported?: boolean } };
+        }[] = body.accepts ?? [];
+
+        const settlementAccept = accepts.find((a) => a.extra?.features?.xSettlementAccountSupported === true);
+        if (settlementAccept != null) {
+            return await payX402(this, url, settlementAccept.network, settlementAccept.asset, options);
+        }
+        throw new Error("Payment not supported");
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {

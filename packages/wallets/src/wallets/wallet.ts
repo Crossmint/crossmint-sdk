@@ -47,7 +47,6 @@ import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { Signer } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
-import { payX402 } from "../x402/faremeter";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -328,31 +327,10 @@ export class Wallet<C extends Chain> {
      * @experimental This API is experimental and may change in the future
      */
     public async experimental_payX402(
-        url: string,
-        options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
+        _url: string,
+        _options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
     ) {
-        if (this.chain !== "solana") {
-            throw new Error(`x402 payments are only supported on Solana. Current chain: ${this.chain}`);
-        }
-
-        const initialResponse = await fetch(url);
-        if (initialResponse.status !== 402) {
-            return;
-        }
-
-        const body = await initialResponse.json();
-        const accepts: {
-            network: string;
-            asset: string;
-            extra?: { features?: { xSettlementAccountSupported?: boolean } };
-        }[] = body.accepts ?? [];
-
-        const settlementAccept = accepts.find((a) => a.extra?.features?.xSettlementAccountSupported === true);
-        if (settlementAccept != null) {
-            // Faremeter path
-            return await payX402(this, url, settlementAccept.network, settlementAccept.asset, options);
-        }
-        throw new Error("Payment not supported");
+        throw new Error("X402 payments are not supported for this wallet");
     }
 
     /**
