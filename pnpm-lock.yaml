@@ -1086,6 +1086,9 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../client/signers
+      '@crossmint/client-signers-cryptography':
+        specifier: workspace:*
+        version: link:../client/signers-cryptography
       '@crossmint/common-sdk-auth':
         specifier: workspace:*
         version: link:../common/auth
