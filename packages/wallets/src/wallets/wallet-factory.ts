@@ -11,15 +11,8 @@ import type {
     DelegatedSigner as DelegatedSignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { InvalidEnvironmentError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
-import {
-    type Chain,
-    type EVMSmartWalletChain,
-    isTestnetChain,
-    isMainnetChain,
-    mainnetToTestnet,
-    validateChainForEnvironment,
-} from "../chains/chains";
+import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
     ApiKeyInternalSignerConfig,
     DeviceInternalSignerConfig,
