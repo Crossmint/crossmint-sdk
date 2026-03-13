@@ -43,6 +43,7 @@ export type CrossmintWalletBaseContext = {
         verifyOtp: ((otp: string) => Promise<void>) | null;
         reject: ((error?: Error) => void) | null;
     };
+    /** Creates a Device Signer */
     createDeviceSigner: () => Promise<DeviceSignerDescriptor> | undefined;
 };
 
