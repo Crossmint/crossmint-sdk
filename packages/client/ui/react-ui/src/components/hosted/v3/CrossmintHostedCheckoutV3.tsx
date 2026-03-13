@@ -28,8 +28,15 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     if ("orderId" in props && props.orderId != null) {
         // Existing order flow: orderId + clientSecret required
         const {
-            orderId, clientSecret, locale, payment, appearance,
-            onClick: _onClick, className: _className, children: _children, ...rest
+            orderId,
+            clientSecret,
+            locale,
+            payment,
+            appearance,
+            onClick: _onClick,
+            className: _className,
+            children: _children,
+            ...rest
         } = props as CrossmintHostedCheckoutV3OrderProps & JSX.IntrinsicElements["button"];
         customProps = { orderId, clientSecret, locale, payment, appearance };
         onClick = _onClick;
@@ -39,8 +46,16 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     } else {
         // New order flow: lineItems + payment required (original behavior)
         const {
-            recipient, locale, lineItems, payment, appearance, metadata,
-            onClick: _onClick, className: _className, children: _children, ...rest
+            recipient,
+            locale,
+            lineItems,
+            payment,
+            appearance,
+            metadata,
+            onClick: _onClick,
+            className: _className,
+            children: _children,
+            ...rest
         } = props as CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
         customProps = { recipient, locale, lineItems, payment, appearance, metadata };
         onClick = _onClick;

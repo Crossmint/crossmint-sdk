@@ -19,9 +19,7 @@ export interface CrossmintHostedCheckoutV3OrderProps {
     appearance?: CrossmintHostedCheckoutV3Appearance;
 }
 
-export type CrossmintHostedCheckoutV3AllProps =
-    | CrossmintHostedCheckoutV3Props
-    | CrossmintHostedCheckoutV3OrderProps;
+export type CrossmintHostedCheckoutV3AllProps = CrossmintHostedCheckoutV3Props | CrossmintHostedCheckoutV3OrderProps;
 
 export function isHostedCheckoutV3ExistingOrderProps(
     props: CrossmintHostedCheckoutV3AllProps
