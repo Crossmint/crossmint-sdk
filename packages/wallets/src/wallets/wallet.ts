@@ -103,8 +103,8 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the API client
-     * @returns The API client
+     * Get the recovery signer config
+     * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
     public get recovery(): SignerConfigForChain<C> {
