@@ -122,6 +122,8 @@ export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
     onAuthRequired?: (
+        signerType: "email" | "phone",
+        signerLocator: string,
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
