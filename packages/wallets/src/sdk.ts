@@ -37,7 +37,7 @@ export class CrossmintWallets {
     }
 
     /**
-     * Get an existing wallet by its locator, can only be called on the server side.
+     * Get an existing wallet by its locator, can only be called on the server side
      * @param walletLocator - Wallet locator
      * @param options - Wallet options
      * @returns A wallet if found, throws WalletNotAvailableError if not found

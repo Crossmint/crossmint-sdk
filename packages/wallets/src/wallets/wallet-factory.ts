@@ -65,8 +65,8 @@ export class WalletFactory {
         logger: walletsLogger,
         methodName: "walletFactory.getWallet",
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
-            const walletArgs = args[1] as WalletArgsFor<Chain>;
             const walletLocator = args[0] as string;
+            const walletArgs = args[1] as WalletArgsFor<Chain>;
             return { walletLocator, chain: walletArgs.chain };
         },
     })
@@ -375,7 +375,7 @@ export class WalletFactory {
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
         if (adminSignerArgs != null && existingWalletSigner != null) {
-            // server signer uses an ephemeral external-wallet as admin signer on the API side
+            // server signer uses an external-wallet as admin signer on the API side
             const expectedApiType = adminSignerArgs.type === "server" ? "external-wallet" : adminSignerArgs.type;
             if (expectedApiType !== existingWalletSigner.type) {
                 throw new WalletCreationError(
