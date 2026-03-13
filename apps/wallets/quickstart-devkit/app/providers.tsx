@@ -161,7 +161,7 @@ function SolanaCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
-                loginMethods={["google", "twitter", "web3:solana-only", "email"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -262,7 +262,7 @@ function StellarCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Stellar Wallets Quickstart"
-                loginMethods={["google", "twitter", "email", "web3"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -273,15 +273,13 @@ function StellarCrossmintAuthProvider({
                                   chain: "stellar",
                                   signer: { type: "email" },
                                   ...ALIAS_CONFIG,
-                                  onCreateConfig: {
-                                      adminSigner: { type: "email" },
-                                      delegatedSigners: [
-                                          {
-                                              type: "external-wallet",
-                                              address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
-                                          },
-                                      ],
-                                  },
+                                  recovery: { type: "email" },
+                                  signers: [
+                                      {
+                                          type: "external-wallet",
+                                          address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                      },
+                                  ],
                               }
                     }
                 >

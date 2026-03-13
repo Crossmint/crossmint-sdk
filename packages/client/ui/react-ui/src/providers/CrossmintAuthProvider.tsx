@@ -1,15 +1,5 @@
 import type React from "react";
-import {
-    type MouseEvent,
-    useEffect,
-    useMemo,
-    useState,
-    useCallback,
-    createContext,
-    useRef,
-    lazy,
-    Suspense,
-} from "react";
+import { type MouseEvent, useEffect, useMemo, useState, useCallback, createContext, useRef } from "react";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import {
@@ -18,18 +8,12 @@ import {
     CrossmintAuthBaseProvider,
     useCrossmintAuthBase,
 } from "@crossmint/client-sdk-react-base";
-import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { OAuthFlowProvider, useOAuthFlow } from "./auth/OAuthFlowProvider";
 import type { CrossmintAuthProviderProps } from "@/types/auth";
 import type { CrossmintAuthContext } from "@/hooks/useAuth";
-
-const LazyDynamicWalletProvider = lazy(() =>
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("./dynamic/DynamicWalletProvider").then((mod) => ({ default: mod.DynamicWalletProvider }))
-);
 
 const defaultContextValue: CrossmintAuthContext = {
     crossmintAuth: undefined,
@@ -39,7 +23,6 @@ const defaultContextValue: CrossmintAuthContext = {
     user: undefined,
     status: "initializing",
     getUser: () => {},
-    experimental_externalWalletSigner: undefined,
     experimental_loginWithOAuth: () => Promise.resolve(),
     loginMethods: [],
 };
@@ -61,11 +44,6 @@ function CrossmintAuthProviderContent({
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
-    const [dynamicSdkLoaded, setDynamicSdkLoaded] = useState(true);
-    const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
-    const [externalWalletSigner, setExternalWalletSigner] = useState<
-        ExternalWalletSignerConfigForChain<Chain> | undefined
-    >(undefined);
 
     // Ref to hold the OAuth login function that will be assigned by AuthWrapper
     const loginWithOAuthRef = useRef<((provider: OAuthProvider) => Promise<void>) | null>(null);
@@ -101,9 +79,6 @@ function CrossmintAuthProviderContent({
         if (baseAuth.status === "initializing") {
             return "initializing";
         }
-        if (isWeb3Enabled && !dynamicSdkLoaded) {
-            return "initializing";
-        }
         if (baseAuth.jwt != null) {
             return "logged-in";
         }
@@ -111,7 +86,7 @@ function CrossmintAuthProviderContent({
             return "in-progress";
         }
         return "logged-out";
-    }, [baseAuth.status, baseAuth.jwt, isWeb3Enabled, dynamicSdkLoaded, dialogOpen]);
+    }, [baseAuth.status, baseAuth.jwt, dialogOpen]);
 
     const experimental_loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
@@ -129,11 +104,10 @@ function CrossmintAuthProviderContent({
             ...baseAuth,
             login,
             status: getAuthStatus(),
-            experimental_externalWalletSigner: externalWalletSigner,
             experimental_loginWithOAuth,
             loginMethods,
         }),
-        [baseAuth, login, getAuthStatus, externalWalletSigner, experimental_loginWithOAuth, loginMethods]
+        [baseAuth, login, getAuthStatus, experimental_loginWithOAuth, loginMethods]
     );
 
     return (
@@ -156,34 +130,8 @@ function CrossmintAuthProviderContent({
             >
                 <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
                     <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
-                        {isWeb3Enabled ? (
-                            <Suspense
-                                fallback={
-                                    <>
-                                        {children}
-                                        <AuthFormDialog open={dialogOpen} />
-                                    </>
-                                }
-                            >
-                                <LazyDynamicWalletProvider
-                                    apiKeyEnvironment={
-                                        crossmint.apiKey.includes("production") ? "production" : "staging"
-                                    }
-                                    loginMethods={loginMethods}
-                                    appearance={appearance}
-                                    onSdkLoaded={setDynamicSdkLoaded}
-                                    onWalletConnected={setExternalWalletSigner}
-                                >
-                                    {children}
-                                    <AuthFormDialog open={dialogOpen} />
-                                </LazyDynamicWalletProvider>
-                            </Suspense>
-                        ) : (
-                            <>
-                                {children}
-                                <AuthFormDialog open={dialogOpen} />
-                            </>
-                        )}
+                        {children}
+                        <AuthFormDialog open={dialogOpen} />
                     </AuthWrapper>
                 </OAuthFlowProvider>
             </AuthFormProvider>

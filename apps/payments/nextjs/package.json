@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-nextjs-starter",
-    "version": "1.5.45",
+    "version": "2.0.2",
     "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
@@ -30,7 +30,7 @@
         "@dynamic-labs/ethereum": "4.8.3",
         "@dynamic-labs/sdk-react-core": "4.8.3",
         "@dynamic-labs/solana": "4.8.3",
-        "next": "15.0.8",
+        "next": "15.3.9",
         "react": "18.3.1",
         "react-dom": "18.3.1"
     },

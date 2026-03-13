@@ -9,6 +9,7 @@ import {
     type WalletCreateArgs,
     type PhoneSignerConfig,
     type DeviceSignerKeyStorage,
+    WalletNotAvailableError,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -158,13 +159,13 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
+        if (createOnLogin?.signer?.type === "passkey" && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.signer.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, createOnLogin?.signer?.type, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -252,32 +253,66 @@ export function CrossmintWalletBaseProvider({
                 const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
-                const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
+                const resolvedSigner = args.signer
+                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
+                    : undefined;
 
-                await initializeWebViewIfNeeded(resolvedSigner);
+                if (resolvedSigner != null) {
+                    await initializeWebViewIfNeeded(resolvedSigner);
+                }
 
-                const wallet = await wallets.getOrCreateWallet<C>({
-                    chain: args.chain,
-                    signer: resolvedSigner,
-                    plugins: args.plugins,
-                    onCreateConfig: args.onCreateConfig,
-                    alias: args.alias,
-                    options: {
-                        clientTEEConnection: clientTEEConnection?.(),
-                        experimental_callbacks: {
-                            onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
-                            onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                            onChangeSigner: async <C extends Chain>(signerConfig: SignerConfigForChain<C>) => {
-                                const resolvedSignerConfig = resolveSignerConfig(signerConfig);
-                                const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
-                                    deviceSignerKeyStorage,
-                                });
-                                wallet.signer = assembledSigner;
-                            },
-                        },
-                        deviceSignerKeyStorage,
+                const walletOptions = {
+                    clientTEEConnection: clientTEEConnection?.(),
+                    experimental_callbacks: {
+                        onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
+                        onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                        onChangeSigner: undefined as
+                            | (<C2 extends Chain>(signerConfig: SignerConfigForChain<C2>) => Promise<void>)
+                            | undefined,
                     },
-                });
+                    deviceSignerKeyStorage,
+                };
+
+                // Try to get existing wallet first, then create if not found
+                let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
+                try {
+                    wallet = await wallets.getWallet<C>({
+                        chain: args.chain,
+                        signer: resolvedSigner,
+                        alias: args.alias,
+                        options: walletOptions,
+                    });
+                } catch (error) {
+                    if (!(error instanceof WalletNotAvailableError)) {
+                        throw error;
+                    }
+                    // Wallet doesn't exist yet, create it
+                }
+
+                if (wallet == null) {
+                    wallet = await wallets.createWallet<C>({
+                        chain: args.chain,
+                        signer: resolvedSigner,
+                        plugins: args.plugins,
+                        recovery: args.recovery,
+                        signers: args.signers,
+                        alias: args.alias,
+                        options: walletOptions,
+                    });
+                }
+
+                // Set up the onChangeSigner callback now that wallet is available
+                walletOptions.experimental_callbacks.onChangeSigner = async <C2 extends Chain>(
+                    signerConfig: SignerConfigForChain<C2>
+                ) => {
+                    const resolvedSignerConfig = resolveSignerConfig(signerConfig);
+                    const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
+                        deviceSignerKeyStorage,
+                    });
+                    if (assembledSigner != null) {
+                        wallet.signer = assembledSigner;
+                    }
+                };
                 setWallet(wallet);
                 setWalletStatus("loaded");
                 return wallet;
@@ -312,9 +347,13 @@ export function CrossmintWalletBaseProvider({
             try {
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
+                const resolvedSigner = args.signer
+                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
+                    : undefined;
 
-                await initializeWebViewIfNeeded(resolvedSigner);
+                if (resolvedSigner != null) {
+                    await initializeWebViewIfNeeded(resolvedSigner);
+                }
 
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
@@ -346,10 +385,11 @@ export function CrossmintWalletBaseProvider({
             // Guard: don't attempt wallet creation if required signer fields are missing.
             // For email signers, email must be explicitly set (populated by CrossmintWalletProvider from auth context).
             // For external-wallet signers, address must be explicitly set.
-            if (createOnLogin.signer.type === "email" && createOnLogin.signer.email == null) {
+            const signer = createOnLogin.signer;
+            if (signer?.type === "email" && signer.email == null) {
                 return;
             }
-            if (createOnLogin.signer.type === "external-wallet" && createOnLogin.signer.address == null) {
+            if (signer?.type === "external-wallet" && signer.address == null) {
                 return;
             }
             getOrCreateWallet(createOnLogin);

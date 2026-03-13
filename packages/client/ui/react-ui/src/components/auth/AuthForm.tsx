@@ -1,5 +1,4 @@
 import type React from "react";
-import { lazy, Suspense } from "react";
 import Color from "color";
 import styled from "@emotion/styled";
 import type { UIConfig } from "@crossmint/common-sdk-base";
@@ -10,24 +9,8 @@ import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
-import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 import { theme } from "../../styles";
 import { DialogDescription, DialogTitle } from "../common/Dialog";
-
-const LazyFarcasterSection = lazy(() =>
-    Promise.all([
-        // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-        import("../../providers/auth/FarcasterProvider"),
-        // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-        import("./methods/farcaster/FarcasterSignIn"),
-    ]).then(([providerMod, signInMod]) => ({
-        default: ({ baseUrl }: { baseUrl: string }) => (
-            <providerMod.FarcasterProvider baseUrl={baseUrl}>
-                <signInMod.FarcasterSignIn />
-            </providerMod.FarcasterProvider>
-        ),
-    }))
-);
 
 const AuthFormContainer = styled.div`
     position: relative;
@@ -80,14 +63,7 @@ export function AuthForm({ style }: { style?: React.CSSProperties }) {
             ) : null}
 
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
-            {loginMethods.includes("farcaster") ? (
-                <Suspense fallback={null}>
-                    <LazyFarcasterSection baseUrl={baseUrl} />
-                </Suspense>
-            ) : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
-            {loginMethods.some((method) => method.startsWith("web3")) ? <Web3AuthFlow /> : null}
-
             {loginMethods.includes("email") ? (
                 <div>
                     {loginMethods.length > 1 ? <Divider appearance={appearance} text="OR" /> : null}

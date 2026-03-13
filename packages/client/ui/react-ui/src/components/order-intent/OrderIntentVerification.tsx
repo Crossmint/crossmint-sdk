@@ -1,51 +1,65 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
 import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 export interface OrderIntentVerificationProps {
     config: VerificationConfig;
     orderIntent: OrderIntent;
-    onVerificationComplete?: (paymentIntent: unknown) => void;
+    onVerificationComplete?: (instruction: unknown) => void;
     onVerificationError?: (error: Error) => void;
 }
 
 export function OrderIntentVerification(props: OrderIntentVerificationProps) {
     return (
-        <BasisTheoryAIProvider jwt={props.config.btJwt} environment={props.config.environment}>
+        <BasisTheoryAIProvider apiKey={props.config.btApiKey} environment={props.config.environment}>
             <OrderIntentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
 }
 
 function OrderIntentVerificationContent({
-    config,
     orderIntent,
     onVerificationComplete,
     onVerificationError,
 }: OrderIntentVerificationProps) {
-    const { verifyPurchaseIntent } = useBasisTheoryAI();
-
-    const handleVerification = useCallback(async () => {
-        try {
-            const paymentIntent = await verifyPurchaseIntent(
-                config.btProjectId,
-                orderIntent.payment.externalOrderIntentId
-            );
-            onVerificationComplete?.(paymentIntent);
-        } catch (error) {
-            onVerificationError?.(error as Error);
-        }
-    }, [
-        verifyPurchaseIntent,
-        config.btProjectId,
-        orderIntent.orderIntentId,
-        onVerificationComplete,
-        onVerificationError,
-    ]);
+    const { verifyInstruction } = useBasisTheoryAI();
+    const verifyRef = useRef(verifyInstruction);
+    const completeRef = useRef(onVerificationComplete);
+    const errorRef = useRef(onVerificationError);
 
     useEffect(() => {
-        handleVerification();
-    }, [handleVerification]);
+        verifyRef.current = verifyInstruction;
+    }, [verifyInstruction]);
+    useEffect(() => {
+        completeRef.current = onVerificationComplete;
+    }, [onVerificationComplete]);
+    useEffect(() => {
+        errorRef.current = onVerificationError;
+    }, [onVerificationError]);
+
+    const agentId = orderIntent.payment.btAgentId;
+    const instructionId = orderIntent.payment.btInstructionId;
+
+    useEffect(() => {
+        let cancelled = false;
+
+        verifyRef
+            .current(agentId, instructionId)
+            .then((instruction: unknown) => {
+                if (!cancelled) {
+                    completeRef.current?.(instruction);
+                }
+            })
+            .catch((error: Error) => {
+                if (!cancelled) {
+                    errorRef.current?.(error);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [agentId, instructionId]);
 
     return null;
 }

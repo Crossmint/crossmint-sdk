@@ -488,7 +488,7 @@ describe("Wallet - approve()", () => {
     });
 });
 
-describe("Wallet - addDelegatedSigner()", () => {
+describe("Wallet - addSigner()", () => {
     let mockApiClient: MockedApiClient;
     let evmWallet: Wallet<"base-sepolia">;
     let solanaWallet: Wallet<"solana">;
@@ -506,7 +506,7 @@ describe("Wallet - addDelegatedSigner()", () => {
     });
 
     describe("EVM chains", () => {
-        it("should add delegated signer successfully for EVM", async () => {
+        it("should add signer successfully for EVM", async () => {
             const mockRegisterResponse = {
                 chains: {
                     "base-sepolia": {
@@ -518,7 +518,7 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await evmWallet.addDelegatedSigner({ signer: "external-wallet:0x456" });
+            await evmWallet.addSigner({ signer: "external-wallet:0x456" });
 
             expect(mockApiClient.registerSigner).toHaveBeenCalledWith("me:evm:smart", {
                 signer: "external-wallet:0x456",
@@ -538,7 +538,7 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await evmWallet.addDelegatedSigner({
+            const result = await evmWallet.addSigner({
                 signer: "external-wallet:0x456",
                 options: { experimental_prepareOnly: true },
             });
@@ -565,7 +565,7 @@ describe("Wallet - addDelegatedSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
 
-            const addPromise = evmWallet.addDelegatedSigner({ signer: "external-wallet:0x456" });
+            const addPromise = evmWallet.addSigner({ signer: "external-wallet:0x456" });
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -574,7 +574,7 @@ describe("Wallet - addDelegatedSigner()", () => {
     });
 
     describe("Solana chains", () => {
-        it("should add delegated signer successfully for Solana", async () => {
+        it("should add signer successfully for Solana", async () => {
             const mockRegisterResponse = {
                 transaction: {
                     id: "txn-123",
@@ -593,7 +593,7 @@ describe("Wallet - addDelegatedSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const addPromise = solanaWallet.addDelegatedSigner({ signer: "external-wallet:ABC123" });
+            const addPromise = solanaWallet.addSigner({ signer: "external-wallet:ABC123" });
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -612,7 +612,7 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await solanaWallet.addDelegatedSigner({
+            const result = await solanaWallet.addSigner({
                 signer: "external-wallet:ABC123",
                 options: { experimental_prepareOnly: true },
             });
@@ -631,7 +631,7 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(errorResponse as any);
 
-            await expect(evmWallet.addDelegatedSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
+            await expect(evmWallet.addSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
                 "Failed to register signer"
             );
         });
@@ -643,7 +643,7 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(solanaWallet.addDelegatedSigner({ signer: "external-wallet:ABC123" })).rejects.toThrow(
+            await expect(solanaWallet.addSigner({ signer: "external-wallet:ABC123" })).rejects.toThrow(
                 "Expected transaction in response for Solana/Stellar chain"
             );
         });
@@ -655,14 +655,14 @@ describe("Wallet - addDelegatedSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(evmWallet.addDelegatedSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
+            await expect(evmWallet.addSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
                 "Expected chains in response for EVM chain"
             );
         });
     });
 });
 
-describe("Wallet - delegatedSigners()", () => {
+describe("Wallet - signers()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
 
@@ -673,7 +673,7 @@ describe("Wallet - delegatedSigners()", () => {
     });
 
     describe("success cases", () => {
-        it("should return list of delegated signers", async () => {
+        it("should return list of signers", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -702,14 +702,14 @@ describe("Wallet - delegatedSigners()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            const signers = await wallet.delegatedSigners();
+            const signers = await wallet.signers();
 
             expect(signers).toHaveLength(2);
             expect(signers[0].signer).toBe("external-wallet:0xsigner1");
             expect(signers[1].signer).toBe("external-wallet:0xsigner2");
         });
 
-        it("should return empty array when no delegated signers", async () => {
+        it("should return empty array when no signers", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -726,7 +726,7 @@ describe("Wallet - delegatedSigners()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            const signers = await wallet.delegatedSigners();
+            const signers = await wallet.signers();
 
             expect(signers).toHaveLength(0);
         });
@@ -742,7 +742,7 @@ describe("Wallet - delegatedSigners()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(errorResponse as any);
 
-            await expect(wallet.delegatedSigners()).rejects.toThrow(WalletNotAvailableError);
+            await expect(wallet.signers()).rejects.toThrow(WalletNotAvailableError);
         });
 
         it("should throw error when wallet type is not smart", async () => {
@@ -762,7 +762,7 @@ describe("Wallet - delegatedSigners()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            await expect(wallet.delegatedSigners()).rejects.toThrow(WalletTypeNotSupportedError);
+            await expect(wallet.signers()).rejects.toThrow(WalletTypeNotSupportedError);
         });
 
         it("should throw error when chain type is not supported", async () => {
@@ -782,7 +782,7 @@ describe("Wallet - delegatedSigners()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            await expect(wallet.delegatedSigners()).rejects.toThrow(WalletTypeNotSupportedError);
+            await expect(wallet.signers()).rejects.toThrow(WalletTypeNotSupportedError);
         });
     });
 });

@@ -52,6 +52,13 @@ export abstract class DeviceSignerKeyStorage {
     abstract getKey(address: string): Promise<string | null>;
 
     /**
+     * Check if a key with the given public key exists on this device.
+     * @param publicKeyBase64 - The base64-encoded public key to look for.
+     * @returns `true` if the key exists on the device, `false` otherwise.
+     */
+    abstract hasKey(publicKeyBase64: string): Promise<boolean>;
+
+    /**
      * Sign a message using the private key associated with the given wallet address.
      * @param address - The wallet address whose private key to sign with.
      * @param message - The message string to sign.

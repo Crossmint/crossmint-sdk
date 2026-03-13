@@ -1,5 +1,31 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.72
+
+### Patch Changes
+
+- d5ce427: Deprecate Farcaster authentication. All Farcaster-related types, components, and methods are now marked as `@deprecated` and will emit console warnings when used. Farcaster login will be removed in a future release.
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/client-sdk-base@2.0.2
+
+## 1.0.71
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/client-sdk-base@2.0.1
+
+## 1.0.70
+
+### Patch Changes
+
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+
 ## 1.0.69
 
 ### Patch Changes

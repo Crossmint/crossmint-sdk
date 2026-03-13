@@ -53,7 +53,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
 
         try {
-            if (isExportableSigner(wallet.signer)) {
+            if (wallet.signer != null && isExportableSigner(wallet.signer)) {
                 const connection = await IFrameWindow.init(
                     iframeRef.current,
                     {
@@ -71,7 +71,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, [wallet, frameUrl]);
 
-    if (frameUrl.toString() === "" || wallet == null || !isExportableSigner(wallet.signer)) {
+    if (frameUrl.toString() === "" || wallet == null || wallet.signer == null || !isExportableSigner(wallet.signer)) {
         return null;
     }
 

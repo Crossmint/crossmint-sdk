@@ -27,7 +27,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
-                adminSigner: Wallet.getAdminSigner(wallet),
+                recovery: Wallet.getRecovery(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -99,11 +99,12 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
+        const signer = this.requireSigner();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                signer: this.signer.locator(),
+                signer: signer.locator(),
                 chain: this.chain,
             },
         });
@@ -145,6 +146,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
+        const signer = this.requireSigner();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: "Invalid typed data" });
@@ -172,7 +174,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: this.signer.locator(),
+                signer: signer.locator(),
                 chain,
             },
         });
@@ -212,7 +214,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        const signer = options?.experimental_signer ?? this.requireSigner().locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,

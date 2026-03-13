@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type RefObject } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
@@ -68,6 +68,10 @@ function CrossmintWalletProviderInternal({
     );
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
+    const handshakeTriggeredRef = useRef<boolean>(false);
+    const handshakeInProgressRef = useRef<boolean>(false);
+    const handshakeGenerationRef = useRef<number>(0);
+    const handshakeStartTimeRef = useRef<number>(0);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -75,6 +79,73 @@ function CrossmintWalletProviderInternal({
         }
         return {};
     }, [appId]);
+
+    const performHandshake = useCallback(
+        async (trigger: "frame-ready" | "onLoadEnd" | "eager") => {
+            if (webViewParentRef.current != null) {
+                const parent = webViewParentRef.current;
+
+                // Prevent concurrent or duplicate handshakes
+                if (handshakeInProgressRef.current) {
+                    logger.info("react-native.wallet.webview.handshake.skip.in-progress", {
+                        trigger,
+                        generation: handshakeGenerationRef.current,
+                    });
+                    return;
+                }
+                if (handshakeTriggeredRef.current && parent.isConnected) {
+                    logger.info("react-native.wallet.webview.handshake.skip.already-connected", {
+                        trigger,
+                        generation: handshakeGenerationRef.current,
+                    });
+                    return;
+                }
+
+                handshakeInProgressRef.current = true;
+                const handshakeStartTime = Date.now();
+                handshakeStartTimeRef.current = handshakeStartTime;
+                const generation = handshakeGenerationRef.current;
+                try {
+                    logger.info("react-native.wallet.webview.handshake.start", {
+                        trigger,
+                        generation,
+                        platform: Platform.OS,
+                    });
+                    handshakeTriggeredRef.current = true;
+                    parent.isConnected = false;
+                    await parent.handshakeWithChild();
+                    const durationMs = Date.now() - handshakeStartTime;
+                    logger.info("react-native.wallet.webview.handshake.success", {
+                        trigger,
+                        generation,
+                        durationMs,
+                    });
+                } catch (e) {
+                    const durationMs = Date.now() - handshakeStartTime;
+                    if (generation === handshakeGenerationRef.current) {
+                        handshakeTriggeredRef.current = false;
+                    }
+                    logger.error("react-native.wallet.webview.handshake.error", {
+                        trigger,
+                        generation,
+                        durationMs,
+                        error: e instanceof Error ? e.message : String(e),
+                    });
+                    console.error("[CrossmintWalletProvider] Handshake error:", e);
+                } finally {
+                    if (generation === handshakeGenerationRef.current) {
+                        handshakeInProgressRef.current = false;
+                    }
+                }
+            } else {
+                logger.warn("react-native.wallet.webview.handshake.skip", {
+                    trigger,
+                    reason: "parent not initialized",
+                });
+            }
+        },
+        [logger]
+    );
 
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
@@ -91,25 +162,26 @@ function CrossmintWalletProviderInternal({
                 },
             });
             logger.info("react-native.wallet.webview.initialized");
+
+            // Start handshake immediately — don't wait for onLoadEnd or frame-ready.
+            // The parent polls handshakeRequest every 100ms for 30s, so by the time
+            // the child finishes init and calls handshakeWithParent(), the request
+            // will arrive within 100ms. This eliminates the 15-23s gap on slow
+            // devices where onLoadEnd fires long after the child is ready.
+            performHandshake("eager");
         }
-    }, [needsWebView, logger]);
+    }, [needsWebView, logger, performHandshake]);
 
     const onWebViewLoad = useCallback(async () => {
-        const parent = webViewParentRef.current;
-        if (parent != null) {
-            try {
-                logger.info("react-native.wallet.webview.handshake.start");
-                parent.isConnected = false;
-                await parent.handshakeWithChild();
-                logger.info("react-native.wallet.webview.handshake.success");
-            } catch (e) {
-                logger.error("react-native.wallet.webview.handshake.error", {
-                    error: e instanceof Error ? e.message : String(e),
-                });
-                console.error("[CrossmintWalletProvider] Handshake error:", e);
-            }
-        }
-    }, [logger]);
+        // onLoadEnd is a fallback — eager handshake should have started already.
+        // This still triggers in case the eager start couldn't run (e.g. ref timing).
+        logger.info("react-native.wallet.webview.onLoadEnd", {
+            handshakeInProgress: handshakeInProgressRef.current,
+            isConnected: webViewParentRef.current?.isConnected ?? false,
+            generation: handshakeGenerationRef.current,
+        });
+        await performHandshake("onLoadEnd");
+    }, [logger, performHandshake]);
 
     const handleMessage = useCallback(
         (event: WebViewMessageEvent) => {
@@ -118,8 +190,25 @@ function CrossmintWalletProviderInternal({
                 return;
             }
 
+            const rawData = event.nativeEvent.data;
+
+            // Handle "frame-ready" signal from child — child is ready to handshake.
+            // With eager handshake, the parent is already polling, so the handshake
+            // should already be in progress or complete. Log for diagnostics.
+            if (rawData === "frame-ready") {
+                logger.info("react-native.wallet.webview.frame-ready.received", {
+                    handshakeInProgress: handshakeInProgressRef.current,
+                    isConnected: webViewParentRef.current?.isConnected ?? false,
+                    generation: handshakeGenerationRef.current,
+                    msSinceHandshakeStart:
+                        handshakeStartTimeRef.current > 0 ? Date.now() - handshakeStartTimeRef.current : null,
+                });
+                performHandshake("frame-ready");
+                return;
+            }
+
             try {
-                const messageData = JSON.parse(event.nativeEvent.data);
+                const messageData = JSON.parse(rawData);
                 if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
                     const consoleMethod = messageData.type.split(".")[1];
                     const args = (messageData.data || []).map((argStr: string) => {
@@ -168,7 +257,7 @@ function CrossmintWalletProviderInternal({
 
             parent.handleMessage(event);
         },
-        [logger]
+        [logger, performHandshake]
     );
 
     const getClientTEEConnection = () => {
@@ -242,8 +331,42 @@ function CrossmintWalletProviderInternal({
                         onHttpError={(syntheticEvent) => {
                             console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
                         }}
-                        onContentProcessDidTerminate={() => webviewRef.current?.reload()}
-                        onRenderProcessGone={() => webviewRef.current?.reload()}
+                        onContentProcessDidTerminate={() => {
+                            const prevGeneration = handshakeGenerationRef.current;
+                            handshakeGenerationRef.current++;
+                            logger.warn("react-native.wallet.webview.process.terminated", {
+                                prevGeneration,
+                                newGeneration: handshakeGenerationRef.current,
+                                wasConnected: webViewParentRef.current?.isConnected ?? false,
+                                hadHandshakeInProgress: handshakeInProgressRef.current,
+                            });
+                            handshakeTriggeredRef.current = false;
+                            handshakeInProgressRef.current = false;
+                            if (webViewParentRef.current != null) {
+                                webViewParentRef.current.isConnected = false;
+                            }
+                            webviewRef.current?.reload();
+                            // Start polling immediately — don't wait for onLoadEnd which fires 15-23s late on slow devices
+                            performHandshake("eager");
+                        }}
+                        onRenderProcessGone={() => {
+                            const prevGeneration = handshakeGenerationRef.current;
+                            handshakeGenerationRef.current++;
+                            logger.warn("react-native.wallet.webview.process.renderGone", {
+                                prevGeneration,
+                                newGeneration: handshakeGenerationRef.current,
+                                wasConnected: webViewParentRef.current?.isConnected ?? false,
+                                hadHandshakeInProgress: handshakeInProgressRef.current,
+                            });
+                            handshakeTriggeredRef.current = false;
+                            handshakeInProgressRef.current = false;
+                            if (webViewParentRef.current != null) {
+                                webViewParentRef.current.isConnected = false;
+                            }
+                            webviewRef.current?.reload();
+                            // Start polling immediately — don't wait for onLoadEnd which fires 15-23s late on slow devices
+                            performHandshake("eager");
+                        }}
                         style={{
                             width: 1,
                             height: 1,

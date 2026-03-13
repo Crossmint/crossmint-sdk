@@ -3,7 +3,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { LoginMethod } from "@crossmint/client-sdk-react-base";
 import type { BaseCrossmintAuthProviderProps } from "@/types/auth";
 
-type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
+type AuthStep = "initial" | "otp" | "qrCode";
 
 interface AuthFormContextType {
     step: AuthStep;

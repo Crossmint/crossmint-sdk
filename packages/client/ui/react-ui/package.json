@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "2.6.18",
+    "version": "3.0.2",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -21,7 +21,7 @@
         "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
-        "@basis-theory-ai/react": "^1.0.1-beta.9",
+        "@basis-theory-ai/react": "2.0.0-beta.4",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
@@ -37,7 +37,6 @@
         "@emotion/react": "^11.11.0",
         "@emotion/styled": "11.14.1",
         "@ethersproject/transactions": "5.7.0",
-        "@farcaster/auth-kit": "0.6.0",
         "@mysten/sui": "1.24.0",
         "@solana/web3.js": "1.98.1",
         "bs58": "5.0.0",

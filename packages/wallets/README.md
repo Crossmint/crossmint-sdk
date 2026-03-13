@@ -66,13 +66,13 @@ const activity = await wallet.experimental_activity();
 console.log(activity.events);
 ```
 
-### Delegated signers
+### Signers
 
 ```ts
-// Add a delegated signer
-await wallet.addDelegatedSigner({ signer: "<signer-address>" });
+// Add a signer
+await wallet.addSigner({ signer: "<signer-address>" });
 
-const signers = await wallet.delegatedSigners();
+const signers = await wallet.signers();
 
 console.log(signers);
 ```

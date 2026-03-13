@@ -1,6 +1,9 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
+// Errors
+export { WalletNotAvailableError } from "./utils/errors";
+
 // API
 export { ApiClient as WalletsApiClient } from "./api";
 
@@ -17,8 +20,8 @@ export type {
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
     DelegatedSigner,
+    DeviceSignerDescriptor,
     EVMTransactionInput,
-    OnCreateConfig,
     Transaction,
     WalletArgsFor,
     WalletCreateArgs,
@@ -44,5 +47,5 @@ export type {
 } from "./signers/types";
 
 // Device Signer Key Storage Interface
-export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage } from "./utils/device-signers";
+export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
 export type { BiometricRequestHandler } from "./utils/device-signers";
