@@ -178,13 +178,12 @@ describe("deriveServerSignerAddress", () => {
 });
 
 describe("deriveServerSignerDetails", () => {
-    it("returns derivedKeyBytes, derivedAddress, and alias", () => {
+    it("returns derivedKeyBytes and derivedAddress", () => {
         const config = { type: "server" as const, secret: TEST_SECRET };
         const result = deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
 
         expect(result.derivedKeyBytes).toBeInstanceOf(Uint8Array);
         expect(result.derivedKeyBytes.length).toBe(32);
         expect(result.derivedAddress).toMatch(/^0x[0-9a-fA-F]{40}$/);
-        expect(result.alias.startsWith("s-")).toBe(true);
     });
 });

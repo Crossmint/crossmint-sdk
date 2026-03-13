@@ -61,25 +61,16 @@ export class WalletFactory {
         return this.createWalletInternal(args);
     }
 
-    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>>;
-    public async getWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "walletFactory.getWallet",
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
-            const walletArgs = (typeof args[0] === "string" ? args[1] : args[0]) as WalletArgsFor<Chain>;
-            const walletLocator = typeof args[0] === "string" ? args[0] : undefined;
+            const walletArgs = args[1] as WalletArgsFor<Chain>;
+            const walletLocator = args[0] as string;
             return { walletLocator, chain: walletArgs.chain };
         },
     })
-    public async getWallet<C extends Chain>(
-        walletLocatorOrArgs: string | WalletArgsFor<C>,
-        maybeArgs?: WalletArgsFor<C>
-    ): Promise<Wallet<C>> {
-        const isLocatorOverload = typeof walletLocatorOrArgs === "string";
-        let args = isLocatorOverload ? maybeArgs! : walletLocatorOrArgs;
-        let walletLocator: string;
-
+    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
         if (!this.apiClient.isServerSide) {
             walletsLogger.error("walletFactory.getWallet.error", {
                 error: "getWallet is not supported on client side",
@@ -88,20 +79,6 @@ export class WalletFactory {
         }
 
         args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-
-        if (isLocatorOverload) {
-            walletLocator = walletLocatorOrArgs;
-        } else if (args.signer.type === "server") {
-            const { alias } = deriveServerSignerDetails(
-                args.signer,
-                args.chain,
-                this.apiClient.projectId,
-                this.apiClient.environment
-            );
-            walletLocator = `${this.getChainType(args.chain)}:smart:alias:${alias}`;
-        } else {
-            throw new Error("walletLocator is required for non-server signers. Use getWallet(locator, args) instead.");
-        }
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -145,7 +122,7 @@ export class WalletFactory {
         if (args.signer.type === "passkey") {
             adminSigner = await this.createPasskeyAdminSigner(args.signer);
         } else if (args.signer.type === "server") {
-            const { derivedAddress, alias } = deriveServerSignerDetails(
+            const { derivedAddress } = deriveServerSignerDetails(
                 args.signer,
                 args.chain,
                 this.apiClient.projectId,
@@ -153,11 +130,6 @@ export class WalletFactory {
             );
 
             adminSigner = { type: "external-wallet", address: derivedAddress };
-
-            // Auto-set alias so the wallet is always recoverable from the same secret
-            if (args.alias == null) {
-                args = { ...args, alias };
-            }
         } else {
             adminSigner = args.signer;
         }

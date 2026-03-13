@@ -5,7 +5,7 @@ import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
 
 import type { Chain } from "../../../chains/chains";
 import type { ServerSignerConfig } from "../../types";
-import { deriveKeyBytes, deriveAlias } from "../../../utils/server-key-derivation";
+import { deriveKeyBytes } from "../../../utils/server-key-derivation";
 import { getChainType } from "./get-chain-type";
 
 export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): string {
@@ -25,10 +25,9 @@ export function deriveServerSignerDetails(
     chain: Chain,
     projectId: string,
     environment: string
-): { derivedKeyBytes: Uint8Array; derivedAddress: string; alias: string } {
+): { derivedKeyBytes: Uint8Array; derivedAddress: string } {
     const chainStr = typeof chain === "string" ? chain : String(chain);
     const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
     const derivedAddress = deriveServerSignerAddress(derivedKeyBytes, chain);
-    const alias = deriveAlias(signer.secret, projectId, environment, chainStr);
-    return { derivedKeyBytes, derivedAddress, alias };
+    return { derivedKeyBytes, derivedAddress };
 }
