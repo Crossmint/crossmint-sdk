@@ -14,56 +14,54 @@ import clsx from "clsx";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3AllProps & JSX.IntrinsicElements["button"];
 
+function extractProps(props: CrossmintHostedCheckoutV3ReactProps) {
+    if (isHostedCheckoutV3ExistingOrderProps(props as CrossmintHostedCheckoutV3AllProps)) {
+        const { orderId, clientSecret, locale, payment, appearance, onClick, className, children, ...restButtonProps } =
+            props as CrossmintHostedCheckoutV3OrderProps & JSX.IntrinsicElements["button"];
+        return {
+            customProps: { orderId, clientSecret, locale, payment, appearance } as CrossmintHostedCheckoutV3AllProps,
+            onClick,
+            className,
+            children,
+            restButtonProps,
+        };
+    }
+
+    const {
+        lineItems,
+        payment,
+        recipient,
+        locale,
+        appearance,
+        metadata,
+        onClick,
+        className,
+        children,
+        ...restButtonProps
+    } = props as CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
+    return {
+        customProps: {
+            lineItems,
+            payment,
+            recipient,
+            locale,
+            appearance,
+            metadata,
+        } as CrossmintHostedCheckoutV3AllProps,
+        onClick,
+        className,
+        children,
+        restButtonProps,
+    };
+}
+
 export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactProps) {
     const [didInjectCss, setDidInjectCss] = useState(false);
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
 
-    let customProps: CrossmintHostedCheckoutV3AllProps;
-    let onClick: JSX.IntrinsicElements["button"]["onClick"];
-    let className: string | undefined;
-    let children: React.ReactNode;
-    let restButtonProps: Record<string, unknown>;
-
-    if (isHostedCheckoutV3ExistingOrderProps(props as CrossmintHostedCheckoutV3AllProps)) {
-        // Existing order flow: orderId + clientSecret required
-        const {
-            orderId,
-            clientSecret,
-            locale,
-            payment,
-            appearance,
-            onClick: _onClick,
-            className: _className,
-            children: _children,
-            ...rest
-        } = props as CrossmintHostedCheckoutV3OrderProps & JSX.IntrinsicElements["button"];
-        customProps = { orderId, clientSecret, locale, payment, appearance };
-        onClick = _onClick;
-        className = _className;
-        children = _children;
-        restButtonProps = rest;
-    } else {
-        // New order flow: lineItems + payment required (original behavior)
-        const {
-            recipient,
-            locale,
-            lineItems,
-            payment,
-            appearance,
-            metadata,
-            onClick: _onClick,
-            className: _className,
-            children: _children,
-            ...rest
-        } = props as CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
-        customProps = { recipient, locale, lineItems, payment, appearance, metadata };
-        onClick = _onClick;
-        className = _className;
-        children = _children;
-        restButtonProps = rest;
-    }
+    const { customProps, onClick, className, children, restButtonProps } = extractProps(props);
 
     const hostedCheckoutService = crossmintHostedCheckoutV3Service({ apiClient, hostedCheckoutProps: customProps });
     const stylesService = crossmintHostedCheckoutV3StylesService(customProps);
