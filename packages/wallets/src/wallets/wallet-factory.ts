@@ -188,7 +188,7 @@ export class WalletFactory {
 
     private async saveDeviceSignerKeyIfNeeded(
         address: string,
-        builtSigners: Awaited<ReturnType<typeof this.buildSigners>>,
+        builtSigners: Awaited<ReturnType<typeof this.registerSigners>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ) {
         const deviceSigner = builtSigners.find(
