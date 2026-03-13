@@ -34,23 +34,11 @@ export class AuthRejectedError extends Error {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
 };
 
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
@@ -84,9 +72,18 @@ type BaseInternalSignerConfig = {
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
-export type EmailInternalSignerConfig = EmailSignerConfig & BaseInternalSignerConfig;
+type OnAuthRequiredCallback = (
+    needsAuth: boolean,
+    sendEmailWithOtp: () => Promise<void>,
+    verifyOtp: (otp: string) => Promise<void>,
+    reject: () => void
+) => Promise<void>;
 
-export type PhoneInternalSignerConfig = PhoneSignerConfig & BaseInternalSignerConfig;
+export type EmailInternalSignerConfig = EmailSignerConfig &
+    BaseInternalSignerConfig & { onAuthRequired?: OnAuthRequiredCallback };
+
+export type PhoneInternalSignerConfig = PhoneSignerConfig &
+    BaseInternalSignerConfig & { onAuthRequired?: OnAuthRequiredCallback };
 
 export type DeviceInternalSignerConfig = {
     type: "device";

@@ -289,7 +289,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signerArgs.onAuthRequired,
+                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as EmailInternalSignerConfig;
             }
@@ -335,7 +335,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signerArgs.onAuthRequired,
+                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as PhoneInternalSignerConfig;
             }
