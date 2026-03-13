@@ -6,6 +6,7 @@ import {
     type ClientSideWalletCreateArgs,
     type SignerConfigForChain,
     type Wallet,
+    type ClientSideWalletArgsFor,
     type WalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
@@ -29,7 +30,7 @@ export type CrossmintWalletBaseContext = {
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     /** Retrieves an existing wallet. */
     getWallet: <C extends Chain>(
-        props: Pick<WalletArgsFor<C>, "chain" | "alias">
+        props: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">
     ) => Promise<Wallet<Chain> | undefined>;
     /** Creates a new wallet. */
     createWallet: <C extends Chain>(props: ClientSideWalletCreateArgs<C>) => Promise<Wallet<Chain> | undefined>;
@@ -327,7 +328,7 @@ export function CrossmintWalletBaseProvider({
     );
 
     const getWallet = useCallback(
-        async <C extends Chain>(args: Pick<WalletArgsFor<C>, "chain" | "alias">) => {
+        async <C extends Chain>(args: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">) => {
             if (experimental_customAuth?.jwt == null) {
                 return undefined;
             }
