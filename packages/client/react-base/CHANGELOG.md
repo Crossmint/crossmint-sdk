@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 1.0.6
+
+### Patch Changes
+
+- 11ab4f6: Fix Phone Signer
+
 ## 1.0.5
 
 ### Patch Changes
