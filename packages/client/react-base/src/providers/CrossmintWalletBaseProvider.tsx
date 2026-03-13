@@ -11,6 +11,7 @@ import {
     type DeviceSignerKeyStorage,
     type WalletOptions,
     WalletNotAvailableError,
+    DeviceSignerDescriptor,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -42,6 +43,7 @@ export type CrossmintWalletBaseContext = {
         verifyOtp: ((otp: string) => Promise<void>) | null;
         reject: ((error?: Error) => void) | null;
     };
+    createDeviceSigner: () => Promise<DeviceSignerDescriptor> | undefined;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -56,6 +58,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
         verifyOtp: null,
         reject: null,
     },
+    createDeviceSigner: () => Promise.resolve(undefined),
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -398,6 +401,14 @@ export function CrossmintWalletBaseProvider({
         ]
     );
 
+    const createDeviceSigner = useCallback(() => {
+        const wallets = CrossmintWallets.from(crossmint);
+        if (!deviceSignerKeyStorage) {
+            throw new Error("A DeviceSignerKeyStorage must be provided to create a device signer");
+        }
+        return wallets.createDeviceSigner(deviceSignerKeyStorage);
+    }, [crossmint, deviceSignerKeyStorage]);
+
     useEffect(() => {
         if (createOnLogin != null) {
             const recovery = createOnLogin.recovery;
@@ -433,8 +444,9 @@ export function CrossmintWalletBaseProvider({
             createWallet,
             clientTEEConnection,
             emailSignerState,
+            createDeviceSigner,
         }),
-        [getWallet, createWallet, wallet, walletStatus, clientTEEConnection, emailSignerState]
+        [getWallet, createWallet, wallet, walletStatus, clientTEEConnection, emailSignerState, createDeviceSigner]
     );
 
     const hasUIProps =
