@@ -1,6 +1,6 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
 import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 export interface OrderIntentVerificationProps {
     config: VerificationConfig;
@@ -23,28 +23,43 @@ function OrderIntentVerificationContent({
     onVerificationError,
 }: OrderIntentVerificationProps) {
     const { verifyInstruction } = useBasisTheoryAI();
-
-    const handleVerification = useCallback(async () => {
-        try {
-            const instruction = await verifyInstruction(
-                orderIntent.payment.btAgentId,
-                orderIntent.payment.btInstructionId
-            );
-            onVerificationComplete?.(instruction);
-        } catch (error) {
-            onVerificationError?.(error as Error);
-        }
-    }, [
-        verifyInstruction,
-        orderIntent.payment.btAgentId,
-        orderIntent.payment.btInstructionId,
-        onVerificationComplete,
-        onVerificationError,
-    ]);
+    const verifyRef = useRef(verifyInstruction);
+    const completeRef = useRef(onVerificationComplete);
+    const errorRef = useRef(onVerificationError);
 
     useEffect(() => {
-        handleVerification();
-    }, [handleVerification]);
+        verifyRef.current = verifyInstruction;
+    }, [verifyInstruction]);
+    useEffect(() => {
+        completeRef.current = onVerificationComplete;
+    }, [onVerificationComplete]);
+    useEffect(() => {
+        errorRef.current = onVerificationError;
+    }, [onVerificationError]);
+
+    const agentId = orderIntent.payment.btAgentId;
+    const instructionId = orderIntent.payment.btInstructionId;
+
+    useEffect(() => {
+        let cancelled = false;
+
+        verifyRef
+            .current(agentId, instructionId)
+            .then((instruction: unknown) => {
+                if (!cancelled) {
+                    completeRef.current?.(instruction);
+                }
+            })
+            .catch((error: Error) => {
+                if (!cancelled) {
+                    errorRef.current?.(error);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [agentId, instructionId]);
 
     return null;
 }
