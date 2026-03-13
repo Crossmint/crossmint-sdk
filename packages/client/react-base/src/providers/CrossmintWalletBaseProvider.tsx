@@ -7,7 +7,6 @@ import {
     type SignerConfigForChain,
     type Wallet,
     type ClientSideWalletArgsFor,
-    type WalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
     type WalletOptions,
