@@ -342,6 +342,7 @@ export function CrossmintWalletBaseProvider({
             }
 
             try {
+                setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
                 const wallet = await wallets.getWallet<C>({
@@ -352,10 +353,15 @@ export function CrossmintWalletBaseProvider({
                 if (wallet != null) {
                     const resolvedRecovery = resolveSignerConfig(wallet.recovery) as WalletCreateArgs<C>["recovery"];
                     await initializeWebViewIfNeeded(resolvedRecovery);
+                    setWallet(wallet);
+                    setWalletStatus("loaded");
+                } else {
+                    setWalletStatus("not-loaded");
                 }
                 return wallet;
             } catch (error) {
                 console.error("Failed to get wallet:", error);
+                setWalletStatus("error");
                 return undefined;
             }
         },
