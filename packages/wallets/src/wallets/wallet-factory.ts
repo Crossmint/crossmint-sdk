@@ -138,6 +138,16 @@ export class WalletFactory {
         if (recoverySignerConfig.type === "device") {
             throw new WalletCreationError("Device signer cannot be used as recovery signer");
         }
+
+        if (!this.apiClient.isServerSide && args.owner != null) {
+            walletsLogger.error("walletFactory.createWallet.error", {
+                error: "Owner field cannot be specified in client-side createWallet calls",
+            });
+            throw new WalletCreationError(
+                "Owner field cannot be specified in client-side createWallet calls. Owner is determined from JWT authentication."
+            );
+        }
+
         const builtSigners = await this.buildSigners(args);
         const tempArgs = { ...args, signer: recoverySignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
