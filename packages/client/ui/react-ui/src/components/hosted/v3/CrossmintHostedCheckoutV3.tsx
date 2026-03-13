@@ -5,6 +5,7 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     crossmintHostedCheckoutV3Service,
     crossmintHostedCheckoutV3StylesService,
+    isHostedCheckoutV3ExistingOrderProps,
     type CrossmintHostedCheckoutV3AllProps,
     type CrossmintHostedCheckoutV3Props,
     type CrossmintHostedCheckoutV3OrderProps,
@@ -25,7 +26,7 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     let children: React.ReactNode;
     let restButtonProps: Record<string, unknown>;
 
-    if ("orderId" in props && props.orderId != null) {
+    if (isHostedCheckoutV3ExistingOrderProps(props as CrossmintHostedCheckoutV3AllProps)) {
         // Existing order flow: orderId + clientSecret required
         const {
             orderId,
