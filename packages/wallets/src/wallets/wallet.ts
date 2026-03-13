@@ -353,7 +353,8 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const signer = options?.experimental_signer ?? (this.signer.type === "server" ? this.signer.locator() : undefined);
+        const signer =
+            options?.experimental_signer ?? (this.signer.type === "server" ? this.signer.locator() : undefined);
         const sendParams = {
             recipient,
             amount,
@@ -474,9 +475,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.addDelegatedSigner.start");
 
         if (this.signer.type === "server") {
-            throw new InvalidSignerError(
-                "Cannot add additional delegated signers to a server signer wallet."
-            );
+            throw new InvalidSignerError("Cannot add additional delegated signers to a server signer wallet.");
         }
 
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
