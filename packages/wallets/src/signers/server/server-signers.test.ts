@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import base58 from "bs58";
+import { Keypair, MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import nacl from "tweetnacl";
 
 import { deriveKeyBytes } from "../../utils/server-key-derivation";
 import type { ServerInternalSignerConfig } from "../types";
@@ -81,12 +83,25 @@ describe("SolanaServerSigner", () => {
         expect(() => base58.decode(result.signature)).not.toThrow();
     });
 
-    it("signTransaction delegates to signMessage", async () => {
-        const messageBytes = new Uint8Array([1, 2, 3]);
-        const message = base58.encode(messageBytes);
-        const msgResult = await signer.signMessage(message);
-        const txResult = await signer.signTransaction(message);
-        expect(txResult.signature).toBe(msgResult.signature);
+    it("signTransaction deserializes and signs the transaction message", async () => {
+        // Build a minimal VersionedTransaction
+        const message = MessageV0.compile({
+            payerKey: new PublicKey(signer.address()),
+            instructions: [],
+            recentBlockhash: PublicKey.default.toBase58(),
+        });
+        const tx = new VersionedTransaction(message);
+        const serialized = base58.encode(tx.serialize());
+
+        const result = await signer.signTransaction(serialized);
+        expect(result.signature).toBeDefined();
+        expect(() => base58.decode(result.signature)).not.toThrow();
+
+        // Verify the signature is valid against the message bytes
+        const sigBytes = base58.decode(result.signature);
+        const messageBytes = tx.message.serialize();
+        const pubkey = base58.decode(signer.address());
+        expect(nacl.sign.detached.verify(messageBytes, sigBytes, pubkey)).toBe(true);
     });
 });
 
