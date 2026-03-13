@@ -48,6 +48,8 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<DialogStep>("initial");
+    const signerRef = useRef<Signer | undefined>(signer);
+    signerRef.current = signer;
 
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
@@ -123,8 +125,8 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ) => {
-            const signerValue = signer?.locator().split(":")[1];
-            if (signer?.type === "phone" && signerValue != null) {
+            const signerValue = signerRef.current?.locator().split(":")[1];
+            if (signerRef.current?.type === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
                 sendPhoneWithOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
@@ -136,7 +138,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
             rejectRef.current = reject;
             return Promise.resolve();
         },
-        [signer]
+        []
     );
 
     return {
