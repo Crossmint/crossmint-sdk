@@ -696,8 +696,13 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.ensureDeviceSignerReady: error registering device signer", {
                     error,
                 });
-                deviceSignerKeyStorage.deleteKey(this.address);
-                signerLocator = "";
+                await deviceSignerKeyStorage.deleteKey(this.address);
+                this.signer = assembleSigner(
+                    this.chain,
+                    { type: "device", address: this.address },
+                    deviceSignerKeyStorage
+                );
+                throw error;
             }
         }
 
@@ -707,8 +712,6 @@ export class Wallet<C extends Chain> {
                 type: "device" as const,
                 locator: signerLocator,
                 address: this.address,
-                crossmint: this.#apiClient.crossmint,
-                clientTEEConnection: this.#options?.clientTEEConnection,
             } as InternalSignerConfig<C>;
             this.signer = assembleSigner(this.chain, deviceInternalConfig, deviceSignerKeyStorage);
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
