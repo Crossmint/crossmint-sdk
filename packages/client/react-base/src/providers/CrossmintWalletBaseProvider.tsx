@@ -388,7 +388,14 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, experimental_customAuth, walletStatus, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
+        [
+            crossmint,
+            experimental_customAuth,
+            walletStatus,
+            resolveSignerConfig,
+            initializeWebViewIfNeeded,
+            buildWalletOptions,
+        ]
     );
 
     useEffect(() => {
