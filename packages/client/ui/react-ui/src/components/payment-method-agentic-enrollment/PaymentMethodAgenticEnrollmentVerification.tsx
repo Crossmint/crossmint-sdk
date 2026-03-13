@@ -1,6 +1,6 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
 import type { VerificationConfig } from "@crossmint/client-sdk-base";
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 export interface PaymentMethodAgenticEnrollmentVerificationProps {
     config: VerificationConfig;
@@ -23,19 +23,40 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
     onVerificationError,
 }: PaymentMethodAgenticEnrollmentVerificationProps) {
     const { verifyEnrollment } = useBasisTheoryAI();
-
-    const handleVerification = useCallback(async () => {
-        try {
-            const enrollment = await verifyEnrollment(agentEnrollmentId);
-            onVerificationComplete?.(enrollment);
-        } catch (error) {
-            onVerificationError?.(error as Error);
-        }
-    }, [verifyEnrollment, agentEnrollmentId, onVerificationComplete, onVerificationError]);
+    const verifyRef = useRef(verifyEnrollment);
+    const completeRef = useRef(onVerificationComplete);
+    const errorRef = useRef(onVerificationError);
 
     useEffect(() => {
-        handleVerification();
-    }, [handleVerification]);
+        verifyRef.current = verifyEnrollment;
+    }, [verifyEnrollment]);
+    useEffect(() => {
+        completeRef.current = onVerificationComplete;
+    }, [onVerificationComplete]);
+    useEffect(() => {
+        errorRef.current = onVerificationError;
+    }, [onVerificationError]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        verifyRef
+            .current(agentEnrollmentId)
+            .then((enrollment: unknown) => {
+                if (!cancelled) {
+                    completeRef.current?.(enrollment);
+                }
+            })
+            .catch((error: Error) => {
+                if (!cancelled) {
+                    errorRef.current?.(error);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [agentEnrollmentId]);
 
     return null;
 }
