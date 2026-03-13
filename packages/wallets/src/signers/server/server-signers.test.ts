@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import base58 from "bs58";
-import { Keypair, MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
 import { deriveKeyBytes } from "../../utils/server-key-derivation";
