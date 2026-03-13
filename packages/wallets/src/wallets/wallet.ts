@@ -353,10 +353,11 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
+        const signer = options?.experimental_signer;
         const sendParams = {
             recipient,
             amount,
-            ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+            ...(signer != null ? { signer } : {}),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -695,7 +696,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const signature = await signer.signMessage(pendingApproval.message);
@@ -742,7 +745,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const transactionToSign =
