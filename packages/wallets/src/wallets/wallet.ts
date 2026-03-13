@@ -44,7 +44,8 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import type { Signer, SignerConfigForChain } from "../signers/types";
+import type { InternalSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -676,7 +677,20 @@ export class Wallet<C extends Chain> {
 
         if (!isRegistered) {
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
-            await this.addSigner({ signer: signerLocator });
+            // Temporarily switch to recovery signer to approve the device signer registration
+            const deviceSigner = this.signer;
+            const recoveryInternalConfig = {
+                ...this.#recovery,
+                address: this.address,
+                crossmint: this.#apiClient.crossmint,
+                clientTEEConnection: this.#options?.clientTEEConnection,
+            } as InternalSignerConfig<C>;
+            this.signer = assembleSigner(this.chain, recoveryInternalConfig, deviceSignerKeyStorage);
+            try {
+                await this.addSigner({ signer: signerLocator });
+            } finally {
+                this.signer = deviceSigner;
+            }
         }
 
         if (this.signer.locator() !== signerLocator) {

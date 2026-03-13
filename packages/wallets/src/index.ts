@@ -25,6 +25,7 @@ export type {
     Transaction,
     WalletArgsFor,
     WalletCreateArgs,
+    WalletOptions,
     WalletPlugin,
     Signature,
     SolanaTransactionInput,
