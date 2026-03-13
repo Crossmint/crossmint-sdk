@@ -1,7 +1,8 @@
 import type { Locale } from "@/types";
-import type {
-    CrossmintHostedCheckoutV3ButtonTheme,
-    CrossmintHostedCheckoutV3AllProps,
+import {
+    type CrossmintHostedCheckoutV3ButtonTheme,
+    type CrossmintHostedCheckoutV3AllProps,
+    isHostedCheckoutV3ExistingOrderProps,
 } from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
 import { t } from "@/utils/i18n";
 
@@ -122,7 +123,10 @@ export function crossmintHostedCheckoutV3StylesService(hostedCheckoutProps: Cros
             if (isFiatEnabled) {
                 return t("hostedCheckoutV3.card", locale);
             }
-            return t("hostedCheckoutV3.crossmint", locale);
+            if (isHostedCheckoutV3ExistingOrderProps(hostedCheckoutProps)) {
+                return t("hostedCheckoutV3.crossmint", locale);
+            }
+            throw new Error("Neither `payment.crypto.enabled` or `payment.fiat.enabled` is true");
         })();
 
         return t(`hostedCheckoutV3.paymentVariant.pay`, locale, [paymentMethodText]);
