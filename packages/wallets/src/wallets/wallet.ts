@@ -107,6 +107,10 @@ export class Wallet<C extends Chain> {
      * @returns The API client
      * @experimental This API is experimental and may change in the future
      */
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#recovery;
+    }
+
     public experimental_apiClient(): ApiClient {
         return this.#apiClient;
     }
@@ -678,7 +682,6 @@ export class Wallet<C extends Chain> {
         if (!isRegistered) {
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
             // Temporarily switch to recovery signer to approve the device signer registration
-            const deviceSigner = this.signer;
             const recoveryInternalConfig = {
                 ...this.#recovery,
                 address: this.address,
@@ -686,14 +689,19 @@ export class Wallet<C extends Chain> {
                 clientTEEConnection: this.#options?.clientTEEConnection,
             } as InternalSignerConfig<C>;
             this.signer = assembleSigner(this.chain, recoveryInternalConfig, deviceSignerKeyStorage);
-            try {
-                await this.addSigner({ signer: signerLocator });
-            } finally {
-                this.signer = deviceSigner;
-            }
+            await this.addSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
+            // Reassemble the device signer with the correct locator
+            const deviceInternalConfig = {
+                type: "device" as const,
+                locator: signerLocator,
+                address: this.address,
+                crossmint: this.#apiClient.crossmint,
+                clientTEEConnection: this.#options?.clientTEEConnection,
+            } as InternalSignerConfig<C>;
+            this.signer = assembleSigner(this.chain, deviceInternalConfig, deviceSignerKeyStorage);
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
                 signerLocator,
             });

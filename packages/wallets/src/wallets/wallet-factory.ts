@@ -416,10 +416,9 @@ export class WalletFactory {
     }
 
     /**
-     * Resolves a device signer for getWallet.
-     * - If no deviceSignerKeyStorage is provided, returns undefined.
-     * - If storage exists but no device signer key is found for the wallet, returns { type: "device" }.
-     * - If a key is found, returns { type: "device", locator: "device:<key>" }.
+     * Mutates signer config with values from experimental_customAuth.
+     * For email/phone signers, fills in the email/phone from customAuth if not provided.
+     * For external-wallet signers, uses the customAuth external wallet signer.
      */
     private mutateSignerFromCustomAuth<C extends Chain>(
         signer: SignerConfigForChain<C>,

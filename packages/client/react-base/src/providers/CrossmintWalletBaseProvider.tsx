@@ -347,18 +347,22 @@ export function CrossmintWalletBaseProvider({
                     alias: args.alias,
                     options: buildWalletOptions(),
                 });
+                if (wallet != null) {
+                    const resolvedRecovery = resolveSignerConfig(wallet.recovery) as WalletCreateArgs<C>["recovery"];
+                    await initializeWebViewIfNeeded(resolvedRecovery);
+                }
                 return wallet;
             } catch (error) {
                 console.error("Failed to get wallet:", error);
                 return undefined;
             }
         },
-        [crossmint, experimental_customAuth, buildWalletOptions]
+        [crossmint, experimental_customAuth, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const createWallet = useCallback(
         async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
-            if (walletStatus === "in-progress") {
+            if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
 
@@ -384,7 +388,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, walletStatus, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, experimental_customAuth, walletStatus, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     useEffect(() => {
