@@ -34,11 +34,13 @@ export class AuthRejectedError extends Error {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
+    locator?: string;
 };
 
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
+    locator?: string;
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
