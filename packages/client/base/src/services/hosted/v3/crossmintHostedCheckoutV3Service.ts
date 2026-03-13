@@ -1,4 +1,7 @@
-import type { CrossmintHostedCheckoutV3Props } from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
+import {
+    type CrossmintHostedCheckoutV3AllProps,
+    isHostedCheckoutV3ExistingOrderProps,
+} from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
 import { appendObjectToQueryParams } from "@/utils/appendObjectToQueryParams";
 import { NewTabWindow, PopupWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
@@ -6,7 +9,7 @@ import { crossmintHostedCheckoutOverlayService } from "./crossmintHostedCheckout
 
 export type CrossmintHostedCheckoutV3ServiceProps = {
     apiClient: CrossmintApiClient;
-    hostedCheckoutProps: CrossmintHostedCheckoutV3Props;
+    hostedCheckoutProps: CrossmintHostedCheckoutV3AllProps;
 };
 
 export function crossmintHostedCheckoutV3Service({
@@ -15,11 +18,28 @@ export function crossmintHostedCheckoutV3Service({
 }: CrossmintHostedCheckoutV3ServiceProps) {
     const overlayService = crossmintHostedCheckoutOverlayService();
 
-    function getUrl(props: CrossmintHostedCheckoutV3Props) {
-        const urlWithPath = apiClient.buildUrl("/sdk/2024-03-05/hosted-checkout");
+    function getUrl(props: CrossmintHostedCheckoutV3AllProps) {
+        const isExistingOrder = isHostedCheckoutV3ExistingOrderProps(props);
+        const path = isExistingOrder
+            ? `/sdk/2024-03-05/hosted-checkout/${props.orderId}`
+            : "/sdk/2024-03-05/hosted-checkout";
+        const urlWithPath = apiClient.buildUrl(path);
         const queryParams = new URLSearchParams();
 
-        appendObjectToQueryParams(queryParams, props);
+        if (isExistingOrder) {
+            queryParams.append("clientSecret", props.clientSecret);
+            if (props.locale) {
+                queryParams.append("locale", props.locale);
+            }
+            if (props.payment) {
+                appendObjectToQueryParams(queryParams, { payment: props.payment });
+            }
+            if (props.appearance) {
+                appendObjectToQueryParams(queryParams, { appearance: props.appearance });
+            }
+        } else {
+            appendObjectToQueryParams(queryParams, props);
+        }
 
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
