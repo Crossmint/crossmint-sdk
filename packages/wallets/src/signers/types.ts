@@ -13,6 +13,7 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
+import type { Callbacks } from "@/wallets/types";
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -74,18 +75,11 @@ type BaseInternalSignerConfig = {
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
-type OnAuthRequiredCallback = (
-    needsAuth: boolean,
-    sendEmailWithOtp: () => Promise<void>,
-    verifyOtp: (otp: string) => Promise<void>,
-    reject: () => void
-) => Promise<void>;
-
 export type EmailInternalSignerConfig = EmailSignerConfig &
-    BaseInternalSignerConfig & { onAuthRequired?: OnAuthRequiredCallback };
+    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
 
 export type PhoneInternalSignerConfig = PhoneSignerConfig &
-    BaseInternalSignerConfig & { onAuthRequired?: OnAuthRequiredCallback };
+    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
 
 export type DeviceInternalSignerConfig = {
     type: "device";

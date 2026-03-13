@@ -462,8 +462,9 @@ export class WalletFactory {
         // Step 2: Check whether any of the wallet's existing device signers are present on the current device
         const config = walletResponse.config as SmartWalletConfig;
         const delegatedSigners = config?.delegatedSigners || [];
-
+        console.log("this are the delegated signers", delegatedSigners);
         for (const delegatedSigner of delegatedSigners) {
+            console.log("This is the delegated Signer:", delegatedSigner);
             const locator = delegatedSigner.locator;
             if (delegatedSigner.type !== "device" || locator == null || !locator.startsWith("device:")) {
                 continue;

@@ -690,7 +690,15 @@ export class Wallet<C extends Chain> {
                 onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
             } as InternalSignerConfig<C>;
             this.signer = assembleSigner(this.chain, recoveryInternalConfig, deviceSignerKeyStorage);
-            await this.addSigner({ signer: signerLocator });
+            try {
+                await this.addSigner({ signer: signerLocator });
+            } catch (error) {
+                walletsLogger.error("wallet.ensureDeviceSignerReady: error registering device signer", {
+                    error,
+                });
+                deviceSignerKeyStorage.deleteKey(this.address);
+                signerLocator = "";
+            }
         }
 
         if (this.signer.locator() !== signerLocator) {

@@ -163,6 +163,8 @@ export abstract class NonCustodialSigner implements Signer {
         if (this.config.onAuthRequired) {
             try {
                 await this.config.onAuthRequired(
+                    this.config.type,
+                    this.locator(),
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
@@ -172,6 +174,8 @@ export abstract class NonCustodialSigner implements Signer {
                         // We call onAuthRequired again so the needsAuth state is updated for the dev
                         if (this.config.onAuthRequired != null) {
                             await this.config.onAuthRequired(
+                                this.config.type,
+                                this.locator(),
                                 this._needsAuth,
                                 () => this.sendMessageWithOtp(),
                                 (otp) => this.verifyOtp(otp),
@@ -300,6 +304,8 @@ export abstract class NonCustodialSigner implements Signer {
             // We call onAuthRequired again so the needsAuth state is updated for the dev
             if (this.config.onAuthRequired != null) {
                 await this.config.onAuthRequired(
+                    this.config.type,
+                    this.locator(),
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
