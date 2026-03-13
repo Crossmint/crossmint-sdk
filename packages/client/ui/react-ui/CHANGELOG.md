@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 3.0.3
+
+### Patch Changes
+
+- a6fadd0: bt: fix double verify
+- Updated dependencies [11ab4f6]
+  - @crossmint/client-sdk-react-base@1.0.6
+
 ## 3.0.2
 
 ### Patch Changes
