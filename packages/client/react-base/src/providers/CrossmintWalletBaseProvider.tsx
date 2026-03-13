@@ -358,6 +358,10 @@ export function CrossmintWalletBaseProvider({
 
     const createWallet = useCallback(
         async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
+            if (walletStatus === "in-progress") {
+                return undefined;
+            }
+
             try {
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
@@ -380,7 +384,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, walletStatus, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     useEffect(() => {
