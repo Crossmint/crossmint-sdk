@@ -25,7 +25,7 @@ function makeConfig(chain: string): ServerInternalSignerConfig {
 }
 
 describe("EVMServerSigner", () => {
-    const config = makeConfig("ethereum");
+    const config = makeConfig("base-sepolia");
     const signer = new EVMServerSigner(config);
 
     it("has type server", () => {
@@ -38,7 +38,7 @@ describe("EVMServerSigner", () => {
     });
 
     it("returns locator", () => {
-        expect(signer.locator()).toBe("server:test-locator-ethereum");
+        expect(signer.locator()).toBe("server:test-locator-base-sepolia");
     });
 
     it("signs a message and returns a signature", async () => {
@@ -157,10 +157,10 @@ describe("assembleServerSigner", () => {
 });
 
 describe("deriveServerSignerAddress", () => {
-    const keyBytes = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "ethereum");
+    const keyBytes = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
 
     it("derives EVM address", () => {
-        const address = deriveServerSignerAddress(keyBytes, "ethereum");
+        const address = deriveServerSignerAddress(keyBytes, "base-sepolia");
         expect(address).toMatch(/^0x[0-9a-fA-F]{40}$/);
     });
 
@@ -180,7 +180,7 @@ describe("deriveServerSignerAddress", () => {
 describe("deriveServerSignerDetails", () => {
     it("returns derivedKeyBytes, derivedAddress, and alias", () => {
         const config = { type: "server" as const, secret: TEST_SECRET };
-        const result = deriveServerSignerDetails(config, "ethereum", PROJECT_ID, ENVIRONMENT);
+        const result = deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
 
         expect(result.derivedKeyBytes).toBeInstanceOf(Uint8Array);
         expect(result.derivedKeyBytes.length).toBe(32);

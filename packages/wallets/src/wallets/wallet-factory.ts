@@ -17,7 +17,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
-import { deriveServerSignerDetails, generateEphemeralAdminSigner } from "../signers/server";
+import { deriveServerSignerDetails } from "../signers/server";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -152,9 +152,7 @@ export class WalletFactory {
                 this.apiClient.environment
             );
 
-            adminSigner = generateEphemeralAdminSigner(args.chain);
-
-            delegatedSigners = [...(delegatedSigners ?? []), { signer: `external-wallet:${derivedAddress}` }];
+            adminSigner = { type: "external-wallet", address: derivedAddress };
 
             // Auto-set alias so the wallet is always recoverable from the same secret
             if (args.alias == null) {
@@ -276,19 +274,15 @@ export class WalletFactory {
                     this.apiClient.projectId,
                     this.apiClient.environment
                 );
-                const expectedLocator = `external-wallet:${derivedAddress}`;
-                const delegatedSigners = (
-                    walletResponse.config as unknown as { delegatedSigners?: Array<{ locator: string }> }
-                )?.delegatedSigners;
-                if (!delegatedSigners?.some((s) => s.locator === expectedLocator)) {
+                if (walletResponse.config.adminSigner.address !== derivedAddress) {
                     throw new WalletCreationError(
-                        `Server signer address ${derivedAddress} is not registered as a delegated signer on this wallet`
+                        `Server signer address ${derivedAddress} does not match the wallet's admin signer address`
                     );
                 }
                 return {
                     type: "server",
                     derivedKeyBytes,
-                    locator: expectedLocator,
+                    locator: walletResponse.config.adminSigner.locator,
                     address: derivedAddress,
                 };
             }
