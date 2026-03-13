@@ -5,11 +5,13 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     crossmintHostedCheckoutV3Service,
     crossmintHostedCheckoutV3StylesService,
+    type CrossmintHostedCheckoutV3AllProps,
     type CrossmintHostedCheckoutV3Props,
+    type CrossmintHostedCheckoutV3OrderProps,
 } from "@crossmint/client-sdk-base";
 import clsx from "clsx";
 
-export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
+export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3AllProps & JSX.IntrinsicElements["button"];
 
 export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactProps) {
     const [didInjectCss, setDidInjectCss] = useState(false);
@@ -17,21 +19,38 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
 
-    // separate custom props from jsx button props
-    const { recipient, locale, lineItems, payment, appearance, metadata, ...buttonProps } = props;
-    const customProps: CrossmintHostedCheckoutV3Props = {
-        recipient,
-        locale,
-        lineItems,
-        payment,
-        appearance,
-        metadata,
-    };
+    let customProps: CrossmintHostedCheckoutV3AllProps;
+    let onClick: JSX.IntrinsicElements["button"]["onClick"];
+    let className: string | undefined;
+    let children: React.ReactNode;
+    let restButtonProps: Record<string, unknown>;
+
+    if ("orderId" in props && props.orderId != null) {
+        // Existing order flow: orderId + clientSecret required
+        const {
+            orderId, clientSecret, locale, payment, appearance,
+            onClick: _onClick, className: _className, children: _children, ...rest
+        } = props as CrossmintHostedCheckoutV3OrderProps & JSX.IntrinsicElements["button"];
+        customProps = { orderId, clientSecret, locale, payment, appearance };
+        onClick = _onClick;
+        className = _className;
+        children = _children;
+        restButtonProps = rest;
+    } else {
+        // New order flow: lineItems + payment required (original behavior)
+        const {
+            recipient, locale, lineItems, payment, appearance, metadata,
+            onClick: _onClick, className: _className, children: _children, ...rest
+        } = props as CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
+        customProps = { recipient, locale, lineItems, payment, appearance, metadata };
+        onClick = _onClick;
+        className = _className;
+        children = _children;
+        restButtonProps = rest;
+    }
 
     const hostedCheckoutService = crossmintHostedCheckoutV3Service({ apiClient, hostedCheckoutProps: customProps });
     const stylesService = crossmintHostedCheckoutV3StylesService(customProps);
-
-    const { onClick, className, children, ...restButtonProps } = buttonProps;
 
     function _onClick(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();

@@ -11,6 +11,24 @@ export interface CrossmintHostedCheckoutV3Props {
     metadata?: JSONObject;
 }
 
+export interface CrossmintHostedCheckoutV3OrderProps {
+    orderId: string;
+    clientSecret: string;
+    locale?: Locale;
+    payment?: HostedCheckoutV3Payment;
+    appearance?: CrossmintHostedCheckoutV3Appearance;
+}
+
+export type CrossmintHostedCheckoutV3AllProps =
+    | CrossmintHostedCheckoutV3Props
+    | CrossmintHostedCheckoutV3OrderProps;
+
+export function isHostedCheckoutV3ExistingOrderProps(
+    props: CrossmintHostedCheckoutV3AllProps
+): props is CrossmintHostedCheckoutV3OrderProps {
+    return "orderId" in props && props.orderId != null;
+}
+
 export type HostedCheckoutV3Payment = {
     receiptEmail?: string;
     fiat: HostedCheckoutV3FiatPayment;

@@ -1,7 +1,7 @@
 import type { Locale } from "@/types";
 import type {
     CrossmintHostedCheckoutV3ButtonTheme,
-    CrossmintHostedCheckoutV3Props,
+    CrossmintHostedCheckoutV3AllProps,
 } from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
 import { t } from "@/utils/i18n";
 
@@ -14,7 +14,7 @@ const BUTTON_THEME_TO_CLASSNAME: Record<CrossmintHostedCheckoutV3ButtonTheme, st
     crossmint: `${BUTTON_CLASSNAME}--Crossmint`,
 };
 
-export function crossmintHostedCheckoutV3StylesService(hostedCheckoutProps: CrossmintHostedCheckoutV3Props) {
+export function crossmintHostedCheckoutV3StylesService(hostedCheckoutProps: CrossmintHostedCheckoutV3AllProps) {
     const buttonTheme = hostedCheckoutProps.appearance?.theme?.button || "dark";
 
     function generateCss() {
@@ -109,8 +109,8 @@ export function crossmintHostedCheckoutV3StylesService(hostedCheckoutProps: Cros
     function getButtonText() {
         const locale: Locale = hostedCheckoutProps.locale || "en-US";
 
-        const isCryptoEnabled = hostedCheckoutProps.payment?.crypto?.enabled;
-        const isFiatEnabled = hostedCheckoutProps.payment?.fiat?.enabled;
+        const isCryptoEnabled = hostedCheckoutProps.payment?.crypto?.enabled ?? false;
+        const isFiatEnabled = hostedCheckoutProps.payment?.fiat?.enabled ?? false;
 
         const paymentMethodText = (() => {
             if (isCryptoEnabled && isFiatEnabled) {
@@ -122,7 +122,7 @@ export function crossmintHostedCheckoutV3StylesService(hostedCheckoutProps: Cros
             if (isFiatEnabled) {
                 return t("hostedCheckoutV3.card", locale);
             }
-            throw new Error("Neither `payment.crypto.enabled` or `payment.fiat.enabled` is true");
+            return t("hostedCheckoutV3.crossmint", locale);
         })();
 
         return t(`hostedCheckoutV3.paymentVariant.pay`, locale, [paymentMethodText]);
