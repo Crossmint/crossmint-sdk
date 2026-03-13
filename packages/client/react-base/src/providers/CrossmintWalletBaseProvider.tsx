@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -20,6 +20,7 @@ import cloneDeep from "lodash.clonedeep";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
+import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
 export type CrossmintWalletBaseContext = {
     /** The current wallet instance, or undefined if no wallet is loaded. */
@@ -380,21 +381,53 @@ export function CrossmintWalletBaseProvider({
         ]
     );
 
+    // When using createOnLogin with an email signer, automatically populate the email from the auth context.
+    // This allows both react-ui and react-native to share this logic via the base auth context.
+    const authBaseContext = useContext(CrossmintAuthBaseContext);
+    const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
-        if (createOnLogin != null) {
-            // Guard: don't attempt wallet creation if required signer fields are missing.
-            // For email signers, email must be explicitly set (populated by CrossmintWalletProvider from auth context).
-            // For external-wallet signers, address must be explicitly set.
-            const signer = createOnLogin.signer;
-            if (signer?.type === "email" && signer.email == null) {
+        if (createOnLogin == null) {
+            setProcessedCreateOnLogin(undefined);
+            return;
+        }
+
+        const signer = createOnLogin.signer;
+        if (signer?.type === "email" && signer.email == null) {
+            // For email signers using createOnLogin, we must populate signer.email from the auth context.
+            // If the user is not yet available, wait for the auth context to update.
+            if (authBaseContext?.user == null) {
                 return;
             }
+            if (authBaseContext.user.email == null) {
+                // Trigger a user fetch; when authBaseContext.user.email updates,
+                // this effect will re-run via the dependency array.
+                authBaseContext.getUser();
+                return;
+            }
+            setProcessedCreateOnLogin({
+                ...createOnLogin,
+                signer: {
+                    ...signer,
+                    email: authBaseContext.user.email,
+                },
+            } as CreateOnLogin);
+            return;
+        }
+
+        // For other signer types (passkey, phone with explicit phone, external-wallet with explicit address, etc.), pass through as-is
+        setProcessedCreateOnLogin(createOnLogin);
+    }, [createOnLogin, authBaseContext?.user, authBaseContext?.user?.email]);
+
+    useEffect(() => {
+        if (processedCreateOnLogin != null) {
+            // Guard: don't attempt wallet creation if required signer fields are still missing.
+            const signer = processedCreateOnLogin.signer;
             if (signer?.type === "external-wallet" && signer.address == null) {
                 return;
             }
-            getOrCreateWallet(createOnLogin);
+            getOrCreateWallet(processedCreateOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet, crossmint.jwt]);
+    }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt]);
 
     useEffect(() => {
         if (crossmint.jwt == null && walletStatus !== "not-loaded") {
