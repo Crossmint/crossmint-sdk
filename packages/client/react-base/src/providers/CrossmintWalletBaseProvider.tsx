@@ -3,7 +3,6 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
-    type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
     type WalletCreateArgs,
@@ -26,12 +25,12 @@ export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
     /** Current wallet status. */
     status: "not-loaded" | "in-progress" | "loaded" | "error";
-    /** Creates a new wallet or retrieves an existing one. */
-    getOrCreateWallet: <C extends Chain>(props: WalletCreateArgs<C>) => Promise<Wallet<Chain> | undefined>;
     /** Retrieves an existing wallet. */
     getWallet: <C extends Chain>(
-        props: Pick<WalletArgsFor<C>, "chain" | "signer">
+        props: Pick<WalletArgsFor<C>, "chain" | "alias">
     ) => Promise<Wallet<Chain> | undefined>;
+    /** Creates a new wallet. */
+    createWallet: <C extends Chain>(props: WalletCreateArgs<C>) => Promise<Wallet<Chain> | undefined>;
     /** Callback invoked when email or phone verification is required during a non-custodial wallet signing flow. */
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     /** @internal */
@@ -48,8 +47,8 @@ export type CrossmintWalletBaseContext = {
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
     wallet: undefined,
     status: "not-loaded",
-    getOrCreateWallet: () => Promise.resolve(undefined),
     getWallet: () => Promise.resolve(undefined),
+    createWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
     clientTEEConnection: undefined,
     emailSignerState: {
@@ -161,13 +160,13 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer?.type === "passkey" && showPasskeyHelpers) {
+        if (showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.signer?.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -190,61 +189,16 @@ export function CrossmintWalletBaseProvider({
         [onAuthRequired]
     );
 
-    const resolveSignerConfig = useCallback(
-        <C extends Chain>(signer: SignerConfigForChain<C>): SignerConfigForChain<C> => {
-            if (signer.type === "email") {
-                const email = signer.email ?? experimental_customAuth?.email;
-                const _onAuthRequired = signer.onAuthRequired ?? wrappedOnAuthRequired;
-
-                if (email == null) {
-                    throw new Error(
-                        "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
-                    );
-                }
-                return {
-                    ...signer,
-                    email,
-                    onAuthRequired: _onAuthRequired,
-                };
-            }
-
-            if (signer.type === "phone") {
-                const phone = signer.phone ?? experimental_customAuth?.phone;
-                const _onAuthRequired = signer.onAuthRequired ?? wrappedOnAuthRequired;
-
-                if (phone == null) {
-                    throw new Error("Phone not found in signer. Please set phone in signer.");
-                }
-                return {
-                    ...signer,
-                    phone,
-                    onAuthRequired: _onAuthRequired,
-                };
-            }
-
-            if (signer.type === "external-wallet") {
-                const resolvedSigner = signer.address != null ? signer : experimental_customAuth?.externalWalletSigner;
-
-                if (resolvedSigner == null) {
-                    throw new Error(
-                        "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
-                    );
-                }
-                return resolvedSigner as SignerConfigForChain<C>;
-            }
-
-            return signer as SignerConfigForChain<C>;
-        },
-        [experimental_customAuth, wrappedOnAuthRequired]
-    );
-
-    const initializeWebViewIfNeeded = useCallback(
-        async (signer: SignerConfigForChain<Chain>) => {
-            if (signer.type === "email" || signer.type === "phone") {
-                await initializeWebView?.();
-            }
-        },
-        [initializeWebView]
+    const walletOptions = useMemo(
+        () => ({
+            clientTEEConnection: clientTEEConnection?.(),
+            experimental_callbacks: {
+                onWalletCreationStart: updateCallbacks?.onWalletCreationStart,
+                onTransactionStart: updateCallbacks?.onTransactionStart,
+            },
+            deviceSignerKeyStorage,
+        }),
+        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage]
     );
 
     const getOrCreateWallet = useCallback(
@@ -262,35 +216,11 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
-                const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
-
-                const resolvedSigner = args.signer
-                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
-                    : undefined;
-
-                if (resolvedSigner != null) {
-                    await initializeWebViewIfNeeded(resolvedSigner);
-                }
-
-                const walletOptions = {
-                    clientTEEConnection: clientTEEConnection?.(),
-                    experimental_callbacks: {
-                        onWalletCreationStart: _onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
-                        onTransactionStart: _onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                        onChangeSigner: undefined as
-                            | (<C2 extends Chain>(signerConfig: SignerConfigForChain<C2>) => Promise<void>)
-                            | undefined,
-                    },
-                    deviceSignerKeyStorage,
-                };
-
                 // Try to get existing wallet first, then create if not found
                 let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
                 try {
                     wallet = await wallets.getWallet<C>({
                         chain: args.chain,
-                        signer: resolvedSigner,
                         alias: args.alias,
                         options: walletOptions,
                     });
@@ -304,7 +234,6 @@ export function CrossmintWalletBaseProvider({
                 if (wallet == null) {
                     wallet = await wallets.createWallet<C>({
                         chain: args.chain,
-                        signer: resolvedSigner,
                         plugins: args.plugins,
                         recovery: args.recovery,
                         signers: args.signers,
@@ -313,18 +242,6 @@ export function CrossmintWalletBaseProvider({
                     });
                 }
 
-                // Set up the onChangeSigner callback now that wallet is available
-                walletOptions.experimental_callbacks.onChangeSigner = async <C2 extends Chain>(
-                    signerConfig: SignerConfigForChain<C2>
-                ) => {
-                    const resolvedSignerConfig = resolveSignerConfig(signerConfig);
-                    const assembledSigner = await wallets.assembleSigner(args, resolvedSignerConfig, {
-                        deviceSignerKeyStorage,
-                    });
-                    if (assembledSigner != null) {
-                        wallet.signer = assembledSigner;
-                    }
-                };
                 setWallet(wallet);
                 setWalletStatus("loaded");
                 return wallet;
@@ -335,23 +252,11 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [
-            crossmint,
-            experimental_customAuth,
-            walletStatus,
-            wallet,
-            resolveSignerConfig,
-            initializeWebViewIfNeeded,
-            updateCallbacks?.onWalletCreationStart,
-            updateCallbacks?.onTransactionStart,
-            clientTEEConnection,
-            callbacks,
-            deviceSignerKeyStorage,
-        ]
+        [crossmint, experimental_customAuth, walletStatus, wallet, walletOptions]
     );
 
     const getWallet = useCallback(
-        async <C extends Chain>(args: Pick<WalletArgsFor<C>, "chain" | "signer">) => {
+        async <C extends Chain>(args: Pick<WalletArgsFor<C>, "chain" | "alias">) => {
             if (experimental_customAuth?.jwt == null) {
                 return undefined;
             }
@@ -359,22 +264,10 @@ export function CrossmintWalletBaseProvider({
             try {
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const resolvedSigner = args.signer
-                    ? (resolveSignerConfig(args.signer) as SignerConfigForChain<C>)
-                    : undefined;
-
-                if (resolvedSigner != null) {
-                    await initializeWebViewIfNeeded(resolvedSigner);
-                }
-
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
-                    signer: resolvedSigner,
-                    options: {
-                        clientTEEConnection: clientTEEConnection?.(),
-                        experimental_callbacks: callbacks,
-                        deviceSignerKeyStorage: deviceSignerKeyStorage,
-                    },
+                    alias: args.alias,
+                    options: walletOptions,
                 });
                 return wallet;
             } catch (error) {
@@ -382,37 +275,44 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [
-            crossmint,
-            experimental_customAuth,
-            resolveSignerConfig,
-            initializeWebViewIfNeeded,
-            clientTEEConnection,
-            callbacks,
-            deviceSignerKeyStorage,
-        ]
+        [crossmint, experimental_customAuth, walletOptions]
+    );
+
+    const createWalletFn = useCallback(
+        async <C extends Chain>(args: WalletCreateArgs<C>) => {
+            if (experimental_customAuth?.jwt == null) {
+                return undefined;
+            }
+
+            try {
+                setWalletStatus("in-progress");
+                const wallets = CrossmintWallets.from(crossmint);
+
+                const wallet = await wallets.createWallet<C>({
+                    ...args,
+                    options: {
+                        ...walletOptions,
+                        ...args.options,
+                    },
+                });
+                setWallet(wallet);
+                setWalletStatus("loaded");
+                return wallet;
+            } catch (error) {
+                console.error("Failed to create wallet:", error);
+                setWallet(undefined);
+                setWalletStatus("error");
+                return undefined;
+            }
+        },
+        [crossmint, experimental_customAuth, walletOptions]
     );
 
     useEffect(() => {
         if (createOnLogin != null) {
-            const signer = createOnLogin.signer;
-            if (
-                (signer?.type === "email" && experimental_customAuth?.email == null) ||
-                (signer?.type === "external-wallet" &&
-                    experimental_customAuth?.externalWalletSigner == null &&
-                    signer.address == null)
-            ) {
-                return;
-            }
-
             getOrCreateWallet(createOnLogin);
         }
-    }, [
-        createOnLogin,
-        getOrCreateWallet,
-        experimental_customAuth?.email,
-        experimental_customAuth?.externalWalletSigner,
-    ]);
+    }, [createOnLogin, getOrCreateWallet]);
 
     useEffect(() => {
         if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
@@ -425,21 +325,13 @@ export function CrossmintWalletBaseProvider({
         () => ({
             wallet,
             status: walletStatus,
-            getOrCreateWallet,
             getWallet,
+            createWallet: createWalletFn,
             onAuthRequired: wrappedOnAuthRequired,
             clientTEEConnection,
             emailSignerState,
         }),
-        [
-            getOrCreateWallet,
-            getWallet,
-            wallet,
-            walletStatus,
-            wrappedOnAuthRequired,
-            clientTEEConnection,
-            emailSignerState,
-        ]
+        [getWallet, createWalletFn, wallet, walletStatus, wrappedOnAuthRequired, clientTEEConnection, emailSignerState]
     );
 
     const hasUIProps =

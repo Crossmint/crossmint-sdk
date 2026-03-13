@@ -44,7 +44,7 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import type { DeviceSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import type { Signer, SignerConfigForChain } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -671,23 +671,15 @@ export class Wallet<C extends Chain> {
             signerLocator = `device:${publicKey}`;
         }
 
-        const signers = await this.signers();
-        const isRegistered = signers.some((s) => s.signer === signerLocator);
+        const existingSigners = await this.signers();
+        const isRegistered = existingSigners.some((s) => s.signer === signerLocator);
 
         if (!isRegistered) {
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
-            if (this.options?.experimental_callbacks?.onChangeSigner == null) {
-                throw new Error("onChangeSigner callback is required to register a new device signer");
-            }
-            // We need to use the recovery signer to register the device signer
-            await this.options.experimental_callbacks.onChangeSigner(this.#recovery);
             await this.addSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
-            const deviceSignerConfig: DeviceSignerConfig = { type: "device" };
-            await this.options?.experimental_callbacks?.onChangeSigner?.(deviceSignerConfig);
-
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
                 signerLocator,
             });
