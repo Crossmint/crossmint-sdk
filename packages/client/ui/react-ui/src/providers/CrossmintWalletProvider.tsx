@@ -49,7 +49,7 @@ export function CrossmintWalletProvider({
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const authContext = useContext(AuthContext);
 
-    // When using createOnLogin, we need to set the signer email/externalWalletSigner from Crossmint Auth
+    // When using createOnLogin, we need to set the signer email from Crossmint Auth
     const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
         const processCreateOnLogin = () => {
@@ -58,7 +58,8 @@ export function CrossmintWalletProvider({
                 return;
             }
 
-            if (createOnLogin.signer.type === "email") {
+            const signer = createOnLogin.signer;
+            if (signer?.type === "email") {
                 // For email signers using createOnLogin, we must populate createOnLogin.signer.email with the email of the user.
                 // If not, processedCreateOnLogin will be undefined and the wallet will not be created.
                 if (authContext?.user == null) {
@@ -73,31 +74,19 @@ export function CrossmintWalletProvider({
                 setProcessedCreateOnLogin({
                     ...createOnLogin,
                     signer: {
-                        ...createOnLogin.signer,
+                        ...signer,
                         email: authContext.user.email,
                     },
                 } as CreateOnLogin);
                 return;
             }
 
-            if (createOnLogin.signer.type === "external-wallet" && createOnLogin.signer.address == null) {
-                // For external-wallet signers without an explicit address, use the auth context's externalWalletSigner
-                if (authContext?.experimental_externalWalletSigner == null) {
-                    return;
-                }
-                setProcessedCreateOnLogin({
-                    ...createOnLogin,
-                    signer: authContext.experimental_externalWalletSigner,
-                } as CreateOnLogin);
-                return;
-            }
-
-            // For other signer types (passkey, phone with explicit phone, etc.), pass through as-is
+            // For other signer types (passkey, phone with explicit phone, external-wallet with explicit address, etc.), pass through as-is
             setProcessedCreateOnLogin(createOnLogin);
         };
 
         processCreateOnLogin();
-    }, [createOnLogin, authContext?.user, authContext?.user?.email, authContext?.experimental_externalWalletSigner]);
+    }, [createOnLogin, authContext?.user, authContext?.user?.email]);
 
     const deviceSignerKeyStorage = useMemo(
         () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
