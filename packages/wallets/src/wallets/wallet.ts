@@ -321,6 +321,19 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Pay via the X402 protocol
+     * @param url - The payment URL
+     * @throws {Error} If the payment fails
+     * @experimental This API is experimental and may change in the future
+     */
+    public async experimental_payX402(
+        _url: string,
+        _options?: { method?: "GET" | "POST"; headers?: Record<string, string> }
+    ) {
+        throw new Error("X402 payments are not supported for this wallet");
+    }
+
+    /**
      * Send a token to a wallet or user locator
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)

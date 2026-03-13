@@ -45,6 +45,7 @@
     },
     "pnpm": {
         "overrides": {
+            "@solana/web3.js": "1.98.4",
             "axios@0": "0.30.0",
             "axios@1": "1.12.2",
             "elliptic@6": "6.6.1",

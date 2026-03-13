@@ -18,7 +18,7 @@
         "tsconfig.json"
     ],
     "scripts": {
-        "build": "next build",
+        "build": "NODE_OPTIONS='--max-old-space-size=16384' next build",
         "build:analyze": "cross-env ANALYZE=true next build",
         "dev": "next dev -p 3005",
         "lint": "next lint",
