@@ -112,6 +112,7 @@ export function CrossmintWalletBaseProvider({
     initializeWebView,
     appearance,
     headlessSigningFlow,
+    onAuthRequired: onAuthRequiredFromProps,
     showPasskeyHelpers,
     renderUI,
 }: CrossmintWalletBaseProviderProps) {
@@ -123,7 +124,7 @@ export function CrossmintWalletBaseProvider({
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth(wallet?.signer);
-    const { onAuthRequired } = signerAuth;
+    const { onAuthRequired: signerOnAuthRequired } = signerAuth;
 
     const [emailSignerState, setEmailSignerState] = useState({
         needsAuth: false,
@@ -180,12 +181,11 @@ export function CrossmintWalletBaseProvider({
                 verifyOtp,
                 reject,
             });
+            const onAuthRequired = onAuthRequiredFromProps ?? signerOnAuthRequired;
 
-            if (onAuthRequired) {
-                return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
-            }
+            return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
         },
-        [onAuthRequired]
+        [onAuthRequiredFromProps, signerOnAuthRequired]
     );
 
     const resolveSignerConfig = useCallback(

@@ -128,7 +128,7 @@ export function useSignerAuth(signer?: Signer): SignerAuthState & SignerAuthHand
                 setPhoneSignerDialogOpen(needsAuth);
                 sendPhoneWithOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
-            } else {
+            } else if (signer?.type === "email" && signerValue != null) {
                 setEmailSignerDialogOpen(needsAuth);
                 sendEmailWithOtpRef.current = sendMessageWithOtp;
                 verifyOtpRef.current = verifyOtp;
