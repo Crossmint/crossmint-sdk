@@ -699,13 +699,6 @@ export class WalletFactory {
         );
     }
 
-    private async buildSigners<C extends Chain>(
-        args: WalletCreateArgs<C>
-    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
-        const signersList = args.signers;
-        return await this.registerSigners(signersList, args.options?.deviceSignerKeyStorage);
-    }
-
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
         if (chain === "solana") {
             return "solana";
