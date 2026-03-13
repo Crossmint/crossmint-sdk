@@ -121,6 +121,12 @@ export type PendingApproval = NonNullable<
 export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
+    onAuthRequired?: (
+        needsAuth: boolean,
+        sendEmailWithOtp: () => Promise<void>,
+        verifyOtp: (otp: string) => Promise<void>,
+        reject: () => void
+    ) => Promise<void>;
 };
 
 export type StellarWalletPlugin = string;

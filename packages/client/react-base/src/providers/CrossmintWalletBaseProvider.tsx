@@ -259,11 +259,13 @@ export function CrossmintWalletBaseProvider({
                         updateCallbacks?.onWalletCreationStart,
                     onTransactionStart:
                         argsOptions?.experimental_callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                    onAuthRequired:
+                        argsOptions?.experimental_callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };
         },
-        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage]
+        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
     );
 
     const getOrCreateWallet = useCallback(

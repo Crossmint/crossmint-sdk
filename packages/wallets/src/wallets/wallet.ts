@@ -687,6 +687,7 @@ export class Wallet<C extends Chain> {
                 address: this.address,
                 crossmint: this.#apiClient.crossmint,
                 clientTEEConnection: this.#options?.clientTEEConnection,
+                onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
             } as InternalSignerConfig<C>;
             this.signer = assembleSigner(this.chain, recoveryInternalConfig, deviceSignerKeyStorage);
             await this.addSigner({ signer: signerLocator });
