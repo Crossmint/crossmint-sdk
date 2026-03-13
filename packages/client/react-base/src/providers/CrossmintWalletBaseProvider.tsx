@@ -259,8 +259,7 @@ export function CrossmintWalletBaseProvider({
                         updateCallbacks?.onWalletCreationStart,
                     onTransactionStart:
                         argsOptions?.experimental_callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                    onAuthRequired:
-                        argsOptions?.experimental_callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
+                    onAuthRequired: argsOptions?.experimental_callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };
