@@ -340,7 +340,7 @@ export function CrossmintWalletBaseProvider({
 
     const createDeviceSigner = useCallback(() => {
         const wallets = CrossmintWallets.from(crossmint);
-        if (!deviceSignerKeyStorage) {
+        if (deviceSignerKeyStorage == null) {
             throw new Error("A DeviceSignerKeyStorage must be provided to create a device signer");
         }
         return wallets.createDeviceSigner(deviceSignerKeyStorage);

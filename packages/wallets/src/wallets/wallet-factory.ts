@@ -136,9 +136,8 @@ export class WalletFactory {
         }
 
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
-        const signersWithDevice = args.options?.deviceSignerKeyStorage
-            ? this.ensureDeviceSignerInSigners(args)
-            : args.signers ?? [];
+        const signersWithDevice =
+            args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
         const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
 
         const adminSigner =
