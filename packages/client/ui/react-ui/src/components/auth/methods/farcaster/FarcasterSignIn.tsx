@@ -9,6 +9,7 @@ import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks";
 import { OAuthButton } from "@/components/common/OAuthButton";
 import { theme } from "@/styles";
+import { reactUiLogger } from "@/logger";
 
 const QRContainer = styled.div`
     display: flex;
@@ -129,7 +130,7 @@ function FarcasterQRCode() {
             setDialogOpen(false);
             setStep("initial");
         } catch (error) {
-            console.error("Error during Farcaster sign-in:", error);
+            reactUiLogger.error("Error during Farcaster sign-in:", error);
             setError("Failed to sign in with Farcaster");
         }
     };

@@ -7,6 +7,7 @@ import Color from "color";
 import { ScreenReaderText } from "../common/ScreenReaderText";
 import { AlertIcon } from "@/icons/alert";
 import { Spinner } from "../common/Spinner";
+import { reactUiLogger } from "@/logger";
 
 interface BaseCodeInputProps {
     contactInfo: string;
@@ -178,7 +179,7 @@ export function BaseCodeInput({
             await onSubmitOTP(otpCode);
             setError(null);
         } catch (err) {
-            console.error(`Error confirming ${contactType} OTP:`, err);
+            reactUiLogger.error(`Error confirming ${contactType} OTP:`, err);
             setError("Invalid code. Please try again.");
         } finally {
             setLoading(false);
