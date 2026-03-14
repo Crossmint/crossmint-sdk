@@ -11,6 +11,7 @@ import {
     SESSION_PREFIX,
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { authLogger, initAuthLogger } from "./logger";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
@@ -39,6 +40,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
+        initAuthLogger(crossmint.apiKey);
         const authClient = new CrossmintAuthClient(crossmint, CrossmintAuth.defaultApiClient(crossmint), config);
         // In case an instance is created on the server, we can't refresh as this stores cookies
         if (typeof window !== "undefined") {
@@ -50,7 +52,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                     authClient
                         .handleRefreshAuthMaterial()
                         .catch((error) => {
-                            console.debug("Initial auth refresh failed:", error);
+                            authLogger.debug("Initial auth refresh failed:", error);
                         })
                         .finally(() => {
                             // Reset the flag so future legitimate refreshes can happen
@@ -115,7 +117,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 await this.logoutFromDefaultRoute(oldRefreshToken);
             }
         } catch (error) {
-            console.error(error);
+            authLogger.error(error);
         }
     }
 
@@ -147,7 +149,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.scheduleNextRefresh(authMaterial.jwt);
             return authMaterial;
         } catch (error) {
-            console.error(error);
+            authLogger.error(error);
             await this.logout();
             return null;
         } finally {
@@ -176,7 +178,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             const data = await response.json();
             return data.oauthUrl;
         } catch (error) {
-            console.error(
+            authLogger.error(
                 `Failed to get OAuth URL for provider ${provider}: ${error instanceof Error ? error.message : "Unknown error"}`
             );
 
