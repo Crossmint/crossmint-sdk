@@ -401,7 +401,7 @@ export class Wallet<C extends Chain> {
      */
     // TODO: Remove this method in the next major version
     public async approveTransaction(params: ApproveParams) {
-        console.warn(
+        walletsLogger.warn(
             "approveTransaction is deprecated. Use approve instead. This method will be removed in the next major version."
         );
         return await this.approve(params);
