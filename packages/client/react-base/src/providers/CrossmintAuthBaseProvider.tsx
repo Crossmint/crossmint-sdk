@@ -3,6 +3,8 @@ import { CrossmintAuth, getCookie, type StorageProvider } from "@crossmint/clien
 import { type SDKExternalUser, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
 import { useCrossmint } from "../hooks";
 import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
+import { useLogger } from "./LoggerProvider";
+import { LoggerContext } from "./CrossmintProvider";
 
 export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextType | undefined>({
     crossmintAuth: undefined,
@@ -36,6 +38,7 @@ export function CrossmintAuthBaseProvider({
     storageProvider,
 }: CrossmintAuthBaseProviderProps) {
     const { crossmint } = useCrossmint("CrossmintAuthBaseProvider must be used within CrossmintProvider");
+    const logger = useLogger(LoggerContext);
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const [jwt, setJwt] = useState<string | undefined>(undefined);
     const [initialized, setInitialized] = useState(false);
@@ -62,7 +65,7 @@ export function CrossmintAuthBaseProvider({
                     storageProvider,
                 });
             } catch (error) {
-                console.error("Failed to initialize CrossmintAuth:", error);
+                logger.error("Failed to initialize CrossmintAuth:", error);
             }
         }
     }, [crossmint, refreshRoute, logoutRoute, storageProvider]);
@@ -91,7 +94,7 @@ export function CrossmintAuthBaseProvider({
                     const jwt = getCookie(SESSION_PREFIX);
                     setJwt(jwt);
                 } catch (error) {
-                    console.error("Failed to get cookie:", error);
+                    logger.error("Failed to get cookie:", error);
                 }
                 setInitialized(true);
             }
@@ -114,7 +117,7 @@ export function CrossmintAuthBaseProvider({
 
     const getUser = useCallback(async () => {
         if (jwt == null) {
-            console.log("User not logged in");
+            logger.info("User not logged in");
             return;
         }
 
