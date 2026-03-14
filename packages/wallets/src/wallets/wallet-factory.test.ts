@@ -65,10 +65,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "DelegatedSignerAddress456",
-                },
                 recovery: {
                     type: "external-wallet",
                     address: "AdminSignerAddress123",
@@ -85,55 +81,14 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                             type: "external-wallet",
                             address: "AdminSignerAddress123",
                         }),
-                        delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
                     }),
                 })
             );
         });
-
-        it("should throw error when neither signer nor recovery is provided", async () => {
-            const args: WalletCreateArgs<"solana"> = {
-                chain: "solana",
-            };
-
-            await expect(walletFactory.createWallet(args)).rejects.toThrow(WalletCreationError);
-        });
     });
 
     describe("getWallet validation", () => {
-        it("should validate existing wallet against signer", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
-            const args: WalletArgsFor<"solana"> = {
-                chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "DelegatedSignerAddress456",
-                },
-            };
-
-            await expect(walletFactory.getWallet(args)).resolves.toBeDefined();
-        });
-
-        it("should throw error when signer cannot use wallet", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
-            const argsWithInvalidSigner: WalletArgsFor<"solana"> = {
-                chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "UnauthorizedSignerAddress",
-                },
-            };
-
-            await expect(walletFactory.getWallet(argsWithInvalidSigner)).rejects.toThrow(
-                new WalletCreationError(
-                    `Signer cannot use wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". The provided signer is neither the recovery signer nor a registered signer.`
-                )
-            );
-        });
-
-        it("should allow read-only wallet without signer", async () => {
+        it("should get wallet without signer (device signer resolved automatically)", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletArgsFor<"solana"> = {
@@ -155,10 +110,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 const wallet = await walletFactory.getWallet(args);
@@ -187,10 +138,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"base"> = {
                     chain: "base",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await walletFactory.getWallet(args);
@@ -217,10 +164,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"stellar"> = {
                     chain: "stellar",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await walletFactory.getWallet(args);
@@ -231,10 +174,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             it("should throw when walletLocator parameter is used on client side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow(
@@ -247,10 +186,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await expect(walletFactory.getWallet(args)).rejects.toThrow();
@@ -268,10 +203,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 const walletLocator = "email:user@example.com:solana:smart";
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 const wallet = await walletFactory.getWallet(walletLocator, args);
@@ -292,10 +223,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 for (const locator of testCases) {
@@ -307,10 +234,6 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             it("should throw error when walletLocator is not provided on server side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await expect(walletFactory.getWallet(args)).rejects.toThrow(
@@ -325,41 +248,9 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
                 };
 
                 await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow();
-            });
-
-            it("should validate signer can use the wallet", async () => {
-                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
-                const validArgs: WalletArgsFor<"solana"> = {
-                    chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "AdminSignerAddress123",
-                    },
-                };
-
-                await expect(
-                    walletFactory.getWallet("email:user@example.com:solana:smart", validArgs)
-                ).resolves.toBeDefined();
-
-                const invalidArgs: WalletArgsFor<"solana"> = {
-                    chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: "UnauthorizedAddress",
-                    },
-                };
-
-                await expect(
-                    walletFactory.getWallet("email:user@example.com:solana:smart", invalidArgs)
-                ).rejects.toThrow(WalletCreationError);
             });
         });
     });
@@ -414,10 +305,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const mainnetArgs: WalletArgsFor<"base"> = {
                 chain: "base",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
@@ -432,10 +319,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
                 chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
@@ -464,10 +347,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const solanaArgs: WalletArgsFor<"solana"> = {
                 chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "AdminSignerAddress123",
-                },
             };
 
             await expect(walletFactory.getWallet(solanaArgs)).resolves.toBeDefined();
@@ -497,10 +376,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const stellarArgs: WalletArgsFor<"stellar"> = {
                 chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
             };
 
             await expect(walletFactory.getWallet(stellarArgs)).resolves.toBeDefined();
@@ -528,10 +403,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
                 chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(testnetArgs)).resolves.toBeDefined();
@@ -546,10 +417,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const mainnetArgs: WalletArgsFor<"base"> = {
                 chain: "base",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
@@ -567,10 +434,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const mainnetArgs: WalletArgsFor<"arbitrumnova"> = {
                 chain: "arbitrumnova",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
@@ -600,10 +463,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const testnetArgs: WalletArgsFor<"polygon-amoy"> = {
                 chain: "polygon-amoy",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(testnetArgs)).resolves.toBeDefined();
@@ -618,10 +477,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const mainnetArgs: WalletArgsFor<"polygon"> = {
                 chain: "polygon",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet(mainnetArgs)).resolves.toBeDefined();
@@ -652,10 +507,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
                 chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet("wallet-locator", testnetArgs)).rejects.toThrow(
@@ -668,10 +519,6 @@ describe("WalletFactory - Chain Environment Validation", () => {
 
             const mainnetArgs: WalletArgsFor<"base"> = {
                 chain: "base",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
             };
 
             await expect(walletFactory.getWallet("wallet-locator", mainnetArgs)).resolves.toBeDefined();
@@ -697,9 +544,9 @@ describe("WalletFactory - Chain Environment Validation", () => {
         it("should throw error when using testnet chain in production with createWallet", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockEvmWallet);
 
-            const testnetArgs: WalletArgsFor<"base-sepolia"> = {
+            const testnetArgs: WalletCreateArgs<"base-sepolia"> = {
                 chain: "base-sepolia",
-                signer: {
+                recovery: {
                     type: "external-wallet",
                     address: "0xAdminSignerAddress123456789012345678901234",
                 },

@@ -121,7 +121,14 @@ export type PendingApproval = NonNullable<
 export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
-    onChangeSigner?: <C extends Chain>(signerConfig: SignerConfigForChain<C>) => Promise<void>;
+    onAuthRequired?: (
+        signerType: "email" | "phone",
+        signerLocator: string,
+        needsAuth: boolean,
+        sendEmailWithOtp: () => Promise<void>,
+        verifyOtp: (otp: string) => Promise<void>,
+        reject: () => void
+    ) => Promise<void>;
 };
 
 export type StellarWalletPlugin = string;
@@ -137,8 +144,6 @@ export type WalletOptions = {
 export type WalletArgsFor<C extends Chain> = {
     /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
     chain: C;
-    /** The signer configuration (e.g. `{ type: "email" }`). If not provided, wallet will be read-only. */
-    signer?: SignerConfigForChain<C>;
     /** Optional owner identifier. */
     owner?: string;
     /** Optional array of wallet plugins. */
@@ -149,8 +154,8 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery signer for wallet creation. If not provided, the main `signer` is used as recovery. Device signers cannot be recovery signers. */
-    recovery?: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
+    recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C>>;
     alias?: string;

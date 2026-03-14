@@ -44,7 +44,8 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import type { DeviceSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import type { InternalSignerConfig, Signer, SignerConfigForChain } from "../signers/types";
+import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
@@ -102,10 +103,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the API client
-     * @returns The API client
+     * Get the recovery signer config
+     * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#recovery;
+    }
+
     public experimental_apiClient(): ApiClient {
         return this.#apiClient;
     }
@@ -671,23 +676,44 @@ export class Wallet<C extends Chain> {
             signerLocator = `device:${publicKey}`;
         }
 
-        const signers = await this.signers();
-        const isRegistered = signers.some((s) => s.signer === signerLocator);
+        const existingSigners = await this.signers();
+        const isRegistered = existingSigners.some((s) => s.signer === signerLocator);
 
         if (!isRegistered) {
             walletsLogger.info("wallet.ensureDeviceSignerReady: registering device signer");
-            if (this.options?.experimental_callbacks?.onChangeSigner == null) {
-                throw new Error("onChangeSigner callback is required to register a new device signer");
+            // Temporarily switch to recovery signer to approve the device signer registration
+            const recoveryInternalConfig = {
+                ...this.#recovery,
+                address: this.address,
+                crossmint: this.#apiClient.crossmint,
+                clientTEEConnection: this.#options?.clientTEEConnection,
+                onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
+            } as InternalSignerConfig<C>;
+            this.signer = assembleSigner(this.chain, recoveryInternalConfig, deviceSignerKeyStorage);
+            try {
+                await this.addSigner({ signer: signerLocator });
+            } catch (error) {
+                walletsLogger.error("wallet.ensureDeviceSignerReady: error registering device signer", {
+                    error,
+                });
+                await deviceSignerKeyStorage.deleteKey(this.address);
+                this.signer = assembleSigner(
+                    this.chain,
+                    { type: "device", address: this.address },
+                    deviceSignerKeyStorage
+                );
+                throw error;
             }
-            // We need to use the recovery signer to register the device signer
-            await this.options.experimental_callbacks.onChangeSigner(this.#recovery);
-            await this.addSigner({ signer: signerLocator });
         }
 
         if (this.signer.locator() !== signerLocator) {
-            const deviceSignerConfig: DeviceSignerConfig = { type: "device" };
-            await this.options?.experimental_callbacks?.onChangeSigner?.(deviceSignerConfig);
-
+            // Reassemble the device signer with the correct locator
+            const deviceInternalConfig = {
+                type: "device" as const,
+                locator: signerLocator,
+                address: this.address,
+            } as InternalSignerConfig<C>;
+            this.signer = assembleSigner(this.chain, deviceInternalConfig, deviceSignerKeyStorage);
             walletsLogger.info("wallet.ensureDeviceSignerReady: device signer ready", {
                 signerLocator,
             });

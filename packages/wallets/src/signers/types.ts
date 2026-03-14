@@ -13,6 +13,7 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
+import type { Callbacks } from "@/wallets/types";
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -34,23 +35,13 @@ export class AuthRejectedError extends Error {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
+    locator?: string;
 };
 
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
+    locator?: string;
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
@@ -84,9 +75,11 @@ type BaseInternalSignerConfig = {
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
-export type EmailInternalSignerConfig = EmailSignerConfig & BaseInternalSignerConfig;
+export type EmailInternalSignerConfig = EmailSignerConfig &
+    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
 
-export type PhoneInternalSignerConfig = PhoneSignerConfig & BaseInternalSignerConfig;
+export type PhoneInternalSignerConfig = PhoneSignerConfig &
+    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
 
 export type DeviceInternalSignerConfig = {
     type: "device";
