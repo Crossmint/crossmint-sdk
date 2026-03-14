@@ -126,8 +126,6 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        const recoverySignerConfig = this.mutateSignerFromCustomAuth(args.recovery, true);
-
         if (!this.apiClient.isServerSide && args.owner != null) {
             walletsLogger.error("walletFactory.createWallet.error", {
                 error: "Owner field cannot be specified in client-side createWallet calls",
@@ -144,9 +142,9 @@ export class WalletFactory {
         const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
 
         const adminSigner =
-            recoverySignerConfig.type === "passkey" && recoverySignerConfig.id == null
-                ? await this.createPasskeySigner(recoverySignerConfig)
-                : recoverySignerConfig;
+            args.recovery.type === "passkey" && args.recovery.id == null
+                ? await this.createPasskeySigner(args.recovery)
+                : args.recovery;
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -416,32 +414,12 @@ export class WalletFactory {
     }
 
     /**
-     * Mutates signer config with values from experimental_customAuth.
-     * For email/phone signers, fills in the email/phone from customAuth if not provided.
-     * For external-wallet signers, uses the customAuth external wallet signer.
+     * Resolves a device signer for getWallet by:
+     * 1. Checking if a device signer is already assigned to the wallet address.
+     * 2. If not, checking whether any of the wallet's existing device signers
+     *    are present on the current device and assigns one if found.
+     * 3. If no matching device signer exists on the device, leaves it empty.
      */
-    private mutateSignerFromCustomAuth<C extends Chain>(
-        signer: SignerConfigForChain<C>,
-        isNewWalletSigner = false
-    ): SignerConfigForChain<C> {
-        const { experimental_customAuth } = this.apiClient.crossmint;
-        if (signer.type === "email" && experimental_customAuth?.email != null) {
-            return { ...signer, email: signer.email ?? experimental_customAuth.email };
-        }
-        if (signer.type === "phone" && experimental_customAuth?.phone != null) {
-            return { ...signer, phone: signer.phone ?? experimental_customAuth.phone };
-        }
-        if (signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
-            return isNewWalletSigner
-                ? ({
-                      type: "external-wallet",
-                      address: experimental_customAuth.externalWalletSigner.address,
-                  } as SignerConfigForChain<C>)
-                : (experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>);
-        }
-        return signer;
-    }
-
     private async resolveDeviceSignerForGetWallet<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
@@ -519,13 +497,12 @@ export class WalletFactory {
             const existingWalletSigner = config?.adminSigner;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
-                const mutatedRecovery = this.mutateSignerFromCustomAuth(createArgs.recovery);
-                if (mutatedRecovery.type !== existingWalletSigner.type) {
+                if (createArgs.recovery.type !== existingWalletSigner.type) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                compareSignerConfigs(mutatedRecovery, existingWalletSigner);
+                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
             }
 
             const inputSigners = createArgs.signers;

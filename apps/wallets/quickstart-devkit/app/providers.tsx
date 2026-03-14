@@ -97,16 +97,7 @@ function EVMPrivyProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                        recovery: { type: "email" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -130,7 +121,7 @@ function EVMDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
@@ -149,15 +140,7 @@ function EVMFirebaseProvider({
     }
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-            <CrossmintWalletProvider
-                createOnLogin={{
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                    recovery: { type: "email" },
-                    ...ALIAS_CONFIG,
-                }}
-            >
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -222,16 +205,7 @@ function SolanaPrivyProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: "solana",
-                        recovery: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -255,15 +229,7 @@ function SolanaDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    createOnLogin={{
-                        chain: "solana",
-                        recovery: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
@@ -278,15 +244,7 @@ function SolanaFirebaseProvider({
 }) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-            <CrossmintWalletProvider
-                createOnLogin={{
-                    chain: "solana",
-                    recovery: { type: "email" },
-                    ...ALIAS_CONFIG,
-                }}
-            >
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -337,7 +295,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     const searchParams = useSearchParams();
 
     const providerType = searchParams.get("provider") || "crossmint"; // default to crossmint
-    const chainType = searchParams.get("chain");
+    const chainType = searchParams.get("chain") || "evm";
     const signerType = searchParams.get("signer") || "email";
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");

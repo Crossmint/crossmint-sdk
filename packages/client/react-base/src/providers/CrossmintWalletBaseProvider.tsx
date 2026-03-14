@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -22,6 +22,7 @@ import cloneDeep from "lodash.clonedeep";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
+import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
 export type CrossmintWalletBaseContext = {
     /** The current wallet instance, or undefined if no wallet is loaded. */
@@ -121,9 +122,7 @@ export function CrossmintWalletBaseProvider({
     renderUI,
 }: CrossmintWalletBaseProviderProps) {
     const logger = useLogger(LoggerContext);
-    const { crossmint, experimental_customAuth } = useCrossmint(
-        "CrossmintWalletBaseProvider must be used within CrossmintProvider"
-    );
+    const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
@@ -193,50 +192,6 @@ export function CrossmintWalletBaseProvider({
         [onAuthRequiredFromProps, signerOnAuthRequired]
     );
 
-    const resolveSignerConfig = useCallback(
-        <C extends Chain>(signer: SignerConfigForChain<C>): SignerConfigForChain<C> => {
-            if (signer.type === "email") {
-                const email = signer.email ?? experimental_customAuth?.email;
-
-                if (email == null) {
-                    throw new Error(
-                        "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
-                    );
-                }
-                return {
-                    ...signer,
-                    email,
-                };
-            }
-
-            if (signer.type === "phone") {
-                const phone = signer.phone ?? experimental_customAuth?.phone;
-
-                if (phone == null) {
-                    throw new Error("Phone not found in signer. Please set phone in signer.");
-                }
-                return {
-                    ...signer,
-                    phone,
-                };
-            }
-
-            if (signer.type === "external-wallet") {
-                const resolvedSigner = signer.address != null ? signer : experimental_customAuth?.externalWalletSigner;
-
-                if (resolvedSigner == null) {
-                    throw new Error(
-                        "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
-                    );
-                }
-                return resolvedSigner as SignerConfigForChain<C>;
-            }
-
-            return signer as SignerConfigForChain<C>;
-        },
-        [experimental_customAuth]
-    );
-
     const initializeWebViewIfNeeded = useCallback(
         async (signer: SignerConfigForChain<Chain>) => {
             if (signer.type === "email" || signer.type === "phone") {
@@ -268,7 +223,7 @@ export function CrossmintWalletBaseProvider({
         async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
-            if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
+            if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
             if (wallet != null) {
@@ -279,8 +234,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const resolvedRecovery = resolveSignerConfig(args.recovery) as WalletCreateArgs<C>["recovery"];
-                await initializeWebViewIfNeeded(resolvedRecovery);
+                await initializeWebViewIfNeeded(args.recovery);
 
                 const walletOptions = buildWalletOptions(args.options);
 
@@ -303,7 +257,7 @@ export function CrossmintWalletBaseProvider({
                     wallet = await wallets.createWallet<C>({
                         chain: args.chain,
                         plugins: args.plugins,
-                        recovery: resolvedRecovery,
+                        recovery: args.recovery,
                         signers: args.signers,
                         alias: args.alias,
                         options: walletOptions,
@@ -320,20 +274,12 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [
-            crossmint,
-            experimental_customAuth,
-            walletStatus,
-            wallet,
-            resolveSignerConfig,
-            initializeWebViewIfNeeded,
-            buildWalletOptions,
-        ]
+        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const getWallet = useCallback(
         async <C extends Chain>(args: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">) => {
-            if (experimental_customAuth?.jwt == null) {
+            if (crossmint?.jwt == null) {
                 return undefined;
             }
 
@@ -347,8 +293,7 @@ export function CrossmintWalletBaseProvider({
                     options: buildWalletOptions(),
                 });
                 if (wallet != null) {
-                    const resolvedRecovery = resolveSignerConfig(wallet.recovery) as WalletCreateArgs<C>["recovery"];
-                    await initializeWebViewIfNeeded(resolvedRecovery);
+                    await initializeWebViewIfNeeded(wallet.recovery);
                     setWallet(wallet);
                     setWalletStatus("loaded");
                 } else {
@@ -361,12 +306,12 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, experimental_customAuth, resolveSignerConfig, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const createWallet = useCallback(
         async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
-            if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
+            if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
 
@@ -374,12 +319,10 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const resolvedRecovery = resolveSignerConfig(args.recovery) as WalletCreateArgs<C>["recovery"];
-                await initializeWebViewIfNeeded(resolvedRecovery);
+                await initializeWebViewIfNeeded(args.recovery);
 
                 const wallet = await wallets.createWallet<C>({
                     ...args,
-                    recovery: resolvedRecovery,
                     options: buildWalletOptions(args.options),
                 });
                 setWallet(wallet);
@@ -392,14 +335,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [
-            crossmint,
-            experimental_customAuth,
-            walletStatus,
-            resolveSignerConfig,
-            initializeWebViewIfNeeded,
-            buildWalletOptions,
-        ]
+        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const createDeviceSigner = useCallback(() => {
@@ -410,32 +346,80 @@ export function CrossmintWalletBaseProvider({
         return wallets.createDeviceSigner(deviceSignerKeyStorage);
     }, [crossmint, deviceSignerKeyStorage]);
 
+    // When using createOnLogin with an email signer, automatically populate the email from the auth context.
+    // This allows both react-ui and react-native to share this logic via the base auth context.
+    const authBaseContext = useContext(CrossmintAuthBaseContext);
+    const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
-        if (createOnLogin != null) {
-            const recovery = createOnLogin.recovery;
-            if (
-                (recovery?.type === "email" && experimental_customAuth?.email == null) ||
-                (recovery?.type === "external-wallet" &&
-                    experimental_customAuth?.externalWalletSigner == null &&
-                    recovery.address == null)
-            ) {
+        if (createOnLogin == null) {
+            setProcessedCreateOnLogin(undefined);
+            return;
+        }
+
+        // Check if any email signer (in recovery or signers array) is missing its email value
+        const hasEmailSignerNeedingPopulation =
+            (createOnLogin.recovery?.type === "email" && createOnLogin.recovery.email == null) ||
+            (createOnLogin.signers?.some((s) => s.type === "email" && s.email == null) ?? false);
+
+        if (hasEmailSignerNeedingPopulation) {
+            // For email signers using createOnLogin, we must populate signer.email from the auth context.
+            // If the user is not yet available, wait for the auth context to update.
+            if (authBaseContext?.user == null) {
                 return;
             }
-            getOrCreateWallet(createOnLogin);
+            if (authBaseContext.user.email == null) {
+                // Trigger a user fetch; when authBaseContext.user.email updates,
+                // this effect will re-run via the dependency array.
+                authBaseContext.getUser();
+                return;
+            }
+
+            const userEmail = authBaseContext.user.email;
+            const processed = { ...createOnLogin };
+
+            // Populate email on recovery signer if needed
+            if (processed.recovery?.type === "email" && processed.recovery.email == null) {
+                processed.recovery = { ...processed.recovery, email: userEmail };
+            }
+
+            // Populate email on each signer in the signers array if needed
+            if (processed.signers != null) {
+                processed.signers = processed.signers.map((s) => {
+                    if (s.type === "email" && s.email == null) {
+                        return { ...s, email: userEmail };
+                    }
+                    return s;
+                }) as typeof processed.signers;
+            }
+
+            setProcessedCreateOnLogin(processed as CreateOnLogin);
+            return;
         }
-    }, [
-        createOnLogin,
-        getOrCreateWallet,
-        experimental_customAuth?.email,
-        experimental_customAuth?.externalWalletSigner,
-    ]);
+
+        // For other signer types (passkey, phone with explicit phone, external-wallet with explicit address, etc.), pass through as-is
+        setProcessedCreateOnLogin(createOnLogin);
+    }, [createOnLogin, authBaseContext?.user, authBaseContext?.user?.email]);
 
     useEffect(() => {
-        if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
+        if (processedCreateOnLogin != null) {
+            // Guard: don't attempt wallet creation if required signer fields are still missing.
+            const { recovery, signers } = processedCreateOnLogin;
+            if (recovery?.type === "external-wallet" && recovery.address == null) {
+                return;
+            }
+            if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {
+                return;
+            }
+            getOrCreateWallet(processedCreateOnLogin);
+        }
+    }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt]);
+
+    useEffect(() => {
+        if (crossmint.jwt == null && walletStatus !== "not-loaded") {
             setWalletStatus("not-loaded");
             setWallet(undefined);
         }
-    }, [experimental_customAuth?.jwt, walletStatus]);
+    }, [crossmint.jwt, walletStatus]);
 
     const contextValue = useMemo(
         () => ({
