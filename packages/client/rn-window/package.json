@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
+        "fast-text-encoding": "^1.0.6",
         "react-native-get-random-values": "^1.11.0",
         "zod": "3.22.4"
     },
