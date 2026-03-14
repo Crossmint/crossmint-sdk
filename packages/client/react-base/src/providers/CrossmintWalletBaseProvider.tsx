@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -20,6 +20,7 @@ import cloneDeep from "lodash.clonedeep";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
+import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
 export type CrossmintWalletBaseContext = {
     /** The current wallet instance, or undefined if no wallet is loaded. */
@@ -118,9 +119,7 @@ export function CrossmintWalletBaseProvider({
     renderUI,
 }: CrossmintWalletBaseProviderProps) {
     const logger = useLogger(LoggerContext);
-    const { crossmint, experimental_customAuth } = useCrossmint(
-        "CrossmintWalletBaseProvider must be used within CrossmintProvider"
-    );
+    const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
@@ -193,49 +192,39 @@ export function CrossmintWalletBaseProvider({
     const resolveSignerConfig = useCallback(
         <C extends Chain>(signer: SignerConfigForChain<C>): SignerConfigForChain<C> => {
             if (signer.type === "email") {
-                const email = signer.email ?? experimental_customAuth?.email;
                 const _onAuthRequired = signer.onAuthRequired ?? wrappedOnAuthRequired;
 
-                if (email == null) {
-                    throw new Error(
-                        "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
-                    );
+                if (signer.email == null) {
+                    throw new Error("Email not set in signer configuration.");
                 }
                 return {
                     ...signer,
-                    email,
                     onAuthRequired: _onAuthRequired,
                 };
             }
 
             if (signer.type === "phone") {
-                const phone = signer.phone ?? experimental_customAuth?.phone;
                 const _onAuthRequired = signer.onAuthRequired ?? wrappedOnAuthRequired;
 
-                if (phone == null) {
-                    throw new Error("Phone not found in signer. Please set phone in signer.");
+                if (signer.phone == null) {
+                    throw new Error("Phone not found in signer configuration.");
                 }
                 return {
                     ...signer,
-                    phone,
                     onAuthRequired: _onAuthRequired,
                 };
             }
 
             if (signer.type === "external-wallet") {
-                const resolvedSigner = signer.address != null ? signer : experimental_customAuth?.externalWalletSigner;
-
-                if (resolvedSigner == null) {
-                    throw new Error(
-                        "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
-                    );
+                if (signer.address == null) {
+                    throw new Error("External wallet address not set in signer configuration.");
                 }
-                return resolvedSigner as SignerConfigForChain<C>;
+                return signer;
             }
 
             return signer as SignerConfigForChain<C>;
         },
-        [experimental_customAuth, wrappedOnAuthRequired]
+        [wrappedOnAuthRequired]
     );
 
     const initializeWebViewIfNeeded = useCallback(
@@ -251,7 +240,7 @@ export function CrossmintWalletBaseProvider({
         async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
-            if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
+            if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
             if (wallet != null) {
@@ -337,7 +326,7 @@ export function CrossmintWalletBaseProvider({
         },
         [
             crossmint,
-            experimental_customAuth,
+            crossmint.jwt,
             walletStatus,
             wallet,
             resolveSignerConfig,
@@ -352,7 +341,7 @@ export function CrossmintWalletBaseProvider({
 
     const getWallet = useCallback(
         async <C extends Chain>(args: Pick<WalletArgsFor<C>, "chain" | "signer">) => {
-            if (experimental_customAuth?.jwt == null) {
+            if (crossmint.jwt == null) {
                 return undefined;
             }
 
@@ -384,7 +373,6 @@ export function CrossmintWalletBaseProvider({
         },
         [
             crossmint,
-            experimental_customAuth,
             resolveSignerConfig,
             initializeWebViewIfNeeded,
             clientTEEConnection,
@@ -393,33 +381,60 @@ export function CrossmintWalletBaseProvider({
         ]
     );
 
+    // When using createOnLogin with an email signer, automatically populate the email from the auth context.
+    // This allows both react-ui and react-native to share this logic via the base auth context.
+    const authBaseContext = useContext(CrossmintAuthBaseContext);
+    const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
-        if (createOnLogin != null) {
-            const signer = createOnLogin.signer;
-            if (
-                (signer?.type === "email" && experimental_customAuth?.email == null) ||
-                (signer?.type === "external-wallet" &&
-                    experimental_customAuth?.externalWalletSigner == null &&
-                    signer.address == null)
-            ) {
+        if (createOnLogin == null) {
+            setProcessedCreateOnLogin(undefined);
+            return;
+        }
+
+        const signer = createOnLogin.signer;
+        if (signer?.type === "email" && signer.email == null) {
+            // For email signers using createOnLogin, we must populate signer.email from the auth context.
+            // If the user is not yet available, wait for the auth context to update.
+            if (authBaseContext?.user == null) {
                 return;
             }
-
-            getOrCreateWallet(createOnLogin);
+            if (authBaseContext.user.email == null) {
+                // Trigger a user fetch; when authBaseContext.user.email updates,
+                // this effect will re-run via the dependency array.
+                authBaseContext.getUser();
+                return;
+            }
+            setProcessedCreateOnLogin({
+                ...createOnLogin,
+                signer: {
+                    ...signer,
+                    email: authBaseContext.user.email,
+                },
+            } as CreateOnLogin);
+            return;
         }
-    }, [
-        createOnLogin,
-        getOrCreateWallet,
-        experimental_customAuth?.email,
-        experimental_customAuth?.externalWalletSigner,
-    ]);
+
+        // For other signer types (passkey, phone with explicit phone, external-wallet with explicit address, etc.), pass through as-is
+        setProcessedCreateOnLogin(createOnLogin);
+    }, [createOnLogin, authBaseContext?.user, authBaseContext?.user?.email]);
 
     useEffect(() => {
-        if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
+        if (processedCreateOnLogin != null) {
+            // Guard: don't attempt wallet creation if required signer fields are still missing.
+            const signer = processedCreateOnLogin.signer;
+            if (signer?.type === "external-wallet" && signer.address == null) {
+                return;
+            }
+            getOrCreateWallet(processedCreateOnLogin);
+        }
+    }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt]);
+
+    useEffect(() => {
+        if (crossmint.jwt == null && walletStatus !== "not-loaded") {
             setWalletStatus("not-loaded");
             setWallet(undefined);
         }
-    }, [experimental_customAuth?.jwt, walletStatus]);
+    }, [crossmint.jwt, walletStatus]);
 
     const contextValue = useMemo(
         () => ({

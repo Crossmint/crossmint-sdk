@@ -39,9 +39,7 @@ function CrossmintAuthProviderContent({
     loginMethods = ["email", "google"],
 }: CrossmintAuthProviderProps) {
     const baseAuth = useCrossmintAuthBase();
-    const { crossmint, experimental_setCustomAuth, experimental_customAuth } = useCrossmint(
-        "CrossmintAuthProvider must be used within CrossmintProvider"
-    );
+    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,18 +50,8 @@ function CrossmintAuthProviderContent({
 
     // Handle auth sync with Crossmint
     useEffect(() => {
-        if (baseAuth.jwt == null && experimental_customAuth?.jwt != null) {
-            experimental_setCustomAuth(undefined);
-        }
-        if (baseAuth.user?.email != null) {
-            experimental_setCustomAuth({
-                jwt: baseAuth.jwt,
-                email: baseAuth.user?.email,
-            });
-        } else {
-            experimental_setCustomAuth({ jwt: baseAuth.jwt });
-        }
-    }, [baseAuth.jwt, baseAuth.user, experimental_setCustomAuth, experimental_customAuth]);
+        setJwt(baseAuth.jwt);
+    }, [baseAuth.jwt, setJwt]);
 
     // Close dialog when login succeeds
     useEffect(() => {

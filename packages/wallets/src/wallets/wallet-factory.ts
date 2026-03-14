@@ -124,7 +124,7 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        let recoverySignerConfig = args.recovery ?? args.signer;
+        const recoverySignerConfig = args.recovery ?? args.signer;
         if (recoverySignerConfig == null) {
             throw new WalletCreationError("Either a signer or recovery must be provided to create a wallet.");
         }
@@ -142,9 +142,6 @@ export class WalletFactory {
         }
 
         const builtSigners = await this.buildSigners(args);
-        const tempArgs = { ...args, signer: recoverySignerConfig };
-        this.mutateSignerFromCustomAuth(tempArgs, true);
-        recoverySignerConfig = tempArgs.signer;
         const adminSigner =
             recoverySignerConfig.type === "passkey" && recoverySignerConfig.id == null
                 ? await this.createPasskeySigner(recoverySignerConfig)
@@ -418,28 +415,6 @@ export class WalletFactory {
         return `device:${publicKey}`;
     }
 
-    private mutateSignerFromCustomAuth<C extends Chain>(args: WalletArgsFor<C>, isNewWalletSigner = false): void {
-        if (args.signer == null) {
-            return;
-        }
-        const { experimental_customAuth } = this.apiClient.crossmint;
-        if (args.signer.type === "email" && experimental_customAuth?.email != null) {
-            args.signer.email = args.signer.email ?? experimental_customAuth.email;
-        }
-        if (args.signer.type === "phone" && experimental_customAuth?.phone != null) {
-            args.signer.phone = args.signer.phone ?? experimental_customAuth.phone;
-        }
-        if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
-            args.signer = isNewWalletSigner
-                ? ({
-                      type: "external-wallet",
-                      address: experimental_customAuth.externalWalletSigner.address,
-                  } as SignerConfigForChain<C>)
-                : (experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>);
-        }
-        return;
-    }
-
     /**
      * Resolves a device signer for getWallet by:
      * 1. Checking if a device signer is already assigned to the wallet address.
@@ -536,13 +511,9 @@ export class WalletFactory {
 
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
-            let expectedAdminSigner = createArgs.recovery ?? args.signer;
+            const expectedAdminSigner = createArgs.recovery ?? args.signer;
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigner = config?.adminSigner;
-
-            const tempArgs = { ...args, signer: expectedAdminSigner };
-            this.mutateSignerFromCustomAuth(tempArgs);
-            expectedAdminSigner = tempArgs.signer;
 
             if (expectedAdminSigner != null && existingWalletSigner != null) {
                 if (expectedAdminSigner.type !== existingWalletSigner.type) {
@@ -651,7 +622,6 @@ export class WalletFactory {
             );
         }
 
-        inputSigners.forEach((s) => this.mutateSignerFromCustomAuth({ signer: s } as WalletArgsFor<C>));
         for (const inputSigner of inputSigners) {
             const matchingExistingSigner = existingSigners.find((existingSigner) => {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {

@@ -57,7 +57,6 @@ export const createMockCrossmint = (overrides: Partial<Crossmint> = {}): Crossmi
     return {
         ...base,
         setJwt: vi.fn().mockReturnThis(),
-        experimental_setCustomAuth: vi.fn().mockReturnThis(),
     } as Crossmint;
 };
 
@@ -301,7 +300,6 @@ export const createIntegrationApiClient = (
     const crossmint = {
         ...base,
         setJwt: () => crossmint as Crossmint,
-        experimental_setCustomAuth: () => crossmint as Crossmint,
     } as Crossmint;
     return new ApiClient(crossmint);
 };

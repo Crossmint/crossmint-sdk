@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
+import { type Chain, useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import type { User } from "firebase/auth";
 import { onAuthStateChange } from "@/lib/firebase";
 
-export const useFirebaseConnector = () => {
-    const { wallet: crossmintWallet, status: crossmintWalletStatus } = useCrossmintWallet();
+export const useFirebaseConnector = (chain: Chain) => {
+    const { wallet: crossmintWallet, status: crossmintWalletStatus, getOrCreateWallet } = useCrossmintWallet();
 
-    const { experimental_setCustomAuth } = useCrossmint();
+    const { setJwt, crossmint } = useCrossmint();
     const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Phase 1: Sync JWT from Firebase auth
     useEffect(() => {
         const unsubscribe = onAuthStateChange(async (user) => {
             setFirebaseUser(user);
@@ -22,17 +23,39 @@ export const useFirebaseConnector = () => {
 
             try {
                 const token = await user.getIdToken();
-                experimental_setCustomAuth({ jwt: token, email: user.email ?? "", phone: user.phoneNumber ?? "" });
+                setJwt(token);
             } catch (error) {
                 console.error("Failed to get Firebase JWT:", error);
-                experimental_setCustomAuth(undefined);
+                setJwt(undefined);
             } finally {
                 setIsLoading(false);
             }
         });
 
         return () => unsubscribe?.();
-    }, [firebaseUser]);
+    }, [setJwt]);
+
+    // Phase 2: Create wallet once JWT is available
+    useEffect(() => {
+        if (crossmint.jwt == null || firebaseUser == null) {
+            return;
+        }
+
+        const email = firebaseUser.email;
+        const phone = firebaseUser.phoneNumber;
+
+        if (email != null) {
+            getOrCreateWallet({
+                chain,
+                signer: { type: "email", email },
+            });
+        } else if (phone != null) {
+            getOrCreateWallet({
+                chain,
+                signer: { type: "phone", phone },
+            });
+        }
+    }, [crossmint.jwt, firebaseUser, chain, getOrCreateWallet]);
 
     return {
         user: firebaseUser,
