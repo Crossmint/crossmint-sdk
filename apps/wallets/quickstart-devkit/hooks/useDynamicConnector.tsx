@@ -14,7 +14,7 @@ const chain = process.env.NEXT_PUBLIC_EVM_CHAIN as Chain;
 /* ============================================================ */
 export const useEVMDynamicConnector = () => {
     const { setJwt, crossmint } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, createWallet } = useCrossmintWallet();
 
     const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
@@ -44,9 +44,9 @@ export const useEVMDynamicConnector = () => {
                     return;
                 }
 
-                getOrCreateWallet({
+                createWallet({
                     chain,
-                    signer: {
+                    recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         viemAccount: dynamicClient.account,
@@ -58,7 +58,7 @@ export const useEVMDynamicConnector = () => {
         };
 
         fetchWallet();
-    });
+    }, [createWallet, dynamicPrimaryWallet, crossmint.jwt]);
 
     return {
         dynamicPrimaryWallet,
@@ -73,7 +73,7 @@ export const useEVMDynamicConnector = () => {
 /* ============================================================ */
 export const useSolanaDynamicConnector = () => {
     const { setJwt, crossmint } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, createWallet } = useCrossmintWallet();
 
     const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
@@ -94,9 +94,9 @@ export const useSolanaDynamicConnector = () => {
         const fetchWallet = async () => {
             try {
                 const dynamicSigner = await dynamicPrimaryWallet.getSigner();
-                getOrCreateWallet({
+                createWallet({
                     chain: "solana",
-                    signer: {
+                    recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         onSignTransaction: async (transaction: VersionedTransaction) => {
@@ -109,7 +109,7 @@ export const useSolanaDynamicConnector = () => {
             }
         };
         fetchWallet();
-    }, [crossmint.jwt, dynamicPrimaryWallet, getOrCreateWallet]);
+    }, [crossmint.jwt, dynamicPrimaryWallet, createWallet]);
 
     return {
         dynamicPrimaryWallet,
