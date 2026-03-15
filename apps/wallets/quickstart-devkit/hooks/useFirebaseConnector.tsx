@@ -6,7 +6,7 @@ import type { User } from "firebase/auth";
 import { onAuthStateChange } from "@/lib/firebase";
 
 export const useFirebaseConnector = (chain: Chain) => {
-    const { wallet: crossmintWallet, status: crossmintWalletStatus, getOrCreateWallet } = useCrossmintWallet();
+    const { wallet: crossmintWallet, status: crossmintWalletStatus, createWallet } = useCrossmintWallet();
 
     const { setJwt, crossmint } = useCrossmint();
     const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
@@ -45,17 +45,17 @@ export const useFirebaseConnector = (chain: Chain) => {
         const phone = firebaseUser.phoneNumber;
 
         if (email != null) {
-            getOrCreateWallet({
+            createWallet({
                 chain,
-                signer: { type: "email", email },
+                recovery: { type: "email", email },
             });
         } else if (phone != null) {
-            getOrCreateWallet({
+            createWallet({
                 chain,
-                signer: { type: "phone", phone },
+                recovery: { type: "phone", phone },
             });
         }
-    }, [crossmint.jwt, firebaseUser, chain, getOrCreateWallet]);
+    }, [crossmint.jwt, firebaseUser, chain, createWallet]);
 
     return {
         user: firebaseUser,
