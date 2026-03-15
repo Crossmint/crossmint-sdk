@@ -145,11 +145,11 @@ export const useSolanaPrivyConnector = () => {
 /* ============================================================ */
 
 // Helper function to create phone-based wallet
-const createPhoneWallet = async (getOrCreateWallet: any, chain: Chain, phone: string) => {
+const createPhoneWallet = async (createWallet: any, chain: Chain, phone: string) => {
     try {
-        await getOrCreateWallet({
+        await createWallet({
             chain,
-            signer: {
+            recovery: {
                 type: "phone",
                 phone,
             },
