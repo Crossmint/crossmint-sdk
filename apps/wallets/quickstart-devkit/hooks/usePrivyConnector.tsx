@@ -10,7 +10,7 @@ import type { VersionedTransaction } from "@solana/web3.js";
 /* ============================================================ */
 export const useEVMPrivyConnector = () => {
     const { setJwt, crossmint } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, createWallet } = useCrossmintWallet();
 
     const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = usePrivyWallets();
@@ -50,22 +50,22 @@ export const useEVMPrivyConnector = () => {
             case "phone":
                 const phone = user?.phone?.number;
                 if (phone) {
-                    createPhoneWallet(getOrCreateWallet, chain, phone);
+                    createPhoneWallet(createWallet, chain, phone);
                 }
                 break;
             case "email":
                 const email = user?.email?.address ?? user?.google?.email;
                 if (email) {
-                    createEmailWallet(getOrCreateWallet, chain, email);
+                    createEmailWallet(createWallet, chain, email);
                 }
                 break;
             case "external-wallet":
                 if (privyEmbeddedWallet?.address) {
-                    createExternalWalletEVM(getOrCreateWallet, chain, privyEmbeddedWallet);
+                    createExternalWalletEVM(createWallet, chain, privyEmbeddedWallet);
                 }
                 break;
         }
-    }, [crossmint.jwt, user, privyEmbeddedWallet, getOrCreateWallet, chain]);
+    }, [crossmint.jwt, user, privyEmbeddedWallet, createWallet, chain]);
 
     return {
         privyEmbeddedWallet,
@@ -81,7 +81,7 @@ export const useEVMPrivyConnector = () => {
 /* ============================================================ */
 export const useSolanaPrivyConnector = () => {
     const { setJwt, crossmint } = useCrossmint();
-    const { status: crossmintWalletStatus, wallet: crossmintWallet, getOrCreateWallet } = useCrossmintWallet();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet, createWallet } = useCrossmintWallet();
 
     const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = useSolanaWallets();
@@ -120,16 +120,16 @@ export const useSolanaPrivyConnector = () => {
             case "email":
                 const email = user?.email?.address ?? user?.google?.email;
                 if (email) {
-                    createEmailWallet(getOrCreateWallet, "solana" as Chain, email);
+                    createEmailWallet(createWallet, "solana" as Chain, email);
                 }
                 break;
             case "external-wallet":
                 if (privyEmbeddedWallet?.address) {
-                    createExternalWalletSolana(getOrCreateWallet, privyEmbeddedWallet);
+                    createExternalWalletSolana(createWallet, privyEmbeddedWallet);
                 }
                 break;
         }
-    }, [crossmint.jwt, user, privyEmbeddedWallet, getOrCreateWallet]);
+    }, [crossmint.jwt, user, privyEmbeddedWallet, createWallet]);
 
     return {
         privyEmbeddedWallet,
@@ -145,11 +145,11 @@ export const useSolanaPrivyConnector = () => {
 /* ============================================================ */
 
 // Helper function to create phone-based wallet
-const createPhoneWallet = async (getOrCreateWallet: any, chain: Chain, phone: string) => {
+const createPhoneWallet = async (createWallet: any, chain: Chain, phone: string) => {
     try {
-        await getOrCreateWallet({
+        await createWallet({
             chain,
-            signer: {
+            recovery: {
                 type: "phone",
                 phone,
             },
@@ -160,11 +160,11 @@ const createPhoneWallet = async (getOrCreateWallet: any, chain: Chain, phone: st
 };
 
 // Helper function to create email-based wallet
-const createEmailWallet = async (getOrCreateWallet: any, chain: Chain, email: string) => {
+const createEmailWallet = async (createWallet: any, chain: Chain, email: string) => {
     try {
-        await getOrCreateWallet({
+        await createWallet({
             chain,
-            signer: {
+            recovery: {
                 type: "email",
                 email,
             },
@@ -175,12 +175,12 @@ const createEmailWallet = async (getOrCreateWallet: any, chain: Chain, email: st
 };
 
 // Helper function to create external wallet (EVM)
-const createExternalWalletEVM = async (getOrCreateWallet: any, chain: Chain, privyEmbeddedWallet: any) => {
+const createExternalWalletEVM = async (createWallet: any, chain: Chain, privyEmbeddedWallet: any) => {
     try {
         const privyProvider = await privyEmbeddedWallet.getEthereumProvider();
-        await getOrCreateWallet({
+        await createWallet({
             chain,
-            signer: {
+            recovery: {
                 type: "external-wallet",
                 address: privyEmbeddedWallet.address,
                 provider: privyProvider,
@@ -192,11 +192,11 @@ const createExternalWalletEVM = async (getOrCreateWallet: any, chain: Chain, pri
 };
 
 // Helper function to create external wallet (Solana)
-const createExternalWalletSolana = async (getOrCreateWallet: any, privyEmbeddedWallet: any) => {
+const createExternalWalletSolana = async (createWallet: any, privyEmbeddedWallet: any) => {
     try {
-        await getOrCreateWallet({
+        await createWallet({
             chain: "solana",
-            signer: {
+            recovery: {
                 type: "external-wallet",
                 address: privyEmbeddedWallet.address,
                 onSignTransaction: (transaction: VersionedTransaction) => {

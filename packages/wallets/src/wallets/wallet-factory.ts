@@ -25,6 +25,7 @@ import type {
     PhoneInternalSignerConfig,
     PhoneSignerConfig,
     SignerConfigForChain,
+    Signer,
 } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
@@ -103,12 +104,13 @@ export class WalletFactory {
             address: existingWallet.address,
         });
 
-        // Handle device signer resolution
-        if (args.signer?.type === "device") {
-            args = await this.resolveDeviceSignerForGetWallet(existingWallet, args);
-        }
+        // Always resolve device signer and set as operational signer
+        const deviceSignerConfig = await this.resolveDeviceSignerForGetWallet<C>(
+            existingWallet,
+            args.options?.deviceSignerKeyStorage
+        );
 
-        return await this.createWalletInstance(existingWallet, args);
+        return await this.createWalletInstance(existingWallet, args, deviceSignerConfig);
     }
 
     @WithLoggerContext({
@@ -116,21 +118,13 @@ export class WalletFactory {
         methodName: "walletFactory.createWallet",
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
             const walletArgs = args[0] as WalletCreateArgs<Chain>;
-            return { chain: walletArgs.chain, signerType: walletArgs.signer?.type };
+            return { chain: walletArgs.chain };
         },
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
-
-        const recoverySignerConfig = args.recovery ?? args.signer;
-        if (recoverySignerConfig == null) {
-            throw new WalletCreationError("Either a signer or recovery must be provided to create a wallet.");
-        }
-        if (recoverySignerConfig.type === "device") {
-            throw new WalletCreationError("Device signer cannot be used as recovery signer");
-        }
 
         if (!this.apiClient.isServerSide && args.owner != null) {
             walletsLogger.error("walletFactory.createWallet.error", {
@@ -141,11 +135,15 @@ export class WalletFactory {
             );
         }
 
-        const builtSigners = await this.buildSigners(args);
+        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
+        const signersWithDevice =
+            args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
+        const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
+
         const adminSigner =
-            recoverySignerConfig.type === "passkey" && recoverySignerConfig.id == null
-                ? await this.createPasskeySigner(recoverySignerConfig)
-                : recoverySignerConfig;
+            args.recovery.type === "passkey" && args.recovery.id == null
+                ? await this.createPasskeySigner(args.recovery)
+                : args.recovery;
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -176,37 +174,18 @@ export class WalletFactory {
             address: walletResponse.address,
         });
 
-        return await this.createWalletInstance(walletResponse, args);
-    }
+        // Resolve device signer as the operational signer
+        const deviceSignerConfig = await this.resolveDeviceSignerForGetWallet<C>(
+            walletResponse,
+            args.options?.deviceSignerKeyStorage
+        );
 
-    @WithLoggerContext({
-        logger: walletsLogger,
-        methodName: "walletFactory.assembleSigner",
-        buildContext(_thisArg: WalletFactory, args: unknown[]) {
-            const walletArgs = args[0] as WalletArgsFor<Chain>;
-            return { chain: walletArgs.chain, signer: args[1] };
-        },
-    })
-    public async assembleSigner<C extends Chain>(
-        args: WalletArgsFor<C>,
-        signerConfig: SignerConfigForChain<C>,
-        options?: WalletOptions
-    ) {
-        const locator = this.getWalletLocator<C>(args);
-
-        const existingWallet = await this.apiClient.getWallet(locator);
-        if ("error" in existingWallet) {
-            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
-        }
-
-        const internalSignerConfig = await this.toInternalSignerConfig(existingWallet, signerConfig, options);
-
-        return assembleSigner(args.chain, internalSignerConfig, options?.deviceSignerKeyStorage);
+        return await this.createWalletInstance(walletResponse, args, deviceSignerConfig);
     }
 
     private async saveDeviceSignerKeyIfNeeded(
         address: string,
-        builtSigners: Awaited<ReturnType<typeof this.buildSigners>>,
+        builtSigners: Awaited<ReturnType<typeof this.registerSigners>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ) {
         const deviceSigner = builtSigners.find(
@@ -222,13 +201,18 @@ export class WalletFactory {
 
     private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        args: WalletArgsFor<C>
+        args: WalletArgsFor<C>,
+        deviceSignerConfig?: DeviceSignerConfig
     ): Promise<Wallet<C>> {
         this.validateExistingWalletConfig(walletResponse, args);
 
-        let signer: ReturnType<typeof assembleSigner> | undefined;
-        if (args.signer != null) {
-            const signerConfig = await this.toInternalSignerConfig(walletResponse, args.signer, args.options);
+        let signer: Signer | undefined;
+        if (deviceSignerConfig != null) {
+            const signerConfig = await this.toInternalSignerConfig(
+                walletResponse,
+                deviceSignerConfig as SignerConfigForChain<C>,
+                args.options
+            );
             signer = assembleSigner(args.chain, signerConfig, args.options?.deviceSignerKeyStorage);
         }
 
@@ -302,7 +286,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signerArgs.onAuthRequired,
+                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as EmailInternalSignerConfig;
             }
@@ -348,7 +332,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signerArgs.onAuthRequired,
+                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as PhoneInternalSignerConfig;
             }
@@ -416,6 +400,19 @@ export class WalletFactory {
     }
 
     /**
+     * Ensures device signer is included in the signers array for wallet creation.
+     * If no device signer is present in args.signers, adds one.
+     */
+    private ensureDeviceSignerInSigners<C extends Chain>(args: WalletCreateArgs<C>): Array<SignerConfigForChain<C>> {
+        const signers = args.signers ?? [];
+        const hasDeviceSigner = signers.some((s) => s.type === "device");
+        if (!hasDeviceSigner) {
+            return [...signers, { type: "device" } as SignerConfigForChain<C>];
+        }
+        return signers;
+    }
+
+    /**
      * Resolves a device signer for getWallet by:
      * 1. Checking if a device signer is already assigned to the wallet address.
      * 2. If not, checking whether any of the wallet's existing device signers
@@ -424,36 +421,24 @@ export class WalletFactory {
      */
     private async resolveDeviceSignerForGetWallet<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        args: WalletArgsFor<C>
-    ): Promise<WalletArgsFor<C>> {
-        const deviceSignerArgs = args.signer as DeviceSignerConfig;
-
-        // If the caller already provided a fully-resolved locator, return as-is
-        if (deviceSignerArgs?.locator != null) {
-            return args;
-        }
-
-        const deviceSignerKeyStorage = args.options?.deviceSignerKeyStorage;
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage
+    ): Promise<DeviceSignerConfig | undefined> {
         if (deviceSignerKeyStorage == null) {
-            return args;
+            return undefined;
         }
 
         // Step 1: Check if a device signer is already assigned to the wallet address
         const existingKey = await deviceSignerKeyStorage.getKey(walletResponse.address);
         if (existingKey != null) {
             return {
-                ...args,
-                signer: {
-                    ...args.signer,
-                    locator: `device:${existingKey}`,
-                } as SignerConfigForChain<C>,
+                type: "device",
+                locator: `device:${existingKey}`,
             };
         }
 
         // Step 2: Check whether any of the wallet's existing device signers are present on the current device
         const config = walletResponse.config as SmartWalletConfig;
         const delegatedSigners = config?.delegatedSigners || [];
-
         for (const delegatedSigner of delegatedSigners) {
             const locator = delegatedSigner.locator;
             if (delegatedSigner.type !== "device" || locator == null || !locator.startsWith("device:")) {
@@ -465,21 +450,17 @@ export class WalletFactory {
                 // Found a matching device signer on this device - map address and use it
                 await deviceSignerKeyStorage.mapAddressToKey(walletResponse.address, publicKeyBase64);
                 return {
-                    ...args,
-                    signer: {
-                        ...args.signer,
-                        locator,
-                    } as SignerConfigForChain<C>,
+                    type: "device",
+                    locator,
                 };
             }
         }
 
-        // Step 3: No matching device signer on device - return signer as-is
-        // Device signer creation will be handled during the first transaction
+        // Step 3: No matching device signer on device - return device signer without locator
         walletsLogger.info("walletFactory.resolveDeviceSignerForGetWallet.noDeviceSignerFound", {
             address: walletResponse.address,
         });
-        return args;
+        return { type: "device" };
     }
 
     private validateExistingWalletConfig<C extends Chain>(
@@ -511,27 +492,22 @@ export class WalletFactory {
 
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
-            const expectedAdminSigner = createArgs.recovery ?? args.signer;
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigner = config?.adminSigner;
 
-            if (expectedAdminSigner != null && existingWalletSigner != null) {
-                if (expectedAdminSigner.type !== existingWalletSigner.type) {
+            if (createArgs.recovery != null && existingWalletSigner != null) {
+                if (createArgs.recovery.type !== existingWalletSigner.type) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
+                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
             }
 
             const inputSigners = createArgs.signers;
             if (inputSigners != null) {
                 this.validateSigners(existingWallet, inputSigners);
             }
-        }
-
-        if (args.signer != null) {
-            this.validateSignerCanUseWallet(existingWallet, args.signer);
         }
     }
 
@@ -697,13 +673,6 @@ export class WalletFactory {
                 }
             ) ?? []
         );
-    }
-
-    private async buildSigners<C extends Chain>(
-        args: WalletCreateArgs<C>
-    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
-        const signersList = args.signers;
-        return await this.registerSigners(signersList, args.options?.deviceSignerKeyStorage);
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
