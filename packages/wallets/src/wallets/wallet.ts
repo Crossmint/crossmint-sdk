@@ -652,7 +652,10 @@ export class Wallet<C extends Chain> {
         this.validateSignerInput(signerConfig);
 
         // Passkey auto-selection: if no id provided, auto-select if exactly one passkey exists
-        if (signerConfig.type === "passkey" && (!("id" in signerConfig) || !signerConfig.id)) {
+        if (
+            signerConfig.type === "passkey" &&
+            (!("id" in signerConfig) || signerConfig.id == null || signerConfig.id === "")
+        ) {
             const existingSigners = await this.signers();
             const passkeySigners = existingSigners.filter((s) => s.signer.startsWith("passkey:"));
 
@@ -675,7 +678,7 @@ export class Wallet<C extends Chain> {
             await this.resolveDeviceSignerAvailability(signerConfig);
         } else {
             // All non-device signers must already be registered
-            const signerLocator = typeof signer === "string" ? signer : getSignerLocator(signerConfig);
+            const signerLocator = getSignerLocator(signerConfig);
             const isRegistered = await this.signerIsRegistered(signerLocator);
             if (!isRegistered) {
                 throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
