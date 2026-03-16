@@ -117,7 +117,7 @@ export class WalletFactory {
         this.mutateSignerFromCustomAuth(args, true);
 
         let adminSigner;
-        let delegatedSigners = args.delegatedSigners;
+        const delegatedSigners = args.delegatedSigners;
 
         if (args.signer.type === "passkey") {
             adminSigner = await this.createPasskeyAdminSigner(args.signer);
@@ -129,7 +129,7 @@ export class WalletFactory {
                 this.apiClient.environment
             );
 
-            adminSigner = { type: "external-wallet", address: derivedAddress };
+            adminSigner = { type: "server", address: derivedAddress };
         } else {
             adminSigner = args.signer;
         }
@@ -235,9 +235,13 @@ export class WalletFactory {
                 };
 
             case "server": {
-                if (walletResponse.config?.adminSigner.type !== "external-wallet") {
+                // The API may return "server" (new backend) or "external-wallet" (legacy) for server signers
+                const serverAdminSigner = walletResponse.config?.adminSigner as
+                    | { type: string; address: string; locator: string }
+                    | undefined;
+                if (serverAdminSigner?.type !== "server" && serverAdminSigner?.type !== "external-wallet") {
                     throw new WalletCreationError(
-                        "Server signer expects an external-wallet admin signer on the wallet"
+                        "Server signer expects a server or external-wallet admin signer on the wallet"
                     );
                 }
                 const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
@@ -246,7 +250,7 @@ export class WalletFactory {
                     this.apiClient.projectId,
                     this.apiClient.environment
                 );
-                if (walletResponse.config.adminSigner.address !== derivedAddress) {
+                if (serverAdminSigner.address !== derivedAddress) {
                     throw new WalletCreationError(
                         `Server signer address ${derivedAddress} does not match the wallet's admin signer address`
                     );
@@ -254,7 +258,7 @@ export class WalletFactory {
                 return {
                     type: "server",
                     derivedKeyBytes,
-                    locator: walletResponse.config.adminSigner.locator,
+                    locator: serverAdminSigner.locator,
                     address: derivedAddress,
                 };
             }
@@ -375,8 +379,9 @@ export class WalletFactory {
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
         if (adminSignerArgs != null && existingWalletSigner != null) {
-            // server signer uses an external-wallet as admin signer on the API side
-            const expectedApiType = adminSignerArgs.type === "server" ? "external-wallet" : adminSignerArgs.type;
+            // server signer uses a "server" type on the API side, but may also match "external-wallet" for backwards compat
+            const expectedApiType =
+                adminSignerArgs.type === "server" ? existingWalletSigner.type : adminSignerArgs.type;
             if (expectedApiType !== existingWalletSigner.type) {
                 throw new WalletCreationError(
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
