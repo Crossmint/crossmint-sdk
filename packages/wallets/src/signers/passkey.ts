@@ -4,13 +4,9 @@ import type { PasskeyInternalSignerConfig, PasskeySignResult, PasskeySignerLocat
 export class PasskeySigner implements Signer {
     type = "passkey" as const;
     id: string;
-    name?: string;
-    publicKey?: { x: string; y: string };
 
     constructor(private config: PasskeyInternalSignerConfig) {
         this.id = config.id;
-        this.name = config.name;
-        this.publicKey = config.publicKey;
     }
 
     locator(): PasskeySignerLocator {
