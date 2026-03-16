@@ -854,11 +854,11 @@ export class Wallet<C extends Chain> {
 
     protected async preAuthIfNeeded(): Promise<void> {
         await this.#deviceSignerReady;
+        await this.recover();
         const signer = this.requireSigner();
         if (signer instanceof NonCustodialSigner) {
             await signer.ensureAuthenticated();
         }
-        await this.recover();
     }
 
     /**
