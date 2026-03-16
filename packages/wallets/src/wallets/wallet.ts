@@ -612,12 +612,9 @@ export class Wallet<C extends Chain> {
                 }
             }
 
-            this.#signer = originalSigner;
             return undefined as any;
-        } catch (error) {
-            // On failure, always restore the original signer
+        } finally {
             this.#signer = originalSigner;
-            throw error;
         }
     }
 
