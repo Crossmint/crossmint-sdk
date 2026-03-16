@@ -79,6 +79,7 @@ export class Wallet<C extends Chain> {
     #recovery: SignerConfigForChain<C>;
     #needsRecovery = false;
     #deviceSignerReady: Promise<void>;
+    #recovering: Promise<void> | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const { chain, address, owner, options, alias, recovery } = args;
@@ -854,7 +855,14 @@ export class Wallet<C extends Chain> {
 
     protected async preAuthIfNeeded(): Promise<void> {
         await this.#deviceSignerReady;
-        await this.recover();
+        if (this.#recovering == null) {
+            this.#recovering = this.recover();
+        }
+        try {
+            await this.#recovering;
+        } finally {
+            this.#recovering = null;
+        }
         const signer = this.requireSigner();
         if (signer instanceof NonCustodialSigner) {
             await signer.ensureAuthenticated();
