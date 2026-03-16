@@ -328,7 +328,7 @@ export class Wallet<C extends Chain> {
         const resolvedChain = this.resolveChainForEnvironment();
         const response = await this.apiClient.getTransfers(this.walletLocator, { chain: resolvedChain });
         if ("error" in response) {
-            throw new Error(`Failed to get activity: ${JSON.stringify(response.message)}`);
+            throw new Error(`Failed to get transfers: ${JSON.stringify(response.message)}`);
         }
         return response;
     }
