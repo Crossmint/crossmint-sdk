@@ -1,6 +1,7 @@
 import {
     type CrossmintHostedCheckoutV3AllProps,
     isHostedCheckoutV3ExistingOrderProps,
+    type CrossmintHostedCheckoutV3OrderProps,
 } from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
 import { appendObjectToQueryParams } from "@/utils/appendObjectToQueryParams";
 import { NewTabWindow, PopupWindow } from "@crossmint/client-sdk-window";
@@ -27,16 +28,8 @@ export function crossmintHostedCheckoutV3Service({
         const queryParams = new URLSearchParams();
 
         if (isExistingOrder) {
-            queryParams.append("clientSecret", props.clientSecret);
-            if (props.locale) {
-                queryParams.append("locale", props.locale);
-            }
-            if (props.payment) {
-                appendObjectToQueryParams(queryParams, { payment: props.payment });
-            }
-            if (props.appearance) {
-                appendObjectToQueryParams(queryParams, { appearance: props.appearance });
-            }
+            const { orderId, ...restOfParams } = props as CrossmintHostedCheckoutV3OrderProps;
+            appendObjectToQueryParams(queryParams, restOfParams);
         } else {
             appendObjectToQueryParams(queryParams, props);
         }
