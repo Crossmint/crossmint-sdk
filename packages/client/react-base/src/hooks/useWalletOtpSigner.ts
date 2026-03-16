@@ -1,18 +1,15 @@
 import { useCallback, useContext } from "react";
-import { CrossmintWalletBaseContext } from "@crossmint/client-sdk-react-base";
+import { CrossmintWalletBaseContext } from "@/providers/CrossmintWalletBaseProvider";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
 };
 
-/**
- * @deprecated Use {@link OtpSignerFunctions} and {@link useWalletOtpSigner} instead.
- */
-export type EmailSignerFunctions = {
-    /** Whether the email signer currently requires authentication (OTP verification). */
+export type OtpSignerFunctions = {
+    /** Whether the OTP signer currently requires authentication (OTP verification). */
     needsAuth: boolean;
-    /** Sends a one-time password to the user's email address. @deprecated Use sendOtp from useWalletOtpSigner instead. */
-    sendEmailWithOtp: () => Promise<void>;
+    /** Sends a one-time password to the user (via email or phone, depending on the signer type). */
+    sendOtp: () => Promise<void>;
     /** Verifies the one-time password entered by the user. */
     verifyOtp: (otp: string) => Promise<void>;
     /** Rejects the current authentication request with an error. */
@@ -20,18 +17,20 @@ export type EmailSignerFunctions = {
 };
 
 /**
- * @deprecated Use {@link useWalletOtpSigner} instead for both email and phone OTP flows.
+ * Hook for managing OTP-based signer authentication flows.
+ * Provides OTP send/verify functions for wallets using an email or phone signer.
+ * Must be used within a {@link CrossmintWalletProvider}.
  */
-export function useWalletEmailSigner(): EmailSignerFunctions {
+export function useWalletOtpSigner(): OtpSignerFunctions {
     const context = useContext(CrossmintWalletBaseContext);
 
     if (context == null) {
-        throw new Error("useWalletEmailSigner must be used within CrossmintWalletProvider");
+        throw new Error("useWalletOtpSigner must be used within CrossmintWalletProvider");
     }
 
     const { emailSignerState } = context;
 
-    const sendEmailWithOtp = useCallback(async () => {
+    const sendOtp = useCallback(async () => {
         if (emailSignerState.sendOtp == null) {
             throwNotAvailable("sendOtp")();
         }
@@ -60,7 +59,7 @@ export function useWalletEmailSigner(): EmailSignerFunctions {
 
     return {
         needsAuth: emailSignerState.needsAuth,
-        sendEmailWithOtp,
+        sendOtp,
         verifyOtp,
         reject,
     };

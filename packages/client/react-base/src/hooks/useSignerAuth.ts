@@ -19,9 +19,9 @@ export interface SignerAuthState {
     setPhoneSignerDialogOpen: (open: boolean) => void;
     setPhoneSignerDialogStep: (step: DialogStep) => void;
 
-    sendEmailWithOtpRef: MutableRefObject<() => Promise<void>>;
+    sendOtpRef: MutableRefObject<() => Promise<void>>;
     verifyOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
-    sendPhoneWithOtpRef: MutableRefObject<() => Promise<void>>;
+    sendPhoneOtpRef: MutableRefObject<() => Promise<void>>;
     verifyPhoneOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
     rejectRef: MutableRefObject<(error?: Error) => void>;
 }
@@ -44,15 +44,15 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<DialogStep>("initial");
 
-    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
-    const sendPhoneWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneWithOtp"));
+    const sendPhoneOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneOtp"));
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
     const emailsigners_handleSendEmailOTP = useCallback(async () => {
         try {
-            await sendEmailWithOtpRef.current();
+            await sendOtpRef.current();
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
@@ -73,7 +73,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
 
     const emailsigners_handleResendOTP = useCallback(async () => {
         try {
-            await sendEmailWithOtpRef.current();
+            await sendOtpRef.current();
         } catch (error) {
             console.error("Failed to resend email OTP", error);
             rejectRef.current(new Error("Failed to resend email OTP"));
@@ -83,7 +83,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
     // Phone authentication handlers
     const phonesigners_handleSendPhoneOTP = useCallback(async () => {
         try {
-            await sendPhoneWithOtpRef.current();
+            await sendPhoneOtpRef.current();
             setPhoneSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send phone OTP", error);
@@ -104,7 +104,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
 
     const phonesigners_handleResendOTP = useCallback(async () => {
         try {
-            await sendPhoneWithOtpRef.current();
+            await sendPhoneOtpRef.current();
         } catch (error) {
             console.error("Failed to resend phone OTP", error);
             rejectRef.current(new Error("Failed to resend phone OTP"));
@@ -123,11 +123,11 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             const signerValue = signerLocator.split(":")[1];
             if (signerType === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
-                sendPhoneWithOtpRef.current = sendMessageWithOtp;
+                sendPhoneOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
             } else if (signerType === "email" && signerValue != null) {
                 setEmailSignerDialogOpen(needsAuth);
-                sendEmailWithOtpRef.current = sendMessageWithOtp;
+                sendOtpRef.current = sendMessageWithOtp;
                 verifyOtpRef.current = verifyOtp;
             }
             rejectRef.current = reject;
@@ -146,9 +146,9 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
         setPhoneSignerDialogOpen,
         setPhoneSignerDialogStep,
 
-        sendEmailWithOtpRef,
+        sendOtpRef,
         verifyOtpRef,
-        sendPhoneWithOtpRef,
+        sendPhoneOtpRef,
         verifyPhoneOtpRef,
         rejectRef,
 
