@@ -96,7 +96,6 @@ export type DeviceInternalSignerConfig = {
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
     locator: PasskeySignerLocator;
     id: string;
-    publicKey?: { x: string; y: string };
 };
 
 export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
