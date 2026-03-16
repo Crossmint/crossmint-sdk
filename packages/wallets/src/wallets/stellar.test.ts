@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StellarWallet } from "./stellar";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
-import { createMockWallet, createMockApiClient, createMockSigner, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockWallet,
+    createMockApiClient,
+    createMockSigner,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 
 describe("StellarWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
@@ -14,9 +19,7 @@ describe("StellarWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("stellar", mockApiClient, "api-key");
         stellarWallet = StellarWallet.from(wallet);
-        vi.spyOn(stellarWallet, "signers").mockImplementation(() =>
-            Promise.resolve([{ signer: "api-key" }])
-        );
+        vi.spyOn(stellarWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
         await stellarWallet.useSigner(createMockSigner("api-key", "stellar"));
     });
 

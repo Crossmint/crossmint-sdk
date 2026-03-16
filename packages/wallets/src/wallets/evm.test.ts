@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EVMWallet } from "./evm";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError, InvalidTypedDataError, SignatureNotCreatedError } from "../utils/errors";
-import { createMockWallet, createMockApiClient, createMockSigner, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockWallet,
+    createMockApiClient,
+    createMockSigner,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 
 describe("EVMWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
@@ -14,9 +19,7 @@ describe("EVMWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
-            Promise.resolve([{ signer: "api-key" }])
-        );
+        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -226,9 +229,7 @@ describe("EVMWallet - signMessage()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
-            Promise.resolve([{ signer: "api-key" }])
-        );
+        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -315,9 +316,7 @@ describe("EVMWallet - signTypedData()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
-            Promise.resolve([{ signer: "api-key" }])
-        );
+        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
