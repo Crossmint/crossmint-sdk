@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
+import type { SignerLocator } from "@crossmint/wallets-sdk";
 
 export function Permissions() {
     const {
@@ -34,7 +35,7 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.addSigner({ signer: newSigner });
+            await wallet.addSigner(newSigner as SignerLocator);
             const signers = await wallet.signers();
             setPermissions(signers);
         } catch (err) {

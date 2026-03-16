@@ -521,10 +521,7 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
-        signer:
-            | Exclude<SignerLocator, PasskeySignerLocator>
-            | RegisterSignerPasskeyParams
-            | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
+        signer: SignerLocator | RegisterSignerPasskeyParams | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
         walletsLogger.info("wallet.addSigner.start");
