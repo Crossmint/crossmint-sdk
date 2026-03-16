@@ -2,18 +2,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EVMWallet } from "./evm";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError, InvalidTypedDataError, SignatureNotCreatedError } from "../utils/errors";
-import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
+import { createMockWallet, createMockApiClient, createMockSigner, type MockedApiClient } from "./__tests__/test-helpers";
 
 describe("EVMWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
     let evmWallet: EVMWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
+        const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ signer: "api-key" }])
+        );
+        await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
     afterEach(() => {
@@ -216,12 +220,16 @@ describe("EVMWallet - signMessage()", () => {
     let mockApiClient: MockedApiClient;
     let evmWallet: EVMWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
+        const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ signer: "api-key" }])
+        );
+        await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
     afterEach(() => {
@@ -301,12 +309,16 @@ describe("EVMWallet - signTypedData()", () => {
     let mockApiClient: MockedApiClient;
     let evmWallet: EVMWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
+        const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ signer: "api-key" }])
+        );
+        await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
     afterEach(() => {
@@ -456,10 +468,10 @@ describe("EVMWallet - getViemClient()", () => {
     let mockApiClient: MockedApiClient;
     let evmWallet: EVMWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("base-sepolia", mockApiClient);
+        const wallet = await createMockWallet("base-sepolia", mockApiClient);
         evmWallet = EVMWallet.from(wallet);
     });
 
@@ -487,16 +499,16 @@ describe("EVMWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create EVMWallet from valid EVM wallet", () => {
-        const wallet = createMockWallet("base-sepolia", mockApiClient);
+    it("should create EVMWallet from valid EVM wallet", async () => {
+        const wallet = await createMockWallet("base-sepolia", mockApiClient);
         const evmWallet = EVMWallet.from(wallet);
 
         expect(evmWallet).toBeInstanceOf(EVMWallet);
         expect(evmWallet.chain).toBe("base-sepolia");
     });
 
-    it("should throw error when wallet is not EVM", () => {
-        const solanaWallet = createMockWallet("solana", mockApiClient);
+    it("should throw error when wallet is not EVM", async () => {
+        const solanaWallet = await createMockWallet("solana", mockApiClient);
 
         expect(() => EVMWallet.from(solanaWallet)).toThrow("Wallet is not an EVM wallet");
     });

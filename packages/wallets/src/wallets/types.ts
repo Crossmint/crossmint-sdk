@@ -36,7 +36,6 @@ export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly;
 
-
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
     : { signatureId: string };

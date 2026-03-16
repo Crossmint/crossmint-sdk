@@ -14,10 +14,10 @@ describe("Wallet - balances()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         mockApiClient = createMockApiClient();
-        wallet = createMockWallet("base-sepolia", mockApiClient);
+        wallet = await createMockWallet("base-sepolia", mockApiClient);
     });
 
     describe("success cases", () => {
@@ -71,7 +71,7 @@ describe("Wallet - balances()", () => {
         });
 
         it("should return balances for Solana chain", async () => {
-            const solanaWallet = createMockWallet("solana", mockApiClient);
+            const solanaWallet = await createMockWallet("solana", mockApiClient);
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
                     symbol: "sol",
@@ -117,7 +117,7 @@ describe("Wallet - balances()", () => {
         });
 
         it("should return balances for Stellar chain", async () => {
-            const stellarWallet = createMockWallet("stellar", mockApiClient);
+            const stellarWallet = await createMockWallet("stellar", mockApiClient);
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
                     symbol: "xlm",
@@ -276,11 +276,11 @@ describe("Wallet - send()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        wallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
+        wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
     });
 
     afterEach(() => {
@@ -402,11 +402,11 @@ describe("Wallet - approve()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        wallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
+        wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
     });
 
     afterEach(() => {
@@ -493,12 +493,12 @@ describe("Wallet - addSigner()", () => {
     let evmWallet: Wallet<"base-sepolia">;
     let solanaWallet: Wallet<"solana">;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        evmWallet = createMockWallet("base-sepolia", mockApiClient, "api-key");
-        solanaWallet = createMockWallet("solana", mockApiClient, "api-key");
+        evmWallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
+        solanaWallet = await createMockWallet("solana", mockApiClient, "api-key");
     });
 
     afterEach(() => {
@@ -518,12 +518,15 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await evmWallet.addSigner({ signer: "external-wallet:0x456" });
+            await evmWallet.addSigner("external-wallet:0x456");
 
-            expect(mockApiClient.registerSigner).toHaveBeenCalledWith("me:evm:smart", {
-                signer: "external-wallet:0x456",
-                chain: "base-sepolia",
-            });
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                "me:evm:smart",
+                expect.objectContaining({
+                    signer: "external-wallet:0x456",
+                    chain: "base-sepolia",
+                })
+            );
         });
 
         it("should return signatureId when experimental_prepareOnly is true", async () => {
@@ -538,10 +541,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await evmWallet.addSigner({
-                signer: "external-wallet:0x456",
-                options: { experimental_prepareOnly: true },
-            });
+            const result = await evmWallet.addSigner("external-wallet:0x456", { experimental_prepareOnly: true });
 
             expect(result.signatureId).toBe("sig-123");
         });
@@ -565,7 +565,7 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
 
-            const addPromise = evmWallet.addSigner({ signer: "external-wallet:0x456" });
+            const addPromise = evmWallet.addSigner("external-wallet:0x456");
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -593,14 +593,17 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const addPromise = solanaWallet.addSigner({ signer: "external-wallet:ABC123" });
+            const addPromise = solanaWallet.addSigner("external-wallet:ABC123");
             await vi.runAllTimersAsync();
             await addPromise;
 
-            expect(mockApiClient.registerSigner).toHaveBeenCalledWith("me:solana:smart", {
-                signer: "external-wallet:ABC123",
-                chain: undefined,
-            });
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                "me:solana:smart",
+                expect.objectContaining({
+                    signer: "external-wallet:ABC123",
+                    chain: undefined,
+                })
+            );
         });
 
         it("should return transactionId when experimental_prepareOnly is true", async () => {
@@ -612,10 +615,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await solanaWallet.addSigner({
-                signer: "external-wallet:ABC123",
-                options: { experimental_prepareOnly: true },
-            });
+            const result = await solanaWallet.addSigner("external-wallet:ABC123", { experimental_prepareOnly: true });
 
             expect(result.transactionId).toBe("txn-123");
         });
@@ -631,9 +631,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(errorResponse as any);
 
-            await expect(evmWallet.addSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
-                "Failed to register signer"
-            );
+            await expect(evmWallet.addSigner("external-wallet:0x456")).rejects.toThrow("Failed to register signer");
         });
 
         it("should throw error when Solana response missing transaction", async () => {
@@ -643,7 +641,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(solanaWallet.addSigner({ signer: "external-wallet:ABC123" })).rejects.toThrow(
+            await expect(solanaWallet.addSigner("external-wallet:ABC123")).rejects.toThrow(
                 "Expected transaction in response for Solana/Stellar chain"
             );
         });
@@ -655,7 +653,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(evmWallet.addSigner({ signer: "external-wallet:0x456" })).rejects.toThrow(
+            await expect(evmWallet.addSigner("external-wallet:0x456")).rejects.toThrow(
                 "Expected chains in response for EVM chain"
             );
         });
@@ -666,10 +664,11 @@ describe("Wallet - signers()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         mockApiClient = createMockApiClient();
-        wallet = createMockWallet("base-sepolia", mockApiClient);
+        wallet = await createMockWallet("base-sepolia", mockApiClient);
+        vi.mocked(wallet.signers).mockRestore();
     });
 
     describe("success cases", () => {

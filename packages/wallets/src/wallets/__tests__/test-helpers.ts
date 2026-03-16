@@ -33,7 +33,7 @@ const getChainAddress = (chain: Chain): string => {
 
 const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): SignerLocator => {
     if (type === "api-key") {
-        return "api-key:test";
+        return "api-key";
     }
     switch (chain) {
         case "solana":
@@ -61,11 +61,11 @@ export const createMockSigner = <C extends Chain>(
     } as unknown as SignerConfigForChain<C>;
 };
 
-export const createMockWallet = <C extends Chain>(
+export const createMockWallet = async <C extends Chain>(
     chain: C,
     mockApiClient: MockedApiClient,
     signerType: "api-key" | "external-wallet" = "api-key"
-): Wallet<C> => {
+): Promise<Wallet<C>> => {
     const signer = createMockSigner(signerType, chain);
     const wallet = new Wallet(
         {
@@ -78,7 +78,7 @@ export const createMockWallet = <C extends Chain>(
     vi.spyOn(wallet, "signers").mockImplementation(() =>
         Promise.resolve([{ signer: getSignerLocator(signerType, chain) }])
     );
-    wallet.useSigner(signer);
+    await wallet.useSigner(signer);
     return wallet;
 };
 
