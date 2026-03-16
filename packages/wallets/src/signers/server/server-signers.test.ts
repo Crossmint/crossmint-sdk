@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import base58 from "bs58";
 import { MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
@@ -185,5 +185,18 @@ describe("deriveServerSignerDetails", () => {
         expect(result.derivedKeyBytes).toBeInstanceOf(Uint8Array);
         expect(result.derivedKeyBytes.length).toBe(32);
         expect(result.derivedAddress).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    });
+
+    it("throws when called in a browser environment", () => {
+        const config = { type: "server" as const, secret: TEST_SECRET };
+
+        vi.stubGlobal("window", {});
+        try {
+            expect(() => deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT)).toThrow(
+                "Server signers can only be used from server-side code."
+            );
+        } finally {
+            vi.unstubAllGlobals();
+        }
     });
 });
