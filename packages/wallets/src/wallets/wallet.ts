@@ -45,10 +45,10 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
+    DeviceSignerConfig,
     DeviceSignerLocator,
     InternalSignerConfig,
     PasskeySignerConfig,
-    PasskeySignerLocator,
     Signer,
     SignerConfigForChain,
     SignerLocator,
@@ -107,11 +107,11 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        const deviceConfig: SignerConfigForChain<C> = { type: "device" } as SignerConfigForChain<C>;
+        const deviceConfig: DeviceSignerConfig = { type: "device" };
         await this.resolveDeviceSignerAvailability(deviceConfig);
 
         // Assemble the device signer with the resolved config
-        const internalConfig = this.buildInternalSignerConfig(deviceConfig);
+        const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, internalConfig, deviceSignerKeyStorage);
     }
 
@@ -659,7 +659,7 @@ export class Wallet<C extends Chain> {
 
             // Auto-select the single passkey
             const credentialId = passkeySigners[0].signer.replace("passkey:", "");
-            (signerConfig as any).id = credentialId;
+            signerConfig.id = credentialId;
         }
 
         // Device signers: check availability and flag for recovery if needed
@@ -913,7 +913,7 @@ export class Wallet<C extends Chain> {
      * Looks up device key storage by wallet address, then by matching registered device signers.
      * If no key is found, sets needsRecovery so a new device key is generated during the next transaction.
      */
-    private async resolveDeviceSignerAvailability(config: SignerConfigForChain<C>): Promise<void> {
+    private async resolveDeviceSignerAvailability(config: DeviceSignerConfig): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
 
         if (deviceSignerKeyStorage == null) {
@@ -923,7 +923,7 @@ export class Wallet<C extends Chain> {
         // Check if device signer key exists for this wallet address
         const existingKey = await deviceSignerKeyStorage.getKey(this.address);
         if (existingKey != null) {
-            (config as any).locator = `device:${existingKey}`;
+            config.locator = `device:${existingKey}`;
             return;
         }
 
@@ -935,7 +935,7 @@ export class Wallet<C extends Chain> {
             const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
             if (hasKey) {
                 await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
-                (config as any).locator = walletSigner.signer;
+                config.locator = walletSigner.signer;
                 return;
             }
         }
@@ -1001,7 +1001,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                 } as InternalSignerConfig<C>;
             default:
-                throw new Error(`Unknown signer type: ${(config as any).type}`);
+                throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
         }
     }
 
