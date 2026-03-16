@@ -108,7 +108,15 @@ export class Wallet<C extends Chain> {
         }
 
         const deviceConfig: DeviceSignerConfig = { type: "device" };
-        await this.resolveDeviceSignerAvailability(deviceConfig);
+        try {
+            await this.resolveDeviceSignerAvailability(deviceConfig);
+        } catch (error) {
+            walletsLogger.error("wallet.initDeviceSigner.error", {
+                error,
+            });
+            this.#needsRecovery = true;
+            return;
+        }
 
         // Assemble the device signer with the resolved config
         const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
@@ -712,13 +720,16 @@ export class Wallet<C extends Chain> {
         },
     })
     public async recover(): Promise<void> {
+        walletsLogger.info("wallet.recover.start");
         if (!this.needsRecovery()) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "Wallet does not need recovery" });
             return;
         }
 
-        walletsLogger.info("wallet.recover.start");
+        if (this.#signer == null) {
+            await this.initDeviceSigner();
+        }
         const signer = this.requireSigner();
-
         if (!(signer instanceof DeviceSigner)) {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
             return;
