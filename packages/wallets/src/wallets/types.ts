@@ -12,6 +12,7 @@ import type {
     PasskeySignResult,
     DeviceSignResult,
     DeviceSignerConfig,
+    DeviceSignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -34,6 +35,7 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly;
+
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
@@ -168,7 +170,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
 export type DeviceSignerDescriptor = {
     type: "device";
     publicKey: { x: string; y: string };
-    locator: string;
+    locator: DeviceSignerLocator;
 };
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;

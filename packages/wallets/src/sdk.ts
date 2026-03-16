@@ -1,11 +1,12 @@
 import { createCrossmint, type Crossmint } from "@crossmint/common-sdk-base";
-import { ApiClient } from "./api";
+import { ApiClient, RegisterSignerPasskeyParams } from "./api";
 import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
 import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import { WebAuthnP256 } from "ox";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -66,6 +67,19 @@ export class CrossmintWallets {
 
     public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage) {
         return await createDeviceSigner(deviceKeyStorage);
+    }
+
+    public async createPasskeySigner(passkeyName: string): Promise<RegisterSignerPasskeyParams> {
+        const passkeyCredential = await WebAuthnP256.createCredential({ name: passkeyName });
+        return {
+            type: "passkey",
+            id: passkeyCredential.id,
+            name: passkeyName,
+            publicKey: {
+                x: passkeyCredential.publicKey.x.toString(),
+                y: passkeyCredential.publicKey.y.toString(),
+            },
+        };
     }
 }
 

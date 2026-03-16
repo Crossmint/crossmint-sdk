@@ -31,6 +31,8 @@ import type {
     WalletsV1ControllerSubmitApprovals4Error,
     WalletsV1ControllerSubmitSignatureApprovals4Error,
 } from "./gen/types.gen";
+import { SignerConfigForChain, SignerLocator } from "@/signers/types";
+import { Chain } from "@/chains/chains";
 
 export type CreateWalletParams = CreateWalletV2025Dto;
 export type GetWalletSuccessResponse = WalletV2025ResponseDto;
@@ -73,7 +75,7 @@ export type FundWalletResponse = BalanceControllerFundWallet2Responses | Balance
 export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: string }>["chain"];
 export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDto["signer"], { type: "passkey" }>;
 export type RegisterSignerParams = {
-    signer: string | RegisterSignerPasskeyParams;
+    signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain>;
     chain?: RegisterSignerChain;
 };
 export type RegisterSignerResponse = DelegatedSignerV2025Dto | WalletsV1ControllerCreateDelegatedSigner4Error;

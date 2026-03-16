@@ -5,7 +5,7 @@ export { createCrossmint, CrossmintWallets } from "./sdk";
 export { WalletNotAvailableError } from "./utils/errors";
 
 // API
-export { ApiClient as WalletsApiClient } from "./api";
+export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams } from "./api";
 
 // Wallets
 export { Wallet } from "./wallets/wallet";
@@ -41,6 +41,13 @@ export type {
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     SignerConfigForChain,
+    SignerLocator,
+    EmailSignerLocator,
+    PhoneSignerLocator,
+    PasskeySignerLocator,
+    DeviceSignerLocator,
+    ExternalWalletSignerLocator,
+    ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
     ExportableSigner,

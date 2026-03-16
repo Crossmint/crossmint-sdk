@@ -1,4 +1,4 @@
-import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
+import type { ExternalWalletInternalSignerConfig, ExternalWalletSignerLocator, Signer } from "./types";
 import type { Chain } from "../chains/chains";
 
 export abstract class ExternalWalletSigner<C extends Chain> implements Signer {
@@ -16,7 +16,7 @@ export abstract class ExternalWalletSigner<C extends Chain> implements Signer {
         return this._address;
     }
 
-    locator() {
+    locator(): ExternalWalletSignerLocator {
         return this.config.locator;
     }
 
