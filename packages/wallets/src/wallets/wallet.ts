@@ -680,6 +680,7 @@ export class Wallet<C extends Chain> {
             if (!isRegistered) {
                 throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
             }
+            this.#needsRecovery = false;
         }
 
         // Assemble and set the signer
