@@ -14,7 +14,7 @@ import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
-import type { CreateTransactionSuccessResponse } from "@/api";
+import type { CreateTransactionParams, CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
 
 export class EVMWallet extends Wallet<EVMChain> {
@@ -221,7 +221,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 chain: this.chain,
                 calls: [transaction],
             },
-        });
+        } as CreateTransactionParams);
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }

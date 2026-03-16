@@ -400,7 +400,7 @@ export const fundWallet = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount: number,
-    token: "usdc" | "usdxm" = "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<FundWalletResponse> => {
     const params: FundWalletParams = {
@@ -478,7 +478,7 @@ export const fundWalletAndWait = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount = 1.0,
-    token: "usdc" | "usdxm" = "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<FundWalletResponse> => {
     return fundWallet(apiClient, walletLocator, amount, token, chain);
@@ -517,7 +517,7 @@ export const ensureWalletFunded = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount = 1.0,
-    token: "usdc" | "usdxm" = "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<void> => {
     try {
