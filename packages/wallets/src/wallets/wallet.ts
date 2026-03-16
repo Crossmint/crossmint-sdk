@@ -282,7 +282,6 @@ export class Wallet<C extends Chain> {
      * @param {number} params.page - The page number
      * @param {WalletLocator} [params.locator] - The locator
      * @returns The NFTs
-     * @experimental This API is experimental and may change in the future
      */
     public async nfts(params: { perPage: number; page: number }) {
         return await this.#apiClient.getNfts({
