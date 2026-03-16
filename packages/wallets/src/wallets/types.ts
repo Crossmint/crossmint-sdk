@@ -15,7 +15,7 @@ import type {
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
-export type { Activity } from "../api/types";
+export type { Transfers } from "../api/types";
 
 export type PrepareOnly<T extends boolean = boolean> = {
     prepareOnly: T;

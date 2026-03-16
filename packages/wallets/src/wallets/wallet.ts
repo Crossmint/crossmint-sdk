@@ -1,6 +1,6 @@
 import { isValidAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type {
-    Activity,
+    Transfers,
     ApiClient,
     GetSignatureResponse,
     GetBalanceSuccessResponse,
@@ -322,9 +322,13 @@ export class Wallet<C extends Chain> {
      * @returns The transfers
      * @throws {Error} If the transfers cannot be retrieved
      */
-    public async transfers(): Promise<Activity> {
+    public async transfers(params: { tokens: string; status: "successful" | "failed" }): Promise<Transfers> {
         const resolvedChain = this.resolveChainForEnvironment();
-        const response = await this.apiClient.getTransfers(this.walletLocator, { chain: resolvedChain });
+        const response = await this.apiClient.getTransfers(this.walletLocator, {
+            chain: resolvedChain,
+            tokens: params.tokens,
+            status: params.status,
+        });
         if ("error" in response) {
             throw new Error(`Failed to get transfers: ${JSON.stringify(response.message)}`);
         }

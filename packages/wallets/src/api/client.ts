@@ -24,7 +24,6 @@ import type {
     ApproveSignatureResponse,
     GetSignatureResponse,
     GetTransactionsResponse,
-    GetNftsResponse,
     GetBalanceResponse,
     RegisterSignerParams,
     RegisterSignerResponse,
@@ -32,7 +31,7 @@ import type {
     WalletLocator,
     SendParams,
     SendResponse,
-    GetActivityResponse,
+    GetTransfersResponse,
     FundWalletResponse,
     FundWalletParams,
 } from "./types";
@@ -40,7 +39,7 @@ import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2025-06-09/wallets";
-    private legacyApiPrefix = "api/2022-06-09/wallets";
+    private unstableApiPrefix = "api/unstable/wallets";
 
     constructor(crossmint: Crossmint) {
         super(crossmint, {
@@ -165,7 +164,7 @@ class ApiClient extends CrossmintApiClient {
         perPage: number;
         page: number;
         chain: string;
-    }): Promise<GetNftsResponse> {
+    }): Promise<unknown> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", params.page.toString());
         queryParams.append("perPage", params.perPage.toString());
@@ -176,16 +175,20 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getTransfers(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
-        let legacyLocator = walletLocator;
-        if (!this.isServerSide) {
-            legacyLocator = `me:${params.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;
-        }
+    async getTransfers(
+        walletLocator: WalletLocator,
+        params: { chain: Chain; tokens: string; status: "successful" | "failed" }
+    ): Promise<GetTransfersResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
-        const response = await this.get(`${this.legacyApiPrefix}/${legacyLocator}/activity?${queryParams.toString()}`, {
-            headers: this.headers,
-        });
+        queryParams.append("tokens", params.tokens);
+        queryParams.append("status", params.status);
+        const response = await this.get(
+            `${this.unstableApiPrefix}/${walletLocator}/transfers?${queryParams.toString()}`,
+            {
+                headers: this.headers,
+            }
+        );
         return response.json();
     }
 
