@@ -160,7 +160,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async experimental_getNfts(params: {
+    async getNfts(params: {
         address: string;
         perPage: number;
         page: number;
@@ -176,7 +176,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async experimental_activity(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
+    async getTransfers(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
         let legacyLocator = walletLocator;
         if (!this.isServerSide) {
             legacyLocator = `me:${params.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;

@@ -11,7 +11,7 @@ import {
     type DeviceSignerKeyStorage,
     type WalletOptions,
     WalletNotAvailableError,
-    DeviceSignerDescriptor,
+    type DeviceSignerDescriptor,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -205,13 +205,12 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
-                experimental_callbacks: {
+                _callbacks: {
                     onWalletCreationStart:
-                        argsOptions?.experimental_callbacks?.onWalletCreationStart ??
-                        updateCallbacks?.onWalletCreationStart,
+                        argsOptions?._callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                     onTransactionStart:
-                        argsOptions?.experimental_callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                    onAuthRequired: argsOptions?.experimental_callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
+                        argsOptions?._callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                    onAuthRequired: argsOptions?._callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };

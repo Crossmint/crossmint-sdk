@@ -115,7 +115,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction when prepareOnly is true", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -134,7 +134,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const result = await solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -175,7 +175,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             expect(result.transactionId).toBe("txn-sol-with-signers");
         });
 
-        it("should use custom signer when experimental_signer is provided", async () => {
+        it("should use custom signer when signer is provided", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -200,7 +200,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { experimental_signer: "external-wallet:custom123", experimental_prepareOnly: false },
+                options: { signer: "external-wallet:custom123", prepareOnly: false },
             });
             await vi.runAllTimersAsync();
             await sendPromise;

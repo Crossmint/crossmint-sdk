@@ -155,7 +155,7 @@ describe("EVMWallet - sendTransaction()", () => {
             expect(mockApiClient.createTransaction).toHaveBeenCalled();
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction when prepareOnly is true", async () => {
             const mockTransactionResponse = {
                 id: "txn-prepare",
                 status: "pending",
@@ -173,7 +173,7 @@ describe("EVMWallet - sendTransaction()", () => {
             const result = await evmWallet.sendTransaction({
                 to: "0xrecipient",
                 value: BigInt("1000"),
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -259,7 +259,7 @@ describe("EVMWallet - signMessage()", () => {
             );
         });
 
-        it("should return prepared signature when experimental_prepareOnly is true", async () => {
+        it("should return prepared signature when prepareOnly is true", async () => {
             const mockSignatureResponse = {
                 id: "sig-prepare",
                 status: "pending",
@@ -269,7 +269,7 @@ describe("EVMWallet - signMessage()", () => {
 
             const result = await evmWallet.signMessage({
                 message: "Hello, world!",
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();
@@ -368,7 +368,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should return prepared signature when experimental_prepareOnly is true", async () => {
+        it("should return prepared signature when prepareOnly is true", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
                 status: "pending",
@@ -389,7 +389,7 @@ describe("EVMWallet - signTypedData()", () => {
                 primaryType: "Message",
                 message: { content: "Hello" },
                 chain: "base-sepolia",
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();

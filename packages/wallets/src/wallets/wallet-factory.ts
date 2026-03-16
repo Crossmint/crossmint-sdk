@@ -123,7 +123,7 @@ export class WalletFactory {
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-        await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+        await args.options?._callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
         if (!this.apiClient.isServerSide && args.owner != null) {
@@ -286,7 +286,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
+                    onAuthRequired: options?._callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as EmailInternalSignerConfig;
             }
@@ -332,7 +332,7 @@ export class WalletFactory {
                     locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
                     address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: options?.experimental_callbacks?.onAuthRequired,
+                    onAuthRequired: options?._callbacks?.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 } as PhoneInternalSignerConfig;
             }
