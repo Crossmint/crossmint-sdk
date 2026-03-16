@@ -318,10 +318,9 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the wallet activity
-     * @returns The activity
-     * @experimental This API is experimental and may change in the future
-     * @throws {Error} If the activity cannot be retrieved
+     * Get the wallet transfers
+     * @returns The transfers
+     * @throws {Error} If the transfers cannot be retrieved
      */
     public async transfers(): Promise<Activity> {
         const resolvedChain = this.resolveChainForEnvironment();
