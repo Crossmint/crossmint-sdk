@@ -1078,9 +1078,9 @@ describe("WalletFactory - Server Signer", () => {
 
             mockApiClient.getWallet.mockResolvedValue(walletWithWrongSigner);
 
-            await expect(
-                walletFactory.getWallet(walletWithWrongSigner.address, mockServerSignerArgs)
-            ).rejects.toThrow(WalletCreationError);
+            await expect(walletFactory.getWallet(walletWithWrongSigner.address, mockServerSignerArgs)).rejects.toThrow(
+                WalletCreationError
+            );
         });
 
         it("should throw when derived address does not match wallet admin signer address", async () => {
