@@ -550,7 +550,10 @@ export class Wallet<C extends Chain> {
         try {
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer,
-                chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
+                chain:
+                    this.chain === "solana" || this.chain === "stellar"
+                        ? undefined
+                        : (this.chain as RegisterSignerChain),
             });
 
             if ("error" in response) {
