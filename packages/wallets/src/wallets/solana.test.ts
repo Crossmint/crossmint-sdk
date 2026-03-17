@@ -6,6 +6,7 @@ import {
     createMockWallet,
     createMockApiClient,
     createMockSolanaSerializedTransaction,
+    createMockSigner,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -13,12 +14,14 @@ describe("SolanaWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
     let solanaWallet: SolanaWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("solana", mockApiClient, "api-key");
+        const wallet = await createMockWallet("solana", mockApiClient, "api-key");
         solanaWallet = SolanaWallet.from(wallet);
+        vi.spyOn(solanaWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        await solanaWallet.useSigner(createMockSigner("api-key", "solana"));
     });
 
     afterEach(() => {
@@ -64,7 +67,7 @@ describe("SolanaWallet - sendTransaction()", () => {
                 expect.objectContaining({
                     params: expect.objectContaining({
                         transaction: expect.any(String),
-                        signer: "api-key:test",
+                        signer: "api-key",
                     }),
                 })
             );
@@ -109,7 +112,7 @@ describe("SolanaWallet - sendTransaction()", () => {
                 expect.objectContaining({
                     params: expect.objectContaining({
                         transaction: serializedTx,
-                        signer: "api-key:test",
+                        signer: "api-key",
                     }),
                 })
             );
@@ -278,8 +281,8 @@ describe("SolanaWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create SolanaWallet from valid Solana wallet", () => {
-        const wallet = createMockWallet("solana", mockApiClient);
+    it("should create SolanaWallet from valid Solana wallet", async () => {
+        const wallet = await createMockWallet("solana", mockApiClient);
         const solanaWallet = SolanaWallet.from(wallet);
 
         expect(solanaWallet).toBeInstanceOf(SolanaWallet);
@@ -290,7 +293,7 @@ describe("SolanaWallet - from()", () => {
         const { isValidSolanaAddress } = await import("@crossmint/common-sdk-base");
         vi.mocked(isValidSolanaAddress).mockReturnValueOnce(false);
 
-        const evmWallet = createMockWallet("base-sepolia", mockApiClient);
+        const evmWallet = await createMockWallet("base-sepolia", mockApiClient);
 
         expect(() => SolanaWallet.from(evmWallet)).toThrow("Wallet is not a Solana wallet");
     });
@@ -299,7 +302,7 @@ describe("SolanaWallet - from()", () => {
         const { isValidSolanaAddress } = await import("@crossmint/common-sdk-base");
         vi.mocked(isValidSolanaAddress).mockReturnValueOnce(false);
 
-        const invalidWallet = createMockWallet("solana", mockApiClient);
+        const invalidWallet = await createMockWallet("solana", mockApiClient);
 
         expect(() => SolanaWallet.from(invalidWallet)).toThrow("Wallet is not a Solana wallet");
     });

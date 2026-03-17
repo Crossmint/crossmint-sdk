@@ -19,7 +19,6 @@ export class StellarWallet extends Wallet<StellarChain> {
                 chain: wallet.chain,
                 address: wallet.address,
                 owner: wallet.owner,
-                signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
                 recovery: Wallet.getRecovery(wallet),

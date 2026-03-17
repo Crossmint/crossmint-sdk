@@ -12,6 +12,7 @@ import type {
     PasskeySignResult,
     DeviceSignResult,
     DeviceSignerConfig,
+    DeviceSignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -125,7 +126,7 @@ export type Callbacks = {
         signerType: "email" | "phone",
         signerLocator: string,
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
@@ -168,7 +169,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
 export type DeviceSignerDescriptor = {
     type: "device";
     publicKey: { x: string; y: string };
-    locator: string;
+    locator: DeviceSignerLocator;
 };
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;

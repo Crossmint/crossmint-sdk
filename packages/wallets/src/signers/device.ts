@@ -1,4 +1,4 @@
-import type { DeviceInternalSignerConfig, DeviceSignResult } from "./types";
+import type { DeviceInternalSignerConfig, DeviceSignResult, DeviceSignerLocator } from "./types";
 import type { Signer } from "./types";
 import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
 export class DeviceSigner implements Signer<"device"> {
@@ -12,8 +12,8 @@ export class DeviceSigner implements Signer<"device"> {
 
     public type = "device" as const;
 
-    public locator(): string {
-        return this.config.locator || "";
+    public locator(): DeviceSignerLocator {
+        return this.config.locator || ("device:" as DeviceSignerLocator);
     }
 
     public async signMessage(message: string): Promise<DeviceSignResult> {

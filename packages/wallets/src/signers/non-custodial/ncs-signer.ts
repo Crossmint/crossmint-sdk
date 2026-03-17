@@ -1,8 +1,10 @@
 import type {
     BaseSignResult,
     EmailInternalSignerConfig,
+    EmailSignerLocator,
     ExportSignerTEEConnection,
     PhoneInternalSignerConfig,
+    PhoneSignerLocator,
     Signer,
 } from "../types";
 import { AuthRejectedError } from "../types";
@@ -29,7 +31,7 @@ export abstract class NonCustodialSigner implements Signer {
         this.type = this.config.type;
     }
 
-    locator() {
+    locator(): EmailSignerLocator | PhoneSignerLocator {
         return this.config.locator;
     }
 
@@ -114,7 +116,7 @@ export abstract class NonCustodialSigner implements Signer {
                 `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
                     `This callback manages the authentication flow (sending OTP and verifying user input). ` +
                     `If using our React/React Native SDK, this is handled automatically by the provider. ` +
-                    `For other environments, implement: onAuthRequired: (needsAuth, sendEmailWithOtp, verifyOtp, reject) => { /* your UI logic */ }`
+                    `For other environments, implement: onAuthRequired: (needsAuth, sendOtp, verifyOtp, reject) => { /* your UI logic */ }`
             );
         }
 
