@@ -15,7 +15,7 @@ export { StellarWallet } from "./wallets/stellar";
 
 // Core types
 export type {
-    Activity,
+    Transfers,
     Balances,
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,

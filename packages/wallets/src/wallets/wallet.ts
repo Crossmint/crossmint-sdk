@@ -1,10 +1,11 @@
 import { isValidAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type {
-    Activity,
+    Transfers,
     ApiClient,
     GetSignatureResponse,
     GetBalanceSuccessResponse,
     WalletLocator,
+    RegisterSignerChain,
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
@@ -324,10 +325,9 @@ export class Wallet<C extends Chain> {
      * @param {number} params.page - The page number
      * @param {WalletLocator} [params.locator] - The locator
      * @returns The NFTs
-     * @experimental This API is experimental and may change in the future
      */
-    public async experimental_nfts(params: { perPage: number; page: number }) {
-        return await this.#apiClient.experimental_getNfts({
+    public async nfts(params: { perPage: number; page: number }) {
+        return await this.#apiClient.getNfts({
             ...params,
             chain: this.chain,
             address: this.address,
@@ -339,7 +339,7 @@ export class Wallet<C extends Chain> {
      * @returns The transactions
      * @throws {Error} If the transactions cannot be retrieved
      */
-    public async experimental_transactions(): Promise<GetTransactionsResponse> {
+    public async transactions(): Promise<GetTransactionsResponse> {
         const response = await this.#apiClient.getTransactions(this.walletLocator);
         if ("error" in response) {
             throw new Error(`Failed to get transactions: ${JSON.stringify(response.message)}`);
@@ -352,7 +352,7 @@ export class Wallet<C extends Chain> {
      * @returns The transaction
      * @throws {Error} If the transaction cannot be retrieved
      */
-    public async experimental_transaction(transactionId: string): Promise<GetTransactionSuccessResponse> {
+    public async transaction(transactionId: string): Promise<GetTransactionSuccessResponse> {
         const response = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
         if ("error" in response) {
             throw new Error(`Failed to get transaction: ${JSON.stringify(response.error)}`);
@@ -361,16 +361,19 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the wallet activity
-     * @returns The activity
-     * @experimental This API is experimental and may change in the future
-     * @throws {Error} If the activity cannot be retrieved
+     * Get the wallet transfers
+     * @returns The transfers
+     * @throws {Error} If the transfers cannot be retrieved
      */
-    public async experimental_activity(): Promise<Activity> {
+    public async transfers(params: { tokens: string; status: "successful" | "failed" }): Promise<Transfers> {
         const resolvedChain = this.resolveChainForEnvironment();
-        const response = await this.apiClient.experimental_activity(this.walletLocator, { chain: resolvedChain });
+        const response = await this.apiClient.getTransfers(this.walletLocator, {
+            chain: resolvedChain,
+            tokens: params.tokens,
+            status: params.status,
+        });
         if ("error" in response) {
-            throw new Error(`Failed to get activity: ${JSON.stringify(response.message)}`);
+            throw new Error(`Failed to get transfers: ${JSON.stringify(response.message)}`);
         }
         return response;
     }
@@ -413,9 +416,7 @@ export class Wallet<C extends Chain> {
         const sendParams = {
             recipient,
             amount,
-            ...(options?.experimental_signer != null
-                ? { signer: options.experimental_signer }
-                : { signer: signer.locator() }),
+            ...(options?.signer != null ? { signer: options.signer } : { signer: signer.locator() }),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -429,7 +430,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.experimental_prepareOnly) {
+        if (options?.prepareOnly) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
@@ -454,7 +455,7 @@ export class Wallet<C extends Chain> {
      * @param params - The parameters
      * @param params.transactionId - The transaction id
      * @param params.options - The options for the transaction
-     * @param params.options.experimental_approval - The approval
+     * @param params.options.approval - The approval
      * @param params.options.additionalSigners - The additional signers
      * @returns The transaction
      */
@@ -472,7 +473,7 @@ export class Wallet<C extends Chain> {
      * @param params.transactionId - The transaction id or
      * @param params.signatureId - The signature id
      * @param params.options - The options for the transaction
-     * @param params.options.experimental_approval - The approval
+     * @param params.options.approval - The approval
      * @param params.options.additionalSigners - The additional signers
      * @returns The transaction or signature
      */
@@ -520,7 +521,7 @@ export class Wallet<C extends Chain> {
      * Otherwise, the original signer is restored after the operation.
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
      * @param options - The options for the operation
-     * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
+     * @param options.prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -542,14 +543,17 @@ export class Wallet<C extends Chain> {
             address: this.address,
             crossmint: this.#apiClient.crossmint,
             clientTEEConnection: this.#options?.clientTEEConnection,
-            onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
+            onAuthRequired: this.#options?._callbacks?.onAuthRequired,
         } as InternalSignerConfig<C>;
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer,
-                chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
+                chain:
+                    this.chain === "solana" || this.chain === "stellar"
+                        ? undefined
+                        : (this.chain as RegisterSignerChain),
             });
 
             if ("error" in response) {
@@ -569,7 +573,7 @@ export class Wallet<C extends Chain> {
 
                 const transactionId = response.transaction.id;
 
-                if (options?.experimental_prepareOnly) {
+                if (options?.prepareOnly) {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         transactionId,
                     });
@@ -590,7 +594,7 @@ export class Wallet<C extends Chain> {
 
                 const chainResponse = response.chains?.[this.chain];
 
-                if (options?.experimental_prepareOnly) {
+                if (options?.prepareOnly) {
                     const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
                     walletsLogger.info("wallet.addSigner.prepared", {
                         signatureId,
@@ -977,7 +981,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
+                    onAuthRequired: this.#options?._callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "phone":
                 return {
@@ -987,7 +991,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?.experimental_callbacks?.onAuthRequired,
+                    onAuthRequired: this.#options?._callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "passkey": {
                 const id = "id" in config && config.id ? config.id : "";
@@ -1082,8 +1086,8 @@ export class Wallet<C extends Chain> {
         }
 
         // If an external signature is provided, use it to approve the transaction
-        if (options?.experimental_approval != null) {
-            const approvals = [options.experimental_approval];
+        if (options?.approval != null) {
+            const approvals = [options.approval];
 
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
         }
@@ -1121,7 +1125,7 @@ export class Wallet<C extends Chain> {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
-        await this.#options?.experimental_callbacks?.onTransactionStart?.();
+        await this.#options?._callbacks?.onTransactionStart?.();
 
         const walletSigner = this.requireSigner();
 
@@ -1131,8 +1135,8 @@ export class Wallet<C extends Chain> {
         }
 
         // If an external signature is provided, use it to approve the transaction
-        if (options?.experimental_approval != null) {
-            const approvals = [options.experimental_approval];
+        if (options?.approval != null) {
+            const approvals = [options.approval];
 
             return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
         }
