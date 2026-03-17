@@ -376,10 +376,11 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         if (/OPR\/|Opera/.test(ua)) {
             return "Opera";
         }
-        if (/Brave/.test(ua)) {
+        // Brave intentionally mirrors Chrome's UA; check the navigator.brave API instead
+        if (typeof navigator !== "undefined" && "brave" in navigator) {
             return "Brave";
         }
-        if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) {
+        if (/Chrome\//.test(ua)) {
             return "Chrome";
         }
         if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) {
