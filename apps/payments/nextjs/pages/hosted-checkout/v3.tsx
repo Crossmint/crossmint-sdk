@@ -66,6 +66,16 @@ export default function HostedCheckoutV3Page() {
                         {createTokenButtonSection("dark", false, true)}
                     </div>
                 </div>
+                <div style={{ marginTop: "40px", textAlign: "center" }}>
+                    <h2 style={{ marginBottom: "16px" }}>Order-Based Checkout (orderId + clientSecret)</h2>
+                    <p style={{ marginBottom: "16px", color: "#666" }}>
+                        Create an order server-side first, then paste orderId + clientSecret below.
+                    </p>
+                    <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+                        {createOrderBasedButtonSection("crossmint")}
+                        {createOrderBasedButtonSection("dark")}
+                    </div>
+                </div>
             </HostedCheckoutV3ClientProviders>
         </div>
     );
@@ -148,6 +158,28 @@ function createTokenButtonSection(
                     receiptEmail: RECEIPT_EMAIL,
                 }}
                 recipient={{ walletAddress: WALLET_ADDRESS }}
+                appearance={{ theme: { button: buttonTheme } }}
+            />
+        </div>
+    );
+}
+
+const ORDER_ID = "YOUR_ORDER_ID";
+const CLIENT_SECRET = "YOUR_CLIENT_SECRET";
+
+function createOrderBasedButtonSection(buttonTheme: CrossmintHostedCheckoutV3ButtonTheme) {
+    return (
+        <div
+            style={{
+                backgroundColor: buttonTheme === "light" ? "black" : "white",
+                display: "flex",
+                justifyContent: "center",
+                padding: "20px",
+            }}
+        >
+            <CrossmintHostedCheckout
+                orderId={ORDER_ID}
+                clientSecret={CLIENT_SECRET}
                 appearance={{ theme: { button: buttonTheme } }}
             />
         </div>
