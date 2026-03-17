@@ -5,8 +5,8 @@ import ExpoModulesCore
 /// Expo native module that exposes device signer key storage to React Native.
 ///
 /// On physical iOS devices the module delegates to ``SecureEnclaveKeyStorage`` so all
-/// key material lives in the Secure Enclave. On simulators (where `SecureEnclave.isAvailable`
-/// is `false`) it falls back to ``KeychainDeviceSignerKeyStorage``.
+/// key material lives in the Secure Enclave. On simulators it always uses
+/// ``KeychainDeviceSignerKeyStorage`` (Secure Enclave is not available on simulators).
 ///
 /// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
 /// `NativeDeviceSignerKeyStorage` from `@crossmint/expo-device-signer`.
@@ -24,18 +24,27 @@ public class DeviceSignerModule: Module {
         }
 
         // Generates a new P-256 key and persists it.
-        // `biometricPolicy` is baked into the Keychain access control at generation time;
-        // subsequent operations do not require it.
         AsyncFunction("generateKey") { (address: String?, biometricPolicy: String) async throws -> String in
             let policy = biometricPolicyFrom(biometricPolicy)
-            let pubKey = try await self.storage(policy: policy).generateKey(address: address)
-            self.trackPublicKey(pubKey)
-            return pubKey
+            do {
+                let pubKey = try await self.storage(policy: policy).generateKey(address: address)
+                self.trackPublicKey(pubKey)
+                return pubKey
+            } catch {
+                throw Exception(
+                    name: "GenerateKeyFailed",
+                    description: "generateKey failed: \(error)"
+                )
+            }
         }
 
         // Renames the pending Keychain entry to a wallet-address entry.
         AsyncFunction("mapAddressToKey") { (address: String, publicKeyBase64: String) async throws in
-            try await self.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
+            do {
+                try await self.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
+            } catch {
+                throw Exception(name: "MapAddressToKeyFailed", description: "mapAddressToKey failed: \(error)")
+            }
         }
 
         // Returns the stored public key for a wallet address, or nil.
@@ -50,8 +59,12 @@ public class DeviceSignerModule: Module {
 
         // Signs a base64-encoded message; returns { r, s } hex strings.
         AsyncFunction("signMessage") { (address: String, message: String) async throws -> [String: String] in
-            let sig = try await self.defaultStorage().signMessage(address: address, message: message)
-            return ["r": sig.r, "s": sig.s]
+            do {
+                let sig = try await self.defaultStorage().signMessage(address: address, message: message)
+                return ["r": sig.r, "s": sig.s]
+            } catch {
+                throw Exception(name: "SignMessageFailed", description: "signMessage failed: \(error)")
+            }
         }
 
         // Deletes the key for a wallet address.
@@ -96,17 +109,22 @@ public class DeviceSignerModule: Module {
 
     // MARK: - Private helpers
 
-    /// Creates a storage instance with the specified biometric policy (used at key-generation time).
+    /// Creates a storage instance with the specified biometric policy.
+    /// Always uses KeychainDeviceSignerKeyStorage on simulators.
     private func storage(policy: BiometricPolicy) -> any DeviceSignerKeyStorage {
+        #if targetEnvironment(simulator)
+        return KeychainKeyStorage(biometricPolicy: policy)
+        #else
         if SecureEnclave.isAvailable {
             return SecureEnclaveKeyStorage(biometricPolicy: policy)
         } else {
-            return KeychainDeviceSignerKeyStorage(biometricPolicy: policy)
+            return KeychainKeyStorage(biometricPolicy: policy)
         }
+        #endif
     }
 
     /// Returns the default storage (`.none` policy) for operations that do not involve
-    /// key generation — the policy is already baked into the Keychain item.
+    /// key generation — biometric auth is handled inside the storage implementation.
     private func defaultStorage() -> any DeviceSignerKeyStorage {
         storage(policy: .none)
     }
