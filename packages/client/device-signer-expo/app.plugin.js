@@ -79,10 +79,7 @@ const withDeviceSigner = (config) => {
     end
 `;
                 // Insert at the top of the post_install block, right after the opening line.
-                podfile = podfile.replace(
-                    /(post_install do \|installer\|)/,
-                    `$1\n${injection}`
-                );
+                podfile = podfile.replace(/(post_install do \|installer\|)/, `$1\n${injection}`);
             }
 
             fs.writeFileSync(podfilePath, podfile);

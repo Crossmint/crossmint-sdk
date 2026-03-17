@@ -1,6 +1,6 @@
 import { requireNativeModule } from "expo-modules-core";
 
-import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import { DeviceSignerKeyStorage, type BiometricPolicy } from "@crossmint/wallets-sdk";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NativeModuleType = Record<string, (...args: any[]) => Promise<any>>;
@@ -13,89 +13,74 @@ function getNativeModule(): NativeModuleType {
     return _nativeModule;
 }
 
-export type BiometricPolicy = "always" | "none";
+export type { BiometricPolicy };
 
 /**
- * React Native implementation of DeviceSignerKeyStorage backed by the platform's
+ * React Native implementation of {@link DeviceSignerKeyStorage} backed by the platform's
  * secure hardware: Secure Enclave on iOS, Android Keystore on Android.
  *
- * Pass an instance of this class to `WalletOptions.deviceSigner` when calling
- * `getOrCreateWallet` from a React Native / Expo app.
+ * Pass an instance to the `deviceSignerKeyStorage` prop of `CrossmintWalletProvider`.
  *
  * @example
- * ```typescript
+ * ```tsx
  * import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
  *
- * const wallet = await sdk.wallets.getOrCreateWallet({
- *     chain: "base-sepolia",
- *     signer: emailSigner,
- *     options: {
- *         deviceSigner: new NativeDeviceSignerKeyStorage({ biometricPolicy: "always" }),
- *     },
- * });
+ * <CrossmintWalletProvider
+ *     deviceSignerKeyStorage={new NativeDeviceSignerKeyStorage()}
+ * >
+ *     {children}
+ * </CrossmintWalletProvider>
  * ```
  */
-export class NativeDeviceSignerKeyStorage implements DeviceSignerKeyStorage {
-    private readonly biometricPolicy: BiometricPolicy;
+export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
+    private readonly defaultBiometricPolicy: BiometricPolicy;
 
     constructor(options?: { biometricPolicy?: BiometricPolicy }) {
-        this.biometricPolicy = options?.biometricPolicy ?? "none";
+        // apiKey is not used by the native implementation — API calls go through the SDK context.
+        super("");
+        this.defaultBiometricPolicy = options?.biometricPolicy ?? "none";
     }
 
-    /**
-     * Returns true if a key storage backend is available. Always returns true because
-     * the module transparently falls back to software storage on simulators.
-     */
-    isAvailable(): Promise<boolean> {
-        return getNativeModule().isAvailable();
+    generateKey(params: { address?: string; biometricPolicy?: Exclude<BiometricPolicy, "session"> }): Promise<string>;
+    generateKey(params: {
+        address?: string;
+        biometricPolicy: "session";
+        biometricExpirationTime: number;
+    }): Promise<string>;
+    generateKey(params: {
+        address?: string;
+        biometricPolicy?: BiometricPolicy;
+        biometricExpirationTime?: number;
+    }): Promise<string> {
+        // "session" is not supported natively — fall back to "always".
+        const policy =
+            params.biometricPolicy === "session" ? "always" : params.biometricPolicy ?? this.defaultBiometricPolicy;
+        return getNativeModule().generateKey(params.address ?? null, policy);
     }
 
-    /**
-     * Generates a new P-256 signing key and persists it in hardware.
-     *
-     * @param address - Wallet address to associate the key with. Pass `null` before
-     *   wallet creation; call `mapAddressToKey` once the address is known.
-     * @returns Base64-encoded 64-byte raw public key (x‖y).
-     */
-    generateKey(address: string | null): Promise<string> {
-        return getNativeModule().generateKey(address, this.biometricPolicy);
-    }
-
-    /**
-     * Associates a pending key (generated without an address) with a wallet address.
-     * Call this immediately after wallet creation.
-     */
     mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
         return getNativeModule().mapAddressToKey(address, publicKeyBase64);
     }
 
-    /**
-     * Returns the base64-encoded public key stored for the given wallet address,
-     * or `null` if no key exists on this device.
-     */
     getKey(address: string): Promise<string | null> {
         return getNativeModule().getKey(address);
     }
 
-    /**
-     * Signs a base64-encoded message with the key for the given wallet address.
-     *
-     * @returns ECDSA signature components as hex strings prefixed with `"0x"`.
-     */
+    hasKey(publicKeyBase64: string): Promise<boolean> {
+        return getNativeModule().hasKey(publicKeyBase64);
+    }
+
     signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
         return getNativeModule().signMessage(address, message);
     }
 
-    /**
-     * Deletes the key for the given wallet address.
-     */
     deleteKey(address: string): Promise<void> {
         return getNativeModule().deleteKey(address);
     }
 
     /**
      * Deletes a pending key that was never mapped to a wallet address.
-     * Call this if wallet creation fails after `generateKey(null)`.
+     * Call this if wallet creation fails after `generateKey({})`.
      */
     deletePendingKey(publicKeyBase64: string): Promise<void> {
         return getNativeModule().deletePendingKey(publicKeyBase64);

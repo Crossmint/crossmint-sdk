@@ -75,6 +75,10 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
         prefs.getString("addr_$address", null)
     }
 
+    fun hasKey(publicKeyBase64: String): Result<Boolean> = runCatching {
+        prefs.contains("pk_$publicKeyBase64")
+    }
+
     // ---- signing ----------------------------------------------------------
 
     fun signMessage(address: String, message: String): Result<Pair<String, String>> = runCatching {
@@ -127,7 +131,9 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
     private fun encodePublicKey(pub: ECPublicKey): String {
         val x = pub.w.affineX.toByteArray().trimSignByte().padStart(32)
         val y = pub.w.affineY.toByteArray().trimSignByte().padStart(32)
-        return Base64.encodeToString(x + y, Base64.NO_WRAP)
+        // Uncompressed P-256 point: 0x04 prefix + 32-byte x + 32-byte y (65 bytes total)
+        val uncompressed = byteArrayOf(0x04) + x + y
+        return Base64.encodeToString(uncompressed, Base64.NO_WRAP)
     }
 
     /** Removes the leading sign byte that BigInteger.toByteArray() may prepend. */

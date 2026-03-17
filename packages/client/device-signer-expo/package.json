@@ -9,14 +9,7 @@
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "ios",
-        "android",
-        "app.plugin.js",
-        "expo-module.config.json",
-        "LICENSE"
-    ],
+    "files": ["dist", "ios", "android", "app.plugin.js", "expo-module.config.json", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"

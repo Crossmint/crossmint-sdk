@@ -45,6 +45,13 @@ class DeviceSignerModule : Module() {
             DeviceSignerKeyStorage(context).getKey(address).getOrNull()
         }
 
+        // Returns true if a key with the given public key exists on this device.
+        AsyncFunction("hasKey") { publicKeyBase64: String ->
+            val context = appContext.reactContext
+                ?: throw IllegalStateException("React context is not available")
+            DeviceSignerKeyStorage(context).hasKey(publicKeyBase64).getOrThrow()
+        }
+
         // Signs a base64-encoded message; returns a map { r, s } as hex strings.
         AsyncFunction("signMessage") { address: String, message: String ->
             val context = appContext.reactContext
