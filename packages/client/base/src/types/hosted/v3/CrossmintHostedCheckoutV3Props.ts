@@ -15,7 +15,10 @@ export interface CrossmintHostedCheckoutV3OrderProps {
     orderId: string;
     clientSecret: string;
     locale?: Locale;
-    payment?: HostedCheckoutV3Payment;
+    payment?: Omit<HostedCheckoutV3Payment, "fiat" | "crypto"> & {
+        fiat?: HostedCheckoutV3FiatPayment;
+        crypto?: HostedCheckoutV3CryptoPayment;
+    };
     appearance?: CrossmintHostedCheckoutV3Appearance;
 }
 
