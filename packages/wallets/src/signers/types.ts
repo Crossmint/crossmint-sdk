@@ -69,36 +69,42 @@ export type PasskeySignerConfig = {
 // Internal signer config
 ////////////////////////////////////////////////////////////
 type BaseInternalSignerConfig = {
-    locator: string;
+    locator: SignerLocator;
     address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type EmailInternalSignerConfig = EmailSignerConfig &
-    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
+    Omit<BaseInternalSignerConfig, "locator"> & {
+        locator: EmailSignerLocator;
+        onAuthRequired?: Callbacks["onAuthRequired"];
+    };
 
 export type PhoneInternalSignerConfig = PhoneSignerConfig &
-    BaseInternalSignerConfig & { onAuthRequired?: Callbacks["onAuthRequired"] };
+    Omit<BaseInternalSignerConfig, "locator"> & {
+        locator: PhoneSignerLocator;
+        onAuthRequired?: Callbacks["onAuthRequired"];
+    };
 
 export type DeviceInternalSignerConfig = {
     type: "device";
-    locator?: string;
+    locator?: DeviceSignerLocator;
     address: string;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
-    locator: string;
+    locator: PasskeySignerLocator;
     id: string;
 };
 
 export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
-    locator: string;
+    locator: ApiKeySignerLocator;
     address: string;
 };
 
 export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
-    locator: string;
+    locator: ExternalWalletSignerLocator;
 };
 
 export type InternalSignerConfig<C extends Chain> =
@@ -144,6 +150,24 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////
+// Signer locator types
+////////////////////////////////////////////////////////////
+export type EmailSignerLocator = `email:${string}`;
+export type PhoneSignerLocator = `phone:${string}`;
+export type PasskeySignerLocator = `passkey:${string}`;
+export type DeviceSignerLocator = `device:${string}`;
+export type ExternalWalletSignerLocator = `external-wallet:${string}`;
+export type ApiKeySignerLocator = "api-key" | `api-key:${string}`;
+
+export type SignerLocator =
+    | EmailSignerLocator
+    | PhoneSignerLocator
+    | PasskeySignerLocator
+    | DeviceSignerLocator
+    | ExternalWalletSignerLocator
+    | ApiKeySignerLocator;
+
+////////////////////////////////////////////////////////////
 // Signer base types
 ////////////////////////////////////////////////////////////
 type SignResultMap = {
@@ -157,7 +181,7 @@ type SignResultMap = {
 
 export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
-    locator(): string;
+    locator(): SignerLocator;
     address?(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;

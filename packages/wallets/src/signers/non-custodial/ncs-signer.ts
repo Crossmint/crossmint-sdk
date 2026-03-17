@@ -1,8 +1,10 @@
 import type {
     BaseSignResult,
     EmailInternalSignerConfig,
+    EmailSignerLocator,
     ExportSignerTEEConnection,
     PhoneInternalSignerConfig,
+    PhoneSignerLocator,
     Signer,
 } from "../types";
 import { AuthRejectedError } from "../types";
@@ -29,7 +31,7 @@ export abstract class NonCustodialSigner implements Signer {
         this.type = this.config.type;
     }
 
-    locator() {
+    locator(): EmailSignerLocator | PhoneSignerLocator {
         return this.config.locator;
     }
 

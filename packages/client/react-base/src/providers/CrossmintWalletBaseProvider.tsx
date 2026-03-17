@@ -10,8 +10,9 @@ import {
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
     type WalletOptions,
+    type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
-    DeviceSignerDescriptor,
+    type DeviceSignerDescriptor,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -46,6 +47,8 @@ export type CrossmintWalletBaseContext = {
     };
     /** Creates a Device Signer */
     createDeviceSigner: () => Promise<DeviceSignerDescriptor> | undefined;
+    /** Creates a Passkey Signer */
+    createPasskeySigner: (passkeyName: string) => Promise<RegisterSignerPasskeyParams>;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -60,7 +63,10 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
         verifyOtp: null,
         reject: null,
     },
-    createDeviceSigner: () => Promise.reject(new Error("Crossmint Wallet SDK not initialized")),
+    createDeviceSigner: () =>
+        Promise.reject(new Error("createDeviceSigner must be used within a CrossmintWalletBaseProvider")),
+    createPasskeySigner: () =>
+        Promise.reject(new Error("createPasskeySigner must be used within a CrossmintWalletBaseProvider")),
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -346,6 +352,14 @@ export function CrossmintWalletBaseProvider({
         return wallets.createDeviceSigner(deviceSignerKeyStorage);
     }, [crossmint, deviceSignerKeyStorage]);
 
+    const createPasskeySigner = useCallback(
+        async (passkeyName: string) => {
+            const wallets = CrossmintWallets.from(crossmint);
+            return await wallets.createPasskeySigner(passkeyName);
+        },
+        [crossmint]
+    );
+
     // When using createOnLogin with an email signer, automatically populate the email from the auth context.
     // This allows both react-ui and react-native to share this logic via the base auth context.
     const authBaseContext = useContext(CrossmintAuthBaseContext);
@@ -430,8 +444,18 @@ export function CrossmintWalletBaseProvider({
             clientTEEConnection,
             emailSignerState,
             createDeviceSigner,
+            createPasskeySigner,
         }),
-        [getWallet, createWallet, wallet, walletStatus, clientTEEConnection, emailSignerState, createDeviceSigner]
+        [
+            getWallet,
+            createWallet,
+            wallet,
+            walletStatus,
+            clientTEEConnection,
+            emailSignerState,
+            createDeviceSigner,
+            createPasskeySigner,
+        ]
     );
 
     const hasUIProps =
