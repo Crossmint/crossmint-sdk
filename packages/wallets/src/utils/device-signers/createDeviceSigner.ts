@@ -31,9 +31,12 @@ export async function createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorag
     const x = `0x${encodeHex(xBytes)}`;
     const y = `0x${encodeHex(yBytes)}`;
 
+    const name = deviceKeyStorage.getDeviceName();
+
     return {
         type: "device",
         publicKey: { x, y },
         locator: `device:${publicKeyBase64}`,
+        name,
     };
 }
