@@ -22,7 +22,7 @@ export function crossmintHostedCheckoutV3Service({
     function getUrl(props: CrossmintHostedCheckoutV3AllProps) {
         const isExistingOrder = isHostedCheckoutV3ExistingOrderProps(props);
         const path = isExistingOrder
-            ? `/sdk/2024-03-05/hosted-checkout/${props.orderId}`
+            ? `/sdk/2024-03-05/hosted-checkout/${encodeURIComponent(props.orderId)}`
             : "/sdk/2024-03-05/hosted-checkout";
         const urlWithPath = apiClient.buildUrl(path);
         const queryParams = new URLSearchParams();
