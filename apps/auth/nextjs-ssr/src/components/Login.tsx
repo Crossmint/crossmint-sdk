@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
     const router = useRouter();
-    const { login, logout, user, status } = useAuth();
+    const { login, logout, user, status } = useCrossmintAuth();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async () => {

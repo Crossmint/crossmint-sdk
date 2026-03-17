@@ -14,5 +14,3 @@ export function useCrossmintAuth(): CrossmintAuthContext {
     }
     return context;
 }
-
-export const useAuth = useCrossmintAuth;
