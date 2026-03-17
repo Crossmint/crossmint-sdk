@@ -4,9 +4,12 @@ import {
     CrossmintProvider,
     CrossmintWalletProvider,
 } from "@crossmint/client-sdk-react-native-ui";
+import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
 import { Stack } from "expo-router";
 
 import "../utils/polyfills";
+
+const deviceStorage = new NativeDeviceSignerKeyStorage();
 
 export default function RootLayout() {
     return (
@@ -21,8 +24,9 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
             <CrossmintAuthProvider>
                 <CrossmintWalletProvider
-                    headlessSigningFlow={false} // set to true to use headless signing flow
-                    createOnLogin={{ chain: "base-sepolia", signer: { type: "email" } }}
+                    headlessSigningFlow={false}
+                    createOnLogin={{ chain: "base-sepolia", recovery: { type: "email" } }}
+                    deviceSignerKeyStorage={deviceStorage}
                 >
                     {children}
                 </CrossmintWalletProvider>
