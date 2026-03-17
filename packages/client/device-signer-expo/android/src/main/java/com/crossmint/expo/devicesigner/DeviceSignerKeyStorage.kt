@@ -3,8 +3,10 @@ package com.crossmint.expo.devicesigner
 import android.content.Context
 import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
@@ -81,26 +83,46 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
 
     // ---- signing ----------------------------------------------------------
 
-    fun signMessage(address: String, message: String): Result<Pair<String, String>> = runCatching {
+    /** Returns true if the key for [address] was generated with user-authentication required. */
+    fun isUserAuthenticationRequired(address: String): Result<Boolean> = runCatching {
         val pubKeyBase64 = prefs.getString("addr_$address", null)
             ?: error("No key found for address $address")
         val alias = prefs.getString("pk_$pubKeyBase64", null)
             ?: error("No alias found for public key")
-
         val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        val privateKey = keyStore.getKey(alias, null)
+        val privateKey = keyStore.getKey(alias, null) as? java.security.PrivateKey
             ?: error("Key not in Keystore for alias $alias")
+        val factory = KeyFactory.getInstance(privateKey.algorithm, "AndroidKeyStore")
+        factory.getKeySpec(privateKey, KeyInfo::class.java).isUserAuthenticationRequired
+    }
 
+    /**
+     * Initializes a [Signature] with the key for [address] and updates it with [message] bytes.
+     * The returned signature is ready for `sign()` — either directly (non-biometric keys) or
+     * via a [androidx.biometric.BiometricPrompt.CryptoObject] (biometric-required keys).
+     */
+    fun prepareSignature(address: String, message: String): Result<Signature> = runCatching {
+        val pubKeyBase64 = prefs.getString("addr_$address", null)
+            ?: error("No key found for address $address")
+        val alias = prefs.getString("pk_$pubKeyBase64", null)
+            ?: error("No alias found for public key")
+        val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+        val privateKey = keyStore.getKey(alias, null) as? java.security.PrivateKey
+            ?: error("Key not in Keystore for alias $alias")
         val messageBytes = Base64.decode(message, Base64.NO_WRAP)
-
-        val sig = Signature.getInstance("SHA256withECDSA").apply {
-            initSign(privateKey as java.security.PrivateKey)
+        Signature.getInstance("SHA256withECDSA").apply {
+            initSign(privateKey)
             update(messageBytes)
         }
-        val derSignature = sig.sign()
-
-        parseDerSignature(derSignature)
     }
+
+    fun signMessage(address: String, message: String): Result<Pair<String, String>> = runCatching {
+        val sig = prepareSignature(address, message).getOrThrow()
+        parseDerSignature(sig.sign())
+    }
+
+    /** Parses a DER-encoded ECDSA signature into (r, s) hex strings. Accessible from the module. */
+    fun parseDerToRs(der: ByteArray): Pair<String, String> = parseDerSignature(der)
 
     // ---- deletion ---------------------------------------------------------
 

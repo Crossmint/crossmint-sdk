@@ -13,3 +13,7 @@ android {
     versionName '0.0.1'
   }
 }
+
+dependencies {
+  implementation "androidx.biometric:biometric:1.1.0"
+}
