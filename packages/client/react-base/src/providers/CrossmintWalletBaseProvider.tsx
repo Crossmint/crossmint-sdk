@@ -63,8 +63,10 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
         verifyOtp: null,
         reject: null,
     },
-    createDeviceSigner: () => Promise.reject(new Error("Crossmint Wallet SDK not initialized")),
-    createPasskeySigner: () => Promise.reject(new Error("Crossmint Wallet SDK not initialized")),
+    createDeviceSigner: () =>
+        Promise.reject(new Error("createDeviceSigner must be used within a CrossmintWalletBaseProvider")),
+    createPasskeySigner: () =>
+        Promise.reject(new Error("createPasskeySigner must be used within a CrossmintWalletBaseProvider")),
 });
 
 export interface CrossmintWalletBaseProviderProps {
