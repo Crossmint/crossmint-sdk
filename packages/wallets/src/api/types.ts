@@ -30,8 +30,8 @@ import type {
     WalletsV2025ControllerSubmitApprovals2Error,
     WalletsV2025ControllerSubmitSignatureApprovals2Error,
 } from "./gen/types.gen";
-import { SignerConfigForChain, SignerLocator } from "@/signers/types";
-import { Chain } from "@/chains/chains";
+import type { SignerConfigForChain, SignerLocator } from "@/signers/types";
+import type { Chain } from "@/chains/chains";
 
 export type CreateWalletParams = CreateWalletV2025Dto;
 export type GetWalletSuccessResponse = WalletV2025ResponseDto;
