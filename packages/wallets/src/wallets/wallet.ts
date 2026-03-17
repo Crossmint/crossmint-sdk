@@ -45,10 +45,12 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
+    BaseSignerConfig,
     DeviceSignerConfig,
-    DeviceSignerLocator,
+    EmailSignerConfig,
     InternalSignerConfig,
     PasskeySignerConfig,
+    PhoneSignerConfig,
     Signer,
     SignerConfigForChain,
     SignerLocator,
@@ -58,6 +60,7 @@ import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
 import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
+import { createDeviceSigner } from "@/utils/device-signers";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -530,7 +533,13 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
-        signer: SignerLocator | RegisterSignerPasskeyParams | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
+        signer:
+            | SignerLocator
+            | RegisterSignerPasskeyParams
+            | DeviceSignerConfig
+            | EmailSignerConfig
+            | PhoneSignerConfig
+            | BaseSignerConfig<C>,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
         walletsLogger.info("wallet.addSigner.start");
@@ -742,11 +751,10 @@ export class Wallet<C extends Chain> {
         if (deviceSignerKeyStorage == null) {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
-        const publicKey = await deviceSignerKeyStorage.generateKey({ address: this.address });
-        const signerLocator: DeviceSignerLocator = `device:${publicKey}`;
+        const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.address);
 
         try {
-            await this.addSigner(signerLocator);
+            await this.addSigner(deviceSigner);
         } catch (error) {
             walletsLogger.error("wallet.recover.device.error", { error });
             await deviceSignerKeyStorage.deleteKey(this.address);
@@ -758,12 +766,12 @@ export class Wallet<C extends Chain> {
             this.chain,
             {
                 type: "device",
-                locator: signerLocator as SignerLocator,
+                locator: deviceSigner.locator as SignerLocator,
                 address: this.address,
             } as InternalSignerConfig<C>,
             deviceSignerKeyStorage
         );
-        walletsLogger.info("wallet.recover.device.success", { signerLocator });
+        walletsLogger.info("wallet.recover.device.success", { signerLocator: deviceSigner.locator });
 
         this.#needsRecovery = false;
     }

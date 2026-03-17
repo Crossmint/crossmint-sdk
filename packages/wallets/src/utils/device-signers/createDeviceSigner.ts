@@ -1,11 +1,12 @@
 import type { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
-import type { DeviceSignerDescriptor } from "../../wallets/types";
 import { decodeBase64, encodeHex } from "@crossmint/client-signers-cryptography";
+import { DeviceSignerConfig } from "@/signers/types";
 
 /**
  * Creates a device signer by generating a new P-256 key pair via the provided key storage.
  *
  * @param deviceKeyStorage - The device key storage implementation to use for key generation.
+ * @param walletAddress optional - The address of the wallet to associate the device signer with.
  * @returns A device signer descriptor containing the type, public key coordinates, and locator.
  *
  * @example
@@ -14,8 +15,11 @@ import { decodeBase64, encodeHex } from "@crossmint/client-signers-cryptography"
  * // signer = { type: "device", publicKey: { x, y }, locator: "device:<pubkey64>" }
  * ```
  */
-export async function createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage): Promise<DeviceSignerDescriptor> {
-    const publicKeyBase64 = await deviceKeyStorage.generateKey({});
+export async function createDeviceSigner(
+    deviceKeyStorage: DeviceSignerKeyStorage,
+    address?: string
+): Promise<DeviceSignerConfig> {
+    const publicKeyBase64 = await deviceKeyStorage.generateKey({ address });
 
     // The public key is an uncompressed P-256 key (65 bytes: 0x04 prefix + 32 bytes x + 32 bytes y)
     // encoded as base64. We need to extract the x and y coordinates.
