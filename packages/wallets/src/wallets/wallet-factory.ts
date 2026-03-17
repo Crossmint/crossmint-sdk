@@ -339,7 +339,7 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
-                        // If the device signer already has a locator (e.g., created via createDeviceSigner helper), use it directly
+                        // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
                         if (signer.publicKey != null) {
                             return {
                                 signer: {
