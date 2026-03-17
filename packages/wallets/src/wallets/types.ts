@@ -126,7 +126,7 @@ export type Callbacks = {
         signerType: "email" | "phone",
         signerLocator: string,
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;

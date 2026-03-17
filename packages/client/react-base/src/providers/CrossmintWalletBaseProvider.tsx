@@ -41,7 +41,7 @@ export type CrossmintWalletBaseContext = {
     /** @internal */
     emailSignerState: {
         needsAuth: boolean;
-        sendEmailWithOtp: (() => Promise<void>) | null;
+        sendOtp: (() => Promise<void>) | null;
         verifyOtp: ((otp: string) => Promise<void>) | null;
         reject: ((error?: Error) => void) | null;
     };
@@ -59,7 +59,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     clientTEEConnection: undefined,
     emailSignerState: {
         needsAuth: false,
-        sendEmailWithOtp: null,
+        sendOtp: null,
         verifyOtp: null,
         reject: null,
     },
@@ -137,7 +137,7 @@ export function CrossmintWalletBaseProvider({
 
     const [emailSignerState, setEmailSignerState] = useState({
         needsAuth: false,
-        sendEmailWithOtp: null as (() => Promise<void>) | null,
+        sendOtp: null as (() => Promise<void>) | null,
         verifyOtp: null as ((otp: string) => Promise<void>) | null,
         reject: null as ((error?: Error) => void) | null,
     });
@@ -182,18 +182,18 @@ export function CrossmintWalletBaseProvider({
             signerType: "email" | "phone",
             signerLocator: string,
             needsAuth: boolean,
-            sendEmailWithOtp: () => Promise<void>,
+            sendOtp: () => Promise<void>,
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ) => {
             setEmailSignerState({
                 needsAuth,
-                sendEmailWithOtp,
+                sendOtp: sendOtp,
                 verifyOtp,
                 reject,
             });
             const onAuthRequired = onAuthRequiredFromProps ?? signerOnAuthRequired;
-            return await onAuthRequired?.(signerType, signerLocator, needsAuth, sendEmailWithOtp, verifyOtp, reject);
+            return await onAuthRequired?.(signerType, signerLocator, needsAuth, sendOtp, verifyOtp, reject);
         },
         [onAuthRequiredFromProps, signerOnAuthRequired]
     );
