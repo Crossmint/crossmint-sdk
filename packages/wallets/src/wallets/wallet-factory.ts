@@ -235,14 +235,11 @@ export class WalletFactory {
                 };
 
             case "server": {
-                // The API may return "server" (new backend) or "external-wallet" (legacy) for server signers
                 const serverAdminSigner = walletResponse.config?.adminSigner as
                     | { type: string; address: string; locator: string }
                     | undefined;
-                if (serverAdminSigner?.type !== "server" && serverAdminSigner?.type !== "external-wallet") {
-                    throw new WalletCreationError(
-                        "Server signer expects a server or external-wallet admin signer on the wallet"
-                    );
+                if (serverAdminSigner?.type !== "server") {
+                    throw new WalletCreationError("Server signer expects a server admin signer on the wallet");
                 }
                 const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
                     signerArgs as ServerSignerConfig,
@@ -379,17 +376,12 @@ export class WalletFactory {
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
         if (adminSignerArgs != null && existingWalletSigner != null) {
-            // server signer uses a "server" type on the API side, but may also match "external-wallet" for backwards compat
-            const expectedApiType =
-                adminSignerArgs.type === "server" ? existingWalletSigner.type : adminSignerArgs.type;
-            if (expectedApiType !== existingWalletSigner.type) {
+            if (adminSignerArgs.type !== existingWalletSigner.type) {
                 throw new WalletCreationError(
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-            if (adminSignerArgs.type !== "server") {
-                compareSignerConfigs(adminSignerArgs, existingWalletSigner);
-            }
+            compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
 
         if (args.delegatedSigners != null) {
