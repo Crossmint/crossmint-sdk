@@ -55,7 +55,6 @@ describe("EVMWallet - sendTransaction()", () => {
 
             const sendPromise = evmWallet.sendTransaction({
                 transaction: "0x1234567890abcdef",
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -96,7 +95,6 @@ describe("EVMWallet - sendTransaction()", () => {
                 to: "0xrecipient",
                 value: BigInt("1000000000000000000"), // 1 ETH
                 data: "0xabcd",
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -156,7 +154,6 @@ describe("EVMWallet - sendTransaction()", () => {
                 abi: mockAbi,
                 functionName: "transfer",
                 args: ["0x0987654321098765432109876543210987654321", BigInt("1000")],
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -165,7 +162,7 @@ describe("EVMWallet - sendTransaction()", () => {
             expect(mockApiClient.createTransaction).toHaveBeenCalled();
         });
 
-        it("should return prepared transaction by default", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-prepare",
                 status: "pending",
@@ -183,6 +180,7 @@ describe("EVMWallet - sendTransaction()", () => {
             const result = await evmWallet.sendTransaction({
                 to: "0xrecipient",
                 value: BigInt("1000"),
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -252,7 +250,6 @@ describe("EVMWallet - signMessage()", () => {
 
             const signPromise = evmWallet.signMessage({
                 message: "Hello, world!",
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await signPromise;
@@ -271,7 +268,7 @@ describe("EVMWallet - signMessage()", () => {
             );
         });
 
-        it("should return prepared signature by default", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-prepare",
                 status: "pending",
@@ -281,6 +278,7 @@ describe("EVMWallet - signMessage()", () => {
 
             const result = await evmWallet.signMessage({
                 message: "Hello, world!",
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();
@@ -356,7 +354,6 @@ describe("EVMWallet - signTypedData()", () => {
             const signPromise = evmWallet.signTypedData({
                 ...typedData,
                 chain: "base-sepolia",
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await signPromise;
@@ -382,7 +379,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should return prepared signature by default", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
                 status: "pending",
@@ -403,6 +400,7 @@ describe("EVMWallet - signTypedData()", () => {
                 primaryType: "Message",
                 message: { content: "Hello" },
                 chain: "base-sepolia",
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();

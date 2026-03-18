@@ -98,11 +98,12 @@ export function ApprovalTest() {
             setIsCreatingTransaction(true);
             setError(null);
 
-            // Create transaction (prepare-by-default, no option needed)
+            // Create transaction with prepareOnly option
             const transaction = await wallet.send(
                 prepareTransfer.recipient,
                 prepareTransfer.token,
-                prepareTransfer.amount
+                prepareTransfer.amount,
+                { prepareOnly: true }
             );
 
             setPreparedTransactionId(transaction.transactionId);

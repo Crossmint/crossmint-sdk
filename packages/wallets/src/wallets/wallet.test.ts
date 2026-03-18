@@ -288,7 +288,7 @@ describe("Wallet - send()", () => {
     });
 
     describe("success cases", () => {
-        it("should send tokens successfully and return transaction with autoApprove", async () => {
+        it("should send tokens successfully and return transaction by default", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -305,7 +305,7 @@ describe("Wallet - send()", () => {
             mockApiClient.send.mockResolvedValue(mockSendResponse);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const sendPromise = wallet.send("0xrecipient123", "usdc", "10.0", { autoApprove: true });
+            const sendPromise = wallet.send("0xrecipient123", "usdc", "10.0");
             await vi.runAllTimersAsync();
             const result = await sendPromise;
 
@@ -321,21 +321,21 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should return prepared transaction by default", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
 
             mockApiClient.send.mockResolvedValue(mockSendResponse);
 
-            const result = await wallet.send("0xrecipient123", "usdc", "10.0");
+            const result = await wallet.send("0xrecipient123", "usdc", "10.0", { prepareOnly: true });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-123");
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should handle user locator as recipient with autoApprove", async () => {
+        it("should handle user locator as recipient", async () => {
             const mockSendResponse = {
                 id: "txn-456",
             } as unknown as SendResponse;
@@ -352,7 +352,7 @@ describe("Wallet - send()", () => {
             mockApiClient.send.mockResolvedValue(mockSendResponse);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const sendPromise = wallet.send({ email: "user@example.com" }, "usdc", "5.0", { autoApprove: true });
+            const sendPromise = wallet.send({ email: "user@example.com" }, "usdc", "5.0");
             await vi.runAllTimersAsync();
             const result = await sendPromise;
 
@@ -391,7 +391,7 @@ describe("Wallet - send()", () => {
                 error: "Transaction failed",
             } as any);
 
-            await expect(wallet.send("0xrecipient123", "usdc", "10.0", { autoApprove: true })).rejects.toThrow();
+            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow();
         });
     });
 });
@@ -527,7 +527,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should return signatureId by default (prepare-by-default)", async () => {
+        it("should return signatureId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 chains: {
                     "base-sepolia": {
@@ -539,12 +539,12 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await evmWallet.addSigner("external-wallet:0x456");
+            const result = await evmWallet.addSigner("external-wallet:0x456", { prepareOnly: true });
 
             expect(result.signatureId).toBe("sig-123");
         });
 
-        it("should approve signature when status is awaiting-approval and autoApprove is true", async () => {
+        it("should approve signature when status is awaiting-approval by default", async () => {
             const mockRegisterResponse = {
                 chains: {
                     "base-sepolia": {
@@ -563,7 +563,7 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
 
-            const addPromise = evmWallet.addSigner("external-wallet:0x456", { autoApprove: true });
+            const addPromise = evmWallet.addSigner("external-wallet:0x456");
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -591,7 +591,7 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const addPromise = solanaWallet.addSigner("external-wallet:ABC123", { autoApprove: true });
+            const addPromise = solanaWallet.addSigner("external-wallet:ABC123");
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -604,7 +604,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should return transactionId by default (prepare-by-default)", async () => {
+        it("should return transactionId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 transaction: {
                     id: "txn-123",
@@ -613,7 +613,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await solanaWallet.addSigner("external-wallet:ABC123");
+            const result = await solanaWallet.addSigner("external-wallet:ABC123", { prepareOnly: true });
 
             expect(result.transactionId).toBe("txn-123");
         });

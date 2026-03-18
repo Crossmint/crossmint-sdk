@@ -2,7 +2,7 @@ import { isValidStellarAddress, WithLoggerContext } from "@crossmint/common-sdk-
 import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
-    AutoApprove,
+    PrepareOnly,
     StellarTransactionInput,
     Transaction,
     TransactionInputOptions,
@@ -49,13 +49,13 @@ export class StellarWallet extends Wallet<StellarChain> {
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
-    ): Promise<Transaction<T extends AutoApprove<true> ? false : true>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (!params.options?.autoApprove) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -63,7 +63,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends AutoApprove<true> ? false : true>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         const options: ApproveOptions = {};

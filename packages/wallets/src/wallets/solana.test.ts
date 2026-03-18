@@ -54,7 +54,6 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -100,7 +99,6 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -120,7 +118,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction by default", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -139,6 +137,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const result = await solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -171,7 +170,6 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -205,7 +203,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { signer: "external-wallet:custom123", autoApprove: true },
+                options: { signer: "external-wallet:custom123" },
             });
             await vi.runAllTimersAsync();
             await sendPromise;
@@ -266,7 +264,6 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const promise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { autoApprove: true },
             });
 
             const errorPromise = promise.catch(() => {});

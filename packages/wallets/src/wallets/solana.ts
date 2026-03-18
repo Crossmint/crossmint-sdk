@@ -3,7 +3,7 @@ import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-b
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
     ApproveOptions,
-    AutoApprove,
+    PrepareOnly,
     SolanaTransactionInput,
     Transaction,
     TransactionInputOptions,
@@ -51,13 +51,13 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput
-    ): Promise<Transaction<T extends AutoApprove<true> ? false : true>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (!params.options?.autoApprove) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -65,7 +65,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends AutoApprove<true> ? false : true>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         const _additionalSigners = params.additionalSigners?.map(
