@@ -45,7 +45,9 @@ export type CreateTransactionParams = CreateTransactionV2025Dto;
 export type CreateTransactionSuccessResponse = WalletsTransactionV2025ResponseDto;
 export type CreateTransactionResponse = CreateTransactionSuccessResponse | WalletV1Alpha2TransactionErrorDto;
 export type ApproveTransactionParams = SubmitApprovalV2025Dto;
-export type ApproveTransactionResponse = WalletsTransactionV2025ResponseDto | WalletsV2025ControllerSubmitApprovals2Error;
+export type ApproveTransactionResponse =
+    | WalletsTransactionV2025ResponseDto
+    | WalletsV2025ControllerSubmitApprovals2Error;
 export type GetTransactionResponse = WalletsTransactionV2025ResponseDto | WalletsV2025ControllerGetTransaction2Error;
 export type GetTransactionSuccessResponse = WalletsTransactionV2025ResponseDto;
 
@@ -78,7 +80,9 @@ export type RegisterSignerParams = {
 };
 export type RegisterSignerResponse = DelegatedSignerV2025Dto | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type GetSignerResponse = DelegatedSignerV2025Dto | WalletsV2025ControllerGetDelegatedSigner2Error;
-export type GetDelegatedSignersResponse = Array<DelegatedSignerV2025Dto> | WalletsV2025ControllerGetDelegatedSigner2Error;
+export type GetDelegatedSignersResponse =
+    | Array<DelegatedSignerV2025Dto>
+    | WalletsV2025ControllerGetDelegatedSigner2Error;
 export type DelegatedSigner = DelegatedSignerV2025Dto;
 
 export type SendParams = SendTokenDto;

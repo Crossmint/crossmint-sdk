@@ -891,7 +891,6 @@ export class Wallet<C extends Chain> {
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-
 }
 
 function toRecipientLocator(to: string | UserLocator): string {

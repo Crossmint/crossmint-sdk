@@ -1114,7 +1114,11 @@ describe("WalletFactory - Server Signer", () => {
                         locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
                     },
                     delegatedSigners: [
-                        { locator: `server:${derivedAddress}`, type: "external-wallet" as const, address: derivedAddress },
+                        {
+                            locator: `server:${derivedAddress}`,
+                            type: "external-wallet" as const,
+                            address: derivedAddress,
+                        },
                     ],
                 },
             } as GetWalletSuccessResponse;
@@ -1157,7 +1161,11 @@ describe("WalletFactory - Server Signer", () => {
                         locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
                     },
                     delegatedSigners: [
-                        { locator: "external-wallet:0xSomeDelegatedAddress", type: "external-wallet" as const, address: "0xSomeDelegatedAddress" },
+                        {
+                            locator: "external-wallet:0xSomeDelegatedAddress",
+                            type: "external-wallet" as const,
+                            address: "0xSomeDelegatedAddress",
+                        },
                     ],
                 },
             } as GetWalletSuccessResponse;

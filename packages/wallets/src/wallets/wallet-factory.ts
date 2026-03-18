@@ -118,9 +118,10 @@ export class WalletFactory {
 
         let adminSigner;
         const delegatedSigners = args.delegatedSigners?.map((ds) => ({
-            signer: typeof ds.signer === "object" && "type" in ds.signer && ds.signer.type === "server"
-                ? `server:${deriveServerSignerDetails(ds.signer, args.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
-                : ds.signer,
+            signer:
+                typeof ds.signer === "object" && "type" in ds.signer && ds.signer.type === "server"
+                    ? `server:${deriveServerSignerDetails(ds.signer, args.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                    : ds.signer,
         }));
 
         if (args.signer.type === "passkey") {
@@ -417,9 +418,12 @@ export class WalletFactory {
         // Check that each input delegated signer exists in the wallet
         // (wallet can have additional signers that weren't specified in input)
         for (const argSigner of inputDelegatedSigners) {
-            const resolvedSigner = typeof argSigner.signer === "object" && "type" in argSigner.signer && argSigner.signer.type === "server"
-                ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
-                : typeof argSigner.signer === "string" ? argSigner.signer : `passkey:${argSigner.signer.id}`;
+            const resolvedSigner =
+                typeof argSigner.signer === "object" && "type" in argSigner.signer && argSigner.signer.type === "server"
+                    ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                    : typeof argSigner.signer === "string"
+                      ? argSigner.signer
+                      : `passkey:${argSigner.signer.id}`;
             const matchingExistingSigner = existingDelegatedSigners.find(
                 (existingSigner) => existingSigner.locator === resolvedSigner
             );

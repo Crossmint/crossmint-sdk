@@ -5,7 +5,13 @@ import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse, RegisterSignerPasskeyParams } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult, ServerSignerConfig } from "../signers/types";
+import type {
+    SignerConfigForChain,
+    Signer,
+    BaseSignResult,
+    PasskeySignResult,
+    ServerSignerConfig,
+} from "../signers/types";
 
 export type { Activity } from "../api/types";
 
