@@ -38,6 +38,7 @@ export { isExportableSigner } from "./signers/types";
 export type {
     EmailSignerConfig,
     PhoneSignerConfig,
+    ExternalWalletSignerConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     SignerConfigForChain,

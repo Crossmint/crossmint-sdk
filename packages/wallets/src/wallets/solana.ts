@@ -3,7 +3,7 @@ import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-b
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
     ApproveOptions,
-    PrepareOnly,
+    AutoApprove,
     SolanaTransactionInput,
     Transaction,
     TransactionInputOptions,
@@ -51,13 +51,13 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    ): Promise<Transaction<T extends AutoApprove<true> ? false : true>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.prepareOnly) {
+        if (!params.options?.autoApprove) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -65,7 +65,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            } as Transaction<T extends AutoApprove<true> ? false : true>;
         }
 
         const _additionalSigners = params.additionalSigners?.map(
@@ -74,7 +74,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                     type: "external-wallet",
                     address: signer.publicKey.toString(),
                     locator: `external-wallet:${signer.publicKey.toString()}`,
-                    onSignTransaction: (transaction) => {
+                    onSign: (transaction) => {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },

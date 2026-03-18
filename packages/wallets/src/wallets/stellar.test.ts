@@ -64,6 +64,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
+                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -130,6 +131,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     amount: "1000000",
                 },
                 memo: "Test memo",
+                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -179,6 +181,7 @@ describe("StellarWallet - sendTransaction()", () => {
             const sendPromise = stellarWallet.sendTransaction({
                 transaction: serializedTx,
                 contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+                options: { autoApprove: true },
             });
             await vi.runAllTimersAsync();
             const result = await sendPromise;
@@ -200,7 +203,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction when prepareOnly is true", async () => {
+        it("should return prepared transaction by default", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-prepare",
                 status: "pending",
@@ -230,12 +233,10 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-stellar-prepare");
-            // getTransaction should not be called when prepareOnly is true
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
@@ -275,7 +276,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { signer: "external-wallet:Gcustom123", prepareOnly: false },
+                options: { signer: "external-wallet:Gcustom123", autoApprove: true },
             });
             await vi.runAllTimersAsync();
             await sendPromise;
@@ -352,6 +353,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
+                options: { autoApprove: true },
             });
 
             const errorPromise = promise.catch(() => {});

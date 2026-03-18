@@ -57,7 +57,7 @@ export const createMockSigner = <C extends Chain>(
     return {
         type,
         address: getSignerLocator(type, chain).split(":")[1],
-        onSignTransaction: vi.fn().mockResolvedValue({ signature: "0xsigned" }),
+        onSign: vi.fn().mockResolvedValue("0xsigned"),
     } as unknown as SignerConfigForChain<C>;
 };
 

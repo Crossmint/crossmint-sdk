@@ -3,7 +3,7 @@ import { isValidEvmAddress, WithLoggerContext } from "@crossmint/common-sdk-base
 import type {
     EVMTransactionInput,
     FormattedEVMTransaction,
-    PrepareOnly,
+    AutoApprove,
     Signature,
     SignMessageInput,
     SignTypedDataInput,
@@ -54,14 +54,14 @@ export class EVMWallet extends Wallet<EVMChain> {
     })
     public async sendTransaction<T extends EVMTransactionInput>(
         params: T
-    ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>> {
+    ): Promise<Transaction<T["options"] extends AutoApprove<true> ? false : true>> {
         walletsLogger.info("evmWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
-        if (params.options?.prepareOnly) {
+        if (!params.options?.autoApprove) {
             walletsLogger.info("evmWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -69,7 +69,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as Transaction<T["options"] extends AutoApprove<true> ? false : true>;
         }
 
         const result = await this.approveTransactionAndWait(createdTransaction.id);
@@ -94,7 +94,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     })
     public async signMessage<T extends SignMessageInput>(
         params: T
-    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+    ): Promise<Signature<T["options"] extends AutoApprove<true> ? false : true>> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
@@ -112,14 +112,14 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.prepareOnly) {
+        if (!params.options?.autoApprove) {
             walletsLogger.info("evmWallet.signMessage.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as Signature<T["options"] extends AutoApprove<true> ? false : true>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);
@@ -141,7 +141,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     })
     public async signTypedData<T extends SignTypedDataInput>(
         params: T
-    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+    ): Promise<Signature<T["options"] extends AutoApprove<true> ? false : true>> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
@@ -182,14 +182,14 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.prepareOnly) {
+        if (!params.options?.autoApprove) {
             walletsLogger.info("evmWallet.signTypedData.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as Signature<T["options"] extends AutoApprove<true> ? false : true>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);

@@ -25,7 +25,7 @@ import type {
     Approval,
     Signature,
     ApproveResult,
-    PrepareOnly,
+    AutoApprove,
     SendTokenTransactionOptions,
 } from "./types";
 import {
@@ -398,7 +398,7 @@ export class Wallet<C extends Chain> {
         token: string,
         amount: string,
         options?: T
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    ): Promise<Transaction<T extends AutoApprove<true> ? false : true>> {
         const resolvedChain = this.resolveChainForEnvironment();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, resolvedChain);
@@ -430,7 +430,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.prepareOnly) {
+        if (!options?.autoApprove) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
@@ -438,7 +438,7 @@ export class Wallet<C extends Chain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: transactionCreationResponse.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            } as Transaction<T extends AutoApprove<true> ? false : true>;
         }
 
         const result = await this.approveTransactionAndWait(transactionCreationResponse.id);
@@ -521,7 +521,7 @@ export class Wallet<C extends Chain> {
      * Otherwise, the original signer is restored after the operation.
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
      * @param options - The options for the operation
-     * @param options.prepareOnly - If true, returns the transaction/signature ID without auto-approving
+     * @param options.autoApprove - If true, auto-approves the registration. By default, returns prepared state.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -533,7 +533,7 @@ export class Wallet<C extends Chain> {
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
         signer: SignerLocator | RegisterSignerPasskeyParams | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
         options?: T
-    ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
+    ): Promise<T extends AutoApprove<true> ? void : AddSignerReturnType<C>> {
         walletsLogger.info("wallet.addSigner.start");
 
         // Store original signer and swap to recovery signer for the registration
@@ -573,7 +573,7 @@ export class Wallet<C extends Chain> {
 
                 const transactionId = response.transaction.id;
 
-                if (options?.prepareOnly) {
+                if (!options?.autoApprove) {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         transactionId,
                     });
@@ -594,7 +594,7 @@ export class Wallet<C extends Chain> {
 
                 const chainResponse = response.chains?.[this.chain];
 
-                if (options?.prepareOnly) {
+                if (!options?.autoApprove) {
                     const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
                     walletsLogger.info("wallet.addSigner.prepared", {
                         signatureId,

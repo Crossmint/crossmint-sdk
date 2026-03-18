@@ -18,13 +18,20 @@ import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSigner
 
 export type { Transfers } from "../api/types";
 
+export type AutoApprove<T extends boolean = boolean> = {
+    autoApprove: T;
+};
+
+/**
+ * @deprecated Use AutoApprove instead. Will be removed in next major version.
+ */
 export type PrepareOnly<T extends boolean = boolean> = {
     prepareOnly: T;
 };
 
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
-export type TransactionInputOptions = PrepareOnly & {
+export type TransactionInputOptions = Partial<AutoApprove> & {
     signer?: string;
 };
 
@@ -32,9 +39,9 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly;
+export type SignatureInputOptions = Partial<AutoApprove>;
 
-export type AddSignerOptions = PrepareOnly;
+export type AddSignerOptions = Partial<AutoApprove>;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }

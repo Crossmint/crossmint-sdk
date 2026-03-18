@@ -1,16 +1,15 @@
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { ExternalWalletInternalSignerConfig } from "./types";
+import type { SolanaExternalWalletInternalSignerConfig } from "./types";
 import { TransactionFailedError } from "../utils/errors";
-import type { SolanaChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
 
-export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
-    onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+export class SolanaExternalWalletSigner extends ExternalWalletSigner {
+    private onSign?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
-    constructor(config: ExternalWalletInternalSignerConfig<SolanaChain>) {
+    constructor(config: SolanaExternalWalletInternalSignerConfig) {
         super(config);
-        this.onSignTransaction = config.onSignTransaction;
+        this.onSign = config.onSign;
     }
 
     async signMessage() {
@@ -18,16 +17,14 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     }
 
     async signTransaction(transaction: string) {
-        if (this.onSignTransaction == null) {
+        if (this.onSign == null) {
             return await Promise.reject(
-                new Error("onSignTransaction method is required to sign transactions with a Solana external wallet")
+                new Error("onSign callback is required to sign transactions with a Solana external wallet")
             );
         }
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        // Sign the transaction (we can't use signMessage on transactions, so we need to sign the transaction directly)
-        const signedTxn = await this.onSignTransaction(deserializedTransaction);
-        // Get the signature from the signed transaction
+        const signedTxn = await this.onSign(deserializedTransaction);
         const externalWalletPublicKey = new PublicKey(this._address);
         const signerIndex = signedTxn.message.staticAccountKeys.findIndex((key) => key.equals(externalWalletPublicKey));
         if (signerIndex === -1) {

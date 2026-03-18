@@ -8,6 +8,7 @@ import type {
 } from "@crossmint/client-signers";
 import type {
     Crossmint,
+    ExternalWalletSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -16,10 +17,10 @@ import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks } from "@/wallets/types";
 
 export type {
+    ExternalWalletSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
-    GenericEIP1193Provider,
 } from "@crossmint/common-sdk-base";
 
 ////////////////////////////////////////////////////////////
@@ -55,6 +56,10 @@ export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends Sola
 export type ApiKeySignerConfig = { type: "api-key" };
 
 export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> | ApiKeySignerConfig;
+
+export type ExternalWalletInternalSignerConfigBase = ExternalWalletSignerConfig & {
+    locator: ExternalWalletSignerLocator;
+};
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -104,6 +109,18 @@ export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
 };
 
 export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
+    locator: ExternalWalletSignerLocator;
+};
+
+export type SolanaExternalWalletInternalSignerConfig = SolanaExternalWalletSignerConfig & {
+    locator: ExternalWalletSignerLocator;
+};
+
+export type EvmExternalWalletInternalSignerConfig = EvmExternalWalletSignerConfig & {
+    locator: ExternalWalletSignerLocator;
+};
+
+export type StellarExternalWalletInternalSignerConfig = StellarExternalWalletSignerConfig & {
     locator: ExternalWalletSignerLocator;
 };
 
