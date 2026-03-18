@@ -18,6 +18,7 @@
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
         "@crossmint/client-sdk-rn-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
+        "@crossmint/expo-device-signer": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
         "@expo/vector-icons": "^15.0.3",
         "@react-navigation/bottom-tabs": "^7.2.0",
@@ -65,5 +66,10 @@
         "react-test-renderer": "18.3.1",
         "typescript": "^5.9.3"
     },
-    "private": true
+    "private": true,
+    "expo": {
+        "autolinking": {
+            "nativeModulesDir": "../../../../../packages/client/device-signer-expo"
+        }
+    }
 }
