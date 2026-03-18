@@ -44,8 +44,9 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { Signer } from "../signers/types";
+import type { Signer, ServerSignerConfig } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 type WalletContructorType<C extends Chain> = {
@@ -353,7 +354,14 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const signer = options?.experimental_signer;
+        let signer: string | undefined;
+        if (options?.experimental_signer != null) {
+            if (typeof options.experimental_signer === "string") {
+                signer = options.experimental_signer;
+            } else {
+                signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`;
+            }
+        }
         const sendParams = {
             recipient,
             amount,
@@ -468,13 +476,18 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
-        signer: string | RegisterSignerPasskeyParams;
+        signer: string | RegisterSignerPasskeyParams | ServerSignerConfig;
         options?: T;
     }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
         walletsLogger.info("wallet.addDelegatedSigner.start");
 
+        const resolvedSigner =
+            typeof params.signer === "object" && "type" in params.signer && params.signer.type === "server"
+                ? `server:${deriveServerSignerDetails(params.signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`
+                : params.signer;
+
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
-            signer: params.signer,
+            signer: resolvedSigner,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
         });
 
@@ -878,6 +891,7 @@ export class Wallet<C extends Chain> {
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
 }
 
 function toRecipientLocator(to: string | UserLocator): string {

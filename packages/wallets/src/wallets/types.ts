@@ -3,9 +3,9 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse } from "../api";
+import type { CreateTransactionSuccessResponse, RegisterSignerPasskeyParams } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
+import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult, ServerSignerConfig } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
@@ -16,7 +16,7 @@ export type PrepareOnly<T extends boolean = boolean> = {
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    experimental_signer?: string;
+    experimental_signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -102,7 +102,7 @@ export type FormattedEVMTransaction =
     | { transaction: string };
 
 export type DelegatedSigner = {
-    signer: string;
+    signer: string | RegisterSignerPasskeyParams | ServerSignerConfig;
 };
 
 // Approvals

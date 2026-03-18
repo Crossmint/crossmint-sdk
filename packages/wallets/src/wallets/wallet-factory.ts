@@ -117,7 +117,11 @@ export class WalletFactory {
         this.mutateSignerFromCustomAuth(args, true);
 
         let adminSigner;
-        const delegatedSigners = args.delegatedSigners;
+        const delegatedSigners = args.delegatedSigners?.map((ds) => ({
+            signer: typeof ds.signer === "object" && "type" in ds.signer && ds.signer.type === "server"
+                ? `server:${deriveServerSignerDetails(ds.signer, args.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                : ds.signer,
+        }));
 
         if (args.signer.type === "passkey") {
             adminSigner = await this.createPasskeyAdminSigner(args.signer);
@@ -385,13 +389,14 @@ export class WalletFactory {
         }
 
         if (args.delegatedSigners != null) {
-            this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+            this.validateDelegatedSigners(existingWallet, args.delegatedSigners, args.chain);
         }
     }
 
     private validateDelegatedSigners(
         existingWallet: GetWalletSuccessResponse,
-        inputDelegatedSigners: Array<DelegatedSigner>
+        inputDelegatedSigners: Array<DelegatedSigner>,
+        chain: Chain
     ): void {
         const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
             | DelegatedSignerResponse[]
@@ -412,14 +417,17 @@ export class WalletFactory {
         // Check that each input delegated signer exists in the wallet
         // (wallet can have additional signers that weren't specified in input)
         for (const argSigner of inputDelegatedSigners) {
+            const resolvedSigner = typeof argSigner.signer === "object" && "type" in argSigner.signer && argSigner.signer.type === "server"
+                ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                : typeof argSigner.signer === "string" ? argSigner.signer : `passkey:${argSigner.signer.id}`;
             const matchingExistingSigner = existingDelegatedSigners.find(
-                (existingSigner) => existingSigner.locator === argSigner.signer
+                (existingSigner) => existingSigner.locator === resolvedSigner
             );
 
             if (matchingExistingSigner == null) {
                 const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
                 throw new WalletCreationError(
-                    `Delegated signer '${argSigner.signer}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                    `Delegated signer '${resolvedSigner}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
             }
         }

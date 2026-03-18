@@ -15,6 +15,7 @@ import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class EVMWallet extends Wallet<EVMChain> {
@@ -211,7 +212,14 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        let signer: string;
+        if (options?.experimental_signer == null) {
+            signer = this.signer.locator();
+        } else if (typeof options.experimental_signer === "string") {
+            signer = options.experimental_signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,

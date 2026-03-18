@@ -10,6 +10,7 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class StellarWallet extends Wallet<StellarChain> {
@@ -78,7 +79,14 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        let signer: string;
+        if (options?.experimental_signer == null) {
+            signer = this.signer.locator();
+        } else if (typeof options.experimental_signer === "string") {
+            signer = options.experimental_signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
 
         let transaction: any;
 

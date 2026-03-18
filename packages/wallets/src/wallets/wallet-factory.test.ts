@@ -1103,6 +1103,87 @@ describe("WalletFactory - Server Signer", () => {
         });
     });
 
+    describe("createWallet with server delegated signer", () => {
+        it("should resolve server signer to server:<derivedAddress> in delegatedSigners", async () => {
+            const walletResponse = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123456789012345678901234",
+                        locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+                    },
+                    delegatedSigners: [
+                        { locator: `server:${derivedAddress}`, type: "external-wallet" as const, address: derivedAddress },
+                    ],
+                },
+            } as GetWalletSuccessResponse;
+            mockApiClient.createWallet.mockResolvedValue(walletResponse);
+
+            const argsWithServerDelegated: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+                delegatedSigners: [
+                    {
+                        signer: {
+                            type: "server",
+                            secret: TEST_SECRET,
+                        },
+                    },
+                ],
+            };
+
+            await walletFactory.createWallet(argsWithServerDelegated);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        delegatedSigners: [{ signer: `server:${derivedAddress}` }],
+                    }),
+                })
+            );
+        });
+
+        it("should pass string delegated signers through unchanged", async () => {
+            const walletResponse = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123456789012345678901234",
+                        locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+                    },
+                    delegatedSigners: [
+                        { locator: "external-wallet:0xSomeDelegatedAddress", type: "external-wallet" as const, address: "0xSomeDelegatedAddress" },
+                    ],
+                },
+            } as GetWalletSuccessResponse;
+            mockApiClient.createWallet.mockResolvedValue(walletResponse);
+
+            const argsWithStringDelegated: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+                signer: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+                delegatedSigners: [{ signer: "external-wallet:0xSomeDelegatedAddress" }],
+            };
+
+            await walletFactory.createWallet(argsWithStringDelegated);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        delegatedSigners: [{ signer: "external-wallet:0xSomeDelegatedAddress" }],
+                    }),
+                })
+            );
+        });
+    });
+
     describe("validateExistingWalletConfig", () => {
         it("should throw when signer type does not match existing wallet", async () => {
             const walletWithExternalSigner = {
