@@ -1,75 +1,61 @@
 package com.crossmint.expo.devicesigner
 
+import com.crossmint.kotlin.devicesigner.DeviceSignerStorageFactory
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import kotlinx.coroutines.runBlocking
 
 /**
  * Expo native module that exposes device signer key storage to React Native.
  *
- * Delegates to [DeviceSignerKeyStorage], which uses Android Keystore
- * backed by StrongBox (if available) or the TEE.
+ * Delegates to [com.crossmint.kotlin.devicesigner.KeystoreKeyStorage] via
+ * [DeviceSignerStorageFactory], which uses Android Keystore backed by StrongBox
+ * (API 28+) or the TEE.
  *
  * Registered as "CrossmintDeviceSigner" and consumed on the JS side by
  * NativeDeviceSignerKeyStorage from @crossmint/expo-device-signer.
  */
 class DeviceSignerModule : Module() {
 
+    private val storage by lazy {
+        DeviceSignerStorageFactory.create()
+            ?: throw IllegalStateException("Device signer storage is not available on this platform")
+    }
+
     override fun definition() = ModuleDefinition {
         Name("CrossmintDeviceSigner")
 
-        // Returns true — Android Keystore is always available on API 23+.
         AsyncFunction("isAvailable") {
-            true
+            runBlocking { storage.isAvailable() }
         }
 
-        // Generates a new P-256 key in Android Keystore (StrongBox or TEE).
         AsyncFunction("generateKey") { address: String? ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).generateKey(address).getOrThrow()
+            runBlocking { storage.generateKey(address).getOrThrow() }
         }
 
-        // Stores the wallet-address → pubkey mapping.
         AsyncFunction("mapAddressToKey") { address: String, publicKeyBase64: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).mapAddressToKey(address, publicKeyBase64).getOrThrow()
+            runBlocking { storage.mapAddressToKey(address, publicKeyBase64).getOrThrow() }
         }
 
-        // Returns the stored public key for a wallet address, or null.
         AsyncFunction("getKey") { address: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).getKey(address).getOrNull()
+            runBlocking { storage.getKey(address) }
         }
 
-        // Returns true if a key with the given public key exists on this device.
         AsyncFunction("hasKey") { publicKeyBase64: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).hasKey(publicKeyBase64).getOrThrow()
+            runBlocking { storage.hasKey(publicKeyBase64) }
         }
 
-        // Signs a base64-encoded message; returns a map { r, s } as hex strings.
         AsyncFunction("signMessage") { address: String, message: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            val (r, s) = DeviceSignerKeyStorage(context).signMessage(address, message).getOrThrow()
+            val (r, s) = runBlocking { storage.signMessage(address, message).getOrThrow() }
             mapOf("r" to r, "s" to s)
         }
 
-        // Deletes the key for a wallet address.
         AsyncFunction("deleteKey") { address: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).deleteKey(address).getOrThrow()
+            runBlocking { storage.deleteKey(address).getOrThrow() }
         }
 
-        // Deletes a pending key that was never promoted to a wallet-address key.
         AsyncFunction("deletePendingKey") { publicKeyBase64: String ->
-            val context = appContext.reactContext
-                ?: throw IllegalStateException("React context is not available")
-            DeviceSignerKeyStorage(context).deletePendingKey(publicKeyBase64).getOrThrow()
+            runBlocking { storage.deletePendingKey(publicKeyBase64).getOrThrow() }
         }
     }
 }
