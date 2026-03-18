@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 0.21.0
+
+### Minor Changes
+
+- e912d18: Add server key signers for EVM, Solana, and Stellar using HKDF-SHA256 key derivation, enabling server-to-server wallet operations without client-side key management.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
+
 ## 0.20.2
 
 ### Patch Changes
