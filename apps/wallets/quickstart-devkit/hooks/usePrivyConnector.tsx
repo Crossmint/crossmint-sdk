@@ -183,7 +183,13 @@ const createExternalWalletEVM = async (createWallet: any, chain: Chain, privyEmb
             recovery: {
                 type: "external-wallet",
                 address: privyEmbeddedWallet.address,
-                provider: privyProvider,
+                onSign: async (payload: string) => {
+                    const result = await privyProvider.request({
+                        method: "personal_sign",
+                        params: [payload, privyEmbeddedWallet.address],
+                    });
+                    return result as string;
+                },
             },
         });
     } catch (error) {
@@ -199,7 +205,7 @@ const createExternalWalletSolana = async (createWallet: any, privyEmbeddedWallet
             recovery: {
                 type: "external-wallet",
                 address: privyEmbeddedWallet.address,
-                onSignTransaction: (transaction: VersionedTransaction) => {
+                onSign: (transaction: VersionedTransaction) => {
                     return privyEmbeddedWallet.signTransaction(transaction);
                 },
             },

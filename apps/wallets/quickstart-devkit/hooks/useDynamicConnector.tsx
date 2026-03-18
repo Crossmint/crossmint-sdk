@@ -49,7 +49,10 @@ export const useEVMDynamicConnector = () => {
                     recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
-                        viemAccount: dynamicClient.account,
+                        onSign: async (payload: string) => {
+                            const signature = await dynamicClient.signMessage({ message: payload, account: dynamicClient.account! });
+                            return signature;
+                        },
                     },
                 });
             } catch (error) {
@@ -99,7 +102,7 @@ export const useSolanaDynamicConnector = () => {
                     recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
-                        onSignTransaction: async (transaction: VersionedTransaction) => {
+                        onSign: async (transaction: VersionedTransaction) => {
                             return await dynamicSigner.signTransaction(transaction);
                         },
                     },
