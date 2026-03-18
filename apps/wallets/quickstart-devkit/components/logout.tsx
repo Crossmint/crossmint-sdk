@@ -1,7 +1,7 @@
 "use client";
 
 import { signOutUser } from "@/lib/firebase";
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -9,7 +9,7 @@ import { usePrivy } from "@privy-io/react-auth";
 /*                    CROSSMINT AUTH LOGOUT BUTTON              */
 /* ============================================================ */
 export function CrossmintAuthLogoutButton() {
-    const { logout } = useAuth();
+    const { logout } = useCrossmintAuth();
     return (
         <button
             data-testid="logout-button"
