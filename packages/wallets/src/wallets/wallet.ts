@@ -732,11 +732,6 @@ export class Wallet<C extends Chain> {
             await this.initDeviceSigner();
         }
 
-        if (this.#signer == null) {
-            walletsLogger.info("wallet.recover.skipped", { reason: "No signer configured" });
-            return;
-        }
-
         if (!(this.#signer instanceof DeviceSigner)) {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
             return;
