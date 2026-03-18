@@ -110,12 +110,12 @@ public class DeviceSignerModule: Module {
 
     private func defaultStorage() -> any DeviceSignerKeyStorage {
         #if targetEnvironment(simulator)
-        return KeychainKeyStorage()
+        return SoftwareDeviceSignerKeyStorage()
         #else
         if SecureEnclave.isAvailable {
             return SecureEnclaveKeyStorage()
         } else {
-            return KeychainKeyStorage()
+            return SoftwareDeviceSignerKeyStorage()
         }
         #endif
     }
