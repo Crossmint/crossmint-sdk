@@ -3,7 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse, RegisterSignerPasskeyParams } from "../api";
+import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
@@ -108,7 +108,7 @@ export type FormattedEVMTransaction =
     | { transaction: string };
 
 export type DelegatedSigner = {
-    signer: string | RegisterSignerPasskeyParams | ServerSignerConfig;
+    signer: string | ServerSignerConfig;
 };
 
 // Approvals
