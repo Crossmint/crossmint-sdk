@@ -68,16 +68,17 @@ public class DeviceSignerModule: Module {
 
         // Deletes the key for a wallet address.
         AsyncFunction("deleteKey") { (address: String) async throws in
-            if let pubKey = await self.defaultStorage().getKey(address: address) {
+            let pubKey = await self.defaultStorage().getKey(address: address)
+            try await self.defaultStorage().deleteKey(address: address)
+            if let pubKey = pubKey {
                 self.untrackPublicKey(pubKey)
             }
-            try await self.defaultStorage().deleteKey(address: address)
         }
 
         // Deletes a pending key that was never promoted to a wallet-address key.
         AsyncFunction("deletePendingKey") { (publicKeyBase64: String) async throws in
-            self.untrackPublicKey(publicKeyBase64)
             try await self.defaultStorage().deletePendingKey(publicKeyBase64: publicKeyBase64)
+            self.untrackPublicKey(publicKeyBase64)
         }
     }
 
