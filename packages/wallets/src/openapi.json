@@ -3062,6 +3062,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3313,6 +3314,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3441,6 +3443,27 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address"],
+                                                "description": "A server-managed blockchain signer",
+                                                "title": "Server Signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["email"],
                                                         "description": "Identifier for email signer type"
                                                     },
@@ -3523,6 +3546,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3569,7 +3593,8 @@
                                     "world-chain-sepolia",
                                     "zora-sepolia",
                                     "arc-testnet",
-                                    "tempo-testnet"
+                                    "tempo-testnet",
+                                    "tempo"
                                 ],
                                 "description": "The chain where the signer will be registered"
                             },
@@ -3598,6 +3623,7 @@
                                     "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                     "api-key:123456789",
                                     "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
                                     "email:test@example.com",
                                     "phone:+1234567890",
                                     "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3622,6 +3648,7 @@
                                     "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                     "api-key:123456789",
                                     "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
                                     "email:test@example.com",
                                     "phone:+1234567890",
                                     "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3632,7 +3659,7 @@
                         "description": "Parameters for creating a Stellar delegated signer",
                         "title": "Stellar",
                         "example": {
-                            "signer": "external-wallet:GDU4D7BPCGXXELMXN32IFVXDPW5F5V3RBUVZQCCK3A5Y5QXMN3OL5ODR"
+                            "signer": "external-wallet:GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
                         }
                     }
                 ]
@@ -3659,6 +3686,7 @@
                                                 "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                 "api-key:123456789",
                                                 "external-wallet:0x1234567890123456789012345678901234567890",
+                                                "server:0x1234567890123456789012345678901234567890",
                                                 "email:test@example.com",
                                                 "phone:+1234567890",
                                                 "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3674,6 +3702,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3707,6 +3736,7 @@
                                                 "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                 "api-key:123456789",
                                                 "external-wallet:0x1234567890123456789012345678901234567890",
+                                                "server:0x1234567890123456789012345678901234567890",
                                                 "email:test@example.com",
                                                 "phone:+1234567890",
                                                 "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -3838,7 +3868,8 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
-                                            "tempo-testnet"
+                                            "tempo-testnet",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -3850,6 +3881,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -4118,6 +4150,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -4182,6 +4215,27 @@
                                                 "title": "External Wallet Signer",
                                                 "example": {
                                                     "type": "external-wallet",
+                                                    "address": "0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address"],
+                                                "description": "A server-managed blockchain signer",
+                                                "title": "Server Signer",
+                                                "example": {
+                                                    "type": "server",
                                                     "address": "0x1234567890123456789012345678901234567890"
                                                 }
                                             },
@@ -4389,6 +4443,27 @@
                                                                     "properties": {
                                                                         "type": {
                                                                             "type": "string",
+                                                                            "enum": ["server"],
+                                                                            "description": "Identifier for server signer type"
+                                                                        },
+                                                                        "address": {
+                                                                            "type": "string",
+                                                                            "description": "The blockchain address of the server signer"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "address"],
+                                                                    "description": "A server-managed blockchain signer",
+                                                                    "title": "Server Signer",
+                                                                    "example": {
+                                                                        "type": "server",
+                                                                        "address": "0x1234567890123456789012345678901234567890"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
                                                                             "enum": ["email"],
                                                                             "description": "Identifier for email signer type"
                                                                         },
@@ -4471,6 +4546,7 @@
                                                                 "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                                 "api-key:123456789",
                                                                 "external-wallet:0x1234567890123456789012345678901234567890",
+                                                                "server:0x1234567890123456789012345678901234567890",
                                                                 "email:test@example.com",
                                                                 "phone:+1234567890",
                                                                 "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -4626,6 +4702,27 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address"],
+                                                "description": "A server-managed blockchain signer",
+                                                "title": "Server Signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["api-key"],
                                                         "description": "Identifier for API key signer type"
                                                     }
@@ -4694,6 +4791,7 @@
                                                         "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                         "api-key:123456789",
                                                         "external-wallet:0x1234567890123456789012345678901234567890",
+                                                        "server:0x1234567890123456789012345678901234567890",
                                                         "email:test@example.com",
                                                         "phone:+1234567890",
                                                         "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -4885,6 +4983,27 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address"],
+                                                "description": "A server-managed blockchain signer",
+                                                "title": "Server Signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["email"],
                                                         "description": "Identifier for email signer type"
                                                     },
@@ -4953,6 +5072,7 @@
                                                         "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                         "api-key:123456789",
                                                         "external-wallet:0x1234567890123456789012345678901234567890",
+                                                        "server:0x1234567890123456789012345678901234567890",
                                                         "email:test@example.com",
                                                         "phone:+1234567890",
                                                         "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -5212,6 +5332,32 @@
                                             "type": "external-wallet",
                                             "address": "0x1234567890123456789012345678901234567890",
                                             "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["server"],
+                                                "description": "Identifier for server signer type"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "description": "The blockchain address of the server signer"
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "The locator of the signer"
+                                            }
+                                        },
+                                        "required": ["type", "address", "locator"],
+                                        "title": "Server Signer",
+                                        "description": "Configuration for a server signer",
+                                        "example": {
+                                            "type": "server",
+                                            "address": "0x1234567890123456789012345678901234567890",
+                                            "locator": "server:0x1234567890123456789012345678901234567890"
                                         }
                                     },
                                     {
@@ -5510,6 +5656,22 @@
                                                                                 }
                                                                             },
                                                                             "required": ["type", "phone", "locator"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["server"]
+                                                                                },
+                                                                                "address": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "locator": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "address", "locator"]
                                                                         }
                                                                     ],
                                                                     "description": "The full signer object that's pending approval"
@@ -5676,6 +5838,22 @@
                                                                                 }
                                                                             },
                                                                             "required": ["type", "phone", "locator"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["server"]
+                                                                                },
+                                                                                "address": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "locator": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "address", "locator"]
                                                                         }
                                                                     ],
                                                                     "description": "The full signer object who submitted this signature"
@@ -6052,6 +6230,32 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
+                                                "enum": ["server"],
+                                                "description": "Identifier for server signer type"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "description": "The blockchain address of the server signer"
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "The locator of the signer"
+                                            }
+                                        },
+                                        "required": ["type", "address", "locator"],
+                                        "title": "Server Signer",
+                                        "description": "Configuration for a server signer",
+                                        "example": {
+                                            "type": "server",
+                                            "address": "0x1234567890123456789012345678901234567890",
+                                            "locator": "server:0x1234567890123456789012345678901234567890"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
                                                 "enum": ["email"],
                                                 "description": "Identifier for email signer type"
                                             },
@@ -6372,6 +6576,26 @@
                                                                                             "phone",
                                                                                             "locator"
                                                                                         ]
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "type": {
+                                                                                                "type": "string",
+                                                                                                "enum": ["server"]
+                                                                                            },
+                                                                                            "address": {
+                                                                                                "type": "string"
+                                                                                            },
+                                                                                            "locator": {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": [
+                                                                                            "type",
+                                                                                            "address",
+                                                                                            "locator"
+                                                                                        ]
                                                                                     }
                                                                                 ],
                                                                                 "description": "The full signer object that's pending approval"
@@ -6558,6 +6782,26 @@
                                                                                         "required": [
                                                                                             "type",
                                                                                             "phone",
+                                                                                            "locator"
+                                                                                        ]
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "type": {
+                                                                                                "type": "string",
+                                                                                                "enum": ["server"]
+                                                                                            },
+                                                                                            "address": {
+                                                                                                "type": "string"
+                                                                                            },
+                                                                                            "locator": {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": [
+                                                                                            "type",
+                                                                                            "address",
                                                                                             "locator"
                                                                                         ]
                                                                                     }
@@ -6776,6 +7020,32 @@
                                             "type": "external-wallet",
                                             "address": "0x1234567890123456789012345678901234567890",
                                             "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["server"],
+                                                "description": "Identifier for server signer type"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "description": "The blockchain address of the server signer"
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "The locator of the signer"
+                                            }
+                                        },
+                                        "required": ["type", "address", "locator"],
+                                        "title": "Server Signer",
+                                        "description": "Configuration for a server signer",
+                                        "example": {
+                                            "type": "server",
+                                            "address": "0x1234567890123456789012345678901234567890",
+                                            "locator": "server:0x1234567890123456789012345678901234567890"
                                         }
                                     },
                                     {
@@ -7132,6 +7402,22 @@
                                                                                 }
                                                                             },
                                                                             "required": ["type", "phone", "locator"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["server"]
+                                                                                },
+                                                                                "address": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "locator": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "address", "locator"]
                                                                         }
                                                                     ],
                                                                     "description": "The full signer object that's pending approval"
@@ -7298,6 +7584,22 @@
                                                                                 }
                                                                             },
                                                                             "required": ["type", "phone", "locator"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["server"]
+                                                                                },
+                                                                                "address": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "locator": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "address", "locator"]
                                                                         }
                                                                     ],
                                                                     "description": "The full signer object who submitted this signature"
@@ -7971,6 +8273,31 @@
                                     "required": ["signer", "signature"],
                                     "title": "External wallet signature submission payload",
                                     "description": "Schema for external wallet signature submission"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "signer": {
+                                            "type": "string",
+                                            "description": "The locator for the server signer",
+                                            "example": "server:0x1234567890123456789012345678901234567890"
+                                        },
+                                        "signature": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "The cryptographic signature",
+                                            "example": "0x4551567890abcdef..."
+                                        }
+                                    },
+                                    "required": ["signer", "signature"],
+                                    "title": "Server signer signature submission payload",
+                                    "description": "Schema for server signer signature submission"
                                 },
                                 {
                                     "type": "object",
@@ -10308,6 +10635,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who will approve this signature"
@@ -10458,6 +10801,22 @@
                                                                     }
                                                                 },
                                                                 "required": ["type", "phone", "locator"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["server"]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "locator": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "address", "locator"]
                                                             }
                                                         ],
                                                         "description": "The full signer object that's pending approval"
@@ -10620,6 +10979,22 @@
                                                                     }
                                                                 },
                                                                 "required": ["type", "phone", "locator"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["server"]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "locator": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "address", "locator"]
                                                             }
                                                         ],
                                                         "description": "The full signer object who submitted this signature"
@@ -10863,7 +11238,8 @@
                                                         "world-chain-sepolia",
                                                         "zora-sepolia",
                                                         "arc-testnet",
-                                                        "tempo-testnet"
+                                                        "tempo-testnet",
+                                                        "tempo"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 },
@@ -10993,6 +11369,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who will submit this transaction"
@@ -11224,6 +11616,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object that's pending approval"
@@ -11386,6 +11794,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object who submitted this signature"
@@ -11903,6 +12327,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object that's pending approval"
@@ -12065,6 +12505,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object who submitted this signature"
@@ -12414,6 +12870,22 @@
                                                                     }
                                                                 },
                                                                 "required": ["type", "phone", "locator"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["server"]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "locator": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "address", "locator"]
                                                             }
                                                         ],
                                                         "description": "Full signer object"
@@ -12546,6 +13018,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who will submit this transaction. Defaults to the admin signer."
@@ -12751,6 +13239,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object that's pending approval"
@@ -12913,6 +13417,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object who submitted this signature"
@@ -13262,6 +13782,22 @@
                                                                     }
                                                                 },
                                                                 "required": ["type", "phone", "locator"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["server"]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "locator": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "address", "locator"]
                                                             }
                                                         ],
                                                         "description": "Full signer object"
@@ -13432,6 +13968,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object that's pending approval"
@@ -13594,6 +14146,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object who submitted this signature"
@@ -13908,6 +14476,7 @@
                                                         "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                                         "api-key:123456789",
                                                         "external-wallet:0x1234567890123456789012345678901234567890",
+                                                        "server:0x1234567890123456789012345678901234567890",
                                                         "email:test@example.com",
                                                         "phone:+1234567890",
                                                         "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -14099,6 +14668,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object that's pending approval"
@@ -14261,6 +14846,22 @@
                                                                             }
                                                                         },
                                                                         "required": ["type", "phone", "locator"]
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"]
                                                                     }
                                                                 ],
                                                                 "description": "The full signer object who submitted this signature"
@@ -14633,6 +15234,22 @@
                                                     }
                                                 },
                                                 "required": ["type", "phone", "locator"]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["server"]
+                                                    },
+                                                    "address": {
+                                                        "type": "string"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"]
                                             }
                                         ],
                                         "description": "The full signer object who will submit this signature. Defaults to the wallet's admin signer."
@@ -14990,6 +15607,22 @@
                                                     }
                                                 },
                                                 "required": ["type", "phone", "locator"]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["server"]
+                                                    },
+                                                    "address": {
+                                                        "type": "string"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"]
                                             }
                                         ],
                                         "description": "The full signer object who will approve this signature"
@@ -15140,6 +15773,22 @@
                                                         }
                                                     },
                                                     "required": ["type", "phone", "locator"]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["server"]
+                                                        },
+                                                        "address": {
+                                                            "type": "string"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["type", "address", "locator"]
                                                 }
                                             ],
                                             "description": "The full signer object that's pending approval"
@@ -15302,6 +15951,22 @@
                                                         }
                                                     },
                                                     "required": ["type", "phone", "locator"]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["server"]
+                                                        },
+                                                        "address": {
+                                                            "type": "string"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["type", "address", "locator"]
                                                 }
                                             ],
                                             "description": "The full signer object who submitted this signature"
@@ -15535,7 +16200,8 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
-                                            "tempo-testnet"
+                                            "tempo-testnet",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -15665,6 +16331,22 @@
                                                     }
                                                 },
                                                 "required": ["type", "phone", "locator"]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["server"]
+                                                    },
+                                                    "address": {
+                                                        "type": "string"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"]
                                             }
                                         ],
                                         "description": "The full signer object who will submit this transaction"
@@ -15896,6 +16578,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object that's pending approval"
@@ -16058,6 +16756,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who submitted this signature"
@@ -16567,6 +17281,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object that's pending approval"
@@ -16729,6 +17459,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who submitted this signature"
@@ -17070,6 +17816,22 @@
                                                         }
                                                     },
                                                     "required": ["type", "phone", "locator"]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["server"]
+                                                        },
+                                                        "address": {
+                                                            "type": "string"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["type", "address", "locator"]
                                                 }
                                             ],
                                             "description": "Full signer object"
@@ -17202,6 +17964,22 @@
                                                     }
                                                 },
                                                 "required": ["type", "phone", "locator"]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["server"]
+                                                    },
+                                                    "address": {
+                                                        "type": "string"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"]
                                             }
                                         ],
                                         "description": "The full signer object who will submit this transaction. Defaults to the admin signer."
@@ -17407,6 +18185,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object that's pending approval"
@@ -17569,6 +18363,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who submitted this signature"
@@ -17910,6 +18720,22 @@
                                                         }
                                                     },
                                                     "required": ["type", "phone", "locator"]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["server"]
+                                                        },
+                                                        "address": {
+                                                            "type": "string"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["type", "address", "locator"]
                                                 }
                                             ],
                                             "description": "Full signer object"
@@ -18080,6 +18906,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object that's pending approval"
@@ -18242,6 +19084,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who submitted this signature"
@@ -18548,6 +19406,7 @@
                                             "passkey:cWtP7gmZbd98HbKUuGXx5Q",
                                             "api-key:123456789",
                                             "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "server:0x1234567890123456789012345678901234567890",
                                             "email:test@example.com",
                                             "phone:+1234567890",
                                             "device:BIVmCqMz8QJB+se2kJEpGQ..."
@@ -18739,6 +19598,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object that's pending approval"
@@ -18901,6 +19776,22 @@
                                                                 }
                                                             },
                                                             "required": ["type", "phone", "locator"]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"]
                                                         }
                                                     ],
                                                     "description": "The full signer object who submitted this signature"
@@ -19223,7 +20114,8 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
-                                            "tempo-testnet"
+                                            "tempo-testnet",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -20751,7 +21643,8 @@
                                             "world-chain-sepolia",
                                             "zora-sepolia",
                                             "arc-testnet",
-                                            "tempo-testnet"
+                                            "tempo-testnet",
+                                            "tempo"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     },
@@ -22351,6 +23244,32 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"],
+                                                "title": "Server Signer",
+                                                "description": "Configuration for a server signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890",
+                                                    "locator": "server:0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["api-key"],
                                                         "description": "Identifier for API key signer type"
                                                     },
@@ -22554,6 +23473,32 @@
                                                         "type": "external-wallet",
                                                         "address": "0x1234567890123456789012345678901234567890",
                                                         "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["server"],
+                                                            "description": "Identifier for server signer type"
+                                                        },
+                                                        "address": {
+                                                            "type": "string",
+                                                            "description": "The blockchain address of the server signer"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string",
+                                                            "description": "The locator of the signer"
+                                                        }
+                                                    },
+                                                    "required": ["type", "address", "locator"],
+                                                    "title": "Server Signer",
+                                                    "description": "Configuration for a server signer",
+                                                    "example": {
+                                                        "type": "server",
+                                                        "address": "0x1234567890123456789012345678901234567890",
+                                                        "locator": "server:0x1234567890123456789012345678901234567890"
                                                     }
                                                 },
                                                 {
@@ -22868,6 +23813,32 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"],
+                                                "title": "Server Signer",
+                                                "description": "Configuration for a server signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890",
+                                                    "locator": "server:0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["api-key"],
                                                         "description": "Identifier for API key signer type"
                                                     },
@@ -23114,6 +24085,32 @@
                                                                 "type": "external-wallet",
                                                                 "address": "0x1234567890123456789012345678901234567890",
                                                                 "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"],
+                                                                    "description": "Identifier for server signer type"
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the server signer"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "description": "The locator of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "Server Signer",
+                                                            "description": "Configuration for a server signer",
+                                                            "example": {
+                                                                "type": "server",
+                                                                "address": "0x1234567890123456789012345678901234567890",
+                                                                "locator": "server:0x1234567890123456789012345678901234567890"
                                                             }
                                                         },
                                                         {
@@ -23452,6 +24449,28 @@
                                                                                                     "phone",
                                                                                                     "locator"
                                                                                                 ]
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "type": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                            "server"
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    "address": {
+                                                                                                        "type": "string"
+                                                                                                    },
+                                                                                                    "locator": {
+                                                                                                        "type": "string"
+                                                                                                    }
+                                                                                                },
+                                                                                                "required": [
+                                                                                                    "type",
+                                                                                                    "address",
+                                                                                                    "locator"
+                                                                                                ]
                                                                                             }
                                                                                         ],
                                                                                         "description": "The full signer object that's pending approval"
@@ -23651,6 +24670,28 @@
                                                                                                 "required": [
                                                                                                     "type",
                                                                                                     "phone",
+                                                                                                    "locator"
+                                                                                                ]
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "type": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                            "server"
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    "address": {
+                                                                                                        "type": "string"
+                                                                                                    },
+                                                                                                    "locator": {
+                                                                                                        "type": "string"
+                                                                                                    }
+                                                                                                },
+                                                                                                "required": [
+                                                                                                    "type",
+                                                                                                    "address",
                                                                                                     "locator"
                                                                                                 ]
                                                                                             }
@@ -24093,6 +25134,32 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
+                                                        "enum": ["server"],
+                                                        "description": "Identifier for server signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the server signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"],
+                                                "title": "Server Signer",
+                                                "description": "Configuration for a server signer",
+                                                "example": {
+                                                    "type": "server",
+                                                    "address": "0x1234567890123456789012345678901234567890",
+                                                    "locator": "server:0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
                                                         "enum": ["email"],
                                                         "description": "Identifier for email signer type"
                                                     },
@@ -24339,6 +25406,32 @@
                                                                 "type": "external-wallet",
                                                                 "address": "0x1234567890123456789012345678901234567890",
                                                                 "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["server"],
+                                                                    "description": "Identifier for server signer type"
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the server signer"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "description": "The locator of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "Server Signer",
+                                                            "description": "Configuration for a server signer",
+                                                            "example": {
+                                                                "type": "server",
+                                                                "address": "0x1234567890123456789012345678901234567890",
+                                                                "locator": "server:0x1234567890123456789012345678901234567890"
                                                             }
                                                         },
                                                         {
@@ -24735,6 +25828,28 @@
                                                                                                     "phone",
                                                                                                     "locator"
                                                                                                 ]
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "type": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                            "server"
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    "address": {
+                                                                                                        "type": "string"
+                                                                                                    },
+                                                                                                    "locator": {
+                                                                                                        "type": "string"
+                                                                                                    }
+                                                                                                },
+                                                                                                "required": [
+                                                                                                    "type",
+                                                                                                    "address",
+                                                                                                    "locator"
+                                                                                                ]
                                                                                             }
                                                                                         ],
                                                                                         "description": "The full signer object that's pending approval"
@@ -24934,6 +26049,28 @@
                                                                                                 "required": [
                                                                                                     "type",
                                                                                                     "phone",
+                                                                                                    "locator"
+                                                                                                ]
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "type": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                            "server"
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    "address": {
+                                                                                                        "type": "string"
+                                                                                                    },
+                                                                                                    "locator": {
+                                                                                                        "type": "string"
+                                                                                                    }
+                                                                                                },
+                                                                                                "required": [
+                                                                                                    "type",
+                                                                                                    "address",
                                                                                                     "locator"
                                                                                                 ]
                                                                                             }
@@ -25255,6 +26392,162 @@
                         }
                     }
                 }
+            },
+            "WalletNFTsResponseDto": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "chain": {
+                            "type": "string",
+                            "enum": [
+                                "solana",
+                                "sui",
+                                "aptos",
+                                "xion",
+                                "stellar",
+                                "arbitrum-sepolia",
+                                "avalanche-fuji",
+                                "curtis",
+                                "base-goerli",
+                                "base-sepolia",
+                                "bsc-testnet",
+                                "chiliz-spicy-testnet",
+                                "coti-testnet",
+                                "ethereum-goerli",
+                                "ethereum-sepolia",
+                                "hedera-testnet",
+                                "hypersonic-testnet",
+                                "lightlink-pegasus",
+                                "mantle-sepolia",
+                                "optimism-goerli",
+                                "optimism-sepolia",
+                                "polygon-amoy",
+                                "polygon-mumbai",
+                                "crossmint-private-testnet-ethereum",
+                                "crossmint-private-testnet-polygon",
+                                "rari-testnet",
+                                "scroll-sepolia",
+                                "sei-atlantic-2-testnet",
+                                "shape-sepolia",
+                                "skale-nebula-testnet",
+                                "soneium-minato-testnet",
+                                "space-testnet",
+                                "story-testnet",
+                                "verify-testnet",
+                                "viction-testnet",
+                                "xai-sepolia-testnet",
+                                "zkatana",
+                                "zkyoto",
+                                "zora-goerli",
+                                "zora-sepolia",
+                                "mode-sepolia",
+                                "u2u-nebulas",
+                                "zenchain-testnet",
+                                "abstract-testnet",
+                                "world-chain-sepolia",
+                                "plume-testnet",
+                                "flow-testnet",
+                                "arc-testnet",
+                                "tempo-testnet",
+                                "ethereum",
+                                "polygon",
+                                "bsc",
+                                "optimism",
+                                "arbitrum",
+                                "base",
+                                "zora",
+                                "arbitrumnova",
+                                "astar-zkevm",
+                                "apechain",
+                                "hedera",
+                                "coti",
+                                "lightlink",
+                                "mantle",
+                                "skale-nebula",
+                                "sei-pacific-1",
+                                "chiliz",
+                                "avalanche",
+                                "xai",
+                                "shape",
+                                "rari",
+                                "scroll",
+                                "viction",
+                                "mode",
+                                "space",
+                                "soneium",
+                                "story",
+                                "u2u-solaris",
+                                "abstract",
+                                "world-chain",
+                                "plume",
+                                "flow",
+                                "tempo"
+                            ],
+                            "description": "The blockchain chain",
+                            "example": "ethereum"
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" },
+                                "description": { "type": "string" },
+                                "image": { "type": "string" },
+                                "attributes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "trait_type": { "type": "string" },
+                                            "value": {
+                                                "oneOf": [
+                                                    { "type": "string" },
+                                                    { "type": "number" },
+                                                    { "type": "boolean" }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["trait_type", "value"]
+                                    }
+                                },
+                                "animation_url": { "type": "string" },
+                                "external_url": { "type": "string" }
+                            },
+                            "description": "NFT metadata including name, description, image, and attributes"
+                        },
+                        "locator": {
+                            "type": "string",
+                            "description": "The unique locator for the token",
+                            "example": "ethereum:0x1234567890123456789012345678901234567890:123"
+                        },
+                        "isSpam": { "type": "boolean", "description": "Whether the token is marked as spam" },
+                        "subscription": {
+                            "type": "object",
+                            "properties": { "expiresAt": { "type": "string" } },
+                            "required": ["expiresAt"],
+                            "description": "Subscription information if the token has subscription properties"
+                        }
+                    },
+                    "required": ["chain", "locator"],
+                    "description": "Token projection representing an NFT in a wallet"
+                },
+                "description": "Array of NFTs in the wallet",
+                "example": [
+                    {
+                        "chain": "ethereum",
+                        "metadata": {
+                            "name": "Example NFT",
+                            "description": "An example NFT",
+                            "image": "https://example.com/image.png",
+                            "attributes": [
+                                { "trait_type": "Rarity", "value": "Legendary" },
+                                { "trait_type": "Level", "value": 10 }
+                            ]
+                        },
+                        "locator": "ethereum:0x1234567890123456789012345678901234567890:123",
+                        "isSpam": false
+                    }
+                ]
             }
         }
     }

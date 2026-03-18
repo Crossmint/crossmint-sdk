@@ -40,6 +40,7 @@ export type {
     PhoneSignerConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
+    ServerSignerConfig,
     SignerConfigForChain,
     SignerLocator,
     EmailSignerLocator,

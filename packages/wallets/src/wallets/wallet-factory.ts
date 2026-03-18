@@ -18,6 +18,7 @@ import { Wallet } from "./wallet";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
+import { deriveServerSignerDetails } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
 
@@ -120,12 +121,26 @@ export class WalletFactory {
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
         const signersWithDevice =
             args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
-        const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
+        const builtSigners = await this.registerSigners(
+            signersWithDevice,
+            args.chain,
+            args.options?.deviceSignerKeyStorage
+        );
 
-        const adminSigner =
-            args.recovery.type === "passkey" && args.recovery.id == null
-                ? await this.createPasskeySigner(args.recovery)
-                : args.recovery;
+        let adminSigner;
+        if (args.recovery.type === "passkey" && args.recovery.id == null) {
+            adminSigner = await this.createPasskeySigner(args.recovery);
+        } else if (args.recovery.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                args.recovery,
+                args.chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            adminSigner = { type: "server", address: derivedAddress };
+        } else {
+            adminSigner = args.recovery;
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -243,12 +258,17 @@ export class WalletFactory {
             const existingWalletSigner = config?.adminSigner;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
-                if (createArgs.recovery.type !== existingWalletSigner.type) {
+                // Server signer uses a "server" type on the API side
+                const expectedApiType =
+                    createArgs.recovery.type === "server" ? "server" : createArgs.recovery.type;
+                if (expectedApiType !== existingWalletSigner.type) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
+                if (createArgs.recovery.type !== "server") {
+                    compareSignerConfigs(createArgs.recovery, existingWalletSigner);
+                }
             }
 
             const inputSigners = createArgs.signers;
@@ -327,6 +347,7 @@ export class WalletFactory {
 
     private async registerSigners<C extends Chain>(
         signersList?: Array<SignerConfigForChain<C>>,
+        chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
@@ -348,6 +369,15 @@ export class WalletFactory {
                         }
                         const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
                         return { signer: deviceSigner.locator };
+                    }
+                    if (signer.type === "server" && chain != null) {
+                        const { derivedAddress } = deriveServerSignerDetails(
+                            signer,
+                            chain,
+                            this.apiClient.projectId,
+                            this.apiClient.environment
+                        );
+                        return { signer: `server:${derivedAddress}` };
                     }
                     return { signer: getSignerLocator(signer) as string };
                 }

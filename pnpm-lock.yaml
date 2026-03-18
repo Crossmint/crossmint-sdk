@@ -766,9 +766,9 @@ importers:
 
   packages/client/ui/react-ui:
     dependencies:
-      '@basis-theory-ai/react':
-        specifier: 2.0.0-beta.4
-        version: 2.0.0-beta.4(react-dom@19.1.2(react@19.1.2))(react@19.1.2)
+      '@basis-theory/react-agentic':
+        specifier: 1.0.2
+        version: 1.0.2(react-dom@19.1.2(react@19.1.2))(react@19.1.2)
       '@crossmint/client-sdk-auth':
         specifier: workspace:*
         version: link:../../auth
@@ -1092,6 +1092,9 @@ importers:
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
+      '@noble/hashes':
+        specifier: 1.8.0
+        version: 1.8.0
       '@solana/web3.js':
         specifier: 1.98.1
         version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -1680,8 +1683,8 @@ packages:
   '@base-org/account@2.4.0':
     resolution: {integrity: sha512-A4Umpi8B9/pqR78D1Yoze4xHyQaujioVRqqO3d6xuDFw9VRtjg6tK3bPlwE0aW+nVH/ntllCpPa2PbI8Rnjcug==}
 
-  '@basis-theory-ai/react@2.0.0-beta.4':
-    resolution: {integrity: sha512-8il8QqCHWr1PyXAanWgnYw+/L90uBNvfH7CYICIClwwdoutRYKcld4SK6oT+OwqynUgkpnsmpUsZ5Gp2+OyL2A==}
+  '@basis-theory/react-agentic@1.0.2':
+    resolution: {integrity: sha512-LNVrPuW2hBtr9R/sfauRqjC4RkG75kZn8J0xqhRLcbXHAbG5BGCJmOC1yLeTX1cL7Qs4iHYNWK4h5copDMfl6g==}
     peerDependencies:
       react: 19.1.2
       react-dom: 19.1.2
@@ -14189,7 +14192,7 @@ snapshots:
       - zod
     optional: true
 
-  '@basis-theory-ai/react@2.0.0-beta.4(react-dom@19.1.2(react@19.1.2))(react@19.1.2)':
+  '@basis-theory/react-agentic@1.0.2(react-dom@19.1.2(react@19.1.2))(react@19.1.2)':
     dependencies:
       react: 19.1.2
       react-dom: 19.1.2(react@19.1.2)
@@ -30074,7 +30077,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/curves': 1.7.0
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.0
       '@scure/bip39': 1.5.0
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -30088,7 +30091,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.22.4)
@@ -30102,7 +30105,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -33281,7 +33284,7 @@ snapshots:
   webauthn-p256@0.0.10:
     dependencies:
       '@noble/curves': 1.7.0
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.8.0
 
   webextension-polyfill@0.10.0: {}
 

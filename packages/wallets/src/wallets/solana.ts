@@ -12,6 +12,7 @@ import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
@@ -94,7 +95,14 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signer = params.options?.signer ?? this.requireSigner().locator();
+        let signer: string;
+        if (params.options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof params.options.signer === "string") {
+            signer = params.options.signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(params.options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
 
         let serializedTransaction: string;
 
