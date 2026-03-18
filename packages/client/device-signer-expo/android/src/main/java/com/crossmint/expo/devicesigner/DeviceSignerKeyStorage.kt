@@ -3,10 +3,8 @@ package com.crossmint.expo.devicesigner
 import android.content.Context
 import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
@@ -25,7 +23,7 @@ import java.util.UUID
  *
  * Metadata (address→pubkey, pubkey→alias) is stored in a private SharedPreferences file.
  */
-internal class DeviceSignerKeyStorage(context: Context, private val biometricPolicy: BiometricPolicy = BiometricPolicy.NONE) {
+internal class DeviceSignerKeyStorage(context: Context) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("crossmint_device_signer", Context.MODE_PRIVATE)
@@ -40,12 +38,6 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
         )
             .setDigests(KeyProperties.DIGEST_SHA256)
             .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
-            .apply {
-                if (biometricPolicy == BiometricPolicy.ALWAYS) {
-                    setUserAuthenticationRequired(true)
-                    setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
-                }
-            }
             .build()
 
         val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, "AndroidKeyStore")
@@ -83,25 +75,7 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
 
     // ---- signing ----------------------------------------------------------
 
-    /** Returns true if the key for [address] was generated with user-authentication required. */
-    fun isUserAuthenticationRequired(address: String): Result<Boolean> = runCatching {
-        val pubKeyBase64 = prefs.getString("addr_$address", null)
-            ?: error("No key found for address $address")
-        val alias = prefs.getString("pk_$pubKeyBase64", null)
-            ?: error("No alias found for public key")
-        val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        val privateKey = keyStore.getKey(alias, null) as? java.security.PrivateKey
-            ?: error("Key not in Keystore for alias $alias")
-        val factory = KeyFactory.getInstance(privateKey.algorithm, "AndroidKeyStore")
-        factory.getKeySpec(privateKey, KeyInfo::class.java).isUserAuthenticationRequired
-    }
-
-    /**
-     * Initializes a [Signature] with the key for [address] and updates it with [message] bytes.
-     * The returned signature is ready for `sign()` — either directly (non-biometric keys) or
-     * via a [androidx.biometric.BiometricPrompt.CryptoObject] (biometric-required keys).
-     */
-    fun prepareSignature(address: String, message: String): Result<Signature> = runCatching {
+    fun signMessage(address: String, message: String): Result<Pair<String, String>> = runCatching {
         val pubKeyBase64 = prefs.getString("addr_$address", null)
             ?: error("No key found for address $address")
         val alias = prefs.getString("pk_$pubKeyBase64", null)
@@ -110,19 +84,12 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
         val privateKey = keyStore.getKey(alias, null) as? java.security.PrivateKey
             ?: error("Key not in Keystore for alias $alias")
         val messageBytes = Base64.decode(message, Base64.NO_WRAP)
-        Signature.getInstance("SHA256withECDSA").apply {
+        val sig = Signature.getInstance("SHA256withECDSA").apply {
             initSign(privateKey)
             update(messageBytes)
         }
-    }
-
-    fun signMessage(address: String, message: String): Result<Pair<String, String>> = runCatching {
-        val sig = prepareSignature(address, message).getOrThrow()
         parseDerSignature(sig.sign())
     }
-
-    /** Parses a DER-encoded ECDSA signature into (r, s) hex strings. Accessible from the module. */
-    fun parseDerToRs(der: ByteArray): Pair<String, String> = parseDerSignature(der)
 
     // ---- deletion ---------------------------------------------------------
 
@@ -185,13 +152,4 @@ internal class DeviceSignerKeyStorage(context: Context, private val biometricPol
     }
 
     private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
-}
-
-internal enum class BiometricPolicy {
-    NONE, ALWAYS;
-
-    companion object {
-        fun from(value: String): BiometricPolicy =
-            if (value.equals("always", ignoreCase = true)) ALWAYS else NONE
-    }
 }

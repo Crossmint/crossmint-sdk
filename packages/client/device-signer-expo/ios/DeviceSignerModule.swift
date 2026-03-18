@@ -6,7 +6,7 @@ import ExpoModulesCore
 ///
 /// On physical iOS devices the module delegates to ``SecureEnclaveKeyStorage`` so all
 /// key material lives in the Secure Enclave. On simulators it always uses
-/// ``KeychainDeviceSignerKeyStorage`` (Secure Enclave is not available on simulators).
+/// ``KeychainKeyStorage`` (Secure Enclave is not available on simulators).
 ///
 /// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
 /// `NativeDeviceSignerKeyStorage` from `@crossmint/expo-device-signer`.
@@ -24,10 +24,9 @@ public class DeviceSignerModule: Module {
         }
 
         // Generates a new P-256 key and persists it.
-        AsyncFunction("generateKey") { (address: String?, biometricPolicy: String) async throws -> String in
-            let policy = biometricPolicyFrom(biometricPolicy)
+        AsyncFunction("generateKey") { (address: String?) async throws -> String in
             do {
-                let pubKey = try await self.storage(policy: policy).generateKey(address: address)
+                let pubKey = try await self.defaultStorage().generateKey(address: address)
                 self.trackPublicKey(pubKey)
                 return pubKey
             } catch {
@@ -109,32 +108,15 @@ public class DeviceSignerModule: Module {
 
     // MARK: - Private helpers
 
-    /// Creates a storage instance with the specified biometric policy.
-    /// Always uses KeychainDeviceSignerKeyStorage on simulators.
-    private func storage(policy: BiometricPolicy) -> any DeviceSignerKeyStorage {
+    private func defaultStorage() -> any DeviceSignerKeyStorage {
         #if targetEnvironment(simulator)
-        return KeychainKeyStorage(biometricPolicy: policy)
+        return KeychainKeyStorage()
         #else
         if SecureEnclave.isAvailable {
-            return SecureEnclaveKeyStorage(biometricPolicy: policy)
+            return SecureEnclaveKeyStorage()
         } else {
-            return KeychainKeyStorage(biometricPolicy: policy)
+            return KeychainKeyStorage()
         }
         #endif
-    }
-
-    /// Returns the default storage (`.none` policy) for operations that do not involve
-    /// key generation — biometric auth is handled inside the storage implementation.
-    private func defaultStorage() -> any DeviceSignerKeyStorage {
-        storage(policy: .none)
-    }
-}
-
-/// Converts the JS biometric policy string to the Swift enum.
-/// Unrecognised values default to `.none`.
-private func biometricPolicyFrom(_ string: String) -> BiometricPolicy {
-    switch string.lowercased() {
-    case "always": return .always
-    default:       return .none
     }
 }

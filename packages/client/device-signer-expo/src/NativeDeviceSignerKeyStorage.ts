@@ -1,6 +1,6 @@
 import { requireNativeModule } from "expo-modules-core";
 
-import { DeviceSignerKeyStorage, type BiometricPolicy } from "@crossmint/wallets-sdk";
+import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NativeModuleType = Record<string, (...args: any[]) => Promise<any>>;
@@ -12,8 +12,6 @@ function getNativeModule(): NativeModuleType {
     }
     return _nativeModule;
 }
-
-export type { BiometricPolicy };
 
 /**
  * React Native implementation of {@link DeviceSignerKeyStorage} backed by the platform's
@@ -33,29 +31,13 @@ export type { BiometricPolicy };
  * ```
  */
 export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
-    private readonly defaultBiometricPolicy: BiometricPolicy;
-
-    constructor(options?: { biometricPolicy?: BiometricPolicy }) {
+    constructor() {
         // apiKey is not used by the native implementation — API calls go through the SDK context.
         super("");
-        this.defaultBiometricPolicy = options?.biometricPolicy ?? "none";
     }
 
-    generateKey(params: { address?: string; biometricPolicy?: Exclude<BiometricPolicy, "session"> }): Promise<string>;
-    generateKey(params: {
-        address?: string;
-        biometricPolicy: "session";
-        biometricExpirationTime: number;
-    }): Promise<string>;
-    generateKey(params: {
-        address?: string;
-        biometricPolicy?: BiometricPolicy;
-        biometricExpirationTime?: number;
-    }): Promise<string> {
-        // "session" is not supported natively — fall back to "always".
-        const policy =
-            params.biometricPolicy === "session" ? "always" : params.biometricPolicy ?? this.defaultBiometricPolicy;
-        return getNativeModule().generateKey(params.address ?? null, policy);
+    generateKey(params: { address?: string }): Promise<string> {
+        return getNativeModule().generateKey(params.address ?? null);
     }
 
     mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
