@@ -482,7 +482,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.addDelegatedSigner.start");
 
         const resolvedSigner =
-            typeof params.signer === "object" && "type" in params.signer && params.signer.type === "server"
+            typeof params.signer === "object" && params.signer.type === "server"
                 ? `server:${deriveServerSignerDetails(params.signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`
                 : params.signer;
 

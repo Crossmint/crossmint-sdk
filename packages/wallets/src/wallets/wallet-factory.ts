@@ -119,7 +119,7 @@ export class WalletFactory {
         let adminSigner;
         const delegatedSigners = args.delegatedSigners?.map((ds) => ({
             signer:
-                typeof ds.signer === "object"
+                typeof ds.signer === "object" && ds.signer.type === "server"
                     ? `server:${deriveServerSignerDetails(ds.signer, args.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
                     : ds.signer,
         }));
@@ -419,7 +419,7 @@ export class WalletFactory {
         // (wallet can have additional signers that weren't specified in input)
         for (const argSigner of inputDelegatedSigners) {
             const resolvedSigner =
-                typeof argSigner.signer === "object"
+                typeof argSigner.signer === "object" && argSigner.signer.type === "server"
                     ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
                     : argSigner.signer;
             const matchingExistingSigner = existingDelegatedSigners.find(
