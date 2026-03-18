@@ -154,10 +154,6 @@ export class Wallet<C extends Chain> {
         return this.#recovery;
     }
 
-    public experimental_apiClient(): ApiClient {
-        return this.#apiClient;
-    }
-
     /**
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
@@ -281,7 +277,11 @@ export class Wallet<C extends Chain> {
         const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
-            return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
+            return (
+                token.symbol !== nativeTokenSymbol &&
+                token.symbol !== "usdc" &&
+                (requestedTokens == null || requestedTokens.includes(token.symbol ?? ""))
+            );
         });
 
         const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance<C> => {
