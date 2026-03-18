@@ -50,7 +50,10 @@ export const useEVMDynamicConnector = () => {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         onSign: async (payload: string) => {
-                            const signature = await dynamicClient.signMessage({ message: payload, account: dynamicClient.account! });
+                            const signature = await dynamicClient.signMessage({
+                                message: payload,
+                                account: dynamicClient.account!,
+                            });
                             return signature;
                         },
                     },
