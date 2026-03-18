@@ -15,7 +15,7 @@ import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain, ServerSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
+import type { DelegatedSignerInput, WalletArgsFor, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { deriveServerSignerDetails } from "../signers/server";
 
@@ -396,7 +396,7 @@ export class WalletFactory {
 
     private validateDelegatedSigners(
         existingWallet: GetWalletSuccessResponse,
-        inputDelegatedSigners: Array<DelegatedSigner>,
+        inputDelegatedSigners: Array<DelegatedSignerInput>,
         chain: Chain
     ): void {
         const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as

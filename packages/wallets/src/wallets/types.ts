@@ -107,8 +107,12 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
-export type DelegatedSigner = {
+export type DelegatedSignerInput = {
     signer: string | ServerSignerConfig;
+};
+
+export type DelegatedSigner = {
+    signer: string;
 };
 
 // Approvals
@@ -136,7 +140,7 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
-    delegatedSigners?: Array<DelegatedSigner>;
+    delegatedSigners?: Array<DelegatedSignerInput>;
     alias?: string;
 };
 
