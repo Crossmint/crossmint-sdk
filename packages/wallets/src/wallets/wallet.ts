@@ -49,7 +49,6 @@ import type {
     DeviceSignerConfig,
     EmailSignerConfig,
     InternalSignerConfig,
-    PasskeySignerConfig,
     PhoneSignerConfig,
     Signer,
     SignerConfigForChain,
