@@ -13,23 +13,6 @@ function getNativeModule(): NativeModuleType {
     return _nativeModule;
 }
 
-/**
- * React Native implementation of {@link DeviceSignerKeyStorage} backed by the platform's
- * secure hardware: Secure Enclave on iOS, Android Keystore on Android.
- *
- * Pass an instance to the `deviceSignerKeyStorage` prop of `CrossmintWalletProvider`.
- *
- * @example
- * ```tsx
- * import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
- *
- * <CrossmintWalletProvider
- *     deviceSignerKeyStorage={new NativeDeviceSignerKeyStorage()}
- * >
- *     {children}
- * </CrossmintWalletProvider>
- * ```
- */
 export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     constructor() {
         // apiKey is not used by the native implementation — API calls go through the SDK context.
