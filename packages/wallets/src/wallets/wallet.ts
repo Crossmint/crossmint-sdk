@@ -430,7 +430,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.prepareOnly) {
+        if (options?.prepareOnly === true) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
