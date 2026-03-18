@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.1.0
+
+### Minor Changes
+
+- 402001f: Add orderId + clientSecret support to hosted checkout for pre-created orders
+
 ## 2.0.2
 
 ### Patch Changes

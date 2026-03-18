@@ -40,24 +40,23 @@ export function Activity() {
                     <div className="text-gray-500 text-center" data-testid="activity-loading">
                         Loading...
                     </div>
-                ) : !activity || activity.data.length === 0 ? (
+                ) : !activity || activity.events.length === 0 ? (
                     <div className="text-gray-500 text-center" data-testid="activity-empty">
                         No recent activity
                     </div>
                 ) : (
-                    activity.data.map((transfer, idx) => (
+                    activity.events.map((event, idx) => (
                         <div
-                            key={`${transfer.sender.address}-${idx}`}
+                            key={`${event.transaction_hash}-${idx}`}
                             data-testid={`activity-event-${idx}`}
                             className="flex justify-between items-center py-2.5 border-t border-gray-100 first:border-t-0"
                         >
                             <div>
                                 <div className="font-medium">
-                                    {transfer.token.amount} {transfer.token.symbol ?? transfer.token.locator}
+                                    {event.amount} {event.token_symbol}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    From: {shortenAddress(transfer.sender.address)} → To:{" "}
-                                    {shortenAddress(transfer.recipient.address)}
+                                    From: {shortenAddress(event.from_address)} → To: {shortenAddress(event.to_address)}
                                 </div>
                             </div>
                         </div>

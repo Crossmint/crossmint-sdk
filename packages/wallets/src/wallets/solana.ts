@@ -94,7 +94,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signer = params.options?.signer ?? this.requireSigner().locator();
+        const signer = this.resolveSigner(params.options?.signer);
 
         let serializedTransaction: string;
 

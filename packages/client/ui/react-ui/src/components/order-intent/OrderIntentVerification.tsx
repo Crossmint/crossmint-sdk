@@ -1,4 +1,4 @@
-import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
+import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
 import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
 import { useEffect, useRef } from "react";
 
