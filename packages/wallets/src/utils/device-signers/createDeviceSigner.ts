@@ -1,6 +1,6 @@
 import type { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import { decodeBase64, encodeHex } from "@crossmint/client-signers-cryptography";
-import { DeviceSignerConfig } from "@/signers/types";
+import type { DeviceSignerConfig } from "@/signers/types";
 
 /**
  * Creates a device signer by generating a new P-256 key pair via the provided key storage.
