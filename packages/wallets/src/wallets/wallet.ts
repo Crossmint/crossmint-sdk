@@ -839,7 +839,6 @@ export class Wallet<C extends Chain> {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
-        // Map wallet-type to simply wallet
         const signers =
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
