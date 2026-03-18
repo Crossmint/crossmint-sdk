@@ -1344,7 +1344,10 @@ function toTokenLocator(token: string, chain: string): string {
     return `${chain}:${token.toLowerCase()}`;
 }
 
-function extractSignerBase(apiSigner: APIDelegatedSigner): Omit<DelegatedSigner, "status"> {
+type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
+type DelegatedSignerBase = DistributiveOmit<DelegatedSigner, "status">;
+
+function extractSignerBase(apiSigner: APIDelegatedSigner): DelegatedSignerBase {
     switch (apiSigner.type) {
         case "passkey":
             return {
