@@ -5,10 +5,12 @@ import { walletsLogger } from "../logger";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { deriveServerSignerDetails } from "../signers/server";
 
 type MockedApiClient = {
     isServerSide: boolean;
     crossmint: { projectId: string };
+    projectId: string;
     environment: string;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     createWallet: MockedFunction<ApiClient["createWallet"]>;
@@ -46,6 +48,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         mockApiClient = {
             isServerSide: false,
             crossmint: { projectId: "test-project" },
+            projectId: "test-project",
             environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
@@ -553,6 +556,248 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.createWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
+        });
+    });
+});
+
+describe("WalletFactory - Server Signer", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    const TEST_SECRET = "a".repeat(64);
+    const PROJECT_ID = "test-project";
+    const ENVIRONMENT = APIKeyEnvironmentPrefix.STAGING;
+
+    const { derivedAddress } = deriveServerSignerDetails(
+        { type: "server", secret: TEST_SECRET },
+        "base-sepolia",
+        PROJECT_ID,
+        ENVIRONMENT
+    );
+
+    // Cast needed: API types don't include "server" admin signer type yet
+    const mockServerWalletResponse = {
+        chainType: "evm" as const,
+        type: "smart" as const,
+        address: derivedAddress,
+        owner: "test-owner",
+        config: {
+            adminSigner: {
+                type: "server",
+                address: derivedAddress,
+                locator: `server:${derivedAddress}`,
+            },
+        },
+        createdAt: Date.now(),
+    } as unknown as GetWalletSuccessResponse;
+
+    const mockServerSignerArgs: WalletCreateArgs<"base-sepolia"> = {
+        chain: "base-sepolia",
+        recovery: {
+            type: "server",
+            secret: TEST_SECRET,
+        },
+    };
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+
+        mockApiClient = {
+            isServerSide: true,
+            crossmint: { projectId: PROJECT_ID },
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("createWallet", () => {
+        it("should send server type as admin signer to the API", async () => {
+            mockApiClient.createWallet.mockResolvedValue(mockServerWalletResponse);
+
+            await walletFactory.createWallet(mockServerSignerArgs);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: { type: "server", address: derivedAddress },
+                    }),
+                })
+            );
+        });
+    });
+
+    describe("getWallet", () => {
+        it("should return a wallet when API returns server admin signer type", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockServerWalletResponse);
+
+            await expect(
+                walletFactory.getWallet(mockServerWalletResponse.address, mockServerSignerArgs)
+            ).resolves.toBeDefined();
+        });
+
+        it("should throw when API returns non-server admin signer type", async () => {
+            const walletWithWrongSigner = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: derivedAddress,
+                        locator: `external-wallet:${derivedAddress}`,
+                    },
+                },
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(walletWithWrongSigner);
+
+            await expect(walletFactory.getWallet(walletWithWrongSigner.address, mockServerSignerArgs)).rejects.toThrow(
+                WalletCreationError
+            );
+        });
+
+        it("should throw when derived address does not match wallet admin signer address", async () => {
+            const walletWithMismatchedAddress = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "server" as const,
+                        address: "0xWrongAddress000000000000000000000000000000",
+                        locator: "server:0xWrongAddress000000000000000000000000000000",
+                    },
+                },
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(walletWithMismatchedAddress);
+
+            await expect(
+                walletFactory.getWallet(walletWithMismatchedAddress.address, mockServerSignerArgs)
+            ).rejects.toThrow("does not match the wallet's admin signer address");
+        });
+    });
+
+    describe("createWallet with server delegated signer", () => {
+        it("should resolve server signer to server:<derivedAddress> in signers", async () => {
+            const walletResponse = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123456789012345678901234",
+                        locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+                    },
+                    delegatedSigners: [
+                        {
+                            locator: `server:${derivedAddress}`,
+                            type: "external-wallet" as const,
+                            address: derivedAddress,
+                        },
+                    ],
+                },
+            } as GetWalletSuccessResponse;
+            mockApiClient.createWallet.mockResolvedValue(walletResponse);
+
+            const argsWithServerSigner: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+                signers: [
+                    {
+                        type: "server",
+                        secret: TEST_SECRET,
+                    },
+                ],
+            };
+
+            await walletFactory.createWallet(argsWithServerSigner);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: expect.objectContaining({
+                            type: "external-wallet",
+                            address: "0xAdminSignerAddress123456789012345678901234",
+                        }),
+                    }),
+                })
+            );
+        });
+
+        it("should pass string delegated signers through unchanged", async () => {
+            const walletResponse = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123456789012345678901234",
+                        locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+                    },
+                    delegatedSigners: [
+                        {
+                            locator: "external-wallet:0xSomeDelegatedAddress",
+                            type: "external-wallet" as const,
+                            address: "0xSomeDelegatedAddress",
+                        },
+                    ],
+                },
+            } as GetWalletSuccessResponse;
+            mockApiClient.createWallet.mockResolvedValue(walletResponse);
+
+            const argsWithExternalSigner: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+                signers: [
+                    {
+                        type: "external-wallet",
+                        address: "0xSomeDelegatedAddress",
+                    },
+                ],
+            };
+
+            await walletFactory.createWallet(argsWithExternalSigner);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: expect.objectContaining({
+                            type: "external-wallet",
+                            address: "0xAdminSignerAddress123456789012345678901234",
+                        }),
+                    }),
+                })
+            );
+        });
+    });
+
+    describe("validateExistingWalletConfig", () => {
+        it("should throw when recovery signer type does not match existing wallet", async () => {
+            const walletWithExternalSigner = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xSomeAddress",
+                        locator: "external-wallet:0xSomeAddress",
+                    },
+                },
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(walletWithExternalSigner);
+
+            await expect(walletFactory.createWallet(mockServerSignerArgs)).rejects.toThrow(
+                "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+            );
         });
     });
 });

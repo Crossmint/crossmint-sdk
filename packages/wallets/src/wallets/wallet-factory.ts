@@ -13,13 +13,13 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
+import type { PasskeySignerConfig, SignerConfigForChain, ServerSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
-import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
+import { deriveServerSignerDetails } from "../signers/server";
 
 const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
@@ -122,10 +122,20 @@ export class WalletFactory {
             args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
         const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
 
-        const adminSigner =
-            args.recovery.type === "passkey" && args.recovery.id == null
-                ? await this.createPasskeySigner(args.recovery)
-                : args.recovery;
+        let adminSigner;
+        if (args.recovery.type === "passkey" && args.recovery.id == null) {
+            adminSigner = await this.createPasskeySigner(args.recovery);
+        } else if (args.recovery.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                args.recovery as ServerSignerConfig,
+                args.chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            adminSigner = { type: "server", address: derivedAddress };
+        } else {
+            adminSigner = args.recovery;
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -255,7 +265,7 @@ export class WalletFactory {
             if (inputSigners != null) {
                 this.validateSigners(existingWallet, inputSigners);
             }
-        }
+        
     }
 
     private validateSigners<C extends Chain>(

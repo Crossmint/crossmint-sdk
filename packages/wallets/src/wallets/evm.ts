@@ -213,7 +213,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        const signer = options?.signer ?? this.requireSigner().locator();
+        const signer = this.resolveSigner(options?.signer);
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,

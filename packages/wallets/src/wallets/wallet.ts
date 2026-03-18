@@ -50,12 +50,14 @@ import type {
     DeviceSignerLocator,
     InternalSignerConfig,
     PasskeySignerConfig,
+    ServerSignerConfig,
     Signer,
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
 import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
@@ -411,12 +413,12 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const signer = this.requireSigner();
+        const resolvedSigner = this.resolveSigner(options?.signer);
 
         const sendParams = {
             recipient,
             amount,
-            ...(options?.signer != null ? { signer: options.signer } : { signer: signer.locator() }),
+            signer: resolvedSigner,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -857,6 +859,21 @@ export class Wallet<C extends Chain> {
         return this.#signer;
     }
 
+    /**
+     * Resolves a signer option (string, ServerSignerConfig, or undefined) to a signer locator string.
+     * If no signer option is provided, falls back to the wallet's configured signer.
+     */
+    protected resolveSigner(signerOption?: string | ServerSignerConfig): string {
+        if (signerOption == null) {
+            return this.requireSigner().locator();
+        }
+        if (typeof signerOption === "string") {
+            return signerOption;
+        }
+        // ServerSignerConfig
+        return `server:${deriveServerSignerDetails(signerOption, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`;
+    }
+
     protected async preAuthIfNeeded(): Promise<void> {
         await this.#deviceSignerReady;
         if (this.#recovering == null) {
@@ -1104,7 +1121,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const signature = await signer.signMessage(pendingApproval.message);
@@ -1153,7 +1172,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 // For Solana device signers (secp256r1), the SWIG precompile expects a signature

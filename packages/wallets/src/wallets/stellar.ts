@@ -78,7 +78,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = options?.signer ?? this.requireSigner().locator();
+        const signer = this.resolveSigner(options?.signer);
 
         let transaction: any;
 
