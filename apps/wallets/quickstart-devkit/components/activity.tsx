@@ -56,8 +56,7 @@ export function Activity() {
                                     {event.amount} {event.token_symbol}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    From: {shortenAddress(event.from_address)} → To:{" "}
-                                    {shortenAddress(event.to_address)}
+                                    From: {shortenAddress(event.from_address)} → To: {shortenAddress(event.to_address)}
                                 </div>
                             </div>
                         </div>
