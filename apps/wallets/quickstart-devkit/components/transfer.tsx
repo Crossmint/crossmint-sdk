@@ -30,7 +30,7 @@ export function EVMTransferFunds() {
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            const tx = await wallet.send(recipient, token, amount.toString(), { autoApprove: true });
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
@@ -158,7 +158,7 @@ export function SolanaTransferFunds() {
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            const tx = await wallet.send(recipient, token, amount.toString(), { autoApprove: true });
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
@@ -279,7 +279,7 @@ export function StellarTransferFunds() {
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            const tx = await wallet.send(recipient, token, amount.toString(), { autoApprove: true });
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
