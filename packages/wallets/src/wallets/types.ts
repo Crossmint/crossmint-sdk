@@ -37,8 +37,8 @@ export type SignatureInputOptions = PrepareOnly;
 export type AddSignerOptions = PrepareOnly;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
-    ? { transactionId: string }
-    : { signatureId: string };
+    ? DelegatedSigner & { transactionId: string }
+    : DelegatedSigner & { signatureId?: string };
 
 export type SignMessageInput = {
     message: string;
@@ -110,9 +110,44 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
-export type DelegatedSigner = {
-    signer: string;
-};
+export type SignerStatus = "success" | "pending" | "awaiting-approval" | "failed";
+
+export type DelegatedSigner =
+    | {
+          type: "passkey";
+          id: string;
+          name: string;
+          publicKey: { x: string; y: string };
+          validatorContractVersion: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "api-key";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "external-wallet";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "email";
+          email: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "phone";
+          phone: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      };
 
 // Approvals
 export type PendingApproval = NonNullable<

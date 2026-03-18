@@ -18,6 +18,7 @@ export type MockedApiClient = {
     send: MockedFunction<ApiClient["send"]>;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     registerSigner: MockedFunction<ApiClient["registerSigner"]>;
+    getSigner: MockedFunction<ApiClient["getSigner"]>;
 };
 
 const getChainAddress = (chain: Chain): string => {
@@ -76,7 +77,14 @@ export const createMockWallet = async <C extends Chain>(
         mockApiClient as unknown as ApiClient
     );
     vi.spyOn(wallet, "signers").mockImplementation(() =>
-        Promise.resolve([{ signer: getSignerLocator(signerType, chain) }])
+        Promise.resolve([
+            {
+                type: signerType === "api-key" ? "api-key" : "external-wallet",
+                address: getChainAddress(chain),
+                locator: getSignerLocator(signerType, chain),
+                status: "success" as const,
+            } as any,
+        ])
     );
     await wallet.useSigner(signer);
     return wallet;
@@ -95,6 +103,7 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     send: vi.fn(),
     getWallet: vi.fn(),
     registerSigner: vi.fn(),
+    getSigner: vi.fn(),
     ...overrides,
 });
 

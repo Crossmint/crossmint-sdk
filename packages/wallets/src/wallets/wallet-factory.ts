@@ -15,7 +15,7 @@ import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
-import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs } from "./types";
+import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -328,10 +328,12 @@ export class WalletFactory {
     private async registerSigners<C extends Chain>(
         signersList?: Array<SignerConfigForChain<C>>,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
-    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+    ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
             signersList?.map(
-                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
+                async (
+                    signer
+                ): Promise<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
                     if (signer.type === "passkey") {
                         if (signer.id == null) {
                             return { signer: await this.createPasskeySigner(signer) };
