@@ -727,18 +727,30 @@ export class Wallet<C extends Chain> {
     })
     public async recover(): Promise<void> {
         walletsLogger.info("wallet.recover.start");
-        if (!this.needsRecovery()) {
-            walletsLogger.info("wallet.recover.skipped", { reason: "Wallet does not need recovery" });
-            return;
-        }
 
         if (this.#signer == null) {
             await this.initDeviceSigner();
         }
-        const signer = this.requireSigner();
-        if (!(signer instanceof DeviceSigner)) {
+
+        if (this.#signer == null) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "No signer configured" });
+            return;
+        }
+
+        if (!(this.#signer instanceof DeviceSigner)) {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
             return;
+        }
+
+        // Check if the device signer is already approved on the wallet
+        const currentLocator = this.#signer.locator();
+        if (currentLocator != null && currentLocator !== "device:") {
+            const isApproved = await this.signerIsRegistered(currentLocator);
+            if (isApproved) {
+                walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
+                this.#needsRecovery = false;
+                return;
+            }
         }
 
         // Generate a new device signer key
