@@ -31,7 +31,7 @@ export function EVMTransferFunds() {
         try {
             setIsLoading(true);
             const tx = await wallet.send(recipient, token, amount.toString());
-            setTxLink(tx.explorerLink);
+            setTxLink(tx.explorerLink ?? null);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
@@ -159,7 +159,7 @@ export function SolanaTransferFunds() {
         try {
             setIsLoading(true);
             const tx = await wallet.send(recipient, token, amount.toString());
-            setTxLink(tx.explorerLink);
+            setTxLink(tx.explorerLink ?? null);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
@@ -280,7 +280,7 @@ export function StellarTransferFunds() {
         try {
             setIsLoading(true);
             const tx = await wallet.send(recipient, token, amount.toString());
-            setTxLink(tx.explorerLink);
+            setTxLink(tx.explorerLink ?? null);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
