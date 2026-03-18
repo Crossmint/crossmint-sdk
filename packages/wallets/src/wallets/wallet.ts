@@ -44,8 +44,9 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { Signer } from "../signers/types";
+import type { Signer, ServerSignerConfig } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 type WalletContructorType<C extends Chain> = {
@@ -353,10 +354,18 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
+        let signer: string | undefined;
+        if (options?.experimental_signer != null) {
+            if (typeof options.experimental_signer === "string") {
+                signer = options.experimental_signer;
+            } else {
+                signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`;
+            }
+        }
         const sendParams = {
             recipient,
             amount,
-            ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+            ...(signer != null ? { signer } : {}),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -467,13 +476,18 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
-        signer: string | RegisterSignerPasskeyParams;
+        signer: string | RegisterSignerPasskeyParams | ServerSignerConfig;
         options?: T;
     }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
         walletsLogger.info("wallet.addDelegatedSigner.start");
 
+        const resolvedSigner =
+            typeof params.signer === "object" && params.signer.type === "server"
+                ? `server:${deriveServerSignerDetails(params.signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`
+                : params.signer;
+
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
-            signer: params.signer,
+            signer: resolvedSigner,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
         });
 
@@ -695,7 +709,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const signature = await signer.signMessage(pendingApproval.message);
@@ -742,7 +758,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const transactionToSign =

@@ -268,6 +268,13 @@ class ApiClient extends CrossmintApiClient {
         return this.parsedAPIKey.environment;
     }
 
+    public get projectId() {
+        if (!this.parsedAPIKey.isValid) {
+            throw new InvalidApiKeyError("Invalid API key");
+        }
+        return this.parsedAPIKey.projectId;
+    }
+
     private get headers() {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",

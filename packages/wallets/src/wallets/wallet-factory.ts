@@ -12,11 +12,12 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
+import type { InternalSignerConfig, SignerConfigForChain, ServerSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
+import type { DelegatedSignerInput, WalletArgsFor, WalletOptions } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
+import { deriveServerSignerDetails } from "../signers/server";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -115,8 +116,28 @@ export class WalletFactory {
 
         this.mutateSignerFromCustomAuth(args, true);
 
-        const adminSigner =
-            args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
+        let adminSigner;
+        const delegatedSigners = args.delegatedSigners?.map((ds) => ({
+            signer:
+                typeof ds.signer === "object" && ds.signer.type === "server"
+                    ? `server:${deriveServerSignerDetails(ds.signer, args.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                    : ds.signer,
+        }));
+
+        if (args.signer.type === "passkey") {
+            adminSigner = await this.createPasskeyAdminSigner(args.signer);
+        } else if (args.signer.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                args.signer,
+                args.chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+
+            adminSigner = { type: "server", address: derivedAddress };
+        } else {
+            adminSigner = args.signer;
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -124,7 +145,7 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
-                ...(args.delegatedSigners != null ? { delegatedSigners: args.delegatedSigners } : {}),
+                ...(delegatedSigners != null ? { delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
             alias: args.alias ?? undefined,
@@ -150,7 +171,7 @@ export class WalletFactory {
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
 
-        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
+        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.chain, args.options);
         return new Wallet(
             {
                 chain: args.chain,
@@ -167,6 +188,7 @@ export class WalletFactory {
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         signerArgs: SignerConfigForChain<C>,
+        chain: C,
         options?: WalletOptions
     ): InternalSignerConfig<C> {
         if (
@@ -216,6 +238,32 @@ export class WalletFactory {
                     onCreatePasskey: signerArgs.onCreatePasskey,
                     onSignWithPasskey: signerArgs.onSignWithPasskey,
                 };
+
+            case "server": {
+                const serverAdminSigner = walletResponse.config?.adminSigner as
+                    | { type: string; address: string; locator: string }
+                    | undefined;
+                if (serverAdminSigner?.type !== "server") {
+                    throw new WalletCreationError("Server signer expects a server admin signer on the wallet");
+                }
+                const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
+                    signerArgs as ServerSignerConfig,
+                    chain,
+                    this.apiClient.projectId,
+                    this.apiClient.environment
+                );
+                if (serverAdminSigner.address !== derivedAddress) {
+                    throw new WalletCreationError(
+                        `Server signer address ${derivedAddress} does not match the wallet's admin signer address`
+                    );
+                }
+                return {
+                    type: "server",
+                    derivedKeyBytes,
+                    locator: serverAdminSigner.locator,
+                    address: derivedAddress,
+                };
+            }
 
             case "email": {
                 if (walletResponse.config?.adminSigner.type !== "email") {
@@ -342,13 +390,14 @@ export class WalletFactory {
         }
 
         if (args.delegatedSigners != null) {
-            this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+            this.validateDelegatedSigners(existingWallet, args.delegatedSigners, args.chain);
         }
     }
 
     private validateDelegatedSigners(
         existingWallet: GetWalletSuccessResponse,
-        inputDelegatedSigners: Array<DelegatedSigner>
+        inputDelegatedSigners: Array<DelegatedSignerInput>,
+        chain: Chain
     ): void {
         const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
             | DelegatedSignerResponse[]
@@ -369,14 +418,18 @@ export class WalletFactory {
         // Check that each input delegated signer exists in the wallet
         // (wallet can have additional signers that weren't specified in input)
         for (const argSigner of inputDelegatedSigners) {
+            const resolvedSigner =
+                typeof argSigner.signer === "object" && argSigner.signer.type === "server"
+                    ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                    : argSigner.signer;
             const matchingExistingSigner = existingDelegatedSigners.find(
-                (existingSigner) => existingSigner.locator === argSigner.signer
+                (existingSigner) => existingSigner.locator === resolvedSigner
             );
 
             if (matchingExistingSigner == null) {
                 const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
                 throw new WalletCreationError(
-                    `Delegated signer '${argSigner.signer}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                    `Delegated signer '${resolvedSigner}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
             }
         }

@@ -5,7 +5,13 @@ import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
+import type {
+    SignerConfigForChain,
+    Signer,
+    BaseSignResult,
+    PasskeySignResult,
+    ServerSignerConfig,
+} from "../signers/types";
 
 export type { Activity } from "../api/types";
 
@@ -16,7 +22,7 @@ export type PrepareOnly<T extends boolean = boolean> = {
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    experimental_signer?: string;
+    experimental_signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -101,6 +107,10 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
+export type DelegatedSignerInput = {
+    signer: string | ServerSignerConfig;
+};
+
 export type DelegatedSigner = {
     signer: string;
 };
@@ -130,7 +140,7 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
-    delegatedSigners?: Array<DelegatedSigner>;
+    delegatedSigners?: Array<DelegatedSignerInput>;
     alias?: string;
 };
 
