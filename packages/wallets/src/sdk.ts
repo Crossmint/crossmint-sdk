@@ -65,8 +65,8 @@ export class CrossmintWallets {
         return await this.walletFactory.createWallet(options);
     }
 
-    public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage) {
-        return await createDeviceSigner(deviceKeyStorage);
+    public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage, address?: string) {
+        return await createDeviceSigner(deviceKeyStorage, address);
     }
 
     public async createPasskeySigner(passkeyName: string): Promise<RegisterSignerPasskeyParams> {
