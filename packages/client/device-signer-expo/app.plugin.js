@@ -21,7 +21,7 @@ const withDeviceSigner = (config) => {
 
             // --- 1. CrossmintDeviceSigner pod source ---
             const podEntry = `  # @crossmint/expo-device-signer: CrossmintDeviceSigner (hardware-backed key storage)
-  pod 'CrossmintDeviceSigner', :git => 'https://github.com/Crossmint/crossmint-swift-sdk.git', :branch => 'tomas/device-signer-podspec'
+  pod 'CrossmintDeviceSigner', :git => 'https://github.com/Crossmint/crossmint-swift-sdk.git', :tag => '0.11.0'
 `;
             if (!podfile.includes("CrossmintDeviceSigner")) {
                 // Insert right after `use_expo_modules!`, which is always inside the target block.
