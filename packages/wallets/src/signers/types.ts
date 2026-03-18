@@ -119,7 +119,7 @@ export type ServerInternalSignerConfig = {
     type: "server";
     /** The derived chain-specific private key bytes */
     derivedKeyBytes: Uint8Array;
-    locator: string;
+    locator: ServerSignerLocator;
     address: string;
 };
 
@@ -175,6 +175,7 @@ export type PasskeySignerLocator = `passkey:${string}`;
 export type DeviceSignerLocator = `device:${string}`;
 export type ExternalWalletSignerLocator = `external-wallet:${string}`;
 export type ApiKeySignerLocator = "api-key" | `api-key:${string}`;
+export type ServerSignerLocator = `server:${string}`;
 
 export type SignerLocator =
     | EmailSignerLocator
@@ -182,7 +183,8 @@ export type SignerLocator =
     | PasskeySignerLocator
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
-    | ApiKeySignerLocator;
+    | ApiKeySignerLocator
+    | ServerSignerLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

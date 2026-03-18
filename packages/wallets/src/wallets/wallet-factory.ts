@@ -273,14 +273,15 @@ export class WalletFactory {
 
             const inputSigners = createArgs.signers;
             if (inputSigners != null) {
-                this.validateSigners(existingWallet, inputSigners);
+                this.validateSigners(existingWallet, inputSigners, args.chain);
             }
         }
     }
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C>>
+        inputSigners: Array<SignerConfigForChain<C>>,
+        chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
         const existingSigners = config?.delegatedSigners;
@@ -304,6 +305,15 @@ export class WalletFactory {
                 }
                 if (existingSigner.type === "device" && inputSigner.type === "device") {
                     return true;
+                }
+                if (inputSigner.type === "server") {
+                    const { derivedAddress } = deriveServerSignerDetails(
+                        inputSigner,
+                        chain,
+                        this.apiClient.projectId,
+                        this.apiClient.environment
+                    );
+                    return existingSigner.locator === `server:${derivedAddress}`;
                 }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });

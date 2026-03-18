@@ -1,11 +1,11 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { bytesToHex } from "@noble/hashes/utils";
-import type { Signer, ServerInternalSignerConfig } from "../types";
+import type { Signer, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
 
 export class EVMServerSigner implements Signer<"server"> {
     type = "server" as const;
     private _address: string;
-    private _locator: string;
+    private _locator: ServerSignerLocator;
     private account: ReturnType<typeof privateKeyToAccount>;
 
     constructor(config: ServerInternalSignerConfig) {
