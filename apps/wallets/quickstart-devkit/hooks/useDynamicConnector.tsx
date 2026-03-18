@@ -51,7 +51,7 @@ export const useEVMDynamicConnector = () => {
                         address: dynamicPrimaryWallet.address,
                         onSign: async (payload: string) => {
                             const signature = await dynamicClient.signMessage({
-                                message: payload,
+                                message: { raw: payload as `0x${string}` },
                                 account: dynamicClient.account!,
                             });
                             return signature;
