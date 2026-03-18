@@ -1,7 +1,7 @@
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import nacl from "tweetnacl";
-import type { Signer, ServerInternalSignerConfig } from "../types";
+import type { Signer, ServerInternalSignerConfig, SignerLocator } from "../types";
 
 export class SolanaServerSigner implements Signer<"server"> {
     type = "server" as const;
@@ -20,7 +20,7 @@ export class SolanaServerSigner implements Signer<"server"> {
     }
 
     locator() {
-        return this._locator;
+        return this._locator as SignerLocator;
     }
 
     async signMessage(message: string) {

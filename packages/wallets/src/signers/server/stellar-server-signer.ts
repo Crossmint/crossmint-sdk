@@ -1,5 +1,5 @@
 import { Keypair } from "@stellar/stellar-sdk";
-import type { Signer, ServerInternalSignerConfig } from "../types";
+import type { Signer, ServerInternalSignerConfig, SignerLocator } from "../types";
 
 export class StellarServerSigner implements Signer<"server"> {
     type = "server" as const;
@@ -18,7 +18,7 @@ export class StellarServerSigner implements Signer<"server"> {
     }
 
     locator() {
-        return this._locator;
+        return this._locator as SignerLocator;
     }
 
     async signMessage(message: string) {

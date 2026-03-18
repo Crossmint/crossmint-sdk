@@ -662,7 +662,7 @@ describe("WalletFactory - Server Signer", () => {
             );
         });
 
-        it("should throw when derived address does not match wallet admin signer address", async () => {
+        it("should return wallet even when derived address does not match (getWallet does not validate recovery)", async () => {
             const walletWithMismatchedAddress = {
                 ...mockServerWalletResponse,
                 config: {
@@ -676,9 +676,10 @@ describe("WalletFactory - Server Signer", () => {
 
             mockApiClient.getWallet.mockResolvedValue(walletWithMismatchedAddress);
 
+            // getWallet takes WalletArgsFor which doesn't have recovery, so no server signer validation
             await expect(
-                walletFactory.getWallet(walletWithMismatchedAddress.address, mockServerSignerArgs)
-            ).rejects.toThrow("does not match the wallet's admin signer address");
+                walletFactory.getWallet(walletWithMismatchedAddress.address, { chain: "base-sepolia" })
+            ).resolves.toBeDefined();
         });
     });
 

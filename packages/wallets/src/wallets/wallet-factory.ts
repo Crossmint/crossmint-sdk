@@ -16,6 +16,7 @@ import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { PasskeySignerConfig, SignerConfigForChain, ServerSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs } from "./types";
+import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { createDeviceSigner } from "@/utils/device-signers";
@@ -120,7 +121,11 @@ export class WalletFactory {
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
         const signersWithDevice =
             args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
-        const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
+        const builtSigners = await this.registerSigners(
+            signersWithDevice,
+            args.chain,
+            args.options?.deviceSignerKeyStorage
+        );
 
         let adminSigner;
         if (args.recovery.type === "passkey" && args.recovery.id == null) {
@@ -263,14 +268,15 @@ export class WalletFactory {
 
             const inputSigners = createArgs.signers;
             if (inputSigners != null) {
-                this.validateSigners(existingWallet, inputSigners);
+                this.validateSigners(existingWallet, inputSigners, createArgs.chain);
             }
-        
+        }
     }
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C>>
+        inputSigners: Array<SignerConfigForChain<C>>,
+        chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
         const existingSigners = config?.delegatedSigners;
@@ -295,6 +301,15 @@ export class WalletFactory {
                 if (existingSigner.type === "device" && inputSigner.type === "device") {
                     return true;
                 }
+                if (inputSigner.type === "server") {
+                    const { derivedAddress } = deriveServerSignerDetails(
+                        inputSigner as unknown as ServerSignerConfig,
+                        chain,
+                        this.apiClient.projectId,
+                        this.apiClient.environment
+                    );
+                    return existingSigner.locator === `server:${derivedAddress}`;
+                }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });
 
@@ -305,7 +320,11 @@ export class WalletFactory {
                 );
             }
 
-            compareSignerConfigs(inputSigner, matchingExistingSigner);
+            // Skip detailed config comparison for server signers - locator matching is sufficient
+            // since the wallet API returns server signers as "external-wallet" type
+            if (inputSigner.type !== "server") {
+                compareSignerConfigs(inputSigner, matchingExistingSigner);
+            }
         }
     }
 
@@ -337,6 +356,7 @@ export class WalletFactory {
 
     private async registerSigners<C extends Chain>(
         signersList?: Array<SignerConfigForChain<C>>,
+        chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
@@ -358,6 +378,15 @@ export class WalletFactory {
                         }
                         const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
                         return { signer: deviceSigner.locator };
+                    }
+                    if (signer.type === "server" && chain != null) {
+                        const { derivedAddress } = deriveServerSignerDetails(
+                            signer as unknown as ServerSignerConfig,
+                            chain,
+                            this.apiClient.projectId,
+                            this.apiClient.environment
+                        );
+                        return { signer: `server:${derivedAddress}` };
                     }
                     return { signer: getSignerLocator(signer) as string };
                 }
