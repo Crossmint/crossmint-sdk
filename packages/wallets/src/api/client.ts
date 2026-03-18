@@ -28,7 +28,6 @@ import type {
     RegisterSignerParams,
     RegisterSignerResponse,
     GetSignerResponse,
-    GetDelegatedSignersResponse,
     WalletLocator,
     SendParams,
     SendResponse,
@@ -223,13 +222,6 @@ class ApiClient extends CrossmintApiClient {
     async registerSigner(walletLocator: WalletLocator, params: RegisterSignerParams): Promise<RegisterSignerResponse> {
         const response = await this.post(`${this.apiPrefix}/${walletLocator}/signers`, {
             body: JSON.stringify(params),
-            headers: this.headers,
-        });
-        return response.json();
-    }
-
-    async getSigners(walletLocator: WalletLocator): Promise<GetDelegatedSignersResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers`, {
             headers: this.headers,
         });
         return response.json();

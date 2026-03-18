@@ -578,6 +578,10 @@ export class Wallet<C extends Chain> {
 
                 const transactionId = response.transaction.id;
 
+                if (delegatedSigner == null) {
+                    throw new Error(`No approval found for chain ${this.chain} in register signer response`);
+                }
+
                 if (options?.prepareOnly) {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         transactionId,
@@ -599,6 +603,10 @@ export class Wallet<C extends Chain> {
                 }
 
                 const chainResponse = response.chains?.[this.chain];
+
+                if (delegatedSigner == null) {
+                    throw new Error(`No approval found for chain ${this.chain} in register signer response`);
+                }
 
                 if (options?.prepareOnly) {
                     const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
@@ -827,6 +835,11 @@ export class Wallet<C extends Chain> {
         // For EVM wallets, get per-chain status by querying each signer individually
         const signersWithStatus = await Promise.all(
             configSigners.map(async (configSigner) => {
+                // Device signers are not in the DelegatedSignerV2025Dto schema;
+                // preserve them directly from the config as with Solana/Stellar.
+                if (configSigner.locator.startsWith("device:")) {
+                    return mapConfigSignerToDelegatedSigner(configSigner, "success");
+                }
                 try {
                     const signerResponse = await this.#apiClient.getSigner(this.walletLocator, configSigner.locator);
                     if ("error" in signerResponse) {
