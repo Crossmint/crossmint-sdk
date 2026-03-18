@@ -15,6 +15,7 @@
         "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
+        "@crossmint/expo-device-signer": "workspace:*",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",

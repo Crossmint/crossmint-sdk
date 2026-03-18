@@ -16,7 +16,7 @@ import {
     type CreateOnLogin,
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
-import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
@@ -36,8 +36,6 @@ export interface CrossmintWalletProviderProps {
         /** Called when a transaction signing flow begins. */
         onTransactionStart?: () => Promise<void>;
     };
-    /** Hardware-backed key storage for device signing. Pass a `NativeDeviceSignerKeyStorage` instance to enable device signer support. */
-    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     /** @internal */
     children: ReactNode;
 }
@@ -48,8 +46,8 @@ function CrossmintWalletProviderInternal({
     appearance,
     headlessSigningFlow = true,
     callbacks,
-    deviceSignerKeyStorage,
 }: CrossmintWalletProviderProps) {
+    const deviceSignerKeyStorage = useMemo(() => new NativeDeviceSignerKeyStorage(), []);
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
     const { apiKey, appId } = crossmint;

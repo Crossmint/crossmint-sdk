@@ -80,7 +80,7 @@ importers:
         version: 5.5.3
       vitest:
         specifier: 1.6.1
-        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
+        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
       vitest-mock-extended:
         specifier: 2.0.2
         version: 2.0.2(typescript@5.5.3)(vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1))
@@ -349,6 +349,9 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../../../../packages/client/signers
+      '@crossmint/expo-device-signer':
+        specifier: workspace:*
+        version: link:../../../../packages/client/device-signer-expo
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../../packages/wallets
@@ -687,7 +690,7 @@ importers:
         version: 19.1.1(react@19.1.1)
       vitest:
         specifier: 1.6.1
-        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
+        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
 
   packages/client/signers:
     dependencies:
@@ -733,6 +736,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
+      '@crossmint/expo-device-signer':
+        specifier: workspace:*
+        version: link:../../device-signer-expo
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
@@ -4645,6 +4651,8 @@ packages:
   '@react-native/codegen@0.82.1':
     resolution: {integrity: sha512-ezXTN70ygVm9l2m0i+pAlct0RntoV4afftWMGUIeAWLgaca9qItQ54uOt32I/9dBJvzBibT33luIR/pBG0dQvg==}
     engines: {node: '>= 20.19.4'}
+    peerDependencies:
+      '@babel/core': '*'
 
   '@react-native/community-cli-plugin@0.82.1':
     resolution: {integrity: sha512-H/eMdtOy9nEeX7YVeEG1N2vyCoifw3dr9OV8++xfUElNYV7LtSmJ6AqxZUUfxGJRDFPQvaU/8enmJlM/l11VxQ==}
@@ -19882,7 +19890,7 @@ snapshots:
       nullthrows: 1.1.1
       yargs: 17.7.2
 
-  '@react-native/codegen@0.82.1':
+  '@react-native/codegen@0.82.1(@babel/core@7.28.5)':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/parser': 7.28.5
@@ -19891,8 +19899,6 @@ snapshots:
       invariant: 2.2.4
       nullthrows: 1.1.1
       yargs: 17.7.2
-    transitivePeerDependencies:
-      - supports-color
 
   '@react-native/community-cli-plugin@0.82.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
@@ -21918,7 +21924,7 @@ snapshots:
       '@jest/globals': 29.7.0
       '@types/jest': 29.5.4
       jest: 29.6.4(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.14.8)(typescript@5.5.3))
-      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
 
   '@testing-library/react@13.4.0(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -31046,7 +31052,7 @@ snapshots:
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
       '@react-native/assets-registry': 0.82.1
-      '@react-native/codegen': 0.82.1
+      '@react-native/codegen': 0.82.1(@babel/core@7.28.5)
       '@react-native/community-cli-plugin': 0.82.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@react-native/gradle-plugin': 0.82.1
       '@react-native/js-polyfills': 0.82.1
@@ -31094,7 +31100,7 @@ snapshots:
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
       '@react-native/assets-registry': 0.82.1
-      '@react-native/codegen': 0.82.1
+      '@react-native/codegen': 0.82.1(@babel/core@7.28.5)
       '@react-native/community-cli-plugin': 0.82.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@react-native/gradle-plugin': 0.82.1
       '@react-native/js-polyfills': 0.82.1
@@ -33230,9 +33236,9 @@ snapshots:
     dependencies:
       ts-essentials: 10.1.1(typescript@5.5.3)
       typescript: 5.5.3
-      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
 
-  vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1):
+  vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
