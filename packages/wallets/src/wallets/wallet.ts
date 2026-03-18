@@ -51,6 +51,7 @@ import type {
     InternalSignerConfig,
     PasskeySignerConfig,
     ServerSignerConfig,
+    ServerSignerLocator,
     Signer,
     SignerConfigForChain,
     SignerLocator,
@@ -701,7 +702,18 @@ export class Wallet<C extends Chain> {
             await this.resolveDeviceSignerAvailability(signerConfig);
         } else {
             // All non-device signers must already be registered
-            const signerLocator = getSignerLocator(signerConfig);
+            let signerLocator: SignerLocator | string;
+            if (signerConfig.type === "server") {
+                const { derivedAddress } = deriveServerSignerDetails(
+                    signerConfig,
+                    this.chain,
+                    this.#apiClient.projectId,
+                    this.#apiClient.environment
+                );
+                signerLocator = `server:${derivedAddress}`;
+            } else {
+                signerLocator = getSignerLocator(signerConfig);
+            }
             const isRegistered = await this.signerIsRegistered(signerLocator);
             if (!isRegistered) {
                 throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
@@ -1045,6 +1057,20 @@ export class Wallet<C extends Chain> {
                     locator: "api-key" as SignerLocator,
                     address: this.address,
                 } as InternalSignerConfig<C>;
+            case "server": {
+                const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
+                    config,
+                    this.chain,
+                    this.#apiClient.projectId,
+                    this.#apiClient.environment
+                );
+                return {
+                    type: "server",
+                    derivedKeyBytes,
+                    locator: `server:${derivedAddress}` as ServerSignerLocator,
+                    address: derivedAddress,
+                } as InternalSignerConfig<C>;
+            }
             default:
                 throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
         }
