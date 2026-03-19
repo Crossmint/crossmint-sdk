@@ -176,6 +176,13 @@ export class WalletFactory {
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
 
+        // For server signers, use the user-provided recovery config to preserve the secret
+        // (the API response strips it). For all other types (passkey, device, etc.), use the API
+        // response which contains the full signer details (e.g. passkey credential ID).
+        const createArgs = args as WalletCreateArgs<C>;
+        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>;
+        const recovery = createArgs.recovery?.type === "server" ? createArgs.recovery : apiRecovery;
+
         return new Wallet(
             {
                 chain: args.chain,
@@ -183,7 +190,7 @@ export class WalletFactory {
                 owner: walletResponse.owner,
                 options: args.options,
                 alias: args.alias,
-                recovery: (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>,
+                recovery,
                 signers: ((walletResponse.config as SmartWalletConfig).delegatedSigners ??
                     []) as SignerConfigForChain<C>[],
             },
