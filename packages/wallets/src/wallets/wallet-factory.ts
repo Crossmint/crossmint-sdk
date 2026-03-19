@@ -184,6 +184,7 @@ export class WalletFactory {
                 options: args.options,
                 alias: args.alias,
                 recovery: (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>,
+                signers: ((walletResponse.config as SmartWalletConfig).delegatedSigners ?? []) as SignerConfigForChain<C>[],
             },
             this.apiClient
         );
