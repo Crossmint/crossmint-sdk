@@ -26,7 +26,7 @@ export abstract class NonCustodialSigner implements Signer {
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
         if (typeof window !== "undefined") {
-            this.initialize();
+            this._initializationPromise = this.initialize();
         }
         this.type = this.config.type;
     }
@@ -42,16 +42,20 @@ export abstract class NonCustodialSigner implements Signer {
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
-        // Initialize iframe if no custom handshake parent is provided
-        if (this.config.clientTEEConnection == null) {
-            const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
-            if (!parsedAPIKey.isValid) {
-                throw new Error("Invalid API key");
+        try {
+            // Initialize iframe if no custom handshake parent is provided
+            if (this.config.clientTEEConnection == null) {
+                const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
+                if (!parsedAPIKey.isValid) {
+                    throw new Error("Invalid API key");
+                }
+                const iframeManager = new NcsIframeManager({
+                    environment: parsedAPIKey.environment,
+                });
+                this.config.clientTEEConnection = await iframeManager.initialize();
             }
-            const iframeManager = new NcsIframeManager({
-                environment: parsedAPIKey.environment,
-            });
-            this.config.clientTEEConnection = await iframeManager.initialize();
+        } finally {
+            this._initializationPromise = null;
         }
     }
 
