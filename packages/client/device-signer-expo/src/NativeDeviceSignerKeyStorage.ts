@@ -1,3 +1,4 @@
+import * as Device from "expo-device";
 import { requireNativeModule } from "expo-modules-core";
 
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
@@ -52,6 +53,13 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     getDeviceName(): string {
-        return "Unknown Device";
+        const model = Device.modelName ?? Device.deviceName ?? Device.brand;
+        const os = Device.osName;
+
+        if (model != null && os != null) {
+            return `${model} (${os})`;
+        }
+
+        return model ?? os ?? "Unknown Device";
     }
 }
