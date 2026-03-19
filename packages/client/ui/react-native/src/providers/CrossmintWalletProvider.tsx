@@ -65,7 +65,9 @@ function CrossmintWalletProviderInternal({
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
     const deviceSignerKeyStorage = useMemo(
-        () => deviceSignerKeyStorageProp ?? (_NativeDeviceSignerKeyStorage != null ? new _NativeDeviceSignerKeyStorage() : undefined),
+        () =>
+            deviceSignerKeyStorageProp ??
+            (_NativeDeviceSignerKeyStorage != null ? new _NativeDeviceSignerKeyStorage() : undefined),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
     );

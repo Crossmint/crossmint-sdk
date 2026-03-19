@@ -152,7 +152,11 @@ export default function Index() {
                                     onPress={async () => {
                                         setIsLoading(true);
                                         try {
-                                            const secret = await crossmintAuth.confirmEmailOtp(loginEmail, emailId, loginOtp);
+                                            const secret = await crossmintAuth.confirmEmailOtp(
+                                                loginEmail,
+                                                emailId,
+                                                loginOtp
+                                            );
                                             await createAuthSession(secret);
                                             setEmailId(null);
                                             setLoginOtp("");
