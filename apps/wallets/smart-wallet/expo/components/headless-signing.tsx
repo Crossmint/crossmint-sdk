@@ -43,20 +43,14 @@ export function HeadlessSigning() {
             }
             // If no key is mapped to this address yet, promote the pending key from initWallet
             const existingKey = await storage.getKey(walletAddress);
-            console.log("[testSign] walletAddress:", walletAddress);
-            console.log("[testSign] existingKey:", existingKey);
-            console.log("[testSign] deviceSignerLocator:", deviceSignerLocator);
             if (existingKey == null) {
                 if (!deviceSignerLocator) {
                     throw new Error("No key found. Tap 'Init Wallet' first.");
                 }
                 const pubKey = deviceSignerLocator.replace("device:", "");
-                console.log("[testSign] calling mapAddressToKey with pubKey:", pubKey.slice(0, 20) + "...");
                 await storage.mapAddressToKey(walletAddress, pubKey);
-                console.log("[testSign] mapAddressToKey succeeded");
             }
             const messageB64 = btoa("crossmint device signer test");
-            console.log("[testSign] calling signMessage...");
             const { r, s } = await storage.signMessage(walletAddress, messageB64);
             Alert.alert("Signed!", `r: ${r.slice(0, 20)}...\ns: ${s.slice(0, 20)}...`);
         } catch (error: any) {
