@@ -61,7 +61,7 @@ import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
-import { DeviceSigner } from "@/signers/device";
+
 import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
 
 type WalletContructorType<C extends Chain> = {
@@ -83,6 +83,7 @@ export class Wallet<C extends Chain> {
     #apiClient: ApiClient;
     #recovery: SignerConfigForChain<C>;
     #needsRecovery = false;
+    #deviceSignerApproved = false;
     #deviceSignerReady: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -771,7 +772,7 @@ export class Wallet<C extends Chain> {
     /**
      * Register a device signer with the wallet using the recovery signer.
      * Generates a new device key and registers it on-chain.
-     * Returns early if needsRecovery() is false.
+     * Returns early if the device signer's locator is already approved on-chain.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -782,17 +783,29 @@ export class Wallet<C extends Chain> {
     })
     public async recover(): Promise<void> {
         walletsLogger.info("wallet.recover.start");
-        if (!this.needsRecovery()) {
-            walletsLogger.info("wallet.recover.skipped", { reason: "Wallet does not need recovery" });
-            return;
-        }
 
         if (this.#signer == null) {
             await this.initDeviceSigner();
         }
-        const signer = this.requireSigner();
-        if (!(signer instanceof DeviceSigner)) {
+
+        if (this.#signer == null || this.#signer.type !== "device") {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
+            return;
+        }
+
+        // Fast-path: skip the API call if we've already verified the device signer is approved
+        if (this.#deviceSignerApproved) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
+            return;
+        }
+
+        // Check if the device signer is already approved on the wallet
+        const currentLocator = this.#signer.locator();
+        const isApproved = await this.signerIsRegistered(currentLocator);
+        if (isApproved) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
+            this.#needsRecovery = false;
+            this.#deviceSignerApproved = true;
             return;
         }
 
@@ -825,6 +838,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.recover.device.success", { signerLocator });
 
         this.#needsRecovery = false;
+        this.#deviceSignerApproved = true;
     }
 
     /**
@@ -1043,6 +1057,7 @@ export class Wallet<C extends Chain> {
 
         // No device signer available — will be created during next transaction
         this.#needsRecovery = true;
+        this.#deviceSignerApproved = false;
     }
 
     /**
