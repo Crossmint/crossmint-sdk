@@ -162,6 +162,12 @@ export class PendingApprovalsError extends CrossmintSDKError {
     }
 }
 
+export class InvalidAddressError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.RECIPIENT_ADDRESS_INVALID, details);
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -189,4 +195,5 @@ export type WalletError =
     | TransactionAwaitingApprovalError
     | TransactionHashNotFoundError
     | TransactionFailedError
-    | PendingApprovalsError;
+    | PendingApprovalsError
+    | InvalidAddressError;

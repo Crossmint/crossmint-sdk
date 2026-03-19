@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Wallet } from "./wallet";
 import type { GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import {
+    InvalidAddressError,
     InvalidTransferAmountError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
@@ -306,7 +307,7 @@ describe("Wallet - send()", () => {
             mockApiClient.send.mockResolvedValue(mockSendResponse);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const sendPromise = wallet.send("0xrecipient123", "usdc", "10.0");
+            const sendPromise = wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0");
             await vi.runAllTimersAsync();
             const result = await sendPromise;
 
@@ -316,7 +317,7 @@ describe("Wallet - send()", () => {
                 "me:evm:smart",
                 "base-sepolia:usdc",
                 expect.objectContaining({
-                    recipient: "0xrecipient123",
+                    recipient: "0x1111111111111111111111111111111111111111",
                     amount: "10.0",
                 })
             );
@@ -329,7 +330,9 @@ describe("Wallet - send()", () => {
 
             mockApiClient.send.mockResolvedValue(mockSendResponse);
 
-            const result = await wallet.send("0xrecipient123", "usdc", "10.0", { prepareOnly: true });
+            const result = await wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0", {
+                prepareOnly: true,
+            });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-123");
@@ -377,7 +380,19 @@ describe("Wallet - send()", () => {
 
             mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
 
-            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow(TransactionNotCreatedError);
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
+                TransactionNotCreatedError
+            );
+        });
+
+        it("should throw InvalidAddressError for invalid recipient address", async () => {
+            await expect(wallet.send("not-a-valid-address", "usdc", "10.0")).rejects.toThrow(InvalidAddressError);
+            expect(mockApiClient.send).not.toHaveBeenCalled();
+        });
+
+        it("should throw InvalidAddressError for short hex address", async () => {
+            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow(InvalidAddressError);
+            expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
         it("should throw error when transaction approval fails", async () => {
@@ -392,26 +407,34 @@ describe("Wallet - send()", () => {
                 error: "Transaction failed",
             } as any);
 
-            await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow();
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow();
         });
 
         it("should throw InvalidTransferAmountError when amount is zero", async () => {
-            await expect(wallet.send("0xrecipient123", "usdc", "0")).rejects.toThrow(InvalidTransferAmountError);
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "0")).rejects.toThrow(
+                InvalidTransferAmountError
+            );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
         it("should throw InvalidTransferAmountError when amount is negative", async () => {
-            await expect(wallet.send("0xrecipient123", "usdc", "-5.0")).rejects.toThrow(InvalidTransferAmountError);
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "-5.0")).rejects.toThrow(
+                InvalidTransferAmountError
+            );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
         it("should throw InvalidTransferAmountError when amount is not a valid number", async () => {
-            await expect(wallet.send("0xrecipient123", "usdc", "abc")).rejects.toThrow(InvalidTransferAmountError);
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "abc")).rejects.toThrow(
+                InvalidTransferAmountError
+            );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
         it("should throw InvalidTransferAmountError when amount is 0.0", async () => {
-            await expect(wallet.send("0xrecipient123", "usdc", "0.0")).rejects.toThrow(InvalidTransferAmountError);
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "0.0")).rejects.toThrow(
+                InvalidTransferAmountError
+            );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
     });
