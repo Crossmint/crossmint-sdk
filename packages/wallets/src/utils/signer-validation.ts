@@ -45,15 +45,18 @@ function normalizeHexToDecimal(value: string): string {
 /**
  * Normalizes a value for comparison.
  * - Email addresses are normalized following backend logic (e.g., Gmail dot removal).
- * - Hex numeric strings (0x-prefixed) are converted to decimal strings so that
+ * - When fieldPath indicates a publicKey coordinate (ends with ".x" or ".y"),
+ *   hex numeric strings (0x-prefixed) are converted to decimal strings so that
  *   values like "0xf4f4387d..." and "110795835..." compare as equal.
  */
-export function normalizeValueForComparison(value: unknown): unknown {
+export function normalizeValueForComparison(value: unknown, fieldPath = ""): unknown {
     if (typeof value === "string") {
         if (isEmailValid(value)) {
             return normalizeEmail(value);
         }
-        return normalizeHexToDecimal(value);
+        if (fieldPath.endsWith(".x") || fieldPath.endsWith(".y")) {
+            return normalizeHexToDecimal(value);
+        }
     }
     return value;
 }
@@ -91,7 +94,7 @@ export function compareSignerConfigs(
                 existingValue as Record<string, unknown>,
                 fieldPath
             );
-        } else if (normalizeValueForComparison(newValue) !== normalizeValueForComparison(existingValue)) {
+        } else if (normalizeValueForComparison(newValue, fieldPath) !== normalizeValueForComparison(existingValue, fieldPath)) {
             throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath, newValue, existingValue));
         }
     }

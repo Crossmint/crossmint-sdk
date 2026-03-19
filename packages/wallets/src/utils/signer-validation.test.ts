@@ -311,11 +311,39 @@ describe("compareSignerConfigs - Email Normalization", () => {
             const existingConfig = {
                 type: "device",
                 publicKey: {
-                    x: "0xGHIJ",
+                    x: "0xHIJK",
                 },
             };
 
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
+        });
+
+        it("should not normalize hex for non-publicKey fields like addresses", () => {
+            const newConfig = {
+                type: "external-wallet",
+                address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+            };
+
+            const existingConfig = {
+                type: "external-wallet",
+                address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+            };
+
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+        });
+
+        it("should treat different hex addresses as different even if numerically close", () => {
+            const newConfig = {
+                type: "external-wallet",
+                address: "0x00ff",
+            };
+
+            const existingConfig = {
+                type: "external-wallet",
+                address: "0xff",
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
         });
     });
 });
