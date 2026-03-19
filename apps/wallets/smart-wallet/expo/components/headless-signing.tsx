@@ -9,8 +9,8 @@ export function HeadlessSigning() {
     const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [deviceSignerLocator, setDeviceSignerLocator] = useState<string | null>(null);
 
+    // Email signer states
     const [otp, setOtp] = useState("");
     const [uiError, setUiError] = useState<string | null>(null);
 
@@ -30,18 +30,16 @@ export function HeadlessSigning() {
     };
 
     async function initWallet() {
+        if (user == null) {
+            console.log("User not logged in");
+            return;
+        }
         setIsLoading(true);
-        setUiError(null);
-        setDeviceSignerLocator(null);
         try {
             const descriptor = await createDeviceSigner();
             await wallet?.addSigner(descriptor.locator);
-            setDeviceSignerLocator(descriptor.locator);
-            Alert.alert("Device Signer Added", `Locator: ${descriptor.locator}`);
-        } catch (error: any) {
-            const message = error?.message ?? "Unknown error";
-            setUiError(message);
-            Alert.alert("Error", message);
+        } catch (error) {
+            console.error("Error initializing wallet:", error);
         } finally {
             setIsLoading(false);
         }
@@ -52,6 +50,7 @@ export function HeadlessSigning() {
             Alert.alert("Error", "User email is not available.");
             return;
         }
+
         await handleAction(sendEmailWithOtp);
     };
 
@@ -70,9 +69,8 @@ export function HeadlessSigning() {
         <View>
             <Text>Headless Signing Component</Text>
             <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
-            {uiError && <Text style={styles.errorText}>Error: {uiError}</Text>}
-            {deviceSignerLocator && <Text style={styles.successText}>Device key: {deviceSignerLocator}</Text>}
-            {user && <Button title="Add Device Signer" onPress={initWallet} disabled={isLoading} />}
+            {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
+            {user && <Button title="Init Wallet" onPress={initWallet} disabled={isLoading} />}
 
             {needsAuth && (
                 <View style={styles.section}>
@@ -112,10 +110,5 @@ const styles = StyleSheet.create({
     errorText: {
         color: "red",
         marginTop: 5,
-    },
-    successText: {
-        color: "green",
-        marginTop: 5,
-        fontSize: 12,
     },
 });
