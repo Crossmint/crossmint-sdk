@@ -754,63 +754,95 @@ export class Wallet<C extends Chain> {
     })
     public async useSigner(signer: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
-
-        // Validate that required values are set for each signer type
         this.validateSignerInput(signer);
 
-        // Device signers: check availability and flag for recovery if needed
         if (signer.type === "device") {
             await this.resolveDeviceSignerAvailability(signer);
         } else {
-            // Recovery signers skip the registration check
-            const isRecovery = this.isRecoverySigner(signer);
-            if (!isRecovery) {
-                // Passkey auto-selection: if no id provided, auto-select if exactly one passkey exists
-                if (signer.type === "passkey" && (!("id" in signer) || signer.id == null || signer.id === "")) {
-                    const existingSigners = await this.signers();
-                    const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
-
-                    if (passkeySigners.length === 0) {
-                        throw new Error("No passkey signer is registered on this wallet.");
-                    }
-                    if (passkeySigners.length > 1) {
-                        throw new Error(
-                            'Multiple passkey signers are registered on this wallet. Please specify the credential id: wallet.useSigner({ type: "passkey", id: "<credential-id>" })'
-                        );
-                    }
-
-                    // Auto-select the single passkey
-                    const passkeyLocator = passkeySigners[0].locator;
-                    const credentialId = passkeyLocator.replace("passkey:", "");
-                    signer.id = credentialId;
-                }
-
-                // Delegated signers must already be registered
-                let signerLocator: SignerLocator | string;
-                if (signer.type === "server") {
-                    const { derivedAddress } = deriveServerSignerDetails(
-                        signer,
-                        this.chain,
-                        this.#apiClient.projectId,
-                        this.#apiClient.environment
-                    );
-                    signerLocator = `server:${derivedAddress}`;
-                } else {
-                    signerLocator = getSignerLocator(signer);
-                }
-                const isRegistered = await this.signerIsRegistered(signerLocator);
-                if (!isRegistered) {
-                    throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
-                }
-            }
-            this.#needsRecovery = false;
+            await this.resolveNonDeviceSigner(signer);
         }
 
-        // Assemble and set the signer
         const internalConfig = this.buildInternalSignerConfig(signer);
         const signerLocator = getSignerLocator(signer);
         this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
+    }
+
+    /**
+     * Resolve a non-device signer: check delegated registration first, then fall back to recovery.
+     * For passkeys without an explicit credential id, auto-selects from registered delegated signers.
+     */
+    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<void> {
+        // Passkey without id: try to auto-select from registered delegated signers
+        if (signer.type === "passkey" && this.isPasskeyMissingId(signer)) {
+            const selected = await this.tryAutoSelectPasskey(signer);
+            if (!selected) {
+                // No delegated passkeys — use recovery if this is the recovery signer
+                if (this.isRecoverySigner(signer)) {
+                    this.#needsRecovery = false;
+                    return;
+                }
+                throw new Error("No passkey signer is registered on this wallet.");
+            }
+        }
+
+        // Check if this is a registered delegated signer
+        const locator = this.resolveSignerLocator(signer);
+        if (await this.signerIsRegistered(locator)) {
+            this.#needsRecovery = false;
+            return;
+        }
+
+        // Not a delegated signer — fall back to recovery
+        if (this.isRecoverySigner(signer)) {
+            this.#needsRecovery = false;
+            return;
+        }
+
+        throw new Error(`Signer "${locator}" is not registered in this wallet.`);
+    }
+
+    /**
+     * Try to auto-select a passkey credential from registered delegated signers.
+     * Returns true if a credential was auto-selected, false if no passkey signers exist.
+     * Throws if multiple passkey signers exist (user must specify an id).
+     */
+    private async tryAutoSelectPasskey(signer: SignerConfigForChain<C>): Promise<boolean> {
+        const existingSigners = await this.signers();
+        const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
+
+        if (passkeySigners.length === 0) {
+            return false;
+        }
+        if (passkeySigners.length > 1) {
+            throw new Error(
+                'Multiple passkey signers are registered on this wallet. Please specify the credential id: wallet.useSigner({ type: "passkey", id: "<credential-id>" })'
+            );
+        }
+
+        signer.id = passkeySigners[0].locator.replace("passkey:", "");
+        return true;
+    }
+
+    /**
+     * Compute the signer locator for registration checks.
+     * Server signers use the derived address; other types use the standard locator.
+     */
+    private resolveSignerLocator(signer: SignerConfigForChain<C>): string {
+        if (signer.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                signer,
+                this.chain,
+                this.#apiClient.projectId,
+                this.#apiClient.environment
+            );
+            return `server:${derivedAddress}`;
+        }
+        return getSignerLocator(signer);
+    }
+
+    private isPasskeyMissingId(signer: SignerConfigForChain<C>): boolean {
+        return !("id" in signer) || signer.id == null || signer.id === "";
     }
 
     /**

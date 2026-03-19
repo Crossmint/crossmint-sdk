@@ -917,8 +917,8 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
-            // useSigner with the recovery signer config should succeed without signers() being called
             await wallet.useSigner({ type: "api-key" } as any);
 
             expect(wallet.signer).toBeDefined();
@@ -935,8 +935,8 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
-            // Using the recovery email signer via config object should work without registration check
             await wallet.useSigner({ type: "email", email: "admin@example.com" } as any);
 
             expect(wallet.signer).toBeDefined();
@@ -953,6 +953,7 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             await wallet.useSigner({ type: "phone", phone: "+1234567890" } as any);
 
@@ -970,6 +971,7 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             await wallet.useSigner({
                 type: "external-wallet",
@@ -981,7 +983,7 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("external-wallet");
         });
 
-        it("should accept the recovery signer (passkey) without requiring auto-selection from delegated signers", async () => {
+        it("should accept the recovery signer (passkey) when no delegated passkeys exist", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -991,17 +993,16 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
-            // Passkey recovery signer should be accepted without querying delegated signers.
-            // Previously this would throw "No passkey signer is registered" because
-            // auto-selection ran before the recovery check.
+            // No delegated passkeys → falls back to recovery signer
             await wallet.useSigner({ type: "passkey" } as any);
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
         });
 
-        it("should accept a passkey with explicit id as recovery signer when recovery is passkey type", async () => {
+        it("should accept a passkey with explicit id as recovery when not found in delegated signers", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1011,10 +1012,37 @@ describe("Wallet - useSigner()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
-            // A passkey with an explicit id could be the recovery passkey's credential,
-            // so it should be accepted without registration check.
-            await wallet.useSigner({ type: "passkey", id: "some-credential-id" } as any);
+            // Not a registered delegated signer, but matches recovery type → accepted as recovery
+            await wallet.useSigner({ type: "passkey", id: "recovery-credential" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("passkey");
+        });
+
+        it("should use passkey with explicit id as delegated when it IS registered, even if recovery is also passkey", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "passkey" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                {
+                    type: "passkey",
+                    id: "delegated-credential",
+                    address: "0xPasskey",
+                    locator: "passkey:delegated-credential",
+                    status: "success" as const,
+                },
+            ]);
+
+            // This id matches a registered delegated signer → used as delegated, not recovery
+            await wallet.useSigner({ type: "passkey", id: "delegated-credential" } as any);
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
