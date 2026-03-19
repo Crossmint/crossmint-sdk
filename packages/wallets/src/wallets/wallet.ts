@@ -157,7 +157,7 @@ export class Wallet<C extends Chain> {
         // Step 1: Try device signer (existing behavior)
         await this.initDeviceSigner();
 
-        // If recovery is pending, we're done
+        // If device signer was found or recovery is pending, we're done
         if (this.#signer != null || this.#needsRecovery) {
             return;
         }
