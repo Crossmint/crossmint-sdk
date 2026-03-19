@@ -3,7 +3,7 @@ import type { EVMChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
 
 export class EVMExternalWalletSigner extends ExternalWalletSigner<EVMChain> {
-    private onSign?: (payload: string) => Promise<string>;
+    private onSign: (payload: string) => Promise<string>;
 
     constructor(config: ExternalWalletInternalSignerConfig<EVMChain>) {
         super(config);
@@ -11,11 +11,6 @@ export class EVMExternalWalletSigner extends ExternalWalletSigner<EVMChain> {
     }
 
     async signMessage(message: string) {
-        if (this.onSign == null) {
-            return await Promise.reject(
-                new Error("onSign callback is required to sign messages with an EVM external wallet")
-            );
-        }
         const signature = await this.onSign(message);
         if (signature == null) {
             throw new Error("[EVMExternalWalletSigner] Failed to sign message: onSign returned null");
