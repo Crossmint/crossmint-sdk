@@ -66,10 +66,5 @@
         "react-test-renderer": "18.3.1",
         "typescript": "^5.9.3"
     },
-    "private": true,
-    "expo": {
-        "autolinking": {
-            "nativeModulesDir": "../../../../../packages/client/device-signer-expo"
-        }
-    }
+    "private": true
 }
