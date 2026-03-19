@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.10.0-beta.1
+
+### Patch Changes
+
+- 4e5bc75: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+
 ## 0.10.0-beta.0
 
 ### Minor Changes

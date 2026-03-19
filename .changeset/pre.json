@@ -29,13 +29,19 @@
     "changesets": [
         "add-sdk-logger-device-signer",
         "chatty-frogs-change",
+        "client-side-address-validation",
         "device-signer-approval-check",
         "device-signer-default",
         "device-signer-idb-fatal",
+        "device-signer-name",
+        "fix-device-signer-hex-comparison",
         "fix-tee-double-init",
+        "fix-transfers-optional-params",
+        "fix-zero-value-transfers",
         "homogenize-signer-management",
         "itchy-ducks-collect",
         "mighty-coins-fix",
+        "reject-unknown-chains",
         "remove-biometric-policy",
         "remove-customauth",
         "remove-dynamic-wallet-auth",
@@ -46,7 +52,10 @@
         "split-get-create-wallet",
         "tall-papayas-glow",
         "ten-mails-scream",
+        "tricky-planes-rest",
+        "use-signer-recovery-support",
         "use-wallet-otp-signer",
-        "wal-9286-rename-signer-terminology"
+        "wal-9286-rename-signer-terminology",
+        "wallet-fixes"
     ]
 }
