@@ -260,16 +260,12 @@ export class WalletFactory {
             const existingWalletSigner = config?.adminSigner;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
-                // Server signer uses a "server" type on the API side
-                const expectedApiType = createArgs.recovery.type === "server" ? "server" : createArgs.recovery.type;
-                if (expectedApiType !== existingWalletSigner.type) {
+                if (createArgs.recovery.type !== existingWalletSigner.type) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                if (createArgs.recovery.type !== "server") {
-                    compareSignerConfigs(createArgs.recovery, existingWalletSigner);
-                }
+                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
             }
 
             const inputSigners = createArgs.signers;
