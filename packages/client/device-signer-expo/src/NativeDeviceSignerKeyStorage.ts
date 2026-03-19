@@ -50,4 +50,8 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     deletePendingKey(publicKeyBase64: string): Promise<void> {
         return getNativeModule().deletePendingKey(publicKeyBase64);
     }
+
+    getDeviceName(): string {
+        return "Unknown Device";
+    }
 }
