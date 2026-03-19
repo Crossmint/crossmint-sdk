@@ -625,6 +625,8 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.success", {
                         signatureId: chainResponse.id,
                     });
+                } else if (chainResponse?.status === "failed") {
+                    throw new Error(`Signer registration failed for chain ${this.chain}`);
                 } else {
                     walletsLogger.info("wallet.addSigner.success");
                 }
