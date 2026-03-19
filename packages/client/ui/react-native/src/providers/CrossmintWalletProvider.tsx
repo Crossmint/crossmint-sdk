@@ -37,7 +37,7 @@ export interface CrossmintWalletProviderProps {
     createOnLogin?: CreateOnLogin;
     /** Optional appearance configuration for styling built-in UI components. */
     appearance?: UIConfig;
-    /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
+    /** When true, no UI is rendered and signing flows must be handled manually. When false (default), built-in UI components are rendered. */
     headlessSigningFlow?: boolean;
     /** Optional lifecycle callbacks invoked during wallet creation and transaction signing. */
     callbacks?: {
@@ -60,7 +60,7 @@ function CrossmintWalletProviderInternal({
     children,
     createOnLogin,
     appearance,
-    headlessSigningFlow = true,
+    headlessSigningFlow = false,
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
