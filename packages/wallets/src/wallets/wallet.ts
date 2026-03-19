@@ -63,7 +63,7 @@ import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
+import { getSignerLocator } from "../utils/signer-locator";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -723,7 +723,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Set the active signer for this wallet.
-     * Accepts a signer locator string (e.g. "email:user@example.com") or a signer config object.
+     * Accepts a signer config object. The locator is inferred internally.
      * Works for both delegated signers and the recovery (admin) signer.
      *
      * For passkey signers: if no `id` is provided, the wallet will auto-select the passkey
@@ -732,13 +732,10 @@ export class Wallet<C extends Chain> {
      * For device signers: if no device key is found locally, the signer will be created
      * automatically during the next transaction (via recovery).
      *
-     * For external-wallet signers: the full config object with an onSign callback must be provided
+     * For external-wallet signers: the config object must include an onSign callback
      * (applies to both delegated and recovery signers).
      *
-     * For all other signer types: a locator string is sufficient. The signer must be either
-     * a registered delegated signer or the wallet's recovery signer.
-     *
-     * @param signer - The signer to use, by locator or config
+     * @param signer - The signer config object to use
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -747,19 +744,10 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async useSigner(signer: SignerLocator | SignerConfigForChain<C>): Promise<void> {
+    public async useSigner(signer: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
 
-        // External wallet signers cannot be used via locator string — onSign callback is required.
-        // Use the full config object instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })
-        if (typeof signer === "string" && signer.startsWith("external-wallet:")) {
-            throw new Error(
-                'Cannot use useSigner with an external-wallet locator string. Pass the full config object with an onSign callback instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })'
-            );
-        }
-
-        // Parse signer input into a config and locator
-        const signerConfig = this.resolveSignerInput(signer);
+        const signerConfig = signer;
 
         // Validate that required values are set for each signer type
         this.validateSignerInput(signerConfig);
@@ -817,7 +805,7 @@ export class Wallet<C extends Chain> {
 
         // Assemble and set the signer
         const internalConfig = this.buildInternalSignerConfig(signerConfig);
-        const signerLocator = typeof signer === "string" ? signer : getSignerLocator(signerConfig);
+        const signerLocator = getSignerLocator(signerConfig);
         this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
@@ -1071,35 +1059,6 @@ export class Wallet<C extends Chain> {
 
         // For other types, compare locators
         return getSignerLocator(signerConfig) === getSignerLocator(recovery);
-    }
-
-    /**
-     * Parse a signer locator string or config object into a SignerConfigForChain.
-     */
-    private resolveSignerInput(signer: SignerLocator | SignerConfigForChain<C>): SignerConfigForChain<C> {
-        if (typeof signer === "string") {
-            const { type, value } = parseSignerLocator(signer as SignerLocator);
-            switch (type) {
-                case "email":
-                    return { type: "email", email: value } as SignerConfigForChain<C>;
-                case "phone":
-                    return { type: "phone", phone: value } as SignerConfigForChain<C>;
-                case "passkey":
-                    return { type: "passkey", id: value } as SignerConfigForChain<C>;
-                case "device":
-                    return {
-                        type: "device",
-                        ...(value ? { locator: signer as SignerLocator } : {}),
-                    } as SignerConfigForChain<C>;
-                case "external-wallet":
-                    return { type: "external-wallet", address: value } as SignerConfigForChain<C>;
-                case "api-key":
-                    return { type: "api-key" } as SignerConfigForChain<C>;
-                default:
-                    throw new Error(`Unknown signer type: ${type}`);
-            }
-        }
-        return signer;
     }
 
     /**
