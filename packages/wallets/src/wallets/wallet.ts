@@ -567,16 +567,15 @@ export class Wallet<C extends Chain> {
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
+            // For server signers, resolvedSigner is already a locator string.
+            // For new passkeys (no id yet), pass the full config so the API creates one.
+            // For everything else, convert to a locator string via getSignerLocator.
             const signerInput =
                 typeof resolvedSigner === "string"
                     ? resolvedSigner
                     : resolvedSigner.type === "passkey" && resolvedSigner.id == null
                       ? resolvedSigner
-                      : resolvedSigner.type === "device" &&
-                          "locator" in resolvedSigner &&
-                          resolvedSigner.locator != null
-                        ? resolvedSigner.locator
-                        : getSignerLocator(resolvedSigner);
+                      : getSignerLocator(resolvedSigner);
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
