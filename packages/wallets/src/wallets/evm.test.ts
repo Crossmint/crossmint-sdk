@@ -19,7 +19,9 @@ describe("EVMWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -162,7 +164,7 @@ describe("EVMWallet - sendTransaction()", () => {
             expect(mockApiClient.createTransaction).toHaveBeenCalled();
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-prepare",
                 status: "pending",
@@ -180,7 +182,7 @@ describe("EVMWallet - sendTransaction()", () => {
             const result = await evmWallet.sendTransaction({
                 to: "0xrecipient",
                 value: BigInt("1000"),
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -229,7 +231,9 @@ describe("EVMWallet - signMessage()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -268,7 +272,7 @@ describe("EVMWallet - signMessage()", () => {
             );
         });
 
-        it("should return prepared signature when experimental_prepareOnly is true", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-prepare",
                 status: "pending",
@@ -278,7 +282,7 @@ describe("EVMWallet - signMessage()", () => {
 
             const result = await evmWallet.signMessage({
                 message: "Hello, world!",
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();
@@ -316,7 +320,9 @@ describe("EVMWallet - signTypedData()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -379,7 +385,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should return prepared signature when experimental_prepareOnly is true", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
                 status: "pending",
@@ -400,7 +406,7 @@ describe("EVMWallet - signTypedData()", () => {
                 primaryType: "Message",
                 message: { content: "Hello" },
                 chain: "base-sepolia",
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.signature).toBeUndefined();

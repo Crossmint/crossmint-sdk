@@ -11,7 +11,7 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 
 vi.mock("@/hooks", () => ({
-    useAuth: vi.fn(() => ({
+    useCrossmintAuth: vi.fn(() => ({
         user: undefined,
         jwt: undefined,
     })),

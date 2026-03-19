@@ -32,5 +32,19 @@ module.exports = {
             react: reactPath,
             "react-dom": reactDomPath,
         },
+        resolveRequest: (context, moduleName, platform) => {
+            // @hpke packages use UMD wrappers that pass `require` as a parameter,
+            // so Metro's static analyzer can't detect dependencies inside them.
+            // Force ESM builds instead — Metro can detect `import` statements correctly.
+            if (moduleName === "@hpke/core") {
+                const pkg = require.resolve("@hpke/core/package.json", { paths: [monorepoRoot] });
+                return { filePath: path.join(path.dirname(pkg), "esm/mod.js"), type: "sourceFile" };
+            }
+            if (moduleName === "@hpke/common") {
+                const pkg = require.resolve("@hpke/common/package.json", { paths: [monorepoRoot] });
+                return { filePath: path.join(path.dirname(pkg), "esm/mod.js"), type: "sourceFile" };
+            }
+            return context.resolveRequest(context, moduleName, platform);
+        },
     },
 };

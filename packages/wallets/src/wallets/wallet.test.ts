@@ -288,7 +288,7 @@ describe("Wallet - send()", () => {
     });
 
     describe("success cases", () => {
-        it("should send tokens successfully and return transaction", async () => {
+        it("should send tokens successfully and return transaction by default", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -321,16 +321,14 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
 
             mockApiClient.send.mockResolvedValue(mockSendResponse);
 
-            const result = await wallet.send("0xrecipient123", "usdc", "10.0", {
-                experimental_prepareOnly: true,
-            });
+            const result = await wallet.send("0xrecipient123", "usdc", "10.0", { prepareOnly: true });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-123");
@@ -508,6 +506,9 @@ describe("Wallet - addSigner()", () => {
     describe("EVM chains", () => {
         it("should add signer successfully for EVM", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
                 chains: {
                     "base-sepolia": {
                         id: "sig-123",
@@ -518,7 +519,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await evmWallet.addSigner("external-wallet:0x456");
+            const result = await evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
 
             expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
                 "me:evm:smart",
@@ -527,10 +528,16 @@ describe("Wallet - addSigner()", () => {
                     chain: "base-sepolia",
                 })
             );
+            expect(result.type).toBe("external-wallet");
+            expect(result.locator).toBe("external-wallet:0x456");
+            expect(result.status).toBe("success");
         });
 
-        it("should return signatureId when experimental_prepareOnly is true", async () => {
+        it("should return signatureId with prepareOnly", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
                 chains: {
                     "base-sepolia": {
                         id: "sig-123",
@@ -541,13 +548,21 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await evmWallet.addSigner("external-wallet:0x456", { experimental_prepareOnly: true });
+            const result = await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { prepareOnly: true }
+            );
 
             expect(result.signatureId).toBe("sig-123");
+            expect(result.type).toBe("external-wallet");
+            expect(result.status).toBe("awaiting-approval");
         });
 
-        it("should approve signature when status is awaiting-approval", async () => {
+        it("should approve signature when status is awaiting-approval by default", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
                 chains: {
                     "base-sepolia": {
                         id: "sig-123",
@@ -565,7 +580,7 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
 
-            const addPromise = evmWallet.addSigner("external-wallet:0x456");
+            const addPromise = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
             await vi.runAllTimersAsync();
             await addPromise;
 
@@ -576,8 +591,12 @@ describe("Wallet - addSigner()", () => {
     describe("Solana chains", () => {
         it("should add signer successfully for Solana", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
                 transaction: {
                     id: "txn-123",
+                    status: "pending",
                 },
             };
 
@@ -593,9 +612,9 @@ describe("Wallet - addSigner()", () => {
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
             mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
 
-            const addPromise = solanaWallet.addSigner("external-wallet:ABC123");
+            const addPromise = solanaWallet.addSigner({ type: "external-wallet", address: "ABC123" });
             await vi.runAllTimersAsync();
-            await addPromise;
+            const result = await addPromise;
 
             expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
                 "me:solana:smart",
@@ -604,20 +623,30 @@ describe("Wallet - addSigner()", () => {
                     chain: undefined,
                 })
             );
+            expect(result.type).toBe("external-wallet");
+            expect(result.status).toBe("success");
         });
 
-        it("should return transactionId when experimental_prepareOnly is true", async () => {
+        it("should return transactionId with prepareOnly", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
                 transaction: {
                     id: "txn-123",
+                    status: "pending",
                 },
             };
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await solanaWallet.addSigner("external-wallet:ABC123", { experimental_prepareOnly: true });
+            const result = await solanaWallet.addSigner(
+                { type: "external-wallet", address: "ABC123" },
+                { prepareOnly: true }
+            );
 
             expect(result.transactionId).toBe("txn-123");
+            expect(result.type).toBe("external-wallet");
         });
     });
 
@@ -631,29 +660,37 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(errorResponse as any);
 
-            await expect(evmWallet.addSigner("external-wallet:0x456")).rejects.toThrow("Failed to register signer");
+            await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
+                "Failed to register signer"
+            );
         });
 
         it("should throw error when Solana response missing transaction", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
                 chains: {},
             };
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(solanaWallet.addSigner("external-wallet:ABC123")).rejects.toThrow(
+            await expect(solanaWallet.addSigner({ type: "external-wallet", address: "ABC123" })).rejects.toThrow(
                 "Expected transaction in response for Solana/Stellar chain"
             );
         });
 
         it("should throw error when EVM response missing chains", async () => {
             const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
                 transaction: { id: "txn-123" },
             };
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            await expect(evmWallet.addSigner("external-wallet:0x456")).rejects.toThrow(
+            await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Expected chains in response for EVM chain"
             );
         });
@@ -672,7 +709,7 @@ describe("Wallet - signers()", () => {
     });
 
     describe("success cases", () => {
-        it("should return list of signers", async () => {
+        it("should return list of signers with status for EVM", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -701,11 +738,87 @@ describe("Wallet - signers()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
+            // Mock getSigner responses for each signer (EVM requires per-signer API calls)
+            mockApiClient.getSigner
+                .mockResolvedValueOnce({
+                    type: "external-wallet",
+                    address: "0xsigner1",
+                    locator: "external-wallet:0xsigner1",
+                    chains: {
+                        "base-sepolia": { status: "success" },
+                    },
+                } as any)
+                .mockResolvedValueOnce({
+                    type: "external-wallet",
+                    address: "0xsigner2",
+                    locator: "external-wallet:0xsigner2",
+                    chains: {
+                        "base-sepolia": { status: "awaiting-approval", id: "sig-456" },
+                    },
+                } as any);
+
             const signers = await wallet.signers();
 
             expect(signers).toHaveLength(2);
-            expect(signers[0].signer).toBe("external-wallet:0xsigner1");
-            expect(signers[1].signer).toBe("external-wallet:0xsigner2");
+            expect(signers[0].type).toBe("external-wallet");
+            expect(signers[0].locator).toBe("external-wallet:0xsigner1");
+            expect(signers[0].status).toBe("success");
+            expect(signers[1].locator).toBe("external-wallet:0xsigner2");
+            expect(signers[1].status).toBe("awaiting-approval");
+        });
+
+        it("should filter out signers without approval for current chain", async () => {
+            const mockWalletResponse: GetWalletSuccessResponse = {
+                chainType: "evm",
+                type: "smart",
+                address: wallet.address,
+                config: {
+                    adminSigner: {
+                        type: "api-key",
+                        address: "0xadmin",
+                        locator: "api-key:admin",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "external-wallet",
+                            address: "0xsigner1",
+                            locator: "external-wallet:0xsigner1",
+                        },
+                        {
+                            type: "external-wallet",
+                            address: "0xsigner2",
+                            locator: "external-wallet:0xsigner2",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+
+            // Signer1 has approval for base-sepolia, signer2 only has approval for ethereum (not base-sepolia)
+            mockApiClient.getSigner
+                .mockResolvedValueOnce({
+                    type: "external-wallet",
+                    address: "0xsigner1",
+                    locator: "external-wallet:0xsigner1",
+                    chains: {
+                        "base-sepolia": { status: "success" },
+                    },
+                } as any)
+                .mockResolvedValueOnce({
+                    type: "external-wallet",
+                    address: "0xsigner2",
+                    locator: "external-wallet:0xsigner2",
+                    chains: {
+                        ethereum: { status: "success" },
+                    },
+                } as any);
+
+            const signers = await wallet.signers();
+
+            expect(signers).toHaveLength(1);
+            expect(signers[0].locator).toBe("external-wallet:0xsigner1");
         });
 
         it("should return empty array when no signers", async () => {

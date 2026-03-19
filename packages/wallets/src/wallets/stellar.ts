@@ -10,6 +10,7 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class StellarWallet extends Wallet<StellarChain> {
@@ -22,6 +23,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
                 recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
             },
             Wallet.getApiClient(wallet)
         );
@@ -55,7 +57,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -78,7 +80,14 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = options?.experimental_signer ?? this.requireSigner().locator();
+        let signer: string;
+        if (options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof options.signer === "string") {
+            signer = options.signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
 
         let transaction: any;
 

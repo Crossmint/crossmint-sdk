@@ -19,7 +19,9 @@ describe("StellarWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("stellar", mockApiClient, "api-key");
         stellarWallet = StellarWallet.from(wallet);
-        vi.spyOn(stellarWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(stellarWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await stellarWallet.useSigner(createMockSigner("api-key", "stellar"));
     });
 
@@ -200,7 +202,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-prepare",
                 status: "pending",
@@ -230,16 +232,15 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-stellar-prepare");
-            // getTransaction should not be called when prepareOnly is true
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should use custom signer when experimental_signer is provided", async () => {
+        it("should use custom signer when signer is provided", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-custom-signer",
                 status: "success",
@@ -275,7 +276,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_signer: "external-wallet:Gcustom123", experimental_prepareOnly: false },
+                options: { signer: "external-wallet:Gcustom123" },
             });
             await vi.runAllTimersAsync();
             await sendPromise;

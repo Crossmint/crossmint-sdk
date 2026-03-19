@@ -1,7 +1,7 @@
 {
     "name": "expo-demo",
     "main": "expo-router/entry",
-    "version": "1.1.125",
+    "version": "1.1.126-beta.2",
     "scripts": {
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",
@@ -18,6 +18,7 @@
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
         "@crossmint/client-sdk-rn-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
+        "@crossmint/expo-device-signer": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
         "@expo/vector-icons": "^15.0.3",
         "@react-navigation/bottom-tabs": "^7.2.0",

@@ -1,5 +1,5 @@
 import { createCrossmint, type Crossmint } from "@crossmint/common-sdk-base";
-import { ApiClient, RegisterSignerPasskeyParams } from "./api";
+import { ApiClient, type RegisterSignerPasskeyParams } from "./api";
 import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";

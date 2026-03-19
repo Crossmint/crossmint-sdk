@@ -15,5 +15,3 @@ export function useCrossmintAuth(): RNCrossmintAuthContext {
     }
     return context;
 }
-
-export const useAuth = useCrossmintAuth;
