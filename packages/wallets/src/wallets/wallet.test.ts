@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Wallet } from "./wallet";
-import type { GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
+import { Wallet } from "./wallet";
+import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -939,6 +939,201 @@ describe("Wallet - signers()", () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
             await expect(wallet.signers()).rejects.toThrow(WalletTypeNotSupportedError);
+        });
+    });
+});
+
+describe("Wallet - useSigner()", () => {
+    let mockApiClient: MockedApiClient;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    describe("recovery signer support", () => {
+        it("should accept the recovery signer (api-key) without registration check", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({ type: "api-key" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("api-key");
+        });
+
+        it("should accept the recovery signer (email) by config object without registration check", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "email", email: "admin@example.com" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({ type: "email", email: "admin@example.com" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("email");
+        });
+
+        it("should accept the recovery signer (phone) by config object without registration check", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "phone", phone: "+1234567890" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({ type: "phone", phone: "+1234567890" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("phone");
+        });
+
+        it("should accept recovery external-wallet signer with full config object", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "external-wallet", address: "0xRecoveryWallet" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({
+                type: "external-wallet",
+                address: "0xRecoveryWallet",
+                onSign: vi.fn().mockResolvedValue("0xsigned"),
+            } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("external-wallet");
+        });
+
+        it("should accept the recovery signer (passkey) when no delegated passkeys exist", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "passkey" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // No delegated passkeys → falls back to recovery signer
+            await wallet.useSigner({ type: "passkey" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("passkey");
+        });
+
+        it("should accept a passkey with explicit id as recovery when not found in delegated signers", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "passkey" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // Not a registered delegated signer, but matches recovery type → accepted as recovery
+            await wallet.useSigner({ type: "passkey", id: "recovery-credential" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("passkey");
+        });
+
+        it("should use passkey with explicit id as delegated when it IS registered, even if recovery is also passkey", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "passkey" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                {
+                    type: "passkey",
+                    id: "delegated-credential",
+                    address: "0xPasskey",
+                    locator: "passkey:delegated-credential",
+                    status: "success" as const,
+                },
+            ]);
+
+            // This id matches a registered delegated signer → used as delegated, not recovery
+            await wallet.useSigner({ type: "passkey", id: "delegated-credential" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("passkey");
+        });
+
+        it("should still reject non-recovery, non-registered signers", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // An email signer that is NOT the recovery signer and NOT registered should fail
+            await expect(wallet.useSigner({ type: "email", email: "unknown@example.com" } as any)).rejects.toThrow(
+                'Signer "email:unknown@example.com" is not registered in this wallet.'
+            );
+        });
+
+        it("should still allow registered delegated signers that are not the recovery signer", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                {
+                    type: "email",
+                    email: "delegated@example.com",
+                    address: "0xDelegated",
+                    locator: "email:delegated@example.com",
+                    status: "success" as const,
+                },
+            ]);
+
+            await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("email");
         });
     });
 });
