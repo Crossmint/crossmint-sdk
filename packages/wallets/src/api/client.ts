@@ -87,7 +87,10 @@ class ApiClient extends CrossmintApiClient {
                 error: result.error,
             });
         } else if ("address" in result) {
-            walletsLogger.info("wallets.api.getWallet.success", result);
+            walletsLogger.info("wallets.api.getWallet.success", {
+                address: result.address,
+                locator,
+            });
         }
         return result;
     }

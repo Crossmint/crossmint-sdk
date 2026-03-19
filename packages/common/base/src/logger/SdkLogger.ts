@@ -1,6 +1,6 @@
 import type { ISdkLogger } from "./interfaces";
 import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { generateExecutionId, mergeContext, serializeLogArgs } from "./utils";
+import { generateExecutionId, mergeContext, redactSensitiveFields, serializeLogArgs } from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -410,11 +410,16 @@ export class SdkLogger implements ISdkLogger {
         // getExecutionContext() returns context from AsyncLocalStorage (Node.js) or instance field (browser/RN)
         const mergedContext = mergeContext(this.globalContext, this.getExecutionContext() ?? {}, argsContext);
 
+        // Redact sensitive fields (JWTs, API keys, auth tokens, etc.) before passing to sinks.
+        // This is a defense-in-depth measure — callers should avoid logging sensitive data,
+        // but this catches any that slip through.
+        const redactedContext = redactSensitiveFields(mergedContext) as LogContext;
+
         // Create log entry
         const entry: LogEntry = {
             level,
             message: serializedMessage,
-            context: mergedContext,
+            context: redactedContext,
             timestamp: Date.now(),
         };
 

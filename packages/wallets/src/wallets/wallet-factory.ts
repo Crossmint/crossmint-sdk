@@ -42,9 +42,11 @@ export class WalletFactory {
         methodName: "walletFactory.getWallet",
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
             if (typeof args[0] === "string") {
-                return { walletLocator: args[0] as string, args: args[1] as WalletArgsFor<Chain> };
+                const walletArgs = args[1] as WalletArgsFor<Chain> | undefined;
+                return { walletLocator: args[0] as string, chain: walletArgs?.chain };
             }
-            return { args: args[0] as WalletArgsFor<Chain> };
+            const walletArgs = args[0] as WalletArgsFor<Chain>;
+            return { chain: walletArgs?.chain };
         },
     })
     public async getWallet<C extends Chain>(
