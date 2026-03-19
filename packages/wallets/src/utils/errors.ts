@@ -12,6 +12,12 @@ export class InvalidEnvironmentError extends CrossmintSDKError {
     }
 }
 
+export class InvalidChainError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.WALLET_CREATION_FAILED, details);
+    }
+}
+
 export class WalletTypeNotSupportedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.WALLET_TYPE_INVALID, details);
@@ -153,6 +159,7 @@ export class PendingApprovalsError extends CrossmintSDKError {
 export type WalletError =
     | InvalidApiKeyError
     | InvalidEnvironmentError
+    | InvalidChainError
     | WalletTypeNotSupportedError
     | WalletNotAvailableError
     | InvalidWalletConfigError
