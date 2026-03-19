@@ -95,8 +95,12 @@ export function mapConfigSignerToDelegatedSigner(
     // Ensure locator has proper prefix
     const colonIndex = configSigner.locator.indexOf(":");
     if (colonIndex === -1) {
-        base.locator = `external-wallet:${configSigner.locator}`;
-        base.type = "external-wallet";
+        if (configSigner.type === "api-key") {
+            base.locator = configSigner.locator;
+        } else {
+            base.locator = `external-wallet:${configSigner.locator}`;
+            base.type = "external-wallet";
+        }
     }
     return base as DelegatedSigner;
 }
