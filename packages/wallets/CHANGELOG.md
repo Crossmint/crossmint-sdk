@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- e60df98: fix: prevent duplicate TEE initialization race condition in NonCustodialSigner
+
+  Stores the constructor's initialize() promise in \_initializationPromise so that
+  getTEEConnection() can detect an in-flight initialization and await it instead
+  of starting a parallel one, preventing duplicate iframe/TEE attestation.
+
 ## 1.0.0-beta.0
 
 ### Major Changes
