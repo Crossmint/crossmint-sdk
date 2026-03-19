@@ -1,6 +1,7 @@
 import CryptoKit
 import CrossmintDeviceSigner
 import ExpoModulesCore
+import Security
 
 /// Expo native module that exposes device signer key storage to React Native.
 ///
@@ -82,29 +83,57 @@ public class DeviceSignerModule: Module {
         }
     }
 
-    // MARK: - Public key index (UserDefaults)
+    // MARK: - Public key index (Keychain-backed)
     //
     // `hasKey(publicKeyBase64)` needs to answer "does this device hold the private key
-    // for this public key?" without knowing the associated wallet address.  We maintain
-    // a lightweight index in UserDefaults that is kept in sync with every generate/delete.
+    // for this public key?" without knowing the associated wallet address. We maintain
+    // a lightweight index stored in the Keychain so it survives app reinstalls —
+    // just like the private keys themselves do.
 
-    private static let indexKey = "crossmint_device_signer_pubkeys"
+    private static let indexService = "com.crossmint.device-signer"
+    private static let indexAccount = "public_key_index"
 
     private func trackedPublicKeys() -> Set<String> {
-        let array = UserDefaults.standard.stringArray(forKey: Self.indexKey) ?? []
-        return Set(array)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.indexService,
+            kSecAttrAccount as String: Self.indexAccount,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data,
+              let keys = try? JSONDecoder().decode([String].self, from: data)
+        else { return [] }
+        return Set(keys)
+    }
+
+    private func saveTrackedPublicKeys(_ keys: Set<String>) {
+        guard let data = try? JSONEncoder().encode(Array(keys)) else { return }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.indexService,
+            kSecAttrAccount as String: Self.indexAccount,
+        ]
+        let status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
+        if status == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            SecItemAdd(addQuery as CFDictionary, nil)
+        }
     }
 
     private func trackPublicKey(_ pubKey: String) {
         var keys = trackedPublicKeys()
         keys.insert(pubKey)
-        UserDefaults.standard.set(Array(keys), forKey: Self.indexKey)
+        saveTrackedPublicKeys(keys)
     }
 
     private func untrackPublicKey(_ pubKey: String) {
         var keys = trackedPublicKeys()
         keys.remove(pubKey)
-        UserDefaults.standard.set(Array(keys), forKey: Self.indexKey)
+        saveTrackedPublicKeys(keys)
     }
 
     // MARK: - Private helpers
