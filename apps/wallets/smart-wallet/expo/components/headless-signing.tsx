@@ -1,11 +1,9 @@
-import { useAuth, useCrossmint, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
-import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
+import { useAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
 import { useState } from "react";
 import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
 export function HeadlessSigning() {
     const { user } = useAuth();
-    const { crossmint } = useCrossmint();
     const { createDeviceSigner, wallet } = useWallet();
     const loggedInUserEmail = user?.email ?? null;
     const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
@@ -13,7 +11,6 @@ export function HeadlessSigning() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [deviceSignerLocator, setDeviceSignerLocator] = useState<string | null>(null);
 
-    // Email signer states
     const [otp, setOtp] = useState("");
     const [uiError, setUiError] = useState<string | null>(null);
 
@@ -32,36 +29,6 @@ export function HeadlessSigning() {
         }
     };
 
-    async function testSign() {
-        setIsLoading(true);
-        setUiError(null);
-        try {
-            const storage = new NativeDeviceSignerKeyStorage();
-            const walletAddress = wallet?.address;
-            if (!walletAddress) {
-                throw new Error("No wallet address available");
-            }
-            // If no key is mapped to this address yet, promote the pending key from initWallet
-            const existingKey = await storage.getKey(walletAddress);
-            if (existingKey == null) {
-                if (!deviceSignerLocator) {
-                    throw new Error("No key found. Tap 'Init Wallet' first.");
-                }
-                const pubKey = deviceSignerLocator.replace("device:", "");
-                await storage.mapAddressToKey(walletAddress, pubKey);
-            }
-            const messageB64 = btoa("crossmint device signer test");
-            const { r, s } = await storage.signMessage(walletAddress, messageB64);
-            Alert.alert("Signed!", `r: ${r.slice(0, 20)}...\ns: ${s.slice(0, 20)}...`);
-        } catch (error: any) {
-            const message = error?.message ?? "Unknown error";
-            setUiError(message);
-            Alert.alert("Sign Error", message);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     async function initWallet() {
         setIsLoading(true);
         setUiError(null);
@@ -70,7 +37,7 @@ export function HeadlessSigning() {
             const descriptor = await createDeviceSigner();
             await wallet?.addSigner(descriptor.locator);
             setDeviceSignerLocator(descriptor.locator);
-            Alert.alert("Device Signer Created", `Locator: ${descriptor.locator}`);
+            Alert.alert("Device Signer Added", `Locator: ${descriptor.locator}`);
         } catch (error: any) {
             const message = error?.message ?? "Unknown error";
             setUiError(message);
@@ -85,7 +52,6 @@ export function HeadlessSigning() {
             Alert.alert("Error", "User email is not available.");
             return;
         }
-
         await handleAction(sendEmailWithOtp);
     };
 
@@ -99,14 +65,14 @@ export function HeadlessSigning() {
             setOtp("");
         });
     };
+
     return (
         <View>
             <Text>Headless Signing Component</Text>
             <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
             {uiError && <Text style={styles.errorText}>Error: {uiError}</Text>}
             {deviceSignerLocator && <Text style={styles.successText}>Device key: {deviceSignerLocator}</Text>}
-            {user && <Button title="Init Wallet (create device key)" onPress={initWallet} disabled={isLoading} />}
-            {user && <Button title="Sign Test Message (device key)" onPress={testSign} disabled={isLoading} />}
+            {user && <Button title="Add Device Signer" onPress={initWallet} disabled={isLoading} />}
 
             {needsAuth && (
                 <View style={styles.section}>
