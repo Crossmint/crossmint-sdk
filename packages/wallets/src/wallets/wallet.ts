@@ -563,7 +563,7 @@ export class Wallet<C extends Chain> {
             address: this.address,
             crossmint: this.#apiClient.crossmint,
             clientTEEConnection: this.#options?.clientTEEConnection,
-            onAuthRequired: this.#options?._callbacks?.onAuthRequired,
+            onAuthRequired: this.#options?.callbacks?.onAuthRequired,
         } as InternalSignerConfig<C>;
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
@@ -1058,7 +1058,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?._callbacks?.onAuthRequired,
+                    onAuthRequired: this.#options?.callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "phone":
                 return {
@@ -1068,7 +1068,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?._callbacks?.onAuthRequired,
+                    onAuthRequired: this.#options?.callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "passkey": {
                 const id = "id" in config && config.id ? config.id : "";
@@ -1218,7 +1218,7 @@ export class Wallet<C extends Chain> {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
-        await this.#options?._callbacks?.onTransactionStart?.();
+        await this.#options?.callbacks?.onTransactionStart?.();
 
         const walletSigner = this.requireSigner();
 

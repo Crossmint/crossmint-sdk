@@ -189,7 +189,7 @@ export type StellarWalletPlugin = string;
 export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWalletPlugin : never;
 
 export type WalletOptions = {
-    _callbacks?: Callbacks;
+    callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
