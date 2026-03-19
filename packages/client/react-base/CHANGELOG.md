@@ -1,5 +1,115 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.0-beta.1
+
+### Patch Changes
+
+- Updated dependencies [e60df98]
+  - @crossmint/wallets-sdk@1.0.0-beta.1
+
+## 2.0.0-beta.0
+
+### Major Changes
+
+- c51a407: Make device signer the default operational signer (WAL-9287).
+
+  BREAKING CHANGES:
+
+  - Removed `signer` property from `WalletArgsFor` and `WalletCreateArgs`
+  - `recovery` is now required on `WalletCreateArgs`
+  - Removed `assembleSigner` public method from `CrossmintWallets`
+  - Removed `onChangeSigner` callback
+  - Removed `getOrCreateWallet` from React provider public API; use `getWallet` and `createWallet` separately
+  - `getWallet` now accepts `alias` instead of `signer`
+
+- 67920a5: Add support for Delegated Signers.
+- db51635: Remove Dynamic crypto wallet authentication from Crossmint Auth.
+
+  This is a breaking change that removes the ability to authenticate with crypto wallets via Dynamic (dynamic-xyz) in the React UI SDK. The following are removed:
+
+  - `web3`, `web3:evm-only`, and `web3:solana-only` login methods
+  - `experimental_externalWalletSigner` from the auth context
+  - All `@dynamic-labs/*` dependencies from the auth flow
+
+- 820c2ec: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- ede1aac: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 34a052b: Remove `useAuth` hook alias in favor of `useCrossmintAuth`
+
+  BREAKING CHANGE: The `useAuth` export has been removed from all packages. Use `useCrossmintAuth` instead, which provides the same functionality.
+
+  - `useAuth()` -> `useCrossmintAuth()`
+
+- 6e3fa39: BREAKING: Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged.
+
+### Minor Changes
+
+- 8c079bd: Device signer can be used in new devices. During the first transaction it will automatically create a device signer before running the transaction
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- bf792d2: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+- 2445716: Add device signer support
+- 74a05a1: feat: unify OTP signer API with useWalletOtpSigner hook
+
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+- Updated dependencies [e912d18]
+  - @crossmint/client-sdk-base@2.1.0
+  - @crossmint/wallets-sdk@0.21.0
+  - @crossmint/client-sdk-auth@1.2.51
+  - @crossmint/common-sdk-auth@1.0.73
+
+## 1.0.6
+
+### Patch Changes
+
+- 11ab4f6: Fix Phone Signer
+- 5e1e86e: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- Updated dependencies [5b77229]
+- Updated dependencies [8c079bd]
+- Updated dependencies [c51a407]
+- Updated dependencies [522b486]
+- Updated dependencies [eb975c9]
+- Updated dependencies [67920a5]
+- Updated dependencies [d29b7d3]
+- Updated dependencies [9b9f9db]
+- Updated dependencies [820c2ec]
+- Updated dependencies [bf792d2]
+- Updated dependencies [ede1aac]
+- Updated dependencies [5e1e86e]
+- Updated dependencies [d5283ab]
+- Updated dependencies [2445716]
+- Updated dependencies [74a05a1]
+- Updated dependencies [6e3fa39]
+  - @crossmint/wallets-sdk@1.0.0-beta.0
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-auth@1.3.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
 ## 1.0.5
 
 ### Patch Changes

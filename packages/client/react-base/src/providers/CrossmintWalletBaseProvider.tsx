@@ -26,7 +26,12 @@ import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
 import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
-type ValidPasskeyPromptType = "create-wallet" | "transaction" | "not-supported" | "create-wallet-error" | "transaction-error";
+type ValidPasskeyPromptType =
+    | "create-wallet"
+    | "transaction"
+    | "not-supported"
+    | "create-wallet-error"
+    | "transaction-error";
 
 export type PasskeyPromptState = {
     open: boolean;
@@ -104,7 +109,6 @@ export interface CrossmintWalletBaseProviderProps {
     /** @internal */
     renderUI?: (props: UIRenderProps) => ReactNode;
 }
-
 
 export function CrossmintWalletBaseProvider({
     children,
@@ -277,7 +281,17 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions, createPasskeyPrompt, showPasskeyHelpers, injectPasskeyPromptCallback]
+        [
+            crossmint,
+            crossmint.jwt,
+            walletStatus,
+            wallet,
+            initializeWebViewIfNeeded,
+            buildWalletOptions,
+            createPasskeyPrompt,
+            showPasskeyHelpers,
+            injectPasskeyPromptCallback,
+        ]
     );
 
     const getWallet = useCallback(
@@ -345,7 +359,15 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions, createPasskeyPrompt, showPasskeyHelpers, injectPasskeyPromptCallback]
+        [
+            crossmint,
+            walletStatus,
+            initializeWebViewIfNeeded,
+            buildWalletOptions,
+            createPasskeyPrompt,
+            showPasskeyHelpers,
+            injectPasskeyPromptCallback,
+        ]
     );
 
     const createDeviceSigner = useCallback(() => {

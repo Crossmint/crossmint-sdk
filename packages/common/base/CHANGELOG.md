@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.10.0-beta.0
+
+### Minor Changes
+
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+
 ## 0.9.20
 
 ### Patch Changes

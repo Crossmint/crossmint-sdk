@@ -16,6 +16,17 @@ import {
     type CreateOnLogin,
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
+import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+
+// @crossmint/expo-device-signer is an optional peer dependency — only available when
+// the consumer has installed and linked the native module via expo prebuild.
+let _NativeDeviceSignerKeyStorage: (new () => DeviceSignerKeyStorage) | null = null;
+try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    _NativeDeviceSignerKeyStorage = require("@crossmint/expo-device-signer").NativeDeviceSignerKeyStorage;
+} catch {
+    // Not installed — device signing will be unavailable unless overridden via prop.
+}
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
@@ -28,6 +39,12 @@ export interface CrossmintWalletProviderProps {
     appearance?: UIConfig;
     /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
     headlessSigningFlow?: boolean;
+    /**
+     * Override the device signer key storage implementation. Defaults to `NativeDeviceSignerKeyStorage`
+     * (Secure Enclave on iOS, Android Keystore on Android) when `@crossmint/expo-device-signer` is installed.
+     * Useful for testing or environments where the native module is unavailable.
+     */
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     /** @internal */
     children: ReactNode;
 }
@@ -37,7 +54,15 @@ function CrossmintWalletProviderInternal({
     createOnLogin,
     appearance,
     headlessSigningFlow = true,
+    deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
+    const deviceSignerKeyStorage = useMemo(
+        () =>
+            deviceSignerKeyStorageProp ??
+            (_NativeDeviceSignerKeyStorage != null ? new _NativeDeviceSignerKeyStorage() : undefined),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
     const { apiKey, appId } = crossmint;
@@ -298,6 +323,7 @@ function CrossmintWalletProviderInternal({
             initializeWebView={initializeWebView}
             renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
+            deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
 

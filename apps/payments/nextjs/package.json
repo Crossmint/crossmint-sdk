@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-nextjs-starter",
-    "version": "2.0.2",
+    "version": "2.0.3-beta.1",
     "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",

@@ -5,10 +5,12 @@ import { walletsLogger } from "../logger";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { deriveServerSignerDetails } from "../signers/server";
 
 type MockedApiClient = {
     isServerSide: boolean;
     crossmint: { projectId: string };
+    projectId: string;
     environment: string;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     createWallet: MockedFunction<ApiClient["createWallet"]>;
@@ -46,6 +48,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         mockApiClient = {
             isServerSide: false,
             crossmint: { projectId: "test-project" },
+            projectId: "test-project",
             environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
@@ -82,6 +85,97 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                             address: "AdminSignerAddress123",
                         }),
                     }),
+                })
+            );
+        });
+    });
+
+    describe("createWallet with device signer", () => {
+        it("should NOT inject device signer for Solana wallets", async () => {
+            mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
+
+            const mockDeviceSignerKeyStorage = {
+                getKey: vi.fn(),
+                saveKey: vi.fn(),
+            };
+
+            const args: WalletCreateArgs<"solana"> = {
+                chain: "solana",
+                recovery: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+                options: {
+                    deviceSignerKeyStorage: mockDeviceSignerKeyStorage as unknown as any,
+                },
+            };
+
+            await walletFactory.createWallet(args);
+
+            // Verify that no device signer was added to delegatedSigners
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toEqual([]);
+        });
+
+        it("should inject device signer for EVM wallets when deviceSignerKeyStorage is provided", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0x123",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123",
+                        locator: "external-wallet:0xAdminSignerAddress123",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "device" as const,
+                            locator: "device:someLocator",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(evmWallet);
+
+            // Create a valid P-256 public key in base64 format:
+            // 0x04 (1 byte) + 32 bytes x + 32 bytes y = 65 bytes total
+            const publicKeyBytes = Buffer.concat([
+                Buffer.from([0x04]), // uncompressed point indicator
+                Buffer.alloc(32, 1), // x coordinate (32 bytes)
+                Buffer.alloc(32, 2), // y coordinate (32 bytes)
+            ]);
+            const publicKeyBase64 = publicKeyBytes.toString("base64");
+
+            const mockDeviceSignerKeyStorage = {
+                getKey: vi.fn().mockResolvedValue(null),
+                saveKey: vi.fn().mockResolvedValue(undefined),
+                generateKey: vi.fn().mockResolvedValue(publicKeyBase64),
+            };
+
+            const args: WalletCreateArgs<"base"> = {
+                chain: "base",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123",
+                },
+                options: {
+                    deviceSignerKeyStorage: mockDeviceSignerKeyStorage as unknown as any,
+                },
+            };
+
+            await walletFactory.createWallet(args);
+
+            // Verify that a device signer was added to delegatedSigners
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toBeDefined();
+            expect(call?.config?.delegatedSigners).toHaveLength(1);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual(
+                expect.objectContaining({
+                    signer: expect.stringContaining("device:"),
                 })
             );
         });
@@ -293,6 +387,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             mockApiClient = {
                 isServerSide: false,
                 crossmint: { projectId: "test-project" },
+                projectId: "test-project",
                 environment: APIKeyEnvironmentPrefix.PRODUCTION,
                 getWallet: vi.fn(),
                 createWallet: vi.fn(),
@@ -391,6 +486,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             mockApiClient = {
                 isServerSide: false,
                 crossmint: { projectId: "test-project" },
+                projectId: "test-project",
                 environment: APIKeyEnvironmentPrefix.STAGING,
                 getWallet: vi.fn(),
                 createWallet: vi.fn(),
@@ -451,6 +547,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             mockApiClient = {
                 isServerSide: false,
                 crossmint: { projectId: "test-project" },
+                projectId: "test-project",
                 environment: APIKeyEnvironmentPrefix.DEVELOPMENT,
                 getWallet: vi.fn(),
                 createWallet: vi.fn(),
@@ -495,6 +592,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             mockApiClient = {
                 isServerSide: true,
                 crossmint: { projectId: "test-project" },
+                projectId: "test-project",
                 environment: APIKeyEnvironmentPrefix.PRODUCTION,
                 getWallet: vi.fn(),
                 createWallet: vi.fn(),
@@ -534,6 +632,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             mockApiClient = {
                 isServerSide: false,
                 crossmint: { projectId: "test-project" },
+                projectId: "test-project",
                 environment: APIKeyEnvironmentPrefix.PRODUCTION,
                 getWallet: vi.fn(),
                 createWallet: vi.fn(),
@@ -553,6 +652,142 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.createWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
+        });
+    });
+});
+
+describe("WalletFactory - Server Signer", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    const TEST_SECRET = "a".repeat(64);
+    const PROJECT_ID = "test-project";
+    const ENVIRONMENT = APIKeyEnvironmentPrefix.STAGING;
+
+    const { derivedAddress } = deriveServerSignerDetails(
+        { type: "server", secret: TEST_SECRET },
+        "base-sepolia",
+        PROJECT_ID,
+        ENVIRONMENT
+    );
+
+    // Cast needed: API types don't include "server" admin signer type yet
+    const mockServerWalletResponse = {
+        chainType: "evm" as const,
+        type: "smart" as const,
+        address: derivedAddress,
+        owner: "test-owner",
+        config: {
+            adminSigner: {
+                type: "server",
+                address: derivedAddress,
+                locator: `server:${derivedAddress}`,
+            },
+        },
+        createdAt: Date.now(),
+    } as unknown as GetWalletSuccessResponse;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+
+        mockApiClient = {
+            isServerSide: true,
+            crossmint: { projectId: PROJECT_ID },
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("createWallet with server recovery", () => {
+        it("should send server type as admin signer to the API", async () => {
+            mockApiClient.createWallet.mockResolvedValue(mockServerWalletResponse);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "server",
+                    secret: TEST_SECRET,
+                },
+            };
+
+            await walletFactory.createWallet(args);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: { type: "server", address: derivedAddress },
+                    }),
+                })
+            );
+        });
+    });
+
+    describe("createWallet with server signer as delegated signer", () => {
+        it("should resolve server signer to server:<derivedAddress> in signers", async () => {
+            const walletResponse = {
+                ...mockServerWalletResponse,
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminSignerAddress123456789012345678901234",
+                        locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
+                    },
+                    delegatedSigners: [
+                        {
+                            locator: `server:${derivedAddress}`,
+                            type: "server" as const,
+                            address: derivedAddress,
+                        },
+                    ],
+                },
+            } as unknown as GetWalletSuccessResponse;
+            mockApiClient.createWallet.mockResolvedValue(walletResponse);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+                signers: [
+                    {
+                        type: "server",
+                        secret: TEST_SECRET,
+                    },
+                ],
+            };
+
+            await walletFactory.createWallet(args);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        delegatedSigners: expect.arrayContaining([
+                            expect.objectContaining({ signer: `server:${derivedAddress}` }),
+                        ]),
+                    }),
+                })
+            );
+        });
+    });
+
+    describe("getWallet with server signer", () => {
+        it("should return a wallet when API returns server admin signer type", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockServerWalletResponse);
+
+            const args: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+            };
+
+            await expect(walletFactory.getWallet(mockServerWalletResponse.address, args)).resolves.toBeDefined();
         });
     });
 });

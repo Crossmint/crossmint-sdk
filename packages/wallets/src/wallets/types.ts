@@ -13,6 +13,7 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
+    ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -25,7 +26,7 @@ export type PrepareOnly<T extends boolean = boolean> = {
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    signer?: string;
+    signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -37,8 +38,8 @@ export type SignatureInputOptions = PrepareOnly;
 export type AddSignerOptions = PrepareOnly;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
-    ? { transactionId: string }
-    : { signatureId: string };
+    ? DelegatedSigner & { transactionId: string }
+    : DelegatedSigner & { signatureId?: string };
 
 export type SignMessageInput = {
     message: string;
@@ -80,7 +81,7 @@ export type StellarTransactionInput = (
           contractId: string;
           method: string;
           memo?: string;
-          args: Record<string, any>;
+          args: Record<string, unknown>;
       }
     | {
           transaction: string;
@@ -110,9 +111,60 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
-export type DelegatedSigner = {
-    signer: string;
+export type SignerStatus = "success" | "pending" | "awaiting-approval" | "failed";
+
+export type DelegatedSignerInput = {
+    signer: string | ServerSignerConfig;
 };
+
+export type DelegatedSigner =
+    | {
+          type: "passkey";
+          id: string;
+          name: string;
+          publicKey: { x: string; y: string };
+          validatorContractVersion: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "api-key";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "external-wallet";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "email";
+          email: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "phone";
+          phone: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "device";
+          publicKey: { x: string; y: string };
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "server";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      };
 
 // Approvals
 export type PendingApproval = NonNullable<
