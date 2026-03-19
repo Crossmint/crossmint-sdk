@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useCrossmint, useWallet as useCrossmintWallet, type Chain } from "@crossmint/client-sdk-react-ui";
 import { usePrivy, useSolanaWallets, useWallets as usePrivyWallets } from "@privy-io/react-auth";
 import type { VersionedTransaction } from "@solana/web3.js";
@@ -50,8 +50,14 @@ export const useEVMPrivyConnector = () => {
         }
     }, [ready, authenticated, getAccessToken, privyEmbeddedWallet, setJwt]);
 
+    const isSyncingEvmWalletRef = useRef(false);
     useEffect(() => {
-        if (crossmint.jwt == null || crossmintWallet != null || crossmintWalletStatus === "in-progress") {
+        if (
+            crossmint.jwt == null ||
+            crossmintWallet != null ||
+            crossmintWalletStatus === "in-progress" ||
+            isSyncingEvmWalletRef.current
+        ) {
             return;
         }
 
@@ -62,6 +68,7 @@ export const useEVMPrivyConnector = () => {
         }
 
         const syncWallet = async () => {
+            isSyncingEvmWalletRef.current = true;
             try {
                 const wallet = await getWallet({ chain });
                 if (wallet != null) {
@@ -115,6 +122,8 @@ export const useEVMPrivyConnector = () => {
                 }
             } catch (error) {
                 console.error("Failed to get or create Privy EVM wallet:", error);
+            } finally {
+                isSyncingEvmWalletRef.current = false;
             }
         };
 
@@ -170,8 +179,14 @@ export const useSolanaPrivyConnector = () => {
         }
     }, [ready, authenticated, getAccessToken, privyEmbeddedWallet, setJwt]);
 
+    const isSyncingSolWalletRef = useRef(false);
     useEffect(() => {
-        if (crossmint.jwt == null || crossmintWallet != null || crossmintWalletStatus === "in-progress") {
+        if (
+            crossmint.jwt == null ||
+            crossmintWallet != null ||
+            crossmintWalletStatus === "in-progress" ||
+            isSyncingSolWalletRef.current
+        ) {
             return;
         }
 
@@ -182,6 +197,7 @@ export const useSolanaPrivyConnector = () => {
         }
 
         const syncWallet = async () => {
+            isSyncingSolWalletRef.current = true;
             try {
                 const wallet = await getWallet({ chain: "solana" });
                 if (wallet != null) {
@@ -218,6 +234,8 @@ export const useSolanaPrivyConnector = () => {
                 }
             } catch (error) {
                 console.error("Failed to get or create Privy Solana wallet:", error);
+            } finally {
+                isSyncingSolWalletRef.current = false;
             }
         };
 

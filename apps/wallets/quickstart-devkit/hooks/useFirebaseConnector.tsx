@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type Chain, useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import type { User } from "firebase/auth";
 import { onAuthStateChange } from "@/lib/firebase";
@@ -37,12 +37,14 @@ export const useFirebaseConnector = () => {
     }, [setJwt]);
 
     // Phase 2: Get or create wallet once JWT is available
+    const isSyncingWalletRef = useRef(false);
     useEffect(() => {
         if (
             crossmint.jwt == null ||
             firebaseUser == null ||
             crossmintWallet != null ||
-            crossmintWalletStatus === "in-progress"
+            crossmintWalletStatus === "in-progress" ||
+            isSyncingWalletRef.current
         ) {
             return;
         }
@@ -51,6 +53,7 @@ export const useFirebaseConnector = () => {
         const phone = firebaseUser.phoneNumber;
 
         const syncWallet = async () => {
+            isSyncingWalletRef.current = true;
             try {
                 const wallet = await getWallet({ chain });
                 if (wallet != null) {
@@ -72,6 +75,8 @@ export const useFirebaseConnector = () => {
                 }
             } catch (error) {
                 console.error("Failed to get or create Firebase wallet:", error);
+            } finally {
+                isSyncingWalletRef.current = false;
             }
         };
 
