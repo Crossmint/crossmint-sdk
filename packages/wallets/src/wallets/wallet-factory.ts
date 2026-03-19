@@ -77,7 +77,7 @@ export class WalletFactory {
             walletLocator = this.getWalletLocator(args);
         }
 
-        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -93,7 +93,7 @@ export class WalletFactory {
             address: existingWallet.address,
         });
 
-        return await this.createWalletInstance(existingWallet, args);
+        return await this.createWalletInstance(existingWallet, validatedArgs);
     }
 
     @WithLoggerContext({
@@ -105,11 +105,11 @@ export class WalletFactory {
         },
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-        await args.options?._callbacks?.onWalletCreationStart?.();
+        const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        await validatedArgs.options?._callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        if (!this.apiClient.isServerSide && args.owner != null) {
+        if (!this.apiClient.isServerSide && validatedArgs.owner != null) {
             walletsLogger.error("walletFactory.createWallet.error", {
                 error: "Owner field cannot be specified in client-side createWallet calls",
             });
@@ -120,38 +120,40 @@ export class WalletFactory {
 
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
         const signersWithDevice =
-            args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
+            validatedArgs.options?.deviceSignerKeyStorage != null
+                ? this.ensureDeviceSignerInSigners(validatedArgs)
+                : validatedArgs.signers ?? [];
         const builtSigners = await this.registerSigners(
             signersWithDevice,
-            args.chain,
-            args.options?.deviceSignerKeyStorage
+            validatedArgs.chain,
+            validatedArgs.options?.deviceSignerKeyStorage
         );
 
         let adminSigner;
-        if (args.recovery.type === "passkey" && args.recovery.id == null) {
-            adminSigner = await this.createPasskeySigner(args.recovery);
-        } else if (args.recovery.type === "server") {
+        if (validatedArgs.recovery.type === "passkey" && validatedArgs.recovery.id == null) {
+            adminSigner = await this.createPasskeySigner(validatedArgs.recovery);
+        } else if (validatedArgs.recovery.type === "server") {
             const { derivedAddress } = deriveServerSignerDetails(
-                args.recovery,
-                args.chain,
+                validatedArgs.recovery,
+                validatedArgs.chain,
                 this.apiClient.projectId,
                 this.apiClient.environment
             );
             adminSigner = { type: "server", address: derivedAddress };
         } else {
-            adminSigner = args.recovery;
+            adminSigner = validatedArgs.recovery;
         }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
-            chainType: this.getChainType(args.chain),
+            chainType: this.getChainType(validatedArgs.chain),
             config: {
                 adminSigner,
-                ...(args?.plugins ? { plugins: args.plugins } : {}),
+                ...(validatedArgs.plugins ? { plugins: validatedArgs.plugins } : {}),
                 ...(builtSigners != null ? { delegatedSigners: builtSigners } : {}),
             },
-            owner: args.owner ?? undefined,
-            alias: args.alias ?? undefined,
+            owner: validatedArgs.owner ?? undefined,
+            alias: validatedArgs.alias ?? undefined,
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
@@ -165,7 +167,7 @@ export class WalletFactory {
             address: walletResponse.address,
         });
 
-        return await this.createWalletInstance(walletResponse, args);
+        return await this.createWalletInstance(walletResponse, validatedArgs);
     }
 
     private createWalletInstance<C extends Chain>(
@@ -259,8 +261,7 @@ export class WalletFactory {
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
                 // Server signer uses a "server" type on the API side
-                const expectedApiType =
-                    createArgs.recovery.type === "server" ? "server" : createArgs.recovery.type;
+                const expectedApiType = createArgs.recovery.type === "server" ? "server" : createArgs.recovery.type;
                 if (expectedApiType !== existingWalletSigner.type) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"

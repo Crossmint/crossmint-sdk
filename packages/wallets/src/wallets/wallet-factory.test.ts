@@ -696,9 +696,7 @@ describe("WalletFactory - Server Signer", () => {
                 chain: "base-sepolia",
             };
 
-            await expect(
-                walletFactory.getWallet(mockServerWalletResponse.address, args)
-            ).resolves.toBeDefined();
+            await expect(walletFactory.getWallet(mockServerWalletResponse.address, args)).resolves.toBeDefined();
         });
     });
 });

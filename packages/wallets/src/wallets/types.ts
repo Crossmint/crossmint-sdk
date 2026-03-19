@@ -13,7 +13,7 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
-    ServerSignerConfig
+    ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -81,7 +81,7 @@ export type StellarTransactionInput = (
           contractId: string;
           method: string;
           memo?: string;
-          args: Record<string, any>;
+          args: Record<string, unknown>;
       }
     | {
           transaction: string;
