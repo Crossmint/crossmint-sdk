@@ -223,6 +223,7 @@ export type DeviceSignerDescriptor = {
     type: "device";
     publicKey: { x: string; y: string };
     locator: DeviceSignerLocator;
+    name?: string;
 };
 
 export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;

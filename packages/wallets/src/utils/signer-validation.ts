@@ -32,13 +32,31 @@ function normalizeEmail(email: string): string {
 }
 
 /**
- * Normalizes a value for comparison if it's an email address.
- * This ensures that email addresses are compared using the same normalization
- * logic as the backend (e.g., Gmail addresses with dots are normalized).
+ * Normalizes a 0x-prefixed hex string to its decimal string representation.
+ * Returns the original value if it's not a hex string.
  */
-export function normalizeValueForComparison(value: unknown): unknown {
-    if (typeof value === "string" && isEmailValid(value)) {
-        return normalizeEmail(value);
+function normalizeHexToDecimal(value: string): string {
+    if (/^0x[0-9a-fA-F]+$/.test(value)) {
+        return BigInt(value).toString();
+    }
+    return value;
+}
+
+/**
+ * Normalizes a value for comparison.
+ * - Email addresses are normalized following backend logic (e.g., Gmail dot removal).
+ * - When fieldPath indicates a publicKey coordinate (ends with ".x" or ".y"),
+ *   hex numeric strings (0x-prefixed) are converted to decimal strings so that
+ *   values like "0xf4f4387d..." and "110795835..." compare as equal.
+ */
+export function normalizeValueForComparison(value: unknown, fieldPath = ""): unknown {
+    if (typeof value === "string") {
+        if (isEmailValid(value)) {
+            return normalizeEmail(value);
+        }
+        if (fieldPath.endsWith(".x") || fieldPath.endsWith(".y")) {
+            return normalizeHexToDecimal(value);
+        }
     }
     return value;
 }
@@ -76,7 +94,9 @@ export function compareSignerConfigs(
                 existingValue as Record<string, unknown>,
                 fieldPath
             );
-        } else if (normalizeValueForComparison(newValue) !== normalizeValueForComparison(existingValue)) {
+        } else if (
+            normalizeValueForComparison(newValue, fieldPath) !== normalizeValueForComparison(existingValue, fieldPath)
+        ) {
             throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath, newValue, existingValue));
         }
     }

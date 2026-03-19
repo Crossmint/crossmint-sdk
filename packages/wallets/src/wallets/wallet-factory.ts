@@ -378,7 +378,16 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
-                        // If the device signer already has a locator (e.g., created via createDeviceSigner helper), use it directly
+                        // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
+                        if (signer.publicKey != null) {
+                            return {
+                                signer: {
+                                    type: "device" as const,
+                                    publicKey: signer.publicKey,
+                                    name: signer.name,
+                                },
+                            };
+                        }
                         if (signer.locator != null) {
                             return { signer: signer.locator };
                         }
@@ -386,7 +395,13 @@ export class WalletFactory {
                             throw new WalletCreationError("Device signer key storage is required for device signers");
                         }
                         const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
-                        return { signer: deviceSigner.locator };
+                        return {
+                            signer: {
+                                type: "device" as const,
+                                publicKey: deviceSigner.publicKey,
+                                name: deviceSigner.name,
+                            },
+                        };
                     }
                     if (signer.type === "server" && chain != null) {
                         const { derivedAddress } = deriveServerSignerDetails(

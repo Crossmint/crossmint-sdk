@@ -49,7 +49,6 @@ import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
-    DeviceSignerLocator,
     ExternalWalletRegistrationConfig,
     InternalSignerConfig,
     ServerSignerConfig,
@@ -64,6 +63,7 @@ import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
+import { createDeviceSigner } from "@/utils/device-signers";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -425,12 +425,12 @@ export class Wallet<C extends Chain> {
      * @returns The transfers
      * @throws {Error} If the transfers cannot be retrieved
      */
-    public async transfers(params: { tokens: string; status: "successful" | "failed" }): Promise<Transfers> {
+    public async transfers(params?: { tokens?: string; status?: "successful" | "failed" }): Promise<Transfers> {
         const resolvedChain = this.resolveChainForEnvironment();
         const response = await this.apiClient.getTransfers(this.walletLocator, {
             chain: resolvedChain,
-            tokens: params.tokens,
-            status: params.status,
+            tokens: params?.tokens,
+            status: params?.status,
         });
         if ("error" in response) {
             throw new Error(`Failed to get transfers: ${JSON.stringify(response.message)}`);
@@ -631,7 +631,15 @@ export class Wallet<C extends Chain> {
                     ? resolvedSigner
                     : resolvedSigner.type === "passkey" && resolvedSigner.id == null
                       ? resolvedSigner
-                      : getSignerLocator(resolvedSigner);
+                      : resolvedSigner.type === "device" &&
+                          "publicKey" in resolvedSigner &&
+                          resolvedSigner.publicKey != null
+                        ? {
+                              type: "device" as const,
+                              publicKey: resolvedSigner.publicKey,
+                              name: (resolvedSigner as DeviceSignerConfig).name,
+                          }
+                        : getSignerLocator(resolvedSigner);
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
@@ -868,11 +876,10 @@ export class Wallet<C extends Chain> {
         if (deviceSignerKeyStorage == null) {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
-        const publicKey = await deviceSignerKeyStorage.generateKey({ address: this.address });
-        const signerLocator: DeviceSignerLocator = `device:${publicKey}`;
+        const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.address);
 
         try {
-            await this.addSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>);
+            await this.addSigner(deviceSigner as SignerConfigForChain<C>);
         } catch (error) {
             walletsLogger.error("wallet.recover.device.error", { error });
             await deviceSignerKeyStorage.deleteKey(this.address);
@@ -884,12 +891,12 @@ export class Wallet<C extends Chain> {
             this.chain,
             {
                 type: "device",
-                locator: signerLocator as SignerLocator,
+                locator: deviceSigner.locator as SignerLocator,
                 address: this.address,
             } as InternalSignerConfig<C>,
             deviceSignerKeyStorage
         );
-        walletsLogger.info("wallet.recover.device.success", { signerLocator });
+        walletsLogger.info("wallet.recover.device.success", { signerLocator: deviceSigner.locator });
 
         this.#needsRecovery = false;
         this.#deviceSignerApproved = true;
