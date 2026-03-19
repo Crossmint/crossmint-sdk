@@ -1,8 +1,8 @@
 {
-  "ios": {
-    "bundleIdentifier": "com.anonymous.crossmint-sdk"
-  },
-  "android": {
-    "package": "com.anonymous.crossmintsdk"
-  }
+    "ios": {
+        "bundleIdentifier": "com.anonymous.crossmint-sdk"
+    },
+    "android": {
+        "package": "com.anonymous.crossmintsdk"
+    }
 }
