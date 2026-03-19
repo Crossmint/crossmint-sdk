@@ -1015,9 +1015,9 @@ describe("Wallet - useSigner()", () => {
 
             // A passkey with an explicit id should NOT be treated as recovery —
             // the user intends to use a specific delegated passkey credential.
-            await expect(
-                wallet.useSigner({ type: "passkey", id: "some-delegated-credential" } as any)
-            ).rejects.toThrow('Signer "passkey:some-delegated-credential" is not registered in this wallet.');
+            await expect(wallet.useSigner({ type: "passkey", id: "some-delegated-credential" } as any)).rejects.toThrow(
+                'Signer "passkey:some-delegated-credential" is not registered in this wallet.'
+            );
         });
 
         it("should still reject non-recovery, non-registered signers", async () => {
