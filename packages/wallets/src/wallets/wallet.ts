@@ -580,7 +580,15 @@ export class Wallet<C extends Chain> {
                     ? resolvedSigner
                     : resolvedSigner.type === "passkey" && resolvedSigner.id == null
                       ? resolvedSigner
-                      : getSignerLocator(resolvedSigner);
+                      : resolvedSigner.type === "device" &&
+                          "publicKey" in resolvedSigner &&
+                          resolvedSigner.publicKey != null
+                        ? {
+                              type: "device" as const,
+                              publicKey: resolvedSigner.publicKey,
+                              name: (resolvedSigner as DeviceSignerConfig).name,
+                          }
+                        : getSignerLocator(resolvedSigner);
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],

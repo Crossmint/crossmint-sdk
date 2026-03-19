@@ -53,7 +53,7 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     getDeviceName(): string {
-        const model = Device.modelName ?? Device.deviceName ?? Device.brand;
+        const model = Device.deviceName ?? Device.modelName ?? Device.brand;
         const os = Device.osName;
 
         if (model != null && os != null) {
