@@ -1467,7 +1467,7 @@ function toRecipientLocator(to: string | UserLocator): string {
     if (typeof to === "string") {
         if (!isValidAddress(to)) {
             throw new InvalidAddressError(
-                `Invalid recipient address: "${to}". Expected a valid EVM (0x...), Solana (base58), or Stellar (G...) address.`
+                `Invalid recipient address: "${to}". Expected a valid EVM (0x...), Solana (base58), or Stellar (G.../C...) address.`
             );
         }
         return to;
