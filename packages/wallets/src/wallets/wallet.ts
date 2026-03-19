@@ -465,7 +465,7 @@ export class Wallet<C extends Chain> {
         const tokenLocator = toTokenLocator(token, resolvedChain);
 
         const parsedAmount = Number(amount);
-        if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+        if (Number.isNaN(parsedAmount) || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
             throw new InvalidTransferAmountError(
                 `Invalid transfer amount: "${amount}". Amount must be a positive number greater than zero.`
             );
