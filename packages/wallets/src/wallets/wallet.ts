@@ -673,6 +673,7 @@ export class Wallet<C extends Chain> {
     /**
      * Set the active signer for this wallet.
      * Accepts a signer locator string (e.g. "email:user@example.com") or a signer config object.
+     * Works for both delegated signers and the recovery (admin) signer.
      *
      * For passkey signers: if no `id` is provided, the wallet will auto-select the passkey
      * if exactly one passkey signer is registered. If multiple passkeys exist, an `id` must be specified.
@@ -680,7 +681,11 @@ export class Wallet<C extends Chain> {
      * For device signers: if no device key is found locally, the signer will be created
      * automatically during the next transaction (via recovery).
      *
-     * For all other signer types: the signer must already be registered on the wallet.
+     * For external-wallet signers: the full config object with an onSign callback must be provided
+     * (applies to both delegated and recovery signers).
+     *
+     * For all other signer types: a locator string is sufficient. The signer must be either
+     * a registered delegated signer or the wallet's recovery signer.
      *
      * @param signer - The signer to use, by locator or config
      */
@@ -735,22 +740,26 @@ export class Wallet<C extends Chain> {
         if (signerConfig.type === "device") {
             await this.resolveDeviceSignerAvailability(signerConfig);
         } else {
-            // All non-device signers must already be registered
-            let signerLocator: SignerLocator | string;
-            if (signerConfig.type === "server") {
-                const { derivedAddress } = deriveServerSignerDetails(
-                    signerConfig,
-                    this.chain,
-                    this.#apiClient.projectId,
-                    this.#apiClient.environment
-                );
-                signerLocator = `server:${derivedAddress}`;
-            } else {
-                signerLocator = getSignerLocator(signerConfig);
-            }
-            const isRegistered = await this.signerIsRegistered(signerLocator);
-            if (!isRegistered) {
-                throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
+            // Recovery signers skip the registration check
+            const isRecovery = this.isRecoverySigner(signerConfig);
+            if (!isRecovery) {
+                // Delegated signers must already be registered
+                let signerLocator: SignerLocator | string;
+                if (signerConfig.type === "server") {
+                    const { derivedAddress } = deriveServerSignerDetails(
+                        signerConfig,
+                        this.chain,
+                        this.#apiClient.projectId,
+                        this.#apiClient.environment
+                    );
+                    signerLocator = `server:${derivedAddress}`;
+                } else {
+                    signerLocator = getSignerLocator(signerConfig);
+                }
+                const isRegistered = await this.signerIsRegistered(signerLocator);
+                if (!isRegistered) {
+                    throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
+                }
             }
             this.#needsRecovery = false;
         }
@@ -973,6 +982,41 @@ export class Wallet<C extends Chain> {
         if (signer instanceof NonCustodialSigner) {
             await signer.ensureAuthenticated();
         }
+    }
+
+    /**
+     * Check if a signer config matches the wallet's recovery (admin) signer.
+     */
+    private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
+        const recovery = this.#recovery;
+        if (recovery.type !== signerConfig.type) {
+            return false;
+        }
+
+        // Device signers cannot be recovery signers
+        if (signerConfig.type === "device") {
+            return false;
+        }
+
+        // For server signers, compare derived addresses
+        if (signerConfig.type === "server" && recovery.type === "server") {
+            const inputDerived = deriveServerSignerDetails(
+                signerConfig,
+                this.chain,
+                this.#apiClient.projectId,
+                this.#apiClient.environment
+            ).derivedAddress;
+            const recoveryDerived = deriveServerSignerDetails(
+                recovery,
+                this.chain,
+                this.#apiClient.projectId,
+                this.#apiClient.environment
+            ).derivedAddress;
+            return inputDerived === recoveryDerived;
+        }
+
+        // For other types, compare locators
+        return getSignerLocator(signerConfig) === getSignerLocator(recovery);
     }
 
     /**
