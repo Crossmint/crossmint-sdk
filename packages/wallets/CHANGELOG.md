@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- 09e9ce2: Simplify null check in recover() and make apiClient publicly accessible
+
 ## 1.0.0-beta.2
 
 ### Minor Changes

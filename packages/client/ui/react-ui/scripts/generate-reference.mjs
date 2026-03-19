@@ -30,7 +30,7 @@ const PRODUCTS = {
             baseClass: "Wallet",
             chainClasses: ["EVMWallet", "SolanaWallet", "StellarWallet"],
             docsBasePath: "/sdk-reference/wallets/typescript/classes",
-            skip: ["approve", "approveTransaction", "experimental_apiClient", "from"],
+            skip: ["approve", "approveTransaction", "from"],
         },
         getStartedExamples: {
             setup: "walletProviderSetup",
