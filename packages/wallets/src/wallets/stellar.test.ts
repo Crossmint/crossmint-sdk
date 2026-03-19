@@ -19,7 +19,9 @@ describe("StellarWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("stellar", mockApiClient, "api-key");
         stellarWallet = StellarWallet.from(wallet);
-        vi.spyOn(stellarWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(stellarWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await stellarWallet.useSigner(createMockSigner("api-key", "stellar"));
     });
 
