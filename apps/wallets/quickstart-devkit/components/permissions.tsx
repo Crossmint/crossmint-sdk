@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
-import type { SignerLocator } from "@crossmint/wallets-sdk";
 
 export function Permissions() {
     const {
@@ -35,7 +34,7 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.addSigner(newSigner as SignerLocator);
+            await wallet.addSigner({ type: "external-wallet", address: newSigner });
             const signers = await wallet.signers();
             setPermissions(signers);
         } catch (err) {
@@ -89,13 +88,13 @@ export function Permissions() {
                     <p className="text-xs text-gray-500 mb-1.5">Registered signers</p>
                     <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
                         <ul className="flex flex-col gap-1" data-testid="delegated-signers-list">
-                            {permissions.map(({ signer }, index) => (
+                            {permissions.map((delegatedSigner, index) => (
                                 <li
                                     key={index}
                                     data-testid={`delegated-signer-item-${index}`}
                                     className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
                                 >
-                                    {signer}
+                                    {delegatedSigner.locator}
                                 </li>
                             ))}
                         </ul>

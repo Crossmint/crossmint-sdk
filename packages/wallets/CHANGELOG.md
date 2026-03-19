@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- e60df98: fix: prevent duplicate TEE initialization race condition in NonCustodialSigner
+
+  Stores the constructor's initialize() promise in \_initializationPromise so that
+  getTEEConnection() can detect an in-flight initialization and await it instead
+  of starting a parallel one, preventing duplicate iframe/TEE attestation.
+
 ## 1.0.0-beta.0
 
 ### Major Changes
@@ -61,6 +71,16 @@
 - Updated dependencies [bf792d2]
   - @crossmint/common-sdk-base@0.10.0-beta.0
   - @crossmint/common-sdk-auth@1.1.0-beta.0
+
+## 0.21.0
+
+### Minor Changes
+
+- e912d18: Add server key signers for EVM, Solana, and Stellar using HKDF-SHA256 key derivation, enabling server-to-server wallet operations without client-side key management.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
 
 ## 0.20.2
 

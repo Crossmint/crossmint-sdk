@@ -7,6 +7,12 @@
 - Updated dependencies [9b9f9db]
   - @crossmint/common-sdk-base@0.10.0-beta.0
 
+## 2.1.0
+
+### Minor Changes
+
+- 402001f: Add orderId + clientSecret support to hosted checkout for pre-created orders
+
 ## 2.0.2
 
 ### Patch Changes
