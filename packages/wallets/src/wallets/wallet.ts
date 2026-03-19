@@ -743,7 +743,6 @@ export class Wallet<C extends Chain> {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
             return;
         }
-        }
 
         // Check if the device signer is already approved on the wallet
         const currentLocator = this.#signer.locator();
@@ -983,6 +982,7 @@ export class Wallet<C extends Chain> {
 
         // No device signer available — will be created during next transaction
         this.#needsRecovery = true;
+        this.#deviceSignerApproved = false;
     }
 
     /**
