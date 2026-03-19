@@ -25,7 +25,13 @@ const withDeviceSigner = (config) => {
 `;
             if (!podfile.includes("CrossmintDeviceSigner")) {
                 // Insert right after `use_expo_modules!`, which is always inside the target block.
-                podfile = podfile.replace(/(use_expo_modules!)/, `$1\n\n${podEntry}`);
+                const withPod = podfile.replace(/(use_expo_modules!)/, `$1\n\n${podEntry}`);
+                if (withPod === podfile) {
+                    throw new Error(
+                        "[crossmint/expo-device-signer] Could not inject pod entry: expected 'use_expo_modules!' in Podfile"
+                    );
+                }
+                podfile = withPod;
             }
 
             // --- 2. Work around Expo SDK 54 + React Native 0.82 header incompatibility ---
@@ -79,7 +85,13 @@ const withDeviceSigner = (config) => {
     end
 `;
                 // Insert at the top of the post_install block, right after the opening line.
-                podfile = podfile.replace(/(post_install do \|installer\|)/, `$1\n${injection}`);
+                const withInjection = podfile.replace(/(post_install do \|installer\|)/, `$1\n${injection}`);
+                if (withInjection === podfile) {
+                    throw new Error(
+                        "[crossmint/expo-device-signer] Could not inject post_install hook: expected 'post_install do |installer|' in Podfile"
+                    );
+                }
+                podfile = withInjection;
             }
 
             fs.writeFileSync(podfilePath, podfile);
