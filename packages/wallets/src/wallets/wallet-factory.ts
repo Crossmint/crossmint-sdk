@@ -105,7 +105,6 @@ export class WalletFactory {
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-        await args.options?._callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
         if (!this.apiClient.isServerSide && args.owner != null) {

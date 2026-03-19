@@ -1125,8 +1125,6 @@ export class Wallet<C extends Chain> {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
-        await this.#options?._callbacks?.onTransactionStart?.();
-
         const walletSigner = this.requireSigner();
 
         // API key signers approve automatically

@@ -111,18 +111,4 @@ describe("CrossmintWalletProvider", () => {
 
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
-
-    it("accepts callbacks prop", () => {
-        const callbacks = {
-            onWalletCreationStart: vi.fn(),
-            onTransactionStart: vi.fn(),
-        };
-
-        render(
-            <CrossmintWalletProvider callbacks={callbacks}>
-                <div>Test</div>
-            </CrossmintWalletProvider>
-        );
-        expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
-    });
 });

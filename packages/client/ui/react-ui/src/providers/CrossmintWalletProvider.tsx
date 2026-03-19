@@ -8,9 +8,9 @@ import {
 } from "@crossmint/client-sdk-react-base";
 import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
-import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 
 export interface CrossmintWalletProviderProps {
     /** Configuration for automatic wallet creation on login. */
@@ -19,11 +19,6 @@ export interface CrossmintWalletProviderProps {
     appearance?: UIConfig;
     /** Whether to show passkey helper UI. Default: true. */
     showPasskeyHelpers?: boolean;
-    /** Lifecycle callbacks for wallet creation and transaction events. */
-    callbacks?: {
-        onWalletCreationStart?: () => Promise<void>;
-        onTransactionStart?: () => Promise<void>;
-    };
     /** @internal */
     children: ReactNode;
 }
@@ -43,7 +38,6 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers = true,
     appearance,
     createOnLogin,
-    callbacks,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
 
@@ -61,7 +55,6 @@ export function CrossmintWalletProvider({
             createOnLogin={createOnLogin}
             appearance={appearance}
             showPasskeyHelpers={showPasskeyHelpers}
-            callbacks={callbacks}
             renderUI={renderWebUI}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >

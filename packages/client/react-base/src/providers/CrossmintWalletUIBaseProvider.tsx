@@ -2,8 +2,8 @@ import type { ReactNode, MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
-
 import type { PasskeyPromptState } from "./CrossmintWalletBaseProvider";
+
 import { useWallet } from "@/hooks/useWallet";
 
 export interface CrossmintWalletUIBaseProviderProps {
@@ -12,8 +12,8 @@ export interface CrossmintWalletUIBaseProviderProps {
     headlessSigningFlow?: boolean;
     showPasskeyHelpers?: boolean;
     renderUI?: (props: UIRenderProps) => ReactNode;
-    passkeyPromptState: PasskeyPromptState;
     signerAuth: SignerAuthState & SignerAuthHandlers;
+    passkeyPromptState?: PasskeyPromptState;
 }
 
 export interface UIRenderProps {
@@ -52,8 +52,8 @@ export function CrossmintWalletUIBaseProvider({
     appearance,
     headlessSigningFlow,
     renderUI,
-    passkeyPromptState,
     signerAuth,
+    passkeyPromptState,
 }: CrossmintWalletUIBaseProviderProps) {
     const { wallet } = useWallet();
 
@@ -83,10 +83,12 @@ export function CrossmintWalletUIBaseProvider({
             rejectRef: signerAuth.rejectRef,
             appearance,
         },
-        passkeyPromptProps: {
-            state: passkeyPromptState,
-            appearance,
-        },
+        ...(passkeyPromptState != null && {
+            passkeyPromptProps: {
+                state: passkeyPromptState,
+                appearance,
+            },
+        }),
     };
 
     return (

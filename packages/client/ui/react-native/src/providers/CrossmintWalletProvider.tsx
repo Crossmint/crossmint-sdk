@@ -28,13 +28,6 @@ export interface CrossmintWalletProviderProps {
     appearance?: UIConfig;
     /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
     headlessSigningFlow?: boolean;
-    /** Optional lifecycle callbacks invoked during wallet creation and transaction signing. */
-    callbacks?: {
-        /** Called when a wallet creation flow begins. */
-        onWalletCreationStart?: () => Promise<void>;
-        /** Called when a transaction signing flow begins. */
-        onTransactionStart?: () => Promise<void>;
-    };
     /** @internal */
     children: ReactNode;
 }
@@ -44,7 +37,6 @@ function CrossmintWalletProviderInternal({
     createOnLogin,
     appearance,
     headlessSigningFlow = true,
-    callbacks,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
@@ -304,7 +296,6 @@ function CrossmintWalletProviderInternal({
             appearance={appearance}
             headlessSigningFlow={headlessSigningFlow}
             initializeWebView={initializeWebView}
-            callbacks={callbacks}
             renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
         >

@@ -25,6 +25,15 @@ import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
 import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
+type ValidPasskeyPromptType = "create-wallet" | "transaction" | "not-supported" | "create-wallet-error" | "transaction-error";
+
+export type PasskeyPromptState = {
+    open: boolean;
+    type?: ValidPasskeyPromptType;
+    primaryActionOnClick?: () => void;
+    secondaryActionOnClick?: () => void;
+};
+
 export type CrossmintWalletBaseContext = {
     /** The current wallet instance, or undefined if no wallet is loaded. */
     wallet: Wallet<Chain> | undefined;
@@ -77,11 +86,6 @@ export interface CrossmintWalletBaseProviderProps {
      * Storage for the device signer key.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
-    /** Lifecycle callbacks for wallet creation and transaction events. */
-    callbacks?: {
-        onWalletCreationStart?: () => Promise<void>;
-        onTransactionStart?: () => Promise<void>;
-    };
     /** Appearance configuration for wallet UI components. */
     appearance?: UIConfig;
     /** Whether to show passkey helper UI. Default: true. */
@@ -100,24 +104,10 @@ export interface CrossmintWalletBaseProviderProps {
     renderUI?: (props: UIRenderProps) => ReactNode;
 }
 
-type ValidPasskeyPromptType =
-    | "create-wallet"
-    | "transaction"
-    | "not-supported"
-    | "create-wallet-error"
-    | "transaction-error";
-
-export type PasskeyPromptState = {
-    open: boolean;
-    type?: ValidPasskeyPromptType;
-    primaryActionOnClick?: () => void;
-    secondaryActionOnClick?: () => void;
-};
 
 export function CrossmintWalletBaseProvider({
     children,
     createOnLogin,
-    callbacks,
     clientTEEConnection,
     deviceSignerKeyStorage,
     initializeWebView,
@@ -131,7 +121,6 @@ export function CrossmintWalletBaseProvider({
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
-    const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth();
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
 
@@ -141,6 +130,8 @@ export function CrossmintWalletBaseProvider({
         verifyOtp: null as ((otp: string) => Promise<void>) | null,
         reject: null as ((error?: Error) => void) | null,
     });
+
+    const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -164,18 +155,6 @@ export function CrossmintWalletBaseProvider({
             }),
         [showPasskeyHelpers]
     );
-
-    const updateCallbacks = useMemo(() => {
-        let onWalletCreationStart = callbacks?.onWalletCreationStart;
-        let onTransactionStart = callbacks?.onTransactionStart;
-
-        if (createOnLogin?.recovery?.type === "passkey" && showPasskeyHelpers) {
-            onWalletCreationStart = createPasskeyPrompt("create-wallet");
-            onTransactionStart = createPasskeyPrompt("transaction");
-        }
-
-        return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.recovery?.type, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -212,16 +191,12 @@ export function CrossmintWalletBaseProvider({
             return {
                 clientTEEConnection: clientTEEConnection?.(),
                 _callbacks: {
-                    onWalletCreationStart:
-                        argsOptions?._callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
-                    onTransactionStart:
-                        argsOptions?._callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
                     onAuthRequired: argsOptions?._callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };
         },
-        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [clientTEEConnection, deviceSignerKeyStorage, wrappedOnAuthRequired]
     );
 
     const getOrCreateWallet = useCallback(
@@ -259,6 +234,9 @@ export function CrossmintWalletBaseProvider({
                 }
 
                 if (wallet == null) {
+                    if (args.recovery.type === "passkey" && showPasskeyHelpers) {
+                        await createPasskeyPrompt("create-wallet")();
+                    }
                     wallet = await wallets.createWallet<C>({
                         chain: args.chain,
                         plugins: args.plugins,
@@ -279,7 +257,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions, createPasskeyPrompt, showPasskeyHelpers]
     );
 
     const getWallet = useCallback(
@@ -326,6 +304,10 @@ export function CrossmintWalletBaseProvider({
 
                 await initializeWebViewIfNeeded(args.recovery);
 
+                if (args.recovery.type === "passkey" && showPasskeyHelpers) {
+                    await createPasskeyPrompt("create-wallet")();
+                }
+
                 const wallet = await wallets.createWallet<C>({
                     ...args,
                     options: buildWalletOptions(args.options),
@@ -340,7 +322,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions, createPasskeyPrompt, showPasskeyHelpers]
     );
 
     const createDeviceSigner = useCallback(() => {
@@ -467,8 +449,8 @@ export function CrossmintWalletBaseProvider({
                     appearance={appearance}
                     headlessSigningFlow={headlessSigningFlow}
                     renderUI={renderUI}
-                    passkeyPromptState={passkeyPromptState}
                     signerAuth={signerAuth}
+                    passkeyPromptState={passkeyPromptState}
                 >
                     {children}
                 </CrossmintWalletUIBaseProvider>

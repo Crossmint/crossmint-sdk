@@ -35,9 +35,12 @@ export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains
 
 // Signer configuration types
 export { isExportableSigner } from "./signers/types";
+export { signWithPasskey } from "./signers/passkey";
 export type {
     EmailSignerConfig,
     PhoneSignerConfig,
+    PasskeySignerConfig,
+    PasskeySignResult,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     SignerConfigForChain,
