@@ -51,6 +51,7 @@ import type {
     DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
     InternalSignerConfig,
+    PasskeySignerConfig,
     ServerSignerConfig,
     ServerSignerLocator,
     Signer,
@@ -807,7 +808,7 @@ export class Wallet<C extends Chain> {
      * Returns true if a credential was auto-selected, false if no passkey signers exist.
      * Throws if multiple passkey signers exist (user must specify an id).
      */
-    private async tryAutoSelectPasskey(signer: SignerConfigForChain<C>): Promise<boolean> {
+    private async tryAutoSelectPasskey(signer: PasskeySignerConfig): Promise<boolean> {
         const existingSigners = await this.signers();
         const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
 
@@ -841,8 +842,8 @@ export class Wallet<C extends Chain> {
         return getSignerLocator(signer);
     }
 
-    private isPasskeyMissingId(signer: SignerConfigForChain<C>): boolean {
-        return !("id" in signer) || signer.id == null || signer.id === "";
+    private isPasskeyMissingId(signer: PasskeySignerConfig): boolean {
+        return signer.id == null || signer.id === "";
     }
 
     /**
