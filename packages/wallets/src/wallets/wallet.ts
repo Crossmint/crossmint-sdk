@@ -1011,8 +1011,7 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryAddress =
-                "address" in recovery ? (recovery as { address: string }).address : null;
+            const recoveryAddress = "address" in recovery ? (recovery as { address: string }).address : null;
             if (recoveryAddress == null) {
                 return false;
             }
