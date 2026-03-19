@@ -177,12 +177,16 @@ class ApiClient extends CrossmintApiClient {
 
     async getTransfers(
         walletLocator: WalletLocator,
-        params: { chain: Chain; tokens: string; status: "successful" | "failed" }
+        params: { chain: Chain; tokens?: string; status?: "successful" | "failed" }
     ): Promise<GetTransfersResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
-        queryParams.append("tokens", params.tokens);
-        queryParams.append("status", params.status);
+        if (params.tokens != null) {
+            queryParams.append("tokens", params.tokens);
+        }
+        if (params.status != null) {
+            queryParams.append("status", params.status);
+        }
         const response = await this.get(
             `${this.unstableApiPrefix}/${walletLocator}/transfers?${queryParams.toString()}`,
             {

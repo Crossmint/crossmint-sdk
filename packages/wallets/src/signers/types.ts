@@ -163,6 +163,7 @@ export type DeviceSignerConfig = {
     type: "device";
     publicKey?: { x: string; y: string };
     locator?: string;
+    name?: string;
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain

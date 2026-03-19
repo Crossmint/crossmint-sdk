@@ -64,4 +64,11 @@ export abstract class DeviceSignerKeyStorage {
      * @param address - The wallet address whose key pair to remove.
      */
     abstract deleteKey(address: string): Promise<void>;
+
+    /**
+     * Get a human-readable name for this device (e.g. "MacBook Pro", "iPhone 15").
+     * Used to label device signers in the API for identification purposes.
+     * @returns A descriptive name for the current device.
+     */
+    abstract getDeviceName(): string;
 }
