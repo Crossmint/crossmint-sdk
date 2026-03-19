@@ -31,6 +31,7 @@ import type {
 } from "./types";
 import { mapApiSignerToDelegatedSigner, mapConfigSignerToDelegatedSigner } from "../utils/signer-mapping";
 import {
+    InvalidAddressError,
     InvalidSignerError,
     SignatureFailedError,
     SignatureNotAvailableError,
@@ -1464,6 +1465,11 @@ export class Wallet<C extends Chain> {
 
 function toRecipientLocator(to: string | UserLocator): string {
     if (typeof to === "string") {
+        if (!isValidAddress(to)) {
+            throw new InvalidAddressError(
+                `Invalid recipient address: "${to}". Expected a valid EVM (0x...), Solana (base58), or Stellar (G...) address.`
+            );
+        }
         return to;
     }
     if ("email" in to) {
