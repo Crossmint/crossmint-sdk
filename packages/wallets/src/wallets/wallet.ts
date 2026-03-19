@@ -1042,11 +1042,12 @@ export class Wallet<C extends Chain> {
             return false;
         }
 
-        // For passkey signers, compare by type only.
+        // For passkey signers, only treat as recovery when no specific credential id is provided.
         // The API-sourced recovery config has shape {type: "passkey"} without an id,
         // so locator comparison would fail ("passkey" vs "passkey:{id}").
+        // If the user specified an id, they intend to use a specific delegated passkey.
         if (signerConfig.type === "passkey") {
-            return true; // type already matches from the check above
+            return !("id" in signerConfig) || signerConfig.id == null || signerConfig.id === "";
         }
 
         // For server signers, compare derived addresses.
