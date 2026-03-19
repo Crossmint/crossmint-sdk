@@ -321,7 +321,7 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction when prepareOnly is true", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -329,7 +329,7 @@ describe("Wallet - send()", () => {
             mockApiClient.send.mockResolvedValue(mockSendResponse);
 
             const result = await wallet.send("0xrecipient123", "usdc", "10.0", {
-                experimental_prepareOnly: true,
+                prepareOnly: true,
             });
 
             expect(result.hash).toBeUndefined();
@@ -529,7 +529,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should return signatureId when experimental_prepareOnly is true", async () => {
+        it("should return signatureId when prepareOnly is true", async () => {
             const mockRegisterResponse = {
                 chains: {
                     "base-sepolia": {
@@ -541,7 +541,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await evmWallet.addSigner("external-wallet:0x456", { experimental_prepareOnly: true });
+            const result = await evmWallet.addSigner("external-wallet:0x456", { prepareOnly: true });
 
             expect(result.signatureId).toBe("sig-123");
         });
@@ -606,7 +606,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should return transactionId when experimental_prepareOnly is true", async () => {
+        it("should return transactionId when prepareOnly is true", async () => {
             const mockRegisterResponse = {
                 transaction: {
                     id: "txn-123",
@@ -615,7 +615,7 @@ describe("Wallet - addSigner()", () => {
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
-            const result = await solanaWallet.addSigner("external-wallet:ABC123", { experimental_prepareOnly: true });
+            const result = await solanaWallet.addSigner("external-wallet:ABC123", { prepareOnly: true });
 
             expect(result.transactionId).toBe("txn-123");
         });

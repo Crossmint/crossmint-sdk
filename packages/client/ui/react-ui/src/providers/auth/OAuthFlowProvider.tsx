@@ -3,7 +3,7 @@ import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 
 import { useAuthForm } from "./AuthFormProvider";
 import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
-import { useAuth } from "@/hooks";
+import { useCrossmintAuth } from "@/hooks";
 
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
@@ -34,7 +34,7 @@ export function OAuthFlowProvider({
     children: ReactNode;
     prefetchOAuthUrls: boolean;
 }) {
-    const { crossmintAuth, loginMethods } = useAuth();
+    const { crossmintAuth, loginMethods } = useCrossmintAuth();
     const { setError } = useAuthForm();
 
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);

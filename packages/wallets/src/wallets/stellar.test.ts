@@ -200,7 +200,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction when prepareOnly is true", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-prepare",
                 status: "pending",
@@ -230,7 +230,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
@@ -239,7 +239,7 @@ describe("StellarWallet - sendTransaction()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should use custom signer when experimental_signer is provided", async () => {
+        it("should use custom signer when signer is provided", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-custom-signer",
                 status: "success",
@@ -275,7 +275,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_signer: "external-wallet:Gcustom123", experimental_prepareOnly: false },
+                options: { signer: "external-wallet:Gcustom123", prepareOnly: false },
             });
             await vi.runAllTimersAsync();
             await sendPromise;

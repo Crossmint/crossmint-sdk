@@ -1,9 +1,9 @@
-import { useAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
 import { useState } from "react";
 import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
 export function HeadlessSigning() {
-    const { user } = useAuth();
+    const { user } = useCrossmintAuth();
     const { createDeviceSigner, wallet } = useWallet();
     const loggedInUserEmail = user?.email ?? null;
     const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
@@ -34,10 +34,14 @@ export function HeadlessSigning() {
             console.log("User not logged in");
             return;
         }
+        if (wallet == null) {
+            console.error("Cannot initialize device signer: wallet is not available");
+            return;
+        }
         setIsLoading(true);
         try {
             const descriptor = await createDeviceSigner();
-            await wallet?.addSigner(descriptor.locator);
+            await wallet.addSigner(descriptor.locator);
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {

@@ -1,5 +1,77 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- c51a407: Make device signer the default operational signer (WAL-9287).
+
+  BREAKING CHANGES:
+
+  - Removed `signer` property from `WalletArgsFor` and `WalletCreateArgs`
+  - `recovery` is now required on `WalletCreateArgs`
+  - Removed `assembleSigner` public method from `CrossmintWallets`
+  - Removed `onChangeSigner` callback
+  - Removed `getOrCreateWallet` from React provider public API; use `getWallet` and `createWallet` separately
+  - `getWallet` now accepts `alias` instead of `signer`
+
+- 67920a5: Add support for Delegated Signers.
+- 820c2ec: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- ede1aac: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 5e1e86e: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- 6e3fa39: BREAKING: Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged.
+
+### Minor Changes
+
+- 8c079bd: Device signer can be used in new devices. During the first transaction it will automatically create a device signer before running the transaction
+- eb975c9: Browser Device Key support with Iframe Key Storage
+- d29b7d3: Remove biometric policy from device signers. Only "none" policies are now created, which is the default for the iframe.
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 2445716: Add device signer support
+- 74a05a1: feat: unify OTP signer API with useWalletOtpSigner hook
+
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 5b77229: Add SDK logger decorator to device signer key storage methods for improved observability
+- 522b486: Handle device signer IDB fatal errors with iframe reload and retry
+- d5283ab: Support Solana Device Signer
+- Updated dependencies [9b9f9db]
+- Updated dependencies [bf792d2]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+
+## 0.21.0
+
+### Minor Changes
+
+- e912d18: Add server key signers for EVM, Solana, and Stellar using HKDF-SHA256 key derivation, enabling server-to-server wallet operations without client-side key management.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
+
 ## 0.20.2
 
 ### Patch Changes

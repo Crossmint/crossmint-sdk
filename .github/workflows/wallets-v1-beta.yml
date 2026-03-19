@@ -1,0 +1,71 @@
+name: Wallets V1 Beta Release
+
+env:
+    NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+on:
+    push:
+        branches:
+            - wallets-v1
+    workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    build-and-test:
+        name: Build & Test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: wallets-v1
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Build all
+              run: pnpm build
+
+            - name: Test all
+              run: pnpm test:vitest
+
+    release:
+        name: Beta Release
+        runs-on: ubuntu-latest
+        needs: [build-and-test]
+        permissions:
+            contents: write
+            pull-requests: write
+            id-token: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: wallets-v1
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Setup Node.js 24 for OIDC trusted publishing
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Update npm for OIDC trusted publishing
+              run: npm install -g npm@11.6.2
+
+            - name: Create Release Pull Request or Publish
+              uses: changesets/action@v1.5.3
+              with:
+                  commit: "Release beta packages"
+                  title: "Release beta packages"
+                  publish: pnpm change:publish
+                  version: pnpm change:version
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

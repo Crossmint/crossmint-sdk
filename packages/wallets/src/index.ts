@@ -15,7 +15,7 @@ export { StellarWallet } from "./wallets/stellar";
 
 // Core types
 export type {
-    Activity,
+    Transfers,
     Balances,
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
@@ -40,6 +40,7 @@ export type {
     PhoneSignerConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
+    ServerSignerConfig,
     SignerConfigForChain,
     SignerLocator,
     EmailSignerLocator,

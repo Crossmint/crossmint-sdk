@@ -23,7 +23,7 @@ const defaultContextValue: CrossmintAuthContext = {
     user: undefined,
     status: "initializing",
     getUser: () => {},
-    experimental_loginWithOAuth: () => Promise.resolve(),
+    loginWithOAuth: () => Promise.resolve(),
     loginMethods: [],
 };
 
@@ -88,7 +88,7 @@ function CrossmintAuthProviderContent({
         return "logged-out";
     }, [baseAuth.status, baseAuth.jwt, dialogOpen]);
 
-    const experimental_loginWithOAuth = useCallback(
+    const loginWithOAuth = useCallback(
         async (provider: OAuthProvider) => {
             if (baseAuth.jwt != null) {
                 console.log("User already logged in");
@@ -104,10 +104,10 @@ function CrossmintAuthProviderContent({
             ...baseAuth,
             login,
             status: getAuthStatus(),
-            experimental_loginWithOAuth,
+            loginWithOAuth,
             loginMethods,
         }),
-        [baseAuth, login, getAuthStatus, experimental_loginWithOAuth, loginMethods]
+        [baseAuth, login, getAuthStatus, loginWithOAuth, loginMethods]
     );
 
     return (

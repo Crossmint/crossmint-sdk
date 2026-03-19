@@ -1,7 +1,7 @@
 "use client";
 
 import { signInWithGoogle } from "@/lib/firebase";
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { usePrivy } from "@privy-io/react-auth";
 import { FirebaseUIPhoneAuth } from "./firebase-phone-auth";
@@ -10,7 +10,7 @@ import { FirebaseUIPhoneAuth } from "./firebase-phone-auth";
 /*                    CROSSMINT AUTH LOGIN BUTTON               */
 /* ============================================================ */
 export function CrossmintAuthLoginButton() {
-    const { login } = useAuth();
+    const { login } = useCrossmintAuth();
     return (
         <button
             className="w-full py-2 px-4 rounded-md text-sm font-medium border bg-gray-50 hover:bg-gray-100 transition-colors"

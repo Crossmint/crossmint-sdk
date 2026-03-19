@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { type AuthStatus, CrossmintAuthBaseProvider, useCrossmintAuthBase } from "@crossmint/client-sdk-react-base";
-import { useAuth, useCrossmint } from "../hooks";
+import { useCrossmintAuth, useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
 import type { RNAuthContext, RNCrossmintAuthProviderProps } from "@/types/auth";
 
@@ -30,7 +30,7 @@ export const AuthContext = createContext<RNAuthContext>(defaultContextValue);
 
 function CrossmintAuthSync({ children }: { children: ReactNode }) {
     const { setJwt } = useCrossmint();
-    const { jwt } = useAuth();
+    const { jwt } = useCrossmintAuth();
 
     useEffect(() => {
         setJwt(jwt);

@@ -1,4 +1,4 @@
-import { useWallet, useAuth, type Balances } from "@crossmint/client-sdk-react-native-ui";
+import { useWallet, useCrossmintAuth, type Balances } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
@@ -6,7 +6,7 @@ import { fundUSDC } from "@/utils/usdcFaucet";
 import { HeadlessSigning } from "@/components/headless-signing";
 
 export default function Index() {
-    const { user, logout, createAuthSession, loginWithOAuth, jwt, crossmintAuth } = useAuth();
+    const { user, logout, createAuthSession, loginWithOAuth, jwt, crossmintAuth } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();

@@ -13,19 +13,20 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
+    ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
-export type { Activity } from "../api/types";
+export type { Transfers } from "../api/types";
 
 export type PrepareOnly<T extends boolean = boolean> = {
-    experimental_prepareOnly: T;
+    prepareOnly: T;
 };
 
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    experimental_signer?: string;
+    signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -80,7 +81,7 @@ export type StellarTransactionInput = (
           contractId: string;
           method: string;
           memo?: string;
-          args: Record<string, any>;
+          args: Record<string, unknown>;
       }
     | {
           transaction: string;
@@ -110,6 +111,10 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
+export type DelegatedSignerInput = {
+    signer: string | ServerSignerConfig;
+};
+
 export type DelegatedSigner = {
     signer: string;
 };
@@ -126,7 +131,7 @@ export type Callbacks = {
         signerType: "email" | "phone",
         signerLocator: string,
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
@@ -137,7 +142,7 @@ export type StellarWalletPlugin = string;
 export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWalletPlugin : never;
 
 export type WalletOptions = {
-    experimental_callbacks?: Callbacks;
+    _callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
@@ -228,7 +233,7 @@ export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly exten
       };
 
 export type ApproveOptions = {
-    experimental_approval?: Approval;
+    approval?: Approval;
     additionalSigners?: Signer[];
 };
 
