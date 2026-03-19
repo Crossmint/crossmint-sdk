@@ -79,6 +79,7 @@ export class Wallet<C extends Chain> {
     #apiClient: ApiClient;
     #recovery: SignerConfigForChain<C>;
     #needsRecovery = false;
+    #deviceSignerApproved = false;
     #deviceSignerReady: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -716,7 +717,7 @@ export class Wallet<C extends Chain> {
     /**
      * Register a device signer with the wallet using the recovery signer.
      * Generates a new device key and registers it on-chain.
-     * Returns early if needsRecovery() is false.
+     * Returns early if the device signer's locator is already approved on-chain.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -737,13 +738,19 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // Fast-path: skip the API call if we've already verified the device signer is approved
+        if (this.#deviceSignerApproved) {
+            return;
+        }
+
         // Check if the device signer is already approved on the wallet
         const currentLocator = this.#signer.locator();
-        if (currentLocator != null && currentLocator !== "device:") {
+        if (currentLocator !== "device:") {
             const isApproved = await this.signerIsRegistered(currentLocator);
             if (isApproved) {
                 walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
                 this.#needsRecovery = false;
+                this.#deviceSignerApproved = true;
                 return;
             }
         }
@@ -777,6 +784,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.recover.device.success", { signerLocator });
 
         this.#needsRecovery = false;
+        this.#deviceSignerApproved = true;
     }
 
     /**
