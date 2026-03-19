@@ -23,14 +23,17 @@
         "@crossmint/common-sdk-auth": "1.0.72",
         "@crossmint/common-sdk-base": "0.9.20",
         "@crossmint/server-sdk": "1.2.62",
-        "@crossmint/wallets-sdk": "0.20.2"
+        "@crossmint/wallets-sdk": "0.20.2",
+        "@crossmint/expo-device-signer": "0.0.1"
     },
     "changesets": [
         "add-sdk-logger-device-signer",
         "chatty-frogs-change",
+        "device-signer-approval-check",
         "device-signer-default",
         "device-signer-idb-fatal",
         "fix-tee-double-init",
+        "homogenize-signer-management",
         "itchy-ducks-collect",
         "mighty-coins-fix",
         "remove-biometric-policy",
