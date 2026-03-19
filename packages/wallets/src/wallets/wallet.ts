@@ -73,6 +73,7 @@ type WalletContructorType<C extends Chain> = {
     options?: WalletOptions;
     recovery: SignerConfigForChain<C>;
     signers?: SignerConfigForChain<C>[];
+    signer?: Signer;
 };
 
 export class Wallet<C extends Chain> {
@@ -91,7 +92,7 @@ export class Wallet<C extends Chain> {
     #recovering: Promise<void> | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, options, alias, recovery, signers } = args;
+        const { chain, address, owner, options, alias, recovery, signers, signer } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -100,6 +101,7 @@ export class Wallet<C extends Chain> {
         this.alias = alias;
         this.#recovery = recovery;
         this.#initialSigners = signers ?? [];
+        this.#signer = signer; // Can be set by useSigner
         this.#signerInitialization = this.initDefaultSigner();
     }
 
@@ -148,10 +150,14 @@ export class Wallet<C extends Chain> {
      * is not available in the API response. In those cases, the signer is left undefined.
      */
     private async initDefaultSigner(): Promise<void> {
+        // If useSigner has been called, don't try to auto-assemble a signer
+        if (this.#signer != null) {
+            return;
+        }
         // Step 1: Try device signer (existing behavior)
         await this.initDeviceSigner();
 
-        // If device signer was found or recovery is pending, we're done
+        // If recovery is pending, we're done
         if (this.#signer != null || this.#needsRecovery) {
             return;
         }
