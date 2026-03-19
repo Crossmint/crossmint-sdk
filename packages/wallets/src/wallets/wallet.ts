@@ -750,26 +750,6 @@ export class Wallet<C extends Chain> {
         // Validate that required values are set for each signer type
         this.validateSignerInput(signer);
 
-        // Passkey auto-selection: if no id provided, auto-select if exactly one passkey exists
-        if (signer.type === "passkey" && (!("id" in signer) || signer.id == null || signer.id === "")) {
-            const existingSigners = await this.signers();
-            const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
-
-            if (passkeySigners.length === 0) {
-                throw new Error("No passkey signer is registered on this wallet.");
-            }
-            if (passkeySigners.length > 1) {
-                throw new Error(
-                    'Multiple passkey signers are registered on this wallet. Please specify the credential id: wallet.useSigner({ type: "passkey", id: "<credential-id>" })'
-                );
-            }
-
-            // Auto-select the single passkey
-            const passkeyLocator = passkeySigners[0].locator;
-            const credentialId = passkeyLocator.replace("passkey:", "");
-            signer.id = credentialId;
-        }
-
         // Device signers: check availability and flag for recovery if needed
         if (signer.type === "device") {
             await this.resolveDeviceSignerAvailability(signer);
@@ -777,6 +757,26 @@ export class Wallet<C extends Chain> {
             // Recovery signers skip the registration check
             const isRecovery = this.isRecoverySigner(signer);
             if (!isRecovery) {
+                // Passkey auto-selection: if no id provided, auto-select if exactly one passkey exists
+                if (signer.type === "passkey" && (!("id" in signer) || signer.id == null || signer.id === "")) {
+                    const existingSigners = await this.signers();
+                    const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
+
+                    if (passkeySigners.length === 0) {
+                        throw new Error("No passkey signer is registered on this wallet.");
+                    }
+                    if (passkeySigners.length > 1) {
+                        throw new Error(
+                            'Multiple passkey signers are registered on this wallet. Please specify the credential id: wallet.useSigner({ type: "passkey", id: "<credential-id>" })'
+                        );
+                    }
+
+                    // Auto-select the single passkey
+                    const passkeyLocator = passkeySigners[0].locator;
+                    const credentialId = passkeyLocator.replace("passkey:", "");
+                    signer.id = credentialId;
+                }
+
                 // Delegated signers must already be registered
                 let signerLocator: SignerLocator | string;
                 if (signer.type === "server") {
@@ -1033,6 +1033,13 @@ export class Wallet<C extends Chain> {
         // Device signers cannot be recovery signers
         if (signerConfig.type === "device") {
             return false;
+        }
+
+        // For passkey signers, compare by type only.
+        // The API-sourced recovery config has shape {type: "passkey"} without an id,
+        // so locator comparison would fail ("passkey" vs "passkey:{id}").
+        if (signerConfig.type === "passkey") {
+            return true; // type already matches from the check above
         }
 
         // For server signers, compare derived addresses.

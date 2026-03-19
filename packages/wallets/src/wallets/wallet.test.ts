@@ -981,6 +981,26 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("external-wallet");
         });
 
+        it("should accept the recovery signer (passkey) without requiring auto-selection from delegated signers", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "passkey" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // Passkey recovery signer should be accepted without querying delegated signers.
+            // Previously this would throw "No passkey signer is registered" because
+            // auto-selection ran before the recovery check.
+            await wallet.useSigner({ type: "passkey" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("passkey");
+        });
+
         it("should still reject non-recovery, non-registered signers", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
