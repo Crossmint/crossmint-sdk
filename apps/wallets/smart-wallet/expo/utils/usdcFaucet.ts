@@ -17,7 +17,8 @@ export async function fundUSDC({
             },
             body: JSON.stringify({
                 amount,
-                token: "usdc",
+                token: "usdxm",
+                chain: "base-sepolia",
             }),
         });
         if (!response.ok) {

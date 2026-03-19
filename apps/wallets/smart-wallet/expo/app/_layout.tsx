@@ -20,10 +20,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
             <CrossmintAuthProvider>
-                <CrossmintWalletProvider
-                    headlessSigningFlow={false} // set to true to use headless signing flow
-                    createOnLogin={{ chain: "base-sepolia", signer: { type: "email" } }}
-                >
+                <CrossmintWalletProvider createOnLogin={{ chain: "base-sepolia", recovery: { type: "email" } }}>
                     {children}
                 </CrossmintWalletProvider>
             </CrossmintAuthProvider>
