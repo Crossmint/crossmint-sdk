@@ -72,6 +72,7 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     options?: WalletOptions;
     recovery: SignerConfigForChain<C>;
+    signers?: SignerConfigForChain<C>[];
     signer?: Signer;
 };
 
@@ -84,13 +85,14 @@ export class Wallet<C extends Chain> {
     #options?: WalletOptions;
     #apiClient: ApiClient;
     #recovery: SignerConfigForChain<C>;
+    #initialSigners: SignerConfigForChain<C>[];
     #needsRecovery = false;
     #deviceSignerApproved = false;
-    #deviceSignerReady: Promise<void>;
+    #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, options, alias, recovery, signer } = args;
+        const { chain, address, owner, options, alias, recovery, signers, signer } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -98,8 +100,9 @@ export class Wallet<C extends Chain> {
         this.#options = options;
         this.alias = alias;
         this.#recovery = recovery;
-        this.#signer = signer;
-        this.#deviceSignerReady = this.initDeviceSigner();
+        this.#initialSigners = signers ?? [];
+        this.#signer = signer; // Can be set by useSigner
+        this.#signerInitialization = this.initDefaultSigner();
     }
 
     public get signer(): Signer | undefined {
@@ -132,6 +135,54 @@ export class Wallet<C extends Chain> {
         // Assemble the device signer with the resolved config
         const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, internalConfig, deviceSignerKeyStorage);
+    }
+
+    /**
+     * Initialize the default signer for this wallet.
+     * Priority:
+     * 1. Device signer (if available and enabled)
+     * 2. If no device signer and no pending recovery: fallback based on delegated signer count
+     *    - 0 signers: try to use recovery signer
+     *    - 1 signer: try to use that signer
+     *    - >1 signers: leave undefined (user must call useSigner)
+     *
+     * Note: Server and api-key signers may fail to auto-assemble if required data
+     * is not available in the API response. In those cases, the signer is left undefined.
+     */
+    private async initDefaultSigner(): Promise<void> {
+        // If useSigner has been called, don't try to auto-assemble a signer
+        if (this.#signer != null) {
+            return;
+        }
+        // Step 1: Try device signer (existing behavior)
+        await this.initDeviceSigner();
+
+        // If device signer was found or recovery is pending, we're done
+        if (this.#signer != null || this.#needsRecovery) {
+            return;
+        }
+
+        // Step 2: Fallback based on delegated signer count
+        // Filter out signers that can't be auto-assembled (server, api-key)
+        const autoAssemblableSigners = this.#initialSigners.filter((s) => s.type !== "server" && s.type !== "api-key");
+
+        try {
+            if (autoAssemblableSigners.length === 0) {
+                // No delegated signers → try to use recovery signer (common on Solana and server-side)
+                if (this.#recovery.type !== "server" && this.#recovery.type !== "api-key") {
+                    const internalConfig = this.buildInternalSignerConfig(this.#recovery);
+                    this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+                }
+            } else if (autoAssemblableSigners.length === 1) {
+                // Exactly 1 auto-assemblable signer → use it
+                const internalConfig = this.buildInternalSignerConfig(autoAssemblableSigners[0]);
+                this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+            }
+            // >1 signers → leave #signer undefined, user must call useSigner()
+        } catch {
+            // If auto-assembly fails (e.g., missing required data), leave #signer undefined
+            // User will need to call useSigner() explicitly
+        }
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -960,7 +1011,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected async preAuthIfNeeded(): Promise<void> {
-        await this.#deviceSignerReady;
+        await this.#signerInitialization;
         if (this.#recovering == null) {
             this.#recovering = this.recover();
         }
