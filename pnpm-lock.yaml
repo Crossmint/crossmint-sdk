@@ -80,7 +80,7 @@ importers:
         version: 5.5.3
       vitest:
         specifier: 1.6.1
-        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
+        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
       vitest-mock-extended:
         specifier: 2.0.2
         version: 2.0.2(typescript@5.5.3)(vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1))
@@ -690,7 +690,7 @@ importers:
         version: 19.1.1(react@19.1.1)
       vitest:
         specifier: 1.6.1
-        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
+        version: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
 
   packages/client/signers:
     dependencies:
@@ -736,9 +736,6 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
-      '@crossmint/expo-device-signer':
-        specifier: workspace:*
-        version: link:../../device-signer-expo
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
@@ -766,6 +763,10 @@ importers:
       zod:
         specifier: 3.22.4
         version: 3.22.4
+    optionalDependencies:
+      '@crossmint/expo-device-signer':
+        specifier: workspace:*
+        version: link:../../device-signer-expo
     devDependencies:
       '@expo/config-plugins':
         specifier: ^9.0.17
@@ -21927,7 +21928,7 @@ snapshots:
       '@jest/globals': 29.7.0
       '@types/jest': 29.5.4
       jest: 29.6.4(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.14.8)(typescript@5.5.3))
-      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
 
   '@testing-library/react@13.4.0(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -33239,9 +33240,9 @@ snapshots:
     dependencies:
       ts-essentials: 10.1.1(typescript@5.5.3)
       typescript: 5.5.3
-      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
 
-  vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1):
+  vitest@1.6.1(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
