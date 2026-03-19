@@ -146,7 +146,7 @@ export class Wallet<C extends Chain> {
         return wallet.#recovery;
     }
 
-    protected get apiClient(): ApiClient {
+    public get apiClient(): ApiClient {
         return this.#apiClient;
     }
 
@@ -799,7 +799,7 @@ export class Wallet<C extends Chain> {
             await this.initDeviceSigner();
         }
 
-        if (this.#signer == null || this.#signer.type !== "device") {
+        if (this.#signer?.type !== "device") {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
             return;
         }
