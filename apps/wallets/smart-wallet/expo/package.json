@@ -18,6 +18,7 @@
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
         "@crossmint/client-sdk-rn-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
+        "@crossmint/expo-device-signer": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
         "@expo/vector-icons": "^15.0.3",
         "@react-navigation/bottom-tabs": "^7.2.0",

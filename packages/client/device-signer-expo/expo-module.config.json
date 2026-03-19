@@ -1,0 +1,9 @@
+{
+    "platforms": ["ios", "android"],
+    "ios": {
+        "modules": ["DeviceSignerModule"]
+    },
+    "android": {
+        "modules": ["com.crossmint.expo.devicesigner.DeviceSignerModule"]
+    }
+}

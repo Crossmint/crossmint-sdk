@@ -349,6 +349,9 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../../../../packages/client/signers
+      '@crossmint/expo-device-signer':
+        specifier: workspace:*
+        version: link:../../../../packages/client/device-signer-expo
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../../packages/wallets
@@ -599,6 +602,25 @@ importers:
         specifier: 9.0.4
         version: 9.0.4
 
+  packages/client/device-signer-expo:
+    dependencies:
+      '@crossmint/wallets-sdk':
+        specifier: workspace:*
+        version: link:../../wallets
+    devDependencies:
+      '@types/react':
+        specifier: 19.1.10
+        version: 19.1.10
+      expo-modules-core:
+        specifier: ^3.0.0
+        version: 3.0.28(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10))(react@19.1.2)
+      react:
+        specifier: 19.1.2
+        version: 19.1.2
+      react-native:
+        specifier: 0.82.1
+        version: 0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.2)(utf-8-validate@5.0.10)
+
   packages/client/react-base:
     dependencies:
       '@crossmint/client-sdk-auth':
@@ -741,6 +763,10 @@ importers:
       zod:
         specifier: 3.22.4
         version: 3.22.4
+    optionalDependencies:
+      '@crossmint/expo-device-signer':
+        specifier: workspace:*
+        version: link:../../device-signer-expo
     devDependencies:
       '@expo/config-plugins':
         specifier: ^9.0.17
@@ -8617,7 +8643,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-dirs@0.1.1:
     resolution: {integrity: sha512-NknMLn7F2J7aflwFOlGdNIuCDpN3VGoSoB+aap3KABFWbHVn1TCgFC+np23J8W2BiZbjfEw3BFBycSMv1AFblg==}
