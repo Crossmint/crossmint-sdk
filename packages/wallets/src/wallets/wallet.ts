@@ -740,7 +740,9 @@ export class Wallet<C extends Chain> {
 
         // Fast-path: skip the API call if we've already verified the device signer is approved
         if (this.#deviceSignerApproved) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
             return;
+        }
         }
 
         // Check if the device signer is already approved on the wallet
