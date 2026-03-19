@@ -77,7 +77,7 @@ export function mapApiSignerToDelegatedSigner(apiSigner: APIDelegatedSigner, cha
     }
 
     // For EVM, status comes from the chains field
-    if ("chains" in apiSigner && apiSigner.chains != null) {
+    if ("chains" in apiSigner && apiSigner.chains != null && Object.keys(apiSigner.chains).length > 0) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry == null) {
             return null; // No approval for this chain
@@ -85,8 +85,8 @@ export function mapApiSignerToDelegatedSigner(apiSigner: APIDelegatedSigner, cha
         return { ...base, status: chainEntry.status } as DelegatedSigner;
     }
 
-    // If no chains field, the signer has no per-chain status — filter it out for EVM
-    return null;
+    // If chains field is empty, the signer was created during wallet creation.
+    return { ...base, status: "success" } as DelegatedSigner;
 }
 
 /**

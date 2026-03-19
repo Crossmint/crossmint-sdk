@@ -71,6 +71,7 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     options?: WalletOptions;
     recovery: SignerConfigForChain<C>;
+    signer?: Signer;
 };
 
 export class Wallet<C extends Chain> {
@@ -87,7 +88,7 @@ export class Wallet<C extends Chain> {
     #recovering: Promise<void> | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, options, alias, recovery } = args;
+        const { chain, address, owner, options, alias, recovery, signer } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -95,6 +96,7 @@ export class Wallet<C extends Chain> {
         this.#options = options;
         this.alias = alias;
         this.#recovery = recovery;
+        this.#signer = signer;
         this.#deviceSignerReady = this.initDeviceSigner();
     }
 
