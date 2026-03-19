@@ -211,12 +211,12 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
-                _callbacks: {
+                callbacks: {
                     onWalletCreationStart:
-                        argsOptions?._callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
+                        argsOptions?.callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                     onTransactionStart:
-                        argsOptions?._callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                    onAuthRequired: argsOptions?._callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
+                        argsOptions?.callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                    onAuthRequired: argsOptions?.callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };
