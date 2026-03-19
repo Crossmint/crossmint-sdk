@@ -94,7 +94,9 @@ export function compareSignerConfigs(
                 existingValue as Record<string, unknown>,
                 fieldPath
             );
-        } else if (normalizeValueForComparison(newValue, fieldPath) !== normalizeValueForComparison(existingValue, fieldPath)) {
+        } else if (
+            normalizeValueForComparison(newValue, fieldPath) !== normalizeValueForComparison(existingValue, fieldPath)
+        ) {
             throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath, newValue, existingValue));
         }
     }
