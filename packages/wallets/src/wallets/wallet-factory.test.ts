@@ -703,12 +703,13 @@ describe("WalletFactory - Chain Environment Validation", () => {
             expect(mockApiClient.getWallet).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidChainError for unknown chain in production environment", async () => {
+        it("should throw InvalidChainError for unknown chain regardless of environment", async () => {
+            // Verify that the isValidChain guard fires before the environment check
             mockApiClient.environment = APIKeyEnvironmentPrefix.PRODUCTION;
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
 
             const args = {
-                chain: "ethereum" as any,
+                chain: "not-a-chain" as any,
                 recovery: {
                     type: "external-wallet" as const,
                     address: "0xAdminSignerAddress123456789012345678901234",
