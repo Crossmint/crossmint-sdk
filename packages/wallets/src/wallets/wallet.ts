@@ -57,7 +57,7 @@ import type {
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { walletsLogger } from "../logger";
-import { DeviceSigner } from "@/signers/device";
+
 import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
 
 type WalletContructorType<C extends Chain> = {
@@ -733,7 +733,7 @@ export class Wallet<C extends Chain> {
             await this.initDeviceSigner();
         }
 
-        if (!(this.#signer instanceof DeviceSigner)) {
+        if (this.#signer == null || this.#signer.type !== "device") {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
             return;
         }
@@ -746,14 +746,12 @@ export class Wallet<C extends Chain> {
 
         // Check if the device signer is already approved on the wallet
         const currentLocator = this.#signer.locator();
-        if (currentLocator !== "device:") {
-            const isApproved = await this.signerIsRegistered(currentLocator);
-            if (isApproved) {
-                walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
-                this.#needsRecovery = false;
-                this.#deviceSignerApproved = true;
-                return;
-            }
+        const isApproved = await this.signerIsRegistered(currentLocator);
+        if (isApproved) {
+            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
+            this.#needsRecovery = false;
+            this.#deviceSignerApproved = true;
+            return;
         }
 
         // Generate a new device signer key
