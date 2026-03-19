@@ -215,4 +215,107 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
         });
     });
+
+    describe("Hex/Decimal normalization (device signer publicKey)", () => {
+        it("should match hex publicKey.x with decimal equivalent from API", () => {
+            const newConfig = {
+                type: "device",
+                publicKey: {
+                    x: "0xff",
+                    y: "0x01",
+                },
+            };
+
+            const existingConfig = {
+                type: "device",
+                publicKey: {
+                    x: "255",
+                    y: "1",
+                },
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+        });
+
+        it("should match large hex values with their decimal equivalents", () => {
+            const hexValue = "0xf4f4387d09a234f8b81b842a9755e5c0ab87079e5eab0b0b7e1e4fc88b3be759";
+            const decimalValue = BigInt(hexValue).toString();
+
+            const newConfig = {
+                type: "device",
+                publicKey: {
+                    x: hexValue,
+                    y: "0xabcd",
+                },
+            };
+
+            const existingConfig = {
+                type: "device",
+                publicKey: {
+                    x: decimalValue,
+                    y: BigInt("0xabcd").toString(),
+                },
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+        });
+
+        it("should match when both values are already decimal strings", () => {
+            const newConfig = {
+                type: "device",
+                publicKey: {
+                    x: "12345",
+                    y: "67890",
+                },
+            };
+
+            const existingConfig = {
+                type: "device",
+                publicKey: {
+                    x: "12345",
+                    y: "67890",
+                },
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+        });
+
+        it("should throw for numerically different hex and decimal values", () => {
+            const newConfig = {
+                type: "device",
+                publicKey: {
+                    x: "0xff",
+                    y: "0x01",
+                },
+            };
+
+            const existingConfig = {
+                type: "device",
+                publicKey: {
+                    x: "256",
+                    y: "1",
+                },
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
+        });
+
+        it("should not treat non-hex 0x-like strings as hex", () => {
+            const newConfig = {
+                type: "device",
+                publicKey: {
+                    x: "0xGHIJ",
+                },
+            };
+
+            const existingConfig = {
+                type: "device",
+                publicKey: {
+                    x: "0xGHIJ",
+                },
+            };
+
+            expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+        });
+    });
 });
