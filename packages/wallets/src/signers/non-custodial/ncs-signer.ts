@@ -42,18 +42,21 @@ export abstract class NonCustodialSigner implements Signer {
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
-        // Initialize iframe if no custom handshake parent is provided
-        if (this.config.clientTEEConnection == null) {
-            const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
-            if (!parsedAPIKey.isValid) {
-                throw new Error("Invalid API key");
+        try {
+            // Initialize iframe if no custom handshake parent is provided
+            if (this.config.clientTEEConnection == null) {
+                const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
+                if (!parsedAPIKey.isValid) {
+                    throw new Error("Invalid API key");
+                }
+                const iframeManager = new NcsIframeManager({
+                    environment: parsedAPIKey.environment,
+                });
+                this.config.clientTEEConnection = await iframeManager.initialize();
             }
-            const iframeManager = new NcsIframeManager({
-                environment: parsedAPIKey.environment,
-            });
-            this.config.clientTEEConnection = await iframeManager.initialize();
+        } finally {
+            this._initializationPromise = null;
         }
-        this._initializationPromise = null;
     }
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
