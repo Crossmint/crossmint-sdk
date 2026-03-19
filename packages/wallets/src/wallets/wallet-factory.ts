@@ -18,6 +18,7 @@ import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
+import { deriveServerSignerDetails } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
 
@@ -76,7 +77,7 @@ export class WalletFactory {
             walletLocator = this.getWalletLocator(args);
         }
 
-        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -92,7 +93,7 @@ export class WalletFactory {
             address: existingWallet.address,
         });
 
-        return await this.createWalletInstance(existingWallet, args);
+        return await this.createWalletInstance(existingWallet, validatedArgs);
     }
 
     @WithLoggerContext({
@@ -104,11 +105,11 @@ export class WalletFactory {
         },
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        args = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-        await args.options?._callbacks?.onWalletCreationStart?.();
+        const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        await validatedArgs.options?._callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
-        if (!this.apiClient.isServerSide && args.owner != null) {
+        if (!this.apiClient.isServerSide && validatedArgs.owner != null) {
             walletsLogger.error("walletFactory.createWallet.error", {
                 error: "Owner field cannot be specified in client-side createWallet calls",
             });
@@ -119,24 +120,40 @@ export class WalletFactory {
 
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
         const signersWithDevice =
-            args.options?.deviceSignerKeyStorage != null ? this.ensureDeviceSignerInSigners(args) : args.signers ?? [];
-        const builtSigners = await this.registerSigners(signersWithDevice, args.options?.deviceSignerKeyStorage);
+            validatedArgs.options?.deviceSignerKeyStorage != null
+                ? this.ensureDeviceSignerInSigners(validatedArgs)
+                : validatedArgs.signers ?? [];
+        const builtSigners = await this.registerSigners(
+            signersWithDevice,
+            validatedArgs.chain,
+            validatedArgs.options?.deviceSignerKeyStorage
+        );
 
-        const adminSigner =
-            args.recovery.type === "passkey" && args.recovery.id == null
-                ? await this.createPasskeySigner(args.recovery)
-                : args.recovery;
+        let adminSigner;
+        if (validatedArgs.recovery.type === "passkey" && validatedArgs.recovery.id == null) {
+            adminSigner = await this.createPasskeySigner(validatedArgs.recovery);
+        } else if (validatedArgs.recovery.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                validatedArgs.recovery,
+                validatedArgs.chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            adminSigner = { type: "server", address: derivedAddress };
+        } else {
+            adminSigner = validatedArgs.recovery;
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
-            chainType: this.getChainType(args.chain),
+            chainType: this.getChainType(validatedArgs.chain),
             config: {
                 adminSigner,
-                ...(args?.plugins ? { plugins: args.plugins } : {}),
+                ...(validatedArgs.plugins ? { plugins: validatedArgs.plugins } : {}),
                 ...(builtSigners != null ? { delegatedSigners: builtSigners } : {}),
             },
-            owner: args.owner ?? undefined,
-            alias: args.alias ?? undefined,
+            owner: validatedArgs.owner ?? undefined,
+            alias: validatedArgs.alias ?? undefined,
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
@@ -150,7 +167,7 @@ export class WalletFactory {
             address: walletResponse.address,
         });
 
-        return await this.createWalletInstance(walletResponse, args);
+        return await this.createWalletInstance(walletResponse, validatedArgs);
     }
 
     private createWalletInstance<C extends Chain>(
@@ -253,14 +270,15 @@ export class WalletFactory {
 
             const inputSigners = createArgs.signers;
             if (inputSigners != null) {
-                this.validateSigners(existingWallet, inputSigners);
+                this.validateSigners(existingWallet, inputSigners, args.chain);
             }
         }
     }
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C>>
+        inputSigners: Array<SignerConfigForChain<C>>,
+        chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
         const existingSigners = config?.delegatedSigners;
@@ -284,6 +302,15 @@ export class WalletFactory {
                 }
                 if (existingSigner.type === "device" && inputSigner.type === "device") {
                     return true;
+                }
+                if (inputSigner.type === "server") {
+                    const { derivedAddress } = deriveServerSignerDetails(
+                        inputSigner,
+                        chain,
+                        this.apiClient.projectId,
+                        this.apiClient.environment
+                    );
+                    return existingSigner.locator === `server:${derivedAddress}`;
                 }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });
@@ -327,6 +354,7 @@ export class WalletFactory {
 
     private async registerSigners<C extends Chain>(
         signersList?: Array<SignerConfigForChain<C>>,
+        chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
         return await Promise.all(
@@ -350,6 +378,15 @@ export class WalletFactory {
                         }
                         const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
                         return { signer: deviceSigner.locator };
+                    }
+                    if (signer.type === "server" && chain != null) {
+                        const { derivedAddress } = deriveServerSignerDetails(
+                            signer,
+                            chain,
+                            this.apiClient.projectId,
+                            this.apiClient.environment
+                        );
+                        return { signer: `server:${derivedAddress}` };
                     }
                     return { signer: getSignerLocator(signer) as string };
                 }
