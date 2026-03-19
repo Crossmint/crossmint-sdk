@@ -1,5 +1,5 @@
 import type { DelegatedSigner as APIDelegatedSigner } from "../api";
-import type { DelegatedSigner, SignerStatus } from "./types";
+import type { DelegatedSigner, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;

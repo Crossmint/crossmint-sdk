@@ -28,7 +28,7 @@ import type {
     PrepareOnly,
     SendTokenTransactionOptions,
 } from "./types";
-import { mapApiSignerToDelegatedSigner, mapConfigSignerToDelegatedSigner } from "./signer-mapping";
+import { mapApiSignerToDelegatedSigner, mapConfigSignerToDelegatedSigner } from "../utils/signer-mapping";
 import {
     InvalidSignerError,
     SignatureFailedError,
