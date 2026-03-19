@@ -989,6 +989,9 @@ export class Wallet<C extends Chain> {
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
         const recovery = this.#recovery;
+        if (recovery == null) {
+            return false;
+        }
         if (recovery.type !== signerConfig.type) {
             return false;
         }
@@ -998,7 +1001,9 @@ export class Wallet<C extends Chain> {
             return false;
         }
 
-        // For server signers, compare derived addresses
+        // For server signers, compare derived addresses.
+        // The API-sourced recovery config has shape {type: "server", address: "0x..."} (no secret),
+        // so we use the address directly instead of re-deriving it.
         if (signerConfig.type === "server" && recovery.type === "server") {
             const inputDerived = deriveServerSignerDetails(
                 signerConfig,
@@ -1006,13 +1011,12 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryDerived = deriveServerSignerDetails(
-                recovery,
-                this.chain,
-                this.#apiClient.projectId,
-                this.#apiClient.environment
-            ).derivedAddress;
-            return inputDerived === recoveryDerived;
+            const recoveryAddress =
+                "address" in recovery ? (recovery as { address: string }).address : null;
+            if (recoveryAddress == null) {
+                return false;
+            }
+            return inputDerived === recoveryAddress;
         }
 
         // For other types, compare locators
