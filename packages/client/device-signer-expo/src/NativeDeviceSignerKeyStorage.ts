@@ -1,3 +1,4 @@
+import * as Device from "expo-device";
 import { requireNativeModule } from "expo-modules-core";
 
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
@@ -49,5 +50,16 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
      */
     deletePendingKey(publicKeyBase64: string): Promise<void> {
         return getNativeModule().deletePendingKey(publicKeyBase64);
+    }
+
+    getDeviceName(): string {
+        const model = Device.deviceName ?? Device.modelName ?? Device.brand;
+        const os = Device.osName;
+
+        if (model != null && os != null) {
+            return `${model} (${os})`;
+        }
+
+        return model ?? os ?? "Unknown Device";
     }
 }

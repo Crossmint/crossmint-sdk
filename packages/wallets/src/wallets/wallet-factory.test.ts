@@ -97,6 +97,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             const mockDeviceSignerKeyStorage = {
                 getKey: vi.fn(),
                 saveKey: vi.fn(),
+                getDeviceName: vi.fn().mockReturnValue("Unknown Device"),
             };
 
             const args: WalletCreateArgs<"solana"> = {
@@ -154,6 +155,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 getKey: vi.fn().mockResolvedValue(null),
                 saveKey: vi.fn().mockResolvedValue(undefined),
                 generateKey: vi.fn().mockResolvedValue(publicKeyBase64),
+                getDeviceName: vi.fn().mockReturnValue("Chrome on Mac"),
             };
 
             const args: WalletCreateArgs<"base"> = {
@@ -175,7 +177,14 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(call?.config?.delegatedSigners).toHaveLength(1);
             expect(call?.config?.delegatedSigners?.[0]).toEqual(
                 expect.objectContaining({
-                    signer: expect.stringContaining("device:"),
+                    signer: expect.objectContaining({
+                        type: "device",
+                        publicKey: expect.objectContaining({
+                            x: expect.any(String),
+                            y: expect.any(String),
+                        }),
+                        name: "Chrome on Mac",
+                    }),
                 })
             );
         });
