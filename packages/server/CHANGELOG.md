@@ -9,6 +9,12 @@
   - @crossmint/common-sdk-base@0.10.0-beta.0
   - @crossmint/common-sdk-auth@1.1.0-beta.0
 
+## 1.2.63
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
+
 ## 1.2.62
 
 ### Patch Changes

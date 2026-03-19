@@ -6,6 +6,12 @@
 
 - @crossmint/server-sdk@1.2.63-beta.0
 
+## 1.1.74
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.63
+
 ## 1.1.73
 
 ### Patch Changes

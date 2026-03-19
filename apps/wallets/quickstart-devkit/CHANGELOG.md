@@ -18,6 +18,22 @@
 - Updated dependencies [74a05a1]
   - @crossmint/client-sdk-react-ui@4.0.0-beta.0
 
+## 0.2.24
+
+### Patch Changes
+
+- Updated dependencies [92c894a]
+- Updated dependencies [464292b]
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-react-ui@3.1.0
+
+## 0.2.23
+
+### Patch Changes
+
+- Updated dependencies [a6fadd0]
+  - @crossmint/client-sdk-react-ui@3.0.3
+
 ## 0.2.22
 
 ### Patch Changes

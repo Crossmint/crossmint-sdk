@@ -50,12 +50,15 @@ import type {
     DeviceSignerLocator,
     InternalSignerConfig,
     PasskeySignerConfig,
+    ServerSignerConfig,
+    ServerSignerLocator,
     Signer,
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 import { DeviceSigner } from "@/signers/device";
 import { getSignerLocator, parseSignerLocator } from "../utils/signer-locator";
@@ -411,12 +414,21 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const signer = this.requireSigner();
+        const walletSigner = this.requireSigner();
+
+        let signer: string;
+        if (options?.signer == null) {
+            signer = walletSigner.locator();
+        } else if (typeof options.signer === "string") {
+            signer = options.signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`;
+        }
 
         const sendParams = {
             recipient,
             amount,
-            ...(options?.signer != null ? { signer: options.signer } : { signer: signer.locator() }),
+            signer,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -531,10 +543,20 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
-        signer: SignerLocator | RegisterSignerPasskeyParams | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
+        signer:
+            | SignerLocator
+            | RegisterSignerPasskeyParams
+            | ServerSignerConfig
+            | Exclude<SignerConfigForChain<C>, PasskeySignerConfig>,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : void> {
         walletsLogger.info("wallet.addSigner.start");
+
+        // Resolve server signer config to locator string
+        const resolvedSigner =
+            typeof signer === "object" && "type" in signer && signer.type === "server"
+                ? (`server:${deriveServerSignerDetails(signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}` as const)
+                : signer;
 
         // Store original signer and swap to recovery signer for the registration
         const originalSigner = this.signer;
@@ -549,7 +571,7 @@ export class Wallet<C extends Chain> {
 
         try {
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
-                signer,
+                signer: resolvedSigner,
                 chain:
                     this.chain === "solana" || this.chain === "stellar"
                         ? undefined
@@ -680,7 +702,18 @@ export class Wallet<C extends Chain> {
             await this.resolveDeviceSignerAvailability(signerConfig);
         } else {
             // All non-device signers must already be registered
-            const signerLocator = getSignerLocator(signerConfig);
+            let signerLocator: SignerLocator | string;
+            if (signerConfig.type === "server") {
+                const { derivedAddress } = deriveServerSignerDetails(
+                    signerConfig,
+                    this.chain,
+                    this.#apiClient.projectId,
+                    this.#apiClient.environment
+                );
+                signerLocator = `server:${derivedAddress}`;
+            } else {
+                signerLocator = getSignerLocator(signerConfig);
+            }
             const isRegistered = await this.signerIsRegistered(signerLocator);
             if (!isRegistered) {
                 throw new Error(`Signer "${signerLocator}" is not registered in this wallet.`);
@@ -806,7 +839,6 @@ export class Wallet<C extends Chain> {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
-        // Map wallet-type to simply wallet
         const signers =
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
@@ -1024,6 +1056,20 @@ export class Wallet<C extends Chain> {
                     locator: "api-key" as SignerLocator,
                     address: this.address,
                 } as InternalSignerConfig<C>;
+            case "server": {
+                const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
+                    config,
+                    this.chain,
+                    this.#apiClient.projectId,
+                    this.#apiClient.environment
+                );
+                return {
+                    type: "server",
+                    derivedKeyBytes,
+                    locator: `server:${derivedAddress}` as ServerSignerLocator,
+                    address: derivedAddress,
+                } as InternalSignerConfig<C>;
+            }
             default:
                 throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
         }
@@ -1104,7 +1150,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 const signature = await signer.signMessage(pendingApproval.message);
@@ -1153,7 +1201,9 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
-                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                    throw new InvalidSignerError(
+                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
+                    );
                 }
 
                 // For Solana device signers (secp256r1), the SWIG precompile expects a signature

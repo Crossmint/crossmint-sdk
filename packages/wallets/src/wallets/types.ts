@@ -13,6 +13,7 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
+    ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -25,7 +26,7 @@ export type PrepareOnly<T extends boolean = boolean> = {
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    signer?: string;
+    signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -80,7 +81,7 @@ export type StellarTransactionInput = (
           contractId: string;
           method: string;
           memo?: string;
-          args: Record<string, any>;
+          args: Record<string, unknown>;
       }
     | {
           transaction: string;
@@ -109,6 +110,10 @@ export type FormattedEVMTransaction =
           data: string;
       }
     | { transaction: string };
+
+export type DelegatedSignerInput = {
+    signer: string | ServerSignerConfig;
+};
 
 export type DelegatedSigner = {
     signer: string;

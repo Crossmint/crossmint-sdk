@@ -81,6 +81,32 @@
   - @crossmint/common-sdk-auth@1.1.0-beta.0
   - @crossmint/client-sdk-base@2.0.3-beta.0
 
+## 3.1.0
+
+### Minor Changes
+
+- 402001f: Add orderId + clientSecret support to hosted checkout for pre-created orders
+
+### Patch Changes
+
+- 92c894a: bt: change package
+- 464292b: bt: upgrade again
+- Updated dependencies [402001f]
+- Updated dependencies [e912d18]
+  - @crossmint/client-sdk-base@2.1.0
+  - @crossmint/wallets-sdk@0.21.0
+  - @crossmint/client-sdk-auth@1.2.51
+  - @crossmint/client-sdk-react-base@1.0.7
+  - @crossmint/common-sdk-auth@1.0.73
+
+## 3.0.3
+
+### Patch Changes
+
+- a6fadd0: bt: fix double verify
+- Updated dependencies [11ab4f6]
+  - @crossmint/client-sdk-react-base@1.0.6
+
 ## 3.0.2
 
 ### Patch Changes
