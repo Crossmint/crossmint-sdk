@@ -28,7 +28,8 @@ export const useEVMPrivyConnector = () => {
     const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = usePrivyWallets();
     const privyEmbeddedWallet =
-        (privyWallets?.find((wallet) => wallet.walletClientType === "privy") as PrivyEmbeddedWallet | undefined) ?? null;
+        (privyWallets?.find((wallet) => wallet.walletClientType === "privy") as PrivyEmbeddedWallet | undefined) ??
+        null;
     const chain = process.env.NEXT_PUBLIC_EVM_CHAIN as Chain;
 
     useEffect(() => {
@@ -118,7 +119,16 @@ export const useEVMPrivyConnector = () => {
         };
 
         syncWallet();
-    }, [crossmint.jwt, user, privyEmbeddedWallet, createWallet, getWallet, chain, crossmintWallet, crossmintWalletStatus]);
+    }, [
+        crossmint.jwt,
+        user,
+        privyEmbeddedWallet,
+        createWallet,
+        getWallet,
+        chain,
+        crossmintWallet,
+        crossmintWalletStatus,
+    ]);
 
     return {
         privyEmbeddedWallet,
@@ -139,7 +149,8 @@ export const useSolanaPrivyConnector = () => {
     const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = useSolanaWallets();
     const privyEmbeddedWallet =
-        (privyWallets?.find((wallet) => wallet.walletClientType === "privy") as PrivyEmbeddedWallet | undefined) ?? null;
+        (privyWallets?.find((wallet) => wallet.walletClientType === "privy") as PrivyEmbeddedWallet | undefined) ??
+        null;
 
     useEffect(() => {
         const syncPrivyJwt = async () => {
