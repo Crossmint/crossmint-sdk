@@ -16,11 +16,16 @@ import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks } from "@/wallets/types";
 
 export type {
+    ExternalWalletSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
-    GenericEIP1193Provider,
 } from "@crossmint/common-sdk-base";
+
+export type ExternalWalletRegistrationConfig = {
+    type: "external-wallet";
+    address: string;
+};
 
 ////////////////////////////////////////////////////////////
 // Signer configs

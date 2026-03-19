@@ -50,6 +50,7 @@ import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
     DeviceSignerLocator,
+    ExternalWalletRegistrationConfig,
     InternalSignerConfig,
     ServerSignerConfig,
     ServerSignerLocator,
@@ -158,10 +159,6 @@ export class Wallet<C extends Chain> {
      */
     public get recovery(): SignerConfigForChain<C> {
         return this.#recovery;
-    }
-
-    public experimental_apiClient(): ApiClient {
-        return this.#apiClient;
     }
 
     /**
@@ -287,7 +284,11 @@ export class Wallet<C extends Chain> {
         const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
-            return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
+            return (
+                token.symbol !== nativeTokenSymbol &&
+                token.symbol !== "usdc" &&
+                (requestedTokens == null || requestedTokens.includes(token.symbol ?? ""))
+            );
         });
 
         const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance<C> => {
@@ -445,7 +446,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.prepareOnly) {
+        if (options?.prepareOnly === true) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
@@ -546,7 +547,7 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
-        signer: SignerConfigForChain<C> | ServerSignerConfig,
+        signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : DelegatedSigner> {
         walletsLogger.info("wallet.addSigner.start");
@@ -690,6 +691,14 @@ export class Wallet<C extends Chain> {
     })
     public async useSigner(signer: SignerLocator | SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
+
+        // External wallet signers cannot be used via locator string — onSign callback is required.
+        // Use the full config object instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })
+        if (typeof signer === "string" && signer.startsWith("external-wallet:")) {
+            throw new Error(
+                'Cannot use useSigner with an external-wallet locator string. Pass the full config object with an onSign callback instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })'
+            );
+        }
 
         // Parse signer input into a config and locator
         const signerConfig = this.resolveSignerInput(signer);

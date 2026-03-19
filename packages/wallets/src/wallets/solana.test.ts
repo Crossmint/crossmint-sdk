@@ -120,7 +120,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction when prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -205,7 +205,7 @@ describe("SolanaWallet - sendTransaction()", () => {
 
             const sendPromise = solanaWallet.sendTransaction({
                 serializedTransaction: serializedTx,
-                options: { signer: "external-wallet:custom123", prepareOnly: false },
+                options: { signer: "external-wallet:custom123" },
             });
             await vi.runAllTimersAsync();
             await sendPromise;
