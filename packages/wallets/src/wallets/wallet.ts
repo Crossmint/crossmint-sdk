@@ -158,9 +158,7 @@ export class Wallet<C extends Chain> {
 
         // Step 2: Fallback based on delegated signer count
         // Filter out signers that can't be auto-assembled (server, api-key)
-        const autoAssemblableSigners = this.#initialSigners.filter(
-            (s) => s.type !== "server" && s.type !== "api-key"
-        );
+        const autoAssemblableSigners = this.#initialSigners.filter((s) => s.type !== "server" && s.type !== "api-key");
 
         try {
             if (autoAssemblableSigners.length === 0) {
