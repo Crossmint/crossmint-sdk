@@ -200,8 +200,13 @@ export class WalletFactory {
     /**
      * Ensures device signer is included in the signers array for wallet creation.
      * If no device signer is present in args.signers, adds one.
+     * Device signers are not supported for Solana (Squads does not support device signer registration).
      */
     private ensureDeviceSignerInSigners<C extends Chain>(args: WalletCreateArgs<C>): Array<SignerConfigForChain<C>> {
+        // Skip device signer for Solana wallets
+        if (args.chain === "solana") {
+            return args.signers ?? [];
+        }
         const signers = args.signers ?? [];
         const hasDeviceSigner = signers.some((s) => s.type === "device");
         if (!hasDeviceSigner) {

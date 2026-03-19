@@ -102,10 +102,11 @@ export class Wallet<C extends Chain> {
      * Initialize the device signer by resolving key availability.
      * If a device key is found locally, assembles the signer immediately.
      * If not, flags the wallet for recovery so a key is generated during the next transaction.
+     * Device signers are not supported for Solana (Squads does not support device signer registration).
      */
     private async initDeviceSigner(): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
-        if (deviceSignerKeyStorage == null) {
+        if (deviceSignerKeyStorage == null || this.chain === "solana") {
             return;
         }
 
