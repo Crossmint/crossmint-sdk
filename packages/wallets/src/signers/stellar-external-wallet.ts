@@ -1,10 +1,11 @@
-import type { StellarExternalWalletInternalSignerConfig } from "./types";
+import type { ExternalWalletInternalSignerConfig } from "./types";
+import type { StellarChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
 
-export class StellarExternalWalletSigner extends ExternalWalletSigner {
+export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarChain> {
     private onSign?: (payload: string) => Promise<string>;
 
-    constructor(config: StellarExternalWalletInternalSignerConfig) {
+    constructor(config: ExternalWalletInternalSignerConfig<StellarChain>) {
         super(config);
         this.onSign = config.onSign;
     }

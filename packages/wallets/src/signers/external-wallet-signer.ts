@@ -1,13 +1,11 @@
-import type { ExternalWalletInternalSignerConfigBase, ExternalWalletSignerLocator, Signer } from "./types";
+import type { Chain } from "../chains/chains";
+import type { ExternalWalletInternalSignerConfig, ExternalWalletSignerLocator, Signer } from "./types";
 
-export abstract class ExternalWalletSigner implements Signer {
+export abstract class ExternalWalletSigner<C extends Chain> implements Signer {
     type = "external-wallet" as const;
     protected _address: string;
 
-    constructor(protected config: ExternalWalletInternalSignerConfigBase) {
-        if (config.address == null) {
-            throw new Error("Please provide an address for the External Wallet Signer");
-        }
+    constructor(protected config: ExternalWalletInternalSignerConfig<C>) {
         this._address = config.address;
     }
 

@@ -22,16 +22,9 @@ export type PrepareOnly<T extends boolean = boolean> = {
     prepareOnly: T;
 };
 
-/**
- * @deprecated Use PrepareOnly instead. Will be removed in next major version.
- */
-export type AutoApprove<T extends boolean = boolean> = {
-    autoApprove: T;
-};
-
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
-export type TransactionInputOptions = Partial<PrepareOnly> & {
+export type TransactionInputOptions = PrepareOnly & {
     signer?: string;
 };
 
@@ -39,9 +32,9 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = Partial<PrepareOnly>;
+export type SignatureInputOptions = PrepareOnly;
 
-export type AddSignerOptions = Partial<PrepareOnly>;
+export type AddSignerOptions = PrepareOnly;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? { transactionId: string }
