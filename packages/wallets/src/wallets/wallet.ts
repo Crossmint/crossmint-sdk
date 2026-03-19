@@ -6,6 +6,7 @@ import type {
     GetBalanceSuccessResponse,
     WalletLocator,
     RegisterSignerChain,
+    RegisterSignerParams,
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
@@ -578,7 +579,7 @@ export class Wallet<C extends Chain> {
                         : getSignerLocator(resolvedSigner);
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
-                signer: signerInput,
+                signer: signerInput as RegisterSignerParams["signer"],
                 chain:
                     this.chain === "solana" || this.chain === "stellar"
                         ? undefined
