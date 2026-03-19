@@ -747,16 +747,11 @@ export class Wallet<C extends Chain> {
     public async useSigner(signer: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
 
-        const signerConfig = signer;
-
         // Validate that required values are set for each signer type
-        this.validateSignerInput(signerConfig);
+        this.validateSignerInput(signer);
 
         // Passkey auto-selection: if no id provided, auto-select if exactly one passkey exists
-        if (
-            signerConfig.type === "passkey" &&
-            (!("id" in signerConfig) || signerConfig.id == null || signerConfig.id === "")
-        ) {
+        if (signer.type === "passkey" && (!("id" in signer) || signer.id == null || signer.id === "")) {
             const existingSigners = await this.signers();
             const passkeySigners = existingSigners.filter((s) => s.type === "passkey");
 
@@ -772,28 +767,28 @@ export class Wallet<C extends Chain> {
             // Auto-select the single passkey
             const passkeyLocator = passkeySigners[0].locator;
             const credentialId = passkeyLocator.replace("passkey:", "");
-            signerConfig.id = credentialId;
+            signer.id = credentialId;
         }
 
         // Device signers: check availability and flag for recovery if needed
-        if (signerConfig.type === "device") {
-            await this.resolveDeviceSignerAvailability(signerConfig);
+        if (signer.type === "device") {
+            await this.resolveDeviceSignerAvailability(signer);
         } else {
             // Recovery signers skip the registration check
-            const isRecovery = this.isRecoverySigner(signerConfig);
+            const isRecovery = this.isRecoverySigner(signer);
             if (!isRecovery) {
                 // Delegated signers must already be registered
                 let signerLocator: SignerLocator | string;
-                if (signerConfig.type === "server") {
+                if (signer.type === "server") {
                     const { derivedAddress } = deriveServerSignerDetails(
-                        signerConfig,
+                        signer,
                         this.chain,
                         this.#apiClient.projectId,
                         this.#apiClient.environment
                     );
                     signerLocator = `server:${derivedAddress}`;
                 } else {
-                    signerLocator = getSignerLocator(signerConfig);
+                    signerLocator = getSignerLocator(signer);
                 }
                 const isRegistered = await this.signerIsRegistered(signerLocator);
                 if (!isRegistered) {
@@ -804,8 +799,8 @@ export class Wallet<C extends Chain> {
         }
 
         // Assemble and set the signer
-        const internalConfig = this.buildInternalSignerConfig(signerConfig);
-        const signerLocator = getSignerLocator(signerConfig);
+        const internalConfig = this.buildInternalSignerConfig(signer);
+        const signerLocator = getSignerLocator(signer);
         this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
