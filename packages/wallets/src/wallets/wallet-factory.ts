@@ -176,6 +176,14 @@ export class WalletFactory {
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
 
+        // Use user-provided recovery config when available (preserves secrets like server signer secret).
+        // Fall back to the API response's adminSigner for cases where recovery isn't provided (e.g. getWallet).
+        const createArgs = args as WalletCreateArgs<C>;
+        const recovery =
+            createArgs.recovery != null
+                ? createArgs.recovery
+                : ((walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>);
+
         return new Wallet(
             {
                 chain: args.chain,
@@ -183,7 +191,7 @@ export class WalletFactory {
                 owner: walletResponse.owner,
                 options: args.options,
                 alias: args.alias,
-                recovery: (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>,
+                recovery,
                 signers: ((walletResponse.config as SmartWalletConfig).delegatedSigners ??
                     []) as SignerConfigForChain<C>[],
             },

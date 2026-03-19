@@ -6,6 +6,7 @@ import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
 import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import { createServerSigner } from "./utils/server-signers";
 import { WebAuthnP256 } from "ox";
 
 export class CrossmintWallets {
@@ -67,6 +68,15 @@ export class CrossmintWallets {
 
     public async createDeviceSigner(deviceKeyStorage: DeviceSignerKeyStorage, address?: string) {
         return await createDeviceSigner(deviceKeyStorage, address);
+    }
+
+    /**
+     * Creates a server signer configuration with a cryptographically random secret.
+     * Server signers can only be used from server-side code.
+     * @returns A server signer configuration containing the type and generated secret
+     */
+    public createServerSigner() {
+        return createServerSigner();
     }
 
     public async createPasskeySigner(passkeyName: string): Promise<RegisterSignerPasskeyParams> {
