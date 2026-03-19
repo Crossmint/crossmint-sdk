@@ -25,8 +25,3 @@ export type StellarExternalWalletSignerConfig = {
     address: string;
     onSign: (payload: string) => Promise<string>;
 };
-
-export type ExternalWalletRegistrationConfig = {
-    type: "external-wallet";
-    address: string;
-};

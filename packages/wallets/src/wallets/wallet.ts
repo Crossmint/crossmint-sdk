@@ -690,10 +690,11 @@ export class Wallet<C extends Chain> {
     public async useSigner(signer: SignerLocator | SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
 
-        // External wallet signers cannot be used via locator string — onSign callback is required
+        // External wallet signers cannot be used via locator string — onSign callback is required.
+        // Use the full config object instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })
         if (typeof signer === "string" && signer.startsWith("external-wallet:")) {
             throw new Error(
-                "Cannot use useSigner with an external-wallet locator string. External wallet signers must be configured at wallet creation time with an onSign callback."
+                'Cannot use useSigner with an external-wallet locator string. Pass the full config object with an onSign callback instead: useSigner({ type: "external-wallet", address: "0x...", onSign: ... })'
             );
         }
 

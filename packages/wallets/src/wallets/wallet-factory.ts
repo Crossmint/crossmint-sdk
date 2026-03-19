@@ -13,7 +13,7 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
+import type { ExternalWalletRegistrationConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
@@ -218,7 +218,9 @@ export class WalletFactory {
      * Ensures device signer is included in the signers array for wallet creation.
      * If no device signer is present in args.signers, adds one.
      */
-    private ensureDeviceSignerInSigners<C extends Chain>(args: WalletCreateArgs<C>): Array<SignerConfigForChain<C>> {
+    private ensureDeviceSignerInSigners<C extends Chain>(
+        args: WalletCreateArgs<C>
+    ): Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig> {
         const signers = args.signers ?? [];
         const hasDeviceSigner = signers.some((s) => s.type === "device");
         if (!hasDeviceSigner) {
@@ -277,7 +279,7 @@ export class WalletFactory {
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C>>,
+        inputSigners: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
@@ -332,7 +334,7 @@ export class WalletFactory {
     If the existing wallet has multiple passkeys, the input signer must be a passkey signer with an ID.
     */
     private isMatchingPasskeySigner<C extends Chain>(
-        inputSigner: SignerConfigForChain<C>,
+        inputSigner: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         existingSigner: SmartWalletConfig["adminSigner"] | DelegatedSignerResponse,
         walletConfig: SmartWalletConfig
     ): boolean {
@@ -353,7 +355,7 @@ export class WalletFactory {
     }
 
     private async registerSigners<C extends Chain>(
-        signersList?: Array<SignerConfigForChain<C>>,
+        signersList?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {

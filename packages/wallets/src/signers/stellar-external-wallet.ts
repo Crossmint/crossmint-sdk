@@ -3,7 +3,7 @@ import type { StellarChain } from "@/chains/chains";
 import { ExternalWalletSigner } from "./external-wallet-signer";
 
 export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarChain> {
-    private onSign: (payload: string) => Promise<string>;
+    private onSign?: (payload: string) => Promise<string>;
 
     constructor(config: ExternalWalletInternalSignerConfig<StellarChain>) {
         super(config);
@@ -15,6 +15,11 @@ export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarCha
     }
 
     async signTransaction(payload: string) {
+        if (this.onSign == null) {
+            throw new Error(
+                "[StellarExternalWalletSigner] No onSign callback provided. Pass an onSign callback when configuring the external wallet signer."
+            );
+        }
         const signedTx = await this.onSign(payload);
         return { signature: signedTx };
     }

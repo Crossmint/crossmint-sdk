@@ -6,7 +6,7 @@ import { TransactionFailedError } from "../utils/errors";
 import { ExternalWalletSigner } from "./external-wallet-signer";
 
 export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
-    private onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    private onSign?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
     constructor(config: ExternalWalletInternalSignerConfig<SolanaChain>) {
         super(config);
@@ -18,6 +18,11 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     }
 
     async signTransaction(transaction: string) {
+        if (this.onSign == null) {
+            throw new Error(
+                "[SolanaExternalWalletSigner] No onSign callback provided. Pass an onSign callback when configuring the external wallet signer."
+            );
+        }
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
         const signedTxn = await this.onSign(deserializedTransaction);
