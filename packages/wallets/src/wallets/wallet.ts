@@ -1089,6 +1089,9 @@ export class Wallet<C extends Chain> {
                 if (!("address" in config) || config.address == null) {
                     throw new Error("External wallet signer requires a wallet address");
                 }
+                if (!("onSign" in config) || typeof config.onSign !== "function") {
+                    throw new Error("External wallet signer requires an onSign callback");
+                }
                 break;
             case "passkey":
             case "device":
