@@ -48,6 +48,12 @@ export function extractSignerBase(apiSigner: APIDelegatedSigner): DelegatedSigne
                 publicKey: apiSigner.publicKey,
                 locator: apiSigner.locator,
             };
+        case "server":
+            return {
+                type: "server",
+                address: apiSigner.address,
+                locator: apiSigner.locator,
+            };
         default:
             throw new Error(`Unknown signer type: ${(apiSigner as { type: string }).type}`);
     }
