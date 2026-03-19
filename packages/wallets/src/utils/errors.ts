@@ -102,6 +102,12 @@ export class SignatureFailedError extends CrossmintSDKError {
     }
 }
 
+export class InvalidTransferAmountError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_TRANSACTION, details);
+    }
+}
+
 export class TransactionNotCreatedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
@@ -151,6 +157,7 @@ export class PendingApprovalsError extends CrossmintSDKError {
 }
 
 export type WalletError =
+    | InvalidTransferAmountError
     | InvalidApiKeyError
     | InvalidEnvironmentError
     | WalletTypeNotSupportedError

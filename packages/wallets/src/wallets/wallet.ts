@@ -32,6 +32,7 @@ import type {
 import { mapApiSignerToDelegatedSigner, mapConfigSignerToDelegatedSigner } from "../utils/signer-mapping";
 import {
     InvalidSignerError,
+    InvalidTransferAmountError,
     SignatureFailedError,
     SignatureNotAvailableError,
     SigningFailedError,
@@ -462,6 +463,13 @@ export class Wallet<C extends Chain> {
         const resolvedChain = this.resolveChainForEnvironment();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, resolvedChain);
+
+        const parsedAmount = Number(amount);
+        if (Number.isNaN(parsedAmount) || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+            throw new InvalidTransferAmountError(
+                `Invalid transfer amount: "${amount}". Amount must be a positive number greater than zero.`
+            );
+        }
 
         walletsLogger.info("wallet.send.start", {
             recipient,
