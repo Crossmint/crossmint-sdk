@@ -50,6 +50,7 @@ import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
     DeviceSignerLocator,
+    ExternalWalletRegistrationConfig,
     InternalSignerConfig,
     ServerSignerConfig,
     ServerSignerLocator,
@@ -544,7 +545,7 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
-        signer: SignerConfigForChain<C> | ServerSignerConfig,
+        signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : DelegatedSigner> {
         walletsLogger.info("wallet.addSigner.start");
@@ -688,6 +689,13 @@ export class Wallet<C extends Chain> {
     })
     public async useSigner(signer: SignerLocator | SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
+
+        // External wallet signers cannot be used via locator string — onSign callback is required
+        if (typeof signer === "string" && signer.startsWith("external-wallet:")) {
+            throw new Error(
+                "Cannot use useSigner with an external-wallet locator string. External wallet signers must be configured at wallet creation time with an onSign callback."
+            );
+        }
 
         // Parse signer input into a config and locator
         const signerConfig = this.resolveSignerInput(signer);

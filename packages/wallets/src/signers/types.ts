@@ -17,6 +17,7 @@ import type { Callbacks } from "@/wallets/types";
 
 export type {
     ExternalWalletSignerConfig,
+    ExternalWalletRegistrationConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
