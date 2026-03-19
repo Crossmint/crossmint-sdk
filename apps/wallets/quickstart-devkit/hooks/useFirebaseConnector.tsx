@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type Chain, useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import type { User } from "firebase/auth";
 import { onAuthStateChange } from "@/lib/firebase";
 
-export const useFirebaseConnector = (chain: Chain) => {
-    const { wallet: crossmintWallet, status: crossmintWalletStatus, createWallet } = useCrossmintWallet();
+export const useFirebaseConnector = () => {
+    const { wallet: crossmintWallet, status: crossmintWalletStatus, createWallet, getWallet } = useCrossmintWallet();
 
     const { setJwt, crossmint } = useCrossmint();
     const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const chain = process.env.NEXT_PUBLIC_EVM_CHAIN as Chain;
 
     // Phase 1: Sync JWT from Firebase auth
     useEffect(() => {
@@ -35,27 +36,52 @@ export const useFirebaseConnector = (chain: Chain) => {
         return () => unsubscribe?.();
     }, [setJwt]);
 
-    // Phase 2: Create wallet once JWT is available
+    // Phase 2: Get or create wallet once JWT is available
+    const isSyncingWalletRef = useRef(false);
     useEffect(() => {
-        if (crossmint.jwt == null || firebaseUser == null) {
+        if (
+            crossmint.jwt == null ||
+            firebaseUser == null ||
+            crossmintWallet != null ||
+            crossmintWalletStatus === "in-progress" ||
+            isSyncingWalletRef.current
+        ) {
             return;
         }
 
         const email = firebaseUser.email;
         const phone = firebaseUser.phoneNumber;
 
-        if (email != null) {
-            createWallet({
-                chain,
-                recovery: { type: "email", email },
-            });
-        } else if (phone != null) {
-            createWallet({
-                chain,
-                recovery: { type: "phone", phone },
-            });
-        }
-    }, [crossmint.jwt, firebaseUser, chain, createWallet]);
+        const syncWallet = async () => {
+            isSyncingWalletRef.current = true;
+            try {
+                const wallet = await getWallet({ chain });
+                if (wallet != null) {
+                    return wallet;
+                }
+
+                if (email != null) {
+                    return await createWallet({
+                        chain,
+                        recovery: { type: "email", email },
+                    });
+                }
+
+                if (phone != null) {
+                    return await createWallet({
+                        chain,
+                        recovery: { type: "phone", phone },
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to get or create Firebase wallet:", error);
+            } finally {
+                isSyncingWalletRef.current = false;
+            }
+        };
+
+        syncWallet();
+    }, [crossmint.jwt, firebaseUser, chain, createWallet, getWallet, crossmintWallet, crossmintWalletStatus]);
 
     return {
         user: firebaseUser,

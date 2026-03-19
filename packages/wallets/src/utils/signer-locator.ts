@@ -1,5 +1,5 @@
 import type { Chain } from "../chains/chains";
-import type { SignerLocator, SignerConfigForChain } from "../signers/types";
+import type { SignerLocator, SignerConfigForChain, ExternalWalletRegistrationConfig } from "../signers/types";
 import type { RegisterSignerPasskeyParams } from "../api";
 
 /**
@@ -7,7 +7,7 @@ import type { RegisterSignerPasskeyParams } from "../api";
  * Shared utility used by both WalletFactory and Wallet.
  */
 export function getSignerLocator<C extends Chain>(
-    signer: SignerConfigForChain<C> | RegisterSignerPasskeyParams
+    signer: SignerConfigForChain<C> | RegisterSignerPasskeyParams | ExternalWalletRegistrationConfig
 ): SignerLocator {
     if (signer.type === "external-wallet") {
         return `external-wallet:${signer.address}`;

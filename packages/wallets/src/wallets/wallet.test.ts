@@ -288,7 +288,7 @@ describe("Wallet - send()", () => {
     });
 
     describe("success cases", () => {
-        it("should send tokens successfully and return transaction", async () => {
+        it("should send tokens successfully and return transaction by default", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -321,16 +321,14 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should return prepared transaction when prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
 
             mockApiClient.send.mockResolvedValue(mockSendResponse);
 
-            const result = await wallet.send("0xrecipient123", "usdc", "10.0", {
-                prepareOnly: true,
-            });
+            const result = await wallet.send("0xrecipient123", "usdc", "10.0", { prepareOnly: true });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-123");
@@ -535,7 +533,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should return signatureId when prepareOnly is true", async () => {
+        it("should return signatureId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -560,7 +558,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("awaiting-approval");
         });
 
-        it("should approve signature when status is awaiting-approval", async () => {
+        it("should approve signature when status is awaiting-approval by default", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -629,7 +627,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should return transactionId when prepareOnly is true", async () => {
+        it("should return transactionId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "ABC123",

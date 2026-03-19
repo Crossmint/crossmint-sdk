@@ -7,6 +7,7 @@ import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
+    ExternalWalletRegistrationConfig,
     Signer,
     BaseSignResult,
     PasskeySignResult,
@@ -210,7 +211,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
     recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
     /** Signers to register on the wallet during creation. */
-    signers?: Array<SignerConfigForChain<C>>;
+    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;
 };
 
