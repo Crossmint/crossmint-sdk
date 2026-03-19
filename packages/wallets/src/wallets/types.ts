@@ -147,6 +147,12 @@ export type DelegatedSigner =
           address: string;
           locator: string;
           status: SignerStatus;
+      }
+    | {
+          type: "device";
+          publicKey: { x: string; y: string };
+          locator: string;
+          status: SignerStatus;
       };
 
 // Approvals
