@@ -20,7 +20,9 @@ describe("SolanaWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("solana", mockApiClient, "api-key");
         solanaWallet = SolanaWallet.from(wallet);
-        vi.spyOn(solanaWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(solanaWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await solanaWallet.useSigner(createMockSigner("api-key", "solana"));
     });
 

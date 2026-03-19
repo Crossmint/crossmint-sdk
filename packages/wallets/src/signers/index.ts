@@ -1,6 +1,7 @@
 import { EVMNonCustodialSigner, SolanaNonCustodialSigner, StellarNonCustodialSigner } from "./non-custodial";
 import { SolanaExternalWalletSigner } from "./solana-external-wallet";
 import { EVMExternalWalletSigner } from "./evm-external-wallet";
+import { assembleServerSigner } from "./server";
 import { PasskeySigner } from "./passkey";
 import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
@@ -37,6 +38,9 @@ export function assembleSigner<C extends Chain>(
                 return new StellarExternalWalletSigner(config as ExternalWalletInternalSignerConfig<StellarChain>);
             }
             return new EVMExternalWalletSigner(config as ExternalWalletInternalSignerConfig<EVMChain>);
+
+        case "server":
+            return assembleServerSigner(chain, config);
 
         case "passkey":
             return new PasskeySigner(config);

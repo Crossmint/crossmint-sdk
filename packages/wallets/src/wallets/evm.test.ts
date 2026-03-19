@@ -19,7 +19,9 @@ describe("EVMWallet - sendTransaction()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -229,7 +231,9 @@ describe("EVMWallet - signMessage()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 
@@ -316,7 +320,9 @@ describe("EVMWallet - signTypedData()", () => {
         mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
         evmWallet = EVMWallet.from(wallet);
-        vi.spyOn(evmWallet, "signers").mockImplementation(() => Promise.resolve([{ signer: "api-key" }]));
+        vi.spyOn(evmWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
         await evmWallet.useSigner(createMockSigner("api-key", "base-sepolia"));
     });
 

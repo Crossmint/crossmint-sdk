@@ -54,7 +54,15 @@ export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends Sola
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> | ApiKeySignerConfig;
+export type ServerSignerConfig = {
+    type: "server";
+    secret: string;
+};
+
+export type BaseSignerConfig<C extends Chain> =
+    | ExternalWalletSignerConfigForChain<C>
+    | ApiKeySignerConfig
+    | ServerSignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -107,13 +115,22 @@ export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWallet
     locator: ExternalWalletSignerLocator;
 };
 
+export type ServerInternalSignerConfig = {
+    type: "server";
+    /** The derived chain-specific private key bytes */
+    derivedKeyBytes: Uint8Array;
+    locator: ServerSignerLocator;
+    address: string;
+};
+
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig
     | PhoneInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
     | ExternalWalletInternalSignerConfig<C>
-    | DeviceInternalSignerConfig;
+    | DeviceInternalSignerConfig
+    | ServerInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signers
@@ -158,6 +175,7 @@ export type PasskeySignerLocator = `passkey:${string}`;
 export type DeviceSignerLocator = `device:${string}`;
 export type ExternalWalletSignerLocator = `external-wallet:${string}`;
 export type ApiKeySignerLocator = "api-key" | `api-key:${string}`;
+export type ServerSignerLocator = `server:${string}`;
 
 export type SignerLocator =
     | EmailSignerLocator
@@ -165,7 +183,8 @@ export type SignerLocator =
     | PasskeySignerLocator
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
-    | ApiKeySignerLocator;
+    | ApiKeySignerLocator
+    | ServerSignerLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
@@ -175,6 +194,7 @@ type SignResultMap = {
     phone: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
+    server: BaseSignResult;
     passkey: PasskeySignResult;
     device: DeviceSignResult;
 };
