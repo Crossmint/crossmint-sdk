@@ -165,24 +165,18 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        // Step 2: Fallback based on delegated signer count
-        // Filter out signers that can't be auto-assembled (server, api-key)
-        const autoAssemblableSigners = this.#initialSigners.filter((s) => s.type !== "server" && s.type !== "api-key");
-
         try {
-            if (autoAssemblableSigners.length === 0) {
+            if (this.#initialSigners.length === 0) {
                 // No delegated signers → try to use recovery signer (common on Solana and server-side)
-                if (this.#recovery.type !== "server" && this.#recovery.type !== "api-key") {
-                    const internalConfig = this.buildInternalSignerConfig(this.#recovery);
-                    this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
-                }
-            } else if (autoAssemblableSigners.length === 1) {
+                const internalConfig = this.buildInternalSignerConfig(this.#recovery);
+                this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+            } else if (this.#initialSigners.length === 1) {
                 // Exactly 1 auto-assemblable signer → use it
-                const internalConfig = this.buildInternalSignerConfig(autoAssemblableSigners[0]);
+                const internalConfig = this.buildInternalSignerConfig(this.#initialSigners[0]);
                 this.#signer = assembleSigner(this.chain, internalConfig, this.#options?.deviceSignerKeyStorage);
             }
             // >1 signers → leave #signer undefined, user must call useSigner()
-        } catch {
+        } catch (error) {
             // If auto-assembly fails (e.g., missing required data), leave #signer undefined
             // User will need to call useSigner() explicitly
         }
@@ -198,6 +192,10 @@ export class Wallet<C extends Chain> {
 
     protected static getRecovery<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
         return wallet.#recovery;
+    }
+
+    protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
+        return wallet.#initialSigners;
     }
 
     public get apiClient(): ApiClient {
@@ -1097,11 +1095,13 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryAddress = "address" in recovery ? (recovery as { address: string }).address : null;
-            if (recoveryAddress == null) {
-                return false;
-            }
-            return inputDerived === recoveryAddress;
+            const recoveryDerived = deriveServerSignerDetails(
+                recovery,
+                this.chain,
+                this.#apiClient.projectId,
+                this.#apiClient.environment
+            ).derivedAddress;
+            return inputDerived === recoveryDerived;
         }
 
         // For other types, compare locators

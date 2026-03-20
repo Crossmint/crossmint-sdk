@@ -180,6 +180,7 @@ export class WalletFactory {
 
         // For server and external-wallet signers, use the user-provided recovery config to preserve
         // runtime data the API cannot store (server secret, external-wallet onSign callback).
+        // Same for signers, if there is only one server or external-wallet signer, use the user-provided one.
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
@@ -189,6 +190,15 @@ export class WalletFactory {
                 ? createArgs.recovery
                 : apiRecovery;
 
+        let signers = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        if (
+            signers != null &&
+            signers.length === 1 &&
+            (signers[0].type === "server" || signers[0].type === "external-wallet")
+        ) {
+            signers = createArgs.signers as DelegatedSignerResponse[];
+        }
+
         return new Wallet(
             {
                 chain: args.chain,
@@ -197,8 +207,7 @@ export class WalletFactory {
                 options: args.options,
                 alias: args.alias,
                 recovery,
-                signers: ((walletResponse.config as SmartWalletConfig).delegatedSigners ??
-                    []) as SignerConfigForChain<C>[],
+                signers: (signers ?? []) as SignerConfigForChain<C>[],
             },
             this.apiClient
         );
