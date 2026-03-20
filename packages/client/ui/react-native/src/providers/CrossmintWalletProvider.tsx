@@ -106,9 +106,6 @@ function CrossmintWalletProviderInternal({
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
-    if (hasPasskeySigner(createOnLogin)) {
-        throw new Error(PASSKEY_RN_ERROR);
-    }
     // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
     const deviceSignerKeyStorage = useMemo(
         () => deviceSignerKeyStorageProp ?? new NativeDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
@@ -365,6 +362,12 @@ function CrossmintWalletProviderInternal({
 
         logger.info("react-native.wallet.webview.init.success", { attempts });
     };
+
+    useEffect(() => {
+        if (hasPasskeySigner(createOnLogin)) {
+            throw new Error(PASSKEY_RN_ERROR);
+        }
+    }, [createOnLogin]);
 
     return (
         <CrossmintWalletBaseProvider
