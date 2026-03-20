@@ -273,7 +273,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
-                console.error("Failed to create wallet:", error);
+                logger.error("react.wallet.getOrCreateWallet.error", { error });
                 setWallet(undefined);
                 setWalletStatus("error");
                 return undefined;
@@ -306,7 +306,7 @@ export function CrossmintWalletBaseProvider({
                 }
                 return wallet;
             } catch (error) {
-                console.error("Failed to get wallet:", error);
+                logger.error("react.wallet.getWallet.error", { error });
                 setWalletStatus("error");
                 return undefined;
             }
@@ -334,7 +334,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
-                console.error("Failed to create wallet:", error);
+                logger.error("react.wallet.createWallet.error", { error });
                 setWallet(undefined);
                 setWalletStatus("error");
                 return undefined;
