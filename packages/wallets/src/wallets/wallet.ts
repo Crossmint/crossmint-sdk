@@ -1558,7 +1558,11 @@ export class Wallet<C extends Chain> {
             throw error;
         }
 
-        const transactionHash = transactionResponse.onChain.txId;
+        const stellarTransactionHash =
+            "txHash" in transactionResponse.onChain && typeof transactionResponse.onChain.txHash === "string"
+                ? transactionResponse.onChain.txHash
+                : undefined;
+        const transactionHash = transactionResponse.onChain.txId ?? stellarTransactionHash;
         if (transactionHash == null) {
             const error = new TransactionHashNotFoundError("Transaction hash not found on transaction response");
             throw error;
