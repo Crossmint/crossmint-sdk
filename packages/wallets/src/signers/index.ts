@@ -6,7 +6,7 @@ import { PasskeySigner } from "./passkey";
 import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain, EVMChain, SolanaChain, StellarChain } from "../chains/chains";
-import type { ExternalWalletInternalSignerConfig, InternalSignerConfig, Signer } from "./types";
+import type { ExternalWalletInternalSignerConfig, InternalSignerConfig, SignerAdapter } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 import { DeviceSigner } from "./device";
 import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
@@ -16,7 +16,7 @@ export function assembleSigner<C extends Chain>(
     chain: C,
     config: InternalSignerConfig<C>,
     deviceSignerKeyStorage?: DeviceSignerKeyStorage
-): Signer {
+): SignerAdapter {
     switch (config.type) {
         case "email":
         case "phone":

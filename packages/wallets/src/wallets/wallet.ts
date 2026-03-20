@@ -56,7 +56,7 @@ import type {
     PasskeySignerConfig,
     ServerSignerConfig,
     ServerSignerLocator,
-    Signer,
+    SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
@@ -76,7 +76,7 @@ type WalletContructorType<C extends Chain> = {
     options?: WalletOptions;
     recovery: SignerConfigForChain<C>;
     signers?: SignerConfigForChain<C>[];
-    signer?: Signer;
+    signer?: SignerAdapter;
 };
 
 export class Wallet<C extends Chain> {
@@ -84,7 +84,7 @@ export class Wallet<C extends Chain> {
     address: string;
     owner?: string;
     alias?: string;
-    #signer?: Signer;
+    #signer?: SignerAdapter;
     #options?: WalletOptions;
     #apiClient: ApiClient;
     #recovery: SignerConfigForChain<C>;
@@ -108,7 +108,7 @@ export class Wallet<C extends Chain> {
         this.#signerInitialization = this.initDefaultSigner();
     }
 
-    public get signer(): Signer | undefined {
+    public get signer(): SignerAdapter | undefined {
         return this.#signer;
     }
 
@@ -1036,7 +1036,7 @@ export class Wallet<C extends Chain> {
     /**
      * Ensures that a signer is available. Throws if the wallet is read-only.
      */
-    protected requireSigner(): Signer {
+    protected requireSigner(): SignerAdapter {
         if (this.#signer == null) {
             throw new Error(
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."

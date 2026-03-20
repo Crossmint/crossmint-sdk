@@ -8,7 +8,7 @@ import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains"
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
-    Signer as CryptoSigner,
+    SignerAdapter,
     BaseSignResult,
     PasskeySignResult,
     DeviceSignResult,
@@ -283,7 +283,7 @@ export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly exten
 
 export type ApproveOptions = {
     approval?: Approval;
-    additionalSigners?: CryptoSigner[];
+    additionalSigners?: SignerAdapter[];
 };
 
 export type ApproveParams = {
