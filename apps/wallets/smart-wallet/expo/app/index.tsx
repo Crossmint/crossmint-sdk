@@ -3,13 +3,30 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
-import { HeadlessSigning } from "@/components/headless-signing";
+// import { HeadlessSigning } from "@/components/headless-signing";
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    return "Unknown error";
+}
 
 export default function Index() {
-    const { user, logout, createAuthSession, loginWithOAuth, jwt, crossmintAuth } = useCrossmintAuth();
+    const {
+        user,
+        logout,
+        createAuthSession,
+        loginWithOAuth,
+        jwt,
+        crossmintAuth,
+        status: authStatus,
+        getUser,
+    } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
+    const isAuthenticated = authStatus === "logged-in";
 
     const [balances, setBalances] = useState<Balances | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -32,12 +49,19 @@ export default function Index() {
     }, [url, createAuthSession]);
 
     useEffect(() => {
+        if (authStatus === "logged-in" && user == null) {
+            getUser();
+        }
+    }, [authStatus, user, getUser]);
+
+    useEffect(() => {
         async function fetchBalances() {
             if (wallet == null) {
                 return;
             }
             try {
-                const balances = await wallet.balances();
+                const balances = await wallet.balances(["usdxm"]);
+                console.log("balances", balances);
                 setBalances(balances);
             } catch (error) {
                 console.log("Error fetching wallet balances:", error);
@@ -89,8 +113,11 @@ export default function Index() {
             {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
 
             <View style={styles.statusSection}>
-                <Text style={{ fontWeight: "bold" }}>User: {user?.email}</Text>
+                <Text style={{ fontWeight: "bold" }}>
+                    User: {user?.email ?? (isAuthenticated ? "Loading..." : "Not logged in")}
+                </Text>
                 <Text>Wallet: {walletAddress}</Text>
+                <Text>Login Status: {authStatus}</Text>
                 <Text>Auth Status: {walletStatus}</Text>
                 <Text>
                     Native Token Balance: ({balances?.nativeToken.symbol}) {balances?.nativeToken.amount}
@@ -107,7 +134,7 @@ export default function Index() {
             </View>
 
             <View style={styles.section}>
-                {user == null ? (
+                {!isAuthenticated ? (
                     <>
                         <Button
                             title="Login with Google"
@@ -130,8 +157,8 @@ export default function Index() {
                                 try {
                                     const res = await crossmintAuth.sendEmailOtp(loginEmail);
                                     setEmailId(res.emailId);
-                                } catch (e: any) {
-                                    Alert.alert("Error", e.message);
+                                } catch (error: unknown) {
+                                    Alert.alert("Error", getErrorMessage(error));
                                 } finally {
                                     setIsLoading(false);
                                 }
@@ -160,8 +187,8 @@ export default function Index() {
                                             await createAuthSession(secret);
                                             setEmailId(null);
                                             setLoginOtp("");
-                                        } catch (e: any) {
-                                            Alert.alert("Error", e.message);
+                                        } catch (error: unknown) {
+                                            Alert.alert("Error", getErrorMessage(error));
                                         } finally {
                                             setIsLoading(false);
                                         }
@@ -181,11 +208,11 @@ export default function Index() {
                 )}
             </View>
 
-            {/* To test headless signing, 
+            {/* To test headless signing,
             1. import and uncomment <HeadlessSigning/>
             2. add 'showOtpSignerPrompt={false}' to CrossmintWalletProvider in _layout.tsx
             3. remove 'createOnLogin' from CrossmintWalletProvider in _layout.tsx */}
-            <HeadlessSigning />
+            {/* <HeadlessSigning /> */}
 
             {walletAddress != null && (
                 <View style={styles.section}>
