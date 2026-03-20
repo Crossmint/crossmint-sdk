@@ -94,7 +94,11 @@ export function getPendingSignerOperation(
     chain: Chain
 ): { type: "signature" | "transaction"; id: string } | null {
     if (chain === "solana" || chain === "stellar") {
-        if ("transaction" in apiSigner && apiSigner.transaction != null && apiSigner.transaction.status !== "success") {
+        if (
+            "transaction" in apiSigner &&
+            apiSigner.transaction != null &&
+            (apiSigner.transaction.status === "pending" || apiSigner.transaction.status === "awaiting-approval")
+        ) {
             return { type: "transaction", id: apiSigner.transaction.id };
         }
         return null;
@@ -102,7 +106,10 @@ export function getPendingSignerOperation(
 
     if ("chains" in apiSigner && apiSigner.chains != null) {
         const chainEntry = apiSigner.chains[chain];
-        if (chainEntry != null && chainEntry.status !== "success") {
+        if (
+            chainEntry != null &&
+            (chainEntry.status === "pending" || chainEntry.status === "awaiting-approval")
+        ) {
             return { type: "signature", id: chainEntry.id };
         }
     }
