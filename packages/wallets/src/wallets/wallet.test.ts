@@ -694,6 +694,45 @@ describe("Wallet - addSigner()", () => {
         });
     });
 
+    describe("passkey signers", () => {
+        it("should pass full passkey config including publicKey to API", async () => {
+            const mockRegisterResponse = {
+                type: "passkey",
+                locator: "passkey:pk-123",
+                chains: {
+                    "base-sepolia": {
+                        id: "sig-456",
+                        status: "success",
+                    },
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            const passkeyConfig = {
+                type: "passkey" as const,
+                id: "pk-123",
+                name: "My Passkey",
+                publicKey: { x: "abc", y: "def" },
+            };
+
+            await evmWallet.addSigner(passkeyConfig);
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                "me:evm:smart",
+                expect.objectContaining({
+                    signer: expect.objectContaining({
+                        type: "passkey",
+                        id: "pk-123",
+                        name: "My Passkey",
+                        publicKey: { x: "abc", y: "def" },
+                    }),
+                    chain: "base-sepolia",
+                })
+            );
+        });
+    });
+
     describe("error cases", () => {
         it("should throw error when API returns error", async () => {
             const errorResponse = {
