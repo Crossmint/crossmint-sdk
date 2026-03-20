@@ -13,7 +13,7 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
+import type { ExternalWalletRegistrationConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
@@ -106,7 +106,7 @@ export class WalletFactory {
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
-        await validatedArgs.options?._callbacks?.onWalletCreationStart?.();
+        await validatedArgs.options?.callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
         if (!this.apiClient.isServerSide && validatedArgs.owner != null) {
@@ -176,6 +176,13 @@ export class WalletFactory {
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
 
+        // For server signers, use the user-provided recovery config to preserve the secret
+        // (the API response strips it). For all other types (passkey, device, etc.), use the API
+        // response which contains the full signer details (e.g. passkey credential ID).
+        const createArgs = args as WalletCreateArgs<C>;
+        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>;
+        const recovery = createArgs.recovery?.type === "server" ? createArgs.recovery : apiRecovery;
+
         return new Wallet(
             {
                 chain: args.chain,
@@ -183,7 +190,9 @@ export class WalletFactory {
                 owner: walletResponse.owner,
                 options: args.options,
                 alias: args.alias,
-                recovery: (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>,
+                recovery,
+                signers: ((walletResponse.config as SmartWalletConfig).delegatedSigners ??
+                    []) as SignerConfigForChain<C>[],
             },
             this.apiClient
         );
@@ -219,7 +228,9 @@ export class WalletFactory {
      * If no device signer is present in args.signers, adds one.
      * Device signers are not supported for Solana (Squads does not support device signer registration).
      */
-    private ensureDeviceSignerInSigners<C extends Chain>(args: WalletCreateArgs<C>): Array<SignerConfigForChain<C>> {
+    private ensureDeviceSignerInSigners<C extends Chain>(
+        args: WalletCreateArgs<C>
+    ): Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig> {
         // Skip device signer for Solana wallets
         if (args.chain === "solana") {
             return args.signers ?? [];
@@ -282,7 +293,7 @@ export class WalletFactory {
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C>>,
+        inputSigners: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
@@ -337,7 +348,7 @@ export class WalletFactory {
     If the existing wallet has multiple passkeys, the input signer must be a passkey signer with an ID.
     */
     private isMatchingPasskeySigner<C extends Chain>(
-        inputSigner: SignerConfigForChain<C>,
+        inputSigner: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         existingSigner: SmartWalletConfig["adminSigner"] | DelegatedSignerResponse,
         walletConfig: SmartWalletConfig
     ): boolean {
@@ -358,7 +369,7 @@ export class WalletFactory {
     }
 
     private async registerSigners<C extends Chain>(
-        signersList?: Array<SignerConfigForChain<C>>,
+        signersList?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage
     ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
@@ -374,7 +385,16 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
-                        // If the device signer already has a locator (e.g., created via createDeviceSigner helper), use it directly
+                        // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
+                        if (signer.publicKey != null) {
+                            return {
+                                signer: {
+                                    type: "device" as const,
+                                    publicKey: signer.publicKey,
+                                    name: signer.name,
+                                },
+                            };
+                        }
                         if (signer.locator != null) {
                             return { signer: signer.locator };
                         }
@@ -382,7 +402,13 @@ export class WalletFactory {
                             throw new WalletCreationError("Device signer key storage is required for device signers");
                         }
                         const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
-                        return { signer: deviceSigner.locator };
+                        return {
+                            signer: {
+                                type: "device" as const,
+                                publicKey: deviceSigner.publicKey,
+                                name: deviceSigner.name,
+                            },
+                        };
                     }
                     if (signer.type === "server" && chain != null) {
                         const { derivedAddress } = deriveServerSignerDetails(

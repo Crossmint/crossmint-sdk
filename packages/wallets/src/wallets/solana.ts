@@ -25,6 +25,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
                 recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
             },
             Wallet.getApiClient(wallet)
         );
@@ -51,7 +52,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         },
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: SolanaTransactionInput
+        params: SolanaTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
@@ -75,7 +76,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                     type: "external-wallet",
                     address: signer.publicKey.toString(),
                     locator: `external-wallet:${signer.publicKey.toString()}`,
-                    onSignTransaction: (transaction) => {
+                    onSign: (transaction) => {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },

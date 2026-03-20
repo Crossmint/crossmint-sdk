@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.swift_version  = '6.0'
 
   s.dependency 'ExpoModulesCore'
-  s.dependency 'CrossmintDeviceSigner', '~> 0.11'
+  s.dependency 'CrossmintDeviceSigner', '~> 0.1'
 end

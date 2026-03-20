@@ -12,7 +12,7 @@ import {
     type WalletOptions,
     type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
-    type DeviceSignerDescriptor,
+    type DeviceSignerConfig,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -46,7 +46,7 @@ export type CrossmintWalletBaseContext = {
         reject: ((error?: Error) => void) | null;
     };
     /** Creates a Device Signer */
-    createDeviceSigner: () => Promise<DeviceSignerDescriptor> | undefined;
+    createDeviceSigner: (address?: string) => Promise<DeviceSignerConfig> | undefined;
     /** Creates a Passkey Signer */
     createPasskeySigner: (passkeyName: string) => Promise<RegisterSignerPasskeyParams>;
 };
@@ -211,12 +211,12 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
-                _callbacks: {
+                callbacks: {
                     onWalletCreationStart:
-                        argsOptions?._callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
+                        argsOptions?.callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
                     onTransactionStart:
-                        argsOptions?._callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
-                    onAuthRequired: argsOptions?._callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
+                        argsOptions?.callbacks?.onTransactionStart ?? updateCallbacks?.onTransactionStart,
+                    onAuthRequired: argsOptions?.callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
             };
@@ -343,13 +343,16 @@ export function CrossmintWalletBaseProvider({
         [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
-    const createDeviceSigner = useCallback(() => {
-        const wallets = CrossmintWallets.from(crossmint);
-        if (deviceSignerKeyStorage == null) {
-            throw new Error("A DeviceSignerKeyStorage must be provided to create a device signer");
-        }
-        return wallets.createDeviceSigner(deviceSignerKeyStorage);
-    }, [crossmint, deviceSignerKeyStorage]);
+    const createDeviceSigner = useCallback(
+        (address?: string) => {
+            const wallets = CrossmintWallets.from(crossmint);
+            if (deviceSignerKeyStorage == null) {
+                throw new Error("A DeviceSignerKeyStorage must be provided to create a device signer");
+            }
+            return wallets.createDeviceSigner(deviceSignerKeyStorage, address);
+        },
+        [crossmint, deviceSignerKeyStorage]
+    );
 
     const createPasskeySigner = useCallback(
         async (passkeyName: string) => {

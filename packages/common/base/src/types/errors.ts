@@ -74,6 +74,7 @@ export const WalletErrorCode = {
     NO_TRANSACTION: "wallet:no-transaction",
     TRANSACTION_FAILED: "wallet:transaction-failed",
     ENVIRONMENT_INVALID: "wallet:environment-invalid",
+    RECIPIENT_ADDRESS_INVALID: "wallet:recipient-address-invalid",
 };
 export type WalletErrorCode = (typeof WalletErrorCode)[keyof typeof WalletErrorCode];
 

@@ -164,7 +164,7 @@ describe("EVMWallet - sendTransaction()", () => {
             expect(mockApiClient.createTransaction).toHaveBeenCalled();
         });
 
-        it("should return prepared transaction when prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-prepare",
                 status: "pending",
@@ -272,7 +272,7 @@ describe("EVMWallet - signMessage()", () => {
             );
         });
 
-        it("should return prepared signature when prepareOnly is true", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-prepare",
                 status: "pending",
@@ -385,7 +385,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should return prepared signature when prepareOnly is true", async () => {
+        it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
                 status: "pending",

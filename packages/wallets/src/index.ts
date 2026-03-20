@@ -2,7 +2,7 @@
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
 // Errors
-export { WalletNotAvailableError } from "./utils/errors";
+export { WalletNotAvailableError, InvalidTransferAmountError } from "./utils/errors";
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams } from "./api";
@@ -21,7 +21,6 @@ export type {
     ClientSideWalletCreateArgs,
     DelegatedSigner,
     SignerStatus,
-    DeviceSignerDescriptor,
     EVMTransactionInput,
     Transaction,
     WalletArgsFor,
@@ -39,6 +38,8 @@ export { isExportableSigner } from "./signers/types";
 export type {
     EmailSignerConfig,
     PhoneSignerConfig,
+    ExternalWalletSignerConfig,
+    ExternalWalletRegistrationConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     ServerSignerConfig,
@@ -48,6 +49,7 @@ export type {
     PhoneSignerLocator,
     PasskeySignerLocator,
     DeviceSignerLocator,
+    DeviceSignerConfig,
     ExternalWalletSignerLocator,
     ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,

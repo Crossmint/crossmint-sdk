@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
 import { WalletFactory } from "./wallet-factory";
-import { InvalidEnvironmentError, WalletCreationError } from "../utils/errors";
+import { InvalidChainError, InvalidEnvironmentError, WalletCreationError } from "../utils/errors";
 import { walletsLogger } from "../logger";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
@@ -97,6 +97,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             const mockDeviceSignerKeyStorage = {
                 getKey: vi.fn(),
                 saveKey: vi.fn(),
+                getDeviceName: vi.fn().mockReturnValue("Unknown Device"),
             };
 
             const args: WalletCreateArgs<"solana"> = {
@@ -154,6 +155,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 getKey: vi.fn().mockResolvedValue(null),
                 saveKey: vi.fn().mockResolvedValue(undefined),
                 generateKey: vi.fn().mockResolvedValue(publicKeyBase64),
+                getDeviceName: vi.fn().mockReturnValue("Chrome on Mac"),
             };
 
             const args: WalletCreateArgs<"base"> = {
@@ -175,7 +177,14 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(call?.config?.delegatedSigners).toHaveLength(1);
             expect(call?.config?.delegatedSigners?.[0]).toEqual(
                 expect.objectContaining({
-                    signer: expect.stringContaining("device:"),
+                    signer: expect.objectContaining({
+                        type: "device",
+                        publicKey: expect.objectContaining({
+                            x: expect.any(String),
+                            y: expect.any(String),
+                        }),
+                        name: "Chrome on Mac",
+                    }),
                 })
             );
         });
@@ -652,6 +661,72 @@ describe("WalletFactory - Chain Environment Validation", () => {
             };
 
             await expect(walletFactory.createWallet(testnetArgs)).rejects.toThrow(InvalidEnvironmentError);
+        });
+    });
+
+    describe("Unknown chain rejection", () => {
+        beforeEach(() => {
+            mockApiClient = {
+                isServerSide: false,
+                crossmint: { projectId: "test-project" },
+                projectId: "test-project",
+                environment: APIKeyEnvironmentPrefix.STAGING,
+                getWallet: vi.fn(),
+                createWallet: vi.fn(),
+            };
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        });
+
+        it("should throw InvalidChainError for unknown chain in createWallet", async () => {
+            const args = {
+                chain: "not-a-chain" as any,
+                recovery: {
+                    type: "external-wallet" as const,
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(InvalidChainError);
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(/Unknown chain "not-a-chain"/);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("should throw InvalidChainError for unknown chain in getWallet", async () => {
+            const args = {
+                chain: "not-a-chain" as any,
+            };
+
+            await expect(walletFactory.getWallet(args)).rejects.toThrow(InvalidChainError);
+            await expect(walletFactory.getWallet(args)).rejects.toThrow(/Unknown chain "not-a-chain"/);
+            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
+        });
+
+        it("should throw InvalidChainError for unknown chain in server-side getWallet", async () => {
+            mockApiClient.isServerSide = true;
+
+            const args = {
+                chain: "not-a-chain" as any,
+            };
+
+            await expect(walletFactory.getWallet("wallet-locator", args)).rejects.toThrow(InvalidChainError);
+            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
+        });
+
+        it("should throw InvalidChainError for unknown chain regardless of environment", async () => {
+            // Verify that the isValidChain guard fires before the environment check
+            mockApiClient.environment = APIKeyEnvironmentPrefix.PRODUCTION;
+            walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+
+            const args = {
+                chain: "not-a-chain" as any,
+                recovery: {
+                    type: "external-wallet" as const,
+                    address: "0xAdminSignerAddress123456789012345678901234",
+                },
+            };
+
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(InvalidChainError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
     });
 });
