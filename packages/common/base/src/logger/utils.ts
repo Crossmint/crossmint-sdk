@@ -10,26 +10,29 @@ const SENSITIVE_KEYS = new Set([
     "api_key",
     "authorization",
     "x-api-key",
-    "token",
+    "accesstoken",
+    "access_token",
+    "authtoken",
+    "auth_token",
+    "bearertoken",
+    "bearer_token",
+    "idtoken",
+    "id_token",
     "refreshtoken",
+    "refresh_token",
     "secret",
+    "client_secret",
     "password",
     "privatekey",
     "private_key",
     "credential",
     "authdata",
+    "bearer",
 ]);
 
 const MAX_REDACTION_DEPTH = 10;
 
-/**
- * Truncates a string value for redacted output, showing first and last 4 chars.
- * For short strings (<=8 chars), returns '[REDACTED]'.
- */
-function redactValue(value: unknown): string {
-    if (typeof value === "string" && value.length > 8) {
-        return `${value.slice(0, 4)}...${value.slice(-4)}`;
-    }
+function redactValue(_value: unknown): string {
     return "[REDACTED]";
 }
 
@@ -49,6 +52,17 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
 
     if (Array.isArray(obj)) {
         return obj.map((item) => redactSensitiveFields(item, depth + 1));
+    }
+
+    // Error instances have non-enumerable properties (name, message, stack);
+    // preserve them explicitly so error observability is not lost.
+    if (obj instanceof Error) {
+        return {
+            name: obj.name,
+            message: obj.message,
+            stack: obj.stack,
+            ...(redactSensitiveFields(Object.fromEntries(Object.entries(obj)), depth + 1) as object),
+        };
     }
 
     const result: Record<string, unknown> = {};
