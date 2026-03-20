@@ -623,13 +623,7 @@ export class Wallet<C extends Chain> {
 
         // Store original signer and swap to recovery signer for the registration
         const originalSigner = this.signer;
-        const recoveryInternalConfig = {
-            ...this.#recovery,
-            address: this.address,
-            crossmint: this.#apiClient.crossmint,
-            clientTEEConnection: this.#options?.clientTEEConnection,
-            onAuthRequired: this.#options?.callbacks?.onAuthRequired,
-        } as InternalSignerConfig<C>;
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {

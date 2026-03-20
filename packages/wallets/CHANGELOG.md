@@ -1,5 +1,38 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.3
+
+### Minor Changes
+
+- d5c0df7: Add human-readable device name to device signers.
+
+  - Added `name` field to `DeviceSignerConfig` and `DeviceSignerDescriptor`
+  - Added abstract `getDeviceName()` method to `DeviceSignerKeyStorage`
+  - `IframeDeviceSignerKeyStorage` derives the name from `navigator.userAgent` (e.g. "Chrome on Mac")
+  - `NativeDeviceSignerKeyStorage` uses `expo-device` APIs for real native device names (e.g. "iPhone 15 (iOS)")
+  - Both `registerSigners` (wallet creation) and `addSigner` (recovery) now send the device name to the API
+
+- 6038b09: Breaking: `useSigner()` now only accepts signer config objects + recovery signer support
+
+  - **Breaking:** `useSigner()` no longer accepts locator strings — only signer config objects (`SignerConfigForChain<C>`)
+  - `useSigner()` now accepts the wallet's recovery (admin) signer in addition to delegated signers
+  - Recovery signers skip the delegated signer registration check
+  - External-wallet signers (both recovery and delegated) require the full config object with an `onSign` callback
+  - All signer types must be passed as config objects (e.g. `{ type: "email", email: "..." }`)
+
+### Patch Changes
+
+- 4e5bc75: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+- d66aacc: Fix createWallet failing when a device signer descriptor from createDeviceSigner() is passed in signers[]. The publicKey.x/y hex values are now normalized to decimal before comparison during idempotency validation.
+- 116111d: fix: make tokens and status optional in wallet.transfers()
+- 5ae2806: Validate transfer amount in wallet.send() to reject zero, negative, and non-numeric values before sending on-chain. Throws InvalidTransferAmountError for invalid amounts.
+- 6eb5217: Reject unknown chain names in createWallet and getWallet with an InvalidChainError before any wallet resource is created
+- d0c8820: Defaulting signer
+- 09e9ce2: Simplify null check in recover() and make apiClient publicly accessible
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/common-sdk-auth@1.1.0-beta.1
+
 ## 1.0.0-beta.2
 
 ### Minor Changes
