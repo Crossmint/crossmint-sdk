@@ -36,6 +36,8 @@ import {
     InvalidTransferAmountError,
     SignatureFailedError,
     SignatureNotAvailableError,
+    SignerApprovalTimeoutError,
+    SignerRegistrationFailedError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
     TransactionConfirmationTimeoutError,
@@ -723,7 +725,7 @@ export class Wallet<C extends Chain> {
                 await this.waitForSignerApproval(delegatedSigner.locator);
 
                 walletsLogger.info("wallet.addSigner.success", {
-                    success: chainResponse?.status === "success",
+                    signatureId: chainResponse != null && "id" in chainResponse ? chainResponse.id : undefined,
                 });
 
                 return { ...delegatedSigner, status: "success" as const } as any;
@@ -1427,13 +1429,16 @@ export class Wallet<C extends Chain> {
     }
 
     protected async waitForSignerApproval(signerLocator: string, timeoutMs = 120_000): Promise<void> {
-        walletsLogger.info("wallet.approve: waiting for signer approval on chain", { signerLocator, timeoutMs });
+        walletsLogger.info("wallet.addSigner: waiting for signer approval", { signerLocator, timeoutMs });
         const startTime = Date.now();
         let backoffMs = STATUS_POLLING_INTERVAL_MS;
+        let resolved = false;
 
-        do {
+        while (!resolved) {
             if (Date.now() - startTime > timeoutMs) {
-                throw new Error("Signer approval timeout");
+                throw new SignerApprovalTimeoutError(
+                    `Timed out waiting for signer "${signerLocator}" to be approved on chain ${this.chain}`
+                );
             }
 
             const signerResponse = await this.#apiClient.getSigner(this.walletLocator, signerLocator);
@@ -1441,17 +1446,20 @@ export class Wallet<C extends Chain> {
                 const delegatedSigner = mapApiSignerToDelegatedSigner(signerResponse, this.chain);
                 if (delegatedSigner != null) {
                     if (delegatedSigner.status === "success" || delegatedSigner.status === "pending") {
-                        return;
-                    }
-                    if (delegatedSigner.status === "failed") {
-                        throw new Error("Signer registration failed on chain");
+                        resolved = true;
+                    } else if (delegatedSigner.status === "failed") {
+                        throw new SignerRegistrationFailedError(
+                            `Signer "${signerLocator}" registration failed on chain ${this.chain}`
+                        );
                     }
                 }
             }
 
-            await this.sleep(backoffMs);
-            backoffMs = Math.min(backoffMs * 1.5, 5_000);
-        } while (true);
+            if (!resolved) {
+                await this.sleep(backoffMs);
+                backoffMs = Math.min(backoffMs * 1.5, 5_000);
+            }
+        }
     }
 
     protected async waitForSignature(signatureId: string): Promise<Signature<false>> {
