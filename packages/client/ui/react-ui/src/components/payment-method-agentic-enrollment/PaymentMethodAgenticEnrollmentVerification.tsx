@@ -22,7 +22,7 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
     onVerificationComplete,
     onVerificationError,
 }: PaymentMethodAgenticEnrollmentVerificationProps) {
-    const { verifyEnrollment } = useBasisTheoryAI();
+    const { verifyEnrollment, ready } = useBasisTheoryAI();
     const verifyRef = useRef(verifyEnrollment);
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
@@ -38,6 +38,10 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
     }, [onVerificationError]);
 
     useEffect(() => {
+        if (!ready) {
+            return;
+        }
+
         let cancelled = false;
 
         verifyRef
@@ -56,7 +60,7 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
         return () => {
             cancelled = true;
         };
-    }, [agentEnrollmentId]);
+    }, [ready, agentEnrollmentId]);
 
     return null;
 }
