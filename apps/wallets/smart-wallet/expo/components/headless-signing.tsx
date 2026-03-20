@@ -1,4 +1,4 @@
-import { useCrossmintAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet, useWalletOtpSigner } from "@crossmint/client-sdk-react-native-ui";
 import { useState } from "react";
 import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
@@ -6,7 +6,7 @@ export function HeadlessSigning() {
     const { user } = useCrossmintAuth();
     const { createDeviceSigner, wallet } = useWallet();
     const loggedInUserEmail = user?.email ?? null;
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
+    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletOtpSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
