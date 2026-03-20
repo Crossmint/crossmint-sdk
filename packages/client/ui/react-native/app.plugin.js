@@ -1,1 +1,1 @@
-module.exports = require("./dist/plugin/withGooglePay");
+module.exports = require("./dist/plugin/withCrossmint");
