@@ -1,10 +1,10 @@
 ---
-"@crossmint/wallets-sdk": major
-"@crossmint/client-sdk-react-ui": major
-"@crossmint/client-sdk-react-base": major
+"@crossmint/wallets-sdk": minor
+"@crossmint/client-sdk-react-ui": minor
+"@crossmint/client-sdk-react-base": minor
 ---
 
 Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
 
-BREAKING CHANGE: The exported type `DelegatedSigner` has been renamed to `Signer`. The old name is still available as a deprecated alias but will be removed in a future release. Similarly, `DelegatedSignerInput` has been renamed to `SignerInput`, and `AdminSignerConfig` has been renamed to `RecoverySignerConfig`.
+The exported type `DelegatedSigner` has been renamed to `Signer` (deprecated alias kept). `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`.
 
