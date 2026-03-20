@@ -39,7 +39,7 @@ export type CrossmintWalletBaseContext = {
     /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     /** @internal */
-    emailSignerState: {
+    otpSignerState: {
         needsAuth: boolean;
         sendOtp: (() => Promise<void>) | null;
         verifyOtp: ((otp: string) => Promise<void>) | null;
@@ -57,7 +57,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     getWallet: () => Promise.resolve(undefined),
     createWallet: () => Promise.resolve(undefined),
     clientTEEConnection: undefined,
-    emailSignerState: {
+    otpSignerState: {
         needsAuth: false,
         sendOtp: null,
         verifyOtp: null,
@@ -86,8 +86,8 @@ export interface CrossmintWalletBaseProviderProps {
     appearance?: UIConfig;
     /** Whether to show passkey helper UI. Default: true. */
     showPasskeyHelpers?: boolean;
-    /** When true, no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
-    headlessSigningFlow?: boolean;
+    /** When true, built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. Default: true. */
+    showOtpSignerPrompt?: boolean;
     /** Callback invoked when email or phone verification is required during a non-custodial wallet signing flow. */
     onAuthRequired?: Callbacks["onAuthRequired"];
     /** @internal */
@@ -122,7 +122,7 @@ export function CrossmintWalletBaseProvider({
     deviceSignerKeyStorage,
     initializeWebView,
     appearance,
-    headlessSigningFlow,
+    showOtpSignerPrompt,
     onAuthRequired: onAuthRequiredFromProps,
     showPasskeyHelpers,
     renderUI,
@@ -135,7 +135,7 @@ export function CrossmintWalletBaseProvider({
     const signerAuth = useSignerAuth();
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
 
-    const [emailSignerState, setEmailSignerState] = useState({
+    const [otpSignerState, setOtpSignerState] = useState({
         needsAuth: false,
         sendOtp: null as (() => Promise<void>) | null,
         verifyOtp: null as ((otp: string) => Promise<void>) | null,
@@ -186,7 +186,7 @@ export function CrossmintWalletBaseProvider({
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ) => {
-            setEmailSignerState({
+            setOtpSignerState({
                 needsAuth,
                 sendOtp: sendOtp,
                 verifyOtp,
@@ -444,7 +444,7 @@ export function CrossmintWalletBaseProvider({
             getWallet,
             createWallet,
             clientTEEConnection,
-            emailSignerState,
+            otpSignerState,
             createDeviceSigner,
             createPasskeySigner,
         }),
@@ -454,21 +454,21 @@ export function CrossmintWalletBaseProvider({
             wallet,
             walletStatus,
             clientTEEConnection,
-            emailSignerState,
+            otpSignerState,
             createDeviceSigner,
             createPasskeySigner,
         ]
     );
 
     const hasUIProps =
-        appearance != null || headlessSigningFlow != null || showPasskeyHelpers != null || renderUI != null;
+        appearance != null || showOtpSignerPrompt != null || showPasskeyHelpers != null || renderUI != null;
 
     return (
         <CrossmintWalletBaseContext.Provider value={contextValue}>
             {hasUIProps ? (
                 <CrossmintWalletUIBaseProvider
                     appearance={appearance}
-                    headlessSigningFlow={headlessSigningFlow}
+                    showOtpSignerPrompt={showOtpSignerPrompt}
                     renderUI={renderUI}
                     passkeyPromptState={passkeyPromptState}
                     signerAuth={signerAuth}

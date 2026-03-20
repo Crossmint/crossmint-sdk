@@ -37,8 +37,8 @@ export interface CrossmintWalletProviderProps {
     createOnLogin?: CreateOnLogin;
     /** Optional appearance configuration for styling built-in UI components. */
     appearance?: UIConfig;
-    /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
-    headlessSigningFlow?: boolean;
+    /** When true (default), built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. */
+    showOtpSignerPrompt?: boolean;
     /** Optional lifecycle callbacks invoked during wallet creation and transaction signing. */
     callbacks?: {
         /** Called when a wallet creation flow begins. */
@@ -60,7 +60,7 @@ function CrossmintWalletProviderInternal({
     children,
     createOnLogin,
     appearance,
-    headlessSigningFlow = true,
+    showOtpSignerPrompt = true,
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
@@ -327,10 +327,10 @@ function CrossmintWalletProviderInternal({
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
-            headlessSigningFlow={headlessSigningFlow}
+            showOtpSignerPrompt={showOtpSignerPrompt}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
-            renderUI={headlessSigningFlow ? undefined : renderNativeUI}
+            renderUI={showOtpSignerPrompt ? renderNativeUI : undefined}
             clientTEEConnection={getClientTEEConnection}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
