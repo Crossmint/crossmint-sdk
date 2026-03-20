@@ -1,5 +1,13 @@
 # @crossmint/expo-device-signer
 
+## 0.1.0-beta.2
+
+### Patch Changes
+
+- Updated dependencies [72a6c13]
+- Updated dependencies [7f45e33]
+  - @crossmint/wallets-sdk@1.0.0-beta.4
+
 ## 0.1.0-beta.1
 
 ### Minor Changes
