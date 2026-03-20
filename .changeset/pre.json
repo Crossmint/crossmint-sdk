@@ -35,6 +35,7 @@
         "device-signer-idb-fatal",
         "device-signer-name",
         "fix-device-signer-hex-comparison",
+        "fix-external-wallet-recovery-config",
         "fix-server-recovery-addsigner",
         "fix-tee-double-init",
         "fix-transfers-optional-params",
@@ -42,6 +43,7 @@
         "homogenize-signer-management",
         "itchy-ducks-collect",
         "mighty-coins-fix",
+        "new-dots-bow",
         "reject-unknown-chains",
         "remove-biometric-policy",
         "remove-customauth",
@@ -51,13 +53,17 @@
         "remove-owner-client-side",
         "remove-stellar-sdk-v1",
         "remove-useauth-alias",
+        "rename-delegated-signers",
         "split-get-create-wallet",
         "tall-papayas-glow",
         "ten-mails-scream",
+        "tough-mice-poke",
         "tricky-planes-rest",
+        "use-logger-wallet-base-provider",
         "use-signer-recovery-support",
         "use-wallet-otp-signer",
         "wal-9286-rename-signer-terminology",
-        "wallet-fixes"
+        "wallet-fixes",
+        "wet-cheetahs-agree"
     ]
 }

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-native-ui",
-    "version": "1.0.0-beta.4",
+    "version": "1.0.0-beta.5",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -43,7 +43,7 @@
         "expo-web-browser": "~15.0.8"
     },
     "peerDependencies": {
-        "@crossmint/expo-device-signer": "0.1.0-beta.2",
+        "@crossmint/expo-device-signer": "0.1.0-beta.3",
         "@expo/config-plugins": ">=9.0.0",
         "@solana/web3.js": "^1.98.1",
         "expo-constants": ">=17 <19",

@@ -1,5 +1,22 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.0-beta.5
+
+### Minor Changes
+
+- 258779d: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+### Patch Changes
+
+- 855a34c: Replace console.error with structured logger.error in CrossmintWalletBaseProvider for improved observability
+- Updated dependencies [2d92c5a]
+- Updated dependencies [512015a]
+- Updated dependencies [258779d]
+- Updated dependencies [05f3feb]
+  - @crossmint/wallets-sdk@1.0.0-beta.5
+
 ## 2.0.0-beta.4
 
 ### Patch Changes

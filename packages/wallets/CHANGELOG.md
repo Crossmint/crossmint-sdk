@@ -1,5 +1,19 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- 258779d: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+### Patch Changes
+
+- 2d92c5a: fix: preserve external-wallet recovery signer config (onSign callback) during wallet instantiation
+- 512015a: Default for recovery or one server signer
+- 05f3feb: Fix createDeviceSigner always generating a new key instead of reusing an existing one for the same address on the same device
+
 ## 1.0.0-beta.4
 
 ### Patch Changes
