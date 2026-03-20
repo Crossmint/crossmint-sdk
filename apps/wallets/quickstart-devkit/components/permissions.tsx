@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type Signer, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
 
 export function Permissions() {
@@ -11,7 +11,7 @@ export function Permissions() {
     const { wallet } = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [permissions, setPermissions] = useState<DelegatedSigner[]>([]);
+    const [permissions, setPermissions] = useState<Signer[]>([]);
     const [newSigner, setNewSigner] = useState<string>("");
 
     useEffect(() => {
