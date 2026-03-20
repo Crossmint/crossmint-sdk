@@ -89,6 +89,27 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
     return { ...base, status: "success" } as Signer;
 }
 
+export function getPendingSignerOperation(
+    apiSigner: APISigner,
+    chain: Chain
+): { type: "signature" | "transaction"; id: string } | null {
+    if (chain === "solana" || chain === "stellar") {
+        if ("transaction" in apiSigner && apiSigner.transaction != null && apiSigner.transaction.status !== "success") {
+            return { type: "transaction", id: apiSigner.transaction.id };
+        }
+        return null;
+    }
+
+    if ("chains" in apiSigner && apiSigner.chains != null) {
+        const chainEntry = apiSigner.chains[chain];
+        if (chainEntry != null && chainEntry.status !== "success") {
+            return { type: "signature", id: chainEntry.id };
+        }
+    }
+
+    return null;
+}
+
 /**
  * Maps a wallet config signer (from getWallet response) to a Signer with a given status.
  * Used for Solana/Stellar where signers in the config are already fully registered.

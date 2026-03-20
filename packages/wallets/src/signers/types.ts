@@ -13,7 +13,7 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import type { Callbacks } from "@/wallets/types";
+import type { Callbacks, SignerStatus } from "@/wallets/types";
 
 export type {
     ExternalWalletSignerConfig,
@@ -207,6 +207,7 @@ type SignResultMap = {
 
 export interface SignerAdapter<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
+    status?: SignerStatus;
     locator(): SignerLocator;
     address?(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
