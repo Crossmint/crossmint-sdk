@@ -98,12 +98,6 @@ export interface CrossmintWalletBaseProviderProps {
     initializeWebView?: () => Promise<void>;
     /** @internal */
     renderUI?: (props: UIRenderProps) => ReactNode;
-    /**
-     * @internal
-     * When true, passkey signers are not supported on this platform.
-     * Set by the React Native provider to disallow passkey usage.
-     */
-    disablePasskeys?: boolean;
 }
 
 type ValidPasskeyPromptType =
@@ -132,7 +126,6 @@ export function CrossmintWalletBaseProvider({
     onAuthRequired: onAuthRequiredFromProps,
     showPasskeyHelpers,
     renderUI,
-    disablePasskeys,
 }: CrossmintWalletBaseProviderProps) {
     const logger = useLogger(LoggerContext);
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
@@ -140,23 +133,6 @@ export function CrossmintWalletBaseProvider({
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth();
-
-    const assertNoPasskeys = useCallback(
-        (args: { recovery?: { type: string }; signers?: Array<{ type: string }> }) => {
-            if (!disablePasskeys) {
-                return;
-            }
-            const PASSKEY_RN_ERROR =
-                "Passkey signers are not supported in React Native. Use a different signer type such as 'email', 'phone', or 'device'.";
-            if (args.recovery?.type === "passkey") {
-                throw new Error(PASSKEY_RN_ERROR);
-            }
-            if (args.signers?.some((s) => s.type === "passkey")) {
-                throw new Error(PASSKEY_RN_ERROR);
-            }
-        },
-        [disablePasskeys]
-    );
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
 
     const [emailSignerState, setEmailSignerState] = useState({
@@ -252,7 +228,6 @@ export function CrossmintWalletBaseProvider({
         async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
-            assertNoPasskeys(args);
             if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
@@ -304,15 +279,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [
-            crossmint,
-            crossmint.jwt,
-            walletStatus,
-            wallet,
-            initializeWebViewIfNeeded,
-            buildWalletOptions,
-            assertNoPasskeys,
-        ]
+        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const getWallet = useCallback(
@@ -349,7 +316,6 @@ export function CrossmintWalletBaseProvider({
 
     const createWallet = useCallback(
         async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
-            assertNoPasskeys(args);
             if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
@@ -374,7 +340,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions, assertNoPasskeys]
+        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const createDeviceSigner = useCallback(
@@ -390,15 +356,10 @@ export function CrossmintWalletBaseProvider({
 
     const createPasskeySigner = useCallback(
         async (passkeyName: string) => {
-            if (disablePasskeys) {
-                throw new Error(
-                    "Passkey signers are not supported in React Native. Use a different signer type such as 'email', 'phone', or 'device'."
-                );
-            }
             const wallets = CrossmintWallets.from(crossmint);
             return await wallets.createPasskeySigner(passkeyName);
         },
-        [crossmint, disablePasskeys]
+        [crossmint]
     );
 
     // When using createOnLogin with an email signer, automatically populate the email from the auth context.

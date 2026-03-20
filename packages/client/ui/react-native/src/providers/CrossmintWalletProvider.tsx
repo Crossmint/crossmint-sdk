@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type RefObject } from "react";
+import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, useContext, type RefObject } from "react";
 import { Platform, View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 
@@ -12,6 +12,7 @@ import {
 import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletBaseProvider,
+    CrossmintWalletBaseContext,
     type UIRenderProps,
     type CreateOnLogin,
     useCrossmint,
@@ -47,6 +48,56 @@ export interface CrossmintWalletProviderProps {
     children: ReactNode;
 }
 
+const PASSKEY_RN_ERROR =
+    "Passkey signers are not supported in React Native. Use a different signer type such as 'email', 'phone', or 'device'.";
+
+function hasPasskeySigner(config?: CreateOnLogin): boolean {
+    if (config == null) {
+        return false;
+    }
+    if (config.recovery?.type === "passkey") {
+        return true;
+    }
+    if (config.signers?.some((s) => s.type === "passkey")) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Wraps children and overrides the wallet context to reject passkey operations.
+ * This sits between CrossmintWalletBaseProvider (which sets the context) and
+ * the app's children (which consume it via useWallet).
+ */
+function PasskeyGuard({ children }: { children: ReactNode }) {
+    const baseContext = useContext(CrossmintWalletBaseContext);
+
+    const guardedCreateWallet: typeof baseContext.createWallet = useCallback(
+        async (args) => {
+            if (args.recovery?.type === "passkey" || args.signers?.some((s) => s.type === "passkey")) {
+                throw new Error(PASSKEY_RN_ERROR);
+            }
+            return baseContext.createWallet(args);
+        },
+        [baseContext.createWallet]
+    );
+
+    const guardedCreatePasskeySigner: typeof baseContext.createPasskeySigner = useCallback(async (_passkeyName) => {
+        throw new Error(PASSKEY_RN_ERROR);
+    }, []);
+
+    const guardedContext = useMemo(
+        () => ({
+            ...baseContext,
+            createWallet: guardedCreateWallet,
+            createPasskeySigner: guardedCreatePasskeySigner,
+        }),
+        [baseContext, guardedCreateWallet, guardedCreatePasskeySigner]
+    );
+
+    return <CrossmintWalletBaseContext.Provider value={guardedContext}>{children}</CrossmintWalletBaseContext.Provider>;
+}
+
 function CrossmintWalletProviderInternal({
     children,
     createOnLogin,
@@ -55,6 +106,9 @@ function CrossmintWalletProviderInternal({
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
+    if (hasPasskeySigner(createOnLogin)) {
+        throw new Error(PASSKEY_RN_ERROR);
+    }
     // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
     const deviceSignerKeyStorage = useMemo(
         () => deviceSignerKeyStorageProp ?? new NativeDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
@@ -322,9 +376,8 @@ function CrossmintWalletProviderInternal({
             renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
-            disablePasskeys={true}
         >
-            {children}
+            <PasskeyGuard>{children}</PasskeyGuard>
 
             {needsWebView && (
                 <View
