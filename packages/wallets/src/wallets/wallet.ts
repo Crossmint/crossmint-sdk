@@ -712,19 +712,19 @@ export class Wallet<C extends Chain> {
 
                 if (chainResponse?.status === "awaiting-approval") {
                     await this.approveSignatureAndWait(chainResponse.id);
-                    walletsLogger.info("wallet.addSigner.success", {
-                        signatureId: chainResponse.id,
-                    });
                 } else if (chainResponse?.status === "pending") {
                     await this.waitForSignature(chainResponse.id);
-                    walletsLogger.info("wallet.addSigner.success", {
-                        signatureId: chainResponse.id,
-                    });
                 } else if (chainResponse?.status === "failed") {
                     throw new Error(`Signer registration failed for chain ${this.chain}`);
-                } else {
-                    walletsLogger.info("wallet.addSigner.success");
                 }
+
+                // If we reach here, the signature is approved (or it was an auto-approving signer).
+                // Wait for the signer registration transaction to complete on-chain.
+                await this.waitForSignerApproval(delegatedSigner.locator);
+
+                walletsLogger.info("wallet.addSigner.success", {
+                    success: chainResponse?.status === "success",
+                });
 
                 return { ...delegatedSigner, status: "success" as const } as any;
             }
@@ -856,7 +856,9 @@ export class Wallet<C extends Chain> {
      */
     public async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
         const existingSigners = await this.signers();
-        return existingSigners.some((s) => s.locator === signerLocator);
+        return existingSigners.some(
+            (s) => s.locator === signerLocator && (s.status === "success" || s.status === "pending")
+        );
     }
 
     /**
@@ -986,11 +988,6 @@ export class Wallet<C extends Chain> {
         // For EVM wallets, get per-chain status by querying each signer individually
         const signersWithStatus = await Promise.all(
             configSigners.map(async (configSigner) => {
-                // Device signers are not in the DelegatedSignerV2025Dto schema;
-                // preserve them directly from the config as with Solana/Stellar.
-                if (configSigner.locator.startsWith("device:")) {
-                    return mapConfigSignerToDelegatedSigner(configSigner, "success");
-                }
                 try {
                     const signerResponse = await this.#apiClient.getSigner(this.walletLocator, configSigner.locator);
                     if ("error" in signerResponse) {
@@ -1427,6 +1424,34 @@ export class Wallet<C extends Chain> {
         }
 
         return approvedSignature;
+    }
+
+    protected async waitForSignerApproval(signerLocator: string, timeoutMs = 120_000): Promise<void> {
+        walletsLogger.info("wallet.approve: waiting for signer approval on chain", { signerLocator, timeoutMs });
+        const startTime = Date.now();
+        let backoffMs = STATUS_POLLING_INTERVAL_MS;
+
+        do {
+            if (Date.now() - startTime > timeoutMs) {
+                throw new Error("Signer approval timeout");
+            }
+
+            const signerResponse = await this.#apiClient.getSigner(this.walletLocator, signerLocator);
+            if (!("error" in signerResponse)) {
+                const delegatedSigner = mapApiSignerToDelegatedSigner(signerResponse, this.chain);
+                if (delegatedSigner != null) {
+                    if (delegatedSigner.status === "success" || delegatedSigner.status === "pending") {
+                        return;
+                    }
+                    if (delegatedSigner.status === "failed") {
+                        throw new Error("Signer registration failed on chain");
+                    }
+                }
+            }
+
+            await this.sleep(backoffMs);
+            backoffMs = Math.min(backoffMs * 1.5, 5_000);
+        } while (true);
     }
 
     protected async waitForSignature(signatureId: string): Promise<Signature<false>> {
