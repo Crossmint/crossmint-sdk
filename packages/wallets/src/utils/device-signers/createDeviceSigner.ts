@@ -19,7 +19,8 @@ export async function createDeviceSigner(
     deviceKeyStorage: DeviceSignerKeyStorage,
     address?: string
 ): Promise<DeviceSignerConfig> {
-    const publicKeyBase64 = await deviceKeyStorage.generateKey({ address });
+    const existingKey = address != null ? await deviceKeyStorage.getKey(address) : null;
+    const publicKeyBase64 = existingKey ?? (await deviceKeyStorage.generateKey({ address }));
 
     // The public key is an uncompressed P-256 key (65 bytes: 0x04 prefix + 32 bytes x + 32 bytes y)
     // encoded as base64. We need to extract the x and y coordinates.
