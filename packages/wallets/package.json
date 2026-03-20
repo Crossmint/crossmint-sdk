@@ -32,7 +32,6 @@
         "@crossmint/common-sdk-base": "workspace:*",
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.98.1",
-
         "abitype": "1.0.8",
         "base32.js": "0.1.0",
         "bs58": "5.0.0",
