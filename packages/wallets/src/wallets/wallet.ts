@@ -630,12 +630,12 @@ export class Wallet<C extends Chain> {
 
         try {
             // For server signers, resolvedSigner is already a locator string.
-            // For new passkeys (no id yet), pass the full config so the API creates one.
+            // For passkeys, always pass the full config so the API receives the publicKey.
             // For everything else, convert to a locator string via getSignerLocator.
             const signerInput =
                 typeof resolvedSigner === "string"
                     ? resolvedSigner
-                    : resolvedSigner.type === "passkey" && resolvedSigner.id == null
+                    : resolvedSigner.type === "passkey"
                       ? resolvedSigner
                       : resolvedSigner.type === "device" &&
                           "publicKey" in resolvedSigner &&
