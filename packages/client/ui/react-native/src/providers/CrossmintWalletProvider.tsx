@@ -293,6 +293,9 @@ function CrossmintWalletProviderInternal({
     };
 
     const renderNativeUI = ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
+        if (!showOtpSignerPrompt) {
+            return null;
+        }
         return (
             <>
                 <EmailSignersDialog {...emailSignerProps} />
@@ -330,7 +333,7 @@ function CrossmintWalletProviderInternal({
             showOtpSignerPrompt={showOtpSignerPrompt}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
-            renderUI={showOtpSignerPrompt ? renderNativeUI : undefined}
+            renderUI={renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >

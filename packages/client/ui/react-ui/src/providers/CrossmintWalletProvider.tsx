@@ -30,11 +30,11 @@ export interface CrossmintWalletProviderProps {
     children: ReactNode;
 }
 
-function renderWebUI({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) {
-    return (
+function createRenderWebUI(showOtpSignerPrompt: boolean) {
+    return ({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) => (
         <>
-            <EmailSignersDialog {...emailSignerProps} />
-            <PhoneSignersDialog {...phoneSignerProps} />
+            {showOtpSignerPrompt && <EmailSignersDialog {...emailSignerProps} />}
+            {showOtpSignerPrompt && <PhoneSignersDialog {...phoneSignerProps} />}
             {passkeyPromptProps != null && <PasskeyPrompt {...passkeyPromptProps} />}
         </>
     );
@@ -66,7 +66,7 @@ export function CrossmintWalletProvider({
             showPasskeyHelpers={showPasskeyHelpers}
             showOtpSignerPrompt={showOtpSignerPrompt}
             callbacks={callbacks}
-            renderUI={showOtpSignerPrompt ? renderWebUI : undefined}
+            renderUI={createRenderWebUI(showOtpSignerPrompt)}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}

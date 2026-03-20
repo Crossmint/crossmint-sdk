@@ -92,7 +92,7 @@ export function CrossmintWalletUIBaseProvider({
     return (
         <>
             {children}
-            {showOtpSignerPrompt !== false && renderUI != null && renderUI(uiRenderProps)}
+            {renderUI != null && renderUI(uiRenderProps)}
         </>
     );
 }
