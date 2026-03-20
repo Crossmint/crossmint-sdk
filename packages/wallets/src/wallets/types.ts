@@ -295,8 +295,3 @@ export type ApproveParams = {
 export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
     signer: string;
 };
-
-/** @deprecated Use `Signer` instead */
-export type DelegatedSigner = Signer;
-/** @deprecated Use `SignerInput` instead */
-export type DelegatedSignerInput = SignerInput;

@@ -20,7 +20,6 @@ export type {
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
     Signer,
-    DelegatedSigner,
     SignerStatus,
     EVMTransactionInput,
     Transaction,
