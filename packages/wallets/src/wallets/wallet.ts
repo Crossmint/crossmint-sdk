@@ -177,8 +177,12 @@ export class Wallet<C extends Chain> {
             }
             // >1 signers → leave #signer undefined, user must call useSigner()
         } catch (error) {
-            // If auto-assembly fails (e.g., missing required data), leave #signer undefined
-            // User will need to call useSigner() explicitly
+            walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
+                recoveryType: this.#recovery.type,
+                signerCount: this.#initialSigners.length,
+                error,
+            });
+            // #signer remains undefined — user will need to call useSigner() explicitly
         }
     }
 
@@ -1036,6 +1040,25 @@ export class Wallet<C extends Chain> {
      */
     protected requireSigner(): SignerAdapter {
         if (this.#signer == null) {
+            if (this.#recovery.type === "server") {
+                throw new Error(
+                    "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
+                        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })\n' +
+                        "Docs: https://docs.crossmint.com/wallets/advanced/server-side-wallets"
+                );
+            }
+            if (this.#recovery.type === "external-wallet") {
+                throw new Error(
+                    "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
+                        'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
+                );
+            }
+            if (this.#initialSigners.length > 1) {
+                throw new Error(
+                    "No signer is set. This wallet has multiple signers configured. " +
+                        "Call wallet.useSigner() to select which signer to use before signing operations."
+                );
+            }
             throw new Error(
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
             );
