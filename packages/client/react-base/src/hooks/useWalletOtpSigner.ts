@@ -28,37 +28,37 @@ export function useWalletOtpSigner(): OtpSignerFunctions {
         throw new Error("useWalletOtpSigner must be used within CrossmintWalletProvider");
     }
 
-    const { emailSignerState } = context;
+    const { otpSignerState } = context;
 
     const sendOtp = useCallback(async () => {
-        if (emailSignerState.sendOtp == null) {
+        if (otpSignerState.sendOtp == null) {
             throwNotAvailable("sendOtp")();
         }
-        return await emailSignerState.sendOtp?.();
-    }, [emailSignerState.sendOtp]);
+        return await otpSignerState.sendOtp?.();
+    }, [otpSignerState.sendOtp]);
 
     const verifyOtp = useCallback(
         async (otp: string) => {
-            if (emailSignerState.verifyOtp == null) {
+            if (otpSignerState.verifyOtp == null) {
                 throwNotAvailable("verifyOtp")();
             }
-            return await emailSignerState.verifyOtp?.(otp);
+            return await otpSignerState.verifyOtp?.(otp);
         },
-        [emailSignerState.verifyOtp]
+        [otpSignerState.verifyOtp]
     );
 
     const reject = useCallback(
         (error: Error) => {
-            if (emailSignerState.reject == null) {
+            if (otpSignerState.reject == null) {
                 throwNotAvailable("reject")();
             }
-            emailSignerState.reject?.(error);
+            otpSignerState.reject?.(error);
         },
-        [emailSignerState.reject]
+        [otpSignerState.reject]
     );
 
     return {
-        needsAuth: emailSignerState.needsAuth,
+        needsAuth: otpSignerState.needsAuth,
         sendOtp,
         verifyOtp,
         reject,
