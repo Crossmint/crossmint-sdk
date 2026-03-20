@@ -1040,23 +1040,22 @@ export class Wallet<C extends Chain> {
      */
     protected requireSigner(): SignerAdapter {
         if (this.#signer == null) {
+            if (this.#initialSigners.length > 1) {
+                throw new Error(
+                    "No signer is set. This wallet has multiple signers configured. " +
+                        "Call wallet.useSigner() to select which signer to use before signing operations."
+                );
+            }
             if (this.#recovery.type === "server") {
                 throw new Error(
                     "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
-                        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })\n' +
-                        "Docs: https://docs.crossmint.com/wallets/advanced/server-side-wallets"
+                        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
                 );
             }
             if (this.#recovery.type === "external-wallet") {
                 throw new Error(
                     "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
                         'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
-                );
-            }
-            if (this.#initialSigners.length > 1) {
-                throw new Error(
-                    "No signer is set. This wallet has multiple signers configured. " +
-                        "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
             throw new Error(
