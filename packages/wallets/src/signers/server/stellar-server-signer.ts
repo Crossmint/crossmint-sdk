@@ -1,16 +1,17 @@
-import { Keypair } from "@stellar/stellar-sdk";
 import type { Signer, ServerInternalSignerConfig } from "../types";
+import { ed25519KeypairFromSeed, ed25519Sign, encodeStellarPublicKey } from "../../utils/stellar";
 
 export class StellarServerSigner implements Signer<"server"> {
     type = "server" as const;
     private _address: string;
     private _locator: string;
-    private keypair: Keypair;
+    private secretKey: Uint8Array;
 
     constructor(config: ServerInternalSignerConfig) {
-        this.keypair = Keypair.fromRawEd25519Seed(Buffer.from(config.derivedKeyBytes));
-        this._address = this.keypair.publicKey();
+        const keypair = ed25519KeypairFromSeed(config.derivedKeyBytes);
+        this._address = encodeStellarPublicKey(keypair.publicKey);
         this._locator = config.locator;
+        this.secretKey = keypair.secretKey;
     }
 
     address() {
@@ -26,8 +27,8 @@ export class StellarServerSigner implements Signer<"server"> {
             throw new Error("StellarServerSigner.signMessage: expected a base64-encoded string");
         }
         const messageBytes = Buffer.from(message, "base64");
-        const signatureBytes = this.keypair.sign(messageBytes);
-        return { signature: signatureBytes.toString("base64") };
+        const signatureBytes = ed25519Sign(messageBytes, this.secretKey);
+        return { signature: Buffer.from(signatureBytes).toString("base64") };
     }
 
     async signTransaction(transaction: string) {
