@@ -1,5 +1,16 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- 72a6c13: Fix server recovery wallets auto-approve for addSigner
+
+  - Preserve user-provided recovery config (with secret) during wallet creation so server recovery signers can properly auto-approve addSigner operations
+  - Use buildInternalSignerConfig for recovery signer assembly in addSigner, which correctly derives server signer keys
+
+- 7f45e33: Remove @stellar/stellar-sdk dependency by replacing it with tweetnacl (already a dependency) for ed25519 operations and a local Stellar StrKey encoder ported from open-signer.
+
 ## 1.0.0-beta.3
 
 ### Minor Changes

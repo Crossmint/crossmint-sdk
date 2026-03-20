@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- Updated dependencies [72a6c13]
+- Updated dependencies [7f45e33]
+  - @crossmint/wallets-sdk@1.0.0-beta.4
+  - @crossmint/expo-device-signer@0.1.0-beta.2
+  - @crossmint/client-sdk-react-base@2.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes
