@@ -5,12 +5,16 @@ const fs = require("fs");
 /**
  * Expo config plugin for @crossmint/expo-device-signer.
  *
- * 1. Injects a `pod 'CrossmintDeviceSigner'` entry so CocoaPods can resolve
- *    the Swift SDK pod that ExpoDeviceSigner depends on.
+ * CrossmintDeviceSigner is declared as a pod dependency in CrossmintExpoDeviceSigner.podspec,
+ * so CocoaPods resolves it from trunk automatically via use_expo_modules!.
  *
- * 2. Injects CrossmintDeviceSigner exclusion code into the existing
- *    `post_install` block to avoid duplicate symbol errors from Expo
- *    autolinking trying to compile DeviceSignerModule.swift twice.
+ * This plugin handles two remaining workarounds:
+ *
+ * 1. Expo SDK 54 + React Native 0.82 header incompatibility in expo-modules-core@3.x.
+ *    Temporary until fixed upstream in Expo SDK 55.
+ *
+ * 2. Simulator arch fix for CrossmintDeviceSigner.
+ *    Temporary until fixed in CrossmintDeviceSigner's podspec.
  */
 const withDeviceSigner = (config) => {
     return withDangerousMod(config, [
@@ -19,22 +23,7 @@ const withDeviceSigner = (config) => {
             const podfilePath = path.join(config.modRequest.platformProjectRoot, "Podfile");
             let podfile = fs.readFileSync(podfilePath, "utf8");
 
-            // --- 1. CrossmintDeviceSigner pod source ---
-            const podEntry = `  # @crossmint/expo-device-signer: CrossmintDeviceSigner (hardware-backed key storage)
-  pod 'CrossmintDeviceSigner', '~> 0.11.1'
-`;
-            if (!podfile.includes("CrossmintDeviceSigner")) {
-                // Insert right after `use_expo_modules!`, which is always inside the target block.
-                const withPod = podfile.replace(/(use_expo_modules!)/, `$1\n\n${podEntry}`);
-                if (withPod === podfile) {
-                    throw new Error(
-                        "[crossmint/expo-device-signer] Could not inject pod entry: expected 'use_expo_modules!' in Podfile"
-                    );
-                }
-                podfile = withPod;
-            }
-
-            // --- 2. Work around Expo SDK 54 + React Native 0.82 header incompatibility ---
+            // --- 1. Work around Expo SDK 54 + React Native 0.82 header incompatibility ---
             // With RCT_USE_PREBUILT_RNCORE=1: React-Core-umbrella.h not found.
             // Without it: CallInvoker not found (moved in RN 0.82).
             // Fix: unset prebuilt flags so React-Core compiles from source.
@@ -45,7 +34,7 @@ const withDeviceSigner = (config) => {
                 );
             }
 
-            // --- 3. Inject into the existing post_install block ---
+            // --- 2. Inject into the existing post_install block ---
             // CocoaPods only allows one post_install block; we must inject into it.
             const injectionMarker = "# @crossmint/expo-device-signer: CrossmintDeviceSigner autolinking exclusion";
             if (!podfile.includes(injectionMarker)) {
