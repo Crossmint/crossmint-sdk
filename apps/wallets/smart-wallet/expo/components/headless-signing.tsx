@@ -6,7 +6,7 @@ export function HeadlessSigning() {
     const { user } = useCrossmintAuth();
     const { createDeviceSigner, wallet } = useWallet();
     const loggedInUserEmail = user?.email ?? null;
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletOtpSigner();
+    const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -40,8 +40,17 @@ export function HeadlessSigning() {
         }
         setIsLoading(true);
         try {
-            const descriptor = await createDeviceSigner();
-            await wallet.addSigner(descriptor.locator);
+            const descriptor = await createDeviceSigner(wallet.address);
+            if (descriptor == null || descriptor.publicKey == null) {
+                throw new Error(
+                    `Creating a device signer returned an invalid descriptor: ${descriptor == null ? String(descriptor) : JSON.stringify(descriptor, null, 2)}`
+                );
+            }
+            await wallet.addSigner({
+                type: "device",
+                publicKey: descriptor.publicKey,
+                name: descriptor.name,
+            });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -55,7 +64,7 @@ export function HeadlessSigning() {
             return;
         }
 
-        await handleAction(sendEmailWithOtp);
+        await handleAction(sendOtp);
     };
 
     const handleVerifyOtpInput = async () => {
