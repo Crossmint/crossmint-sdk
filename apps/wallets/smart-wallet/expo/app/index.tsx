@@ -13,8 +13,16 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default function Index() {
-    const { user, logout, createAuthSession, loginWithOAuth, jwt, crossmintAuth, status: authStatus, getUser } =
-        useCrossmintAuth();
+    const {
+        user,
+        logout,
+        createAuthSession,
+        loginWithOAuth,
+        jwt,
+        crossmintAuth,
+        status: authStatus,
+        getUser,
+    } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
