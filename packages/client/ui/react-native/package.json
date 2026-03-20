@@ -30,7 +30,8 @@
         "lucide-react-native": "0.548.0",
         "mitt": "3.0.1",
         "react-native-svg": "15.14.0",
-        "zod": "3.22.4"
+        "zod": "3.22.4",
+        "@crossmint/expo-device-signer": "workspace:*"
     },
     "devDependencies": {
         "@expo/config-plugins": "^9.0.17",
@@ -40,9 +41,6 @@
         "expo-device": "~8.0.9",
         "expo-secure-store": "~15.0.7",
         "expo-web-browser": "~15.0.8"
-    },
-    "optionalDependencies": {
-        "@crossmint/expo-device-signer": "workspace:*"
     },
     "peerDependencies": {
         "@crossmint/expo-device-signer": "0.1.0-beta.2",
