@@ -858,9 +858,7 @@ export class Wallet<C extends Chain> {
      */
     public async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
         const existingSigners = await this.signers();
-        return existingSigners.some(
-            (s) => s.locator === signerLocator && (s.status === "success" || s.status === "pending")
-        );
+        return existingSigners.some((s) => s.locator === signerLocator);
     }
 
     /**
@@ -990,6 +988,11 @@ export class Wallet<C extends Chain> {
         // For EVM wallets, get per-chain status by querying each signer individually
         const signersWithStatus = await Promise.all(
             configSigners.map(async (configSigner) => {
+                // Device signers are not in the DelegatedSignerV2025Dto schema;
+                // preserve them directly from the config as with Solana/Stellar.
+                if (configSigner.locator.startsWith("device:")) {
+                    return mapConfigSignerToDelegatedSigner(configSigner, "success");
+                }
                 try {
                     const signerResponse = await this.#apiClient.getSigner(this.walletLocator, configSigner.locator);
                     if ("error" in signerResponse) {
