@@ -1204,9 +1204,7 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
-    private async getSignerState(
-        signerLocator: SignerLocator
-    ): Promise<{
+    private async getSignerState(signerLocator: SignerLocator): Promise<{
         response: GetSignerResponse | null;
         signer: WalletSigner | null;
         pendingOperation: { type: "signature" | "transaction"; id: string } | null;
