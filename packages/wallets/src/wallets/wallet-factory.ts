@@ -196,7 +196,7 @@ export class WalletFactory {
             signers.length === 1 &&
             (signers[0].type === "server" || signers[0].type === "external-wallet")
         ) {
-            signers = createArgs.signers as DelegatedSignerResponse[];
+            signers = createArgs.signers as SignerResponse[];
         }
 
         return new Wallet(
