@@ -1,11 +1,11 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { bytesToHex } from "@noble/hashes/utils";
 import { Keypair as SolanaKeypair } from "@solana/web3.js";
-import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
 
 import type { Chain } from "../../../chains/chains";
 import type { ServerSignerConfig } from "../../types";
 import { deriveKeyBytes } from "../../../utils/server-key-derivation";
+import { ed25519KeypairFromSeed, encodeStellarPublicKey } from "../../../utils/stellar";
 import { getChainType } from "./get-chain-type";
 
 export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): string {
@@ -16,7 +16,7 @@ export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): s
         case "solana":
             return SolanaKeypair.fromSeed(keyBytes).publicKey.toBase58();
         case "stellar":
-            return StellarKeypair.fromRawEd25519Seed(Buffer.from(keyBytes)).publicKey();
+            return encodeStellarPublicKey(ed25519KeypairFromSeed(keyBytes).publicKey);
     }
 }
 
