@@ -38,7 +38,7 @@ export type GetWalletSuccessResponse = WalletV2025ResponseDto;
 export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
-export type AdminSignerConfig = NonNullable<
+export type RecoverySignerConfig = NonNullable<
     Extract<CreateWalletV2025Dto, { config: { adminSigner: Record<string, unknown> } }>["config"]
 >["adminSigner"];
 
@@ -80,10 +80,8 @@ export type RegisterSignerParams = {
 };
 export type RegisterSignerResponse = DelegatedSignerV2025Dto | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type GetSignerResponse = DelegatedSignerV2025Dto | WalletsV2025ControllerGetDelegatedSigner2Error;
-export type GetDelegatedSignersResponse =
-    | Array<DelegatedSignerV2025Dto>
-    | WalletsV2025ControllerGetDelegatedSigner2Error;
-export type DelegatedSigner = DelegatedSignerV2025Dto;
+export type GetSignersResponse = Array<DelegatedSignerV2025Dto> | WalletsV2025ControllerGetDelegatedSigner2Error;
+export type Signer = DelegatedSignerV2025Dto;
 
 export type SendParams = SendTokenDto;
 export type SendResponse = WalletsSendTokenControllerSendToken2Response;

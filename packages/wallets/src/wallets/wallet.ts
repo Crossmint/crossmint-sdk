@@ -15,7 +15,7 @@ import type {
 import type {
     AddSignerOptions,
     AddSignerReturnType,
-    DelegatedSigner,
+    Signer as WalletSigner,
     WalletOptions,
     UserLocator,
     Transaction,
@@ -29,7 +29,7 @@ import type {
     PrepareOnly,
     SendTokenTransactionOptions,
 } from "./types";
-import { mapApiSignerToDelegatedSigner, mapConfigSignerToDelegatedSigner } from "../utils/signer-mapping";
+import { mapApiSignerToSigner, mapConfigSignerToSigner } from "../utils/signer-mapping";
 import {
     InvalidAddressError,
     InvalidSignerError,
@@ -612,7 +612,7 @@ export class Wallet<C extends Chain> {
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : DelegatedSigner> {
+    ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
         // Resolve server signer config to locator string
@@ -660,7 +660,7 @@ export class Wallet<C extends Chain> {
                 throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
 
-            const delegatedSigner = mapApiSignerToDelegatedSigner(response, this.chain);
+            const registeredSigner = mapApiSignerToSigner(response, this.chain);
 
             if (this.chain === "solana" || this.chain === "stellar") {
                 if (!("transaction" in response) || response.transaction == null) {
@@ -672,7 +672,7 @@ export class Wallet<C extends Chain> {
 
                 const transactionId = response.transaction.id;
 
-                if (delegatedSigner == null) {
+                if (registeredSigner == null) {
                     throw new Error(`No approval found for chain ${this.chain} in register signer response`);
                 }
 
@@ -680,14 +680,14 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         transactionId,
                     });
-                    return { ...delegatedSigner, transactionId } as any;
+                    return { ...registeredSigner, transactionId } as any;
                 }
 
                 await this.approveTransactionAndWait(transactionId);
                 walletsLogger.info("wallet.addSigner.success", {
                     transactionId,
                 });
-                return { ...delegatedSigner, status: "success" as const } as any;
+                return { ...registeredSigner, status: "success" as const } as any;
             } else {
                 if (!("chains" in response)) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -698,7 +698,7 @@ export class Wallet<C extends Chain> {
 
                 const chainResponse = response.chains?.[this.chain];
 
-                if (delegatedSigner == null) {
+                if (registeredSigner == null) {
                     throw new Error(`No approval found for chain ${this.chain} in register signer response`);
                 }
 
@@ -707,7 +707,7 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         signatureId,
                     });
-                    return { ...delegatedSigner, signatureId } as any;
+                    return { ...registeredSigner, signatureId } as any;
                 }
 
                 if (chainResponse?.status === "awaiting-approval") {
@@ -726,7 +726,7 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.success");
                 }
 
-                return { ...delegatedSigner, status: "success" as const } as any;
+                return { ...registeredSigner, status: "success" as const } as any;
             }
         } finally {
             this.#signer = originalSigner;
@@ -736,7 +736,7 @@ export class Wallet<C extends Chain> {
     /**
      * Set the active signer for this wallet.
      * Accepts a signer config object. The locator is inferred internally.
-     * Works for both delegated signers and the recovery (admin) signer.
+     * Works for both registered signers and the recovery signer.
      *
      * For passkey signers: if no `id` is provided, the wallet will auto-select the passkey
      * if exactly one passkey signer is registered. If multiple passkeys exist, an `id` must be specified.
@@ -745,7 +745,7 @@ export class Wallet<C extends Chain> {
      * automatically during the next transaction (via recovery).
      *
      * For external-wallet signers: the config object must include an onSign callback
-     * (applies to both delegated and recovery signers).
+     * (applies to both registered and recovery signers).
      *
      * @param signer - The signer config object to use
      */
@@ -773,15 +773,15 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Resolve a non-device signer: check delegated registration first, then fall back to recovery.
-     * For passkeys without an explicit credential id, auto-selects from registered delegated signers.
+     * Resolve a non-device signer: check registration first, then fall back to recovery.
+     * For passkeys without an explicit credential id, auto-selects from registered signers.
      */
     private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<void> {
-        // Passkey without id: try to auto-select from registered delegated signers
+        // Passkey without id: try to auto-select from registered signers
         if (signer.type === "passkey" && this.isPasskeyMissingId(signer)) {
             const selected = await this.tryAutoSelectPasskey(signer);
             if (!selected) {
-                // No delegated passkeys — use recovery if this is the recovery signer
+                // No registered passkeys — use recovery if this is the recovery signer
                 if (this.isRecoverySigner(signer)) {
                     this.#needsRecovery = false;
                     return;
@@ -790,14 +790,14 @@ export class Wallet<C extends Chain> {
             }
         }
 
-        // Check if this is a registered delegated signer
+        // Check if this is a registered signer
         const locator = this.resolveSignerLocator(signer);
         if (await this.signerIsRegistered(locator)) {
             this.#needsRecovery = false;
             return;
         }
 
-        // Not a delegated signer — fall back to recovery
+        // Not a registered signer — fall back to recovery
         if (this.isRecoverySigner(signer)) {
             this.#needsRecovery = false;
             return;
@@ -807,7 +807,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Try to auto-select a passkey credential from registered delegated signers.
+     * Try to auto-select a passkey credential from registered signers.
      * Returns true if a credential was auto-selected, false if no passkey signers exist.
      * Throws if multiple passkey signers exist (user must specify an id).
      */
@@ -850,7 +850,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Check if a signer is registered (delegated) in this wallet.
+     * Check if a signer is registered in this wallet.
      * @param signerLocator - The locator of the signer to check
      * @returns true if the signer is registered
      */
@@ -942,7 +942,7 @@ export class Wallet<C extends Chain> {
      * List the signers for this wallet.
      * Returns full signer objects with status.
      * For EVM wallets, only signers with an approval (pending or completed) for the wallet's chain are included.
-     * @returns {Promise<DelegatedSigner[]>} The signers
+     * @returns {Promise<WalletSigner[]>} The signers
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -951,7 +951,7 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async signers(): Promise<DelegatedSigner[]> {
+    public async signers(): Promise<WalletSigner[]> {
         walletsLogger.info("wallet.signers.start");
 
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
@@ -978,7 +978,7 @@ export class Wallet<C extends Chain> {
 
         // For non-EVM wallets, signers in the config are fully registered
         if (this.chain === "solana" || this.chain === "stellar") {
-            const signers = configSigners.map((signer) => mapConfigSignerToDelegatedSigner(signer, "success"));
+            const signers = configSigners.map((signer) => mapConfigSignerToSigner(signer, "success"));
             walletsLogger.info("wallet.signers.success", { count: signers.length });
             return signers;
         }
@@ -986,17 +986,17 @@ export class Wallet<C extends Chain> {
         // For EVM wallets, get per-chain status by querying each signer individually
         const signersWithStatus = await Promise.all(
             configSigners.map(async (configSigner) => {
-                // Device signers are not in the DelegatedSignerV2025Dto schema;
+                // Device signers are not in the API signer schema;
                 // preserve them directly from the config as with Solana/Stellar.
                 if (configSigner.locator.startsWith("device:")) {
-                    return mapConfigSignerToDelegatedSigner(configSigner, "success");
+                    return mapConfigSignerToSigner(configSigner, "success");
                 }
                 try {
                     const signerResponse = await this.#apiClient.getSigner(this.walletLocator, configSigner.locator);
                     if ("error" in signerResponse) {
                         return null;
                     }
-                    return mapApiSignerToDelegatedSigner(signerResponse, this.chain);
+                    return mapApiSignerToSigner(signerResponse, this.chain);
                 } catch {
                     return null;
                 }
@@ -1004,7 +1004,7 @@ export class Wallet<C extends Chain> {
         );
 
         // Filter out null results (signers that don't have approval for this chain)
-        const signers = signersWithStatus.filter((s): s is DelegatedSigner => s != null);
+        const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
 
         walletsLogger.info("wallet.signers.success", {
             count: signers.length,
@@ -1062,7 +1062,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Check if a signer config matches the wallet's recovery (admin) signer.
+     * Check if a signer config matches the wallet's recovery signer.
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
         const recovery = this.#recovery;

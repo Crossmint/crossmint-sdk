@@ -3,6 +3,7 @@ export {
     type Transfers,
     type Balances,
     type Chain,
+    type Signer,
     type DelegatedSigner,
     type Transaction,
     type Signature,

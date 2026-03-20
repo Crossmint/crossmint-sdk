@@ -19,6 +19,7 @@ export type {
     Balances,
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
+    Signer,
     DelegatedSigner,
     SignerStatus,
     EVMTransactionInput,
@@ -56,7 +57,6 @@ export type {
     StellarExternalWalletSignerConfig,
     ExportableSigner,
     ExportSignerTEEConnection,
-    Signer,
 } from "./signers/types";
 
 // Device Signer Key Storage Interface

@@ -3,12 +3,12 @@ import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
-    AdminSignerConfig,
+    RecoverySignerConfig,
     ApiClient,
     CreateWalletParams,
     GetWalletSuccessResponse,
     RegisterSignerPasskeyParams,
-    DelegatedSigner as DelegatedSignerResponse,
+    Signer as SignerResponse,
     RegisterSignerParams,
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
@@ -26,8 +26,8 @@ const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
 
 type SmartWalletConfig = {
-    adminSigner: AdminSignerConfig | PasskeySignerConfig;
-    delegatedSigners?: DelegatedSignerResponse[];
+    adminSigner: RecoverySignerConfig | PasskeySignerConfig;
+    delegatedSigners?: SignerResponse[];
 };
 
 export class WalletFactory {
@@ -351,7 +351,7 @@ export class WalletFactory {
     */
     private isMatchingPasskeySigner<C extends Chain>(
         inputSigner: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
-        existingSigner: SmartWalletConfig["adminSigner"] | DelegatedSignerResponse,
+        existingSigner: SmartWalletConfig["adminSigner"] | SignerResponse,
         walletConfig: SmartWalletConfig
     ): boolean {
         const numberOfPasskeySigners =

@@ -8,7 +8,7 @@ import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains"
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
-    Signer,
+    Signer as CryptoSigner,
     BaseSignResult,
     PasskeySignResult,
     DeviceSignResult,
@@ -39,8 +39,8 @@ export type SignatureInputOptions = PrepareOnly;
 export type AddSignerOptions = PrepareOnly;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
-    ? DelegatedSigner & { transactionId: string }
-    : DelegatedSigner & { signatureId?: string };
+    ? Signer & { transactionId: string }
+    : Signer & { signatureId?: string };
 
 export type SignMessageInput = {
     message: string;
@@ -114,11 +114,11 @@ export type FormattedEVMTransaction =
 
 export type SignerStatus = "success" | "pending" | "awaiting-approval" | "failed";
 
-export type DelegatedSignerInput = {
+export type SignerInput = {
     signer: string | ServerSignerConfig;
 };
 
-export type DelegatedSigner =
+export type Signer =
     | {
           type: "passkey";
           id: string;
@@ -283,7 +283,7 @@ export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly exten
 
 export type ApproveOptions = {
     approval?: Approval;
-    additionalSigners?: Signer[];
+    additionalSigners?: CryptoSigner[];
 };
 
 export type ApproveParams = {
@@ -295,3 +295,8 @@ export type ApproveParams = {
 export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
     signer: string;
 };
+
+/** @deprecated Use `Signer` instead */
+export type DelegatedSigner = Signer;
+/** @deprecated Use `SignerInput` instead */
+export type DelegatedSignerInput = SignerInput;
