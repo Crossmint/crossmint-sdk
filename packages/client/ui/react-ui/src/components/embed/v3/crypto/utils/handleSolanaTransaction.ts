@@ -3,6 +3,7 @@ import type { Wallet } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import { Transaction } from "@solana/web3.js";
 import base58 from "bs58";
+import { reactUiLogger } from "@/logger";
 
 export async function handleSolanaTransaction({
     primaryWallet,
@@ -22,7 +23,7 @@ export async function handleSolanaTransaction({
         }
         signer = await primaryWallet.getSigner();
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to get signer", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to get signer", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: "Failed to get signer",
         });
@@ -33,7 +34,7 @@ export async function handleSolanaTransaction({
     try {
         deserializedTransaction = Transaction.from(base58.decode(serializedTransaction));
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to deserialize transaction", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to deserialize transaction", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: "Failed to deserialize transaction",
         });
@@ -42,12 +43,12 @@ export async function handleSolanaTransaction({
 
     try {
         const { signature: txId } = await signer.signAndSendTransaction(deserializedTransaction);
-        console.log("[CryptoWalletConnectionHandler] txId", txId);
+        reactUiLogger.info("[CryptoWalletConnectionHandler] txId", txId);
         iframeClient.send("crypto:send-transaction:success", {
             txId,
         });
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to send transaction", error);
+        reactUiLogger.error("[CryptoWalletConnectionHandler] failed to send transaction", error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });

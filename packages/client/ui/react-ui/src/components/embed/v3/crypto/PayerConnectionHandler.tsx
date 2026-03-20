@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { EmbeddedCheckoutPayer, EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
 import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
+import { reactUiLogger } from "@/logger";
 
 export function PayerConnectionHandler({
     payer,
@@ -25,7 +26,7 @@ export function PayerConnectionHandler({
                         iframeClient.send("crypto:send-transaction:failed", { error: tx.errorMessage });
                     }
                 } catch (error) {
-                    console.error("[SignerConnectionHandler] Failed to send transaction", error);
+                    reactUiLogger.error("[SignerConnectionHandler] Failed to send transaction", error);
                     iframeClient.send("crypto:send-transaction:failed", {
                         error: (error as Error).message || "An unknown error occurred",
                     });
@@ -43,7 +44,7 @@ export function PayerConnectionHandler({
                 iframeClient.send("crypto:sign-message:success", { signature });
                 return;
             } catch (error) {
-                console.error("[PayerConnectionHandler] failed to sign message", error);
+                reactUiLogger.error("[PayerConnectionHandler] failed to sign message", error);
                 iframeClient.send("crypto:sign-message:failed", { error: (error as Error).message });
             }
         });
