@@ -17,16 +17,8 @@ import {
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
 import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
 
-// @crossmint/expo-device-signer is an optional peer dependency — only available when
-// the consumer has installed and linked the native module via expo prebuild.
-let _NativeDeviceSignerKeyStorage: (new () => DeviceSignerKeyStorage) | null = null;
-try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _NativeDeviceSignerKeyStorage = require("@crossmint/expo-device-signer").NativeDeviceSignerKeyStorage;
-} catch {
-    // Not installed — device signing will be unavailable unless overridden via prop.
-}
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
@@ -47,9 +39,8 @@ export interface CrossmintWalletProviderProps {
         onTransactionStart?: () => Promise<void>;
     };
     /**
-     * Override the device signer key storage implementation. Defaults to `NativeDeviceSignerKeyStorage`
-     * (Secure Enclave on iOS, Android Keystore on Android) when `@crossmint/expo-device-signer` is installed.
-     * Useful for testing or environments where the native module is unavailable.
+     * Storage implementation for device signer keys. Defaults to `NativeDeviceSignerKeyStorage`
+     * (Secure Enclave on iOS, Android Keystore on Android). Override for testing or custom storage.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     /** @internal */
@@ -64,11 +55,9 @@ function CrossmintWalletProviderInternal({
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
     const deviceSignerKeyStorage = useMemo(
-        () =>
-            deviceSignerKeyStorageProp ??
-            (_NativeDeviceSignerKeyStorage != null ? new _NativeDeviceSignerKeyStorage() : undefined),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        () => deviceSignerKeyStorageProp ?? new NativeDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
         []
     );
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
