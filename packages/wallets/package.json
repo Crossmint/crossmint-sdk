@@ -30,7 +30,6 @@
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.98.1",
         "abitype": "1.0.8",
-        "abitype": "1.0.8",
         "bs58": "5.0.0",
         "@noble/hashes": "1.8.0",
         "ox": "0.6.9",
