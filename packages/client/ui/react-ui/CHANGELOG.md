@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 3.1.1
+
+### Patch Changes
+
+- 5bdf9a3: bt: wait for ready
+- Updated dependencies [732eeb0]
+  - @crossmint/wallets-sdk@0.21.1
+  - @crossmint/client-sdk-react-base@1.0.8
+
 ## 3.1.0
 
 ### Minor Changes
