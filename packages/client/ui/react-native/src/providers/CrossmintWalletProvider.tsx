@@ -322,6 +322,7 @@ function CrossmintWalletProviderInternal({
             renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
+            disablePasskeys={true}
         >
             {children}
 
