@@ -1,4 +1,4 @@
-import { useCrossmintAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet, useWalletOtpSigner } from "@crossmint/client-sdk-react-native-ui";
 import { useState } from "react";
 import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
@@ -6,7 +6,7 @@ export function HeadlessSigning() {
     const { user } = useCrossmintAuth();
     const { createDeviceSigner, wallet } = useWallet();
     const loggedInUserEmail = user?.email ?? null;
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
+    const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -41,7 +41,7 @@ export function HeadlessSigning() {
         setIsLoading(true);
         try {
             const descriptor = await createDeviceSigner();
-            await wallet.addSigner(descriptor.locator);
+            await wallet.addSigner({ type: "device", locator: descriptor?.locator });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -55,7 +55,7 @@ export function HeadlessSigning() {
             return;
         }
 
-        await handleAction(sendEmailWithOtp);
+        await handleAction(sendOtp);
     };
 
     const handleVerifyOtpInput = async () => {
@@ -79,9 +79,9 @@ export function HeadlessSigning() {
             {needsAuth && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
+                    <Button title="Send OTP" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
                     <TextInput
-                        placeholder="Enter OTP from Email"
+                        placeholder="Enter OTP"
                         value={otp}
                         onChangeText={setOtp}
                         style={styles.input}
