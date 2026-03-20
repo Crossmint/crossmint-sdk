@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.21.1
+
+### Patch Changes
+
+- 732eeb0: Remove @stellar/stellar-sdk dependency by replacing it with tweetnacl (already a dependency) for ed25519 operations and a local Stellar StrKey encoder ported from open-signer.
+
 ## 0.21.0
 
 ### Minor Changes
