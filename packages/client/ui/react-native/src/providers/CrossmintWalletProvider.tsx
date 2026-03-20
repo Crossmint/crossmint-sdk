@@ -24,9 +24,18 @@ import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
 
+/** Passkey signers are not supported in React Native. Strip them from createOnLogin config. */
+type ExcludePasskey<T> = T extends { type: "passkey" } ? never : T;
+type RNCreateOnLogin<T = CreateOnLogin> = T extends { recovery: infer R; signers?: Array<infer S> }
+    ? Omit<T, "recovery" | "signers"> & {
+          recovery: ExcludePasskey<R>;
+          signers?: Array<ExcludePasskey<S>>;
+      }
+    : T;
+    
 export interface CrossmintWalletProviderProps {
     /** Wallet configuration for automatic creation on user login. Defines the chain and signer type for the wallet. */
-    createOnLogin?: CreateOnLogin;
+    createOnLogin?: RNCreateOnLogin;
     /** Optional appearance configuration for styling built-in UI components. */
     appearance?: UIConfig;
     /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
@@ -314,7 +323,7 @@ function CrossmintWalletProviderInternal({
 
     return (
         <CrossmintWalletBaseProvider
-            createOnLogin={createOnLogin}
+            createOnLogin={createOnLogin as CreateOnLogin}
             appearance={appearance}
             headlessSigningFlow={headlessSigningFlow}
             initializeWebView={initializeWebView}
