@@ -5,6 +5,9 @@ import { treeShakableConfig } from "../../../../tsup.config.base";
 const config: Options = {
     ...treeShakableConfig,
     external: ["react", "react-native"],
+    loader: {
+        ".png": "dataurl",
+    },
 };
 
 export default config;
