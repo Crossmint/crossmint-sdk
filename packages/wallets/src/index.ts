@@ -19,7 +19,7 @@ export type {
     Balances,
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
-    DelegatedSigner,
+    Signer,
     SignerStatus,
     EVMTransactionInput,
     Transaction,
@@ -34,8 +34,9 @@ export type {
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
-export { isExportableSigner } from "./signers/types";
+export { isExportableSignerAdapter } from "./signers/types";
 export type {
+    SignerAdapter,
     EmailSignerConfig,
     PhoneSignerConfig,
     ExternalWalletSignerConfig,
@@ -54,9 +55,8 @@ export type {
     ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
-    ExportableSigner,
+    ExportableSignerAdapter,
     ExportSignerTEEConnection,
-    Signer,
 } from "./signers/types";
 
 // Device Signer Key Storage Interface

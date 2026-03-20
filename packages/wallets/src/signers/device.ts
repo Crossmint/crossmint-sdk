@@ -1,7 +1,7 @@
 import type { DeviceInternalSignerConfig, DeviceSignResult, DeviceSignerLocator } from "./types";
-import type { Signer } from "./types";
+import type { SignerAdapter } from "./types";
 import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
-export class DeviceSigner implements Signer<"device"> {
+export class DeviceSigner implements SignerAdapter<"device"> {
     private readonly config: DeviceInternalSignerConfig;
     private readonly deviceSignerKeyStorage: DeviceSignerKeyStorage;
 

@@ -205,7 +205,7 @@ type SignResultMap = {
     device: DeviceSignResult;
 };
 
-export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
+export interface SignerAdapter<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
     locator(): SignerLocator;
     address?(): string;
@@ -213,12 +213,12 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }
 
-export interface ExportableSigner extends Signer {
+export interface ExportableSignerAdapter extends SignerAdapter {
     _exportPrivateKey: (exportTEEConnection: ExportSignerTEEConnection) => Promise<void>;
 }
 
-export function isExportableSigner(signer: Signer): signer is ExportableSigner {
-    return (signer as ExportableSigner)._exportPrivateKey !== undefined;
+export function isExportableSignerAdapter(signer: SignerAdapter): signer is ExportableSignerAdapter {
+    return (signer as ExportableSignerAdapter)._exportPrivateKey !== undefined;
 }
 
 export type ExportSignerTEEConnection = HandshakeParent<

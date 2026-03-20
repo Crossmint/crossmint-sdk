@@ -5,7 +5,7 @@ import type {
     ExportSignerTEEConnection,
     PhoneInternalSignerConfig,
     PhoneSignerLocator,
-    Signer,
+    SignerAdapter,
 } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
@@ -13,7 +13,7 @@ import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 
-export abstract class NonCustodialSigner implements Signer {
+export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
     private _authPromise: {

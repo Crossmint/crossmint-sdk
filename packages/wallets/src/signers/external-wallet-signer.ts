@@ -1,7 +1,7 @@
 import type { Chain } from "../chains/chains";
-import type { ExternalWalletInternalSignerConfig, ExternalWalletSignerLocator, Signer } from "./types";
+import type { ExternalWalletInternalSignerConfig, ExternalWalletSignerLocator, SignerAdapter } from "./types";
 
-export abstract class ExternalWalletSigner<C extends Chain> implements Signer {
+export abstract class ExternalWalletSigner<C extends Chain> implements SignerAdapter {
     type = "external-wallet" as const;
     protected _address: string;
 

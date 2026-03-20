@@ -5,7 +5,7 @@ import { useWallet, useCrossmint } from "@/hooks";
 import { theme } from "@/styles";
 import { environmentUrlConfig, exportSignerInboundEvents, exportSignerOutboundEvents } from "@crossmint/client-signers";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
-import { isExportableSigner } from "@crossmint/wallets-sdk";
+import { isExportableSignerAdapter } from "@crossmint/wallets-sdk";
 import { IFrameWindow, SignersWindowTransport } from "@crossmint/client-sdk-window";
 
 export interface ExportPrivateKeyButtonProps {
@@ -53,7 +53,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
 
         try {
-            if (wallet.signer != null && isExportableSigner(wallet.signer)) {
+            if (wallet.signer != null && isExportableSignerAdapter(wallet.signer)) {
                 const connection = await IFrameWindow.init(
                     iframeRef.current,
                     {
@@ -71,7 +71,12 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, [wallet, frameUrl]);
 
-    if (frameUrl.toString() === "" || wallet == null || wallet.signer == null || !isExportableSigner(wallet.signer)) {
+    if (
+        frameUrl.toString() === "" ||
+        wallet == null ||
+        wallet.signer == null ||
+        !isExportableSignerAdapter(wallet.signer)
+    ) {
         return null;
     }
 

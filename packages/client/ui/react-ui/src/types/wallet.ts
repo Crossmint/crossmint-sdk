@@ -3,7 +3,7 @@ export {
     type Transfers,
     type Balances,
     type Chain,
-    type DelegatedSigner,
+    type Signer,
     type Transaction,
     type Signature,
     EVMWallet,

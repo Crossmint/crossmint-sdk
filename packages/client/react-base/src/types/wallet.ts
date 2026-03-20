@@ -7,7 +7,7 @@ export type {
     ClientSideWalletArgsFor,
     ClientSideWalletCreateArgs,
     EvmExternalWalletSignerConfig,
-    DelegatedSigner,
+    Signer,
     SolanaExternalWalletSignerConfig,
     Wallet,
     WalletPlugin,

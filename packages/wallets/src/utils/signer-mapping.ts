@@ -1,11 +1,11 @@
-import type { DelegatedSigner as APIDelegatedSigner } from "../api";
-import type { DelegatedSigner, SignerStatus } from "../wallets/types";
+import type { Signer as APISigner } from "../api";
+import type { Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
-type DelegatedSignerBase = DistributiveOmit<DelegatedSigner, "status">;
+type SignerBase = DistributiveOmit<Signer, "status">;
 
-export function extractSignerBase(apiSigner: APIDelegatedSigner): DelegatedSignerBase {
+export function extractSignerBase(apiSigner: APISigner): SignerBase {
     switch (apiSigner.type) {
         case "passkey":
             return {
@@ -60,11 +60,11 @@ export function extractSignerBase(apiSigner: APIDelegatedSigner): DelegatedSigne
 }
 
 /**
- * Maps a full API signer response (DelegatedSignerV2025Dto) to a DelegatedSigner.
+ * Maps a full API signer response (DelegatedSignerV2025Dto) to a Signer.
  * For EVM chains, extracts the per-chain status. Returns null if no approval exists for the chain.
  * For Solana/Stellar, extracts the transaction status.
  */
-export function mapApiSignerToDelegatedSigner(apiSigner: APIDelegatedSigner, chain: Chain): DelegatedSigner | null {
+export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer | null {
     const base = extractSignerBase(apiSigner);
 
     if (chain === "solana" || chain === "stellar") {
@@ -73,7 +73,7 @@ export function mapApiSignerToDelegatedSigner(apiSigner: APIDelegatedSigner, cha
         if ("transaction" in apiSigner && apiSigner.transaction != null) {
             status = apiSigner.transaction.status;
         }
-        return { ...base, status } as DelegatedSigner;
+        return { ...base, status } as Signer;
     }
 
     // For EVM, status comes from the chains field
@@ -82,21 +82,21 @@ export function mapApiSignerToDelegatedSigner(apiSigner: APIDelegatedSigner, cha
         if (chainEntry == null) {
             return null; // No approval for this chain
         }
-        return { ...base, status: chainEntry.status } as DelegatedSigner;
+        return { ...base, status: chainEntry.status } as Signer;
     }
 
     // If chains field is empty, the signer was created during wallet creation.
-    return { ...base, status: "success" } as DelegatedSigner;
+    return { ...base, status: "success" } as Signer;
 }
 
 /**
- * Maps a wallet config signer (from getWallet response) to a DelegatedSigner with a given status.
+ * Maps a wallet config signer (from getWallet response) to a Signer with a given status.
  * Used for Solana/Stellar where signers in the config are already fully registered.
  */
-export function mapConfigSignerToDelegatedSigner(
+export function mapConfigSignerToSigner(
     configSigner: { type: string; locator: string; [key: string]: unknown },
     status: SignerStatus
-): DelegatedSigner {
+): Signer {
     const base: Record<string, unknown> = { ...configSigner, status };
     // Ensure locator has proper prefix
     const colonIndex = configSigner.locator.indexOf(":");
@@ -108,5 +108,5 @@ export function mapConfigSignerToDelegatedSigner(
             base.type = "external-wallet";
         }
     }
-    return base as DelegatedSigner;
+    return base as Signer;
 }
