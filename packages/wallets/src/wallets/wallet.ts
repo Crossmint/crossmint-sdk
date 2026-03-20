@@ -919,10 +919,18 @@ export class Wallet<C extends Chain> {
         deviceSigner.status = signerState.signer?.status;
 
         if (signerState.pendingOperation != null) {
-            if (signerState.pendingOperation.type === "signature") {
-                await this.approveSignatureAndWait(signerState.pendingOperation.id);
-            } else {
-                await this.approveTransactionAndWait(signerState.pendingOperation.id);
+            const originalSigner = this.#signer;
+            const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+            this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+            try {
+                if (signerState.pendingOperation.type === "signature") {
+                    await this.approveSignatureAndWait(signerState.pendingOperation.id);
+                } else {
+                    await this.approveTransactionAndWait(signerState.pendingOperation.id);
+                }
+            } finally {
+                this.#signer = originalSigner;
             }
             deviceSigner.status = "success";
             walletsLogger.info("wallet.recover.device.success", {
