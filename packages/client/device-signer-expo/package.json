@@ -15,11 +15,13 @@
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
     },
     "dependencies": {
-        "@crossmint/wallets-sdk": "workspace:*"
+        "@crossmint/wallets-sdk": "workspace:*",
+        "@noble/curves": "^1.8.0"
     },
     "devDependencies": {
         "expo-device": "~8.0.10",
         "expo-modules-core": "^3.0.0",
+        "expo-secure-store": "~15.0.7",
         "@types/react": "19.1.10",
         "react": "19.1.1",
         "react-native": "0.82.1"
@@ -27,7 +29,16 @@
     "peerDependencies": {
         "expo-device": ">=7 <9",
         "expo-modules-core": ">=2.0.0",
+        "expo-secure-store": ">=14 <16",
         "react": ">=18.0.0",
         "react-native": ">=0.74.0"
+    },
+    "peerDependenciesMeta": {
+        "expo-modules-core": {
+            "optional": true
+        },
+        "expo-secure-store": {
+            "optional": true
+        }
     }
 }
