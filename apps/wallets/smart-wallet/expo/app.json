@@ -35,7 +35,8 @@
                 }
             ],
             "expo-font",
-            "expo-secure-store"
+            "expo-secure-store",
+            "@crossmint/expo-device-signer"
         ],
         "experiments": {
             "typedRoutes": true
