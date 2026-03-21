@@ -1,12 +1,12 @@
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import nacl from "tweetnacl";
-import type { Signer, ServerInternalSignerConfig } from "../types";
+import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
 
-export class SolanaServerSigner implements Signer<"server"> {
+export class SolanaServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
     private _address: string;
-    private _locator: string;
+    private _locator: ServerSignerLocator;
     private keypair: Keypair;
 
     constructor(config: ServerInternalSignerConfig) {

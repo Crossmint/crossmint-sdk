@@ -1,15 +1,13 @@
-import { type ConfigPlugin, withAndroidManifest, createRunOncePlugin, AndroidConfig } from "@expo/config-plugins";
+import { type ConfigPlugin, withAndroidManifest, AndroidConfig } from "@expo/config-plugins";
 import { addQueryToAndroidManifest } from "./mods/addQueryToAndroidManifest";
 
 const { addMetaDataItemToMainApplication, getMainApplicationOrThrow } = AndroidConfig.Manifest;
-
-const pkg = require("@crossmint/client-sdk-react-native-ui/package.json");
 
 export interface GooglePayPluginProps {
     enableGooglePay?: boolean;
 }
 
-const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (
+export const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (
     config,
     options: GooglePayPluginProps = { enableGooglePay: false }
 ) => {
@@ -56,5 +54,3 @@ const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (
         return config;
     });
 };
-
-export default createRunOncePlugin(withGooglePay, pkg.name, pkg.version);

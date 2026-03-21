@@ -14,7 +14,7 @@ import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
-import type { CreateTransactionSuccessResponse } from "@/api";
+import type { CreateTransactionParams, CreateTransactionSuccessResponse } from "@/api";
 import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
@@ -25,9 +25,11 @@ export class EVMWallet extends Wallet<EVMChain> {
                 chain: wallet.chain,
                 address: wallet.address,
                 owner: wallet.owner,
-                signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
+                recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
+                signers: Wallet.getInitialSigners(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -62,7 +64,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("evmWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -99,11 +101,12 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
+        const signer = this.requireSigner();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                signer: this.signer.locator(),
+                signer: signer.locator(),
                 chain: this.chain,
             },
         });
@@ -112,7 +115,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("evmWallet.signMessage.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
@@ -145,6 +148,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
+        const signer = this.requireSigner();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: "Invalid typed data" });
@@ -172,7 +176,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: this.signer.locator(),
+                signer: signer.locator(),
                 chain,
             },
         });
@@ -181,7 +185,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("evmWallet.signTypedData.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
@@ -213,12 +217,12 @@ export class EVMWallet extends Wallet<EVMChain> {
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
         let signer: string;
-        if (options?.experimental_signer == null) {
-            signer = this.signer.locator();
-        } else if (typeof options.experimental_signer === "string") {
-            signer = options.experimental_signer;
+        if (options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof options.signer === "string") {
+            signer = options.signer;
         } else {
-            signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
         }
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
@@ -226,7 +230,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 chain: this.chain,
                 calls: [transaction],
             },
-        });
+        } as CreateTransactionParams);
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }

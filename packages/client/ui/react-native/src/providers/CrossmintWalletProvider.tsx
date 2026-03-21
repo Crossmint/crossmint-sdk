@@ -1,6 +1,7 @@
-import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, type RefObject } from "react";
+import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, useContext, type RefObject } from "react";
 import { Platform, View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
+
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import {
     environmentUrlConfig,
@@ -11,10 +12,14 @@ import {
 import { validateAPIKey, type UIConfig } from "@crossmint/common-sdk-base";
 import {
     CrossmintWalletBaseProvider,
+    CrossmintWalletBaseContext,
     type UIRenderProps,
     type CreateOnLogin,
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
+import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
+
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 import { useLogger } from "@crossmint/client-sdk-react-base";
@@ -25,8 +30,8 @@ export interface CrossmintWalletProviderProps {
     createOnLogin?: CreateOnLogin;
     /** Optional appearance configuration for styling built-in UI components. */
     appearance?: UIConfig;
-    /** When true (default), no UI is rendered and signing flows must be handled manually. When false, built-in UI components are rendered. */
-    headlessSigningFlow?: boolean;
+    /** When true (default), built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. */
+    showOtpSignerPrompt?: boolean;
     /** Optional lifecycle callbacks invoked during wallet creation and transaction signing. */
     callbacks?: {
         /** Called when a wallet creation flow begins. */
@@ -34,17 +39,78 @@ export interface CrossmintWalletProviderProps {
         /** Called when a transaction signing flow begins. */
         onTransactionStart?: () => Promise<void>;
     };
+    /**
+     * Storage implementation for device signer keys. Defaults to `NativeDeviceSignerKeyStorage`
+     * (Secure Enclave on iOS, Android Keystore on Android). Override for testing or custom storage.
+     */
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     /** @internal */
     children: ReactNode;
+}
+
+const PASSKEY_RN_ERROR =
+    "Passkey signers are not supported in React Native. Use a different signer type such as 'email', 'phone', or 'device'.";
+
+function hasPasskeySigner(config?: CreateOnLogin): boolean {
+    if (config == null) {
+        return false;
+    }
+    if (config.recovery?.type === "passkey") {
+        return true;
+    }
+    if (config.signers?.some((s) => s.type === "passkey")) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Wraps children and overrides the wallet context to reject passkey operations.
+ * This sits between CrossmintWalletBaseProvider (which sets the context) and
+ * the app's children (which consume it via useWallet).
+ */
+function PasskeyGuard({ children }: { children: ReactNode }) {
+    const baseContext = useContext(CrossmintWalletBaseContext);
+
+    const guardedCreateWallet: typeof baseContext.createWallet = useCallback(
+        async (args) => {
+            if (args.recovery?.type === "passkey" || args.signers?.some((s) => s.type === "passkey")) {
+                throw new Error(PASSKEY_RN_ERROR);
+            }
+            return baseContext.createWallet(args);
+        },
+        [baseContext.createWallet]
+    );
+
+    const guardedCreatePasskeySigner: typeof baseContext.createPasskeySigner = useCallback(async (_passkeyName) => {
+        throw new Error(PASSKEY_RN_ERROR);
+    }, []);
+
+    const guardedContext = useMemo(
+        () => ({
+            ...baseContext,
+            createWallet: guardedCreateWallet,
+            createPasskeySigner: guardedCreatePasskeySigner,
+        }),
+        [baseContext, guardedCreateWallet, guardedCreatePasskeySigner]
+    );
+
+    return <CrossmintWalletBaseContext.Provider value={guardedContext}>{children}</CrossmintWalletBaseContext.Provider>;
 }
 
 function CrossmintWalletProviderInternal({
     children,
     createOnLogin,
     appearance,
-    headlessSigningFlow = true,
+    showOtpSignerPrompt = true,
     callbacks,
+    deviceSignerKeyStorage: deviceSignerKeyStorageProp,
 }: CrossmintWalletProviderProps) {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
+    const deviceSignerKeyStorage = useMemo(
+        () => deviceSignerKeyStorageProp ?? new NativeDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
+        []
+    );
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
     const { apiKey, appId } = crossmint;
@@ -267,6 +333,9 @@ function CrossmintWalletProviderInternal({
     };
 
     const renderNativeUI = ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
+        if (!showOtpSignerPrompt) {
+            return null;
+        }
         return (
             <>
                 <EmailSignersDialog {...emailSignerProps} />
@@ -278,8 +347,10 @@ function CrossmintWalletProviderInternal({
     const initializeWebView = async () => {
         logger.info("react-native.wallet.webview.init.start");
         setNeedsWebView(true);
+
         let attempts = 0;
         const maxAttempts = 100; // 5 seconds total with 50ms intervals
+
         while (webViewParentRef.current == null && attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
@@ -291,20 +362,28 @@ function CrossmintWalletProviderInternal({
             });
             throw new Error("WebView not ready or handshake incomplete");
         }
+
         logger.info("react-native.wallet.webview.init.success", { attempts });
     };
+
+    useEffect(() => {
+        if (hasPasskeySigner(createOnLogin)) {
+            throw new Error(PASSKEY_RN_ERROR);
+        }
+    }, [createOnLogin]);
 
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
-            headlessSigningFlow={headlessSigningFlow}
+            showOtpSignerPrompt={showOtpSignerPrompt}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
-            renderUI={headlessSigningFlow ? undefined : renderNativeUI}
+            renderUI={renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
+            deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
-            {children}
+            <PasskeyGuard>{children}</PasskeyGuard>
 
             {needsWebView && (
                 <View

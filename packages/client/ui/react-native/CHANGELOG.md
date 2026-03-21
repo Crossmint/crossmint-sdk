@@ -1,12 +1,135 @@
 # @crossmint/client-sdk-react-native-ui
 
-## 0.13.27
+## 1.0.0-beta.6
 
 ### Patch Changes
 
-- Updated dependencies [732eeb0]
-  - @crossmint/wallets-sdk@0.21.1
-  - @crossmint/client-sdk-react-base@1.0.8
+- 6fbf135: Disallow passkey signers in React Native. Passkeys are not supported in React Native and will now throw a clear error when used as recovery signers, delegated signers, or via createPasskeySigner.
+- 8c02d3d: Fixes modal icons for otp flow
+- Updated dependencies [003e632]
+- Updated dependencies [f5517fc]
+- Updated dependencies [e38e91b]
+- Updated dependencies [bac3bd4]
+  - @crossmint/wallets-sdk@1.0.0-beta.6
+  - @crossmint/expo-device-signer@0.1.0-beta.4
+  - @crossmint/client-sdk-react-base@2.0.0-beta.6
+
+## 1.0.0-beta.5
+
+### Patch Changes
+
+- 884952e: Statically loading @crossmint/expo-device-signer
+- Updated dependencies [2d92c5a]
+- Updated dependencies [512015a]
+- Updated dependencies [258779d]
+- Updated dependencies [855a34c]
+- Updated dependencies [05f3feb]
+  - @crossmint/wallets-sdk@1.0.0-beta.5
+  - @crossmint/client-sdk-react-base@2.0.0-beta.5
+  - @crossmint/expo-device-signer@0.1.0-beta.3
+
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- Updated dependencies [72a6c13]
+- Updated dependencies [7f45e33]
+  - @crossmint/wallets-sdk@1.0.0-beta.4
+  - @crossmint/expo-device-signer@0.1.0-beta.2
+  - @crossmint/client-sdk-react-base@2.0.0-beta.4
+
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+- Updated dependencies [d5c0df7]
+- Updated dependencies [d66aacc]
+- Updated dependencies [116111d]
+- Updated dependencies [5ae2806]
+- Updated dependencies [6eb5217]
+- Updated dependencies [d0c8820]
+- Updated dependencies [6038b09]
+- Updated dependencies [09e9ce2]
+  - @crossmint/wallets-sdk@1.0.0-beta.3
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/expo-device-signer@0.1.0-beta.1
+  - @crossmint/client-sdk-react-base@2.0.0-beta.3
+  - @crossmint/client-sdk-auth@1.3.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+  - @crossmint/common-sdk-auth@1.1.0-beta.1
+
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- Updated dependencies [d09537e]
+- Updated dependencies [534e27d]
+  - @crossmint/wallets-sdk@1.0.0-beta.2
+  - @crossmint/expo-device-signer@0.0.2-beta.0
+  - @crossmint/client-sdk-react-base@2.0.0-beta.2
+
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- Updated dependencies [e60df98]
+  - @crossmint/wallets-sdk@1.0.0-beta.1
+  - @crossmint/client-sdk-react-base@2.0.0-beta.1
+
+## 1.0.0-beta.0
+
+### Major Changes
+
+- ede1aac: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 34a052b: Remove `useAuth` hook alias in favor of `useCrossmintAuth`
+
+  BREAKING CHANGE: The `useAuth` export has been removed from all packages. Use `useCrossmintAuth` instead, which provides the same functionality.
+
+  - `useAuth()` -> `useCrossmintAuth()`
+
+### Minor Changes
+
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 74a05a1: feat: unify OTP signer API with useWalletOtpSigner hook
+
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 5e1e86e: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- Updated dependencies [5b77229]
+- Updated dependencies [8c079bd]
+- Updated dependencies [c51a407]
+- Updated dependencies [522b486]
+- Updated dependencies [eb975c9]
+- Updated dependencies [11ab4f6]
+- Updated dependencies [67920a5]
+- Updated dependencies [d29b7d3]
+- Updated dependencies [9b9f9db]
+- Updated dependencies [db51635]
+- Updated dependencies [820c2ec]
+- Updated dependencies [bf792d2]
+- Updated dependencies [ede1aac]
+- Updated dependencies [34a052b]
+- Updated dependencies [5e1e86e]
+- Updated dependencies [d5283ab]
+- Updated dependencies [2445716]
+- Updated dependencies [74a05a1]
+- Updated dependencies [6e3fa39]
+  - @crossmint/wallets-sdk@1.0.0-beta.0
+  - @crossmint/client-sdk-react-base@2.0.0-beta.0
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-auth@1.3.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
 
 ## 0.13.26
 

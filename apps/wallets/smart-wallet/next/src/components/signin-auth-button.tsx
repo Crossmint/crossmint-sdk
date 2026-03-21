@@ -1,12 +1,12 @@
 "use client";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
 
 export const SignInAuthButton = () => {
-    const { login } = useAuth();
+    const { login } = useCrossmintAuth();
 
     return (
         <div className="flex justify-center">

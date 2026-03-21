@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type Signer, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
 
 export function Permissions() {
@@ -11,13 +11,13 @@ export function Permissions() {
     const { wallet } = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [permissions, setPermissions] = useState<DelegatedSigner[]>([]);
+    const [permissions, setPermissions] = useState<Signer[]>([]);
     const [newSigner, setNewSigner] = useState<string>("");
 
     useEffect(() => {
         const fetchPermissions = async () => {
             if (wallet != null) {
-                const signers = await wallet.delegatedSigners();
+                const signers = await wallet.signers();
                 setPermissions(signers);
             }
         };
@@ -34,8 +34,8 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.addDelegatedSigner({ signer: newSigner });
-            const signers = await wallet.delegatedSigners();
+            await wallet.addSigner({ type: "external-wallet", address: newSigner });
+            const signers = await wallet.signers();
             setPermissions(signers);
         } catch (err) {
             console.error("Permissions: ", err);
@@ -88,13 +88,13 @@ export function Permissions() {
                     <p className="text-xs text-gray-500 mb-1.5">Registered signers</p>
                     <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
                         <ul className="flex flex-col gap-1" data-testid="delegated-signers-list">
-                            {permissions.map(({ signer }, index) => (
+                            {permissions.map((delegatedSigner, index) => (
                                 <li
                                     key={index}
                                     data-testid={`delegated-signer-item-${index}`}
                                     className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
                                 >
-                                    {signer}
+                                    {delegatedSigner.locator}
                                 </li>
                             ))}
                         </ul>

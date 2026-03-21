@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWallet, useCrossmint } from "@crossmint/client-sdk-react-base";
 import { environmentUrlConfig, exportSignerInboundEvents, exportSignerOutboundEvents } from "@crossmint/client-signers";
-import { isExportableSigner } from "@crossmint/wallets-sdk";
+import { isExportableSignerAdapter } from "@crossmint/wallets-sdk";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { WebViewParent, RNWebView } from "@crossmint/client-sdk-rn-window";
@@ -48,7 +48,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
             }
 
             try {
-                if (isExportableSigner(wallet.signer)) {
+                if (wallet.signer != null && isExportableSignerAdapter(wallet.signer)) {
                     const connection = new WebViewParent(webViewRef, {
                         incomingEvents: exportSignerOutboundEvents,
                         outgoingEvents: exportSignerInboundEvents,
@@ -77,7 +77,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
         }
     }, []);
 
-    if (frameUrl === "" || wallet == null || !isExportableSigner(wallet.signer)) {
+    if (frameUrl === "" || wallet == null || wallet.signer == null || !isExportableSignerAdapter(wallet.signer)) {
         return null;
     }
 

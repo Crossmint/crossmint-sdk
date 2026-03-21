@@ -6,7 +6,7 @@ import { LogoutIcon } from "@/icons/logout";
 import { Copy, Image as ImageIcon, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type Chain, useAuth, useWallet, type Wallet } from "@crossmint/client-sdk-react-ui";
+import { type Chain, useCrossmintAuth, useWallet, type Wallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
@@ -19,7 +19,7 @@ function formatWalletAddress(address: string, startLength: number, endLength: nu
 }
 
 export const Header: React.FC = () => {
-    const { logout, status: authStatus } = useAuth();
+    const { logout, status: authStatus } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const router = useRouter();
     const { toast } = useToast();

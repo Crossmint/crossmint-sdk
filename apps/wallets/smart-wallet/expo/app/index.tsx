@@ -1,15 +1,32 @@
-import { useWallet, useAuth, type Balances } from "@crossmint/client-sdk-react-native-ui";
+import { useWallet, useCrossmintAuth, type Balances } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
-import { HeadlessSigning } from "@/components/headless-signing";
+// import { HeadlessSigning } from "@/components/headless-signing";
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    return "Unknown error";
+}
 
 export default function Index() {
-    const { loginWithOAuth, user, logout, createAuthSession, jwt } = useAuth();
+    const {
+        user,
+        logout,
+        createAuthSession,
+        loginWithOAuth,
+        jwt,
+        crossmintAuth,
+        status: authStatus,
+        getUser,
+    } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
+    const isAuthenticated = authStatus === "logged-in";
 
     const [balances, setBalances] = useState<Balances | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -17,6 +34,11 @@ export default function Index() {
     const [txLink, setTxLink] = useState<string | null>(null);
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState<string>("");
+
+    // Email login state
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginOtp, setLoginOtp] = useState("");
+    const [emailId, setEmailId] = useState<string | null>(null);
 
     console.log("wallet", wallet);
 
@@ -27,12 +49,19 @@ export default function Index() {
     }, [url, createAuthSession]);
 
     useEffect(() => {
+        if (authStatus === "logged-in" && user == null) {
+            getUser();
+        }
+    }, [authStatus, user, getUser]);
+
+    useEffect(() => {
         async function fetchBalances() {
             if (wallet == null) {
                 return;
             }
             try {
-                const balances = await wallet.balances();
+                const balances = await wallet.balances(["usdxm"]);
+                console.log("balances", balances);
                 setBalances(balances);
             } catch (error) {
                 console.log("Error fetching wallet balances:", error);
@@ -67,7 +96,7 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            const tx = await wallet.send(recipientAddress, "usdc", amount);
+            const tx = await wallet.send(recipientAddress, "usdxm", amount);
             console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
             setTxLink(tx.explorerLink);
             setRecipientAddress("");
@@ -84,38 +113,94 @@ export default function Index() {
             {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
 
             <View style={styles.statusSection}>
-                <Text style={{ fontWeight: "bold" }}>User: {user?.email}</Text>
+                <Text style={{ fontWeight: "bold" }}>
+                    User: {user?.email ?? (isAuthenticated ? "Loading..." : "Not logged in")}
+                </Text>
                 <Text>Wallet: {walletAddress}</Text>
+                <Text>Login Status: {authStatus}</Text>
                 <Text>Auth Status: {walletStatus}</Text>
                 <Text>
                     Native Token Balance: ({balances?.nativeToken.symbol}) {balances?.nativeToken.amount}
                 </Text>
-                <Text>USDC Balance: {balances?.usdc.amount}</Text>
+                <Text>USDXM Balance: {balances?.tokens.find((t) => t.symbol === "usdxm")?.amount ?? "0"}</Text>
                 {txLink && <Text>Last Tx Link: {txLink}</Text>}
             </View>
 
             <View style={styles.section}>
                 {walletAddress != null && (
-                    <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+                    <Button title="Get $5 USDXM" onPress={onHandleFundUSDC} disabled={isLoading} />
                 )}
                 {/* <ExportPrivateKeyButton /> */}
             </View>
 
             <View style={styles.section}>
-                {user == null ? (
-                    <Button
-                        title="Login with Google"
-                        onPress={() => {
-                            console.log("login with google");
-                            loginWithOAuth("google");
-                        }}
-                        disabled={isLoading}
-                    />
+                {!isAuthenticated ? (
+                    <>
+                        <Button
+                            title="Login with Google"
+                            onPress={() => loginWithOAuth("google")}
+                            disabled={isLoading}
+                        />
+                        <TextInput
+                            placeholder="Email"
+                            value={loginEmail}
+                            onChangeText={setLoginEmail}
+                            style={styles.input}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <Button
+                            title="Send OTP"
+                            disabled={!loginEmail || isLoading}
+                            onPress={async () => {
+                                setIsLoading(true);
+                                try {
+                                    const res = await crossmintAuth.sendEmailOtp(loginEmail);
+                                    setEmailId(res.emailId);
+                                } catch (error: unknown) {
+                                    Alert.alert("Error", getErrorMessage(error));
+                                } finally {
+                                    setIsLoading(false);
+                                }
+                            }}
+                        />
+                        {emailId != null && (
+                            <>
+                                <TextInput
+                                    placeholder="Enter OTP"
+                                    value={loginOtp}
+                                    onChangeText={setLoginOtp}
+                                    style={styles.input}
+                                    keyboardType="numeric"
+                                />
+                                <Button
+                                    title="Verify OTP"
+                                    disabled={!loginOtp || isLoading}
+                                    onPress={async () => {
+                                        setIsLoading(true);
+                                        try {
+                                            const secret = await crossmintAuth.confirmEmailOtp(
+                                                loginEmail,
+                                                emailId,
+                                                loginOtp
+                                            );
+                                            await createAuthSession(secret);
+                                            setEmailId(null);
+                                            setLoginOtp("");
+                                        } catch (error: unknown) {
+                                            Alert.alert("Error", getErrorMessage(error));
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                />
+                            </>
+                        )}
+                    </>
                 ) : (
                     <Button
                         title="Logout"
                         onPress={() => {
-                            console.log("logout");
                             logout();
                         }}
                         disabled={isLoading}
@@ -123,17 +208,17 @@ export default function Index() {
                 )}
             </View>
 
-            {/* To test headless signing, 
+            {/* To test headless signing,
             1. import and uncomment <HeadlessSigning/>
-            2. add 'headlessSigningFlow' to CrossmintWalletProvider in _layout.tsx
+            2. add 'showOtpSignerPrompt={false}' to CrossmintWalletProvider in _layout.tsx
             3. remove 'createOnLogin' from CrossmintWalletProvider in _layout.tsx */}
-            <HeadlessSigning />
+            {/* <HeadlessSigning /> */}
 
             {walletAddress != null && (
                 <View style={styles.section}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "100%" }}>
                         <View style={{ flex: 1 }}>
-                            <Text>Send USDC to</Text>
+                            <Text>Send USDXM to</Text>
                             <TextInput
                                 placeholder="Enter address"
                                 value={recipientAddress}
@@ -151,7 +236,7 @@ export default function Index() {
                             />
                         </View>
                     </View>
-                    <Button title="Send USDC" onPress={sendUSDC} disabled={isLoading || amount === ""} />
+                    <Button title="Send USDXM" onPress={sendUSDC} disabled={isLoading || amount === ""} />
                 </View>
             )}
         </ScrollView>

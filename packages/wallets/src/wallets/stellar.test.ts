@@ -2,18 +2,27 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StellarWallet } from "./stellar";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
-import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockWallet,
+    createMockApiClient,
+    createMockSigner,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 
 describe("StellarWallet - sendTransaction()", () => {
     let mockApiClient: MockedApiClient;
     let stellarWallet: StellarWallet;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
         mockApiClient = createMockApiClient();
-        const wallet = createMockWallet("stellar", mockApiClient, "api-key");
+        const wallet = await createMockWallet("stellar", mockApiClient, "api-key");
         stellarWallet = StellarWallet.from(wallet);
+        vi.spyOn(stellarWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
+        await stellarWallet.useSigner(createMockSigner("api-key", "stellar"));
     });
 
     afterEach(() => {
@@ -76,7 +85,7 @@ describe("StellarWallet - sendTransaction()", () => {
                                 amount: "1000000",
                             },
                         }),
-                        signer: "api-key:test",
+                        signer: "api-key",
                     }),
                 })
             );
@@ -187,13 +196,13 @@ describe("StellarWallet - sendTransaction()", () => {
                             serializedTransaction: serializedTx,
                             contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
                         }),
-                        signer: "api-key:test",
+                        signer: "api-key",
                     }),
                 })
             );
         });
 
-        it("should return prepared transaction when experimental_prepareOnly is true", async () => {
+        it("should return prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-prepare",
                 status: "pending",
@@ -223,16 +232,15 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_prepareOnly: true },
+                options: { prepareOnly: true },
             });
 
             expect(result.hash).toBeUndefined();
             expect(result.transactionId).toBe("txn-stellar-prepare");
-            // getTransaction should not be called when prepareOnly is true
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should use custom signer when experimental_signer is provided", async () => {
+        it("should use custom signer when signer is provided", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-custom-signer",
                 status: "success",
@@ -268,7 +276,7 @@ describe("StellarWallet - sendTransaction()", () => {
                     to: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUV",
                     amount: "1000000",
                 },
-                options: { experimental_signer: "external-wallet:Gcustom123", experimental_prepareOnly: false },
+                options: { signer: "external-wallet:Gcustom123" },
             });
             await vi.runAllTimersAsync();
             await sendPromise;
@@ -362,16 +370,16 @@ describe("StellarWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create StellarWallet from valid Stellar wallet", () => {
-        const wallet = createMockWallet("stellar", mockApiClient);
+    it("should create StellarWallet from valid Stellar wallet", async () => {
+        const wallet = await createMockWallet("stellar", mockApiClient);
         const stellarWallet = StellarWallet.from(wallet);
 
         expect(stellarWallet).toBeInstanceOf(StellarWallet);
         expect(stellarWallet.chain).toBe("stellar");
     });
 
-    it("should throw error when wallet is not Stellar", () => {
-        const evmWallet = createMockWallet("base-sepolia", mockApiClient);
+    it("should throw error when wallet is not Stellar", async () => {
+        const evmWallet = await createMockWallet("base-sepolia", mockApiClient);
 
         expect(() => StellarWallet.from(evmWallet)).toThrow("Wallet is not a Stellar wallet");
     });

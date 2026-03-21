@@ -6,11 +6,16 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         crossmint: { apiKey: "test-api-key" },
-        experimental_customAuth: undefined,
     })),
     CrossmintWalletBaseProvider: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="wallet-base-provider">{children}</div>
     ),
+}));
+
+vi.mock("@crossmint/wallets-sdk", () => ({
+    IframeDeviceSignerKeyStorage: vi.fn(() => ({
+        destroy: vi.fn(),
+    })),
 }));
 
 vi.mock("@/components/auth/PasskeyPrompt", () => ({
@@ -19,6 +24,10 @@ vi.mock("@/components/auth/PasskeyPrompt", () => ({
 
 vi.mock("@/components/signers/EmailSignersDialog", () => ({
     EmailSignersDialog: () => <div data-testid="email-signers-dialog">Email Signers Dialog</div>,
+}));
+
+vi.mock("@/components/signers/PhoneSignersDialog", () => ({
+    PhoneSignersDialog: () => <div data-testid="phone-signers-dialog">Phone Signers Dialog</div>,
 }));
 
 vi.mock("../logger/init", () => ({

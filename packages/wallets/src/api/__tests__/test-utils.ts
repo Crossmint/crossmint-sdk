@@ -57,7 +57,6 @@ export const createMockCrossmint = (overrides: Partial<Crossmint> = {}): Crossmi
     return {
         ...base,
         setJwt: vi.fn().mockReturnThis(),
-        experimental_setCustomAuth: vi.fn().mockReturnThis(),
     } as Crossmint;
 };
 
@@ -301,7 +300,6 @@ export const createIntegrationApiClient = (
     const crossmint = {
         ...base,
         setJwt: () => crossmint as Crossmint,
-        experimental_setCustomAuth: () => crossmint as Crossmint,
     } as Crossmint;
     return new ApiClient(crossmint);
 };
@@ -402,7 +400,7 @@ export const fundWallet = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount: number,
-    token: "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<FundWalletResponse> => {
     const params: FundWalletParams = {
@@ -480,7 +478,7 @@ export const fundWalletAndWait = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount = 1.0,
-    token: "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<FundWalletResponse> => {
     return fundWallet(apiClient, walletLocator, amount, token, chain);
@@ -519,7 +517,7 @@ export const ensureWalletFunded = async (
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     amount = 1.0,
-    token: "usdxm",
+    token: "usdxm" = "usdxm",
     chain = "base-sepolia"
 ): Promise<void> => {
     try {

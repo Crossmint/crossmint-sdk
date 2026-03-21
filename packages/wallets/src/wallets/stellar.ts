@@ -20,9 +20,11 @@ export class StellarWallet extends Wallet<StellarChain> {
                 chain: wallet.chain,
                 address: wallet.address,
                 owner: wallet.owner,
-                signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
+                recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
+                signers: Wallet.getInitialSigners(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -56,7 +58,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -80,12 +82,12 @@ export class StellarWallet extends Wallet<StellarChain> {
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
         let signer: string;
-        if (options?.experimental_signer == null) {
-            signer = this.signer.locator();
-        } else if (typeof options.experimental_signer === "string") {
-            signer = options.experimental_signer;
+        if (options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof options.signer === "string") {
+            signer = options.signer;
         } else {
-            signer = `server:${deriveServerSignerDetails(options.experimental_signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
         }
 
         let transaction: any;

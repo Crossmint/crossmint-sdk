@@ -1,25 +1,13 @@
-import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
+import type { ExternalWalletInternalSignerConfig } from "./types";
 import type { StellarChain } from "@/chains/chains";
+import { ExternalWalletSigner } from "./external-wallet-signer";
 
-export class StellarExternalWalletSigner implements Signer {
-    type = "external-wallet" as const;
-    private _address: string;
-    onSignStellarTransaction?: (payload: string) => Promise<string>;
+export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarChain> {
+    private onSign?: (payload: string) => Promise<string>;
 
-    constructor(private config: ExternalWalletInternalSignerConfig<StellarChain>) {
-        if (config.address == null) {
-            throw new Error("Please provide an address for the External Wallet Signer");
-        }
-        this._address = config.address;
-        this.onSignStellarTransaction = config.onSignStellarTransaction;
-    }
-
-    address() {
-        return this._address;
-    }
-
-    locator() {
-        return this.config.locator;
+    constructor(config: ExternalWalletInternalSignerConfig<StellarChain>) {
+        super(config);
+        this.onSign = config.onSign;
     }
 
     async signMessage() {
@@ -27,15 +15,12 @@ export class StellarExternalWalletSigner implements Signer {
     }
 
     async signTransaction(payload: string) {
-        if (this.onSignStellarTransaction == null) {
-            return await Promise.reject(
-                new Error(
-                    "onSignStellarTransaction method is required to sign transactions with a Stellar external wallet"
-                )
+        if (this.onSign == null) {
+            throw new Error(
+                "[StellarExternalWalletSigner] No onSign callback provided. Pass an onSign callback when configuring the external wallet signer."
             );
         }
-
-        const signedTx = await this.onSignStellarTransaction(payload);
+        const signedTx = await this.onSign(payload);
         return { signature: signedTx };
     }
 }

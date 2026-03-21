@@ -13,13 +13,19 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
+import type { Callbacks, SignerStatus } from "@/wallets/types";
 
 export type {
+    ExternalWalletSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
-    GenericEIP1193Provider,
 } from "@crossmint/common-sdk-base";
+
+export type ExternalWalletRegistrationConfig = {
+    type: "external-wallet";
+    address: string;
+};
 
 ////////////////////////////////////////////////////////////
 // Signer configs
@@ -34,23 +40,13 @@ export class AuthRejectedError extends Error {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
+    locator?: string;
 };
 
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
-    onAuthRequired?: (
-        needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
+    locator?: string;
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
@@ -76,6 +72,8 @@ export type BaseSignerConfig<C extends Chain> =
 export type PasskeySignerConfig = {
     type: "passkey";
     name?: string;
+    id?: string;
+    locator?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
 };
@@ -84,35 +82,49 @@ export type PasskeySignerConfig = {
 // Internal signer config
 ////////////////////////////////////////////////////////////
 type BaseInternalSignerConfig = {
-    locator: string;
+    locator: SignerLocator;
     address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
-export type EmailInternalSignerConfig = EmailSignerConfig & BaseInternalSignerConfig;
+export type EmailInternalSignerConfig = EmailSignerConfig &
+    Omit<BaseInternalSignerConfig, "locator"> & {
+        locator: EmailSignerLocator;
+        onAuthRequired?: Callbacks["onAuthRequired"];
+    };
 
-export type PhoneInternalSignerConfig = PhoneSignerConfig & BaseInternalSignerConfig;
+export type PhoneInternalSignerConfig = PhoneSignerConfig &
+    Omit<BaseInternalSignerConfig, "locator"> & {
+        locator: PhoneSignerLocator;
+        onAuthRequired?: Callbacks["onAuthRequired"];
+    };
+
+export type DeviceInternalSignerConfig = {
+    type: "device";
+    locator?: DeviceSignerLocator;
+    address: string;
+};
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
-    locator: string;
+    locator: PasskeySignerLocator;
     id: string;
 };
 
 export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
-    locator: string;
+    locator: ApiKeySignerLocator;
     address: string;
 };
 
 export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
-    locator: string;
+    locator: ExternalWalletSignerLocator;
 };
 
 export type ServerInternalSignerConfig = {
     type: "server";
     /** The derived chain-specific private key bytes */
     derivedKeyBytes: Uint8Array;
-    locator: string;
+    locator: ServerSignerLocator;
     address: string;
 };
 
@@ -122,6 +134,7 @@ export type InternalSignerConfig<C extends Chain> =
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
     | ExternalWalletInternalSignerConfig<C>
+    | DeviceInternalSignerConfig
     | ServerInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
@@ -129,6 +142,13 @@ export type InternalSignerConfig<C extends Chain> =
 ////////////////////////////////////////////////////////////
 export type BaseSignResult = {
     signature: string;
+};
+
+export type DeviceSignResult = {
+    signature: {
+        r: string;
+        s: string;
+    };
 };
 
 export type PasskeySignResult = {
@@ -139,11 +159,38 @@ export type PasskeySignResult = {
     metadata: WebAuthnP256.SignMetadata;
 };
 
+export type DeviceSignerConfig = {
+    type: "device";
+    publicKey?: { x: string; y: string };
+    locator?: string;
+    name?: string;
+};
+
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
+    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
-      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
+      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
+
+////////////////////////////////////////////////////////////
+// Signer locator types
+////////////////////////////////////////////////////////////
+export type EmailSignerLocator = `email:${string}`;
+export type PhoneSignerLocator = `phone:${string}`;
+export type PasskeySignerLocator = `passkey:${string}`;
+export type DeviceSignerLocator = `device:${string}`;
+export type ExternalWalletSignerLocator = `external-wallet:${string}`;
+export type ApiKeySignerLocator = "api-key" | `api-key:${string}`;
+export type ServerSignerLocator = `server:${string}`;
+
+export type SignerLocator =
+    | EmailSignerLocator
+    | PhoneSignerLocator
+    | PasskeySignerLocator
+    | DeviceSignerLocator
+    | ExternalWalletSignerLocator
+    | ApiKeySignerLocator
+    | ServerSignerLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
@@ -155,22 +202,24 @@ type SignResultMap = {
     "external-wallet": BaseSignResult;
     server: BaseSignResult;
     passkey: PasskeySignResult;
+    device: DeviceSignResult;
 };
 
-export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
+export interface SignerAdapter<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
-    locator(): string;
+    status?: SignerStatus;
+    locator(): SignerLocator;
     address?(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }
 
-export interface ExportableSigner extends Signer {
+export interface ExportableSignerAdapter extends SignerAdapter {
     _exportPrivateKey: (exportTEEConnection: ExportSignerTEEConnection) => Promise<void>;
 }
 
-export function isExportableSigner(signer: Signer): signer is ExportableSigner {
-    return (signer as ExportableSigner)._exportPrivateKey !== undefined;
+export function isExportableSignerAdapter(signer: SignerAdapter): signer is ExportableSignerAdapter {
+    return (signer as ExportableSignerAdapter)._exportPrivateKey !== undefined;
 }
 
 export type ExportSignerTEEConnection = HandshakeParent<

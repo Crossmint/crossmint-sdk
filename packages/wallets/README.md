@@ -1,47 +1,98 @@
-# Wallets SDK
+# @crossmint/wallets-sdk
 
-A Typescript SDK to interact with Crossmint Wallets. This SDK enables developers to easily create and manage wallets on Solana and EVM chains.
+Typescript SDK for creating and managing [Crossmint Wallets](https://docs.crossmint.com) on EVM, Solana, and Stellar chains.
 
-Get a Crossmint client API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to your `.env` file. Make sure your API key has all scopes for `Wallet API`, and `Users`.  
+## Prerequisites
+
+Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+
+- **Client-side** (browser): Use a client API key
+- **Server-side** (Node.js): Use a server API key
 
 ## Installation
 
 ```bash
-pnpm install @crossmint/wallets-sdk
+npm install @crossmint/wallets-sdk
+# or
+pnpm add @crossmint/wallets-sdk
+# or
+yarn add @crossmint/wallets-sdk
+```
+
+## Quick Start
+
+### Server-side (Node.js)
+
+```ts
+import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
+
+const crossmint = createCrossmint({ apiKey: "<YOUR_SERVER_API_KEY>" });
+const wallets = CrossmintWallets.from(crossmint);
+
+// Create a wallet with a server signer
+const wallet = await wallets.createWallet({
+  chain: "base-sepolia",
+  recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
+});
+
+console.log(wallet.address);
+
+// Send tokens
+const tx = await wallet.send("0xRecipientAddress", "usdc", "10");
+console.log(tx.explorerLink);
+```
+
+### Client-side (Headless)
+
+For client-side usage without React, you can use the SDK directly with JWT authentication:
+
+```ts
+import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
+
+const crossmint = createCrossmint({ apiKey: "<YOUR_CLIENT_API_KEY>" });
+crossmint.setJwt("<USER_JWT>");
+
+const wallets = CrossmintWallets.from(crossmint);
+
+const wallet = await wallets.getWallet({ chain: "base-sepolia" });
+console.log(wallet.address);
+```
+
+> For React apps, use [`@crossmint/client-sdk-react-ui`](https://www.npmjs.com/package/@crossmint/client-sdk-react-ui) which provides `CrossmintWalletProvider`, hooks, and built-in UI for OTP and passkey flows.
+
+## Core Concepts
+
+### Signers
+
+Wallets SDK uses a two-tier signer model:
+
+- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
+- **Operational signer** — Low-friction, used for day-to-day signing. The default is the **device signer**, which uses hardware-backed keys (no OTP needed). Also supports passkey, server key, and external wallet.
+
+When no operational signer is available, the recovery signer automatically serves as a fallback for signing.
+
+### Wallet Lifecycle
+
+```ts
+// Create a new wallet
+const wallet = await wallets.createWallet({
+  chain: "base-sepolia",
+  recovery: { type: "email", email: "user@example.com" },
+  signers: [{ type: "device" }], // optional — device is the default
+});
+
+// Retrieve an existing wallet (client-side)
+const wallet = await wallets.getWallet({ chain: "base-sepolia" });
+
+// Retrieve an existing wallet (server-side)
+const wallet = await wallets.getWallet("0xWalletAddress", {
+  chain: "base-sepolia",
+});
 ```
 
 ## Usage
 
-```ts
-import { CrossmintWallets, createCrossmint } from "@crossmint/wallets-sdk";
-
-const crossmint = createCrossmint({
-    apiKey: "<your-client-OR-server-api-key>",
-    experimental_customAuth: {
-        jwt: "<your-jwt>", // required for client-side calls, optional for server-side calls
-    },
-});
-const crossmintWallets = CrossmintWallets.from(crossmint);
-const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "<your-chain>",  
-    signer: {
-        type: "email",
-        email: "<your-email>",
-        onAuthRequired: async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
-            if (needsAuth) {
-                await sendEmailWithOtp();
-                // Prompt the user to check their email for the OTP code.
-                // Once the user provides the OTP, pass it to verifyOtp(otp).
-                // NOTE: If using our React/React Native SDK, this is handled automatically by the provider.
-            }
-        }, 
-    },
-});
-
-console.log(wallet.address);
-```
-
-### Get wallet balances
+### Balances
 
 ```ts
 const balances = await wallet.balances();
@@ -50,47 +101,122 @@ console.log(balances.nativeToken.amount);
 console.log(balances.usdc.amount);
 ```
 
-### Transfer
+### Send Tokens
 
 ```ts
-const transaction = await wallet.send(recipient, "usdc", "100");
-
-console.log(transaction.explorerLink);
+const tx = await wallet.send("0xRecipient", "usdc", "100");
+console.log(tx.explorerLink);
 ```
 
-### Get wallet activity
+### Transfers
 
 ```ts
-const activity = await wallet.experimental_activity();
-
-console.log(activity.events);
+const transfers = await wallet.transfers({
+  tokens: "usdc",
+  status: "successful",
+});
 ```
 
-### Delegated signers
+### NFTs
 
 ```ts
-// Add a delegated signer
-await wallet.addDelegatedSigner({ signer: "<signer-address>" });
-
-const signers = await wallet.delegatedSigners();
-
-console.log(signers);
+const nfts = await wallet.nfts({ perPage: 10, page: 1 });
 ```
 
-### Create custom transactions
+### Chain-Specific Transactions
 
 ```ts
-import { SolanaWallet, EVMWallet } from "@crossmint/wallets-sdk";
+import { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
+
+// EVM — smart contract interaction
+const evmWallet = EVMWallet.from(wallet);
+const tx = await evmWallet.sendTransaction({
+  to: "0xContractAddress",
+  abi: contractAbi,
+  functionName: "mint",
+  args: [1],
+  value: 0n,
+});
+
+// EVM — sign a message
+const sig = await evmWallet.signMessage({ message: "Hello" });
+
+// EVM — viem public client
+const client = evmWallet.getViemClient();
 
 // Solana
-const solanaWallet = SolanaWallet.from(wallet);
-const solTx = await solanaWallet.sendTransaction({ transaction: "<serialized-or-non-serialized-transaction>" });
+const solWallet = SolanaWallet.from(wallet);
+const solTx = await solWallet.sendTransaction({
+  serializedTransaction: "<base64-encoded-transaction>",
+});
 
-console.log(solTx.explorerLink);
-
-// EVM
-const evmWallet = EVMWallet.from(wallet);
-const evmTx = await evmWallet.sendTransaction({ transaction: "<serialized-or-non-serialized-transaction>" });
-
-console.log(evmTx.explorerLink);
+// Stellar
+const stellarWallet = StellarWallet.from(wallet);
+const stellarTx = await stellarWallet.sendTransaction({
+  contractId: "C...",
+  method: "transfer",
+  args: { to: "G...", amount: "1000000" },
+});
 ```
+
+### Signer Management
+
+```ts
+// Add a new signer
+await wallet.addSigner({ type: "server", secret: "<SECRET>" });
+
+// List signers
+const signers = await wallet.signers();
+console.log(signers); // [{ type: "device", locator: "device:...", status: "success" }, ...]
+
+// Set the active signer
+await wallet.useSigner({ type: "server", secret: "<SECRET>" });
+
+// Recovery flow (new device)
+if (wallet.needsRecovery()) {
+  await wallet.recover(); // uses recovery signer to register a new device signer
+}
+```
+
+### Transaction Approval (Prepare-Only Mode)
+
+For flows that require multi-step approval:
+
+```ts
+// Create a transaction without auto-approving
+const pendingTx = await wallet.send("0xRecipient", "usdc", "10", {
+  prepareOnly: true,
+});
+console.log(pendingTx.transactionId);
+
+// Approve later
+const result = await wallet.approve({
+  transactionId: pendingTx.transactionId,
+});
+```
+
+## Signer Types
+
+| Type | Use Case | Platforms |
+|---|---|---|
+| `device` | Default day-to-day signer. Hardware-backed, no OTP. | Browser, React Native |
+| `server` | Server-side automated operations (AI agents, backends). | Node.js |
+| `email` | OTP-based recovery signer. | All |
+| `phone` | OTP-based recovery signer. | All |
+| `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
+| `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
+
+## React / React Native
+
+For React applications, use [`@crossmint/client-sdk-react-ui`](https://www.npmjs.com/package/@crossmint/client-sdk-react-ui) which provides wallet providers, hooks (`useWallet`, `useWalletOtpSigner`), and built-in UI for OTP and passkey flows.
+
+For React Native, see [`@crossmint/client-sdk-react-native-ui`](https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui).
+
+## Documentation
+
+- [Crossmint Wallets Docs](https://docs.crossmint.com)
+- [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets)
+
+## License
+
+Apache-2.0

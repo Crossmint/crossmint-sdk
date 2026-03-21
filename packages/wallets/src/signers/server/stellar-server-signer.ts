@@ -1,10 +1,10 @@
-import type { Signer, ServerInternalSignerConfig } from "../types";
+import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
 import { ed25519KeypairFromSeed, ed25519Sign, encodeStellarPublicKey } from "../../utils/stellar";
 
-export class StellarServerSigner implements Signer<"server"> {
+export class StellarServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
     private _address: string;
-    private _locator: string;
+    private _locator: ServerSignerLocator;
     private secretKey: Uint8Array;
 
     constructor(config: ServerInternalSignerConfig) {
