@@ -22,7 +22,7 @@ function OrderIntentVerificationContent({
     onVerificationComplete,
     onVerificationError,
 }: OrderIntentVerificationProps) {
-    const { verifyInstruction } = useBasisTheoryAI();
+    const { verifyInstruction, ready } = useBasisTheoryAI();
     const verifyRef = useRef(verifyInstruction);
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
@@ -41,6 +41,10 @@ function OrderIntentVerificationContent({
     const instructionId = orderIntent.payment.btInstructionId;
 
     useEffect(() => {
+        if (!ready) {
+            return;
+        }
+
         let cancelled = false;
 
         verifyRef
@@ -59,7 +63,7 @@ function OrderIntentVerificationContent({
         return () => {
             cancelled = true;
         };
-    }, [agentId, instructionId]);
+    }, [ready, agentId, instructionId]);
 
     return null;
 }

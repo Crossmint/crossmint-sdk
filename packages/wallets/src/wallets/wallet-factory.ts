@@ -299,17 +299,32 @@ export class WalletFactory {
                 compareSignerConfigs(createArgs.recovery, existingWalletSigner);
             }
 
+<<<<<<< HEAD
             const inputSigners = createArgs.signers;
             if (inputSigners != null) {
                 this.validateSigners(existingWallet, inputSigners, args.chain);
             }
+||||||| a6fadd04
+        if (args.delegatedSigners != null) {
+            this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+=======
+        if (args.delegatedSigners != null) {
+            this.validateDelegatedSigners(existingWallet, args.delegatedSigners, args.chain);
+>>>>>>> origin/main
         }
     }
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
+<<<<<<< HEAD
         inputSigners: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain: C
+||||||| a6fadd04
+        inputDelegatedSigners: Array<DelegatedSigner>
+=======
+        inputDelegatedSigners: Array<DelegatedSignerInput>,
+        chain: Chain
+>>>>>>> origin/main
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
         const existingSigners = config?.delegatedSigners;
@@ -326,6 +341,7 @@ export class WalletFactory {
             );
         }
 
+<<<<<<< HEAD
         for (const inputSigner of inputSigners) {
             const matchingExistingSigner = existingSigners.find((existingSigner) => {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {
@@ -345,10 +361,30 @@ export class WalletFactory {
                 }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });
+||||||| a6fadd04
+        // Check that each input delegated signer exists in the wallet
+        // (wallet can have additional signers that weren't specified in input)
+        for (const argSigner of inputDelegatedSigners) {
+            const matchingExistingSigner = existingDelegatedSigners.find(
+                (existingSigner) => existingSigner.locator === argSigner.signer
+            );
+=======
+        // Check that each input delegated signer exists in the wallet
+        // (wallet can have additional signers that weren't specified in input)
+        for (const argSigner of inputDelegatedSigners) {
+            const resolvedSigner =
+                typeof argSigner.signer === "object" && argSigner.signer.type === "server"
+                    ? `server:${deriveServerSignerDetails(argSigner.signer, chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`
+                    : argSigner.signer;
+            const matchingExistingSigner = existingDelegatedSigners.find(
+                (existingSigner) => existingSigner.locator === resolvedSigner
+            );
+>>>>>>> origin/main
 
             if (matchingExistingSigner == null) {
                 const walletSignersList = existingSigners.map((s) => s.locator).join(", ");
                 throw new WalletCreationError(
+<<<<<<< HEAD
                     `Signer '${inputSigner.type}' does not exist in wallet "${existingWallet.address}". Available signers: ${walletSignersList}. ${SIGNER_MISMATCH_ERROR}`
                 );
             }
@@ -377,6 +413,11 @@ export class WalletFactory {
             if (inputSigner.id == null && numberOfPasskeySigners > 1) {
                 throw new WalletCreationError(
                     "When creating a wallet with multiple passkeys, you must provide the passkey ID for each passkey."
+||||||| a6fadd04
+                    `Delegated signer '${argSigner.signer}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+=======
+                    `Delegated signer '${resolvedSigner}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+>>>>>>> origin/main
                 );
             }
         }
