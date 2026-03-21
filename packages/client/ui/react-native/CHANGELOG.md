@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.0.0-beta.6
+
+### Patch Changes
+
+- 6fbf135: Disallow passkey signers in React Native. Passkeys are not supported in React Native and will now throw a clear error when used as recovery signers, delegated signers, or via createPasskeySigner.
+- 8c02d3d: Fixes modal icons for otp flow
+- Updated dependencies [003e632]
+- Updated dependencies [f5517fc]
+- Updated dependencies [e38e91b]
+- Updated dependencies [bac3bd4]
+  - @crossmint/wallets-sdk@1.0.0-beta.6
+  - @crossmint/expo-device-signer@0.1.0-beta.4
+  - @crossmint/client-sdk-react-base@2.0.0-beta.6
+
 ## 1.0.0-beta.5
 
 ### Patch Changes
