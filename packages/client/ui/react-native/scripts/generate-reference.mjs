@@ -22,7 +22,7 @@ const PRODUCTS = {
             "CrossmintProvider",
             "CrossmintWalletProvider",
             "useWallet",
-            "useWalletEmailSigner",
+            "useWalletOtpSigner",
             "ExportPrivateKeyButton",
         ],
         descriptions: {
@@ -74,13 +74,21 @@ const MANUAL_RETURNS = {
             },
         },
         {
-            name: "getOrCreateWallet",
+            name: "getWallet",
             type: {
                 type: "reflection",
                 declaration: {
                     signatures: [
                         {
-                            parameters: [{ name: "args", type: { type: "reference", name: "WalletArgsFor<Chain>" } }],
+                            parameters: [
+                                {
+                                    name: "props",
+                                    type: {
+                                        type: "reference",
+                                        name: 'Pick<ClientSideWalletArgsFor<Chain>, "chain" | "alias">',
+                                    },
+                                },
+                            ],
                             type: {
                                 type: "reference",
                                 name: "Promise",
@@ -98,10 +106,103 @@ const MANUAL_RETURNS = {
                     ],
                 },
             },
-            comment: { summary: [{ kind: "text", text: "Creates a new wallet or retrieves an existing one." }] },
+            comment: {
+                summary: [
+                    { kind: "text", text: "Retrieves an existing wallet. Returns undefined if no wallet is found." },
+                ],
+            },
+        },
+        {
+            name: "createWallet",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [
+                                {
+                                    name: "props",
+                                    type: { type: "reference", name: "ClientSideWalletCreateArgs<Chain>" },
+                                },
+                            ],
+                            type: {
+                                type: "reference",
+                                name: "Promise",
+                                typeArguments: [
+                                    {
+                                        type: "union",
+                                        types: [
+                                            { type: "reference", name: "Wallet" },
+                                            { type: "intrinsic", name: "undefined" },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [{ kind: "text", text: "Creates a new wallet with the specified chain and recovery signer." }],
+            },
+        },
+        {
+            name: "createDeviceSigner",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [],
+                            type: {
+                                type: "union",
+                                types: [
+                                    { type: "reference", name: "Promise<DeviceSignerDescriptor>" },
+                                    { type: "intrinsic", name: "undefined" },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [
+                    {
+                        kind: "text",
+                        text: "Creates a device signer using native secure storage (iOS Secure Enclave / Android Keystore). Returns undefined if @crossmint/expo-device-signer is not installed.",
+                    },
+                ],
+            },
+        },
+        {
+            name: "createPasskeySigner",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [
+                                {
+                                    name: "passkeyName",
+                                    type: { type: "intrinsic", name: "string" },
+                                },
+                            ],
+                            type: { type: "reference", name: "Promise<RegisterSignerPasskeyParams>" },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [
+                    {
+                        kind: "text",
+                        text: "Creates a passkey signer. Requires custom onCreatePasskey / onSignWithPasskey callbacks. EVM only.",
+                    },
+                ],
+            },
         },
     ],
-    useWalletEmailSigner: [
+    useWalletOtpSigner: [
         {
             name: "needsAuth",
             type: { type: "intrinsic", name: "boolean" },
@@ -109,13 +210,13 @@ const MANUAL_RETURNS = {
                 summary: [
                     {
                         kind: "text",
-                        text: "Whether the email signer currently requires authentication (OTP verification).",
+                        text: "Whether the OTP signer currently requires authentication (email or phone OTP verification).",
                     },
                 ],
             },
         },
         {
-            name: "sendEmailWithOtp",
+            name: "sendOtp",
             type: {
                 type: "reflection",
                 declaration: {
@@ -132,7 +233,7 @@ const MANUAL_RETURNS = {
                 },
             },
             comment: {
-                summary: [{ kind: "text", text: "Sends a one-time password to the user's email address." }],
+                summary: [{ kind: "text", text: "Sends a one-time password to the user's email or phone." }],
             },
         },
         {
