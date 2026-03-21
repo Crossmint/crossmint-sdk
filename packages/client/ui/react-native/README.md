@@ -115,7 +115,7 @@ function WalletActions() {
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` + optional `signers`. |
-| `headlessSigningFlow` | `boolean` | `true` | When `true`, built-in OTP dialogs are suppressed. Handle OTP manually via `useWalletOtpSigner()`. Set to `false` to show built-in dialogs. |
+| `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
 
@@ -138,7 +138,7 @@ const {
 
 ### `useWalletOtpSigner()`
 
-For custom OTP UI when using email/phone recovery signers. Since `headlessSigningFlow` defaults to `true` in React Native, you'll typically need this hook to handle OTP flows manually:
+For custom OTP UI when using email/phone recovery signers. When `showOtpSignerPrompt` is set to `false`, use this hook to handle OTP flows manually:
 
 ```tsx
 const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
@@ -174,7 +174,7 @@ import { ExportPrivateKeyButton } from "@crossmint/client-sdk-react-native-ui";
 |---|---|---|
 | Device signer storage | Browser iframe (`IframeDeviceSignerKeyStorage`) | Native secure storage (iOS Secure Enclave / Android Keystore) |
 | Device storage override | Not exposed | `deviceSignerKeyStorage` prop on provider |
-| Built-in OTP UI | Always rendered | `headlessSigningFlow=true` (suppressed by default) |
+| Built-in OTP UI | Always rendered | `showOtpSignerPrompt=true` (shown by default) |
 | Passkey helper UI | `showPasskeyHelpers` prop | Not available |
 | TEE communication | Hidden iframe | Hidden WebView (lazily initialized) |
 
