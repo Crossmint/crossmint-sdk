@@ -35,12 +35,16 @@ export function CrossmintAuthBaseProvider({
     logoutRoute,
     storageProvider,
 }: CrossmintAuthBaseProviderProps) {
-    const { crossmint } = useCrossmint("CrossmintAuthBaseProvider must be used within CrossmintProvider");
+    const { crossmint, setJwt: setCrossmintJwt } = useCrossmint(
+        "CrossmintAuthBaseProvider must be used within CrossmintProvider"
+    );
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const [jwt, setJwt] = useState<string | undefined>(undefined);
     const [initialized, setInitialized] = useState(false);
 
-    const crossmintAuthRef = useRef<any | null>(null);
+    const crossmintAuthRef = useRef<ReturnType<typeof CrossmintAuth.from> | null>(null);
+    const getUserInFlightRef = useRef<Promise<SDKExternalUser | undefined> | null>(null);
+    const lastUserFetchJwtRef = useRef<string | undefined>(undefined);
 
     // Initialize auth client in useEffect to avoid state updates during render
     useEffect(() => {
@@ -106,22 +110,55 @@ export function CrossmintAuthBaseProvider({
         }
     }, [jwt, triggerHasJustLoggedIn]);
 
+    useEffect(() => {
+        setCrossmintJwt(jwt);
+    }, [jwt, setCrossmintJwt]);
+
     const logout = useCallback(async () => {
         setUser(undefined);
         setJwt(undefined);
+        getUserInFlightRef.current = null;
+        lastUserFetchJwtRef.current = undefined;
         return await crossmintAuth?.logout();
     }, [crossmintAuth]);
 
     const getUser = useCallback(async () => {
-        if (jwt == null) {
-            console.log("User not logged in");
+        if (jwt == null || crossmintAuth == null) {
             return;
         }
 
-        const user = await crossmintAuth?.getUser();
-        setUser(user);
-        return user;
-    }, [jwt, crossmintAuth]);
+        setCrossmintJwt(jwt);
+
+        if (getUserInFlightRef.current != null && lastUserFetchJwtRef.current === jwt) {
+            return await getUserInFlightRef.current;
+        }
+
+        lastUserFetchJwtRef.current = jwt;
+        const userPromise = crossmintAuth.getUser().then((resolvedUser) => {
+            setUser(resolvedUser);
+            return resolvedUser;
+        });
+
+        getUserInFlightRef.current = userPromise ?? null;
+
+        try {
+            return await userPromise;
+        } finally {
+            if (getUserInFlightRef.current === userPromise) {
+                getUserInFlightRef.current = null;
+            }
+        }
+    }, [jwt, crossmintAuth, setCrossmintJwt]);
+
+    useEffect(() => {
+        if (!initialized || jwt == null || user != null || crossmintAuth == null) {
+            return;
+        }
+
+        void getUser().catch((error) => {
+            console.error("Failed to hydrate Crossmint user:", error);
+        });
+    }, [initialized, jwt, user, crossmintAuth, getUser]);
 
     const getStatus = useCallback((): AuthStatus => {
         if (!initialized) {
@@ -141,7 +178,7 @@ export function CrossmintAuthBaseProvider({
             getUser,
             login: () => {},
         }),
-        [crossmintAuth, logout, jwt, user, initialized, getUser, getStatus]
+        [crossmintAuth, logout, jwt, user, getUser, getStatus]
     );
 
     return <CrossmintAuthBaseContext.Provider value={contextValue}>{children}</CrossmintAuthBaseContext.Provider>;
