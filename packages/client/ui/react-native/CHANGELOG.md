@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.0.0-beta.7
+
+### Patch Changes
+
+- fd0dae4: Force new release of React Native SDK, Wallets SDK, and React UI SDK
+- Updated dependencies [fd0dae4]
+  - @crossmint/wallets-sdk@1.0.0-beta.7
+  - @crossmint/expo-device-signer@0.1.0-beta.5
+  - @crossmint/client-sdk-react-base@2.0.0-beta.7
+
 ## 1.0.0-beta.6
 
 ### Patch Changes
