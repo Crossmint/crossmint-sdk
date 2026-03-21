@@ -10,6 +10,15 @@ const ADDRESS_KEY_PREFIX = `${STORE_PREFIX}addr_`;
 const PUBLIC_KEY_INDEX_KEY = `${STORE_PREFIX}pub_key_index`;
 
 /**
+ * Converts a base64 string to a SecureStore-safe key by replacing
+ * characters that are invalid in expo-secure-store keys.
+ * SecureStore only allows alphanumeric, '.', '-', and '_'.
+ */
+function safeStoreKey(base64: string): string {
+    return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+/**
  * Converts a hex string to a Uint8Array.
  */
 function hexToBytes(hex: string): Uint8Array {
@@ -79,7 +88,7 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${params.address}`, privateKeyHex);
             await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${params.address}_pub`, publicKeyBase64);
         } else {
-            await SecureStore.setItemAsync(`${PENDING_KEY_PREFIX}${publicKeyBase64}`, privateKeyHex);
+            await SecureStore.setItemAsync(`${PENDING_KEY_PREFIX}${safeStoreKey(publicKeyBase64)}`, privateKeyHex);
         }
 
         await this.trackPublicKey(publicKeyBase64);
@@ -87,7 +96,7 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     async mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
-        const pendingKey = `${PENDING_KEY_PREFIX}${publicKeyBase64}`;
+        const pendingKey = `${PENDING_KEY_PREFIX}${safeStoreKey(publicKeyBase64)}`;
         const privateKeyHex = await SecureStore.getItemAsync(pendingKey);
         if (privateKeyHex == null) {
             throw new Error(`No pending key found for public key: ${publicKeyBase64}`);
@@ -115,6 +124,8 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
         const privateKey = hexToBytes(privateKeyHex);
         const messageBytes = base64ToBytes(message);
+        // The message is already a hash digest (e.g. keccak256) provided by the wallet API,
+        // so we sign the raw bytes directly without re-hashing (prehash defaults to false).
         const signature = p256.sign(messageBytes, privateKey, { lowS: true });
 
         return {
@@ -133,7 +144,7 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     async deletePendingKey(publicKeyBase64: string): Promise<void> {
-        await SecureStore.deleteItemAsync(`${PENDING_KEY_PREFIX}${publicKeyBase64}`);
+        await SecureStore.deleteItemAsync(`${PENDING_KEY_PREFIX}${safeStoreKey(publicKeyBase64)}`);
         await this.untrackPublicKey(publicKeyBase64);
     }
 
