@@ -77,7 +77,10 @@ const MANUAL_RETURNS = {
                             parameters: [
                                 {
                                     name: "props",
-                                    type: { type: "reference", name: "Pick<ClientSideWalletArgsFor<Chain>, \"chain\" | \"alias\">" },
+                                    type: {
+                                        type: "reference",
+                                        name: 'Pick<ClientSideWalletArgsFor<Chain>, "chain" | "alias">',
+                                    },
                                 },
                             ],
                             type: {
@@ -98,7 +101,9 @@ const MANUAL_RETURNS = {
                 },
             },
             comment: {
-                summary: [{ kind: "text", text: "Retrieves an existing wallet. Returns undefined if no wallet is found." }],
+                summary: [
+                    { kind: "text", text: "Retrieves an existing wallet. Returns undefined if no wallet is found." },
+                ],
             },
         },
         {
