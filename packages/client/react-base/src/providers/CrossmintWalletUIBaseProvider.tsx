@@ -9,7 +9,7 @@ import { useWallet } from "@/hooks/useWallet";
 export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
     appearance?: UIConfig;
-    headlessSigningFlow?: boolean;
+    showOtpSignerPrompt?: boolean;
     showPasskeyHelpers?: boolean;
     renderUI?: (props: UIRenderProps) => ReactNode;
     passkeyPromptState: PasskeyPromptState;
@@ -50,7 +50,7 @@ export interface UIRenderProps {
 export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
-    headlessSigningFlow,
+    showOtpSignerPrompt,
     renderUI,
     passkeyPromptState,
     signerAuth,
@@ -92,7 +92,7 @@ export function CrossmintWalletUIBaseProvider({
     return (
         <>
             {children}
-            {!headlessSigningFlow && renderUI != null && renderUI(uiRenderProps)}
+            {renderUI != null && renderUI(uiRenderProps)}
         </>
     );
 }
