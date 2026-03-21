@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.0.0-beta.6
+
+### Patch Changes
+
+- Updated dependencies [003e632]
+- Updated dependencies [f5517fc]
+- Updated dependencies [e38e91b]
+- Updated dependencies [bac3bd4]
+  - @crossmint/wallets-sdk@1.0.0-beta.6
+  - @crossmint/client-sdk-react-base@2.0.0-beta.6
+
 ## 4.0.0-beta.5
 
 ### Minor Changes
