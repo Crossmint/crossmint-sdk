@@ -39,7 +39,7 @@ function CrossmintAuthProviderContent({
     loginMethods = ["email", "google"],
 }: CrossmintAuthProviderProps) {
     const baseAuth = useCrossmintAuthBase();
-    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { crossmint } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,11 +47,6 @@ function CrossmintAuthProviderContent({
 
     // Ref to hold the OAuth login function that will be assigned by AuthWrapper
     const loginWithOAuthRef = useRef<((provider: OAuthProvider) => Promise<void>) | null>(null);
-
-    // Handle auth sync with Crossmint
-    useEffect(() => {
-        setJwt(baseAuth.jwt);
-    }, [baseAuth.jwt, setJwt]);
 
     // Close dialog when login succeeds
     useEffect(() => {
