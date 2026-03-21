@@ -43,6 +43,7 @@
         "fix-tee-double-init",
         "fix-transfers-optional-params",
         "fix-zero-value-transfers",
+        "force-rn-release",
         "homogenize-signer-management",
         "improve-signer-missing-error",
         "itchy-ducks-collect",

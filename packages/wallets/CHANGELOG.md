@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.7
+
+### Patch Changes
+
+- fd0dae4: Force new release of React Native SDK, Wallets SDK, and React UI SDK
+
 ## 1.0.0-beta.6
 
 ### Patch Changes
