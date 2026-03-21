@@ -42,9 +42,6 @@ export function assembleSigner<C extends Chain>(
         case "server":
             return assembleServerSigner(chain, config);
 
-        case "server":
-            return assembleServerSigner(chain, config);
-
         case "passkey":
             return new PasskeySigner(config);
 
