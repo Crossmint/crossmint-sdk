@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 1.0.0-beta.6
+
+### Patch Changes
+
+- 003e632: Remove incorrect signer mention from getWallet JSDoc description.
+- f5517fc: fix: pass full passkey signer config in addSigner to preserve publicKey
+- e38e91b: Improve error messages when server wallet signer is missing. Instead of a generic "read-only" error, the SDK now provides context-specific guidance for server signers, external-wallet signers, and wallets with multiple signers. Also adds a warning log when auto-assembly of the default signer fails.
+- bac3bd4: If a signer is in a pending state, approve it and then use it'
+
 ## 1.0.0-beta.5
 
 ### Minor Changes
