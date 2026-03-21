@@ -59,6 +59,8 @@ export function CrossmintWalletProvider({
         return () => deviceSignerKeyStorage.destroy();
     }, [deviceSignerKeyStorage]);
 
+    const renderUI = useMemo(() => createRenderWebUI(showOtpSignerPrompt), [showOtpSignerPrompt]);
+
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
@@ -66,7 +68,7 @@ export function CrossmintWalletProvider({
             showPasskeyHelpers={showPasskeyHelpers}
             showOtpSignerPrompt={showOtpSignerPrompt}
             callbacks={callbacks}
-            renderUI={createRenderWebUI(showOtpSignerPrompt)}
+            renderUI={renderUI}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
