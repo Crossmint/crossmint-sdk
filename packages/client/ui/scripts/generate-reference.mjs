@@ -25,7 +25,7 @@ import { join, resolve } from "path";
  *
  * createOnLogin and getOrCreateWallet share the same WalletArgsFor<Chain> shape.
  */
-const WALLET_ARGS_CHILDREN = [
+const WALLET_CREATE_ARGS_CHILDREN = [
     {
         name: "chain",
         type: { type: "reference", name: "Chain" },
@@ -34,15 +34,29 @@ const WALLET_ARGS_CHILDREN = [
         },
     },
     {
-        name: "signer",
+        name: "recovery",
         type: { type: "reference", name: "SignerConfigForChain" },
-        comment: { summary: [{ kind: "text", text: 'The signer configuration (e.g. `{ type: "email" }`).' }] },
+        comment: {
+            summary: [
+                {
+                    kind: "text",
+                    text: 'The recovery signer configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                },
+            ],
+        },
     },
     {
-        name: "owner",
+        name: "signers",
         flags: { isOptional: true },
-        type: { type: "intrinsic", name: "string" },
-        comment: { summary: [{ kind: "text", text: "Optional owner identifier." }] },
+        type: { type: "array", elementType: { type: "reference", name: "SignerConfigForChain" } },
+        comment: {
+            summary: [
+                {
+                    kind: "text",
+                    text: 'Optional array of operational signers. Defaults to a device signer if omitted (e.g. `[{ type: "device" }]`).',
+                },
+            ],
+        },
     },
     {
         name: "alias",
@@ -56,17 +70,28 @@ const WALLET_ARGS_CHILDREN = [
         type: { type: "array", elementType: { type: "reference", name: "WalletPlugin" } },
         comment: { summary: [{ kind: "text", text: "Optional array of wallet plugins." }] },
     },
+];
+
+const WALLET_GET_ARGS_CHILDREN = [
     {
-        name: "signers",
+        name: "chain",
+        type: { type: "reference", name: "Chain" },
+        comment: {
+            summary: [{ kind: "text", text: 'The blockchain of the wallet to retrieve (e.g. "base-sepolia").' }],
+        },
+    },
+    {
+        name: "alias",
         flags: { isOptional: true },
-        type: { type: "array", elementType: { type: "reference", name: "DelegatedSigner" } },
-        comment: { summary: [{ kind: "text", text: "Optional array of signers." }] },
+        type: { type: "intrinsic", name: "string" },
+        comment: { summary: [{ kind: "text", text: "Optional wallet alias to look up." }] },
     },
 ];
 
 const DEFAULT_EXPANDABLE_CHILDREN = {
-    createOnLogin: WALLET_ARGS_CHILDREN,
-    getOrCreateWallet: WALLET_ARGS_CHILDREN,
+    createOnLogin: WALLET_CREATE_ARGS_CHILDREN,
+    createWallet: WALLET_CREATE_ARGS_CHILDREN,
+    getWallet: WALLET_GET_ARGS_CHILDREN,
 };
 
 // =============================================================================

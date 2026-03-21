@@ -381,10 +381,9 @@ export class Wallet<C extends Chain> {
 
     /**
      * Get the wallet NFTs
-     * @param {Object} params - The parameters
-     * @param {number} params.perPage - The number of NFTs per page
-     * @param {number} params.page - The page number
-     * @param {WalletLocator} [params.locator] - The locator
+     * @param params - The parameters
+     * @param params.perPage - The number of NFTs per page
+     * @param params.page - The page number
      * @returns The NFTs
      */
     public async nfts(params: { perPage: number; page: number }) {
@@ -547,11 +546,11 @@ export class Wallet<C extends Chain> {
     /**
      * Approve a transaction or signature
      * @param params - The parameters
-     * @param params.transactionId - The transaction id or
+     * @param params.transactionId - The transaction id
      * @param params.signatureId - The signature id
-     * @param params.options - The options for the transaction
-     * @param params.options.approval - The approval
-     * @param params.options.additionalSigners - The additional signers
+     * @param params.options - The options for the approval
+     * @param params.options.approval - The approval data
+     * @param params.options.additionalSigners - Additional signers for the approval
      * @returns The transaction or signature
      */
     @WithLoggerContext({

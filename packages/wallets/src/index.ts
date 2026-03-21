@@ -30,6 +30,9 @@ export type {
     WalletPlugin,
     Signature,
     SolanaTransactionInput,
+    ApproveParams,
+    ApproveOptions,
+    AddSignerOptions,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

@@ -68,13 +68,18 @@ const MANUAL_RETURNS = {
             },
         },
         {
-            name: "getOrCreateWallet",
+            name: "getWallet",
             type: {
                 type: "reflection",
                 declaration: {
                     signatures: [
                         {
-                            parameters: [{ name: "args", type: { type: "reference", name: "WalletArgsFor<Chain>" } }],
+                            parameters: [
+                                {
+                                    name: "props",
+                                    type: { type: "reference", name: "Pick<ClientSideWalletArgsFor<Chain>, \"chain\" | \"alias\">" },
+                                },
+                            ],
                             type: {
                                 type: "reference",
                                 name: "Promise",
@@ -92,7 +97,98 @@ const MANUAL_RETURNS = {
                     ],
                 },
             },
-            comment: { summary: [{ kind: "text", text: "Creates a new wallet or retrieves an existing one." }] },
+            comment: {
+                summary: [{ kind: "text", text: "Retrieves an existing wallet. Returns undefined if no wallet is found." }],
+            },
+        },
+        {
+            name: "createWallet",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [
+                                {
+                                    name: "props",
+                                    type: { type: "reference", name: "ClientSideWalletCreateArgs<Chain>" },
+                                },
+                            ],
+                            type: {
+                                type: "reference",
+                                name: "Promise",
+                                typeArguments: [
+                                    {
+                                        type: "union",
+                                        types: [
+                                            { type: "reference", name: "Wallet" },
+                                            { type: "intrinsic", name: "undefined" },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [{ kind: "text", text: "Creates a new wallet with the specified chain and recovery signer." }],
+            },
+        },
+        {
+            name: "createDeviceSigner",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [],
+                            type: {
+                                type: "union",
+                                types: [
+                                    { type: "reference", name: "Promise<DeviceSignerDescriptor>" },
+                                    { type: "intrinsic", name: "undefined" },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [
+                    {
+                        kind: "text",
+                        text: "Creates a device signer using the provider's key storage. Returns undefined if device signing is not available.",
+                    },
+                ],
+            },
+        },
+        {
+            name: "createPasskeySigner",
+            type: {
+                type: "reflection",
+                declaration: {
+                    signatures: [
+                        {
+                            parameters: [
+                                {
+                                    name: "passkeyName",
+                                    type: { type: "intrinsic", name: "string" },
+                                },
+                            ],
+                            type: { type: "reference", name: "Promise<RegisterSignerPasskeyParams>" },
+                        },
+                    ],
+                },
+            },
+            comment: {
+                summary: [
+                    {
+                        kind: "text",
+                        text: "Creates a passkey signer via WebAuthn biometric prompt. EVM only.",
+                    },
+                ],
+            },
         },
     ],
 };

@@ -6,7 +6,7 @@ import type { DeviceSignerConfig } from "@/signers/types";
  * Creates a device signer by generating a new P-256 key pair via the provided key storage.
  *
  * @param deviceKeyStorage - The device key storage implementation to use for key generation.
- * @param walletAddress optional - The address of the wallet to associate the device signer with.
+ * @param address - Optional address of the wallet to associate the device signer with.
  * @returns A device signer descriptor containing the type, public key coordinates, and locator.
  *
  * @example
