@@ -18,7 +18,7 @@ import {
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
 import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
-import { NativeDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
+import { createDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
 
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
@@ -108,7 +108,7 @@ function CrossmintWalletProviderInternal({
 }: CrossmintWalletProviderProps) {
     // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
     const deviceSignerKeyStorage = useMemo(
-        () => deviceSignerKeyStorageProp ?? new NativeDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
+        () => deviceSignerKeyStorageProp ?? createDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
         []
     );
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
