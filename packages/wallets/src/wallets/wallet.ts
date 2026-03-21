@@ -617,6 +617,13 @@ export class Wallet<C extends Chain> {
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
+        // Device signers are not supported for Solana wallets
+        if (signer.type === "device" && this.chain === "solana") {
+            throw new InvalidSignerError(
+                "Device signers are not currently supported for Solana wallets. Contact sales (https://www.crossmint.com/contact/sales) for access."
+            );
+        }
+
         // Resolve server signer config to locator string
         const resolvedSigner =
             typeof signer === "object" && "type" in signer && signer.type === "server"

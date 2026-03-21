@@ -11,7 +11,7 @@ import type {
     Signer as SignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import { InvalidSignerError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type { ExternalWalletRegistrationConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
@@ -400,6 +400,12 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
+                        // Device signers are not supported for Solana wallets
+                        if (chain === "solana") {
+                            throw new InvalidSignerError(
+                                "Device signers are not currently supported for Solana wallets. Contact sales (https://www.crossmint.com/contact/sales) for access."
+                            );
+                        }
                         // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
                         if (signer.publicKey != null) {
                             return {
