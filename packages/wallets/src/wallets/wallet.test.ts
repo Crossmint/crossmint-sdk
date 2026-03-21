@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
+import type { SignerAdapter } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -694,6 +695,45 @@ describe("Wallet - addSigner()", () => {
         });
     });
 
+    describe("passkey signers", () => {
+        it("should pass full passkey config including publicKey to API", async () => {
+            const mockRegisterResponse = {
+                type: "passkey",
+                locator: "passkey:pk-123",
+                chains: {
+                    "base-sepolia": {
+                        id: "sig-456",
+                        status: "success",
+                    },
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            const passkeyConfig = {
+                type: "passkey" as const,
+                id: "pk-123",
+                name: "My Passkey",
+                publicKey: { x: "abc", y: "def" },
+            };
+
+            await evmWallet.addSigner(passkeyConfig);
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                "me:evm:smart",
+                expect.objectContaining({
+                    signer: expect.objectContaining({
+                        type: "passkey",
+                        id: "pk-123",
+                        name: "My Passkey",
+                        publicKey: { x: "abc", y: "def" },
+                    }),
+                    chain: "base-sepolia",
+                })
+            );
+        });
+    });
+
     describe("error cases", () => {
         it("should throw error when API returns error", async () => {
             const errorResponse = {
@@ -885,6 +925,53 @@ describe("Wallet - signers()", () => {
             const signers = await wallet.signers();
 
             expect(signers).toHaveLength(0);
+        });
+
+        it("should return signer status for Solana from getSigner", async () => {
+            const solanaWallet = await createMockWallet("solana", mockApiClient);
+            vi.mocked(solanaWallet.signers).mockRestore();
+
+            const mockWalletResponse: GetWalletSuccessResponse = {
+                chainType: "solana",
+                type: "smart",
+                address: solanaWallet.address,
+                config: {
+                    adminSigner: {
+                        type: "api-key",
+                        address: "solana-admin",
+                        locator: "api-key:admin",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "device",
+                            locator: "device:solana-device",
+                            publicKey: { x: "1", y: "2" },
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:solana-device",
+                publicKey: { x: "1", y: "2" },
+                transaction: {
+                    chainType: "solana",
+                    id: "tx-123",
+                    status: "pending",
+                    onChain: {
+                        transaction: "serialized-tx",
+                    },
+                },
+            } as any);
+
+            const signers = await solanaWallet.signers();
+
+            expect(signers).toHaveLength(1);
+            expect(signers[0].locator).toBe("device:solana-device");
+            expect(signers[0].status).toBe("pending");
         });
     });
 
@@ -1129,11 +1216,105 @@ describe("Wallet - useSigner()", () => {
                     status: "success" as const,
                 },
             ]);
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "email",
+                email: "delegated@example.com",
+                address: "0xDelegated",
+                locator: "email:delegated@example.com",
+                chains: {
+                    "base-sepolia": { status: "awaiting-approval", id: "sig-789" },
+                },
+            } as any);
 
             await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("email");
+            expect(wallet.signer?.status).toBe("awaiting-approval");
         });
+    });
+});
+
+describe("Wallet - recover()", () => {
+    it("should resume pending Stellar device signer registration from getSigner", async () => {
+        const mockApiClient = createMockApiClient();
+        const deviceSigner: SignerAdapter<"device"> = {
+            type: "device",
+            status: "pending",
+            locator: () => "device:stellar-device",
+            signMessage: vi.fn(),
+            signTransaction: vi.fn(),
+        };
+
+        const wallet = new Wallet(
+            {
+                chain: "stellar",
+                address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
+                recovery: { type: "api-key" } as any,
+                signer: deviceSigner,
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:stellar-device",
+            publicKey: { x: "1", y: "2" },
+            transaction: {
+                chainType: "solana",
+                id: "tx-123",
+                status: "pending",
+                onChain: {
+                    transaction: "serialized-tx",
+                },
+            },
+        } as any);
+        mockApiClient.getTransaction.mockResolvedValue({
+            id: "tx-123",
+            status: "success",
+            chainType: "stellar",
+            onChain: {
+                txEnvelope: "envelope-xdr",
+                txHash: "stellar-hash",
+                explorerLink: "https://stellar.explorer/tx-123",
+            },
+        } as any);
+
+        await wallet.recover();
+
+        expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:stellar:smart", "device:stellar-device");
+        expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:stellar:smart", "tx-123");
+        expect(wallet.signer?.status).toBe("success");
+    });
+});
+
+describe("Wallet - isSignerApproved()", () => {
+    it("should return true only when signer status is success", async () => {
+        const mockApiClient = createMockApiClient();
+        const wallet = await createMockWallet("base-sepolia", mockApiClient);
+        vi.mocked(wallet.signers).mockRestore();
+
+        mockApiClient.getSigner
+            .mockResolvedValueOnce({
+                type: "email",
+                email: "approved@example.com",
+                address: "0xApproved",
+                locator: "email:approved@example.com",
+                chains: {
+                    "base-sepolia": { status: "success" },
+                },
+            } as any)
+            .mockResolvedValueOnce({
+                type: "email",
+                email: "pending@example.com",
+                address: "0xPending",
+                locator: "email:pending@example.com",
+                chains: {
+                    "base-sepolia": { status: "awaiting-approval", id: "sig-pending" },
+                },
+            } as any);
+
+        await expect(wallet.isSignerApproved("email:approved@example.com")).resolves.toBe(true);
+        await expect(wallet.isSignerApproved("email:pending@example.com")).resolves.toBe(false);
     });
 });

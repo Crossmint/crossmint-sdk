@@ -33,7 +33,6 @@ export class CrossmintWallets {
      * Works on both client and server side.
      * On client side, provide wallet args directly.
      * On server side, provide the wallet locator string and wallet args.
-     * If no signer is provided, the wallet will be read-only.
      * @param argsOrLocator - Wallet args (client) or wallet locator string (server)
      * @param maybeArgs - Wallet args (required when using wallet locator on server side)
      * @returns A wallet if found, throws WalletNotAvailableError if not found

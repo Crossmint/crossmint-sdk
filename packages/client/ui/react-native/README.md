@@ -29,7 +29,6 @@ export default function App() {
             chain: "solana",
             signer: { type: "email" }
           }}
-          headlessSigningFlow={false}
         >
           <MainApp />
         </CrossmintWalletProvider>

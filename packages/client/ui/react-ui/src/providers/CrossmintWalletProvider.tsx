@@ -24,15 +24,17 @@ export interface CrossmintWalletProviderProps {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
+    /** When true (default), built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. Default: true. */
+    showOtpSignerPrompt?: boolean;
     /** @internal */
     children: ReactNode;
 }
 
-function renderWebUI({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) {
-    return (
+function createRenderWebUI(showOtpSignerPrompt: boolean) {
+    return ({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) => (
         <>
-            <EmailSignersDialog {...emailSignerProps} />
-            <PhoneSignersDialog {...phoneSignerProps} />
+            {showOtpSignerPrompt && <EmailSignersDialog {...emailSignerProps} />}
+            {showOtpSignerPrompt && <PhoneSignersDialog {...phoneSignerProps} />}
             {passkeyPromptProps != null && <PasskeyPrompt {...passkeyPromptProps} />}
         </>
     );
@@ -41,6 +43,7 @@ function renderWebUI({ emailSignerProps, phoneSignerProps, passkeyPromptProps }:
 export function CrossmintWalletProvider({
     children,
     showPasskeyHelpers = true,
+    showOtpSignerPrompt = true,
     appearance,
     createOnLogin,
     callbacks,
@@ -61,8 +64,9 @@ export function CrossmintWalletProvider({
             createOnLogin={createOnLogin}
             appearance={appearance}
             showPasskeyHelpers={showPasskeyHelpers}
+            showOtpSignerPrompt={showOtpSignerPrompt}
             callbacks={callbacks}
-            renderUI={renderWebUI}
+            renderUI={createRenderWebUI(showOtpSignerPrompt)}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
