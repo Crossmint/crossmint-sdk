@@ -1,5 +1,6 @@
 import type { ReactNode, MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+
 import type { SignerAuthHandlers, SignerAuthState } from "@/hooks/useSignerAuth";
 
 import type { PasskeyPromptState } from "./CrossmintWalletBaseProvider";
@@ -8,7 +9,7 @@ import { useWallet } from "@/hooks/useWallet";
 export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
     appearance?: UIConfig;
-    headlessSigningFlow?: boolean;
+    showOtpSignerPrompt?: boolean;
     showPasskeyHelpers?: boolean;
     renderUI?: (props: UIRenderProps) => ReactNode;
     passkeyPromptState: PasskeyPromptState;
@@ -49,15 +50,15 @@ export interface UIRenderProps {
 export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
-    headlessSigningFlow,
+    showOtpSignerPrompt,
     renderUI,
     passkeyPromptState,
     signerAuth,
 }: CrossmintWalletUIBaseProviderProps) {
     const { wallet } = useWallet();
 
-    const signerType = wallet?.signer.type;
-    const signerValue = wallet?.signer.locator().split(":")[1];
+    const signerType = wallet?.signer?.type;
+    const signerValue = wallet?.signer?.locator().split(":")[1];
 
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
@@ -91,7 +92,7 @@ export function CrossmintWalletUIBaseProvider({
     return (
         <>
             {children}
-            {!headlessSigningFlow && renderUI != null && renderUI(uiRenderProps)}
+            {renderUI != null && renderUI(uiRenderProps)}
         </>
     );
 }

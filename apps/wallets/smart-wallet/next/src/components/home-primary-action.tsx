@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import Link from "next/link";
 import { Fireworks } from "@/components/fireworks";
 import { MintNFTButton } from "@/components/mint-nft-button";
@@ -12,7 +12,7 @@ import { Typography } from "./typography";
 import { Spinner } from "@/icons/spinner";
 
 export function HomePrimaryAction() {
-    const { status: authStatus } = useAuth();
+    const { status: authStatus } = useCrossmintAuth();
     const { status: walletStatus, wallet } = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
     const { walletType, setWalletType } = useWalletConfig();

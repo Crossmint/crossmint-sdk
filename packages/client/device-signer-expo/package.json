@@ -1,0 +1,41 @@
+{
+    "name": "@crossmint/expo-device-signer",
+    "version": "0.1.1",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
+    "description": "Expo native module for hardware-backed device signing in Crossmint wallets",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "ios",
+        "android",
+        "app.plugin.js",
+        "expo-module.config.json",
+        "CrossmintExpoDeviceSigner.podspec",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
+    },
+    "dependencies": {
+        "@crossmint/wallets-sdk": "workspace:*"
+    },
+    "devDependencies": {
+        "expo-device": "~8.0.10",
+        "expo-modules-core": "^3.0.0",
+        "@types/react": "19.1.10",
+        "react": "19.1.1",
+        "react-native": "0.82.1"
+    },
+    "peerDependencies": {
+        "expo-device": ">=7 <9",
+        "expo-modules-core": ">=2.0.0",
+        "react": ">=18.0.0",
+        "react-native": ">=0.74.0"
+    }
+}

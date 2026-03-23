@@ -5,11 +5,55 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     crossmintHostedCheckoutV3Service,
     crossmintHostedCheckoutV3StylesService,
+    isHostedCheckoutV3ExistingOrderProps,
+    type CrossmintHostedCheckoutV3AllProps,
     type CrossmintHostedCheckoutV3Props,
+    type CrossmintHostedCheckoutV3OrderProps,
 } from "@crossmint/client-sdk-base";
 import clsx from "clsx";
 
-export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
+export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3AllProps & JSX.IntrinsicElements["button"];
+
+function extractProps(props: CrossmintHostedCheckoutV3ReactProps) {
+    if (isHostedCheckoutV3ExistingOrderProps(props as CrossmintHostedCheckoutV3AllProps)) {
+        const { orderId, clientSecret, locale, payment, appearance, onClick, className, children, ...restButtonProps } =
+            props as CrossmintHostedCheckoutV3OrderProps & JSX.IntrinsicElements["button"];
+        return {
+            customProps: { orderId, clientSecret, locale, payment, appearance } as CrossmintHostedCheckoutV3AllProps,
+            onClick,
+            className,
+            children,
+            restButtonProps,
+        };
+    }
+
+    const {
+        lineItems,
+        payment,
+        recipient,
+        locale,
+        appearance,
+        metadata,
+        onClick,
+        className,
+        children,
+        ...restButtonProps
+    } = props as CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
+    return {
+        customProps: {
+            lineItems,
+            payment,
+            recipient,
+            locale,
+            appearance,
+            metadata,
+        } as CrossmintHostedCheckoutV3AllProps,
+        onClick,
+        className,
+        children,
+        restButtonProps,
+    };
+}
 
 export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactProps) {
     const [didInjectCss, setDidInjectCss] = useState(false);
@@ -17,21 +61,10 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
 
-    // separate custom props from jsx button props
-    const { recipient, locale, lineItems, payment, appearance, metadata, ...buttonProps } = props;
-    const customProps: CrossmintHostedCheckoutV3Props = {
-        recipient,
-        locale,
-        lineItems,
-        payment,
-        appearance,
-        metadata,
-    };
+    const { customProps, onClick, className, children, restButtonProps } = extractProps(props);
 
     const hostedCheckoutService = crossmintHostedCheckoutV3Service({ apiClient, hostedCheckoutProps: customProps });
     const stylesService = crossmintHostedCheckoutV3StylesService(customProps);
-
-    const { onClick, className, children, ...restButtonProps } = buttonProps;
 
     function _onClick(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();

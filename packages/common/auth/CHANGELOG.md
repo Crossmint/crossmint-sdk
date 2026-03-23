@@ -1,5 +1,45 @@
 # @crossmint/common-sdk-auth
 
+## 1.1.0
+
+### Minor Changes
+
+- 02ac7bc: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 1.1.0-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+
+## 1.1.0-beta.0
+
+### Minor Changes
+
+- bf792d2: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 1.0.73
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-base@2.1.0
+
 ## 1.0.72
 
 ### Patch Changes

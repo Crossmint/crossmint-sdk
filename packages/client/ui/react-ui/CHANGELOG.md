@@ -1,5 +1,303 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [b701730]
+  - @crossmint/wallets-sdk@1.0.1
+  - @crossmint/client-sdk-react-base@2.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- 02ac7bc: Add support for Delegated Signers.
+- 02ac7bc: Remove Dynamic crypto wallet authentication from Crossmint Auth.
+
+  This is a breaking change that removes the ability to authenticate with crypto wallets via Dynamic (dynamic-xyz) in the React UI SDK. The following are removed:
+
+  - `web3`, `web3:evm-only`, and `web3:solana-only` login methods
+  - `experimental_externalWalletSigner` from the auth context
+  - All `@dynamic-labs/*` dependencies from the auth flow
+
+- 02ac7bc: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- 02ac7bc: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 02ac7bc: Remove `useAuth` hook alias in favor of `useCrossmintAuth`
+
+  BREAKING CHANGE: The `useAuth` export has been removed from all packages. Use `useCrossmintAuth` instead, which provides the same functionality.
+
+  - `useAuth()` -> `useCrossmintAuth()`
+
+### Minor Changes
+
+- 02ac7bc: Browser Device Key support with Iframe Key Storage
+- 02ac7bc: Remove biometric policy from device signers. Only "none" policies are now created, which is the default for the iframe.
+- 02ac7bc: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 02ac7bc: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+- 02ac7bc: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+- 02ac7bc: feat: unify OTP signer API with useWalletOtpSigner hook and showOtpSignerPrompt prop
+
+  - Replace `headlessSigningFlow` with `showOtpSignerPrompt` (defaults to `true`) for consistent opt-in/opt-out of built-in OTP UI across both react-ui and react-native
+  - Rename `emailSignerState` to `otpSignerState` in the wallet context to reflect support for both email and phone OTP signers
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 02ac7bc: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/wallets-sdk@1.0.0
+  - @crossmint/client-sdk-react-base@2.0.0
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-auth@1.3.0
+  - @crossmint/common-sdk-auth@1.1.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 4.0.0-beta.6
+
+### Patch Changes
+
+- Updated dependencies [003e632]
+- Updated dependencies [f5517fc]
+- Updated dependencies [e38e91b]
+- Updated dependencies [bac3bd4]
+  - @crossmint/wallets-sdk@1.0.0-beta.6
+  - @crossmint/client-sdk-react-base@2.0.0-beta.6
+
+## 4.0.0-beta.5
+
+### Minor Changes
+
+- 258779d: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+### Patch Changes
+
+- Updated dependencies [2d92c5a]
+- Updated dependencies [512015a]
+- Updated dependencies [258779d]
+- Updated dependencies [855a34c]
+- Updated dependencies [05f3feb]
+  - @crossmint/wallets-sdk@1.0.0-beta.5
+  - @crossmint/client-sdk-react-base@2.0.0-beta.5
+
+## 4.0.0-beta.4
+
+### Patch Changes
+
+- Updated dependencies [72a6c13]
+- Updated dependencies [7f45e33]
+  - @crossmint/wallets-sdk@1.0.0-beta.4
+  - @crossmint/client-sdk-react-base@2.0.0-beta.4
+
+## 4.0.0-beta.3
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+- Updated dependencies [d5c0df7]
+- Updated dependencies [d66aacc]
+- Updated dependencies [116111d]
+- Updated dependencies [5ae2806]
+- Updated dependencies [6eb5217]
+- Updated dependencies [d0c8820]
+- Updated dependencies [6038b09]
+- Updated dependencies [09e9ce2]
+  - @crossmint/wallets-sdk@1.0.0-beta.3
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-react-base@2.0.0-beta.3
+  - @crossmint/client-sdk-auth@1.3.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+  - @crossmint/common-sdk-auth@1.1.0-beta.1
+
+## 4.0.0-beta.2
+
+### Patch Changes
+
+- Updated dependencies [d09537e]
+- Updated dependencies [534e27d]
+  - @crossmint/wallets-sdk@1.0.0-beta.2
+  - @crossmint/client-sdk-react-base@2.0.0-beta.2
+
+## 4.0.0-beta.1
+
+### Patch Changes
+
+- Updated dependencies [e60df98]
+  - @crossmint/wallets-sdk@1.0.0-beta.1
+  - @crossmint/client-sdk-react-base@2.0.0-beta.1
+
+## 4.0.0-beta.0
+
+### Major Changes
+
+- 67920a5: Add support for Delegated Signers.
+- db51635: Remove Dynamic crypto wallet authentication from Crossmint Auth.
+
+  This is a breaking change that removes the ability to authenticate with crypto wallets via Dynamic (dynamic-xyz) in the React UI SDK. The following are removed:
+
+  - `web3`, `web3:evm-only`, and `web3:solana-only` login methods
+  - `experimental_externalWalletSigner` from the auth context
+  - All `@dynamic-labs/*` dependencies from the auth flow
+
+- 820c2ec: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- ede1aac: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 34a052b: Remove `useAuth` hook alias in favor of `useCrossmintAuth`
+
+  BREAKING CHANGE: The `useAuth` export has been removed from all packages. Use `useCrossmintAuth` instead, which provides the same functionality.
+
+  - `useAuth()` -> `useCrossmintAuth()`
+
+### Minor Changes
+
+- eb975c9: Browser Device Key support with Iframe Key Storage
+- d29b7d3: Remove biometric policy from device signers. Only "none" policies are now created, which is the default for the iframe.
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- bf792d2: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+- 74a05a1: feat: unify OTP signer API with useWalletOtpSigner hook
+
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 5e1e86e: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- a6fadd0: bt: fix double verify
+- Updated dependencies [5b77229]
+- Updated dependencies [8c079bd]
+- Updated dependencies [c51a407]
+- Updated dependencies [522b486]
+- Updated dependencies [eb975c9]
+- Updated dependencies [11ab4f6]
+- Updated dependencies [67920a5]
+- Updated dependencies [d29b7d3]
+- Updated dependencies [9b9f9db]
+- Updated dependencies [db51635]
+- Updated dependencies [820c2ec]
+- Updated dependencies [bf792d2]
+- Updated dependencies [ede1aac]
+- Updated dependencies [34a052b]
+- Updated dependencies [5e1e86e]
+- Updated dependencies [d5283ab]
+- Updated dependencies [2445716]
+- Updated dependencies [74a05a1]
+- Updated dependencies [6e3fa39]
+  - @crossmint/wallets-sdk@1.0.0-beta.0
+  - @crossmint/client-sdk-react-base@2.0.0-beta.0
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-auth@1.3.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 3.1.0
+
+### Minor Changes
+
+- 402001f: Add orderId + clientSecret support to hosted checkout for pre-created orders
+
+### Patch Changes
+
+- 92c894a: bt: change package
+- 464292b: bt: upgrade again
+- Updated dependencies [402001f]
+- Updated dependencies [e912d18]
+  - @crossmint/client-sdk-base@2.1.0
+  - @crossmint/wallets-sdk@0.21.0
+  - @crossmint/client-sdk-auth@1.2.51
+  - @crossmint/client-sdk-react-base@1.0.7
+  - @crossmint/common-sdk-auth@1.0.73
+
+## 3.0.3
+
+### Patch Changes
+
+- a6fadd0: bt: fix double verify
+- Updated dependencies [11ab4f6]
+  - @crossmint/client-sdk-react-base@1.0.6
+
 ## 3.0.2
 
 ### Patch Changes

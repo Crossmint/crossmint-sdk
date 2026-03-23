@@ -1,3 +1,8 @@
+import type { Options } from "tsup";
 import { treeShakableConfig } from "../../tsup.config.base";
 
-export default { ...treeShakableConfig, minify: false }; // Disable minification for less-verbose error logs
+const config: Options = {
+    ...treeShakableConfig,
+};
+
+export default config;

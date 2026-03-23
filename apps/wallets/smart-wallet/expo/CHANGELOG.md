@@ -1,5 +1,170 @@
 # expo-demo
 
+## 1.1.127
+
+### Patch Changes
+
+- Updated dependencies [b701730]
+  - @crossmint/wallets-sdk@1.0.1
+  - @crossmint/client-sdk-react-native-ui@1.0.1
+
+## 1.1.126
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/wallets-sdk@1.0.0
+  - @crossmint/client-sdk-react-native-ui@1.0.0
+
+## 1.1.126-beta.6
+
+### Patch Changes
+
+- Updated dependencies [6fbf135]
+- Updated dependencies [003e632]
+- Updated dependencies [f5517fc]
+- Updated dependencies [e38e91b]
+- Updated dependencies [8c02d3d]
+- Updated dependencies [bac3bd4]
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.6
+  - @crossmint/wallets-sdk@1.0.0-beta.6
+  - @crossmint/expo-device-signer@0.1.0-beta.4
+
+## 1.1.126-beta.5
+
+### Patch Changes
+
+- Updated dependencies [2d92c5a]
+- Updated dependencies [512015a]
+- Updated dependencies [258779d]
+- Updated dependencies [884952e]
+- Updated dependencies [05f3feb]
+  - @crossmint/wallets-sdk@1.0.0-beta.5
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.5
+  - @crossmint/expo-device-signer@0.1.0-beta.3
+
+## 1.1.126-beta.4
+
+### Patch Changes
+
+- Updated dependencies [72a6c13]
+- Updated dependencies [7f45e33]
+  - @crossmint/wallets-sdk@1.0.0-beta.4
+  - @crossmint/expo-device-signer@0.1.0-beta.2
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.4
+
+## 1.1.126-beta.3
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+- Updated dependencies [d5c0df7]
+- Updated dependencies [d66aacc]
+- Updated dependencies [116111d]
+- Updated dependencies [5ae2806]
+- Updated dependencies [6eb5217]
+- Updated dependencies [d0c8820]
+- Updated dependencies [6038b09]
+- Updated dependencies [09e9ce2]
+  - @crossmint/wallets-sdk@1.0.0-beta.3
+  - @crossmint/expo-device-signer@0.1.0-beta.1
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.3
+
+## 1.1.126-beta.2
+
+### Patch Changes
+
+- Updated dependencies [d09537e]
+- Updated dependencies [534e27d]
+  - @crossmint/wallets-sdk@1.0.0-beta.2
+  - @crossmint/expo-device-signer@0.0.2-beta.0
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.2
+
+## 1.1.126-beta.1
+
+### Patch Changes
+
+- Updated dependencies [e60df98]
+  - @crossmint/wallets-sdk@1.0.0-beta.1
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.1
+
+## 1.1.126-beta.0
+
+### Patch Changes
+
+- Updated dependencies [5b77229]
+- Updated dependencies [8c079bd]
+- Updated dependencies [c51a407]
+- Updated dependencies [522b486]
+- Updated dependencies [eb975c9]
+- Updated dependencies [67920a5]
+- Updated dependencies [d29b7d3]
+- Updated dependencies [9b9f9db]
+- Updated dependencies [820c2ec]
+- Updated dependencies [ede1aac]
+- Updated dependencies [34a052b]
+- Updated dependencies [5e1e86e]
+- Updated dependencies [d5283ab]
+- Updated dependencies [2445716]
+- Updated dependencies [74a05a1]
+- Updated dependencies [6e3fa39]
+  - @crossmint/wallets-sdk@1.0.0-beta.0
+  - @crossmint/client-sdk-react-native-ui@1.0.0-beta.0
+
+## 1.1.127
+
+### Patch Changes
+
+- Updated dependencies [e912d18]
+  - @crossmint/wallets-sdk@0.21.0
+  - @crossmint/client-sdk-react-native-ui@0.13.26
+
+## 1.1.126
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@0.13.25
+
 ## 1.1.125
 
 ### Patch Changes

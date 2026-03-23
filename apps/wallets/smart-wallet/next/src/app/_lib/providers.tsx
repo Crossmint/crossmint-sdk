@@ -3,12 +3,7 @@
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import {
-    CrossmintAuthProvider,
-    CrossmintProvider,
-    CrossmintWalletProvider,
-    type LoginMethod,
-} from "@crossmint/client-sdk-react-ui";
+import { CrossmintAuthProvider, CrossmintProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 import { useWalletConfig, WalletConfigProvider } from "../context/wallet-config";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -26,12 +21,6 @@ export function Providers({ children }: { children: ReactNode }) {
 function CrossmintProviders({ children }: { children: ReactNode }) {
     const { walletType } = useWalletConfig();
 
-    let web3LoginMethod: LoginMethod = "web3";
-    if (walletType === "evm-smart-wallet") {
-        web3LoginMethod = "web3:evm-only";
-    } else if (walletType === "solana-smart-wallet") {
-        web3LoginMethod = "web3:solana-only";
-    }
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
             <CrossmintAuthProvider
@@ -50,7 +39,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
                     },
                 }}
                 authModalTitle="Sign in to Wallet Demo"
-                loginMethods={["google", "email", "farcaster", "twitter", web3LoginMethod]}
+                loginMethods={["google", "email", "twitter"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}

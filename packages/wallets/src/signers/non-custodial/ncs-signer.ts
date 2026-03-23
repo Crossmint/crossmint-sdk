@@ -1,9 +1,11 @@
 import type {
     BaseSignResult,
     EmailInternalSignerConfig,
+    EmailSignerLocator,
     ExportSignerTEEConnection,
     PhoneInternalSignerConfig,
-    Signer,
+    PhoneSignerLocator,
+    SignerAdapter,
 } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
@@ -11,7 +13,7 @@ import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 
-export abstract class NonCustodialSigner implements Signer {
+export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
     private _authPromise: {
@@ -24,12 +26,12 @@ export abstract class NonCustodialSigner implements Signer {
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
         if (typeof window !== "undefined") {
-            this.initialize();
+            this._initializationPromise = this.initialize();
         }
         this.type = this.config.type;
     }
 
-    locator() {
+    locator(): EmailSignerLocator | PhoneSignerLocator {
         return this.config.locator;
     }
 
@@ -40,16 +42,20 @@ export abstract class NonCustodialSigner implements Signer {
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
-        // Initialize iframe if no custom handshake parent is provided
-        if (this.config.clientTEEConnection == null) {
-            const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
-            if (!parsedAPIKey.isValid) {
-                throw new Error("Invalid API key");
+        try {
+            // Initialize iframe if no custom handshake parent is provided
+            if (this.config.clientTEEConnection == null) {
+                const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
+                if (!parsedAPIKey.isValid) {
+                    throw new Error("Invalid API key");
+                }
+                const iframeManager = new NcsIframeManager({
+                    environment: parsedAPIKey.environment,
+                });
+                this.config.clientTEEConnection = await iframeManager.initialize();
             }
-            const iframeManager = new NcsIframeManager({
-                environment: parsedAPIKey.environment,
-            });
-            this.config.clientTEEConnection = await iframeManager.initialize();
+        } finally {
+            this._initializationPromise = null;
         }
     }
 
@@ -60,7 +66,10 @@ export abstract class NonCustodialSigner implements Signer {
             // If there's already an initialization in progress, wait for it
             if (this._initializationPromise) {
                 await this._initializationPromise;
-                return this.config.clientTEEConnection!;
+                if (this.config.clientTEEConnection == null) {
+                    throw new Error("Failed to initialize TEE connection");
+                }
+                return this.config.clientTEEConnection;
             }
 
             // Start initialization and store the promise to prevent concurrent initializations
@@ -74,7 +83,10 @@ export abstract class NonCustodialSigner implements Signer {
             }
         }
 
-        return this.config.clientTEEConnection!;
+        if (this.config.clientTEEConnection == null) {
+            throw new Error("TEE connection is not initialized");
+        }
+        return this.config.clientTEEConnection;
     }
 
     private async initializeTEEConnection(): Promise<void> {
@@ -108,7 +120,7 @@ export abstract class NonCustodialSigner implements Signer {
                 `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
                     `This callback manages the authentication flow (sending OTP and verifying user input). ` +
                     `If using our React/React Native SDK, this is handled automatically by the provider. ` +
-                    `For other environments, implement: onAuthRequired: (needsAuth, sendEmailWithOtp, verifyOtp, reject) => { /* your UI logic */ }`
+                    `For other environments, implement: onAuthRequired: (needsAuth, sendOtp, verifyOtp, reject) => { /* your UI logic */ }`
             );
         }
 
@@ -120,7 +132,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:get-status",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
@@ -157,6 +169,8 @@ export abstract class NonCustodialSigner implements Signer {
         if (this.config.onAuthRequired) {
             try {
                 await this.config.onAuthRequired(
+                    this.config.type,
+                    this.locator(),
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
@@ -166,6 +180,8 @@ export abstract class NonCustodialSigner implements Signer {
                         // We call onAuthRequired again so the needsAuth state is updated for the dev
                         if (this.config.onAuthRequired != null) {
                             await this.config.onAuthRequired(
+                                this.config.type,
+                                this.locator(),
                                 this._needsAuth,
                                 () => this.sendMessageWithOtp(),
                                 (otp) => this.verifyOtp(otp),
@@ -194,7 +210,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected getJwtOrThrow() {
-        const jwt = this.config.crossmint.experimental_customAuth?.jwt;
+        const jwt = this.config.crossmint.jwt;
         if (jwt == null) {
             throw new Error("JWT is required");
         }
@@ -227,7 +243,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:start-onboarding",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: { authId },
@@ -269,7 +285,7 @@ export abstract class NonCustodialSigner implements Signer {
                 responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
-                        jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                        jwt: this.config.crossmint.jwt ?? "",
                         apiKey: this.config.crossmint.apiKey,
                     },
                     data: {
@@ -294,6 +310,8 @@ export abstract class NonCustodialSigner implements Signer {
             // We call onAuthRequired again so the needsAuth state is updated for the dev
             if (this.config.onAuthRequired != null) {
                 await this.config.onAuthRequired(
+                    this.config.type,
+                    this.locator(),
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),

@@ -1,4 +1,4 @@
-import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory-ai/react";
+import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
 import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
 import { useEffect, useRef } from "react";
 
@@ -22,7 +22,7 @@ function OrderIntentVerificationContent({
     onVerificationComplete,
     onVerificationError,
 }: OrderIntentVerificationProps) {
-    const { verifyInstruction } = useBasisTheoryAI();
+    const { verifyInstruction, ready } = useBasisTheoryAI();
     const verifyRef = useRef(verifyInstruction);
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
@@ -41,6 +41,10 @@ function OrderIntentVerificationContent({
     const instructionId = orderIntent.payment.btInstructionId;
 
     useEffect(() => {
+        if (!ready) {
+            return;
+        }
+
         let cancelled = false;
 
         verifyRef
@@ -59,7 +63,7 @@ function OrderIntentVerificationContent({
         return () => {
             cancelled = true;
         };
-    }, [agentId, instructionId]);
+    }, [ready, agentId, instructionId]);
 
     return null;
 }

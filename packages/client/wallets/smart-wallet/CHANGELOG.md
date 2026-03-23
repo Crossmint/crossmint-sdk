@@ -1,5 +1,37 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.54
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 0.3.54-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+
+## 0.3.54-beta.0
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 0.3.54
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-base@2.1.0
+
 ## 0.3.53
 
 ### Patch Changes

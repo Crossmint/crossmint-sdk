@@ -5,18 +5,29 @@ import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
+import type {
+    SignerConfigForChain,
+    ExternalWalletRegistrationConfig,
+    SignerAdapter,
+    BaseSignResult,
+    PasskeySignResult,
+    DeviceSignResult,
+    DeviceSignerConfig,
+    DeviceSignerLocator,
+    ServerSignerConfig,
+} from "../signers/types";
+import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
-export type { Activity } from "../api/types";
+export type { Transfers } from "../api/types";
 
 export type PrepareOnly<T extends boolean = boolean> = {
-    experimental_prepareOnly: T;
+    prepareOnly: T;
 };
 
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
 export type TransactionInputOptions = PrepareOnly & {
-    experimental_signer?: string;
+    signer?: string | ServerSignerConfig;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -25,11 +36,11 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly;
 
-export type AddDelegatedSignerOptions = PrepareOnly;
+export type AddSignerOptions = PrepareOnly;
 
-export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
-    ? { transactionId: string }
-    : { signatureId: string };
+export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
+    ? Signer & { transactionId: string }
+    : Signer & { signatureId?: string };
 
 export type SignMessageInput = {
     message: string;
@@ -71,7 +82,7 @@ export type StellarTransactionInput = (
           contractId: string;
           method: string;
           memo?: string;
-          args: Record<string, any>;
+          args: Record<string, unknown>;
       }
     | {
           transaction: string;
@@ -101,9 +112,60 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
-export type DelegatedSigner = {
-    signer: string;
+export type SignerStatus = "success" | "pending" | "awaiting-approval" | "failed";
+
+export type SignerInput = {
+    signer: string | ServerSignerConfig;
 };
+
+export type Signer =
+    | {
+          type: "passkey";
+          id: string;
+          name: string;
+          publicKey: { x: string; y: string };
+          validatorContractVersion: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "api-key";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "external-wallet";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "email";
+          email: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "phone";
+          phone: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "device";
+          publicKey: { x: string; y: string };
+          locator: string;
+          status: SignerStatus;
+      }
+    | {
+          type: "server";
+          address: string;
+          locator: string;
+          status: SignerStatus;
+      };
 
 // Approvals
 export type PendingApproval = NonNullable<
@@ -113,6 +175,14 @@ export type PendingApproval = NonNullable<
 export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
+    onAuthRequired?: (
+        signerType: "email" | "phone",
+        signerLocator: string,
+        needsAuth: boolean,
+        sendOtp: () => Promise<void>,
+        verifyOtp: (otp: string) => Promise<void>,
+        reject: () => void
+    ) => Promise<void>;
 };
 
 export type StellarWalletPlugin = string;
@@ -120,19 +190,45 @@ export type StellarWalletPlugin = string;
 export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWalletPlugin : never;
 
 export type WalletOptions = {
-    experimental_callbacks?: Callbacks;
+    callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
 
 export type WalletArgsFor<C extends Chain> = {
+    /** The blockchain to create the wallet on (e.g. "base-sepolia"). */
     chain: C;
-    signer: SignerConfigForChain<C>;
+    /** Optional owner identifier. */
     owner?: string;
+    /** Optional array of wallet plugins. */
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
-    delegatedSigners?: Array<DelegatedSigner>;
+    /** Optional wallet alias. */
     alias?: string;
 };
+
+export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
+    /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
+    recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Signers to register on the wallet during creation. */
+    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
+    alias?: string;
+};
+
+/**
+ * A device signer descriptor containing the public key and locator.
+ * Returned by `createDeviceSigner`.
+ */
+export type DeviceSignerDescriptor = {
+    type: "device";
+    publicKey: { x: string; y: string };
+    locator: DeviceSignerLocator;
+    name?: string;
+};
+
+export type ClientSideWalletArgsFor<C extends Chain> = Omit<WalletArgsFor<C>, "owner">;
+
+export type ClientSideWalletCreateArgs<C extends Chain> = Omit<WalletCreateArgs<C>, "owner">;
 
 type ChainExtras = {
     solana: { mintHash?: string };
@@ -186,8 +282,8 @@ export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly exten
       };
 
 export type ApproveOptions = {
-    experimental_approval?: Approval;
-    additionalSigners?: Signer[];
+    approval?: Approval;
+    additionalSigners?: SignerAdapter[];
 };
 
 export type ApproveParams = {
@@ -196,6 +292,6 @@ export type ApproveParams = {
     options?: ApproveOptions;
 };
 
-export type Approval = (BaseSignResult | PasskeySignResult) & {
+export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
     signer: string;
 };

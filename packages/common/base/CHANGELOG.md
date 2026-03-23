@@ -1,5 +1,27 @@
 # @crossmint/common-sdk-base
 
+## 0.10.0
+
+### Minor Changes
+
+- 02ac7bc: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+
+### Patch Changes
+
+- 02ac7bc: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+
+## 0.10.0-beta.1
+
+### Patch Changes
+
+- 4e5bc75: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+
+## 0.10.0-beta.0
+
+### Minor Changes
+
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+
 ## 0.9.20
 
 ### Patch Changes

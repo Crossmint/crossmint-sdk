@@ -6,7 +6,7 @@ import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
@@ -29,7 +29,7 @@ export function HomeContent() {
     //     isLoading,
     // } = useEVMDynamicConnector();
     const { wallet, status } = useWallet();
-    const { status: crossminAuthStatus } = useAuth();
+    const { status: crossminAuthStatus } = useCrossmintAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
     const walletAddress = wallet?.address;

@@ -58,6 +58,6 @@ export class CrossmintApiClient extends ApiClient {
     }
 
     private get resolvedJwt(): string | undefined {
-        return this.crossmint.experimental_customAuth?.jwt || this.crossmint.jwt;
+        return this.crossmint.jwt;
     }
 }

@@ -1,6 +1,12 @@
-import type { ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { CrossmintWalletBaseProvider, type UIRenderProps, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import {
+    CrossmintWalletBaseProvider,
+    type UIRenderProps,
+    type CreateOnLogin,
+    useCrossmint,
+} from "@crossmint/client-sdk-react-base";
+import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -18,15 +24,17 @@ export interface CrossmintWalletProviderProps {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
+    /** When true (default), built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. Default: true. */
+    showOtpSignerPrompt?: boolean;
     /** @internal */
     children: ReactNode;
 }
 
-function renderWebUI({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) {
-    return (
+function createRenderWebUI(showOtpSignerPrompt: boolean) {
+    return ({ emailSignerProps, phoneSignerProps, passkeyPromptProps }: UIRenderProps) => (
         <>
-            <EmailSignersDialog {...emailSignerProps} />
-            <PhoneSignersDialog {...phoneSignerProps} />
+            {showOtpSignerPrompt && <EmailSignersDialog {...emailSignerProps} />}
+            {showOtpSignerPrompt && <PhoneSignersDialog {...phoneSignerProps} />}
             {passkeyPromptProps != null && <PasskeyPrompt {...passkeyPromptProps} />}
         </>
     );
@@ -35,17 +43,33 @@ function renderWebUI({ emailSignerProps, phoneSignerProps, passkeyPromptProps }:
 export function CrossmintWalletProvider({
     children,
     showPasskeyHelpers = true,
+    showOtpSignerPrompt = true,
     appearance,
     createOnLogin,
     callbacks,
 }: CrossmintWalletProviderProps) {
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+
+    const deviceSignerKeyStorage = useMemo(
+        () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
+        [crossmint.apiKey]
+    );
+
+    useEffect(() => {
+        return () => deviceSignerKeyStorage.destroy();
+    }, [deviceSignerKeyStorage]);
+
+    const renderUI = useMemo(() => createRenderWebUI(showOtpSignerPrompt), [showOtpSignerPrompt]);
+
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
             showPasskeyHelpers={showPasskeyHelpers}
+            showOtpSignerPrompt={showOtpSignerPrompt}
             callbacks={callbacks}
-            renderUI={renderWebUI}
+            renderUI={renderUI}
+            deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             {children}
         </CrossmintWalletBaseProvider>

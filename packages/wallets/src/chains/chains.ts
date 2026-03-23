@@ -1,6 +1,6 @@
 import { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
 import { walletsLogger } from "../logger";
-import { InvalidEnvironmentError } from "../utils/errors";
+import { InvalidChainError, InvalidEnvironmentError } from "../utils/errors";
 import type { Chain as ViemChain } from "viem";
 import {
     baseSepolia,
@@ -196,7 +196,22 @@ export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTe
  * @param environment - The API key environment prefix
  * @returns The validated (and potentially converted) chain
  */
+export function isValidChain(chain: string): chain is Chain {
+    return (
+        chain === "solana" ||
+        chain === "stellar" ||
+        isTestnetChain(chain as EVMSmartWalletChain) ||
+        isMainnetChain(chain as EVMSmartWalletChain)
+    );
+}
+
 export function validateChainForEnvironment<C extends Chain>(chain: C, environment: APIKeyEnvironmentPrefix): C {
+    if (!isValidChain(chain)) {
+        throw new InvalidChainError(
+            `Unknown chain "${chain}". Please use a supported chain name (e.g. "base-sepolia", "polygon", "solana", "stellar").`
+        );
+    }
+
     if (chain === "solana" || chain === "stellar") {
         return chain;
     }

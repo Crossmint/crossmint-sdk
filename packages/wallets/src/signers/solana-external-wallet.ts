@@ -1,28 +1,16 @@
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
-import { TransactionFailedError } from "../utils/errors";
+import type { ExternalWalletInternalSignerConfig } from "./types";
 import type { SolanaChain } from "@/chains/chains";
+import { TransactionFailedError } from "../utils/errors";
+import { ExternalWalletSigner } from "./external-wallet-signer";
 
-export class SolanaExternalWalletSigner implements Signer {
-    type = "external-wallet" as const;
-    private _address: string;
-    onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
+    private onSign?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
-    constructor(private config: ExternalWalletInternalSignerConfig<SolanaChain>) {
-        if (config.address == null) {
-            throw new Error("Please provide an address for the External Wallet Signer");
-        }
-        this._address = config.address;
-        this.onSignTransaction = config.onSignTransaction;
-    }
-
-    address() {
-        return this._address;
-    }
-
-    locator() {
-        return this.config.locator;
+    constructor(config: ExternalWalletInternalSignerConfig<SolanaChain>) {
+        super(config);
+        this.onSign = config.onSign;
     }
 
     async signMessage() {
@@ -30,16 +18,14 @@ export class SolanaExternalWalletSigner implements Signer {
     }
 
     async signTransaction(transaction: string) {
-        if (this.onSignTransaction == null) {
-            return await Promise.reject(
-                new Error("onSignTransaction method is required to sign transactions with a Solana external wallet")
+        if (this.onSign == null) {
+            throw new Error(
+                "[SolanaExternalWalletSigner] No onSign callback provided. Pass an onSign callback when configuring the external wallet signer."
             );
         }
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        // Sign the transaction (we can't use signMessage on transactions, so we need to sign the transaction directly)
-        const signedTxn = await this.onSignTransaction(deserializedTransaction);
-        // Get the signature from the signed transaction
+        const signedTxn = await this.onSign(deserializedTransaction);
         const externalWalletPublicKey = new PublicKey(this._address);
         const signerIndex = signedTxn.message.staticAccountKeys.findIndex((key) => key.equals(externalWalletPublicKey));
         if (signerIndex === -1) {
