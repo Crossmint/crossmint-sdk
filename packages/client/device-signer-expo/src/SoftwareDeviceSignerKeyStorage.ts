@@ -25,12 +25,37 @@ type CryptoLike = {
 };
 
 /**
- * Converts a base64 string to a SecureStore-safe key by replacing
- * characters that are invalid in expo-secure-store keys.
- * SecureStore only allows alphanumeric, '.', '-', and '_'.
+ * Converts a base64/base64url string back into padded canonical base64.
  */
-function safeStoreKey(base64: string): string {
-    return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+function toBase64(base64: string): string {
+    const normalized = base64.replace(/-/g, "+").replace(/_/g, "/");
+    const remainder = normalized.length % 4;
+
+    if (remainder === 0) {
+        return normalized;
+    }
+    if (remainder === 2) {
+        return `${normalized}==`;
+    }
+    if (remainder === 3) {
+        return `${normalized}=`;
+    }
+
+    throw new Error("Invalid base64url string");
+}
+
+/**
+ * Converts a public-key string into canonical base64 for comparisons and API usage.
+ */
+function normalizePublicKeyEncoding(publicKey: string): string {
+    return toBase64(publicKey);
+}
+
+/**
+ * Converts a public-key string into a SecureStore-safe key.
+ */
+function safeStoreKey(publicKey: string): string {
+    return normalizePublicKeyEncoding(publicKey).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
 /**
@@ -68,7 +93,7 @@ function bytesToBase64(bytes: Uint8Array): string {
  * Converts a base64 string to a Uint8Array.
  */
 function base64ToBytes(base64: string): Uint8Array {
-    const binary = atob(base64);
+    const binary = atob(toBase64(base64));
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -128,7 +153,10 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
         if (params.address != null) {
             await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${params.address}`, privateKeyHex);
-            await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${params.address}_pub`, publicKeyBase64);
+            await SecureStore.setItemAsync(
+                `${ADDRESS_KEY_PREFIX}${params.address}_pub`,
+                normalizePublicKeyEncoding(publicKeyBase64)
+            );
         } else {
             await SecureStore.setItemAsync(`${PENDING_KEY_PREFIX}${safeStoreKey(publicKeyBase64)}`, privateKeyHex);
         }
@@ -145,17 +173,22 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         }
 
         await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${address}`, privateKeyHex);
-        await SecureStore.setItemAsync(`${ADDRESS_KEY_PREFIX}${address}_pub`, publicKeyBase64);
+        await SecureStore.setItemAsync(
+            `${ADDRESS_KEY_PREFIX}${address}_pub`,
+            normalizePublicKeyEncoding(publicKeyBase64)
+        );
         await SecureStore.deleteItemAsync(pendingKey);
     }
 
     async getKey(address: string): Promise<string | null> {
-        return await SecureStore.getItemAsync(`${ADDRESS_KEY_PREFIX}${address}_pub`);
+        const publicKey = await SecureStore.getItemAsync(`${ADDRESS_KEY_PREFIX}${address}_pub`);
+        return publicKey == null ? null : normalizePublicKeyEncoding(publicKey);
     }
 
     async hasKey(publicKeyBase64: string): Promise<boolean> {
         const index = await this.getPublicKeyIndex();
-        return index.includes(publicKeyBase64);
+        const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
+        return index.some((key) => normalizePublicKeyEncoding(key) === normalizedPublicKey);
     }
 
     async signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
@@ -166,9 +199,9 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
         const privateKey = hexToBytes(privateKeyHex);
         const messageBytes = base64ToBytes(message);
-        // The message is already a hash digest (e.g. keccak256) provided by the wallet API,
-        // so we sign the raw bytes directly without re-hashing (prehash defaults to false).
-        const signature = p256.sign(messageBytes, privateKey, { lowS: true });
+        // Match the native implementations, which sign the decoded message bytes using the
+        // platform P-256 primitives. Those primitives apply SHA-256 before ECDSA signing.
+        const signature = p256.sign(messageBytes, privateKey, { lowS: true, prehash: true });
 
         return {
             r: `0x${signature.r.toString(16).padStart(64, "0")}`,
@@ -221,15 +254,17 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
     private async trackPublicKey(publicKeyBase64: string): Promise<void> {
         const index = await this.getPublicKeyIndex();
-        if (!index.includes(publicKeyBase64)) {
-            index.push(publicKeyBase64);
+        const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
+        if (!index.some((key) => normalizePublicKeyEncoding(key) === normalizedPublicKey)) {
+            index.push(normalizedPublicKey);
             await this.savePublicKeyIndex(index);
         }
     }
 
     private async untrackPublicKey(publicKeyBase64: string): Promise<void> {
         const index = await this.getPublicKeyIndex();
-        const filtered = index.filter((k) => k !== publicKeyBase64);
+        const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
+        const filtered = index.filter((key) => normalizePublicKeyEncoding(key) !== normalizedPublicKey);
         await this.savePublicKeyIndex(filtered);
     }
 }

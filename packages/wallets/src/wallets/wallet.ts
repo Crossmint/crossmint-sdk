@@ -22,6 +22,7 @@ import type {
     Transaction,
     Balances,
     TokenBalance,
+    SignerStatus,
     ApproveParams,
     ApproveOptions,
     Approval,
@@ -911,8 +912,17 @@ export class Wallet<C extends Chain> {
             this.#needsRecovery = false;
             this.#deviceSignerApproved = true;
         };
+        const isApprovedDeviceSignerStatus = (status: SignerStatus | undefined): boolean =>
+            status === "success" || status === "active";
+        const isAlreadyApprovedDeviceSignerError = (error: unknown): boolean => {
+            if (!(error instanceof Error)) {
+                return false;
+            }
 
-        if (deviceSigner.status === "success") {
+            return error.message.includes("Delegated signer") && error.message.includes("already 'approved'");
+        };
+
+        if (isApprovedDeviceSignerStatus(deviceSigner.status)) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
             markDeviceSignerApproved();
             return;
@@ -944,7 +954,7 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (deviceSigner.status === "success") {
+        if (isApprovedDeviceSignerStatus(deviceSigner.status)) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
             markDeviceSignerApproved();
             return;
@@ -960,12 +970,20 @@ export class Wallet<C extends Chain> {
         try {
             await this.addSigner(newDeviceSigner as SignerConfigForChain<C>);
         } catch (error) {
-            walletsLogger.error("wallet.recover.device.error", { error });
-            await deviceSignerKeyStorage.deleteKey(this.address);
-            throw error;
+            if (isAlreadyApprovedDeviceSignerError(error)) {
+                walletsLogger.info("wallet.recover.skipped", {
+                    reason: "Device signer already approved",
+                    signerLocator: newDeviceSigner.locator,
+                });
+            } else {
+                walletsLogger.error("wallet.recover.device.error", { error });
+                await deviceSignerKeyStorage.deleteKey(this.address);
+                throw error;
+            }
         }
 
-        // Reassemble device signer with the new locator
+        // Reassemble device signer with the resolved locator. This also covers the
+        // idempotent case where the backend reports the signer is already approved.
         this.#signer = await this.assembleFullSigner(
             {
                 type: "device",
@@ -974,6 +992,9 @@ export class Wallet<C extends Chain> {
             } as InternalSignerConfig<C>,
             deviceSignerKeyStorage
         );
+        if (this.#signer.type === "device") {
+            this.#signer.status = "success";
+        }
         walletsLogger.info("wallet.recover.device.success", { signerLocator: newDeviceSigner.locator });
 
         markDeviceSignerApproved();
