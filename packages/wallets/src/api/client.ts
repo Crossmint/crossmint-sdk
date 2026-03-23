@@ -27,6 +27,8 @@ import type {
     GetBalanceResponse,
     RegisterSignerParams,
     RegisterSignerResponse,
+    RemoveSignerParams,
+    RemoveSignerResponse,
     GetSignerResponse,
     WalletLocator,
     SendParams,
@@ -229,6 +231,14 @@ class ApiClient extends CrossmintApiClient {
     async registerSigner(walletLocator: WalletLocator, params: RegisterSignerParams): Promise<RegisterSignerResponse> {
         const response = await this.post(`${this.apiPrefix}/${walletLocator}/signers`, {
             body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async removeSigner(walletLocator: WalletLocator, signer: string, params: RemoveSignerParams): Promise<RemoveSignerResponse> {
+        const queryString = params.chain ? `?chain=${params.chain}` : '';
+        const response = await this.delete(`${this.apiPrefix}/${walletLocator}/signers/${signer}${queryString}`, {
             headers: this.headers,
         });
         return response.json();

@@ -16,6 +16,8 @@ import type {
 import type {
     AddSignerOptions,
     AddSignerReturnType,
+    RemoveSignerOptions,
+    RemoveSignerReturnType,
     Signer as WalletSigner,
     WalletOptions,
     UserLocator,
@@ -726,6 +728,104 @@ export class Wallet<C extends Chain> {
                 }
 
                 return { ...registeredSigner, status: "success" as const } as any;
+            }
+        } finally {
+            this.#signer = originalSigner;
+        }
+    }
+
+    /**
+     * Remove a signer from the wallet.
+     * Always uses the recovery signer internally to approve the removal.
+     * @param signerLocator - The locator of the signer to remove (e.g., "external-wallet:0x123", "passkey:abc123")
+     * @param options - The options for the operation
+     * @param options.prepareOnly - If true, returns the operation ID without auto-approving
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.removeSigner",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
+        signerLocator: string,
+        options?: T
+    ): Promise<T extends PrepareOnly<true> ? RemoveSignerReturnType<C> : RemoveSignerReturnType<C>> {
+        walletsLogger.info("wallet.removeSigner.start", { signerLocator });
+
+        // Store original signer and swap to recovery signer for the removal
+        const originalSigner = this.signer;
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+        try {
+            const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
+                chain:
+                    this.chain === "solana" || this.chain === "stellar"
+                        ? undefined
+                        : (this.chain as RegisterSignerChain),
+            });
+
+            if ("error" in response) {
+                walletsLogger.error("wallet.removeSigner.error", {
+                    error: response,
+                });
+                throw new Error(`Failed to remove signer: ${JSON.stringify(response.message)}`);
+            }
+
+            if (this.chain === "solana" || this.chain === "stellar") {
+                if (!("transaction" in response) || response.transaction == null) {
+                    walletsLogger.error("wallet.removeSigner.error", {
+                        error: "Expected transaction in response for Solana/Stellar chain",
+                    });
+                    throw new Error("Expected transaction in response for Solana/Stellar chain");
+                }
+
+                const transactionId = response.transaction.id;
+
+                if (options?.prepareOnly) {
+                    walletsLogger.info("wallet.removeSigner.prepared", {
+                        transactionId,
+                    });
+                    return { transactionId, status: undefined } as any;
+                }
+
+                await this.approveTransactionAndWait(transactionId);
+                walletsLogger.info("wallet.removeSigner.success", {
+                    transactionId,
+                });
+                return { transactionId, status: "success" as const } as any;
+            } else {
+                if (!("chains" in response)) {
+                    walletsLogger.error("wallet.removeSigner.error", {
+                        error: "Expected chains in response for EVM chain",
+                    });
+                    throw new Error("Expected chains in response for EVM chain");
+                }
+
+                const pendingOperation = getPendingSignerOperation(response, this.chain);
+
+                if (options?.prepareOnly) {
+                    const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
+                    walletsLogger.info("wallet.removeSigner.prepared", {
+                        signatureId,
+                    });
+                    return { signatureId, status: undefined } as any;
+                }
+
+                if (pendingOperation?.type === "signature") {
+                    await this.approveSignatureAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.removeSigner.success", {
+                        signatureId: pendingOperation.id,
+                    });
+                } else if (response.chains?.[this.chain]?.status === "failed") {
+                    throw new Error(`Signer removal failed for chain ${this.chain}`);
+                } else {
+                    walletsLogger.info("wallet.removeSigner.success");
+                }
+
+                return { signatureId: pendingOperation?.id, status: "success" as const } as any;
             }
         } finally {
             this.#signer = originalSigner;

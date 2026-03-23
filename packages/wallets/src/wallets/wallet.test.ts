@@ -781,6 +781,163 @@ describe("Wallet - addSigner()", () => {
     });
 });
 
+describe("Wallet - removeSigner()", () => {
+    let mockApiClient: MockedApiClient;
+    let evmWallet: Wallet<"base-sepolia">;
+    let solanaWallet: Wallet<"solana">;
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        mockApiClient = createMockApiClient();
+        evmWallet = await createMockWallet("base-sepolia", mockApiClient);
+        solanaWallet = await createMockWallet("solana", mockApiClient);
+    });
+
+    describe("success cases", () => {
+        it("should remove signer for EVM chain", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": {
+                        status: "success",
+                    },
+                },
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+
+            const result = await evmWallet.removeSigner("external-wallet:0x456");
+
+            expect(mockApiClient.removeSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:0x456",
+                { chain: "base-sepolia" }
+            );
+            expect(result.status).toBe("success");
+        });
+
+        it("should remove signer with prepareOnly for EVM", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": {
+                        status: "pending",
+                        id: "sig-123",
+                    },
+                },
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+            mockApiClient.getSigner.mockResolvedValue({
+                ...mockRemoveResponse,
+                chains: {
+                    "base-sepolia": {
+                        status: "pending",
+                        id: "sig-123",
+                    },
+                },
+            } as any);
+
+            const result = await evmWallet.removeSigner("external-wallet:0x456", {
+                prepareOnly: true,
+            });
+
+            expect(result.signatureId).toBe("sig-123");
+            expect(result.status).toBeUndefined();
+            expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
+        });
+
+        it("should remove signer for Solana chain with transaction", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
+                transaction: { id: "txn-123" },
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+            mockApiClient.getTransaction.mockResolvedValue({
+                status: "success",
+                onChain: { txId: "hash-123", explorerLink: "https://explorer.com/tx/hash-123" },
+            } as any);
+
+            const result = await solanaWallet.removeSigner("external-wallet:ABC123");
+
+            expect(mockApiClient.removeSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:ABC123",
+                { chain: undefined }
+            );
+            expect(result.status).toBe("success");
+        });
+
+        it("should remove signer with prepareOnly for Solana", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
+                transaction: { id: "txn-123" },
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+
+            const result = await solanaWallet.removeSigner("external-wallet:ABC123", {
+                prepareOnly: true,
+            });
+
+            expect(result.transactionId).toBe("txn-123");
+            expect(result.status).toBeUndefined();
+            expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("error cases", () => {
+        it("should throw error on API failure", async () => {
+            mockApiClient.removeSigner.mockResolvedValue({
+                error: true,
+                message: "Failed to remove signer",
+            } as any);
+
+            await expect(evmWallet.removeSigner("external-wallet:0x456")).rejects.toThrow(
+                "Failed to remove signer"
+            );
+        });
+
+        it("should throw error when Solana response missing transaction", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+
+            await expect(solanaWallet.removeSigner("external-wallet:ABC123")).rejects.toThrow(
+                "Expected transaction in response for Solana/Stellar chain"
+            );
+        });
+
+        it("should throw error when EVM response missing chains", async () => {
+            const mockRemoveResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                transaction: { id: "txn-123" },
+            };
+
+            mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
+
+            await expect(evmWallet.removeSigner("external-wallet:0x456")).rejects.toThrow(
+                "Expected chains in response for EVM chain"
+            );
+        });
+    });
+});
+
 describe("Wallet - signers()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;

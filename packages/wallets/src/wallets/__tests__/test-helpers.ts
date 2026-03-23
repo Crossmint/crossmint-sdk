@@ -18,6 +18,7 @@ export type MockedApiClient = {
     send: MockedFunction<ApiClient["send"]>;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     registerSigner: MockedFunction<ApiClient["registerSigner"]>;
+    removeSigner: MockedFunction<ApiClient["removeSigner"]>;
     getSigner: MockedFunction<ApiClient["getSigner"]>;
 };
 
@@ -103,6 +104,7 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     send: vi.fn(),
     getWallet: vi.fn(),
     registerSigner: vi.fn(),
+    removeSigner: vi.fn(),
     getSigner: vi.fn(),
     ...overrides,
 });
