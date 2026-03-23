@@ -171,8 +171,8 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         const signature = p256.sign(messageBytes, privateKey, { lowS: true });
 
         return {
-            r: signature.r.toString(16).padStart(64, "0"),
-            s: signature.s.toString(16).padStart(64, "0"),
+            r: `0x${signature.r.toString(16).padStart(64, "0")}`,
+            s: `0x${signature.s.toString(16).padStart(64, "0")}`,
         };
     }
 
