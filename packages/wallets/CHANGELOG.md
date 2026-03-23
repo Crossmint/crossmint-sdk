@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.1
+
+### Patch Changes
+
+- b701730: Patch bump to publish v1.0.1 — v1.0.0 was already occupied by a stale release on npm and could not be overwritten by the changeset release action.
+
 ## 1.0.0
 
 ### Major Changes
