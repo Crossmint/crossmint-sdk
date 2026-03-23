@@ -8,7 +8,7 @@
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "app.plugin.js", "LICENSE"],
+    "files": ["dist", "ios", "android", "expo-module.config.json", "app.plugin.js", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
@@ -37,6 +37,7 @@
         "@types/react": "19.1.10",
         "expo-constants": "~18.0.9",
         "expo-device": "~8.0.9",
+        "expo-modules-core": "~3.0.29",
         "expo-secure-store": "~15.0.7",
         "expo-web-browser": "~15.0.8"
     },
@@ -46,6 +47,7 @@
         "@solana/web3.js": "^1.98.1",
         "expo-constants": ">=17 <19",
         "expo-device": ">=7 <9",
+        "expo-modules-core": ">=2.0.0",
         "expo-secure-store": ">=14 <16",
         "expo-web-browser": ">=14 <16",
         "react": ">=17.0.2",
