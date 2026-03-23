@@ -236,8 +236,12 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async removeSigner(walletLocator: WalletLocator, signer: string, params: RemoveSignerParams): Promise<RemoveSignerResponse> {
-        const queryString = params.chain ? `?chain=${params.chain}` : '';
+    async removeSigner(
+        walletLocator: WalletLocator,
+        signer: string,
+        params: RemoveSignerParams
+    ): Promise<RemoveSignerResponse> {
+        const queryString = params.chain ? `?chain=${params.chain}` : "";
         const response = await this.delete(`${this.apiPrefix}/${walletLocator}/signers/${signer}${queryString}`, {
             headers: this.headers,
         });
