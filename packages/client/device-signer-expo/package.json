@@ -24,13 +24,14 @@
     },
     "dependencies": {
         "@crossmint/wallets-sdk": "workspace:*",
-        "@noble/curves": "^1.8.0"
+        "@noble/curves": "^1.8.0",
+        "react-native-get-random-values": "2.0.0"
     },
     "devDependencies": {
+        "@types/react": "19.1.10",
         "expo-device": "~8.0.10",
         "expo-modules-core": "^3.0.0",
         "expo-secure-store": "~15.0.7",
-        "@types/react": "19.1.10",
         "react": "19.1.1",
         "react-native": "0.82.1"
     },

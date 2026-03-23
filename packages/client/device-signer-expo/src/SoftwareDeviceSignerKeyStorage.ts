@@ -1,3 +1,4 @@
+import "react-native-get-random-values";
 import * as Device from "expo-device";
 import * as SecureStore from "expo-secure-store";
 import { p256 } from "@noble/curves/p256";
@@ -8,6 +9,20 @@ const STORE_PREFIX = "crossmint_device_signer_";
 const PENDING_KEY_PREFIX = `${STORE_PREFIX}pending_`;
 const ADDRESS_KEY_PREFIX = `${STORE_PREFIX}addr_`;
 const PUBLIC_KEY_INDEX_KEY = `${STORE_PREFIX}pub_key_index`;
+
+type ExpoGlobal = typeof globalThis & {
+    expo?: {
+        modules?: {
+            ExpoCrypto?: {
+                getRandomValues: (array: Uint8Array) => void;
+            };
+        };
+    };
+};
+
+type CryptoLike = {
+    getRandomValues: (array: Uint8Array) => void;
+};
 
 /**
  * Converts a base64 string to a SecureStore-safe key by replacing
@@ -61,6 +76,33 @@ function base64ToBytes(base64: string): Uint8Array {
     return bytes;
 }
 
+function fillRandomBytes(bytes: Uint8Array): Uint8Array {
+    if (globalThis.crypto?.getRandomValues != null) {
+        (globalThis.crypto as CryptoLike).getRandomValues(bytes);
+        return bytes;
+    }
+
+    const expoCrypto = (globalThis as ExpoGlobal).expo?.modules?.ExpoCrypto;
+    if (expoCrypto?.getRandomValues != null) {
+        expoCrypto.getRandomValues(bytes);
+        return bytes;
+    }
+
+    throw new Error("No secure random source is available for software device signer key generation");
+}
+
+function generatePrivateKey(): Uint8Array {
+    // Rejection sampling avoids modulo bias; retries are vanishingly rare for P-256.
+    for (let attempt = 0; attempt < 8; attempt++) {
+        const privateKey = fillRandomBytes(new Uint8Array(32));
+        if (p256.utils.isValidPrivateKey(privateKey)) {
+            return privateKey;
+        }
+    }
+
+    throw new Error("Failed to generate a valid P-256 private key");
+}
+
 /**
  * Software-based implementation of DeviceSignerKeyStorage for environments
  * where native modules are not available (e.g. Expo Go).
@@ -79,7 +121,7 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     async generateKey(params: { address?: string }): Promise<string> {
-        const privateKey = p256.utils.randomPrivateKey();
+        const privateKey = generatePrivateKey();
         const publicKeyBytes = p256.getPublicKey(privateKey, false); // uncompressed
         const publicKeyBase64 = bytesToBase64(publicKeyBytes);
         const privateKeyHex = bytesToHex(privateKey);
