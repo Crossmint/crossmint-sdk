@@ -1,5 +1,58 @@
 # @crossmint/expo-device-signer
 
+## 0.1.0
+
+### Minor Changes
+
+- 02ac7bc: Add human-readable device name to device signers.
+
+  - Added `name` field to `DeviceSignerConfig` and `DeviceSignerDescriptor`
+  - Added abstract `getDeviceName()` method to `DeviceSignerKeyStorage`
+  - `IframeDeviceSignerKeyStorage` derives the name from `navigator.userAgent` (e.g. "Chrome on Mac")
+  - `NativeDeviceSignerKeyStorage` uses `expo-device` APIs for real native device names (e.g. "iPhone 15 (iOS)")
+  - Both `registerSigners` (wallet creation) and `addSigner` (recovery) now send the device name to the API
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/wallets-sdk@1.0.0
+
 ## 0.1.0-beta.4
 
 ### Patch Changes
