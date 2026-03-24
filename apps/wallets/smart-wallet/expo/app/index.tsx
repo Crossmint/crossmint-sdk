@@ -21,7 +21,6 @@ export default function Index() {
         jwt,
         crossmintAuth,
         status: authStatus,
-        getUser,
     } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
@@ -47,12 +46,6 @@ export default function Index() {
             createAuthSession(url);
         }
     }, [url, createAuthSession]);
-
-    useEffect(() => {
-        if (authStatus === "logged-in" && user == null) {
-            getUser();
-        }
-    }, [authStatus, user, getUser]);
 
     useEffect(() => {
         async function fetchBalances() {
