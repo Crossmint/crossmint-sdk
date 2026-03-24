@@ -29,7 +29,6 @@
         "lodash.isequal": "4.5.0",
         "mitt": "3.0.1",
         "zod": "3.22.4",
-        "@crossmint/expo-device-signer": "workspace:*",
         "expo-constants": "~18.0.9",
         "expo-device": "~8.0.9",
         "expo-secure-store": "~15.0.7",
@@ -44,16 +43,10 @@
         "expo-modules-core": "~3.0.29"
     },
     "peerDependencies": {
-        "@crossmint/expo-device-signer": "0.1.2",
         "@expo/config-plugins": ">=9.0.0",
         "@solana/web3.js": "^1.98.1",
         "expo-modules-core": ">=2.0.0",
         "react": ">=17.0.2",
         "react-native": ">=0.74.3"
-    },
-    "peerDependenciesMeta": {
-        "@crossmint/expo-device-signer": {
-            "optional": true
-        }
     }
 }

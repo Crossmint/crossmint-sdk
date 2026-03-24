@@ -2,9 +2,8 @@ import { type ConfigPlugin, withDangerousMod } from "@expo/config-plugins";
 import path from "path";
 import fs from "fs";
 
-// Applies iOS Podfile workarounds required by @crossmint/expo-device-signer.
-// @crossmint/expo-device-signer is a regular dependency so its native module is
-// autolinked automatically via use_expo_modules! — no separate plugin entry needed.
+// Applies iOS Podfile workarounds required by @crossmint/client-sdk-react-native-ui's
+// embedded native device signer module (CrossmintDeviceSigner).
 //
 // Workaround 1: Expo SDK 54 + React Native 0.82 header incompatibility in
 //   expo-modules-core@3.x. Temporary until fixed upstream in Expo SDK 55.
