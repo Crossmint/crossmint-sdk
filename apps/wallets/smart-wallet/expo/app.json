@@ -24,7 +24,6 @@
             "favicon": "./assets/images/favicon.png"
         },
         "plugins": [
-            "@crossmint/client-sdk-react-native-ui",
             "expo-router",
             [
                 "expo-splash-screen",
