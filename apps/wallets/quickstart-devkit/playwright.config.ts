@@ -51,13 +51,25 @@ export default defineConfig({
             testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
             use: { ...devices["Desktop Safari"] },
         },
+        // API-only tests — no browser, no webServer needed
+        {
+            name: "api",
+            testDir: "./e2e/api",
+            testMatch: "**/*.spec.ts",
+            fullyParallel: false, // serial — avoid API rate limits
+            retries: 1,
+            timeout: 300_000, // 5 minutes
+            use: {},
+        },
     ],
-    webServer: {
-        command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
-        url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
-        timeout: process.env.CI ? 180000 : 300000,
-        stdout: "pipe",
-        stderr: "pipe",
-    },
+    webServer: process.env.SKIP_WEB_SERVER
+        ? undefined
+        : {
+              command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
+              url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+              reuseExistingServer: !process.env.CI,
+              timeout: process.env.CI ? 180000 : 300000,
+              stdout: "pipe",
+              stderr: "pipe",
+          },
 });

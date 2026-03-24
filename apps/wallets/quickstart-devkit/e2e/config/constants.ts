@@ -9,16 +9,25 @@ export const AUTH_CONFIG = {
     emailTimeout: 60000, // Longer timeout for email delivery
 };
 
-// Validation
-if (
-    !AUTH_CONFIG.mailosaurApiKey ||
-    !AUTH_CONFIG.mailosaurServerId ||
-    !AUTH_CONFIG.mailosaurPhoneNumber ||
-    !AUTH_CONFIG.crossmintApiKey
-) {
-    throw new Error(
-        "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, MAILOSAUR_PHONE_NUMBER, and TESTS_CROSSMINT_API_KEY environment variables must be set to run tests"
-    );
+// Full validation (required for UI/browser tests using Mailosaur)
+export function validateUITestConfig(): void {
+    if (
+        !AUTH_CONFIG.mailosaurApiKey ||
+        !AUTH_CONFIG.mailosaurServerId ||
+        !AUTH_CONFIG.mailosaurPhoneNumber ||
+        !AUTH_CONFIG.crossmintApiKey
+    ) {
+        throw new Error(
+            "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, MAILOSAUR_PHONE_NUMBER, and TESTS_CROSSMINT_API_KEY environment variables must be set to run tests"
+        );
+    }
+}
+
+// API-only validation (used by device signer API tests — no Mailosaur needed)
+export function validateAPITestConfig(): void {
+    if (!AUTH_CONFIG.crossmintApiKey) {
+        throw new Error("TESTS_CROSSMINT_API_KEY environment variable must be set to run API tests");
+    }
 }
 
 // Test configurations for different provider/chain/signer combinations
@@ -62,6 +71,13 @@ export const TEST_RECIPIENT_WALLET_ADDRESSES = {
     solana: "61Y4H6d2SUnuJNeJVHazVCm1Btf6CK2g2iags5oV44v7",
     stellar: "CANKOZR2XAFXTUT7JX6ZPKKDNOQQ2XS5RGVC6ZU57VLDNDYRJPXUK2SJ",
 };
+
+// Chain configuration for device signer API tests
+export const DEVICE_SIGNER_CHAINS = {
+    evm: { chainId: "base-sepolia", chainType: "evm", token: "base-sepolia:usdxm" },
+    solana: { chainId: "solana", chainType: "solana" },
+    stellar: { chainId: "stellar", chainType: "stellar" },
+} as const;
 
 // Base email aliases for different signer types
 // Random numbers are appended to prevent email blocking
