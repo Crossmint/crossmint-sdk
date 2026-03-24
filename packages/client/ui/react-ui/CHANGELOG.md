@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.0.2
+
+### Patch Changes
+
+- c025889: bt: update sdk version
+- Updated dependencies [e2dbee9]
+  - @crossmint/wallets-sdk@1.0.2
+  - @crossmint/client-sdk-react-base@2.0.2
+
 ## 4.0.1
 
 ### Patch Changes

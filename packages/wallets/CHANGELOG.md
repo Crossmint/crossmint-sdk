@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.2
+
+### Patch Changes
+
+- e2dbee9: Reject device signers for Solana wallets with a clear error message instead of letting the request fail with a 500. Includes a contact sales link for access.
+
 ## 1.0.1
 
 ### Patch Changes
