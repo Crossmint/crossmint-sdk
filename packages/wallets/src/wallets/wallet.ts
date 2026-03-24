@@ -866,7 +866,8 @@ export class Wallet<C extends Chain> {
      */
     public async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
         const signerState = await this.getSignerState(signerLocator as SignerLocator);
-        return signerState.signer?.status === "success";
+        const status = signerState.signer?.status;
+        return status === "success" || status === "active";
     }
 
     /**
