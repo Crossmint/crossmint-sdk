@@ -1,22 +1,29 @@
-import * as Device from "expo-device";
 import { requireNativeModule } from "expo-modules-core";
-
+import * as Device from "expo-device";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type NativeModuleType = Record<string, (...args: any[]) => Promise<any>>;
-let _nativeModule: NativeModuleType | null = null;
+interface CrossmintDeviceSignerModule {
+    isAvailable(): Promise<boolean>;
+    generateKey(address: string | null): Promise<string>;
+    mapAddressToKey(address: string, publicKeyBase64: string): Promise<void>;
+    getKey(address: string): Promise<string | null>;
+    hasKey(publicKeyBase64: string): Promise<boolean>;
+    signMessage(address: string, message: string): Promise<{ r: string; s: string }>;
+    deleteKey(address: string): Promise<void>;
+    deletePendingKey(publicKeyBase64: string): Promise<void>;
+}
 
-function getNativeModule(): NativeModuleType {
+let _nativeModule: CrossmintDeviceSignerModule | null = null;
+
+function getNativeModule(): CrossmintDeviceSignerModule {
     if (_nativeModule == null) {
-        _nativeModule = requireNativeModule("CrossmintDeviceSigner") as NativeModuleType;
+        _nativeModule = requireNativeModule<CrossmintDeviceSignerModule>("CrossmintDeviceSigner");
     }
     return _nativeModule;
 }
 
 export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     constructor() {
-        // apiKey is not used by the native implementation — API calls go through the SDK context.
         super("");
     }
 
@@ -44,10 +51,6 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         return getNativeModule().deleteKey(address);
     }
 
-    /**
-     * Deletes a pending key that was never mapped to a wallet address.
-     * Call this if wallet creation fails after `generateKey({})`.
-     */
     deletePendingKey(publicKeyBase64: string): Promise<void> {
         return getNativeModule().deletePendingKey(publicKeyBase64);
     }
@@ -55,11 +58,9 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     getDeviceName(): string {
         const model = Device.deviceName ?? Device.modelName ?? Device.brand;
         const os = Device.osName;
-
         if (model != null && os != null) {
             return `${model} (${os})`;
         }
-
         return model ?? os ?? "Unknown Device";
     }
 }

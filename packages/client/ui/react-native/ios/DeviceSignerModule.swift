@@ -10,7 +10,7 @@ import Security
 /// ``KeychainKeyStorage`` (Secure Enclave is not available on simulators).
 ///
 /// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
-/// `NativeDeviceSignerKeyStorage` from `@crossmint/expo-device-signer`.
+/// `NativeDeviceSignerKeyStorage` from `@crossmint/client-sdk-react-native-ui`.
 public class DeviceSignerModule: Module {
 
     // MARK: - Module definition
@@ -84,11 +84,6 @@ public class DeviceSignerModule: Module {
     }
 
     // MARK: - Public key index (Keychain-backed)
-    //
-    // `hasKey(publicKeyBase64)` needs to answer "does this device hold the private key
-    // for this public key?" without knowing the associated wallet address. We maintain
-    // a lightweight index stored in the Keychain so it survives app reinstalls —
-    // just like the private keys themselves do.
 
     private static let indexService = "com.crossmint.device-signer"
     private static let indexAccount = "public_key_index"

@@ -1,0 +1,10 @@
+{
+    "platforms": ["ios", "android"],
+    "ios": {
+        "modules": ["DeviceSignerModule"],
+        "podspecPath": "ios/CrossmintReactNativeUI.podspec"
+    },
+    "android": {
+        "modules": ["com.crossmint.client.sdk.reactnativeui.DeviceSignerModule"]
+    }
+}

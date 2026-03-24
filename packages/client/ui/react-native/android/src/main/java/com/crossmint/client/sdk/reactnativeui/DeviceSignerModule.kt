@@ -1,4 +1,4 @@
-package com.crossmint.expo.devicesigner
+package com.crossmint.client.sdk.reactnativeui
 
 import com.crossmint.kotlin.devicesigner.DeviceSignerStorageFactory
 import expo.modules.kotlin.modules.Module
@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
  * (API 28+) or the TEE.
  *
  * Registered as "CrossmintDeviceSigner" and consumed on the JS side by
- * NativeDeviceSignerKeyStorage from @crossmint/expo-device-signer.
+ * NativeDeviceSignerKeyStorage from @crossmint/client-sdk-react-native-ui.
  */
 class DeviceSignerModule : Module() {
 
