@@ -3,8 +3,9 @@ import type { Page, BrowserContext } from "@playwright/test";
 import { getEmailForSigner, buildTestUrl, validateUITestConfig } from "../config/constants";
 import type { SignerType, TestConfiguration } from "../config/constants";
 
-validateUITestConfig();
 import { performEmailOTPLogin, waitForWalletReady } from "../helpers";
+
+validateUITestConfig();
 
 // Cache for authenticated pages per configuration to prevent multiple authentications
 const authenticatedPageCache = new Map<string, { page: Page; context: BrowserContext }>();
