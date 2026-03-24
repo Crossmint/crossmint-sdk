@@ -1,6 +1,6 @@
 # Stress Test Findings
-Run date: 2026-03-16 (updated 2026-03-17 after Solana + Stellar chain coverage added; re-run 2026-03-17 after server-side fixes merged)
-Results: 300/303 passed | 3 failing (Bugs 1/9/12 — silent `type` default, all chains) | Bugs 2–5 and 15 confirmed FIXED | 15 total findings
+Run date: 2026-03-16 (updated 2026-03-17 after Solana + Stellar chain coverage added; re-run 2026-03-17 after server-side fixes merged; re-run 2026-03-24 after Bug 10 fixed — Solana signer registration now enabled, exposing 3 new 500s)
+Results: 294/303 passed | 9 failing | Bugs 2–5 and 10 confirmed FIXED | 18 total findings
 
 ---
 
@@ -249,12 +249,15 @@ curl -s -w "\nHTTP %{http_code}" \
 | 7 | EVM | POST /wallets/{addr}/transactions/{id}/approvals | non-existent tx + invalid signer | 404 | 400 | API: validation order (body before 404) | ❌ Open |
 | 8 | Any | POST /wallets | `x-idempotency-key` header + `owner` field | reject one or accept both | 400 | API: undocumented mutual exclusivity | ❌ Open |
 | 9 | Solana | POST /wallets | missing `type` | 400 | 201 | API: silent default (same root as Bug 1) | ❌ Open |
-| 10 | Solana | POST /wallets/{addr}/signers | `chain: "solana"` | 400 | 400 "unsupported chain" | API: delegated signers not supported on Solana staging | ❌ Open |
+| 10 | Solana | POST /wallets/{addr}/signers | `chain: "solana"` | 400 | 400 "unsupported chain" | API: delegated signers not supported on Solana staging | ✅ Fixed 2026-03-24 |
 | 11 | Solana | POST /wallets/{addr}/tokens/{t}/transfers | missing `signer` field | 400 | **422** | API: skips signer validation, attempts simulation | ❌ Open |
 | 12 | Stellar | POST /wallets | missing `type` | 400 | 201 | API: silent default (same root as Bug 1, confirmed on Stellar) | ❌ Open |
 | 13 | Stellar | POST /wallets/{addr}/signers | EVM-style object body sent to Stellar wallet | works | 400 (no schema hint) | API: undocumented chain-specific body format change | ❌ Open |
 | 14 | Stellar | POST /wallets/{addr}/tokens/{t}/transfers | missing `signer` | 400 (like EVM) | 201 (uses admin signer) | API: undocumented cross-chain behavioral inconsistency | ❌ Open |
 | 15 | Solana/Stellar | POST /wallets | off-curve ed25519 key as admin signer | 400 "invalid key" | 400 "smart wallet address cannot be admin" | API: misleading error message hides the real cause | ❌ Open |
+| 16 | Solana | POST /wallets/{addr}/signers | `signer.address = ""` (empty string) | 400 | **500** | API: unhandled exception — no guard before address parsing | ❌ Open |
+| 17 | Solana | POST /wallets/{addr}/signers | `signer.address` in EVM format (`0x...`) | 400 | **500** | API: unhandled exception — no format check before address parsing | ❌ Open |
+| 18 | Solana | POST /wallets/{addr}/signers | `signer.address` too short (`"abc"`) | 400 | **500** | API: unhandled exception — no length/format check before address parsing | ❌ Open |
 
 ---
 
@@ -462,6 +465,93 @@ curl -s -w "\nHTTP %{http_code}" \
 # Got: 400 "Solana smart wallets addresses cannot be used as admin signers"
 # Misleading: the real issue is the address is off the ed25519 curve, not that it's a "smart wallet"
 ```
+
+---
+
+---
+
+## Category E — New Solana Signer Registration 500s (found 2026-03-24 after Bug 10 fixed)
+
+These three bugs were hidden behind Bug 10 (Solana signer registration returned 400 "unsupported chain" for all inputs). Once Bug 10 was fixed and the endpoint started accepting Solana signer registrations, invalid address inputs began reaching unguarded parsing code and crashing the server. They share the same root cause as EVM Bugs 3/4/5 — no input validation before the address is processed.
+
+All three were confirmed with a live Solana wallet (`9YTo2x9y5sorqo8XnsJnbZ6VXpjoKVos95NBSvYM6MMg`) on staging on 2026-03-24.
+
+---
+
+### Bug 16 — `POST /wallets/{addr}/signers` returns 500 for empty string `signer.address` (Solana)
+- **Test:** `signer.address = ""` → expected 400
+- **Got:** 500 `{"statusCode":500,"message":"Internal server error"}`
+- **Endpoint:** `POST /api/2025-06-09/wallets/{solana-address}/signers`
+- **Payload:** `{ "signer": { "type": "external-wallet", "address": "" }, "chain": "solana" }`
+- **Issue:** An empty string is not a valid base58 Solana address. The server should reject it with 400 before attempting any address parsing or on-chain operations. Instead, the empty string reaches internal parsing code and causes an unhandled exception.
+
+**Reproduce:**
+```bash
+SOLANA_WALLET=<valid-solana-smart-wallet-address>
+
+curl -s -w "\nHTTP %{http_code}" \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "signer": { "type": "external-wallet", "address": "" },
+    "chain": "solana"
+  }' \
+  "https://staging.crossmint.com/api/2025-06-09/wallets/$SOLANA_WALLET/signers"
+# Expected: 400 "signer.address is required" or "signer.address must be a valid Solana address"
+# Actual:   500 {"statusCode":500,"message":"Internal server error"}
+```
+
+---
+
+### Bug 17 — `POST /wallets/{addr}/signers` returns 500 for EVM-format address on Solana wallet
+- **Test:** `signer.address` set to an EVM hex address (`0x...`) → expected 400
+- **Got:** 500 `{"statusCode":500,"message":"Internal server error"}`
+- **Endpoint:** `POST /api/2025-06-09/wallets/{solana-address}/signers`
+- **Payload:** `{ "signer": { "type": "external-wallet", "address": "0x000000000000000000000000000000000000dead" }, "chain": "solana" }`
+- **Issue:** An `0x`-prefixed hex address is not valid base58 and is not a Solana address. The server should detect the wrong format and return 400. Instead, it crashes with an unhandled exception. This is likely to happen in practice when a developer accidentally passes an EVM address to a Solana endpoint.
+
+**Reproduce:**
+```bash
+SOLANA_WALLET=<valid-solana-smart-wallet-address>
+
+curl -s -w "\nHTTP %{http_code}" \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "signer": { "type": "external-wallet", "address": "0x000000000000000000000000000000000000dead" },
+    "chain": "solana"
+  }' \
+  "https://staging.crossmint.com/api/2025-06-09/wallets/$SOLANA_WALLET/signers"
+# Expected: 400 "signer.address must be a valid Solana base58 address"
+# Actual:   500 {"statusCode":500,"message":"Internal server error"}
+```
+
+---
+
+### Bug 18 — `POST /wallets/{addr}/signers` returns 500 for a too-short `signer.address` on Solana wallet
+- **Test:** `signer.address = "abc"` (3 chars, not a valid base58 public key) → expected 400
+- **Got:** 500 `{"statusCode":500,"message":"Internal server error"}`
+- **Endpoint:** `POST /api/2025-06-09/wallets/{solana-address}/signers`
+- **Payload:** `{ "signer": { "type": "external-wallet", "address": "abc" }, "chain": "solana" }`
+- **Issue:** A 3-character string is far too short to be a valid Solana address (valid base58 public keys are 32–44 characters). No length or format check is performed before the address is passed to the parsing/validation layer, causing a server crash.
+
+**Reproduce:**
+```bash
+SOLANA_WALLET=<valid-solana-smart-wallet-address>
+
+curl -s -w "\nHTTP %{http_code}" \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "signer": { "type": "external-wallet", "address": "abc" },
+    "chain": "solana"
+  }' \
+  "https://staging.crossmint.com/api/2025-06-09/wallets/$SOLANA_WALLET/signers"
+# Expected: 400 "signer.address must be a valid Solana base58 address (32–44 characters)"
+# Actual:   500 {"statusCode":500,"message":"Internal server error"}
+```
+
+**Note:** Bugs 16, 17, and 18 share the same root cause — the Solana signer registration handler lacks a guard that validates `signer.address` as a valid base58 Solana public key before proceeding. A single Zod/schema-level `.refine()` that checks the address is a non-empty, correctly-formatted base58 string of valid length would fix all three. This is the same pattern as EVM Bugs 3/4/5, which were fixed in WAL-9389/9390.
 
 ---
 
