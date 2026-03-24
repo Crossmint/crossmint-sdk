@@ -2,14 +2,23 @@ import { requireNativeModule } from "expo-modules-core";
 import * as Device from "expo-device";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _nativeModule: any = null;
+interface CrossmintDeviceSignerModule {
+    isAvailable(): Promise<boolean>;
+    generateKey(address: string | null): Promise<string>;
+    mapAddressToKey(address: string, publicKeyBase64: string): Promise<void>;
+    getKey(address: string): Promise<string | null>;
+    hasKey(publicKeyBase64: string): Promise<boolean>;
+    signMessage(address: string, message: string): Promise<{ r: string; s: string }>;
+    deleteKey(address: string): Promise<void>;
+    deletePendingKey(publicKeyBase64: string): Promise<void>;
+}
 
-function getNativeModule() {
+let _nativeModule: CrossmintDeviceSignerModule | null = null;
+
+function getNativeModule(): CrossmintDeviceSignerModule {
     if (_nativeModule == null) {
-        _nativeModule = requireNativeModule("CrossmintDeviceSigner");
+        _nativeModule = requireNativeModule<CrossmintDeviceSignerModule>("CrossmintDeviceSigner");
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return _nativeModule;
 }
 
