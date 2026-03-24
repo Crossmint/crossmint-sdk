@@ -866,7 +866,10 @@ export class Wallet<C extends Chain> {
      */
     public async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
         const signerState = await this.getSignerState(signerLocator as SignerLocator);
-        const status = signerState.signer?.status;
+        return this.isApprovedSignerStatus(signerState.signer?.status);
+    }
+
+    private isApprovedSignerStatus(status: SignerStatus | undefined): boolean {
         return status === "success" || status === "active";
     }
 
@@ -913,8 +916,6 @@ export class Wallet<C extends Chain> {
             this.#needsRecovery = false;
             this.#deviceSignerApproved = true;
         };
-        const isApprovedDeviceSignerStatus = (status: SignerStatus | undefined): boolean =>
-            status === "success" || status === "active";
         const isAlreadyApprovedDeviceSignerError = (error: unknown): boolean => {
             if (!(error instanceof Error)) {
                 return false;
@@ -923,7 +924,7 @@ export class Wallet<C extends Chain> {
             return error.message.includes("Delegated signer") && error.message.includes("already 'approved'");
         };
 
-        if (isApprovedDeviceSignerStatus(deviceSigner.status)) {
+        if (this.isApprovedSignerStatus(deviceSigner.status)) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
             markDeviceSignerApproved();
             return;
@@ -955,7 +956,7 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (isApprovedDeviceSignerStatus(deviceSigner.status)) {
+        if (this.isApprovedSignerStatus(deviceSigner.status)) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
             markDeviceSignerApproved();
             return;

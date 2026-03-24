@@ -255,24 +255,28 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     private async trackPublicKey(publicKeyBase64: string): Promise<void> {
-        this.indexUpdateLock = this.indexUpdateLock.catch(() => {}).then(async () => {
-            const index = await this.getPublicKeyIndex();
-            const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
-            if (!index.some((key) => normalizePublicKeyEncoding(key) === normalizedPublicKey)) {
-                index.push(normalizedPublicKey);
-                await this.savePublicKeyIndex(index);
-            }
-        });
+        this.indexUpdateLock = this.indexUpdateLock
+            .catch(() => {})
+            .then(async () => {
+                const index = await this.getPublicKeyIndex();
+                const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
+                if (!index.some((key) => normalizePublicKeyEncoding(key) === normalizedPublicKey)) {
+                    index.push(normalizedPublicKey);
+                    await this.savePublicKeyIndex(index);
+                }
+            });
         await this.indexUpdateLock;
     }
 
     private async untrackPublicKey(publicKeyBase64: string): Promise<void> {
-        this.indexUpdateLock = this.indexUpdateLock.then(async () => {
-            const index = await this.getPublicKeyIndex();
-            const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
-            const filtered = index.filter((key) => normalizePublicKeyEncoding(key) !== normalizedPublicKey);
-            await this.savePublicKeyIndex(filtered);
-        });
+        this.indexUpdateLock = this.indexUpdateLock
+            .catch(() => {})
+            .then(async () => {
+                const index = await this.getPublicKeyIndex();
+                const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
+                const filtered = index.filter((key) => normalizePublicKeyEncoding(key) !== normalizedPublicKey);
+                await this.savePublicKeyIndex(filtered);
+            });
         await this.indexUpdateLock;
     }
 }
