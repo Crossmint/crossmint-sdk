@@ -20,10 +20,15 @@ type ExpoGlobal = typeof globalThis & {
  */
 export function createDeviceSignerKeyStorage(): DeviceSignerKeyStorage {
     if (isNativeModuleAvailable()) {
+        console.info("[CrossmintDeviceSigner] Using native device signer key storage (hardware-backed)");
         const { NativeDeviceSignerKeyStorage } = require("./NativeDeviceSignerKeyStorage");
         return new NativeDeviceSignerKeyStorage();
     }
 
+    console.info(
+        "[CrossmintDeviceSigner] Native module not available — using software-backed key storage. " +
+            "This is suitable for development in Expo Go but not recommended for production."
+    );
     const { SoftwareDeviceSignerKeyStorage } = require("./SoftwareDeviceSignerKeyStorage");
     return new SoftwareDeviceSignerKeyStorage();
 }
