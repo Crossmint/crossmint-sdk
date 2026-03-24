@@ -255,7 +255,7 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     private async trackPublicKey(publicKeyBase64: string): Promise<void> {
-        this.indexUpdateLock = this.indexUpdateLock.then(async () => {
+        this.indexUpdateLock = this.indexUpdateLock.catch(() => {}).then(async () => {
             const index = await this.getPublicKeyIndex();
             const normalizedPublicKey = normalizePublicKeyEncoding(publicKeyBase64);
             if (!index.some((key) => normalizePublicKeyEncoding(key) === normalizedPublicKey)) {
