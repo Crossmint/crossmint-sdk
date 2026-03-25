@@ -18,7 +18,7 @@ import {
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
 import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
-import { createDeviceSignerKeyStorage } from "@crossmint/expo-device-signer";
+import { createDeviceSignerKeyStorage } from "@/native/createDeviceSignerKeyStorage";
 
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";

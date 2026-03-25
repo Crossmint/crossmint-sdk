@@ -1,6 +1,5 @@
 ---
-"@crossmint/expo-device-signer": minor
-"@crossmint/client-sdk-react-native-ui": patch
+"@crossmint/client-sdk-react-native-ui": minor
 ---
 
 feat: support Expo Go with software-backed device signer fallback
