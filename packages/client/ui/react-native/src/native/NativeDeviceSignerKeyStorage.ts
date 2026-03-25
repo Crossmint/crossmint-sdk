@@ -17,7 +17,16 @@ let _nativeModule: CrossmintDeviceSignerModule | null = null;
 
 function getNativeModule(): CrossmintDeviceSignerModule {
     if (_nativeModule == null) {
-        _nativeModule = requireNativeModule<CrossmintDeviceSignerModule>("CrossmintDeviceSigner");
+        try {
+            _nativeModule = requireNativeModule<CrossmintDeviceSignerModule>("CrossmintDeviceSigner");
+        } catch {
+            throw new Error(
+                "CrossmintDeviceSigner native module is not available. " +
+                    "This typically means you are running in Expo Go, which does not support custom native modules. " +
+                    "Use a development build (`npx expo run:ios` / `npx expo run:android`) or EAS Build, " +
+                    "or use SoftwareDeviceSignerKeyStorage as a fallback for development."
+            );
+        }
     }
     return _nativeModule;
 }
