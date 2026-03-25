@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.2.0
+
+### Minor Changes
+
+- 76099c7: chore: bump client sdk base
+
 ## 2.1.0
 
 ### Minor Changes
