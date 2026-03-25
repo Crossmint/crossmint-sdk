@@ -21,7 +21,7 @@
         "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
-        "@basis-theory/react-agentic": "1.2.0",
+        "@basis-theory/react-agentic": "1.3.1",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
