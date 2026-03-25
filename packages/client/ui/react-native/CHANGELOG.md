@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.0.3
+
+### Patch Changes
+
+- 258c005: Moved expo-device-signer from separate module to a module within client-sdk-react-native-ui
+
 ## 1.0.2
 
 ### Patch Changes
