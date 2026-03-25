@@ -1,5 +1,13 @@
 # expo-demo
 
+## 1.1.129
+
+### Patch Changes
+
+- 258c005: Moved expo-device-signer from separate module to a module within client-sdk-react-native-ui
+- Updated dependencies [258c005]
+  - @crossmint/client-sdk-react-native-ui@1.0.3
+
 ## 1.1.128
 
 ### Patch Changes
