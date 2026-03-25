@@ -96,20 +96,38 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     }
 
     /**
-     * Override sendAction to add automatic recovery for fatal errors.
-     * When a recoverable error is detected, reloads WebView and retries once with the original timeout.
+     * Checks if an error from sendAction is a timeout rejection.
+     * EventEmitter.sendAction rejects with a plain string starting with "Timed out" or "Max retries".
+     */
+    private isTimeoutError(error: unknown): boolean {
+        return typeof error === "string" && (error.startsWith("Timed out") || error.startsWith("Max retries"));
+    }
+
+    /**
+     * Override sendAction to add automatic recovery for fatal errors and timeouts.
+     * When a recoverable error or timeout is detected, reloads WebView and retries once
+     * with the original timeout.
      */
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
     ): Promise<z.infer<IncomingEvents[R]>> {
-        const response = await super.sendAction(args);
+        try {
+            const response = await super.sendAction(args);
 
-        if (this.isRecoverableError(response)) {
-            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
-            await this.reloadAndHandshake();
-            return await super.sendAction(args);
+            if (this.isRecoverableError(response)) {
+                console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
+                await this.reloadAndHandshake();
+                return await super.sendAction(args);
+            }
+
+            return response;
+        } catch (error) {
+            if (this.isTimeoutError(error)) {
+                console.info("[WebViewParent] Timeout detected, reloading WebView and retrying");
+                await this.reloadAndHandshake();
+                return await super.sendAction(args);
+            }
+            throw error;
         }
-
-        return response;
     }
 }
