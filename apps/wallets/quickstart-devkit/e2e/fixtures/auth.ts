@@ -1,7 +1,9 @@
 import { test as base, expect } from "@playwright/test";
 import type { Page, BrowserContext } from "@playwright/test";
-import { getEmailForSigner, buildTestUrl } from "../config/constants";
+import { getEmailForSigner, buildTestUrl, validateUITestConfig } from "../config/constants";
 import type { SignerType, TestConfiguration } from "../config/constants";
+
+validateUITestConfig();
 import { performEmailOTPLogin, waitForWalletReady } from "../helpers";
 
 // Cache for authenticated pages per configuration to prevent multiple authentications

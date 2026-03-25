@@ -72,13 +72,6 @@ export const TEST_RECIPIENT_WALLET_ADDRESSES = {
     stellar: "CANKOZR2XAFXTUT7JX6ZPKKDNOQQ2XS5RGVC6ZU57VLDNDYRJPXUK2SJ",
 };
 
-// Chain configuration for device signer API/SDK tests
-export const DEVICE_SIGNER_CHAINS = {
-    evm: { chainId: "base-sepolia", chainType: "evm", token: "base-sepolia:usdxm" },
-    solana: { chainId: "solana", chainType: "solana" },
-    stellar: { chainId: "stellar", chainType: "stellar" },
-} as const;
-
 // Base email aliases for different signer types
 // Random numbers are appended to prevent email blocking
 const SIGNER_EMAIL_BASE: Record<SignerType, string> = {

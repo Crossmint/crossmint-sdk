@@ -25,7 +25,13 @@ function parseDERSig(der: Uint8Array): { r: Uint8Array; s: Uint8Array } {
 }
 
 function uint8ToHex32(b: Uint8Array): string {
-    return "0x" + Array.from(b).map((n) => n.toString(16).padStart(2, "0")).join("").padStart(64, "0");
+    return (
+        "0x" +
+        Array.from(b)
+            .map((n) => n.toString(16).padStart(2, "0"))
+            .join("")
+            .padStart(64, "0")
+    );
 }
 
 export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
@@ -75,9 +81,7 @@ export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nodeKey = createPrivateKey({ key: Buffer.from(pkcs8Buf) as any, format: "der", type: "pkcs8" });
 
-        const msgBuf = message.startsWith("0x")
-            ? Buffer.from(message.slice(2), "hex")
-            : Buffer.from(message, "base64");
+        const msgBuf = message.startsWith("0x") ? Buffer.from(message.slice(2), "hex") : Buffer.from(message, "base64");
 
         // Sign raw digest without additional hashing (message is a pre-computed hash)
         const derBuf = nodeSign(null, new Uint8Array(msgBuf), nodeKey);

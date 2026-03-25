@@ -27,8 +27,7 @@ function makeEvmRecovery() {
     return {
         type: "external-wallet" as const,
         address: admin.address,
-        onSign: async (payload: string) =>
-            admin.signMessage({ message: { raw: payload as `0x${string}` } }),
+        onSign: async (payload: string) => admin.signMessage({ message: { raw: payload as `0x${string}` } }),
     };
 }
 
@@ -209,9 +208,7 @@ test.describe("Device Signer — SDK", () => {
             // Revoke the device key (e.g. user deregisters this device)
             await storage.deleteKey(wallet.address);
 
-            await expect(
-                wallet.send(TEST_RECIPIENT_WALLET_ADDRESSES.evm, "usdxm", "0.0001")
-            ).rejects.toThrow();
+            await expect(wallet.send(TEST_RECIPIENT_WALLET_ADDRESSES.evm, "usdxm", "0.0001")).rejects.toThrow();
         });
 
         test("send fails when wallet is retrieved with a storage that has no key for this wallet", async () => {
