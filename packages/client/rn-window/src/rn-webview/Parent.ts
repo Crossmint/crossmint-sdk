@@ -114,16 +114,9 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
     ): Promise<z.infer<IncomingEvents[R]>> {
+        let response: z.infer<IncomingEvents[R]>;
         try {
-            const response = await super.sendAction(args);
-
-            if (this.isRecoverableError(response)) {
-                console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
-                await this.reloadAndHandshake();
-                return await super.sendAction(args);
-            }
-
-            return response;
+            response = await super.sendAction(args);
         } catch (error) {
             if (this.isTimeoutError(error)) {
                 console.info("[WebViewParent] Timeout detected, reloading WebView and retrying");
@@ -132,5 +125,13 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
             }
             throw error;
         }
+
+        if (this.isRecoverableError(response)) {
+            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
+            await this.reloadAndHandshake();
+            return await super.sendAction(args);
+        }
+
+        return response;
     }
 }
