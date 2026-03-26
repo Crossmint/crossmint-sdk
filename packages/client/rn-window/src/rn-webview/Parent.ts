@@ -100,6 +100,9 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * EventEmitter.sendAction rejects with a plain string starting with "Timed out" or "Max retries".
      */
     private isTimeoutError(error: unknown): boolean {
+        if (this.recoveryOptions == null) {
+            return false;
+        }
         return typeof error === "string" && (error.startsWith("Timed out") || error.startsWith("Max retries"));
     }
 
