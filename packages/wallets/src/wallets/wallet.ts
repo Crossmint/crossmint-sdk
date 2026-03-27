@@ -31,7 +31,7 @@ import type {
     PrepareOnly,
     SendTokenTransactionOptions,
 } from "./types";
-import { getPendingSignerOperation, mapApiSignerToSigner, mapConfigSignerToSigner } from "../utils/signer-mapping";
+import { getPendingSignerOperation, mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     InvalidAddressError,
     InvalidSignerError,
@@ -1051,30 +1051,7 @@ export class Wallet<C extends Chain> {
             configSigners.map(async (configSigner) => {
                 try {
                     const signerState = await this.getSignerState(configSigner.locator as SignerLocator);
-
-                    if (signerState.signer != null) {
-                        return signerState.signer;
-                    }
-
-                    // getSigner returned a valid response but mapApiSignerToSigner returned
-                    // null — the signer has chain-specific entries that don't include this
-                    // chain, so it should be excluded.
-                    if (signerState.response != null) {
-                        walletsLogger.warn("wallet.signers.filtered", {
-                            locator: configSigner.locator,
-                            reason: "signer has chain entries but none for the current chain",
-                        });
-                        return null;
-                    }
-
-                    // getSigner failed (error / not found). The signer is listed in
-                    // delegatedSigners so it was added during wallet creation and may not
-                    // have per-chain data yet. Fall back to the config signer info.
-                    walletsLogger.warn("wallet.signers.fallback", {
-                        locator: configSigner.locator,
-                        reason: "getSigner did not return a valid response, using config signer data",
-                    });
-                    return mapConfigSignerToSigner(configSigner as { type: string; locator: string }, "success");
+                    return signerState.signer;
                 } catch {
                     return null;
                 }
