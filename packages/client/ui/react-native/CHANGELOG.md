@@ -1,5 +1,143 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.1.0
+
+### Minor Changes
+
+- 4bbbe63: feat: support Expo Go with software-backed device signer fallback
+
+  Added `SoftwareDeviceSignerKeyStorage` — a pure JavaScript implementation of `DeviceSignerKeyStorage` that uses `@noble/curves` for P-256 key operations and `expo-secure-store` for encrypted key persistence. This allows the SDK to run in Expo Go where the native `CrossmintDeviceSigner` module is not available.
+
+  Added `createDeviceSignerKeyStorage()` factory function that auto-detects whether the native module is available and returns the appropriate implementation (native hardware-backed in dev builds, software fallback in Expo Go).
+
+  Improved error message in `NativeDeviceSignerKeyStorage` when the native module is unavailable.
+
+### Patch Changes
+
+- Updated dependencies [76099c7]
+  - @crossmint/client-sdk-base@2.2.0
+  - @crossmint/client-sdk-auth@1.3.2
+  - @crossmint/client-sdk-react-base@2.0.4
+  - @crossmint/common-sdk-auth@1.1.2
+  - @crossmint/wallets-sdk@1.0.4
+
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [2a63ea6]
+  - @crossmint/client-sdk-base@2.1.0
+  - @crossmint/client-sdk-auth@1.3.1
+  - @crossmint/client-sdk-react-base@2.0.3
+  - @crossmint/common-sdk-auth@1.1.1
+  - @crossmint/wallets-sdk@1.0.3
+
+## 1.0.3
+
+### Patch Changes
+
+- 258c005: Moved expo-device-signer from separate module to a module within client-sdk-react-native-ui
+
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [e2dbee9]
+  - @crossmint/wallets-sdk@1.0.2
+  - @crossmint/expo-device-signer@0.1.2
+  - @crossmint/client-sdk-react-base@2.0.2
+
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [b701730]
+  - @crossmint/wallets-sdk@1.0.1
+  - @crossmint/expo-device-signer@0.1.1
+  - @crossmint/client-sdk-react-base@2.0.1
+
+## 1.0.0
+
+### Major Changes
+
+- 02ac7bc: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 02ac7bc: Remove `useAuth` hook alias in favor of `useCrossmintAuth`
+
+  BREAKING CHANGE: The `useAuth` export has been removed from all packages. Use `useCrossmintAuth` instead, which provides the same functionality.
+
+  - `useAuth()` -> `useCrossmintAuth()`
+
+### Minor Changes
+
+- 02ac7bc: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 02ac7bc: feat: unify OTP signer API with useWalletOtpSigner hook and showOtpSignerPrompt prop
+
+  - Replace `headlessSigningFlow` with `showOtpSignerPrompt` (defaults to `true`) for consistent opt-in/opt-out of built-in OTP UI across both react-ui and react-native
+  - Rename `emailSignerState` to `otpSignerState` in the wallet context to reflect support for both email and phone OTP signers
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 02ac7bc: Disallow passkey signers in React Native. Passkeys are not supported in React Native and will now throw a clear error when used as recovery signers, delegated signers, or via createPasskeySigner.
+- 02ac7bc: Fixes modal icons for otp flow
+- 02ac7bc: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- 02ac7bc: Statically loading @crossmint/expo-device-signer
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/wallets-sdk@1.0.0
+  - @crossmint/client-sdk-react-base@2.0.0
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/expo-device-signer@0.1.0
+  - @crossmint/client-sdk-auth@1.3.0
+  - @crossmint/common-sdk-auth@1.1.0
+  - @crossmint/client-sdk-base@2.0.3
+
 ## 1.0.0-beta.6
 
 ### Patch Changes

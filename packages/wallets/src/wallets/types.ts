@@ -118,7 +118,7 @@ export type FormattedEVMTransaction =
       }
     | { transaction: string };
 
-export type SignerStatus = "success" | "pending" | "awaiting-approval" | "failed";
+export type SignerStatus = "success" | "active" | "pending" | "awaiting-approval" | "failed";
 
 export type SignerInput = {
     signer: string | ServerSignerConfig;
