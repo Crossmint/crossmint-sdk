@@ -16,6 +16,8 @@ import type {
 import type {
     AddSignerOptions,
     AddSignerReturnType,
+    RemoveSignerOptions,
+    RemoveSignerReturnType,
     Signer as WalletSigner,
     WalletOptions,
     UserLocator,
@@ -631,12 +633,7 @@ export class Wallet<C extends Chain> {
                 ? (`server:${deriveServerSignerDetails(signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}` as const)
                 : signer;
 
-        // Store original signer and swap to recovery signer for the registration
-        const originalSigner = this.signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
-        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-
-        try {
+        return this.withRecoverySigner(async () => {
             // For server signers, resolvedSigner is already a locator string.
             // For passkeys, always pass the full config so the API receives the publicKey.
             // For everything else, convert to a locator string via getSignerLocator.
@@ -657,10 +654,7 @@ export class Wallet<C extends Chain> {
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
-                chain:
-                    this.chain === "solana" || this.chain === "stellar"
-                        ? undefined
-                        : (this.chain as RegisterSignerChain),
+                chain: this.getSignerRegistrationChain(),
             });
 
             if ("error" in response) {
@@ -686,18 +680,14 @@ export class Wallet<C extends Chain> {
                     throw new Error(`No approval found for chain ${this.chain} in register signer response`);
                 }
 
-                if (options?.prepareOnly) {
-                    walletsLogger.info("wallet.addSigner.prepared", {
-                        transactionId,
-                    });
-                    return { ...registeredSigner, transactionId } as any;
-                }
-
-                await this.approveTransactionAndWait(transactionId);
-                walletsLogger.info("wallet.addSigner.success", {
+                return this.handleTransactionSignerFlow({
                     transactionId,
+                    prepareOnly: options?.prepareOnly,
+                    preparedLogEvent: "wallet.addSigner.prepared",
+                    successLogEvent: "wallet.addSigner.success",
+                    buildPreparedResult: () => ({ ...registeredSigner, transactionId }) as any,
+                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as any,
                 });
-                return { ...registeredSigner, status: "success" as const } as any;
             } else {
                 if (!("chains" in response)) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -714,30 +704,93 @@ export class Wallet<C extends Chain> {
 
                 const pendingOperation = getPendingSignerOperation(response, this.chain);
 
-                if (options?.prepareOnly) {
-                    const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
-                    walletsLogger.info("wallet.addSigner.prepared", {
-                        signatureId,
-                    });
-                    return { ...registeredSigner, signatureId } as any;
-                }
-
-                if (pendingOperation?.type === "signature") {
-                    await this.approveSignatureAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", {
-                        signatureId: pendingOperation.id,
-                    });
-                } else if (chainResponse?.status === "failed") {
-                    throw new Error(`Signer registration failed for chain ${this.chain}`);
-                } else {
-                    walletsLogger.info("wallet.addSigner.success");
-                }
-
-                return { ...registeredSigner, status: "success" as const } as any;
+                return this.handleEvmSignerFlow({
+                    pendingOperation,
+                    prepareOnly: options?.prepareOnly,
+                    chainStatus: chainResponse?.status,
+                    failureMessage: `Signer registration failed for chain ${this.chain}`,
+                    preparedLogEvent: "wallet.addSigner.prepared",
+                    successLogEvent: "wallet.addSigner.success",
+                    buildPreparedResult: (signatureId) => ({ ...registeredSigner, signatureId }) as any,
+                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as any,
+                });
             }
-        } finally {
-            this.#signer = originalSigner;
-        }
+        });
+    }
+
+    /**
+     * Remove a signer from the wallet.
+     * Always uses the recovery signer internally to approve the removal.
+     * @param signer - The signer to remove, provided as a signer config object
+     * @param options - The options for the operation
+     * @param options.prepareOnly - If true, returns the operation ID without auto-approving
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.removeSigner",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        options?: T
+    ): Promise<T extends PrepareOnly<true> ? RemoveSignerReturnType<C> : RemoveSignerReturnType<C>> {
+        const signerLocator = this.resolveSignerLocator(signer);
+        walletsLogger.info("wallet.removeSigner.start", { signerLocator });
+
+        return this.withRecoverySigner(async () => {
+            const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
+                chain: this.getSignerRegistrationChain(),
+            });
+
+            if ("error" in response) {
+                walletsLogger.error("wallet.removeSigner.error", {
+                    error: response,
+                });
+                throw new Error(`Failed to remove signer: ${JSON.stringify(response.message)}`);
+            }
+
+            if (this.chain === "solana" || this.chain === "stellar") {
+                if (!("transaction" in response) || response.transaction == null) {
+                    walletsLogger.error("wallet.removeSigner.error", {
+                        error: "Expected transaction in response for Solana/Stellar chain",
+                    });
+                    throw new Error("Expected transaction in response for Solana/Stellar chain");
+                }
+
+                const transactionId = response.transaction.id;
+
+                return this.handleTransactionSignerFlow({
+                    transactionId,
+                    prepareOnly: options?.prepareOnly,
+                    preparedLogEvent: "wallet.removeSigner.prepared",
+                    successLogEvent: "wallet.removeSigner.success",
+                    buildPreparedResult: () => ({ transactionId, status: undefined }) as any,
+                    buildSuccessResult: () => ({ transactionId, status: "success" as const }) as any,
+                });
+            } else {
+                if (!("chains" in response)) {
+                    walletsLogger.error("wallet.removeSigner.error", {
+                        error: "Expected chains in response for EVM chain",
+                    });
+                    throw new Error("Expected chains in response for EVM chain");
+                }
+
+                const pendingOperation = getPendingSignerOperation(response, this.chain);
+
+                return this.handleEvmSignerFlow({
+                    pendingOperation,
+                    prepareOnly: options?.prepareOnly,
+                    chainStatus: response.chains?.[this.chain]?.status,
+                    failureMessage: `Signer removal failed for chain ${this.chain}`,
+                    preparedLogEvent: "wallet.removeSigner.prepared",
+                    successLogEvent: "wallet.removeSigner.success",
+                    buildPreparedResult: (signatureId) => ({ signatureId, status: undefined }) as any,
+                    buildSuccessResult: (signatureId) => ({ signatureId, status: "success" as const }) as any,
+                });
+            }
+        });
     }
 
     /**
@@ -839,7 +892,7 @@ export class Wallet<C extends Chain> {
      * Compute the signer locator for registration checks.
      * Server signers use the derived address; other types use the standard locator.
      */
-    private resolveSignerLocator(signer: SignerConfigForChain<C>): string {
+    private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
@@ -850,6 +903,80 @@ export class Wallet<C extends Chain> {
             return `server:${derivedAddress}`;
         }
         return getSignerLocator(signer);
+    }
+
+    private getSignerRegistrationChain(): RegisterSignerChain | undefined {
+        if (this.chain === "solana" || this.chain === "stellar") {
+            return undefined;
+        }
+        return this.chain as RegisterSignerChain;
+    }
+
+    private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
+        const originalSigner = this.signer;
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+        try {
+            return await operation();
+        } finally {
+            this.#signer = originalSigner;
+        }
+    }
+
+    private async handleTransactionSignerFlow<T>(params: {
+        transactionId: string;
+        prepareOnly?: boolean;
+        preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
+        successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
+        buildPreparedResult: () => T;
+        buildSuccessResult: () => T;
+    }): Promise<T> {
+        if (params.prepareOnly) {
+            walletsLogger.info(params.preparedLogEvent, {
+                transactionId: params.transactionId,
+            });
+            return params.buildPreparedResult();
+        }
+
+        await this.approveTransactionAndWait(params.transactionId);
+        walletsLogger.info(params.successLogEvent, {
+            transactionId: params.transactionId,
+        });
+        return params.buildSuccessResult();
+    }
+
+    private async handleEvmSignerFlow<T>(params: {
+        pendingOperation: { type: "signature" | "transaction"; id: string } | null;
+        prepareOnly?: boolean;
+        chainStatus?: string;
+        failureMessage: string;
+        preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
+        successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
+        buildPreparedResult: (signatureId?: string) => T;
+        buildSuccessResult: (signatureId?: string) => T;
+    }): Promise<T> {
+        const signatureId = params.pendingOperation?.type === "signature" ? params.pendingOperation.id : undefined;
+
+        if (params.prepareOnly) {
+            walletsLogger.info(params.preparedLogEvent, {
+                signatureId,
+            });
+            return params.buildPreparedResult(signatureId);
+        }
+
+        if (params.pendingOperation?.type === "signature") {
+            await this.approveSignatureAndWait(params.pendingOperation.id);
+            walletsLogger.info(params.successLogEvent, {
+                signatureId: params.pendingOperation.id,
+            });
+        } else if (params.chainStatus === "failed") {
+            throw new Error(params.failureMessage);
+        } else {
+            walletsLogger.info(params.successLogEvent);
+        }
+
+        return params.buildSuccessResult(params.pendingOperation?.id);
     }
 
     private isPasskeyMissingId(signer: PasskeySignerConfig): boolean {
