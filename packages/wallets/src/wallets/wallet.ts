@@ -942,6 +942,14 @@ export class Wallet<C extends Chain> {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
 
+        // Defense-in-depth: device signers are not supported on Solana (Squads).
+        // initDeviceSigner already guards against this and never sets needsRecovery for Solana,
+        // but guard here too in case recover() is called directly.
+        if (this.chain === "solana") {
+            walletsLogger.warn("wallet.recover.skipped", { reason: "Device signers are not supported on Solana" });
+            return;
+        }
+
         const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
         if (matchedSigner != null) {
             if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
