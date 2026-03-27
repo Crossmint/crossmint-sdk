@@ -808,7 +808,7 @@ describe("Wallet - removeSigner()", () => {
 
             mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
 
-            const result = await evmWallet.removeSigner("external-wallet:0x456");
+            const result = await evmWallet.removeSigner({ type: "external-wallet", address: "0x456" });
 
             expect(mockApiClient.removeSigner).toHaveBeenCalledWith(expect.any(String), "external-wallet:0x456", {
                 chain: "base-sepolia",
@@ -840,7 +840,7 @@ describe("Wallet - removeSigner()", () => {
                 },
             } as any);
 
-            const result = await evmWallet.removeSigner("external-wallet:0x456", {
+            const result = await evmWallet.removeSigner({ type: "external-wallet", address: "0x456" }, {
                 prepareOnly: true,
             });
 
@@ -863,7 +863,7 @@ describe("Wallet - removeSigner()", () => {
                 onChain: { txId: "hash-123", explorerLink: "https://explorer.com/tx/hash-123" },
             } as any);
 
-            const result = await solanaWallet.removeSigner("external-wallet:ABC123");
+            const result = await solanaWallet.removeSigner({ type: "external-wallet", address: "ABC123" });
 
             expect(mockApiClient.removeSigner).toHaveBeenCalledWith(expect.any(String), "external-wallet:ABC123", {
                 chain: undefined,
@@ -881,7 +881,7 @@ describe("Wallet - removeSigner()", () => {
 
             mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
 
-            const result = await solanaWallet.removeSigner("external-wallet:ABC123", {
+            const result = await solanaWallet.removeSigner({ type: "external-wallet", address: "ABC123" }, {
                 prepareOnly: true,
             });
 
@@ -898,7 +898,7 @@ describe("Wallet - removeSigner()", () => {
                 message: "Failed to remove signer",
             } as any);
 
-            await expect(evmWallet.removeSigner("external-wallet:0x456")).rejects.toThrow("Failed to remove signer");
+            await expect(evmWallet.removeSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow("Failed to remove signer");
         });
 
         it("should throw error when Solana response missing transaction", async () => {
@@ -910,7 +910,7 @@ describe("Wallet - removeSigner()", () => {
 
             mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
 
-            await expect(solanaWallet.removeSigner("external-wallet:ABC123")).rejects.toThrow(
+            await expect(solanaWallet.removeSigner({ type: "external-wallet", address: "ABC123" })).rejects.toThrow(
                 "Expected transaction in response for Solana/Stellar chain"
             );
         });
@@ -925,7 +925,7 @@ describe("Wallet - removeSigner()", () => {
 
             mockApiClient.removeSigner.mockResolvedValue(mockRemoveResponse as any);
 
-            await expect(evmWallet.removeSigner("external-wallet:0x456")).rejects.toThrow(
+            await expect(evmWallet.removeSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Expected chains in response for EVM chain"
             );
         });

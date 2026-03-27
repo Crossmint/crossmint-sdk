@@ -745,7 +745,7 @@ export class Wallet<C extends Chain> {
     /**
      * Remove a signer from the wallet.
      * Always uses the recovery signer internally to approve the removal.
-     * @param signerLocator - The locator of the signer to remove (e.g., "external-wallet:0x123", "passkey:abc123")
+     * @param signer - The signer to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the operation ID without auto-approving
      */
@@ -757,9 +757,10 @@ export class Wallet<C extends Chain> {
         },
     })
     public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
-        signerLocator: string,
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? RemoveSignerReturnType<C> : RemoveSignerReturnType<C>> {
+        const signerLocator = this.resolveSignerLocator(signer);
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
         // Store original signer and swap to recovery signer for the removal
@@ -939,7 +940,7 @@ export class Wallet<C extends Chain> {
      * Compute the signer locator for registration checks.
      * Server signers use the derived address; other types use the standard locator.
      */
-    private resolveSignerLocator(signer: SignerConfigForChain<C>): string {
+    private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
