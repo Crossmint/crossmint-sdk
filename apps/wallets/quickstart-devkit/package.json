@@ -34,6 +34,7 @@
     },
     "devDependencies": {
         "@crossmint/wallets-sdk": "workspace:*",
+        "ox": "0.6.9",
         "@playwright/test": "1.54.2",
         "@tailwindcss/postcss": "^4",
         "@types/node": "^20",

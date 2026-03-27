@@ -6,8 +6,6 @@ import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
 import { AUTH_CONFIG, TEST_RECIPIENT_WALLET_ADDRESSES, validateAPITestConfig } from "../../config/constants";
 import { MockDeviceSignerKeyStorage } from "./helpers/mock-device-storage";
 
-validateAPITestConfig();
-
 const API_KEY = AUTH_CONFIG.crossmintApiKey;
 
 function makeSdk() {
@@ -32,6 +30,10 @@ function makeEvmRecovery() {
 }
 
 test.describe("Device Signer — SDK", () => {
+    test.beforeAll(() => {
+        validateAPITestConfig();
+    });
+
     test("createDeviceSigner returns a valid descriptor shape", async () => {
         const sdk = makeSdk();
         const storage = new MockDeviceSignerKeyStorage(API_KEY);

@@ -1,41 +1,8 @@
-import { createPrivateKey, sign as nodeSign, webcrypto } from "node:crypto";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
-
-const crypto = webcrypto as unknown as Crypto;
-
-function parseDERSig(der: Uint8Array): { r: Uint8Array; s: Uint8Array } {
-    let pos = 0;
-    if (der[pos++] !== 0x30) throw new Error("DER: expected SEQUENCE");
-    let totalLen = der[pos++]!;
-    if (totalLen & 0x80) {
-        const nBytes = totalLen & 0x7f;
-        totalLen = 0;
-        for (let i = 0; i < nBytes; i++) totalLen = (totalLen << 8) | der[pos++]!;
-    }
-    if (der[pos++] !== 0x02) throw new Error("DER: expected INTEGER (r)");
-    const rLen = der[pos++]!;
-    let r = der.slice(pos, pos + rLen);
-    pos += rLen;
-    if (der[pos++] !== 0x02) throw new Error("DER: expected INTEGER (s)");
-    const sLen = der[pos++]!;
-    let s = der.slice(pos, pos + sLen);
-    while (r.length > 1 && r[0] === 0) r = r.slice(1);
-    while (s.length > 1 && s[0] === 0) s = s.slice(1);
-    return { r, s };
-}
-
-function uint8ToHex32(b: Uint8Array): string {
-    return (
-        "0x" +
-        Array.from(b)
-            .map((n) => n.toString(16).padStart(2, "0"))
-            .join("")
-            .padStart(64, "0")
-    );
-}
+import { P256 } from "ox";
 
 export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
-    private readonly keys = new Map<string, CryptoKey>(); // base64PubKey → private CryptoKey
+    private readonly keys = new Map<string, `0x${string}`>(); // base64PubKey → private key hex
     private readonly addressMap = new Map<string, string>(); // walletAddress → base64PubKey
 
     constructor(apiKey: string) {
@@ -43,14 +10,12 @@ export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     }
 
     async generateKey({ address }: { address?: string } = {}): Promise<string> {
-        const { publicKey, privateKey } = await crypto.subtle.generateKey(
-            { name: "ECDSA", namedCurve: "P-256" },
-            true,
-            ["sign", "verify"]
-        );
+        const privateKey = P256.randomPrivateKey();
+        const publicKey = P256.getPublicKey({ privateKey });
 
-        const rawBuf = await crypto.subtle.exportKey("raw", publicKey);
-        const base64 = Buffer.from(new Uint8Array(rawBuf)).toString("base64");
+        const xHex = publicKey.x.toString(16).padStart(64, "0");
+        const yHex = publicKey.y.toString(16).padStart(64, "0");
+        const base64 = Buffer.from(`04${xHex}${yHex}`, "hex").toString("base64");
 
         this.keys.set(base64, privateKey);
         if (address) this.addressMap.set(address, base64);
@@ -77,16 +42,16 @@ export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         const privateKey = this.keys.get(base64);
         if (!privateKey) throw new Error(`No private key for pubkey: ${base64}`);
 
-        const pkcs8Buf = await crypto.subtle.exportKey("pkcs8", privateKey);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const nodeKey = createPrivateKey({ key: Buffer.from(pkcs8Buf) as any, format: "der", type: "pkcs8" });
-
-        const msgBuf = message.startsWith("0x") ? Buffer.from(message.slice(2), "hex") : Buffer.from(message, "base64");
+        const messageHex = message.startsWith("0x")
+            ? (message as `0x${string}`)
+            : (`0x${Buffer.from(message, "base64").toString("hex")}` as `0x${string}`);
 
         // Sign raw digest without additional hashing (message is a pre-computed hash)
-        const derBuf = nodeSign(null, new Uint8Array(msgBuf), nodeKey);
-        const { r, s } = parseDERSig(new Uint8Array(derBuf));
-        return { r: uint8ToHex32(r), s: uint8ToHex32(s) };
+        const { r, s } = P256.sign({ payload: messageHex, hash: false, privateKey });
+        return {
+            r: `0x${r.toString(16).padStart(64, "0")}`,
+            s: `0x${s.toString(16).padStart(64, "0")}`,
+        };
     }
 
     async deleteKey(address: string): Promise<void> {

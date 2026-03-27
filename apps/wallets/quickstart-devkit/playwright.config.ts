@@ -39,16 +39,19 @@ export default defineConfig({
         {
             name: "chromium",
             testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testIgnore: /sdk\//, // Exclude SDK-only tests (run by the "sdk" project)
             use: { ...devices["Desktop Chrome"] },
         },
         {
             name: "firefox",
             testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testIgnore: /sdk\//, // Exclude SDK-only tests (run by the "sdk" project)
             use: { ...devices["Desktop Firefox"] },
         },
         {
             name: "webkit",
             testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testIgnore: /sdk\//, // Exclude SDK-only tests (run by the "sdk" project)
             use: { ...devices["Desktop Safari"] },
         },
         // SDK integration tests — no browser, tests SDK classes directly
