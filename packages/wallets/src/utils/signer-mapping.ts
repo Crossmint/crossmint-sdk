@@ -82,7 +82,8 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         if (chainEntry == null) {
             return null; // No approval for this chain
         }
-        return { ...base, status: chainEntry.status } as Signer;
+        // chainEntry may be a signature ID string (completed registration) rather than a status object
+        return { ...base, status: chainEntry.status ?? "success" } as Signer;
     }
 
     // If chains field is empty, the signer was created during wallet creation.
