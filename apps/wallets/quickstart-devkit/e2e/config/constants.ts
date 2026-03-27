@@ -9,16 +9,25 @@ export const AUTH_CONFIG = {
     emailTimeout: 60000, // Longer timeout for email delivery
 };
 
-// Validation
-if (
-    !AUTH_CONFIG.mailosaurApiKey ||
-    !AUTH_CONFIG.mailosaurServerId ||
-    !AUTH_CONFIG.mailosaurPhoneNumber ||
-    !AUTH_CONFIG.crossmintApiKey
-) {
-    throw new Error(
-        "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, MAILOSAUR_PHONE_NUMBER, and TESTS_CROSSMINT_API_KEY environment variables must be set to run tests"
-    );
+// Full validation (required for UI/browser tests using Mailosaur)
+export function validateUITestConfig(): void {
+    if (
+        !AUTH_CONFIG.mailosaurApiKey ||
+        !AUTH_CONFIG.mailosaurServerId ||
+        !AUTH_CONFIG.mailosaurPhoneNumber ||
+        !AUTH_CONFIG.crossmintApiKey
+    ) {
+        throw new Error(
+            "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, MAILOSAUR_PHONE_NUMBER, and TESTS_CROSSMINT_API_KEY environment variables must be set to run tests"
+        );
+    }
+}
+
+// API/SDK-only validation (no Mailosaur needed)
+export function validateAPITestConfig(): void {
+    if (!AUTH_CONFIG.crossmintApiKey) {
+        throw new Error("TESTS_CROSSMINT_API_KEY environment variable must be set to run API/SDK tests");
+    }
 }
 
 // Test configurations for different provider/chain/signer combinations
