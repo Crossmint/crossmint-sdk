@@ -69,6 +69,7 @@ import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
 import { createDeviceSigner } from "@/utils/device-signers";
+import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -134,6 +135,11 @@ export class Wallet<C extends Chain> {
                 error,
             });
             this.#needsRecovery = true;
+            return;
+        }
+
+        // If no local key was found, skip signer assembly — recovery will handle it
+        if (this.#needsRecovery) {
             return;
         }
 
@@ -903,83 +909,90 @@ export class Wallet<C extends Chain> {
     public async recover(): Promise<void> {
         walletsLogger.info("wallet.recover.start");
 
-        if (this.#signer == null) {
-            await this.initDeviceSigner();
-        }
-
-        if (this.#signer?.type !== "device") {
-            walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
-            return;
-        }
-
         // Fast-path: skip the API call if we've already verified the device signer is approved
         if (this.#deviceSignerApproved) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
             return;
         }
 
-        const deviceSigner = this.#signer;
         const markDeviceSignerApproved = () => {
             this.#needsRecovery = false;
             this.#deviceSignerApproved = true;
         };
-        const isAlreadyApprovedDeviceSignerError = (error: unknown): boolean => {
-            if (!(error instanceof Error)) {
-                return false;
+
+        // If we already have a valid device signer assembled, check its status
+        if (this.#signer?.type === "device") {
+            const deviceSigner = this.#signer;
+            if (this.isApprovedSignerStatus(deviceSigner.status)) {
+                walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
+                markDeviceSignerApproved();
+                return;
             }
 
-            return error.message.includes("Delegated signer") && error.message.includes("already 'approved'");
-        };
+            const signerState = await this.getSignerState(deviceSigner.locator());
+            deviceSigner.status = signerState.signer?.status;
 
-        if (this.isApprovedSignerStatus(deviceSigner.status)) {
-            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
-            markDeviceSignerApproved();
-            return;
-        }
-
-        const signerState = await this.getSignerState(deviceSigner.locator());
-        deviceSigner.status = signerState.signer?.status;
-
-        if (signerState.pendingOperation != null) {
-            const originalSigner = this.#signer;
-            const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
-            this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-
-            try {
-                if (signerState.pendingOperation.type === "signature") {
-                    await this.approveSignatureAndWait(signerState.pendingOperation.id);
-                } else {
-                    await this.approveTransactionAndWait(signerState.pendingOperation.id);
-                }
-            } finally {
-                this.#signer = originalSigner;
+            if (signerState.pendingOperation != null) {
+                await this.resumePendingDeviceSignerApproval(deviceSigner, signerState.pendingOperation);
+                markDeviceSignerApproved();
+                return;
             }
-            deviceSigner.status = "success";
-            walletsLogger.info("wallet.recover.device.success", {
-                signerLocator: deviceSigner.locator(),
-                resumed: true,
-            });
-            markDeviceSignerApproved();
-            return;
+
+            if (this.isApprovedSignerStatus(deviceSigner.status)) {
+                walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
+                markDeviceSignerApproved();
+                return;
+            }
         }
 
-        if (this.isApprovedSignerStatus(deviceSigner.status)) {
-            walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
-            markDeviceSignerApproved();
-            return;
-        }
-
-        // Generate a new device signer key
+        // For the remaining recovery steps we need device signer key storage
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
-        if (deviceSignerKeyStorage == null) {
-            throw new Error("Device signer key storage is required to recover a device signer");
+        if (deviceSignerKeyStorage == null || this.chain === "solana") {
+            walletsLogger.warn("wallet.recover.skipped", {
+                reason: "No device signer key storage available or Solana chain",
+            });
+            return;
         }
+
+        // No usable device signer assembled yet. Search all registered device signers
+        // to find one whose private key exists on this device.
+        const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
+        if (matchedSigner != null) {
+            this.#signer = matchedSigner;
+            if (this.isApprovedSignerStatus(matchedSigner.status)) {
+                walletsLogger.info("wallet.recover.matchedExisting", { signerLocator: matchedSigner.locator() });
+                markDeviceSignerApproved();
+                return;
+            }
+
+            const signerState = await this.getSignerState(matchedSigner.locator());
+            matchedSigner.status = signerState.signer?.status;
+
+            if (signerState.pendingOperation != null) {
+                await this.resumePendingDeviceSignerApproval(matchedSigner, signerState.pendingOperation);
+                markDeviceSignerApproved();
+                return;
+            }
+
+            if (this.isApprovedSignerStatus(matchedSigner.status)) {
+                walletsLogger.info("wallet.recover.matchedExisting", { signerLocator: matchedSigner.locator() });
+                markDeviceSignerApproved();
+                return;
+            }
+        }
+
+        // No existing device signer matches this device — generate a new key and register it
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.address);
 
         try {
             await this.addSigner(newDeviceSigner as SignerConfigForChain<C>);
         } catch (error) {
-            if (isAlreadyApprovedDeviceSignerError(error)) {
+            const isAlreadyApproved =
+                error instanceof Error &&
+                error.message.includes("already") &&
+                (error.message.includes("approved") || error.message.includes("'approved'"));
+
+            if (isAlreadyApproved) {
                 walletsLogger.info("wallet.recover.skipped", {
                     reason: "Device signer already approved",
                     signerLocator: newDeviceSigner.locator,
@@ -1007,6 +1020,69 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.recover.device.success", { signerLocator: newDeviceSigner.locator });
 
         markDeviceSignerApproved();
+    }
+
+    /**
+     * Resume a pending approval operation for a device signer.
+     * Temporarily swaps to the recovery signer, approves the pending operation,
+     * then restores the device signer.
+     */
+    private async resumePendingDeviceSignerApproval(
+        deviceSigner: SignerAdapter,
+        pendingOperation: { type: "signature" | "transaction"; id: string }
+    ): Promise<void> {
+        const originalSigner = this.#signer;
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+        try {
+            if (pendingOperation.type === "signature") {
+                await this.approveSignatureAndWait(pendingOperation.id);
+            } else {
+                await this.approveTransactionAndWait(pendingOperation.id);
+            }
+        } finally {
+            this.#signer = originalSigner;
+        }
+        deviceSigner.status = "success";
+        walletsLogger.info("wallet.recover.device.success", {
+            signerLocator: deviceSigner.locator(),
+            resumed: true,
+        });
+    }
+
+    /**
+     * Search registered device signers to find one whose private key exists locally.
+     * Returns a fully assembled SignerAdapter if found, or null if no match.
+     */
+    private async findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
+        try {
+            const existingSigners = await this.signers();
+            const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
+
+            for (const walletSigner of deviceSigners) {
+                const publicKeyBase64 = walletSigner.locator.replace("device:", "");
+                const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
+                if (hasKey) {
+                    await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                    const signer = await this.assembleFullSigner(
+                        {
+                            type: "device",
+                            locator: walletSigner.locator as SignerLocator,
+                            address: this.address,
+                        } as InternalSignerConfig<C>,
+                        deviceSignerKeyStorage
+                    );
+                    walletsLogger.info("wallet.recover.foundLocalDeviceSigner", {
+                        signerLocator: walletSigner.locator,
+                    });
+                    return signer;
+                }
+            }
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.findLocalDeviceSigner.error", { error });
+        }
+        return null;
     }
 
     /**
