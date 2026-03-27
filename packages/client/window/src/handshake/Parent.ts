@@ -1,5 +1,6 @@
 import { generateRandomString } from "@/utils/generateRandomString";
 import type { z } from "zod";
+import { windowLogger } from "../logger";
 
 import {
     DEFAULT_HANDSHAKE_OPTIONS,
@@ -62,7 +63,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
             return;
         }
 
-        console.info(`[HandshakeParent] Starting handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
+        windowLogger.info(`[HandshakeParent] Starting handshake (timeout: ${this.handshakeOptions.timeoutMs}ms)`);
         const requestVerificationId = generateRandomString();
 
         await this._sendAction({
@@ -81,7 +82,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         });
 
         this.isConnected = true;
-        console.info("[HandshakeParent] Handshake completed");
+        windowLogger.info("[HandshakeParent] Handshake completed");
     }
 
     // Wrap EventEmitter methods, adding handshake event types
