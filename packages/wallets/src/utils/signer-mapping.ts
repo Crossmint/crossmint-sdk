@@ -61,7 +61,8 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
 
 /**
  * Maps a full API signer response (DelegatedSignerV2025Dto) to a Signer.
- * For EVM chains, extracts the per-chain status. Returns null if no approval exists for the chain.
+ * For EVM chains, extracts the per-chain status. Returns null only if the signer
+ * has chain-specific entries but none for the requested chain.
  * For Solana/Stellar, extracts the transaction status.
  */
 export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer | null {
@@ -79,13 +80,17 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
     // For EVM, status comes from the chains field
     if ("chains" in apiSigner && apiSigner.chains != null && Object.keys(apiSigner.chains).length > 0) {
         const chainEntry = apiSigner.chains[chain];
-        if (chainEntry == null) {
-            return null; // No approval for this chain
+        if (chainEntry != null) {
+            return { ...base, status: chainEntry.status } as Signer;
         }
-        return { ...base, status: chainEntry.status } as Signer;
+        // chains field has entries but none for the current chain — the signer
+        // was not explicitly registered for this chain (e.g. added during wallet
+        // creation without a per-chain registration). Return null so callers that
+        // need strict per-chain filtering can still discard it.
+        return null;
     }
 
-    // If chains field is empty, the signer was created during wallet creation.
+    // If chains field is empty or absent, the signer was created during wallet creation.
     return { ...base, status: "success" } as Signer;
 }
 
