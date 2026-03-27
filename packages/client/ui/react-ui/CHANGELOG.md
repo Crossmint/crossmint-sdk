@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.0.6
+
+### Patch Changes
+
+- a2f667b: bt: bump sdk version
+
 ## 4.0.5
 
 ### Patch Changes
