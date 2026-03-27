@@ -2,12 +2,16 @@ import { AddressZero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
 import type { StaticJsonRpcProvider } from "@ethersproject/providers";
 
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import type { VCChain } from "../types/chain";
 import type { Nft } from "../types/nft";
 import { isVcChain } from "../types/utils";
 import { abi_ERC_721 } from "./ABI/ERC721";
 import { abi_ERC_7572 } from "./ABI/ERC7572";
 import { getProvider } from "./provider";
+
+const nftLogger = new SdkLogger();
 
 export class NFTService {
     private provider: StaticJsonRpcProvider;
@@ -50,12 +54,12 @@ export class NFTService {
         try {
             uri = await contract.contractURI();
         } catch (error: any) {
-            console.error(`Failed call contractURI() on ${contractAddress}: ${error.message}`);
+            nftLogger.error(`Failed call contractURI() on ${contractAddress}: ${error.message}`);
             return null;
         }
 
         if (uri != null) {
-            console.debug(`Found contract metadata at ${uri} for contract ${contractAddress}`);
+            nftLogger.debug(`Found contract metadata at ${uri} for contract ${contractAddress}`);
         }
         return uri;
     }
