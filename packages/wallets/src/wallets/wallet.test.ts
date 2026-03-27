@@ -905,6 +905,63 @@ describe("Wallet - signers()", () => {
             expect(signers[0].locator).toBe("external-wallet:0xsigner1");
         });
 
+        it("should handle chain entries that are signature ID strings instead of status objects", async () => {
+            const mockWalletResponse: GetWalletSuccessResponse = {
+                chainType: "evm",
+                type: "smart",
+                address: wallet.address,
+                config: {
+                    adminSigner: {
+                        type: "api-key",
+                        address: "0xadmin",
+                        locator: "api-key:admin",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "device",
+                            publicKey: { x: "1", y: "2" },
+                            locator: "device:abc123",
+                        },
+                        {
+                            type: "device",
+                            publicKey: { x: "3", y: "4" },
+                            locator: "device:def456",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+
+            // API returns signature ID strings instead of {status: "success"} objects
+            mockApiClient.getSigner
+                .mockResolvedValueOnce({
+                    type: "device",
+                    publicKey: { x: "1", y: "2" },
+                    locator: "device:abc123",
+                    chains: {
+                        "base-sepolia": "d8101662-17e0-4baf-bee8-06e9cfc0e780",
+                    },
+                } as any)
+                .mockResolvedValueOnce({
+                    type: "device",
+                    publicKey: { x: "3", y: "4" },
+                    locator: "device:def456",
+                    chains: {
+                        "base-sepolia": "802c868f-02b5-4183-b38b-270139f33e34",
+                    },
+                } as any);
+
+            const signers = await wallet.signers();
+
+            expect(signers).toHaveLength(2);
+            expect(signers[0].locator).toBe("device:abc123");
+            expect(signers[0].status).toBe("success");
+            expect(signers[1].locator).toBe("device:def456");
+            expect(signers[1].status).toBe("success");
+        });
+
         it("should return empty array when no signers", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
