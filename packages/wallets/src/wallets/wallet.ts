@@ -929,24 +929,23 @@ export class Wallet<C extends Chain> {
         }
 
         // No usable device signer assembled yet. Search all registered device signers
-        // to find one whose private key exists on this device.
+        // to find one whose private key exists on this device, or generate a new one.
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
-        if (deviceSignerKeyStorage != null) {
-            const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
-            if (matchedSigner != null) {
-                this.#signer = matchedSigner;
-                if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
-                    markDeviceSignerApproved();
-                    return;
-                }
-            }
-        }
-
-        // No existing device signer matches this device — generate a new key and register it
         if (deviceSignerKeyStorage == null) {
             walletsLogger.warn("wallet.recover.skipped", { reason: "No device signer key storage available" });
             return;
         }
+
+        const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
+        if (matchedSigner != null) {
+            this.#signer = matchedSigner;
+            if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
+                markDeviceSignerApproved();
+                return;
+            }
+        }
+
+        // No existing device signer matches this device — generate a new key and register it
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.address);
 
         try {
