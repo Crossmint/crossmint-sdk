@@ -928,18 +928,24 @@ export class Wallet<C extends Chain> {
             }
         }
 
+        // If the current signer is a non-device type (e.g., user explicitly called useSigner
+        // with email/passkey/server), skip device recovery to avoid overwriting their choice.
+        if (this.#signer != null && this.#signer.type !== "device") {
+            walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
+            return;
+        }
+
         // No usable device signer assembled yet. Search all registered device signers
         // to find one whose private key exists on this device, or generate a new one.
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
-            walletsLogger.warn("wallet.recover.skipped", { reason: "No device signer key storage available" });
-            return;
+            throw new Error("Device signer key storage is required to recover a device signer");
         }
 
         const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
         if (matchedSigner != null) {
-            this.#signer = matchedSigner;
             if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
+                this.#signer = matchedSigner;
                 markDeviceSignerApproved();
                 return;
             }
@@ -953,8 +959,8 @@ export class Wallet<C extends Chain> {
         } catch (error) {
             const isAlreadyApproved =
                 error instanceof Error &&
-                error.message.includes("already") &&
-                (error.message.includes("approved") || error.message.includes("'approved'"));
+                error.message.toLowerCase().includes("already") &&
+                error.message.toLowerCase().includes("approved");
 
             if (isAlreadyApproved) {
                 walletsLogger.info("wallet.recover.skipped", {
@@ -1043,7 +1049,8 @@ export class Wallet<C extends Chain> {
 
     /**
      * Search registered device signers to find one whose private key exists locally.
-     * Returns a fully assembled SignerAdapter if found, or null if no match.
+     * Returns an assembled SignerAdapter (without pre-fetched status) if found, or null.
+     * The caller is responsible for checking status via checkAndResumeDeviceSigner.
      */
     private async findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
         try {
@@ -1055,7 +1062,8 @@ export class Wallet<C extends Chain> {
                 const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
                 if (hasKey) {
                     await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
-                    const signer = await this.assembleFullSigner(
+                    const signer = assembleSigner(
+                        this.chain,
                         {
                             type: "device",
                             locator: walletSigner.locator as SignerLocator,
