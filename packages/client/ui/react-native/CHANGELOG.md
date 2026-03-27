@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.1.1
+
+### Patch Changes
+
+- bc659b5: Fix React Native passkey signer error message to suggest supported alternatives ('device', 'external-wallet') instead of unsupported ones ('email', 'phone')
+
 ## 1.1.0
 
 ### Minor Changes
