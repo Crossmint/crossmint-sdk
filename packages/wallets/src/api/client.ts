@@ -245,7 +245,7 @@ class ApiClient extends CrossmintApiClient {
         if (params.chain) {
             queryParams.append("chain", params.chain);
         }
-        const url = `${this.apiPrefix}/${walletLocator}/signers/${signer}${queryParams.keys.length ? `?${queryParams.toString()}` : ""}`;
+        const url = `${this.apiPrefix}/${walletLocator}/signers/${signer}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
         const response = await this.delete(url, {
             headers: this.headers,
         });
