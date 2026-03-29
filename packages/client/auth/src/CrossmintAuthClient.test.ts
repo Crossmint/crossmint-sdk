@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { authLogger } from "./logger";
 import { AUTH_SDK_ROOT_ENDPOINT, type AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { CrossmintAuthClient } from "./CrossmintAuthClient";
 import * as cookiesUtils from "./utils/cookies";
@@ -212,11 +213,11 @@ describe("CrossmintAuthClient", () => {
             const mockError = new Error("Refresh failed");
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockRejectedValue(mockError);
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
-            const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+            const logErrorSpy = vi.spyOn(authLogger, "error").mockImplementation(() => {});
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
-            expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
+            expect(logErrorSpy).toHaveBeenCalledWith(mockError);
             expect(crossmintAuthClient.logout).toHaveBeenCalled();
         });
 
