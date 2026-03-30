@@ -7,7 +7,7 @@ import { initReactNativeLogger } from "../logger/init";
 
 export const LoggerContext = createLoggerContext();
 
-export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> {
+export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl" | "appId"> {
     /**
      * Minimum log level for console output (or "silent" to suppress all output).
      * Logs below this level will not be written to the console.
@@ -23,13 +23,19 @@ export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" |
  * Root provider for the Crossmint SDK. Must wrap your entire application.
  * Initializes the SDK with your API key and sets up logging.
  */
-export function CrossmintProvider({ children, apiKey, overrideBaseUrl, consoleLogLevel }: CrossmintProviderProps) {
+export function CrossmintProvider({
+    children,
+    apiKey,
+    overrideBaseUrl,
+    appId: appIdProp,
+    consoleLogLevel,
+}: CrossmintProviderProps) {
     const logger = useMemo(() => {
         return initReactNativeLogger(apiKey, consoleLogLevel);
     }, [apiKey, consoleLogLevel]);
 
-    // Get app ID from Expo constants
-    const appId = Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
+    // Use provided appId prop, or auto-detect from Expo constants
+    const appId = appIdProp ?? Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
 
     return (
         <LoggerContext.Provider value={logger}>
