@@ -149,7 +149,7 @@ export class Wallet<C extends Chain> {
      * 2. If no device signer and no pending recovery: fallback based on delegated signer count
      *    - 0 signers: try to use recovery signer
      *    - 1 signer: try to use that signer
-     *    - >1 signers: leave undefined (user must call useSigner)
+     *    - >1 signers: fall back to recovery signer (wallet owner can always sign)
      *
      * Note: Server and api-key signers may fail to auto-assemble if required data
      * is not available in the API response. In those cases, the signer is left undefined.
@@ -176,8 +176,16 @@ export class Wallet<C extends Chain> {
                 // Exactly 1 auto-assemblable signer → use it
                 const internalConfig = this.buildInternalSignerConfig(this.#initialSigners[0]);
                 this.#signer = await this.assembleFullSigner(internalConfig);
+            } else {
+                // >1 signers → fall back to recovery signer so the wallet remains usable.
+                // Users who need a specific delegated signer can call useSigner() to override.
+                walletsLogger.info("wallet.initDefaultSigner.multipleSignersFallbackToRecovery", {
+                    signerCount: this.#initialSigners.length,
+                    recoveryType: this.#recovery.type,
+                });
+                const internalConfig = this.buildInternalSignerConfig(this.#recovery);
+                this.#signer = await this.assembleFullSigner(internalConfig);
             }
-            // >1 signers → leave #signer undefined, user must call useSigner()
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#recovery.type,
