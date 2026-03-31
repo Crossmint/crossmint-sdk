@@ -82,8 +82,7 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         if (chainEntry == null) {
             return null; // No approval for this chain
         }
-        // chainEntry may be a signature ID string (completed registration) rather than a status object
-        return { ...base, status: chainEntry.status ?? "success" } as Signer;
+        return { ...base, status: chainEntry.status } as Signer;
     }
 
     // If chains field is empty, the signer was created during wallet creation.
@@ -113,26 +112,4 @@ export function getPendingSignerOperation(
     }
 
     return null;
-}
-
-/**
- * Maps a wallet config signer (from getWallet response) to a Signer with a given status.
- * Used for Solana/Stellar where signers in the config are already fully registered.
- */
-export function mapConfigSignerToSigner(
-    configSigner: { type: string; locator: string; [key: string]: unknown },
-    status: SignerStatus
-): Signer {
-    const base: Record<string, unknown> = { ...configSigner, status };
-    // Ensure locator has proper prefix
-    const colonIndex = configSigner.locator.indexOf(":");
-    if (colonIndex === -1) {
-        if (configSigner.type === "api-key") {
-            base.locator = configSigner.locator;
-        } else {
-            base.locator = `external-wallet:${configSigner.locator}`;
-            base.type = "external-wallet";
-        }
-    }
-    return base as Signer;
 }

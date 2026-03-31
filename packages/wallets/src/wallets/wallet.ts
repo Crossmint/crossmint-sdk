@@ -1051,7 +1051,15 @@ export class Wallet<C extends Chain> {
             configSigners.map(async (configSigner) => {
                 try {
                     const signerState = await this.getSignerState(configSigner.locator as SignerLocator);
-                    return signerState.signer;
+                    if (signerState.signer != null) {
+                        return signerState.signer;
+                    }
+                    // getSigner failed (e.g. 404 due to base64 slash in device locator) — fall back to config data
+                    if (signerState.response == null) {
+                        return { ...configSigner, status: "active" as const } as WalletSigner;
+                    }
+                    // getSigner succeeded but signer was filtered (e.g. no approval for current chain)
+                    return null;
                 } catch {
                     return null;
                 }

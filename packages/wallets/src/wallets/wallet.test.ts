@@ -905,7 +905,7 @@ describe("Wallet - signers()", () => {
             expect(signers[0].locator).toBe("external-wallet:0xsigner1");
         });
 
-        it("should handle chain entries that are signature ID strings instead of status objects", async () => {
+        it("should include signer with active status when getSigner returns error (e.g. base64 locator with slash)", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -920,12 +920,13 @@ describe("Wallet - signers()", () => {
                         {
                             type: "device",
                             publicKey: { x: "1", y: "2" },
-                            locator: "device:abc123",
+                            locator:
+                                "device:BBcnCr40va3t7IqfjwJTt30Mil23tkydu7Hcy9FThT6mc3yCaWw2nY9nSXVck/1rdGY1lqV8q8mfALyLnYDNICg=",
                         },
                         {
                             type: "device",
                             publicKey: { x: "3", y: "4" },
-                            locator: "device:def456",
+                            locator: "device:BH5CnMgSc3HohfMMRxrbY8M5EhLBZbXv02uPdTc9z56i",
                         },
                     ],
                 },
@@ -934,32 +935,34 @@ describe("Wallet - signers()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            // API returns signature ID strings instead of {status: "success"} objects
+            // First signer: getSigner returns 404 error (base64 locator contains '/')
+            // Second signer: getSigner works normally
             mockApiClient.getSigner
                 .mockResolvedValueOnce({
-                    type: "device",
-                    publicKey: { x: "1", y: "2" },
-                    locator: "device:abc123",
-                    chains: {
-                        "base-sepolia": "d8101662-17e0-4baf-bee8-06e9cfc0e780",
-                    },
+                    error: true,
+                    message:
+                        "Cannot GET /api/2025-06-09/wallets/.../signers/device:BBcnCr40.../1rdGY1lqV8q8mfALyLnYDNICg=",
                 } as any)
                 .mockResolvedValueOnce({
                     type: "device",
                     publicKey: { x: "3", y: "4" },
-                    locator: "device:def456",
+                    locator: "device:BH5CnMgSc3HohfMMRxrbY8M5EhLBZbXv02uPdTc9z56i",
                     chains: {
-                        "base-sepolia": "802c868f-02b5-4183-b38b-270139f33e34",
+                        "base-sepolia": { status: "active" },
                     },
                 } as any);
 
             const signers = await wallet.signers();
 
             expect(signers).toHaveLength(2);
-            expect(signers[0].locator).toBe("device:abc123");
-            expect(signers[0].status).toBe("success");
-            expect(signers[1].locator).toBe("device:def456");
-            expect(signers[1].status).toBe("success");
+            // First signer falls back to config data with "active" status
+            expect(signers[0].locator).toBe(
+                "device:BBcnCr40va3t7IqfjwJTt30Mil23tkydu7Hcy9FThT6mc3yCaWw2nY9nSXVck/1rdGY1lqV8q8mfALyLnYDNICg="
+            );
+            expect(signers[0].status).toBe("active");
+            // Second signer uses normal getSigner response
+            expect(signers[1].locator).toBe("device:BH5CnMgSc3HohfMMRxrbY8M5EhLBZbXv02uPdTc9z56i");
+            expect(signers[1].status).toBe("active");
         });
 
         it("should return empty array when no signers", async () => {
