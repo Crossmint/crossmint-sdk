@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.1.1
+
+### Patch Changes
+
+- 313119a: Expose appId as an optional prop on CrossmintProvider for bare React Native projects where expo-constants is unavailable
+- bc659b5: Fix React Native passkey signer error message to suggest supported alternatives ('device', 'external-wallet') instead of unsupported ones ('email', 'phone')
+
 ## 1.1.0
 
 ### Minor Changes
