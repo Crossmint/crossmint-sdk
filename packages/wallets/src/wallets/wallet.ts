@@ -1385,6 +1385,8 @@ export class Wallet<C extends Chain> {
                 return true;
             case "server":
                 return "secret" in config && typeof config.secret === "string";
+            case "external-wallet":
+                return "onSign" in config && typeof config.onSign === "function";
             default:
                 return false;
         }
