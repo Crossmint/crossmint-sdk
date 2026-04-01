@@ -167,17 +167,24 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        const signerToAssemble =
+            this.#initialSigners.length === 0
+                ? this.#recovery
+                : this.#initialSigners.length === 1
+                  ? this.#initialSigners[0]
+                  : null; // >1 signers → user must call useSigner()
+
+        if (signerToAssemble == null) {
+            return;
+        }
+
+        if (!this.isAutoAssemblableSignerType(signerToAssemble.type)) {
+            return;
+        }
+
         try {
-            if (this.#initialSigners.length === 0) {
-                // No delegated signers → try to use recovery signer (common on Solana and server-side)
-                const internalConfig = this.buildInternalSignerConfig(this.#recovery);
-                this.#signer = await this.assembleFullSigner(internalConfig);
-            } else if (this.#initialSigners.length === 1) {
-                // Exactly 1 auto-assemblable signer → use it
-                const internalConfig = this.buildInternalSignerConfig(this.#initialSigners[0]);
-                this.#signer = await this.assembleFullSigner(internalConfig);
-            }
-            // >1 signers → leave #signer undefined, user must call useSigner()
+            const internalConfig = this.buildInternalSignerConfig(signerToAssemble);
+            this.#signer = await this.assembleFullSigner(internalConfig);
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#recovery.type,
@@ -1359,6 +1366,25 @@ export class Wallet<C extends Chain> {
             }
             default:
                 throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
+        }
+    }
+
+    /**
+     * Returns true if the signer type can be auto-assembled without user interaction.
+     * Types like external-wallet (stored as evm-keypair/solana-keypair in the API) require
+     * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
+     */
+    private isAutoAssemblableSignerType(type: string): boolean {
+        switch (type) {
+            case "email":
+            case "phone":
+            case "passkey":
+            case "api-key":
+            case "server":
+            case "device":
+                return true;
+            default:
+                return false;
         }
     }
 
