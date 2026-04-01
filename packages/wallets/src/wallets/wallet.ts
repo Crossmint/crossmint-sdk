@@ -939,6 +939,9 @@ export class Wallet<C extends Chain> {
         // to find one whose private key exists on this device, or generate a new one.
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
+            if (!this.#needsRecovery) {
+                return; // No device signer was configured — nothing to recover
+            }
             throw new Error("Device signer key storage is required to recover a device signer");
         }
 
@@ -953,6 +956,9 @@ export class Wallet<C extends Chain> {
         const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
         if (matchedSigner != null) {
             if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
+                // Commit the address→key mapping only after confirming the signer is usable
+                const publicKeyBase64 = matchedSigner.locator().replace("device:", "");
+                await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
                 this.#signer = matchedSigner;
                 markDeviceSignerApproved();
                 return;
@@ -1061,15 +1067,19 @@ export class Wallet<C extends Chain> {
      * The caller is responsible for checking status via checkAndResumeDeviceSigner.
      */
     private async findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
-        try {
-            const existingSigners = await this.signers();
-            const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
+        // Fetch registered signers — let network errors propagate so we don't
+        // accidentally generate a new key when an existing one is on the device.
+        const existingSigners = await this.signers();
+        const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
 
-            for (const walletSigner of deviceSigners) {
-                const publicKeyBase64 = walletSigner.locator.replace("device:", "");
+        for (const walletSigner of deviceSigners) {
+            const publicKeyBase64 = walletSigner.locator.replace("device:", "");
+            try {
                 const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
                 if (hasKey) {
-                    await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                    // Don't call mapAddressToKey here — the caller (recover) will do it
+                    // only after confirming the signer is usable, to avoid poisoning
+                    // the key mapping if we fall through to new-key generation.
                     const signer = assembleSigner(
                         this.chain,
                         {
@@ -1084,9 +1094,14 @@ export class Wallet<C extends Chain> {
                     });
                     return signer;
                 }
+            } catch (error) {
+                // hasKey / assembleSigner failures for individual keys are non-fatal;
+                // continue checking other device signers.
+                walletsLogger.warn("wallet.recover.findLocalDeviceSigner.keyCheckError", {
+                    signerLocator: walletSigner.locator,
+                    error,
+                });
             }
-        } catch (error) {
-            walletsLogger.warn("wallet.recover.findLocalDeviceSigner.error", { error });
         }
         return null;
     }
