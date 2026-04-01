@@ -137,6 +137,11 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // If no matching device key was found, recovery is needed — don't attempt to assemble
+        if (this.#needsRecovery) {
+            return;
+        }
+
         // Assemble the device signer with the resolved config
         const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
         this.#signer = await this.assembleFullSigner(internalConfig, deviceSignerKeyStorage);
