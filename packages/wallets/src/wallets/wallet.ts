@@ -956,11 +956,16 @@ export class Wallet<C extends Chain> {
         const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
         if (matchedSigner != null) {
             if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
-                // Commit the address→key mapping only after confirming the signer is usable
-                const publicKeyBase64 = matchedSigner.locator().replace("device:", "");
-                await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                // Assign signer and mark approved before the non-critical mapAddressToKey call,
+                // so a storage I/O error doesn't leave the wallet without a usable signer.
                 this.#signer = matchedSigner;
                 markDeviceSignerApproved();
+                const publicKeyBase64 = matchedSigner.locator().replace("device:", "");
+                try {
+                    await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                } catch (error) {
+                    walletsLogger.warn("wallet.recover.mapAddressToKey.error", { error });
+                }
                 return;
             }
         }
@@ -1051,8 +1056,18 @@ export class Wallet<C extends Chain> {
             } else {
                 await this.approveTransactionAndWait(pendingOperation.id);
             }
+        } catch (error) {
+            // Restore the device signer (not null) so the caller has a reference to the
+            // signer that was being recovered, rather than masking the failure behind a
+            // generic "read-only wallet" error from requireSigner().
+            this.#signer = deviceSigner;
+            throw error;
         } finally {
-            this.#signer = originalSigner;
+            // On the success path, restore the original signer — the caller (recover)
+            // will reassign this.#signer to the device signer after mapAddressToKey.
+            if (this.#signer !== deviceSigner) {
+                this.#signer = originalSigner;
+            }
         }
         deviceSigner.status = "success";
         walletsLogger.info("wallet.recover.device.success", {
