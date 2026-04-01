@@ -19,6 +19,11 @@ export interface SignerAuthState {
     setPhoneSignerDialogOpen: (open: boolean) => void;
     setPhoneSignerDialogStep: (step: DialogStep) => void;
 
+    /** The email address from the active auth flow (set by onAuthRequired callback). */
+    activeAuthEmail: string | undefined;
+    /** The phone number from the active auth flow (set by onAuthRequired callback). */
+    activeAuthPhone: string | undefined;
+
     sendEmailOtpRef: MutableRefObject<() => Promise<void>>;
     verifyOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
     sendPhoneOtpRef: MutableRefObject<() => Promise<void>>;
@@ -43,6 +48,8 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<DialogStep>("initial");
+    const [activeAuthEmail, setActiveAuthEmail] = useState<string | undefined>(undefined);
+    const [activeAuthPhone, setActiveAuthPhone] = useState<string | undefined>(undefined);
 
     const sendEmailOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
@@ -123,10 +130,12 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             const signerValue = signerLocator.split(":")[1];
             if (signerType === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
+                setActiveAuthPhone(needsAuth ? signerValue : undefined);
                 sendPhoneOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
             } else if (signerType === "email" && signerValue != null) {
                 setEmailSignerDialogOpen(needsAuth);
+                setActiveAuthEmail(needsAuth ? signerValue : undefined);
                 sendEmailOtpRef.current = sendMessageWithOtp;
                 verifyOtpRef.current = verifyOtp;
             }
@@ -145,6 +154,8 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
         phoneSignerDialogStep,
         setPhoneSignerDialogOpen,
         setPhoneSignerDialogStep,
+        activeAuthEmail,
+        activeAuthPhone,
 
         sendEmailOtpRef,
         verifyOtpRef,

@@ -60,10 +60,18 @@ export function CrossmintWalletUIBaseProvider({
     const signerType = wallet?.signer?.type;
     const signerValue = wallet?.signer?.locator().split(":")[1];
 
+    // Use the active auth signer info from the onAuthRequired callback when available.
+    // This is needed because during recovery the wallet's public signer may still be a
+    // device signer while the OTP flow is triggered by the internal email/phone recovery signer.
+    // Without this, EVMWallet.from(wallet).sendTransaction() would never show the OTP dialog
+    // because the wallet context's signer type stays "device".
+    const effectiveEmail = signerAuth.activeAuthEmail ?? (signerType === "email" ? signerValue : undefined);
+    const effectivePhone = signerAuth.activeAuthPhone ?? (signerType === "phone" ? signerValue : undefined);
+
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
-            email: signerType === "email" ? signerValue : undefined,
-            open: signerAuth.emailSignerDialogOpen && signerType === "email" && signerValue != null,
+            email: effectiveEmail,
+            open: signerAuth.emailSignerDialogOpen && effectiveEmail != null,
             setOpen: signerAuth.setEmailSignerDialogOpen,
             step: signerAuth.emailSignerDialogStep,
             onSubmitOTP: signerAuth.emailsigners_handleOTPSubmit,
@@ -73,8 +81,8 @@ export function CrossmintWalletUIBaseProvider({
             appearance,
         },
         phoneSignerProps: {
-            phone: signerType === "phone" ? signerValue : undefined,
-            open: signerAuth.phoneSignerDialogOpen && signerType === "phone" && signerValue != null,
+            phone: effectivePhone,
+            open: signerAuth.phoneSignerDialogOpen && effectivePhone != null,
             setOpen: signerAuth.setPhoneSignerDialogOpen,
             step: signerAuth.phoneSignerDialogStep,
             onSubmitOTP: signerAuth.phonesigners_handleOTPSubmit,
