@@ -94,7 +94,7 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
                     minWidth: "100%",
                     height,
                     backgroundColor: "transparent",
-                    overflow: "hidden",
+                    overflow: undefined,
                     opacity: 1,
                     padding: 0,
                     boxShadow: "none",
@@ -105,7 +105,8 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
                 mediaPlaybackRequiresUserAction={false}
                 allowsBackForwardNavigationGestures={false}
                 allowsLinkPreview={false}
-                scrollEnabled={false}
+                scrollEnabled={true}
+                keyboardDismissMode="on-drag"
                 bounces={false}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
