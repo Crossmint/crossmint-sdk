@@ -106,7 +106,6 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
                 allowsBackForwardNavigationGestures={false}
                 allowsLinkPreview={false}
                 scrollEnabled={true}
-                keyboardDismissMode="on-drag"
                 bounces={false}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
