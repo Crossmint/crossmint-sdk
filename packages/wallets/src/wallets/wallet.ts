@@ -1112,7 +1112,7 @@ export class Wallet<C extends Chain> {
                         'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
                 );
             }
-            if (this.#recovery.type === "external-wallet") {
+            if (this.#recovery.type === "external-wallet" || !this.isAutoAssemblableSignerConfig(this.#recovery)) {
                 throw new Error(
                     "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
                         'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
