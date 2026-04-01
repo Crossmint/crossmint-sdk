@@ -178,7 +178,7 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (!this.isAutoAssemblableSignerType(signerToAssemble.type)) {
+        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
             return;
         }
 
@@ -1370,19 +1370,21 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Returns true if the signer type can be auto-assembled without user interaction.
+     * Returns true if the signer config can be auto-assembled without user interaction.
      * Types like external-wallet (stored as evm-keypair/solana-keypair in the API) require
      * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
+     * Server signers also require the secret to be present in the config.
      */
-    private isAutoAssemblableSignerType(type: string): boolean {
-        switch (type) {
+    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C>): boolean {
+        switch (config.type) {
             case "email":
             case "phone":
             case "passkey":
             case "api-key":
-            case "server":
             case "device":
                 return true;
+            case "server":
+                return "secret" in config && typeof config.secret === "string";
             default:
                 return false;
         }
