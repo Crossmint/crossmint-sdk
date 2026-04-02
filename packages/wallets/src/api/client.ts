@@ -241,11 +241,12 @@ class ApiClient extends CrossmintApiClient {
         signer: string,
         params: RemoveSignerParams
     ): Promise<RemoveSignerResponse> {
+        const encodedSigner = encodeURIComponent(signer);
         const queryParams = new URLSearchParams();
         if (params.chain) {
             queryParams.append("chain", params.chain);
         }
-        const url = `${this.apiPrefix}/${walletLocator}/signers/${signer}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
+        const url = `${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
         const response = await this.delete(url, {
             headers: this.headers,
         });
