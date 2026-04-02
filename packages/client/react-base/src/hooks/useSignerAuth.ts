@@ -72,6 +72,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             await verifyOtpRef.current(otp);
             setEmailSignerDialogOpen(false);
             setEmailSignerDialogStep("initial");
+            setActiveAuthEmail(undefined);
         } catch (error) {
             console.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
@@ -103,6 +104,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             await verifyPhoneOtpRef.current(otp);
             setPhoneSignerDialogOpen(false);
             setPhoneSignerDialogStep("initial");
+            setActiveAuthPhone(undefined);
         } catch (error) {
             console.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
