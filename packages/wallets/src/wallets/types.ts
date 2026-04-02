@@ -44,9 +44,7 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
     ? Signer & { transactionId: string }
     : Signer & { signatureId?: string };
 
-export type RemoveSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
-    ? { transactionId: string; status?: "success" }
-    : { signatureId?: string; status?: "success" };
+export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
 export type SignMessageInput = {
     message: string;

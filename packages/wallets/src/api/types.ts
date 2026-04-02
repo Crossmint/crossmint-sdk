@@ -86,7 +86,9 @@ export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025
 export type RemoveSignerParams = {
     chain?: RegisterSignerChain;
 };
-export type RemoveSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
+export type RemoveSignerResponse =
+    | WalletsTransactionV2025ResponseDtoClass
+    | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type GetSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerGetDelegatedSigner2Error;
 export type GetSignersResponse = Array<DelegatedSignerV2025DtoClass> | WalletsV2025ControllerGetDelegatedSigner2Error;
 export type Signer = DelegatedSignerV2025DtoClass;

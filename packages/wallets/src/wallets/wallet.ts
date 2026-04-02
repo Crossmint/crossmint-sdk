@@ -735,7 +735,7 @@ export class Wallet<C extends Chain> {
     public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<T extends PrepareOnly<true> ? RemoveSignerReturnType<C> : RemoveSignerReturnType<C>> {
+    ): Promise<RemoveSignerReturnType> {
         const signerLocator = this.resolveSignerLocator(signer);
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
@@ -748,48 +748,18 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeSigner.error", {
                     error: response,
                 });
-                throw new Error(`Failed to remove signer: ${JSON.stringify(response.message)}`);
+                throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
             }
 
-            if (this.chain === "solana" || this.chain === "stellar") {
-                if (!("transaction" in response) || response.transaction == null) {
-                    walletsLogger.error("wallet.removeSigner.error", {
-                        error: "Expected transaction in response for Solana/Stellar chain",
-                    });
-                    throw new Error("Expected transaction in response for Solana/Stellar chain");
-                }
-
-                const transactionId = response.transaction.id;
-
-                return this.handleTransactionSignerFlow({
-                    transactionId,
-                    prepareOnly: options?.prepareOnly,
-                    preparedLogEvent: "wallet.removeSigner.prepared",
-                    successLogEvent: "wallet.removeSigner.success",
-                    buildPreparedResult: () => ({ transactionId, status: undefined }) as any,
-                    buildSuccessResult: () => ({ transactionId, status: "success" as const }) as any,
-                });
-            } else {
-                if (!("chains" in response)) {
-                    walletsLogger.error("wallet.removeSigner.error", {
-                        error: "Expected chains in response for EVM chain",
-                    });
-                    throw new Error("Expected chains in response for EVM chain");
-                }
-
-                const pendingOperation = getPendingSignerOperation(response, this.chain);
-
-                return this.handleEvmSignerFlow({
-                    pendingOperation,
-                    prepareOnly: options?.prepareOnly,
-                    chainStatus: response.chains?.[this.chain]?.status,
-                    failureMessage: `Signer removal failed for chain ${this.chain}`,
-                    preparedLogEvent: "wallet.removeSigner.prepared",
-                    successLogEvent: "wallet.removeSigner.success",
-                    buildPreparedResult: (signatureId) => ({ signatureId, status: undefined }) as any,
-                    buildSuccessResult: (signatureId) => ({ signatureId, status: "success" as const }) as any,
-                });
-            }
+            const transactionId = response.id;
+            return this.handleTransactionSignerFlow({
+                transactionId,
+                prepareOnly: options?.prepareOnly,
+                preparedLogEvent: "wallet.removeSigner.prepared",
+                successLogEvent: "wallet.removeSigner.success",
+                buildPreparedResult: () => ({ transactionId, status: undefined }) as any,
+                buildSuccessResult: () => ({ transactionId, status: "success" as const }) as any,
+            });
         });
     }
 

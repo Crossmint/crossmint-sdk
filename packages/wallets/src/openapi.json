@@ -1253,7 +1253,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/DelegatedSignerV2025DtoClass"
+                                    "$ref": "#/components/schemas/WalletsTransactionV2025ResponseDTOClass"
                                 }
                             }
                         }
@@ -2296,7 +2296,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/DelegatedSignerV2025DtoClass"
+                                    "$ref": "#/components/schemas/WalletsTransactionV2025ResponseDTOClass"
                                 }
                             }
                         }
@@ -9994,7 +9994,7 @@
                                                     },
                                                     {
                                                         "type": "string",
-                                                        "description": "The Solana address of the signer"
+                                                        "description": "The Solana address of the custodial signer"
                                                     },
                                                     {
                                                         "type": "string"
@@ -10385,7 +10385,7 @@
                                                                             "type": "string"
                                                                         }
                                                                     ],
-                                                                    "description": "ISO timestamp when the signature was created"
+                                                                    "description": "ISO timestamp when the transaction was created"
                                                                 },
                                                                 "signer": {
                                                                     "oneOf": [
@@ -10586,7 +10586,7 @@
                                                         "type": "string"
                                                     }
                                                 ],
-                                                "description": "ISO timestamp when the signature was created"
+                                                "description": "ISO timestamp when the transaction was created"
                                             },
                                             "completedAt": {
                                                 "description": "ISO timestamp when the transaction reached finality",
@@ -10759,7 +10759,7 @@
                                 }
                             }
                         ],
-                        "title": "Delegated Signer Response",
+                        "title": "Solana Delegated Signer Response",
                         "description": "Complete delegated signer response including the signer and authorization transaction"
                     },
                     {
@@ -10844,7 +10844,7 @@
                                                     },
                                                     {
                                                         "type": "string",
-                                                        "description": "The Solana address of the signer"
+                                                        "description": "The Solana address of the custodial signer"
                                                     },
                                                     {
                                                         "type": "string"
@@ -11265,7 +11265,7 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 ],
-                                                                                "description": "ISO timestamp when the signature was created"
+                                                                                "description": "ISO timestamp when the transaction was created"
                                                                             },
                                                                             "signer": {
                                                                                 "oneOf": [
@@ -11493,7 +11493,7 @@
                                 }
                             }
                         ],
-                        "title": "Delegated Signer Response",
+                        "title": "EVM Delegated Signer Response",
                         "description": "Complete delegated signer response including the signer and authorizations for each chain"
                     },
                     {
@@ -11578,7 +11578,7 @@
                                                     },
                                                     {
                                                         "type": "string",
-                                                        "description": "The Solana address of the signer"
+                                                        "description": "The Solana address of the custodial signer"
                                                     },
                                                     {
                                                         "type": "string"
@@ -12059,7 +12059,7 @@
                                                                             "type": "string"
                                                                         }
                                                                     ],
-                                                                    "description": "ISO timestamp when the signature was created"
+                                                                    "description": "ISO timestamp when the transaction was created"
                                                                 },
                                                                 "signer": {
                                                                     "oneOf": [
@@ -12260,7 +12260,7 @@
                                                         "type": "string"
                                                     }
                                                 ],
-                                                "description": "ISO timestamp when the signature was created"
+                                                "description": "ISO timestamp when the transaction was created"
                                             },
                                             "completedAt": {
                                                 "description": "ISO timestamp when the transaction reached finality",
@@ -12433,7 +12433,7 @@
                                 }
                             }
                         ],
-                        "title": "Delegated Signer Response",
+                        "title": "Stellar Delegated Signer Response",
                         "description": "Complete delegated signer response including the signer and authorization transaction"
                     }
                 ]
@@ -16512,7 +16512,7 @@
                                                                         "type": "string"
                                                                     }
                                                                 ],
-                                                                "description": "ISO timestamp when the signature was created"
+                                                                "description": "ISO timestamp when the transaction was created"
                                                             },
                                                             "signer": {
                                                                 "oneOf": [
@@ -16704,7 +16704,7 @@
                                                     "type": "string"
                                                 }
                                             ],
-                                            "description": "ISO timestamp when the signature was created"
+                                            "description": "ISO timestamp when the transaction was created"
                                         },
                                         "completedAt": {
                                             "description": "ISO timestamp when the transaction reached finality",
@@ -17247,7 +17247,7 @@
                                                                         "type": "string"
                                                                     }
                                                                 ],
-                                                                "description": "ISO timestamp when the signature was created"
+                                                                "description": "ISO timestamp when the transaction was created"
                                                             },
                                                             "signer": {
                                                                 "oneOf": [
@@ -17439,7 +17439,7 @@
                                                     "type": "string"
                                                 }
                                             ],
-                                            "description": "ISO timestamp when the signature was created"
+                                            "description": "ISO timestamp when the transaction was created"
                                         },
                                         "completedAt": {
                                             "description": "ISO timestamp when the transaction reached finality",
@@ -18186,7 +18186,7 @@
                                                                         "type": "string"
                                                                     }
                                                                 ],
-                                                                "description": "ISO timestamp when the signature was created"
+                                                                "description": "ISO timestamp when the transaction was created"
                                                             },
                                                             "signer": {
                                                                 "oneOf": [
@@ -18378,7 +18378,7 @@
                                                     "type": "string"
                                                 }
                                             ],
-                                            "description": "ISO timestamp when the signature was created"
+                                            "description": "ISO timestamp when the transaction was created"
                                         },
                                         "completedAt": {
                                             "description": "ISO timestamp when the transaction reached finality",
@@ -18940,7 +18940,7 @@
                                                                         "type": "string"
                                                                     }
                                                                 ],
-                                                                "description": "ISO timestamp when the signature was created"
+                                                                "description": "ISO timestamp when the transaction was created"
                                                             },
                                                             "signer": {
                                                                 "oneOf": [
@@ -19132,7 +19132,7 @@
                                                     "type": "string"
                                                 }
                                             ],
-                                            "description": "ISO timestamp when the signature was created"
+                                            "description": "ISO timestamp when the transaction was created"
                                         },
                                         "completedAt": {
                                             "description": "ISO timestamp when the transaction reached finality",
@@ -19640,7 +19640,7 @@
                                                                         "type": "string"
                                                                     }
                                                                 ],
-                                                                "description": "ISO timestamp when the signature was created"
+                                                                "description": "ISO timestamp when the transaction was created"
                                                             },
                                                             "signer": {
                                                                 "oneOf": [
@@ -19832,7 +19832,7 @@
                                                     "type": "string"
                                                 }
                                             ],
-                                            "description": "ISO timestamp when the signature was created"
+                                            "description": "ISO timestamp when the transaction was created"
                                         },
                                         "completedAt": {
                                             "description": "ISO timestamp when the transaction reached finality",
@@ -21698,7 +21698,7 @@
                                                             "type": "string"
                                                         }
                                                     ],
-                                                    "description": "ISO timestamp when the signature was created"
+                                                    "description": "ISO timestamp when the transaction was created"
                                                 },
                                                 "signer": {
                                                     "oneOf": [
@@ -21890,7 +21890,7 @@
                                         "type": "string"
                                     }
                                 ],
-                                "description": "ISO timestamp when the signature was created"
+                                "description": "ISO timestamp when the transaction was created"
                             },
                             "completedAt": {
                                 "description": "ISO timestamp when the transaction reached finality",
@@ -22425,7 +22425,7 @@
                                                             "type": "string"
                                                         }
                                                     ],
-                                                    "description": "ISO timestamp when the signature was created"
+                                                    "description": "ISO timestamp when the transaction was created"
                                                 },
                                                 "signer": {
                                                     "oneOf": [
@@ -22617,7 +22617,7 @@
                                         "type": "string"
                                     }
                                 ],
-                                "description": "ISO timestamp when the signature was created"
+                                "description": "ISO timestamp when the transaction was created"
                             },
                             "completedAt": {
                                 "description": "ISO timestamp when the transaction reached finality",
@@ -23356,7 +23356,7 @@
                                                             "type": "string"
                                                         }
                                                     ],
-                                                    "description": "ISO timestamp when the signature was created"
+                                                    "description": "ISO timestamp when the transaction was created"
                                                 },
                                                 "signer": {
                                                     "oneOf": [
@@ -23548,7 +23548,7 @@
                                         "type": "string"
                                     }
                                 ],
-                                "description": "ISO timestamp when the signature was created"
+                                "description": "ISO timestamp when the transaction was created"
                             },
                             "completedAt": {
                                 "description": "ISO timestamp when the transaction reached finality",
@@ -24102,7 +24102,7 @@
                                                             "type": "string"
                                                         }
                                                     ],
-                                                    "description": "ISO timestamp when the signature was created"
+                                                    "description": "ISO timestamp when the transaction was created"
                                                 },
                                                 "signer": {
                                                     "oneOf": [
@@ -24294,7 +24294,7 @@
                                         "type": "string"
                                     }
                                 ],
-                                "description": "ISO timestamp when the signature was created"
+                                "description": "ISO timestamp when the transaction was created"
                             },
                             "completedAt": {
                                 "description": "ISO timestamp when the transaction reached finality",
@@ -24794,7 +24794,7 @@
                                                             "type": "string"
                                                         }
                                                     ],
-                                                    "description": "ISO timestamp when the signature was created"
+                                                    "description": "ISO timestamp when the transaction was created"
                                                 },
                                                 "signer": {
                                                     "oneOf": [
@@ -24986,7 +24986,7 @@
                                         "type": "string"
                                     }
                                 ],
-                                "description": "ISO timestamp when the signature was created"
+                                "description": "ISO timestamp when the transaction was created"
                             },
                             "completedAt": {
                                 "description": "ISO timestamp when the transaction reached finality",
@@ -28337,7 +28337,7 @@
                                                             },
                                                             {
                                                                 "type": "string",
-                                                                "description": "The Solana address of the signer"
+                                                                "description": "The Solana address of the custodial signer"
                                                             },
                                                             {
                                                                 "type": "string"
@@ -28547,7 +28547,7 @@
                                                                 },
                                                                 {
                                                                     "type": "string",
-                                                                    "description": "The Solana address of the signer"
+                                                                    "description": "The Solana address of the custodial signer"
                                                                 },
                                                                 {
                                                                     "type": "string"
@@ -28843,7 +28843,7 @@
                                                             },
                                                             {
                                                                 "type": "string",
-                                                                "description": "The Solana address of the signer"
+                                                                "description": "The Solana address of the custodial signer"
                                                             },
                                                             {
                                                                 "type": "string"
@@ -29013,7 +29013,7 @@
                                                                         },
                                                                         {
                                                                             "type": "string",
-                                                                            "description": "The Solana address of the signer"
+                                                                            "description": "The Solana address of the custodial signer"
                                                                         },
                                                                         {
                                                                             "type": "string"
@@ -29450,7 +29450,7 @@
                                                                                                 "type": "string"
                                                                                             }
                                                                                         ],
-                                                                                        "description": "ISO timestamp when the signature was created"
+                                                                                        "description": "ISO timestamp when the transaction was created"
                                                                                     },
                                                                                     "signer": {
                                                                                         "oneOf": [
@@ -29692,7 +29692,7 @@
                                                                             "type": "string"
                                                                         }
                                                                     ],
-                                                                    "description": "ISO timestamp when the signature was created"
+                                                                    "description": "ISO timestamp when the transaction was created"
                                                                 },
                                                                 "completedAt": {
                                                                     "description": "ISO timestamp when the transaction reached finality",
@@ -29885,7 +29885,7 @@
                                                     }
                                                 }
                                             ],
-                                            "title": "Delegated Signer Response",
+                                            "title": "Solana Delegated Signer Response",
                                             "description": "Complete delegated signer response including the signer and authorization transaction"
                                         }
                                     }
@@ -30163,7 +30163,7 @@
                                                             },
                                                             {
                                                                 "type": "string",
-                                                                "description": "The Solana address of the signer"
+                                                                "description": "The Solana address of the custodial signer"
                                                             },
                                                             {
                                                                 "type": "string"
@@ -30267,7 +30267,7 @@
                                                                         },
                                                                         {
                                                                             "type": "string",
-                                                                            "description": "The Solana address of the signer"
+                                                                            "description": "The Solana address of the custodial signer"
                                                                         },
                                                                         {
                                                                             "type": "string"
@@ -30794,7 +30794,7 @@
                                                                                                 "type": "string"
                                                                                             }
                                                                                         ],
-                                                                                        "description": "ISO timestamp when the signature was created"
+                                                                                        "description": "ISO timestamp when the transaction was created"
                                                                                     },
                                                                                     "signer": {
                                                                                         "oneOf": [
@@ -31036,7 +31036,7 @@
                                                                             "type": "string"
                                                                         }
                                                                     ],
-                                                                    "description": "ISO timestamp when the signature was created"
+                                                                    "description": "ISO timestamp when the transaction was created"
                                                                 },
                                                                 "completedAt": {
                                                                     "description": "ISO timestamp when the transaction reached finality",
@@ -31229,7 +31229,7 @@
                                                     }
                                                 }
                                             ],
-                                            "title": "Delegated Signer Response",
+                                            "title": "Stellar Delegated Signer Response",
                                             "description": "Complete delegated signer response including the signer and authorization transaction"
                                         }
                                     },
