@@ -37,26 +37,38 @@ export default defineConfig({
         // Full e2e tests - multiple browsers, parallel execution
         {
             name: "chromium",
-            testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
             use: { ...devices["Desktop Chrome"] },
         },
         {
             name: "firefox",
-            testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
             use: { ...devices["Desktop Firefox"] },
         },
         {
             name: "webkit",
-            testMatch: /^(?!.*smoke).*\.spec\.ts$/, // Exclude smoke tests
+            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
             use: { ...devices["Desktop Safari"] },
         },
+        // SDK integration tests — no browser, tests SDK classes directly
+        {
+            name: "sdk",
+            testDir: "./e2e/sdk",
+            testMatch: "**/*.spec.ts",
+            fullyParallel: false,
+            retries: 1,
+            timeout: 300_000,
+            use: {},
+        },
     ],
-    webServer: {
-        command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
-        url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
-        timeout: process.env.CI ? 180000 : 300000,
-        stdout: "pipe",
-        stderr: "pipe",
-    },
+    webServer: process.env.SKIP_WEB_SERVER
+        ? undefined
+        : {
+              command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || "pnpm dev",
+              url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+              reuseExistingServer: !process.env.CI,
+              timeout: process.env.CI ? 180000 : 300000,
+              stdout: "pipe",
+              stderr: "pipe",
+          },
 });
