@@ -680,14 +680,18 @@ export class Wallet<C extends Chain> {
                     throw new Error(`No approval found for chain ${this.chain} in register signer response`);
                 }
 
-                return this.handleTransactionSignerFlow({
+                if (options?.prepareOnly) {
+                    walletsLogger.info("wallet.addSigner.prepared", {
+                        transactionId,
+                    });
+                    return { ...registeredSigner, transactionId } as AddSignerReturnType<C>;
+                }
+
+                await this.approveTransactionAndWait(transactionId);
+                walletsLogger.info("wallet.addSigner.success", {
                     transactionId,
-                    prepareOnly: options?.prepareOnly,
-                    preparedLogEvent: "wallet.addSigner.prepared",
-                    successLogEvent: "wallet.addSigner.success",
-                    buildPreparedResult: () => ({ ...registeredSigner, transactionId }) as AddSignerReturnType<C>,
-                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" }) as WalletSigner,
                 });
+                return { ...registeredSigner, status: "success" } as WalletSigner;
             } else {
                 if (!("chains" in response)) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -703,18 +707,27 @@ export class Wallet<C extends Chain> {
                 }
 
                 const pendingOperation = getPendingSignerOperation(response, this.chain);
+                const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
 
-                return this.handleEvmSignerFlow({
-                    pendingOperation,
-                    prepareOnly: options?.prepareOnly,
-                    chainStatus: chainResponse?.status,
-                    failureMessage: `Signer registration failed for chain ${this.chain}`,
-                    preparedLogEvent: "wallet.addSigner.prepared",
-                    successLogEvent: "wallet.addSigner.success",
-                    buildPreparedResult: (signatureId) =>
-                        ({ ...registeredSigner, signatureId }) as AddSignerReturnType<C>,
-                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as WalletSigner,
-                });
+                if (options?.prepareOnly) {
+                    walletsLogger.info("wallet.addSigner.prepared", {
+                        signatureId,
+                    });
+                    return { ...registeredSigner, signatureId } as AddSignerReturnType<C>;
+                }
+
+                if (pendingOperation?.type === "signature") {
+                    await this.approveSignatureAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.addSigner.success", {
+                        signatureId: pendingOperation.id,
+                    });
+                } else if (chainResponse?.status === "failed") {
+                    throw new Error(`Signer registration failed for chain ${this.chain}`);
+                } else {
+                    walletsLogger.info("wallet.addSigner.success");
+                }
+
+                return { ...registeredSigner, status: "success" as const } as WalletSigner;
             }
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
     }
@@ -753,14 +766,18 @@ export class Wallet<C extends Chain> {
             }
 
             const transactionId = response.id;
-            return this.handleTransactionSignerFlow({
+            if (options?.prepareOnly) {
+                walletsLogger.info("wallet.removeSigner.prepared", {
+                    transactionId,
+                });
+                return { transactionId, status: undefined };
+            }
+
+            await this.approveTransactionAndWait(transactionId);
+            walletsLogger.info("wallet.removeSigner.success", {
                 transactionId,
-                prepareOnly: options?.prepareOnly,
-                preparedLogEvent: "wallet.removeSigner.prepared",
-                successLogEvent: "wallet.removeSigner.success",
-                buildPreparedResult: () => ({ transactionId, status: undefined }),
-                buildSuccessResult: () => ({ transactionId, status: "success" }) as RemoveSignerReturnType,
             });
+            return { transactionId, status: "success" } as RemoveSignerReturnType;
         });
     }
 
@@ -893,61 +910,6 @@ export class Wallet<C extends Chain> {
         } finally {
             this.#signer = originalSigner;
         }
-    }
-
-    private async handleTransactionSignerFlow<T, K>(params: {
-        transactionId: string;
-        prepareOnly?: boolean;
-        preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
-        successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
-        buildPreparedResult: () => T;
-        buildSuccessResult: () => K;
-    }): Promise<T | K> {
-        if (params.prepareOnly) {
-            walletsLogger.info(params.preparedLogEvent, {
-                transactionId: params.transactionId,
-            });
-            return params.buildPreparedResult();
-        }
-
-        await this.approveTransactionAndWait(params.transactionId);
-        walletsLogger.info(params.successLogEvent, {
-            transactionId: params.transactionId,
-        });
-        return params.buildSuccessResult();
-    }
-
-    private async handleEvmSignerFlow<T, K>(params: {
-        pendingOperation: { type: "signature" | "transaction"; id: string } | null;
-        prepareOnly?: boolean;
-        chainStatus?: string;
-        failureMessage: string;
-        preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
-        successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
-        buildPreparedResult: (signatureId?: string) => T;
-        buildSuccessResult: (signatureId?: string) => K;
-    }): Promise<T | K> {
-        const signatureId = params.pendingOperation?.type === "signature" ? params.pendingOperation.id : undefined;
-
-        if (params.prepareOnly) {
-            walletsLogger.info(params.preparedLogEvent, {
-                signatureId,
-            });
-            return params.buildPreparedResult(signatureId);
-        }
-
-        if (params.pendingOperation?.type === "signature") {
-            await this.approveSignatureAndWait(params.pendingOperation.id);
-            walletsLogger.info(params.successLogEvent, {
-                signatureId: params.pendingOperation.id,
-            });
-        } else if (params.chainStatus === "failed") {
-            throw new Error(params.failureMessage);
-        } else {
-            walletsLogger.info(params.successLogEvent);
-        }
-
-        return params.buildSuccessResult(params.pendingOperation?.id);
     }
 
     private isPasskeyMissingId(signer: PasskeySignerConfig): boolean {
