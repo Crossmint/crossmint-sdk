@@ -9,7 +9,7 @@ on:
     push:
         branches:
             - main
-            - wallets-v1
+            - beta
     workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
@@ -60,8 +60,8 @@ jobs:
             - name: Create Release Pull Request or Publish
               uses: changesets/action@v1.5.3
               with:
-                  commit: ${{ github.ref_name == 'wallets-v1' && 'Release beta packages' || 'Release packages' }}
-                  title: ${{ github.ref_name == 'wallets-v1' && 'Release beta packages' || 'Release packages' }}
+                  commit: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
+                  title: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
                   publish: pnpm change:publish
                   version: pnpm change:version
               env:

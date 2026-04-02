@@ -9,7 +9,7 @@ on:
     push:
         branches-ignore:
             - main
-            - wallets-v1
+            - beta
 
 jobs:
     build-and-test:
