@@ -13,6 +13,19 @@ import {
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 
+vi.mock("@/utils/device-signers", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/utils/device-signers")>();
+    return {
+        ...actual,
+        createDeviceSigner: vi.fn().mockResolvedValue({
+            type: "device",
+            publicKey: { x: "0x01", y: "0x02" },
+            locator: "device:mockNewKey",
+            name: "Test Device",
+        }),
+    };
+});
+
 describe("Wallet - balances()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
@@ -1236,55 +1249,796 @@ describe("Wallet - useSigner()", () => {
 });
 
 describe("Wallet - recover()", () => {
-    it("should resume pending Stellar device signer registration from getSigner", async () => {
-        const mockApiClient = createMockApiClient();
-        const deviceSigner: SignerAdapter<"device"> = {
-            type: "device",
-            status: "pending",
-            locator: () => "device:stellar-device",
-            signMessage: vi.fn(),
-            signTransaction: vi.fn(),
-        };
+    let mockApiClient: MockedApiClient;
 
-        const wallet = new Wallet(
-            {
-                chain: "stellar",
-                address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
-                recovery: { type: "api-key" } as any,
-                signer: deviceSigner,
-            },
-            mockApiClient as unknown as ApiClient
-        );
+    // Helper: create a mock DeviceSignerKeyStorage
+    const createMockDeviceKeyStorage = () => ({
+        generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+        getKey: vi.fn().mockResolvedValue(null),
+        hasKey: vi.fn().mockResolvedValue(false),
+        mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+        deleteKey: vi.fn().mockResolvedValue(undefined),
+        signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+        getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        apiKey: "test-api-key",
+    });
 
+    // Helper: create a mock SignerAdapter for device type
+    const createDeviceSignerAdapter = (
+        locatorValue = "device:testkey123",
+        status?: string
+    ): SignerAdapter<"device"> => ({
+        type: "device",
+        status: status as any,
+        locator: () => locatorValue as any,
+        signMessage: vi.fn(),
+        signTransaction: vi.fn(),
+    });
+
+    // Helper: mock getSigner to return an approved EVM device signer
+    const mockGetSignerApproved = (chain: string, locator = "device:testkey123") => {
+        if (chain === "stellar" || chain === "solana") {
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "device",
+                locator,
+                publicKey: { x: "1", y: "2" },
+                transaction: { id: "tx-1", status: "success" },
+            } as any);
+        } else {
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "device",
+                locator,
+                publicKey: { x: "1", y: "2" },
+                chains: { "base-sepolia": { status: "success" } },
+            } as any);
+        }
+    };
+
+    // Helper: mock getSigner to return a pending EVM device signer with a signature op
+    const mockGetSignerPendingSignature = (sigId = "sig-pending-1") => {
         mockApiClient.getSigner.mockResolvedValue({
             type: "device",
-            locator: "device:stellar-device",
+            locator: "device:testkey123",
             publicKey: { x: "1", y: "2" },
-            transaction: {
-                chainType: "solana",
-                id: "tx-123",
-                status: "pending",
-                onChain: {
-                    transaction: "serialized-tx",
-                },
+            chains: {
+                "base-sepolia": { status: "awaiting-approval", id: sigId },
             },
         } as any);
+    };
+
+    // Helper: mock getSigner to return a pending Stellar device signer with a transaction op
+    const mockGetSignerPendingTransaction = (txId = "tx-pending-1") => {
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:testkey123",
+            publicKey: { x: "1", y: "2" },
+            transaction: {
+                chainType: "stellar",
+                id: txId,
+                status: "pending",
+                onChain: { transaction: "serialized-tx" },
+            },
+        } as any);
+    };
+
+    // Helper: mock getSigner to return a signer with no approval / not approved
+    const mockGetSignerNotApproved = () => {
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:testkey123",
+            publicKey: { x: "1", y: "2" },
+            chains: {},
+        } as any);
+    };
+
+    // Helper: mock successful signature approval flow
+    const mockSignatureApprovalSuccess = (sigId = "sig-pending-1") => {
+        mockApiClient.getSignature.mockResolvedValue({
+            id: sigId,
+            status: "success",
+            outputSignature: "0xapprovedsig",
+        } as any);
+    };
+
+    // Helper: mock successful transaction approval flow
+    const mockTransactionApprovalSuccess = (txId = "tx-pending-1") => {
         mockApiClient.getTransaction.mockResolvedValue({
-            id: "tx-123",
+            id: txId,
             status: "success",
             chainType: "stellar",
             onChain: {
                 txEnvelope: "envelope-xdr",
                 txHash: "stellar-hash",
-                explorerLink: "https://stellar.explorer/tx-123",
+                explorerLink: "https://stellar.explorer/tx",
             },
         } as any);
+    };
 
-        await wallet.recover();
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockApiClient = createMockApiClient();
+    });
 
-        expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:stellar:smart", "device:stellar-device");
-        expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:stellar:smart", "tx-123");
-        expect(wallet.signer?.status).toBe("success");
+    describe("early return paths", () => {
+        it("should skip recovery when deviceSignerApproved is already cached", async () => {
+            // Use undefined status so first recover() must call getSigner to verify approval
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // First call — signer status is unknown, so it checks via API and caches the flag
+            mockGetSignerApproved("base-sepolia");
+            await wallet.recover();
+            expect(mockApiClient.getSigner).toHaveBeenCalledTimes(1);
+
+            // Second call — should return immediately from cache without API call
+            mockApiClient.getSigner.mockClear();
+            await wallet.recover();
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        it("should skip recovery when current signer is non-device type (email)", async () => {
+            const emailSigner: SignerAdapter = {
+                type: "email",
+                status: "success",
+                locator: () => "email:user@example.com" as any,
+                signMessage: vi.fn(),
+                signTransaction: vi.fn(),
+            };
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: emailSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            await wallet.recover();
+
+            // Should not call getSigner at all — non-device signer is skipped
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        it("should return silently when no deviceSignerKeyStorage and !needsRecovery", async () => {
+            // Wallet with no signer and no deviceSignerKeyStorage — needsRecovery defaults false
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // Flush init so any constructor-driven API calls complete first
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            mockApiClient.getSigner.mockClear();
+
+            // Should not throw and recover itself should not call getSigner
+            await wallet.recover();
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        it("should return early for Solana chain (defense-in-depth)", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            const wallet = new Wallet(
+                {
+                    chain: "solana",
+                    address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // Flush init so any constructor-driven API calls complete first
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            mockApiClient.getWallet.mockClear();
+            mockApiClient.getSigner.mockClear();
+
+            await wallet.recover();
+
+            // recover() itself should not call signers() or getSigner — early Solana guard
+            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("existing device signer on wallet (this.#signer)", () => {
+        it("should mark approved when assembled device signer has approved status", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", "success");
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            await wallet.recover();
+
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.needsRecovery()).toBe(false);
+            // No API calls needed — status was already approved in-memory
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        it("should mark approved when assembled device signer has active status", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", "active");
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            await wallet.recover();
+
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("should check API and approve when signer status is not yet approved", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockGetSignerApproved("base-sepolia");
+
+            await wallet.recover();
+
+            expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:evm:smart", "device:testkey123");
+            expect(wallet.signer?.status).toBe("success");
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("should resume pending signature approval on EVM chain", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockGetSignerPendingSignature("sig-resume-1");
+            mockSignatureApprovalSuccess("sig-resume-1");
+
+            await wallet.recover();
+
+            expect(mockApiClient.getSigner).toHaveBeenCalled();
+            expect(mockApiClient.getSignature).toHaveBeenCalledWith("me:evm:smart", "sig-resume-1");
+            expect(wallet.signer?.status).toBe("success");
+        });
+
+        it("should resume pending Stellar device signer registration from getSigner", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:stellar-device", "pending");
+            const wallet = new Wallet(
+                {
+                    chain: "stellar",
+                    address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:stellar-device",
+                publicKey: { x: "1", y: "2" },
+                transaction: {
+                    chainType: "solana",
+                    id: "tx-123",
+                    status: "pending",
+                    onChain: { transaction: "serialized-tx" },
+                },
+            } as any);
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "tx-123",
+                status: "success",
+                chainType: "stellar",
+                onChain: {
+                    txEnvelope: "envelope-xdr",
+                    txHash: "stellar-hash",
+                    explorerLink: "https://stellar.explorer/tx-123",
+                },
+            } as any);
+
+            await wallet.recover();
+
+            expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:stellar:smart", "device:stellar-device");
+            expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:stellar:smart", "tx-123");
+            expect(wallet.signer?.status).toBe("success");
+        });
+    });
+
+    describe("findLocalDeviceSigner path", () => {
+        it("should find local device signer and mark approved", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockResolvedValue(true);
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                { type: "device", locator: "device:localkey456", publicKey: { x: "1", y: "2" }, status: "success" },
+            ] as any);
+
+            mockGetSignerApproved("base-sepolia", "device:localkey456");
+
+            await wallet.recover();
+
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("localkey456");
+            expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:evm:smart", "device:localkey456");
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("should call mapAddressToKey after confirming signer is approved", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockResolvedValue(true);
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                { type: "device", locator: "device:localkey456", publicKey: { x: "1", y: "2" }, status: "success" },
+            ] as any);
+
+            mockGetSignerApproved("base-sepolia", "device:localkey456");
+
+            await wallet.recover();
+
+            expect(mockStorage.mapAddressToKey).toHaveBeenCalledWith(
+                "0x1234567890123456789012345678901234567890",
+                "localkey456"
+            );
+        });
+
+        it("should tolerate mapAddressToKey failure without losing signer", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockImplementation(async (key: string) => key === "localkey456");
+            mockStorage.mapAddressToKey.mockRejectedValue(new Error("Storage I/O error"));
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers")
+                .mockResolvedValueOnce([
+                    { type: "device", locator: "device:localkey456", publicKey: { x: "1", y: "2" }, status: "success" },
+                ] as any) // recover's findLocalDeviceSigner
+                .mockResolvedValue([] as any); // init's resolveDeviceSignerAvailability
+
+            mockGetSignerApproved("base-sepolia", "device:localkey456");
+
+            await wallet.recover();
+
+            // Signer should still be assigned despite mapAddressToKey failure
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("should resume pending operation on a found local device signer", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockResolvedValue(true);
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                { type: "device", locator: "device:localkey456", publicKey: { x: "1", y: "2" }, status: "pending" },
+            ] as any);
+
+            // getSigner returns pending signature
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:localkey456",
+                publicKey: { x: "1", y: "2" },
+                chains: {
+                    "base-sepolia": { status: "awaiting-approval", id: "sig-local-1" },
+                },
+            } as any);
+            mockSignatureApprovalSuccess("sig-local-1");
+
+            await wallet.recover();
+
+            expect(mockApiClient.getSignature).toHaveBeenCalledWith("me:evm:smart", "sig-local-1");
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.signer?.status).toBe("success");
+        });
+
+        it("should skip device signers without local keys and check the next one", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            // Use mockImplementation so both init and recover get consistent key-based behavior
+            mockStorage.hasKey.mockImplementation(async (key: string) => key === "mykey789");
+
+            const deviceSigners = [
+                {
+                    type: "device",
+                    locator: "device:otherdevicekey",
+                    publicKey: { x: "a", y: "b" },
+                    status: "success",
+                },
+                { type: "device", locator: "device:mykey789", publicKey: { x: "1", y: "2" }, status: "success" },
+            ];
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            // recover()'s findLocalDeviceSigner calls signers() FIRST (sync, before init's getKey
+            // microtask resolves). Give it the device signers; init gets empty → needsRecovery.
+            vi.spyOn(wallet, "signers")
+                .mockResolvedValueOnce(deviceSigners as any) // recover's findLocalDeviceSigner
+                .mockResolvedValue([] as any); // init's resolveDeviceSignerAvailability
+
+            mockGetSignerApproved("base-sepolia", "device:mykey789");
+
+            await wallet.recover();
+
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("otherdevicekey");
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("mykey789");
+            expect(mockApiClient.getSigner).toHaveBeenCalledWith("me:evm:smart", "device:mykey789");
+            expect(wallet.signer?.type).toBe("device");
+        });
+
+        it("should continue checking when hasKey throws for one signer", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockImplementation(async (key: string) => {
+                if (key === "badkey") throw new Error("Key check failed");
+                return key === "goodkey";
+            });
+
+            const deviceSigners = [
+                { type: "device", locator: "device:badkey", publicKey: { x: "a", y: "b" }, status: "success" },
+                { type: "device", locator: "device:goodkey", publicKey: { x: "1", y: "2" }, status: "success" },
+            ];
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers")
+                .mockResolvedValueOnce(deviceSigners as any) // recover's findLocalDeviceSigner
+                .mockResolvedValue([] as any); // init's resolveDeviceSignerAvailability
+
+            mockGetSignerApproved("base-sepolia", "device:goodkey");
+
+            await wallet.recover();
+
+            expect(mockStorage.hasKey).toHaveBeenCalledTimes(2);
+            expect(wallet.signer?.type).toBe("device");
+        });
+
+        it("should propagate network errors from signers() instead of silently generating new key", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockRejectedValue(new Error("Network error"));
+
+            await expect(wallet.recover()).rejects.toThrow("Network error");
+
+            // Should NOT have tried to generate a new key
+            expect(mockStorage.generateKey).not.toHaveBeenCalled();
+        });
+
+        it("should ignore non-device signers when searching for local device signer", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                { type: "email", locator: "email:user@example.com", status: "success" },
+                { type: "api-key", locator: "api-key", status: "success" },
+            ] as any);
+
+            // No device signers found — should proceed to new key generation
+            // Mock registerSigner for the createDeviceSigner fallback
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { status: "success" } },
+            } as any);
+            mockGetSignerApproved("base-sepolia", "device:mockNewKey");
+
+            // hasKey should never be called since there are no device signers
+            await wallet.recover();
+            expect(mockStorage.hasKey).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("new key generation fallback (createDeviceSigner + addSigner)", () => {
+        it("should generate new key and register when no local device signer found", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { status: "success" } },
+            } as any);
+            mockGetSignerApproved("base-sepolia", "device:mockNewKey");
+
+            await wallet.recover();
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.signer?.status).toBe("success");
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("should handle 'already approved' error gracefully during addSigner", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            // registerSigner returns an error response with "error" field → addSigner throws
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "Delegated signer is already 'approved'",
+            } as any);
+            // assembleFullSigner after the catch still needs getSigner
+            mockGetSignerApproved("base-sepolia", "device:mockNewKey");
+
+            await wallet.recover();
+
+            // Should NOT delete the key
+            expect(mockStorage.deleteKey).not.toHaveBeenCalled();
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.signer?.status).toBe("success");
+        });
+
+        it("should delete key and rethrow when addSigner fails with non-'already approved' error", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            // registerSigner returns an error response → addSigner throws
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "Internal server error",
+            } as any);
+
+            await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
+
+            expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
+        });
+
+        it("should not false-positive on error containing 'already' and 'approved' without 'delegated signer'", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            // Simulate a JSON-stringified API response that contains "already" and "approved"
+            // but is NOT the "delegated signer already approved" error
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: '{"status":"already","result":"approved","error":"some other failure"}',
+            } as any);
+
+            await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
+            expect(mockStorage.deleteKey).toHaveBeenCalled();
+        });
+    });
+
+    describe("resumePendingDeviceSignerApproval error handling", () => {
+        it("should preserve device signer reference on approval error (not restore null)", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // getSigner returns a pending signature
+            mockGetSignerPendingSignature("sig-fail-1");
+            // But the signature approval fails
+            mockApiClient.getSignature.mockResolvedValue({
+                error: { message: "Signature not found" },
+            } as any);
+
+            await expect(wallet.recover()).rejects.toThrow();
+
+            // The device signer should still be set (not null)
+            expect(wallet.signer).toBe(deviceSigner);
+            expect(wallet.signer?.type).toBe("device");
+        });
+
+        it("should resume pending transaction approval on Stellar chain", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:stellar-device", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "stellar",
+                    address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockGetSignerPendingTransaction("tx-stellar-1");
+            mockTransactionApprovalSuccess("tx-stellar-1");
+
+            await wallet.recover();
+
+            expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:stellar:smart", "tx-stellar-1");
+            expect(wallet.signer?.status).toBe("success");
+        });
+    });
+
+    describe("findLocalDeviceSigner with pending op on matched signer that fails check", () => {
+        it("should fall through to new key generation when local signer is not approved and has no pending op", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            mockStorage.hasKey.mockImplementation(async (key: string) => key === "unapprovedkey");
+
+            const deviceSigners = [
+                {
+                    type: "device",
+                    locator: "device:unapprovedkey",
+                    publicKey: { x: "1", y: "2" },
+                    status: "pending",
+                },
+            ];
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers")
+                .mockResolvedValueOnce(deviceSigners as any) // recover's findLocalDeviceSigner
+                .mockResolvedValue([] as any); // init's resolveDeviceSignerAvailability
+
+            // First getSigner call (for findLocalDeviceSigner match) — not approved, no pending op
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "device",
+                locator: "device:unapprovedkey",
+                publicKey: { x: "1", y: "2" },
+                chains: { "base-sepolia": { status: "failed" } },
+            } as any);
+
+            // Second getSigner call (for assembleFullSigner after createDeviceSigner)
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { status: "success" } },
+            } as any);
+
+            // createDeviceSigner → addSigner path
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { status: "success" } },
+            } as any);
+
+            await wallet.recover();
+
+            // Should have attempted findLocalDeviceSigner, failed check, and fallen through
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
+            expect(wallet.signer?.type).toBe("device");
+        });
     });
 });
 
