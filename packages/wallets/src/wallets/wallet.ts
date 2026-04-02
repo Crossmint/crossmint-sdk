@@ -685,8 +685,8 @@ export class Wallet<C extends Chain> {
                     prepareOnly: options?.prepareOnly,
                     preparedLogEvent: "wallet.addSigner.prepared",
                     successLogEvent: "wallet.addSigner.success",
-                    buildPreparedResult: () => ({ ...registeredSigner, transactionId }) as any,
-                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as any,
+                    buildPreparedResult: () => ({ ...registeredSigner, transactionId }) as AddSignerReturnType<C>,
+                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" }) as WalletSigner,
                 });
             } else {
                 if (!("chains" in response)) {
@@ -711,11 +711,12 @@ export class Wallet<C extends Chain> {
                     failureMessage: `Signer registration failed for chain ${this.chain}`,
                     preparedLogEvent: "wallet.addSigner.prepared",
                     successLogEvent: "wallet.addSigner.success",
-                    buildPreparedResult: (signatureId) => ({ ...registeredSigner, signatureId }) as any,
-                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as any,
+                    buildPreparedResult: (signatureId) =>
+                        ({ ...registeredSigner, signatureId }) as AddSignerReturnType<C>,
+                    buildSuccessResult: () => ({ ...registeredSigner, status: "success" as const }) as WalletSigner,
                 });
             }
-        });
+        }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
     }
 
     /**
@@ -757,8 +758,8 @@ export class Wallet<C extends Chain> {
                 prepareOnly: options?.prepareOnly,
                 preparedLogEvent: "wallet.removeSigner.prepared",
                 successLogEvent: "wallet.removeSigner.success",
-                buildPreparedResult: () => ({ transactionId, status: undefined }) as any,
-                buildSuccessResult: () => ({ transactionId, status: "success" as const }) as any,
+                buildPreparedResult: () => ({ transactionId, status: undefined }),
+                buildSuccessResult: () => ({ transactionId, status: "success" }) as RemoveSignerReturnType,
             });
         });
     }
@@ -894,14 +895,14 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    private async handleTransactionSignerFlow<T>(params: {
+    private async handleTransactionSignerFlow<T, K>(params: {
         transactionId: string;
         prepareOnly?: boolean;
         preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
         successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
         buildPreparedResult: () => T;
-        buildSuccessResult: () => T;
-    }): Promise<T> {
+        buildSuccessResult: () => K;
+    }): Promise<T | K> {
         if (params.prepareOnly) {
             walletsLogger.info(params.preparedLogEvent, {
                 transactionId: params.transactionId,
@@ -916,7 +917,7 @@ export class Wallet<C extends Chain> {
         return params.buildSuccessResult();
     }
 
-    private async handleEvmSignerFlow<T>(params: {
+    private async handleEvmSignerFlow<T, K>(params: {
         pendingOperation: { type: "signature" | "transaction"; id: string } | null;
         prepareOnly?: boolean;
         chainStatus?: string;
@@ -924,8 +925,8 @@ export class Wallet<C extends Chain> {
         preparedLogEvent: "wallet.addSigner.prepared" | "wallet.removeSigner.prepared";
         successLogEvent: "wallet.addSigner.success" | "wallet.removeSigner.success";
         buildPreparedResult: (signatureId?: string) => T;
-        buildSuccessResult: (signatureId?: string) => T;
-    }): Promise<T> {
+        buildSuccessResult: (signatureId?: string) => K;
+    }): Promise<T | K> {
         const signatureId = params.pendingOperation?.type === "signature" ? params.pendingOperation.id : undefined;
 
         if (params.prepareOnly) {
