@@ -13,7 +13,7 @@
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
     },
-    "files": ["dist", "LICENSE"],
+    "files": ["dist", "LICENSE", "README.md"],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
