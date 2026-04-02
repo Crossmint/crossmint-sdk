@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.5
+
+### Patch Changes
+
+- 36169eb: Fix spurious 400 API call to empty device locator when no matching device key is found locally
+
+  Fix OTP dialog not appearing during recovery flow when using EVMWallet.from(wallet).sendTransaction(). The dialog's open condition previously required wallet.signer.type === "email", which fails during recovery because the wallet's public signer remains a device signer. Now uses the active auth signer info from the onAuthRequired callback instead.
+
+- Updated dependencies [36169eb]
+- Updated dependencies [ab768c6]
+  - @crossmint/wallets-sdk@1.0.5
+
 ## 2.0.4
 
 ### Patch Changes
