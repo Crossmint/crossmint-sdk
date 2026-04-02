@@ -38,9 +38,13 @@ export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly;
 
+export type RemoveSignerOptions = PrepareOnly;
+
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? Signer & { transactionId: string }
     : Signer & { signatureId?: string };
+
+export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
 export type SignMessageInput = {
     message: string;

@@ -33,6 +33,7 @@ export type {
     ApproveParams,
     ApproveOptions,
     AddSignerOptions,
+    RemoveSignerOptions,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

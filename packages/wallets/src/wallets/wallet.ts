@@ -16,6 +16,8 @@ import type {
 import type {
     AddSignerOptions,
     AddSignerReturnType,
+    RemoveSignerOptions,
+    RemoveSignerReturnType,
     Signer as WalletSigner,
     WalletOptions,
     UserLocator,
@@ -643,12 +645,7 @@ export class Wallet<C extends Chain> {
                 ? (`server:${deriveServerSignerDetails(signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}` as const)
                 : signer;
 
-        // Store original signer and swap to recovery signer for the registration
-        const originalSigner = this.signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
-        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-
-        try {
+        return this.withRecoverySigner(async () => {
             // For server signers, resolvedSigner is already a locator string.
             // For passkeys, always pass the full config so the API receives the publicKey.
             // For everything else, convert to a locator string via getSignerLocator.
@@ -669,10 +666,7 @@ export class Wallet<C extends Chain> {
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
-                chain:
-                    this.chain === "solana" || this.chain === "stellar"
-                        ? undefined
-                        : (this.chain as RegisterSignerChain),
+                chain: this.getSignerRegistrationChain(),
             });
 
             if ("error" in response) {
@@ -702,14 +696,14 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.prepared", {
                         transactionId,
                     });
-                    return { ...registeredSigner, transactionId } as any;
+                    return { ...registeredSigner, transactionId } as AddSignerReturnType<C>;
                 }
 
                 await this.approveTransactionAndWait(transactionId);
                 walletsLogger.info("wallet.addSigner.success", {
                     transactionId,
                 });
-                return { ...registeredSigner, status: "success" as const } as any;
+                return { ...registeredSigner, status: "success" } as WalletSigner;
             } else {
                 if (!("chains" in response)) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -725,13 +719,13 @@ export class Wallet<C extends Chain> {
                 }
 
                 const pendingOperation = getPendingSignerOperation(response, this.chain);
+                const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
 
                 if (options?.prepareOnly) {
-                    const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
                     walletsLogger.info("wallet.addSigner.prepared", {
                         signatureId,
                     });
-                    return { ...registeredSigner, signatureId } as any;
+                    return { ...registeredSigner, signatureId } as AddSignerReturnType<C>;
                 }
 
                 if (pendingOperation?.type === "signature") {
@@ -745,11 +739,58 @@ export class Wallet<C extends Chain> {
                     walletsLogger.info("wallet.addSigner.success");
                 }
 
-                return { ...registeredSigner, status: "success" as const } as any;
+                return { ...registeredSigner, status: "success" as const } as WalletSigner;
             }
-        } finally {
-            this.#signer = originalSigner;
-        }
+        }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
+    }
+
+    /**
+     * Remove a signer from the wallet.
+     * Always uses the recovery signer internally to approve the removal.
+     * @param signer - The signer to remove, provided as a signer config object
+     * @param options - The options for the operation
+     * @param options.prepareOnly - If true, returns the operation ID without auto-approving
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.removeSigner",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        options?: T
+    ): Promise<RemoveSignerReturnType> {
+        const signerLocator = this.resolveSignerLocator(signer);
+        walletsLogger.info("wallet.removeSigner.start", { signerLocator });
+
+        return this.withRecoverySigner(async () => {
+            const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
+                chain: this.getSignerRegistrationChain(),
+            });
+
+            if ("error" in response) {
+                walletsLogger.error("wallet.removeSigner.error", {
+                    error: response,
+                });
+                throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
+            }
+
+            const transactionId = response.id;
+            if (options?.prepareOnly) {
+                walletsLogger.info("wallet.removeSigner.prepared", {
+                    transactionId,
+                });
+                return { transactionId, status: undefined };
+            }
+
+            await this.approveTransactionAndWait(transactionId);
+            walletsLogger.info("wallet.removeSigner.success", {
+                transactionId,
+            });
+            return { transactionId, status: "success" } as RemoveSignerReturnType;
+        });
     }
 
     /**
@@ -851,7 +892,7 @@ export class Wallet<C extends Chain> {
      * Compute the signer locator for registration checks.
      * Server signers use the derived address; other types use the standard locator.
      */
-    private resolveSignerLocator(signer: SignerConfigForChain<C>): string {
+    private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
@@ -862,6 +903,25 @@ export class Wallet<C extends Chain> {
             return `server:${derivedAddress}`;
         }
         return getSignerLocator(signer);
+    }
+
+    private getSignerRegistrationChain(): RegisterSignerChain | undefined {
+        if (this.chain === "solana" || this.chain === "stellar") {
+            return undefined;
+        }
+        return this.chain as RegisterSignerChain;
+    }
+
+    private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
+        const originalSigner = this.signer;
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+        try {
+            return await operation();
+        } finally {
+            this.#signer = originalSigner;
+        }
     }
 
     private isPasskeyMissingId(signer: PasskeySignerConfig): boolean {
