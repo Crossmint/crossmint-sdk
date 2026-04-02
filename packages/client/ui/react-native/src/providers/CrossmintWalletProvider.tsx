@@ -49,7 +49,7 @@ export interface CrossmintWalletProviderProps {
 }
 
 const PASSKEY_RN_ERROR =
-    "Passkey signers are not supported in React Native. Use a different signer type such as 'email', 'phone', or 'device'.";
+    "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
 
 function hasPasskeySigner(config?: CreateOnLogin): boolean {
     if (config == null) {

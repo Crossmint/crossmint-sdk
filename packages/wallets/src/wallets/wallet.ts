@@ -173,17 +173,24 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        const signerToAssemble =
+            this.#initialSigners.length === 0
+                ? this.#recovery
+                : this.#initialSigners.length === 1
+                  ? this.#initialSigners[0]
+                  : null; // >1 signers → user must call useSigner()
+
+        if (signerToAssemble == null) {
+            return;
+        }
+
+        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
+            return;
+        }
+
         try {
-            if (this.#initialSigners.length === 0) {
-                // No delegated signers → try to use recovery signer (common on Solana and server-side)
-                const internalConfig = this.buildInternalSignerConfig(this.#recovery);
-                this.#signer = await this.assembleFullSigner(internalConfig);
-            } else if (this.#initialSigners.length === 1) {
-                // Exactly 1 auto-assemblable signer → use it
-                const internalConfig = this.buildInternalSignerConfig(this.#initialSigners[0]);
-                this.#signer = await this.assembleFullSigner(internalConfig);
-            }
-            // >1 signers → leave #signer undefined, user must call useSigner()
+            const internalConfig = this.buildInternalSignerConfig(signerToAssemble);
+            this.#signer = await this.assembleFullSigner(internalConfig);
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#recovery.type,
@@ -1217,7 +1224,7 @@ export class Wallet<C extends Chain> {
                         'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
                 );
             }
-            if (this.#recovery.type === "external-wallet") {
+            if (this.#recovery.type === "external-wallet" || !this.isAutoAssemblableSignerConfig(this.#recovery)) {
                 throw new Error(
                     "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
                         'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
@@ -1471,6 +1478,29 @@ export class Wallet<C extends Chain> {
             }
             default:
                 throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
+        }
+    }
+
+    /**
+     * Returns true if the signer config can be auto-assembled without user interaction.
+     * Types like external-wallet (stored as evm-keypair/solana-keypair in the API) require
+     * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
+     * Server signers also require the secret to be present in the config.
+     */
+    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C>): boolean {
+        switch (config.type) {
+            case "email":
+            case "phone":
+            case "passkey":
+            case "api-key":
+            case "device":
+                return true;
+            case "server":
+                return "secret" in config && typeof config.secret === "string";
+            case "external-wallet":
+                return "onSign" in config && typeof config.onSign === "function";
+            default:
+                return false;
         }
     }
 
