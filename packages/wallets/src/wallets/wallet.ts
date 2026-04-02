@@ -985,6 +985,7 @@ export class Wallet<C extends Chain> {
         } catch (error) {
             const isAlreadyApproved =
                 error instanceof Error &&
+                error.message.toLowerCase().includes("delegated signer") &&
                 error.message.toLowerCase().includes("already") &&
                 error.message.toLowerCase().includes("approved");
 
