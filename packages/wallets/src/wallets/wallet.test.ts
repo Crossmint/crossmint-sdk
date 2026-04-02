@@ -1272,6 +1272,8 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
         it("should accept a passkey with explicit id as recovery when not found in delegated signers", async () => {
@@ -1291,6 +1293,8 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
         it("should use passkey with explicit id as delegated when it IS registered, even if recovery is also passkey", async () => {
