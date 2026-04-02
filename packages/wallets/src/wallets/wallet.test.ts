@@ -1171,7 +1171,7 @@ describe("Wallet - useSigner()", () => {
     });
 
     describe("recovery signer support", () => {
-        it("should accept the recovery signer (api-key) without registration check", async () => {
+        it("should accept the recovery signer (api-key) without registration check and skip getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1187,9 +1187,11 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("api-key");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept the recovery signer (email) by config object without registration check", async () => {
+        it("should accept the recovery signer (email) without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1205,9 +1207,11 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("email");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept the recovery signer (phone) by config object without registration check", async () => {
+        it("should accept the recovery signer (phone) without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1223,9 +1227,11 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("phone");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept recovery external-wallet signer with full config object", async () => {
+        it("should accept recovery external-wallet signer without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1245,6 +1251,8 @@ describe("Wallet - useSigner()", () => {
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("external-wallet");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
         it("should accept the recovery signer (passkey) when no delegated passkeys exist", async () => {
