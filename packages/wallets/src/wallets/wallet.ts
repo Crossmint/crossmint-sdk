@@ -1267,12 +1267,15 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryDerived = deriveServerSignerDetails(
-                recovery,
-                this.chain,
-                this.#apiClient.projectId,
-                this.#apiClient.environment
-            ).derivedAddress;
+            const recoveryDerived =
+                "address" in recovery && recovery.address != null
+                    ? recovery.address
+                    : deriveServerSignerDetails(
+                          recovery,
+                          this.chain,
+                          this.#apiClient.projectId,
+                          this.#apiClient.environment
+                      ).derivedAddress;
             return inputDerived === recoveryDerived;
         }
 
