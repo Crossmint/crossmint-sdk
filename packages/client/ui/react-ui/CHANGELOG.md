@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.0.8
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- Updated dependencies [8743da2]
+- Updated dependencies [fc14bbf]
+- Updated dependencies [cf42378]
+  - @crossmint/wallets-sdk@1.0.6
+  - @crossmint/client-sdk-auth@1.3.3
+  - @crossmint/common-sdk-auth@1.1.3
+  - @crossmint/client-sdk-react-base@2.0.6
+
 ## 4.0.7
 
 ### Patch Changes
