@@ -85,7 +85,14 @@ const wallet = await wallets.createWallet({
 // Create a new wallet with an external wallet signer
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
-  recovery: { type: "external-wallet", address: "0xYourWalletAddress" },
+  recovery: {
+    type: "external-wallet",
+    address: "0xYourWalletAddress",
+    onSign: async (message: string) => {
+      // Sign the message with your wallet/KMS and return the signature
+      return await yourWallet.signMessage({ message: { raw: message as `0x${string}` } });
+    },
+  },
 });
 ```
 
