@@ -67,18 +67,25 @@ console.log(wallet.address);
 Wallets SDK uses a two-tier signer model:
 
 - **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
-- **Operational signer** — Low-friction, used for day-to-day signing. The default is the **device signer**, which uses hardware-backed keys (no OTP needed). Also supports passkey, server key, and external wallet.
+- **Operational signer** — Low-friction, used for day-to-day signing. Supports server key, external wallet, passkey, and device (browser/mobile only). For server-side (Node.js) usage, use a **server** or **external-wallet** signer.
 
 When no operational signer is available, the recovery signer automatically serves as a fallback for signing.
 
 ### Wallet Lifecycle
 
 ```ts
-// Create a new wallet
+// Create a new wallet (server-side)
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
-  recovery: { type: "email", email: "user@example.com" },
-  signers: [{ type: "device" }], // optional — device is the default
+  recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
+  signers: [{ type: "server", secret: "<OPERATIONAL_SECRET>" }], // optional
+});
+
+// Create a new wallet with an external wallet signer
+const wallet = await wallets.createWallet({
+  chain: "base-sepolia",
+  recovery: { type: "external-wallet", address: "0xYourWalletAddress" },
+  signers: [{ type: "external-wallet", address: "0xYourWalletAddress" }], // optional
 });
 
 // Retrieve an existing wallet (client-side)
@@ -167,15 +174,13 @@ await wallet.addSigner({ type: "server", secret: "<SECRET>" });
 
 // List signers
 const signers = await wallet.signers();
-console.log(signers); // [{ type: "device", locator: "device:...", status: "success" }, ...]
+console.log(signers); // [{ type: "server", locator: "server:...", status: "success" }, ...]
 
 // Set the active signer
 await wallet.useSigner({ type: "server", secret: "<SECRET>" });
 
-// Recovery flow (new device)
-if (wallet.needsRecovery()) {
-  await wallet.recover(); // uses recovery signer to register a new device signer
-}
+// Set the active signer (required after getWallet server-side)
+await wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (payload) => sign(payload) });
 ```
 
 ### Transaction Approval (Prepare-Only Mode)
@@ -199,7 +204,7 @@ const result = await wallet.approve({
 
 | Type | Use Case | Platforms |
 |---|---|---|
-| `device` | Default day-to-day signer. Hardware-backed, no OTP. | Browser, React Native |
+| `device` | Hardware-backed, no OTP. **Browser and React Native only** — not available in Node.js. | Browser, React Native |
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
 | `email` | OTP-based recovery signer. | All |
 | `phone` | OTP-based recovery signer. | All |
