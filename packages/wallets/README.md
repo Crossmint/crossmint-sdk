@@ -180,11 +180,8 @@ await wallet.addSigner({ type: "server", secret: "<SECRET>" });
 const signers = await wallet.signers();
 console.log(signers); // [{ type: "server", locator: "server:...", status: "success" }, ...]
 
-// Set the active signer
-await wallet.useSigner({ type: "server", secret: "<SECRET>" });
-
 // Set the active signer (required after getWallet server-side)
-await wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (payload) => sign(payload) });
+await wallet.useSigner({ type: "server", secret: "<SECRET>" });
 ```
 
 ### Transaction Approval (Prepare-Only Mode)
