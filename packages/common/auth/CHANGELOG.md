@@ -1,5 +1,13 @@
 # @crossmint/common-sdk-auth
 
+## 1.1.3
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
 ## 1.1.2
 
 ### Patch Changes

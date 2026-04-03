@@ -1,5 +1,24 @@
 # @crossmint/wallets-sdk
 
+## 1.0.6
+
+### Patch Changes
+
+- 8743da2: Fix device signer recovery when local key lookup fails
+
+  - Prevent assembling a device signer with an empty locator when `getKey()` returns null during initialization
+  - Make `recover()` search all registered device signers for a local key match before generating a new one
+  - Make "already approved" error detection more robust with looser string matching
+  - Extract `resumePendingDeviceSignerApproval` and `findLocalDeviceSigner` helpers for clarity
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- cf42378: Can remove a signer from a wallet
+- Updated dependencies [fc14bbf]
+  - @crossmint/common-sdk-auth@1.1.3
+
 ## 1.0.5
 
 ### Patch Changes

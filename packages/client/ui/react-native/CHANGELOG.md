@@ -1,5 +1,26 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.1.3
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- 6e15b46: fix: enable WebView scrolling for keyboard visibility in embedded checkout (PAY-11522)
+
+  - Changed `scrollEnabled` from `false` to `true` on the embedded checkout WebView to allow scrolling when the keyboard opens
+  - Removed `overflow: "hidden"` from the WebView inline style
+
+- Updated dependencies [8743da2]
+- Updated dependencies [fc14bbf]
+- Updated dependencies [cf42378]
+  - @crossmint/wallets-sdk@1.0.6
+  - @crossmint/client-sdk-auth@1.3.3
+  - @crossmint/common-sdk-auth@1.1.3
+  - @crossmint/client-sdk-react-base@2.0.6
+
 ## 1.1.2
 
 ### Patch Changes
