@@ -74,23 +74,27 @@ When no operational signer is available, the recovery signer automatically serve
 ### Wallet Lifecycle
 
 ```ts
-// Create a new wallet (server-side)
+// Create a new wallet with a server signer
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
   recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
-  signers: [{ type: "server", secret: "<OPERATIONAL_SECRET>" }], // optional
 });
+```
 
+```ts
 // Create a new wallet with an external wallet signer
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
   recovery: { type: "external-wallet", address: "0xYourWalletAddress" },
-  signers: [{ type: "external-wallet", address: "0xYourWalletAddress" }], // optional
 });
+```
 
+```ts
 // Retrieve an existing wallet (client-side)
 const wallet = await wallets.getWallet({ chain: "base-sepolia" });
+```
 
+```ts
 // Retrieve an existing wallet (server-side)
 const wallet = await wallets.getWallet("0xWalletAddress", {
   chain: "base-sepolia",
