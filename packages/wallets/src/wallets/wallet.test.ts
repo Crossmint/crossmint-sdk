@@ -13,6 +13,23 @@ import {
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 
+vi.mock("@/signers/server", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/signers/server")>();
+    return {
+        ...actual,
+        deriveServerSignerDetails: vi.fn().mockReturnValue({
+            derivedKeyBytes: new Uint8Array(32),
+            derivedAddress: "0xDerivedServerAddress",
+        }),
+        assembleServerSigner: vi.fn().mockReturnValue({
+            type: "server",
+            locator: () => "server:0xDerivedServerAddress",
+            address: "0xDerivedServerAddress",
+            status: undefined,
+        }),
+    };
+});
+
 vi.mock("@/utils/device-signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/utils/device-signers")>();
     return {
@@ -1341,6 +1358,77 @@ describe("Wallet - useSigner()", () => {
             await expect(wallet.useSigner({ type: "email", email: "unknown@example.com" } as any)).rejects.toThrow(
                 'Signer "email:unknown@example.com" is not registered in this wallet.'
             );
+        });
+
+        it("should accept server recovery signer when recovery config has no secret (API-sourced)", async () => {
+            const { deriveServerSignerDetails } = await import("@/signers/server");
+            const mockedDerive = vi.mocked(deriveServerSignerDetails);
+            // The input signer (with secret) derives to this address
+            mockedDerive.mockReturnValue({
+                derivedKeyBytes: new Uint8Array(32),
+                derivedAddress: "0xDerivedServerAddress",
+            });
+
+            mockApiClient = createMockApiClient();
+            // API-sourced recovery config: has address but no secret
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", address: "0xDerivedServerAddress" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "server",
+                address: "0xDerivedServerAddress",
+                locator: "server:0xDerivedServerAddress",
+                chains: {
+                    "base-sepolia": { status: "active", id: "sig-server" },
+                },
+            } as any);
+
+            // Should NOT throw TypeError about 'startsWith'
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
+        });
+
+        it("should accept server recovery signer when recovery config has a secret (user-provided)", async () => {
+            const { deriveServerSignerDetails } = await import("@/signers/server");
+            const mockedDerive = vi.mocked(deriveServerSignerDetails);
+            // Both input and recovery derive to the same address
+            mockedDerive.mockReturnValue({
+                derivedKeyBytes: new Uint8Array(32),
+                derivedAddress: "0xDerivedServerAddress",
+            });
+
+            mockApiClient = createMockApiClient();
+            // User-provided recovery config: has a secret
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", secret: "recovery-secret" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            mockApiClient.getSigner.mockResolvedValue({
+                type: "server",
+                address: "0xDerivedServerAddress",
+                locator: "server:0xDerivedServerAddress",
+                chains: {
+                    "base-sepolia": { status: "active", id: "sig-server" },
+                },
+            } as any);
+
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
         });
 
         it("should still allow registered delegated signers that are not the recovery signer", async () => {

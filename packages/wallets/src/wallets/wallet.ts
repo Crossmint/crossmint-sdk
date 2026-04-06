@@ -1350,12 +1350,17 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryDerived = deriveServerSignerDetails(
-                recovery,
-                this.chain,
-                this.#apiClient.projectId,
-                this.#apiClient.environment
-            ).derivedAddress;
+            // The API-sourced recovery config has shape {type: "server", address: "..."} (no secret),
+            // so we use the address directly instead of re-deriving it.
+            const recoveryDerived =
+                "secret" in recovery && recovery.secret
+                    ? deriveServerSignerDetails(
+                          recovery,
+                          this.chain,
+                          this.#apiClient.projectId,
+                          this.#apiClient.environment
+                      ).derivedAddress
+                    : (recovery as any).address;
             return inputDerived === recoveryDerived;
         }
 
