@@ -10,15 +10,25 @@ export function TransferForm() {
     const [amount, setAmount] = useState("");
     const [tokenIdx, setTokenIdx] = useState(0);
     const [txLink, setTxLink] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const token = TOKENS[tokenIdx];
 
     const handleTransfer = async () => {
-        if (!wallet || !recipient || !amount) return;
-        const { explorerLink } = await wallet.send(recipient, token, amount);
-        setTxLink(explorerLink);
-        setRecipient("");
-        setAmount("");
+        if (!wallet || !recipient || !amount || loading) return;
+        setLoading(true);
+        setError("");
+        try {
+            const { explorerLink } = await wallet.send(recipient, token, amount);
+            setTxLink(explorerLink);
+            setRecipient("");
+            setAmount("");
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -80,13 +90,18 @@ export function TransferForm() {
                     borderRadius: 8,
                     alignItems: "center",
                     marginTop: 12,
-                    opacity: !recipient || !amount ? 0.5 : 1,
+                    opacity: !recipient || !amount || loading ? 0.5 : 1,
                 }}
                 onPress={handleTransfer}
-                disabled={!recipient || !amount}
+                disabled={!recipient || !amount || loading}
             >
-                <Text style={{ color: "#fff", fontWeight: "500" }}>Transfer {token.toUpperCase()}</Text>
+                <Text style={{ color: "#fff", fontWeight: "500" }}>
+                    {loading ? "Sending..." : `Transfer ${token.toUpperCase()}`}
+                </Text>
             </TouchableOpacity>
+            {error ? (
+                <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text>
+            ) : null}
             {txLink ? (
                 <TouchableOpacity onPress={() => Linking.openURL(txLink)} style={{ marginTop: 8 }}>
                     <Text style={{ color: "#13b601" }}>View transaction</Text>
