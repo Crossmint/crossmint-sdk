@@ -295,7 +295,7 @@ export function CrossmintWalletBaseProvider({
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
                     alias: args.alias,
-                    options: buildWalletOptions(),
+                    options: { ...buildWalletOptions(), clientTEEConnection: undefined },
                 });
                 if (wallet != null) {
                     await initializeWebViewIfNeeded(wallet.recovery);
