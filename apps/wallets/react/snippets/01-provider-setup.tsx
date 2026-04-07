@@ -9,7 +9,7 @@ import { CrossmintProvider, CrossmintAuthProvider, CrossmintWalletProvider } fro
  *   - "email"   (default) — Crossmint email/google auth, email recovery
  *   - "phone"   — Crossmint email/google auth, phone recovery
  *   - "passkey" — Crossmint email/google auth, email recovery + passkey signer on login
- *   - "jwt"     — Bring-your-own-auth via JWT (no CrossmintAuthProvider; set JWT via useWallet().setJwt)
+ *   - "jwt"     — Bring-your-own-auth via JWT (no CrossmintAuthProvider; set JWT via useCrossmint().setJwt)
  */
 type AuthMode = "email" | "phone" | "passkey" | "jwt";
 

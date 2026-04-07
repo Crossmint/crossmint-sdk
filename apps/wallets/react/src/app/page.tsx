@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useCrossmint, useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { AuthButton } from "../../snippets/02-auth-button";
 import { WalletDisplay } from "../../snippets/03-wallet-display";
 import { BalanceCard } from "../../snippets/04-balance-card";
@@ -49,17 +49,13 @@ function Dashboard() {
 }
 
 function JwtLogin() {
-    const { wallet } = useWallet();
+    const { setJwt: setCrossmintJwt } = useCrossmint();
     const [jwt, setJwt] = useState("");
-    const [applied, setApplied] = useState(false);
 
     const applyJwt = () => {
         if (!jwt) return;
-        (wallet as any)?.setJwt?.(jwt);
-        setApplied(true);
+        setCrossmintJwt(jwt);
     };
-
-    if (applied) return null;
 
     return (
         <div className="qs-card qs-card--nested" style={{ maxWidth: 480 }}>
@@ -79,9 +75,9 @@ function JwtLogin() {
 
 /** JWT mode — useCrossmintAuth is NOT available (no CrossmintAuthProvider in tree) */
 function JwtModeHome() {
-    const { wallet } = useWallet();
+    const { wallet, status } = useWallet();
 
-    if (!wallet) {
+    if (!wallet && status !== "in-progress") {
         return (
             <div className="qs-page">
                 <div className="qs-center">

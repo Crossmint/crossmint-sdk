@@ -11,13 +11,23 @@ export function TransferForm() {
     const [amount, setAmount] = useState("");
     const [token, setToken] = useState(TOKENS[0]);
     const [txExplorerLink, setTxExplorerLink] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleTransfer = async () => {
         if (!wallet || !recipient || !amount) return;
-        const { explorerLink } = await wallet.send(recipient, token, amount);
-        setTxExplorerLink(explorerLink);
-        setRecipient("");
-        setAmount("");
+        setLoading(true);
+        setError("");
+        try {
+            const { explorerLink } = await wallet.send(recipient, token, amount);
+            setTxExplorerLink(explorerLink);
+            setRecipient("");
+            setAmount("");
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -46,10 +56,15 @@ export function TransferForm() {
             <button
                 className="qs-btn qs-btn--primary qs-btn--full qs-mt-md"
                 onClick={handleTransfer}
-                disabled={!recipient || !amount}
+                disabled={!recipient || !amount || loading}
             >
-                Transfer
+                {loading ? "Sending..." : "Transfer"}
             </button>
+            {error && (
+                <p className="qs-text-error qs-mt-sm" style={{ fontSize: 12 }}>
+                    {error}
+                </p>
+            )}
             {txExplorerLink && (
                 <a className="qs-tx-link" href={txExplorerLink} target="_blank" rel="noopener noreferrer">
                     View transaction

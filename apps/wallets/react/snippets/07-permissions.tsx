@@ -281,6 +281,7 @@ export function Permissions() {
             />
             {isExternalWalletSelected && (
                 <input
+                    type="password"
                     className="qs-input qs-mt-sm"
                     placeholder="Private key (0x...) for this external wallet"
                     value={usePrivateKey}
@@ -328,6 +329,7 @@ export function Permissions() {
 
             {signerType === "external-wallet" && (
                 <input
+                    type="password"
                     className="qs-input qs-mt-sm"
                     placeholder="Private key (0x... for EVM, secret for Stellar, [bytes] for Solana)"
                     value={fields.privateKey ?? ""}
