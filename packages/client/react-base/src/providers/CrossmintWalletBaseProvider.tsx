@@ -292,13 +292,18 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
+                // Initialize WebView before building options. Unlike getOrCreateWallet/createWallet,
+                // getWallet doesn't know the recovery type upfront, so we initialize unconditionally.
+                // On web this is a no-op (initializeWebView is undefined). On React Native, this
+                // ensures the TEE connection is available for email/phone signer wallets.
+                await initializeWebView?.();
+
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
                     alias: args.alias,
-                    options: { ...buildWalletOptions(), clientTEEConnection: undefined },
+                    options: buildWalletOptions(),
                 });
                 if (wallet != null) {
-                    await initializeWebViewIfNeeded(wallet.recovery);
                     setWallet(wallet);
                     setWalletStatus("loaded");
                 } else {
@@ -311,7 +316,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, initializeWebView, buildWalletOptions]
     );
 
     const createWallet = useCallback(
