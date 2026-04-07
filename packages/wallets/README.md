@@ -64,7 +64,7 @@ console.log(wallet.address);
 
 ### Server signer
 
-The simplest way to create a wallet server-side — the server key acts as both the recovery and operational signer:
+Create a wallet with a server key as the recovery signer:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
