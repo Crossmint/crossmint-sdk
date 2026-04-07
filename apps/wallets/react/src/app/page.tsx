@@ -13,6 +13,41 @@ import { ChainTest } from "../../snippets/09-chain-test";
 
 const isJwtMode = process.env.NEXT_PUBLIC_AUTH_MODE === "jwt";
 
+function Dashboard() {
+    const { wallet, status } = useWallet();
+
+    return (
+        <div className="qs-card__body">
+            {status === "in-progress" && <p className="qs-text-muted">Creating wallet...</p>}
+            {status === "error" && <p className="qs-text-error">Error loading wallet</p>}
+            {status === "loaded" && wallet && (
+                <>
+                    <div className="qs-grid qs-grid--2">
+                        <BalanceCard />
+                        <TransferForm />
+                    </div>
+                    <div className="qs-grid qs-grid--2 qs-mt-md">
+                        <Activity />
+                        <Permissions />
+                    </div>
+                    <div className="qs-mt-md">
+                        <ApprovalTest />
+                    </div>
+                    <div className="qs-mt-md">
+                        <ChainTest />
+                    </div>
+                    <div className="qs-card qs-card--nested qs-mt-md">
+                        <div className="qs-card__body">
+                            <p className="qs-label">Wallet Details</p>
+                            <WalletDisplay />
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 function JwtLogin() {
     const { wallet } = useWallet();
     const [jwt, setJwt] = useState("");
@@ -42,19 +77,17 @@ function JwtLogin() {
     );
 }
 
-export default function Home() {
-    const { user } = useCrossmintAuth();
-    const { wallet, status } = useWallet();
+/** JWT mode — useCrossmintAuth is NOT available (no CrossmintAuthProvider in tree) */
+function JwtModeHome() {
+    const { wallet } = useWallet();
 
-    const isAuthenticated = isJwtMode ? !!wallet : !!user;
-
-    if (!isAuthenticated) {
+    if (!wallet) {
         return (
             <div className="qs-page">
                 <div className="qs-center">
                     <h1 className="qs-title">Wallets Playground</h1>
                     <p className="qs-subtitle qs-mb-lg">Test Crossmint wallet operations</p>
-                    {isJwtMode ? <JwtLogin /> : <AuthButton />}
+                    <JwtLogin />
                 </div>
             </div>
         );
@@ -64,44 +97,54 @@ export default function Home() {
         <div className="qs-page">
             <header className="qs-header">
                 <span className="qs-header__brand">Wallets Playground</span>
-                {!isJwtMode && <AuthButton />}
             </header>
-
             <main className="qs-container">
                 <div className="qs-card">
                     <div className="qs-card__header">
                         <h2 className="qs-card__title">Dashboard</h2>
                     </div>
-                    <div className="qs-card__body">
-                        {status === "in-progress" && <p className="qs-text-muted">Creating wallet...</p>}
-                        {status === "error" && <p className="qs-text-error">Error loading wallet</p>}
-                        {status === "loaded" && wallet && (
-                            <>
-                                <div className="qs-grid qs-grid--2">
-                                    <BalanceCard />
-                                    <TransferForm />
-                                </div>
-                                <div className="qs-grid qs-grid--2 qs-mt-md">
-                                    <Activity />
-                                    <Permissions />
-                                </div>
-                                <div className="qs-mt-md">
-                                    <ApprovalTest />
-                                </div>
-                                <div className="qs-mt-md">
-                                    <ChainTest />
-                                </div>
-                                <div className="qs-card qs-card--nested qs-mt-md">
-                                    <div className="qs-card__body">
-                                        <p className="qs-label">Wallet Details</p>
-                                        <WalletDisplay />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    <Dashboard />
                 </div>
             </main>
         </div>
     );
+}
+
+/** Standard auth mode — uses CrossmintAuthProvider + useCrossmintAuth */
+function AuthModeHome() {
+    const { user } = useCrossmintAuth();
+    const { wallet, status } = useWallet();
+
+    if (!user) {
+        return (
+            <div className="qs-page">
+                <div className="qs-center">
+                    <h1 className="qs-title">Wallets Playground</h1>
+                    <p className="qs-subtitle qs-mb-lg">Test Crossmint wallet operations</p>
+                    <AuthButton />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="qs-page">
+            <header className="qs-header">
+                <span className="qs-header__brand">Wallets Playground</span>
+                <AuthButton />
+            </header>
+            <main className="qs-container">
+                <div className="qs-card">
+                    <div className="qs-card__header">
+                        <h2 className="qs-card__title">Dashboard</h2>
+                    </div>
+                    <Dashboard />
+                </div>
+            </main>
+        </div>
+    );
+}
+
+export default function Home() {
+    return isJwtMode ? <JwtModeHome /> : <AuthModeHome />;
 }

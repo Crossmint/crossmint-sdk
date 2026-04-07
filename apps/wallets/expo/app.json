@@ -7,7 +7,7 @@
         "newArchEnabled": true,
         "platforms": ["ios", "android"],
         "plugins": ["@crossmint/client-sdk-react-native-ui", "expo-secure-store", "expo-web-browser"],
-        "entryPoint": "./index.js",
+        "entryPoint": "./index.ts",
         "android": {
             "package": "com.anonymous.walletsreactnative"
         },
