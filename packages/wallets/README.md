@@ -60,29 +60,31 @@ console.log(wallet.address);
 
 > For React apps, use [`@crossmint/client-sdk-react-ui`](https://www.npmjs.com/package/@crossmint/client-sdk-react-ui) which provides `CrossmintWalletProvider`, hooks, and built-in UI for OTP and passkey flows.
 
-## Core Concepts
+## Creating a Wallet
 
-### Signers
+### Server signer
 
-Wallets SDK uses a two-tier signer model:
-
-- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
-- **Operational signer** — Low-friction, used for day-to-day signing. Supports server key, external wallet, passkey, and device (browser/mobile only). For server-side (Node.js) usage, use a **server** or **external-wallet** signer.
-
-When no operational signer is available, the recovery signer automatically serves as a fallback for signing.
-
-### Wallet Lifecycle
+The simplest way to create a wallet server-side — the server key acts as both the recovery and operational signer:
 
 ```ts
-// Create a new wallet with a server signer
+import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
+
+const crossmint = createCrossmint({ apiKey: "<YOUR_SERVER_API_KEY>" });
+const wallets = CrossmintWallets.from(crossmint);
+
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
   recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
 });
+
+console.log(wallet.address);
 ```
 
+### External wallet signer
+
+Bring your own key (MetaMask, KMS, etc.):
+
 ```ts
-// Create a new wallet with an external wallet signer
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
   recovery: {
@@ -96,17 +98,53 @@ const wallet = await wallets.createWallet({
 });
 ```
 
+### Device signer (browser / React Native)
+
+Device signers use hardware-backed P256 keys for frictionless client-side signing. They must be created on the client and can be passed to the server at wallet creation time:
+
 ```ts
-// Retrieve an existing wallet (client-side)
+// Client: generate a device signer descriptor
+const { createDeviceSigner } = useWallet();
+const deviceSigner = await createDeviceSigner();
+// Send deviceSigner to your server
+```
+
+```ts
+// Server: create the wallet with the device signer pre-registered
+const wallet = await wallets.createWallet({
+  chain: "base-sepolia",
+  owner: "email:user@example.com",
+  recovery: { type: "email", email: "user@example.com" },
+  signers: [deviceSigner],
+});
+```
+
+> Device signers are **browser and React Native only** — not available in Node.js. See the [Server-Side Wallet with Device Signer](https://docs.crossmint.com/wallets/guides/signers/device-signer-server-wallet) guide for the full pattern.
+
+### Retrieving an existing wallet
+
+```ts
+// Client-side
 const wallet = await wallets.getWallet({ chain: "base-sepolia" });
 ```
 
 ```ts
-// Retrieve an existing wallet (server-side)
+// Server-side — requires a wallet locator
 const wallet = await wallets.getWallet("0xWalletAddress", {
   chain: "base-sepolia",
 });
 ```
+
+## Core Concepts
+
+### Signers
+
+Wallets SDK uses a two-tier signer model:
+
+- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
+- **Operational signer** — Low-friction, used for day-to-day signing. Supports server key, external wallet, passkey, and device (browser/mobile only). For server-side (Node.js) usage, use a **server** or **external-wallet** signer.
+
+When no operational signer is available, the recovery signer automatically serves as a fallback for signing.
 
 ## Usage
 
