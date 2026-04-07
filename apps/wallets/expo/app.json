@@ -1,0 +1,18 @@
+{
+    "expo": {
+        "name": "wallets-playground-expo",
+        "slug": "wallets-playground-expo",
+        "version": "1.0.0",
+        "scheme": "crossmint-wallets",
+        "newArchEnabled": true,
+        "platforms": ["ios", "android"],
+        "plugins": ["@crossmint/client-sdk-react-native-ui", "expo-secure-store", "expo-web-browser"],
+        "entryPoint": "./index.js",
+        "android": {
+            "package": "com.anonymous.walletsreactnative"
+        },
+        "ios": {
+            "bundleIdentifier": "com.anonymous.walletsreactnative"
+        }
+    }
+}

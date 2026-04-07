@@ -1,0 +1,26 @@
+{
+    "name": "@crossmint/wallets-playground-react",
+    "private": true,
+    "version": "0.0.1",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-react-ui": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*",
+        "@solana/web3.js": "1.98.1",
+        "@stellar/stellar-sdk": "^14.6.1",
+        "next": "^15.3.3",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "viem": "^2.33.1"
+    },
+    "devDependencies": {
+        "@types/node": "20.14.8",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "typescript": "5.5.3"
+    }
+}
