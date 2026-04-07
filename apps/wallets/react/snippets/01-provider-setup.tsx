@@ -39,14 +39,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // JWT / BYOA mode — no CrossmintAuthProvider, the host app provides the JWT
     if (mode === "jwt") {
         return (
-            <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
+            <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY!}>
                 <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         );
     }
 
     return (
-        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY!}>
             <CrossmintAuthProvider loginMethods={["email", "google"]}>
                 <CrossmintWalletProvider createOnLogin={getCreateOnLoginConfig(mode)}>
                     {children}

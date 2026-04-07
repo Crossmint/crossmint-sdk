@@ -166,9 +166,7 @@ export function Permissions() {
                 signer = buildSignerConfig(signerType, fields);
             }
             await wallet.addSigner(signer as any);
-            setStatus((prev) =>
-                signerType === "external-wallet" ? prev + `\nSigner added to wallet.` : `Added ${signerType} signer`
-            );
+            setStatus(signerType === "external-wallet" ? "Signer added to wallet." : `Added ${signerType} signer`);
             await loadSigners();
         } catch (e: any) {
             setStatus(`addSigner error: ${e.message ?? e}`);
