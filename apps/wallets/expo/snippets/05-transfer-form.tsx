@@ -99,9 +99,7 @@ export function TransferForm() {
                     {loading ? "Sending..." : `Transfer ${token.toUpperCase()}`}
                 </Text>
             </TouchableOpacity>
-            {error ? (
-                <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text>
-            ) : null}
+            {error ? <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
             {txLink ? (
                 <TouchableOpacity onPress={() => Linking.openURL(txLink)} style={{ marginTop: 8 }}>
                     <Text style={{ color: "#13b601" }}>View transaction</Text>
