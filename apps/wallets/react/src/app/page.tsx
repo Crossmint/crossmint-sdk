@@ -109,7 +109,6 @@ function JwtModeHome() {
 /** Standard auth mode — uses CrossmintAuthProvider + useCrossmintAuth */
 function AuthModeHome() {
     const { user } = useCrossmintAuth();
-    const { wallet, status } = useWallet();
 
     if (!user) {
         return (

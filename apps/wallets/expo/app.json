@@ -9,10 +9,10 @@
         "plugins": ["@crossmint/client-sdk-react-native-ui", "expo-secure-store", "expo-web-browser"],
         "entryPoint": "./index.ts",
         "android": {
-            "package": "com.anonymous.walletsreactnative"
+            "package": "com.crossmint.walletsplayground"
         },
         "ios": {
-            "bundleIdentifier": "com.anonymous.walletsreactnative"
+            "bundleIdentifier": "com.crossmint.walletsplayground"
         }
     }
 }
