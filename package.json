@@ -55,6 +55,7 @@
             "form-data@4": "4.0.4",
             "path-to-regexp@0": "0.1.12",
             "react-native": "0.82.1",
+            "@crossmint/wallets-playground-expo>react-native": "0.81.5",
             "@types/react": "19.1.10",
             "@types/react-dom": "19.1.0",
             "pbkdf2": "3.1.3",

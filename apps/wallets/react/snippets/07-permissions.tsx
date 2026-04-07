@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallet } from "@crossmint/client-sdk-react-ui";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { privateKeyToAccount } from "viem/accounts";
 import { Keypair as SolanaKeypair, type VersionedTransaction } from "@solana/web3.js";
 import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
@@ -112,15 +112,15 @@ export function Permissions() {
 
     const setField = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
 
-    const loadSigners = async () => {
+    const loadSigners = useCallback(async () => {
         if (!wallet) return;
         const res = await wallet.signers();
         setSigners(res ?? []);
-    };
+    }, [wallet]);
 
     useEffect(() => {
         loadSigners();
-    }, [wallet]);
+    }, [loadSigners]);
 
     const selectSigner = (s: any) => {
         const locator = getSignerLocator(s);

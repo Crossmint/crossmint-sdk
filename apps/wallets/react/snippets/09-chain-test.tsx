@@ -132,12 +132,12 @@ export function ChainTest() {
                         </button>
                     </>
                 )}
-                {chain === "solana" && (
+                {chain.startsWith("solana") && (
                     <button className="qs-btn qs-btn--secondary" onClick={solanaSendTx} disabled={!!loading}>
                         {loading === "sendTransaction" ? "Sending..." : "Send Tx"}
                     </button>
                 )}
-                {chain === "stellar" && (
+                {chain.startsWith("stellar") && (
                     <button className="qs-btn qs-btn--secondary" onClick={stellarSendTx} disabled={!!loading}>
                         {loading === "sendTransaction" ? "Sending..." : "Send Tx"}
                     </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { useWallet } from "@crossmint/client-sdk-react-native-ui";
 
@@ -42,15 +42,15 @@ export function Permissions() {
 
     const setField = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
 
-    const loadSigners = async () => {
+    const loadSigners = useCallback(async () => {
         if (!wallet) return;
         const res = await wallet.signers();
         setSigners(res ?? []);
-    };
+    }, [wallet]);
 
     useEffect(() => {
         loadSigners();
-    }, [wallet]);
+    }, [loadSigners]);
 
     const selectSigner = (s: any) => {
         const locator = getSignerLocator(s);
