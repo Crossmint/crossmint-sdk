@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { CrossmintAuth, getCookie, type StorageProvider } from "@crossmint/client-sdk-auth";
+import { CrossmintAuth, type StorageProvider, getScopedStorageProvider } from "@crossmint/client-sdk-auth";
 import { type SDKExternalUser, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
 import { useCrossmint } from "../hooks";
 import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
@@ -87,18 +87,25 @@ export function CrossmintAuthBaseProvider({
                         setInitialized(true);
                     });
             } else {
-                try {
-                    const jwt = getCookie(SESSION_PREFIX);
-                    setJwt(jwt);
-                } catch (error) {
-                    console.error("Failed to get cookie:", error);
-                }
-                setInitialized(true);
+                getScopedStorageProvider(crossmint.apiKey)
+                    .get(SESSION_PREFIX)
+                    .then((jwt) => {
+                        if (jwt != null) {
+                            setJwt(jwt);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Failed to get cookie:", error);
+                    })
+                    .finally(() => {
+                        setInitialized(true);
+                    });
+                return;
             }
         } else {
             setInitialized(true);
         }
-    }, [jwt, storageProvider]);
+    }, [jwt, storageProvider, crossmint.apiKey]);
 
     useEffect(() => {
         if (jwt != null) {
