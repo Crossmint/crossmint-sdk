@@ -16,3 +16,8 @@ docs
 .env
 
 .claude
+
+# Expo prebuild native folders (generated, do not commit)
+/android/
+/ios/
+/.expo/
