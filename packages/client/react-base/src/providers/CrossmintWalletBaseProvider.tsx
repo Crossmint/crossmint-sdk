@@ -4,7 +4,6 @@ import {
     CrossmintWallets,
     type Callbacks,
     type ClientSideWalletCreateArgs,
-    type RecoverySignerConfigForChain,
     type SignerConfigForChain,
     type Wallet,
     type ClientSideWalletArgsFor,
@@ -200,7 +199,7 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signer: RecoverySignerConfigForChain<Chain> | SignerConfigForChain<Chain>) => {
+        async (signer: SignerConfigForChain<Chain>) => {
             if (signer.type === "email" || signer.type === "phone") {
                 await initializeWebView?.();
             }
