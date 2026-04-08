@@ -919,16 +919,20 @@ export class Wallet<C extends Chain> {
         const originalSigner = this.signer;
 
         // When the recovery config is API-sourced (no secret), we can't re-derive
-        // a signer from it. If the caller already set a signer via useSigner(),
-        // use it directly — it's the recovery signer the user provided.
+        // a signer from it. Verify that the current signer actually matches the
+        // recovery config (type + address) before using it for admin operations.
         if (!this.isApiSourcedServerConfig(this.#recovery)) {
             const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
             this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-        } else if (this.#signer == null) {
-            throw new Error(
-                "Cannot perform this operation: the recovery config is API-sourced (no secret). " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) first.'
-            );
+        } else {
+            const recoveryAddress = this.#recovery.address;
+            const currentSignerAddress = this.#signer?.address?.();
+            if (this.#signer == null || this.#signer.type !== "server" || currentSignerAddress !== recoveryAddress) {
+                throw new Error(
+                    "Cannot perform this operation: the recovery config is API-sourced (no secret). " +
+                        'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+                );
+            }
         }
 
         try {
@@ -1132,11 +1136,15 @@ export class Wallet<C extends Chain> {
         if (!this.isApiSourcedServerConfig(this.#recovery)) {
             const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
             this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-        } else if (this.#signer == null) {
-            throw new Error(
-                "Cannot resume pending approval: the recovery config is API-sourced (no secret). " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) first.'
-            );
+        } else {
+            const recoveryAddress = this.#recovery.address;
+            const currentSignerAddress = this.#signer?.address?.();
+            if (this.#signer == null || this.#signer.type !== "server" || currentSignerAddress !== recoveryAddress) {
+                throw new Error(
+                    "Cannot resume pending approval: the recovery config is API-sourced (no secret). " +
+                        'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+                );
+            }
         }
 
         try {

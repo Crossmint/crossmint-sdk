@@ -48,6 +48,7 @@ export type {
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     RecoverySignerConfigForChain,
+    ApiSourcedServerSignerConfig,
     ServerSignerConfig,
     SignerConfigForChain,
     SignerLocator,
