@@ -64,6 +64,16 @@ export type ServerSignerConfig = {
     secret: string;
 };
 
+/**
+ * Shape returned by the API for server signers (e.g. adminSigner).
+ * The API never stores the secret, so only the derived address and locator are available.
+ */
+export type ApiSourcedServerSignerConfig = {
+    type: "server";
+    address: string;
+    locator?: string;
+};
+
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
     | ApiKeySignerConfig
@@ -171,6 +181,12 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     : C extends StellarChain
       ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
+
+/**
+ * The recovery field can hold either a user-provided signer config (with secret)
+ * or an API-sourced config (with address but no secret).
+ */
+export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signer locator types

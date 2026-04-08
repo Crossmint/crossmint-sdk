@@ -54,10 +54,12 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
+    ApiSourcedServerSignerConfig,
     DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
     InternalSignerConfig,
     PasskeySignerConfig,
+    RecoverySignerConfigForChain,
     ServerSignerConfig,
     ServerSignerLocator,
     SignerAdapter,
@@ -79,7 +81,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: SignerConfigForChain<C>;
+    recovery: RecoverySignerConfigForChain<C>;
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
@@ -92,7 +94,7 @@ export class Wallet<C extends Chain> {
     #signer?: SignerAdapter;
     #options?: WalletOptions;
     #apiClient: ApiClient;
-    #recovery: SignerConfigForChain<C>;
+    #recovery: RecoverySignerConfigForChain<C>;
     #initialSigners: SignerConfigForChain<C>[];
     #needsRecovery = false;
     #deviceSignerApproved = false;
@@ -211,7 +213,7 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): RecoverySignerConfigForChain<C> {
         return wallet.#recovery;
     }
 
@@ -232,7 +234,7 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): SignerConfigForChain<C> {
+    public get recovery(): RecoverySignerConfigForChain<C> {
         return this.#recovery;
     }
 
@@ -915,7 +917,7 @@ export class Wallet<C extends Chain> {
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.requireAssemblableRecovery());
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1115,7 +1117,7 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.requireAssemblableRecovery());
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1341,8 +1343,6 @@ export class Wallet<C extends Chain> {
         }
 
         // For server signers, compare derived addresses.
-        // The API-sourced recovery config has shape {type: "server", address: "0x..."} (no secret),
-        // so we use the address directly instead of re-deriving it.
         if (signerConfig.type === "server" && recovery.type === "server") {
             const inputDerived = deriveServerSignerDetails(
                 signerConfig,
@@ -1350,26 +1350,49 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            // The API-sourced recovery config has shape {type: "server", address: "..."} (no secret),
-            // so we use the address directly instead of re-deriving it.
-            const recoveryAddress = (recovery as { address?: string }).address;
-            const recoveryDerived =
-                "secret" in recovery && recovery.secret
-                    ? deriveServerSignerDetails(
-                          recovery,
-                          this.chain,
-                          this.#apiClient.projectId,
-                          this.#apiClient.environment
-                      ).derivedAddress
-                    : recoveryAddress;
-            if (recoveryDerived == null) {
-                return false;
-            }
+            // ApiSourcedServerSignerConfig already carries the address; user-provided
+            // ServerSignerConfig carries a secret we can derive from.
+            const recoveryDerived = this.isApiSourcedServerConfig(recovery)
+                ? recovery.address
+                : deriveServerSignerDetails(
+                      recovery,
+                      this.chain,
+                      this.#apiClient.projectId,
+                      this.#apiClient.environment
+                  ).derivedAddress;
             return inputDerived === recoveryDerived;
         }
 
         // For other types, compare locators
+        if (this.isApiSourcedServerConfig(recovery)) {
+            // Should not reach here — server type is handled above — but guard anyway.
+            return false;
+        }
         return getSignerLocator(signerConfig) === getSignerLocator(recovery);
+    }
+
+    /**
+     * Type guard: returns true when the recovery config is an API-sourced server signer
+     * (has `address` but no `secret`), as opposed to a user-provided ServerSignerConfig.
+     */
+    private isApiSourcedServerConfig(config: RecoverySignerConfigForChain<C>): config is ApiSourcedServerSignerConfig {
+        return config.type === "server" && "address" in config && !("secret" in config);
+    }
+
+    /**
+     * Returns the recovery config narrowed to SignerConfigForChain<C>.
+     * Throws if the recovery config is an API-sourced server signer (no secret),
+     * which cannot be assembled into a usable signer.
+     */
+    private requireAssemblableRecovery(): SignerConfigForChain<C> {
+        const recovery = this.#recovery;
+        if (this.isApiSourcedServerConfig(recovery)) {
+            throw new Error(
+                "Cannot assemble a signer from an API-sourced server recovery config (no secret). " +
+                    'Call wallet.useSigner({ type: "server", secret: ... }) to provide the secret.'
+            );
+        }
+        return recovery;
     }
 
     /**
@@ -1557,7 +1580,10 @@ export class Wallet<C extends Chain> {
      * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
      * Server signers also require the secret to be present in the config.
      */
-    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C>): boolean {
+    private isAutoAssemblableSignerConfig(config: RecoverySignerConfigForChain<C>): config is SignerConfigForChain<C> {
+        if (this.isApiSourcedServerConfig(config)) {
+            return false;
+        }
         switch (config.type) {
             case "email":
             case "phone":
