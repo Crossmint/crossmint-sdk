@@ -1044,6 +1044,9 @@ importers:
 
   packages/client/window:
     dependencies:
+      '@crossmint/common-sdk-base':
+        specifier: workspace:*
+        version: link:../../common/base
       zod:
         specifier: 3.22.4
         version: 3.22.4
