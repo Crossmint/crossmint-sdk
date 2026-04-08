@@ -1396,6 +1396,33 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("server");
         });
 
+        it("should reject server signer when derived address does not match API-sourced recovery address", async () => {
+            const { deriveServerSignerDetails } = await import("@/signers/server");
+            const mockedDerive = vi.mocked(deriveServerSignerDetails);
+            // The input signer derives to a DIFFERENT address than the recovery
+            mockedDerive.mockReturnValue({
+                derivedKeyBytes: new Uint8Array(32),
+                derivedAddress: "0xDifferentAddress",
+            });
+
+            mockApiClient = createMockApiClient();
+            // API-sourced recovery config with a different address
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", address: "0xRecoveryAddress" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // Should throw "not registered" rather than a TypeError
+            await expect(wallet.useSigner({ type: "server", secret: "wrong-secret" } as any)).rejects.toThrow(
+                "is not registered in this wallet"
+            );
+        });
+
         it("should accept server recovery signer when recovery config has a secret (user-provided)", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);

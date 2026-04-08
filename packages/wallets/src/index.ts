@@ -47,6 +47,7 @@ export type {
     ExternalWalletRegistrationConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
+    RecoverySignerConfigForChain,
     ServerSignerConfig,
     SignerConfigForChain,
     SignerLocator,
