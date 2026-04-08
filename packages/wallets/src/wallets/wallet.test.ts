@@ -1547,7 +1547,7 @@ describe("Wallet - useSigner()", () => {
             expect(result.locator).toBe("email:new@example.com");
         });
 
-        it("addSigner should throw when no signer is set and recovery is API-sourced", async () => {
+        it("addSigner should throw when no signer is set and recovery is API-sourced (no secret)", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             mockedDerive.mockReturnValue({
@@ -1566,13 +1566,14 @@ describe("Wallet - useSigner()", () => {
                 mockApiClient as unknown as ApiClient
             );
 
-            // Don't call useSigner — this.#signer is null
+            // Don't call useSigner — #recovery still has no secret, so withRecoverySigner
+            // will fail when trying to build the internal config.
             await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
-                "the recovery config is API-sourced (no secret)"
+                "no secret available"
             );
         });
 
-        it("addSigner should throw when active signer is not a server type and recovery is API-sourced", async () => {
+        it("addSigner should throw when active signer is not recovery and recovery is API-sourced (no secret)", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             mockedDerive.mockReturnValue({
@@ -1611,9 +1612,10 @@ describe("Wallet - useSigner()", () => {
             } as any);
             await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
 
-            // Now addSigner should throw because the active signer is email, not server
+            // #recovery still has no secret (useSigner with email didn't upgrade it),
+            // so withRecoverySigner will fail when trying to build the internal config.
             await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
-                "the recovery config is API-sourced (no secret)"
+                "no secret available"
             );
         });
     });
