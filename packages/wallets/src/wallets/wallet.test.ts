@@ -1514,9 +1514,9 @@ describe("Wallet - useSigner()", () => {
             );
 
             // Don't call useSigner — this.#signer is null
-            await expect(
-                wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)
-            ).rejects.toThrow("the recovery config is API-sourced (no secret)");
+            await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
+                "the recovery config is API-sourced (no secret)"
+            );
         });
 
         it("addSigner should throw when active signer is not a server type and recovery is API-sourced", async () => {
@@ -1559,9 +1559,9 @@ describe("Wallet - useSigner()", () => {
             await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
 
             // Now addSigner should throw because the active signer is email, not server
-            await expect(
-                wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)
-            ).rejects.toThrow("the recovery config is API-sourced (no secret)");
+            await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
+                "the recovery config is API-sourced (no secret)"
+            );
         });
     });
 });
