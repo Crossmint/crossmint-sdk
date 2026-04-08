@@ -1399,22 +1399,6 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Returns the recovery config narrowed to SignerConfigForChain<C>.
-     * Throws if the recovery config is an API-sourced server signer (no secret),
-     * which cannot be assembled into a usable signer.
-     */
-    private requireAssemblableRecovery(): SignerConfigForChain<C> {
-        const recovery = this.#recovery;
-        if (this.isApiSourcedServerConfig(recovery)) {
-            throw new Error(
-                "Cannot assemble a signer from an API-sourced server recovery config (no secret). " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) to provide the secret.'
-            );
-        }
-        return recovery;
-    }
-
-    /**
      * Validate that the signer input has the required values for its type.
      */
     private validateSignerInput(config: SignerConfigForChain<C> | RegisterSignerPasskeyParams): void {
