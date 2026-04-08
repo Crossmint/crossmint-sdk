@@ -24,15 +24,16 @@ import type {
     ApproveSignatureResponse,
     GetSignatureResponse,
     GetTransactionsResponse,
-    GetNftsResponse,
     GetBalanceResponse,
     RegisterSignerParams,
     RegisterSignerResponse,
+    RemoveSignerParams,
+    RemoveSignerResponse,
     GetSignerResponse,
     WalletLocator,
     SendParams,
     SendResponse,
-    GetActivityResponse,
+    GetTransfersResponse,
     FundWalletResponse,
     FundWalletParams,
 } from "./types";
@@ -40,7 +41,7 @@ import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2025-06-09/wallets";
-    private legacyApiPrefix = "api/2022-06-09/wallets";
+    private unstableApiPrefix = "api/unstable/wallets";
 
     constructor(crossmint: Crossmint) {
         super(crossmint, {
@@ -88,7 +89,10 @@ class ApiClient extends CrossmintApiClient {
                 error: result.error,
             });
         } else if ("address" in result) {
-            walletsLogger.info("wallets.api.getWallet.success", result);
+            walletsLogger.info("wallets.api.getWallet.success", {
+                address: result.address,
+                locator,
+            });
         }
         return result;
     }
@@ -160,12 +164,12 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async experimental_getNfts(params: {
+    async getNfts(params: {
         address: string;
         perPage: number;
         page: number;
         chain: string;
-    }): Promise<GetNftsResponse> {
+    }): Promise<unknown> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", params.page.toString());
         queryParams.append("perPage", params.perPage.toString());
@@ -176,16 +180,24 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async experimental_activity(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
-        let legacyLocator = walletLocator;
-        if (!this.isServerSide) {
-            legacyLocator = `me:${params.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;
-        }
+    async getTransfers(
+        walletLocator: WalletLocator,
+        params: { chain: Chain; tokens?: string; status?: "successful" | "failed" }
+    ): Promise<GetTransfersResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
-        const response = await this.get(`${this.legacyApiPrefix}/${legacyLocator}/activity?${queryParams.toString()}`, {
-            headers: this.headers,
-        });
+        if (params.tokens != null) {
+            queryParams.append("tokens", params.tokens);
+        }
+        if (params.status != null) {
+            queryParams.append("status", params.status);
+        }
+        const response = await this.get(
+            `${this.unstableApiPrefix}/${walletLocator}/transfers?${queryParams.toString()}`,
+            {
+                headers: this.headers,
+            }
+        );
         return response.json();
     }
 
@@ -224,8 +236,26 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    async removeSigner(
+        walletLocator: WalletLocator,
+        signer: string,
+        params: RemoveSignerParams
+    ): Promise<RemoveSignerResponse> {
+        const encodedSigner = encodeURIComponent(signer);
+        const queryParams = new URLSearchParams();
+        if (params.chain) {
+            queryParams.append("chain", params.chain);
+        }
+        const url = `${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
+        const response = await this.delete(url, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
     async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
+        const encodedSigner = encodeURIComponent(signer);
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}`, {
             headers: this.headers,
         });
         return response.json();
@@ -266,6 +296,13 @@ class ApiClient extends CrossmintApiClient {
             throw new InvalidApiKeyError("Invalid API key");
         }
         return this.parsedAPIKey.environment;
+    }
+
+    public get projectId() {
+        if (!this.parsedAPIKey.isValid) {
+            throw new InvalidApiKeyError("Invalid API key");
+        }
+        return this.parsedAPIKey.projectId;
     }
 
     private get headers() {

@@ -1,11 +1,13 @@
 import { vi, type MockedFunction } from "vitest";
+import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { Signer } from "../../signers/types";
+import type { SignerConfigForChain, SignerLocator } from "../../signers/types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
+    environment: APIKeyEnvironmentPrefix;
     createTransaction: MockedFunction<ApiClient["createTransaction"]>;
     createSignature: MockedFunction<ApiClient["createSignature"]>;
     getTransaction: MockedFunction<ApiClient["getTransaction"]>;
@@ -16,6 +18,8 @@ export type MockedApiClient = {
     send: MockedFunction<ApiClient["send"]>;
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     registerSigner: MockedFunction<ApiClient["registerSigner"]>;
+    removeSigner: MockedFunction<ApiClient["removeSigner"]>;
+    getSigner: MockedFunction<ApiClient["getSigner"]>;
 };
 
 const getChainAddress = (chain: Chain): string => {
@@ -29,9 +33,9 @@ const getChainAddress = (chain: Chain): string => {
     }
 };
 
-const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): string => {
+const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): SignerLocator => {
     if (type === "api-key") {
-        return "api-key:test";
+        return "api-key";
     }
     switch (chain) {
         case "solana":
@@ -43,37 +47,53 @@ const getSignerLocator = (type: "api-key" | "external-wallet", chain: Chain): st
     }
 };
 
-export const createMockSigner = (
+export const createMockSigner = <C extends Chain>(
     type: "api-key" | "external-wallet" = "api-key",
-    chain: Chain = "base-sepolia"
-): Signer => {
-    const signer = {
+    chain: C = "base-sepolia" as C
+): SignerConfigForChain<C> => {
+    if ("api-key" === type) {
+        return {
+            type,
+        } as SignerConfigForChain<C>;
+    }
+    return {
         type,
-        locator: () => getSignerLocator(type, chain),
-        signTransaction: vi.fn().mockResolvedValue({ signature: "0xsigned" }),
-        signMessage: vi.fn().mockResolvedValue({ signature: "0xsigned" }),
-    } as unknown as Signer;
-    return signer;
+        address: getSignerLocator(type, chain).split(":")[1],
+        onSign: vi.fn().mockResolvedValue("0xsigned"),
+    } as unknown as SignerConfigForChain<C>;
 };
 
-export const createMockWallet = <C extends Chain>(
+export const createMockWallet = async <C extends Chain>(
     chain: C,
     mockApiClient: MockedApiClient,
     signerType: "api-key" | "external-wallet" = "api-key"
-): Wallet<C> => {
+): Promise<Wallet<C>> => {
     const signer = createMockSigner(signerType, chain);
-    return new Wallet(
+    const wallet = new Wallet(
         {
             chain,
             address: getChainAddress(chain),
-            signer,
+            recovery: { type: "api-key" } as SignerConfigForChain<C>,
         },
         mockApiClient as unknown as ApiClient
     );
+    vi.spyOn(wallet, "signers").mockImplementation(() =>
+        Promise.resolve([
+            {
+                type: signerType === "api-key" ? "api-key" : "external-wallet",
+                address: getChainAddress(chain),
+                locator: getSignerLocator(signerType, chain),
+                status: "success" as const,
+            } as any,
+        ])
+    );
+    await wallet.useSigner(signer);
+    return wallet;
 };
 
 export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): MockedApiClient => ({
     isServerSide: false,
+    environment: APIKeyEnvironmentPrefix.STAGING,
     createTransaction: vi.fn(),
     createSignature: vi.fn(),
     getTransaction: vi.fn(),
@@ -84,6 +104,8 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     send: vi.fn(),
     getWallet: vi.fn(),
     registerSigner: vi.fn(),
+    removeSigner: vi.fn(),
+    getSigner: vi.fn(),
     ...overrides,
 });
 

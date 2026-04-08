@@ -36,7 +36,7 @@ export function WalletBalance() {
                         <Image src="/sol.svg" alt="Solana" width={24} height={24} />
                         <p className="font-medium">Solana</p>
                     </div>
-                    <div className="text-gray-700 font-medium">
+                    <div className="text-gray-700 font-medium" data-testid="native-token-balance">
                         {formatBalance(balances?.nativeToken.amount ?? "0")} SOL
                     </div>
                 </div>
@@ -46,7 +46,7 @@ export function WalletBalance() {
                         <Image src="/xlm.svg" alt="Stellar" width={24} height={24} />
                         <p className="font-medium">Stellar</p>
                     </div>
-                    <div className="text-gray-700 font-medium">
+                    <div className="text-gray-700 font-medium" data-testid="native-token-balance">
                         {formatBalance(balances?.nativeToken.amount ?? "0")} XLM
                     </div>
                 </div>
@@ -56,7 +56,7 @@ export function WalletBalance() {
                         <Image src="/eth.svg" alt="Ethereum" width={24} height={24} />
                         <p className="font-medium">Ethereum</p>
                     </div>
-                    <div className="text-gray-700 font-medium">
+                    <div className="text-gray-700 font-medium" data-testid="native-token-balance">
                         {formatBalance(balances?.nativeToken.amount ?? "0")} ETH
                     </div>
                 </div>
@@ -79,11 +79,14 @@ export function WalletBalance() {
             ) : (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
-                        <p className="font-medium">USDC</p>
+                        <Image src="/usdc.svg" alt="USDXM" width={24} height={24} />
+                        <p className="font-medium">USDXM</p>
                     </div>
-                    <div className="text-gray-700 font-medium" data-testid="usdc-balance">
-                        $ {formatBalance(balances?.usdc.amount ?? "0")}
+                    <div className="text-gray-700 font-medium" data-testid="usdxm-balance">
+                        ${" "}
+                        {formatBalance(
+                            balances?.tokens?.find((t) => t.symbol?.toLowerCase() === "usdxm")?.amount ?? "0"
+                        )}
                     </div>
                 </div>
             )}

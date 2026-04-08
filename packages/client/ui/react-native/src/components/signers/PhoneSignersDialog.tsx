@@ -1,7 +1,7 @@
 import type { MutableRefObject } from "react";
 import { View, StyleSheet, Dimensions, Modal, TouchableOpacity, Text } from "react-native";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { PhoneIcon, Smartphone, X } from "lucide-react-native";
+import { PhoneIcon, SmartphoneIcon, XIcon } from "../icons";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { BaseCodeInput } from "./BaseCodeInput";
 import { theme } from "../../styles/theme";
@@ -96,7 +96,7 @@ export function PhoneSignersDialog({
                         onPress={handleOnCancel}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <X size={16} color={appearance?.colors?.textSecondary || theme["cm-text-secondary"]} />
+                        <XIcon size={16} color={appearance?.colors?.textSecondary || theme["cm-text-secondary"]} />
                     </TouchableOpacity>
 
                     {step === "initial" ? (
@@ -125,7 +125,7 @@ export function PhoneSignersDialog({
                                         padding: 12,
                                     }}
                                 >
-                                    <Smartphone
+                                    <SmartphoneIcon
                                         size={22}
                                         color={appearance?.colors?.background || theme["cm-background-primary"]}
                                     />

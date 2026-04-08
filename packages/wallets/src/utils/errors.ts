@@ -12,6 +12,12 @@ export class InvalidEnvironmentError extends CrossmintSDKError {
     }
 }
 
+export class InvalidChainError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.WALLET_CREATION_FAILED, details);
+    }
+}
+
 export class WalletTypeNotSupportedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.WALLET_TYPE_INVALID, details);
@@ -102,6 +108,12 @@ export class SignatureFailedError extends CrossmintSDKError {
     }
 }
 
+export class InvalidTransferAmountError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_TRANSACTION, details);
+    }
+}
+
 export class TransactionNotCreatedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
@@ -150,9 +162,17 @@ export class PendingApprovalsError extends CrossmintSDKError {
     }
 }
 
+export class InvalidAddressError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.RECIPIENT_ADDRESS_INVALID, details);
+    }
+}
+
 export type WalletError =
+    | InvalidTransferAmountError
     | InvalidApiKeyError
     | InvalidEnvironmentError
+    | InvalidChainError
     | WalletTypeNotSupportedError
     | WalletNotAvailableError
     | InvalidWalletConfigError
@@ -175,4 +195,5 @@ export type WalletError =
     | TransactionAwaitingApprovalError
     | TransactionHashNotFoundError
     | TransactionFailedError
-    | PendingApprovalsError;
+    | PendingApprovalsError
+    | InvalidAddressError;

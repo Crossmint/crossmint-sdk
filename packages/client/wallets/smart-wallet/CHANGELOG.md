@@ -1,5 +1,109 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.57
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+## 0.3.56
+
+### Patch Changes
+
+- Updated dependencies [76099c7]
+  - @crossmint/client-sdk-base@2.2.0
+
+## 0.3.55
+
+### Patch Changes
+
+- Updated dependencies [2a63ea6]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 0.3.54
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 0.3.54-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+
+## 0.3.54-beta.0
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 0.3.54
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 0.3.53
+
+### Patch Changes
+
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/client-sdk-base@2.0.2
+
+## 0.3.52
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/client-sdk-base@2.0.1
+
+## 0.3.51
+
+### Patch Changes
+
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+
+## 0.3.50
+
+### Patch Changes
+
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/client-sdk-base@1.7.14
+
+## 0.3.49
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/client-sdk-base@1.7.13
+
+## 0.3.48
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/client-sdk-base@1.7.12
+
 ## 0.3.47
 
 ### Patch Changes

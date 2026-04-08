@@ -1,19 +1,26 @@
 # Crossmint React SDK
 
+React SDK for integrating [Crossmint Wallets](https://docs.crossmint.com) into your application. Provides providers, hooks, and built-in UI for wallet creation, signing, OTP verification, and passkey flows.
 
-> **Create chain-agnostic wallets for your users in minutes**  
-> Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with custodial and non-custodial options.
+## Prerequisites
 
-## 🚀 Quick Start
+Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+
+## Installation
 
 ```bash
+npm install @crossmint/client-sdk-react-ui
+# or
 pnpm add @crossmint/client-sdk-react-ui
+# or
+yarn add @crossmint/client-sdk-react-ui
 ```
 
+## Quick Start
 
 ### 1. Setup Providers
 
-**Option A: With Crossmint Authentication (Recommended)**
+**With Crossmint Authentication (Recommended for quickstarts only)**
 
 ```tsx
 "use client";
@@ -21,17 +28,17 @@ pnpm add @crossmint/client-sdk-react-ui
 import {
   CrossmintProvider,
   CrossmintAuthProvider,
-  CrossmintWalletProvider
+  CrossmintWalletProvider,
 } from "@crossmint/client-sdk-react-ui";
 
 export default function App({ children }) {
   return (
     <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY}>
-      <CrossmintAuthProvider authModalTitle="Sign in to MyApp">
+      <CrossmintAuthProvider>
         <CrossmintWalletProvider
-          createOnLogin={{ 
-            chain: "polygon-amoy", 
-            signer: { type: "email" } 
+          createOnLogin={{
+            chain: "base-sepolia",
+            recovery: { type: "email" },
           }}
         >
           {children}
@@ -42,32 +49,30 @@ export default function App({ children }) {
 }
 ```
 
-**Option B: 🔧 Bring Your Own Authentication**
+**Bring Your Own Authentication**
 
-Already have authentication? Skip Crossmint Auth and use wallets with your existing system:
-
-📖 **[Complete Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)** - Full setup with examples and implementation details.
+Already have authentication? Skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth) for full details.
 
 ```tsx
 "use client";
 
 import {
   CrossmintProvider,
-  CrossmintWalletProvider
+  CrossmintWalletProvider,
 } from "@crossmint/client-sdk-react-ui";
 
 export default function App({ children }) {
   return (
     <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY}>
-      {/* No CrossmintAuthProvider needed! */}
-      <CrossmintWalletProvider 
-        createOnLogin={{ 
-            chain: "solana", 
-            signer: { 
-                type: "email", 
-                email: "<email-from-your-auth-system>" 
-            } 
-        }}>
+      <CrossmintWalletProvider
+        createOnLogin={{
+          chain: "base-sepolia",
+          recovery: {
+            type: "email",
+            email: "user@example.com",
+          },
+        }}
+      >
         {children}
       </CrossmintWalletProvider>
     </CrossmintProvider>
@@ -75,139 +80,122 @@ export default function App({ children }) {
 }
 ```
 
-### 2. Use Authentication & Wallets
+### 2. Use Wallets
 
 ```tsx
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 
-export default function MyComponent() {
-  const { login, logout, user, status } = useAuth();
-  const { wallet, status: walletStatus } = useWallet();
+function WalletActions() {
+  const { wallet, status } = useWallet();
 
-  if (status === "logged-out") {
-    return <button onClick={login}>Sign In</button>;
-  }
+  if (status === "in-progress") return <p>Loading wallet...</p>;
+  if (!wallet) return <p>No wallet</p>;
 
-  if (walletStatus === "loaded") {
-    return (
-      <div>
-        <p>Welcome {user?.email}!</p>
-        <p>Wallet: {wallet?.address}</p>
-        <button onClick={() => wallet?.send(recipient, "usdc", "1.0")}>
-          Send 1 USDC
-        </button>
-        <button onClick={logout}>Logout</button>
-      </div>
-    );
-  }
+  const handleSend = async () => {
+    const tx = await wallet.send("0xRecipient", "usdc", "10");
+    console.log("Transaction:", tx.explorerLink);
+  };
 
-  return <div>Loading wallet...</div>;
+  return (
+    <div>
+      <p>Wallet: {wallet.address}</p>
+      <button onClick={handleSend}>Send 10 USDC</button>
+    </div>
+  );
 }
 ```
 
-## 🔐 Authentication
+## Providers
 
-### Supported Login Methods
-- **Email OTP**: Passwordless sign-in with verification code
-- **Social Accounts**: Google, Twitter/X, Farcaster
-- **Web3 Wallets**: Connect external wallets for authentication
-- **Custom UI**: Headed or headless authentication flows
+| Provider | Purpose |
+|---|---|
+| `CrossmintProvider` | Root provider. Required for all Crossmint features. |
+| `CrossmintAuthProvider` | Authentication (email OTP, Google, Twitter/X). Optional if using your own auth. |
+| `CrossmintWalletProvider` | Wallet creation, device signer management, and built-in OTP/passkey UI. |
 
-### Provider Configuration
-```tsx
-<CrossmintAuthProvider
-  loginMethods={["email", "google", "twitter", "farcaster", "web3"]}
-  authModalTitle="Welcome to MyApp"
-  // Optional: Customize the appearance of the auth modal. 
-  // -> See https://docs.crossmint.com/authentication/customization for more details.
-  appearance={{
-    borderRadius: "12px",
-    colors: {
-      background: "#ffffff",
-      textPrimary: "#000000",
-      accent: "#6366f1"
-    }
-  }}
->
-```
+### `createOnLogin` Configuration
 
-## 💳 Wallets
+When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatically created when the user logs in:
 
-### Multi-Chain Support
-- **Solana**: Native SOL, SPL tokens
-- **EVM Chains**: Ethereum, Polygon, Base, Arbitrum, and 15+ more
-- **Unified API**: Same code works across all chains
-
-### Wallet Creation Options
 ```tsx
 <CrossmintWalletProvider
   createOnLogin={{
-    chain: "solana", // or EVM chains: "polygon", "base", etc.
-    signer: { 
-      type: "email" // or "api-key", "passkey", "external-wallet"
-    }
+    chain: "base-sepolia",       // required — the blockchain
+    recovery: { type: "email" }, // required — recovery signer config
+    signers: [{ type: "device" }], // optional — defaults to device signer
   }}
 >
 ```
 
-### Using Wallets
-```tsx
-const { wallet, getOrCreateWallet } = useWallet();
+## Hooks
 
-// Get wallet info
-const address = wallet?.address;
-const balance = await wallet?.balances();
+### `useWallet()`
 
-// Send tokens
-const tx = await wallet?.send(recipient, "usdc", "10.5");
-console.log("Transaction:", tx.explorerLink);
-
-// For advanced use cases
-const customWallet = await getOrCreateWallet({
-  chain: "<your-chain>",
-  signer: { type: "<your-signer-type>" }
-});
-```
-
-## 🎨 UI Components
-
-Ready-to-use components for displaying wallet content:
+Returns the wallet instance and management functions:
 
 ```tsx
-import { 
-  CrossmintNFTCollectionView,
-  CrossmintNFTDetail 
-} from "@crossmint/client-sdk-react-ui";
-
-// Display user's NFT collection
-<CrossmintNFTCollectionView {...props} />
-
-// Show NFT details
-<CrossmintNFTDetail {...props} />
+const {
+  wallet,              // Wallet | undefined
+  status,              // "not-loaded" | "in-progress" | "loaded" | "error"
+  getWallet,           // (props: { chain, alias? }) => Promise<Wallet | undefined>
+  createWallet,        // (props: ClientSideWalletCreateArgs) => Promise<Wallet | undefined>
+  createDeviceSigner,  // () => Promise<DeviceSignerDescriptor> | undefined
+  createPasskeySigner, // (name: string) => Promise<RegisterSignerPasskeyParams>
+} = useWallet();
 ```
 
-## 📱 React Native
+### `useWalletOtpSigner()`
 
-For React Native apps, use our dedicated [npm package](https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui).
+For custom OTP UI when using email/phone recovery signers:
 
-
-```bash
-pnpm add @crossmint/client-sdk-react-native-ui
+```tsx
+const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
 ```
 
-## 🛠️ Environment Setup
+### `useAuth()`
 
-1. Get your API key from [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys)
+Authentication state and login methods:
 
-2. Add to your `.env`:
-```bash
-NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
+```tsx
+const { login, logout, user, status } = useAuth();
 ```
 
-## 📚 Examples & Documentation
+## Components
 
-- **[Quickstarts](https://www.crossmint.com/quickstarts)** - Find your quickstart for your use case.
+### `ExportPrivateKeyButton`
 
----
+Renders a button to export the wallet's private key via TEE. Only renders for email/phone signers.
 
-**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 
+```tsx
+import { ExportPrivateKeyButton } from "@crossmint/client-sdk-react-ui";
+
+<ExportPrivateKeyButton appearance={{ borderRadius: "12px" }} />
+```
+
+## React Native
+
+For React Native apps, see [`@crossmint/client-sdk-react-native-ui`](https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui).
+
+## Wallets SDK
+
+The `wallet` object returned by `useWallet()` is a [`Wallet`](https://www.npmjs.com/package/@crossmint/wallets-sdk) instance. For wallet method documentation (send, balances, sign, etc.), see the [`@crossmint/wallets-sdk` README](https://www.npmjs.com/package/@crossmint/wallets-sdk).
+
+## Documentation
+
+- [Crossmint Wallets Docs](https://docs.crossmint.com)
+- [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets/react)
+- [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)
+
+## SDK Reference Docs Generation
+
+```
+Source JSDoc -> TypeDoc -> api.json -+
+                                    +-> generate-reference.mjs -> MDX pages (docs/<product>/)
+                     examples.json -+
+```
+
+Run with `pnpm generate:docs` or `node scripts/generate-reference.mjs --product wallets`.
+
+## License
+
+Apache-2.0

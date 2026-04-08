@@ -1,9 +1,9 @@
 export type { BaseCrossmintWalletProviderProps } from "@crossmint/client-sdk-react-base";
 export {
-    type Activity,
+    type Transfers,
     type Balances,
     type Chain,
-    type DelegatedSigner,
+    type Signer,
     type Transaction,
     type Signature,
     EVMWallet,

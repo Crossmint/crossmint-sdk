@@ -62,7 +62,7 @@ function EVMCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                                  signer: { type: "email" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
                               }
                     }
@@ -97,16 +97,7 @@ function EVMPrivyProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                        signer: { type: "email" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -130,7 +121,7 @@ function EVMDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
@@ -149,15 +140,7 @@ function EVMFirebaseProvider({
     }
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-            <CrossmintWalletProvider
-                createOnLogin={{
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                    signer: { type: "email" },
-                    ...ALIAS_CONFIG,
-                }}
-            >
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -178,7 +161,7 @@ function SolanaCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
-                loginMethods={["google", "twitter", "web3:solana-only", "email"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -187,7 +170,7 @@ function SolanaCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: "solana",
-                                  signer: { type: "email" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
                               }
                     }
@@ -222,16 +205,7 @@ function SolanaPrivyProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: "solana",
-                        signer: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -255,15 +229,7 @@ function SolanaDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider
-                    createOnLogin={{
-                        chain: "solana",
-                        signer: { type: "external-wallet" },
-                        ...ALIAS_CONFIG,
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
@@ -278,15 +244,7 @@ function SolanaFirebaseProvider({
 }) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-            <CrossmintWalletProvider
-                createOnLogin={{
-                    chain: "solana",
-                    signer: { type: "email" },
-                    ...ALIAS_CONFIG,
-                }}
-            >
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -304,7 +262,7 @@ function StellarCrossmintAuthProvider({
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
                 authModalTitle="Stellar Wallets Quickstart"
-                loginMethods={["google", "twitter", "email", "web3"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
@@ -313,11 +271,12 @@ function StellarCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: "stellar",
-                                  signer: { type: "email", email: "user@example.com" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
-                                  delegatedSigners: [
+                                  signers: [
                                       {
-                                          signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                          type: "external-wallet",
+                                          address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
                                       },
                                   ],
                               }
@@ -336,7 +295,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     const searchParams = useSearchParams();
 
     const providerType = searchParams.get("provider") || "crossmint"; // default to crossmint
-    const chainType = searchParams.get("chain");
+    const chainType = searchParams.get("chain") || "evm";
     const signerType = searchParams.get("signer") || "email";
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
@@ -355,11 +314,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
             default:
                 const createOnLogin: any = {
                     chain: chainId,
-                    signer: { type: signerType },
+                    recovery: { type: signerType },
                     ...(alias != null ? { alias } : {}),
                 };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.signer = {
+                    createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
                     };
@@ -382,11 +341,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
             default:
                 const createOnLogin: any = {
                     chain: "solana",
-                    signer: { type: signerType },
+                    recovery: { type: signerType },
                     ...(alias != null ? { alias } : {}),
                 };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.signer = {
+                    createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
                     };
@@ -400,11 +359,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     } else if (chainType === "stellar") {
         const createOnLogin: any = {
             chain: "stellar",
-            signer: { type: signerType },
+            recovery: { type: signerType },
             ...(alias != null ? { alias } : {}),
         };
         if (signerType === "phone" && phoneNumber != null) {
-            createOnLogin.signer = {
+            createOnLogin.recovery = {
                 type: signerType,
                 phone: decodeURIComponent(phoneNumber),
             };

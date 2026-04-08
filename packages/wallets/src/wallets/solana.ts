@@ -12,6 +12,7 @@ import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
@@ -21,9 +22,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 chain: wallet.chain,
                 address: wallet.address,
                 owner: wallet.owner,
-                signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
+                recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
+                signers: Wallet.getInitialSigners(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -37,6 +40,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
+    /**
+     * Send a raw Solana transaction.
+     * @param params - The transaction parameters (serialized transaction or Transaction object)
+     * @returns The transaction result
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "solanaWallet.sendTransaction",
@@ -45,14 +53,14 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         },
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: SolanaTransactionInput
+        params: SolanaTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -69,7 +77,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                     type: "external-wallet",
                     address: signer.publicKey.toString(),
                     locator: `external-wallet:${signer.publicKey.toString()}`,
-                    onSignTransaction: (transaction) => {
+                    onSign: (transaction) => {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },
@@ -89,7 +97,14 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signer = params.options?.experimental_signer ?? this.signer.locator();
+        let signer: string;
+        if (params.options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof params.options.signer === "string") {
+            signer = params.options.signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(params.options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
 
         let serializedTransaction: string;
 

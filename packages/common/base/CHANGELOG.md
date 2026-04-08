@@ -1,5 +1,64 @@
 # @crossmint/common-sdk-base
 
+## 0.10.0
+
+### Minor Changes
+
+- 02ac7bc: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+
+### Patch Changes
+
+- 02ac7bc: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+
+## 0.10.0-beta.1
+
+### Patch Changes
+
+- 4e5bc75: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+
+## 0.10.0-beta.0
+
+### Minor Changes
+
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+
+## 0.9.20
+
+### Patch Changes
+
+- ec44b25: Fix handshake timeout race condition on low-end Android devices by triggering handshake on frame-ready signal instead of onLoadEnd. Add dead WebView recovery with handshake state reset. Throw structured ApiClientError on 5xx responses instead of crashing on HTML error pages.
+
+## 0.9.19
+
+### Patch Changes
+
+- 803e351: Add Tempo mainnet chain support
+
+## 0.9.18
+
+### Patch Changes
+
+- f5bcec1: update tempo testnet details
+
+## 0.9.17
+
+### Patch Changes
+
+- 27194e5: Add "silent" option to consoleLogLevel to suppress all console output while maintaining Datadog logging
+- 4dc0dbf: Add JSDoc comments to CrossmintConfig type
+
+## 0.9.16
+
+### Patch Changes
+
+- 4eb0dc6: Add configurable consoleLogLevel prop to CrossmintProvider for filtering console output while maintaining full Datadog logging
+
+## 0.9.15
+
+### Patch Changes
+
+- 944f239: Add logging to WithLoggerContext decorator: logs parameters before function call, result on success, and error before throwing
+
 ## 0.9.14
 
 ### Patch Changes

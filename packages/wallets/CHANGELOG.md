@@ -1,5 +1,449 @@
 # @crossmint/wallets-sdk
 
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [80538a9]
+  - @crossmint/client-signers-cryptography@0.0.5
+
+## 1.0.6
+
+### Patch Changes
+
+- 8743da2: Fix device signer recovery when local key lookup fails
+
+  - Prevent assembling a device signer with an empty locator when `getKey()` returns null during initialization
+  - Make `recover()` search all registered device signers for a local key match before generating a new one
+  - Make "already approved" error detection more robust with looser string matching
+  - Extract `resumePendingDeviceSignerApproval` and `findLocalDeviceSigner` helpers for clarity
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- cf42378: Can remove a signer from a wallet
+- Updated dependencies [fc14bbf]
+  - @crossmint/common-sdk-auth@1.1.3
+
+## 1.0.5
+
+### Patch Changes
+
+- 36169eb: Fix spurious 400 API call to empty device locator when no matching device key is found locally
+
+  Fix OTP dialog not appearing during recovery flow when using EVMWallet.from(wallet).sendTransaction(). The dialog's open condition previously required wallet.signer.type === "email", which fails during recovery because the wallet's public signer remains a device signer. Now uses the active auth signer info from the onAuthRequired callback instead.
+
+- ab768c6: fix: skip auto-assembly for non-assemblable signer types (e.g. evm-keypair from API)
+
+## 1.0.4
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.2
+
+## 1.0.3
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.1
+
+## 1.0.2
+
+### Patch Changes
+
+- e2dbee9: Reject device signers for Solana wallets with a clear error message instead of letting the request fail with a 500. Includes a contact sales link for access.
+
+## 1.0.1
+
+### Patch Changes
+
+- b701730: Patch bump to publish v1.0.1 — v1.0.0 was already occupied by a stale release on npm and could not be overwritten by the changeset release action.
+
+## 1.0.0
+
+### Major Changes
+
+- 02ac7bc: Make device signer the default operational signer (WAL-9287).
+
+  BREAKING CHANGES:
+
+  - Removed `signer` property from `WalletArgsFor` and `WalletCreateArgs`
+  - `recovery` is now required on `WalletCreateArgs`
+  - Removed `assembleSigner` public method from `CrossmintWallets`
+  - Removed `onChangeSigner` callback
+  - Removed `getOrCreateWallet` from React provider public API; use `getWallet` and `createWallet` separately
+  - `getWallet` now accepts `alias` instead of `signer`
+
+- 02ac7bc: Add support for Delegated Signers.
+- 02ac7bc: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- 02ac7bc: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 02ac7bc: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- 02ac7bc: BREAKING: Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged.
+
+### Minor Changes
+
+- 02ac7bc: Device signer can be used in new devices. During the first transaction it will automatically create a device signer before running the transaction
+- 02ac7bc: Add human-readable device name to device signers.
+
+  - Added `name` field to `DeviceSignerConfig` and `DeviceSignerDescriptor`
+  - Added abstract `getDeviceName()` method to `DeviceSignerKeyStorage`
+  - `IframeDeviceSignerKeyStorage` derives the name from `navigator.userAgent` (e.g. "Chrome on Mac")
+  - `NativeDeviceSignerKeyStorage` uses `expo-device` APIs for real native device names (e.g. "iPhone 15 (iOS)")
+  - Both `registerSigners` (wallet creation) and `addSigner` (recovery) now send the device name to the API
+
+- 02ac7bc: Homogenize signer management to always use full objects with approval status
+
+  - `addSigner()` now accepts full signer config objects (`SignerConfigForChain<C>`) instead of locator strings
+  - `addSigner()` returns a `DelegatedSigner` with approval status
+  - `signers()` returns full `DelegatedSigner` objects, filtered to only include signers that exist for the instantiated chain
+  - New `SignerStatus` and `DelegatedSigner` types are exported
+
+- 02ac7bc: Browser Device Key support with Iframe Key Storage
+- 02ac7bc: Remove biometric policy from device signers. Only "none" policies are now created, which is the default for the iframe.
+- 02ac7bc: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 02ac7bc: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+- 02ac7bc: Add device signer support
+- 02ac7bc: Breaking: `useSigner()` now only accepts signer config objects + recovery signer support
+
+  - **Breaking:** `useSigner()` no longer accepts locator strings — only signer config objects (`SignerConfigForChain<C>`)
+  - `useSigner()` now accepts the wallet's recovery (admin) signer in addition to delegated signers
+  - Recovery signers skip the delegated signer registration check
+  - External-wallet signers (both recovery and delegated) require the full config object with an `onSign` callback
+  - All signer types must be passed as config objects (e.g. `{ type: "email", email: "..." }`)
+
+- 02ac7bc: feat: unify OTP signer API with useWalletOtpSigner hook and showOtpSignerPrompt prop
+
+  - Replace `headlessSigningFlow` with `showOtpSignerPrompt` (defaults to `true`) for consistent opt-in/opt-out of built-in OTP UI across both react-ui and react-native
+  - Rename `emailSignerState` to `otpSignerState` in the wallet context to reflect support for both email and phone OTP signers
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 02ac7bc: Add SDK logger decorator to device signer key storage methods for improved observability
+- 02ac7bc: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+- 02ac7bc: fix: check device signer approval instead of needsRecovery flag in recover()
+
+  Replaces the needsRecovery() flag check with an actual signerIsRegistered() call to verify
+  whether the device signer is approved on the wallet. This fixes the case where the recovery
+  signer does not require auth and there is no device signer, causing recover() to skip
+  registration.
+
+- 02ac7bc: Handle device signer IDB fatal errors with iframe reload and retry
+- 02ac7bc: Fix createWallet failing when a device signer descriptor from createDeviceSigner() is passed in signers[]. The publicKey.x/y hex values are now normalized to decimal before comparison during idempotency validation.
+- 02ac7bc: fix: preserve external-wallet recovery signer config (onSign callback) during wallet instantiation
+- 02ac7bc: Remove incorrect signer mention from getWallet JSDoc description.
+- 02ac7bc: fix: pass full passkey signer config in addSigner to preserve publicKey
+- 02ac7bc: Fix server recovery wallets auto-approve for addSigner
+
+  - Preserve user-provided recovery config (with secret) during wallet creation so server recovery signers can properly auto-approve addSigner operations
+  - Use buildInternalSignerConfig for recovery signer assembly in addSigner, which correctly derives server signer keys
+
+- 02ac7bc: fix: prevent duplicate TEE initialization race condition in NonCustodialSigner
+
+  Stores the constructor's initialize() promise in \_initializationPromise so that
+  getTEEConnection() can detect an in-flight initialization and await it instead
+  of starting a parallel one, preventing duplicate iframe/TEE attestation.
+
+- 02ac7bc: fix: make tokens and status optional in wallet.transfers()
+- 02ac7bc: Validate transfer amount in wallet.send() to reject zero, negative, and non-numeric values before sending on-chain. Throws InvalidTransferAmountError for invalid amounts.
+- 02ac7bc: Improve error messages when server wallet signer is missing. Instead of a generic "read-only" error, the SDK now provides context-specific guidance for server signers, external-wallet signers, and wallets with multiple signers. Also adds a warning log when auto-assembly of the default signer fails.
+- 02ac7bc: Default for recovery or one server signer
+- 02ac7bc: Reject unknown chain names in createWallet and getWallet with an InvalidChainError before any wallet resource is created
+- 02ac7bc: Remove @stellar/stellar-sdk dependency by replacing it with tweetnacl (already a dependency) for ed25519 operations and a local Stellar StrKey encoder ported from open-signer.
+- 02ac7bc: If a signer is in a pending state, approve it and then use it'
+- 02ac7bc: Support Solana Device Signer
+- 02ac7bc: Defaulting signer
+- 02ac7bc: Simplify null check in recover() and make apiClient publicly accessible
+- 02ac7bc: Fix createDeviceSigner always generating a new key instead of reusing an existing one for the same address on the same device
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/common-sdk-auth@1.1.0
+
+## 1.0.0-beta.6
+
+### Patch Changes
+
+- 003e632: Remove incorrect signer mention from getWallet JSDoc description.
+- f5517fc: fix: pass full passkey signer config in addSigner to preserve publicKey
+- e38e91b: Improve error messages when server wallet signer is missing. Instead of a generic "read-only" error, the SDK now provides context-specific guidance for server signers, external-wallet signers, and wallets with multiple signers. Also adds a warning log when auto-assembly of the default signer fails.
+- bac3bd4: If a signer is in a pending state, approve it and then use it'
+
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- 258779d: Rename DelegatedSigner to Signer and AdminSignerConfig to RecoverySignerConfig.
+
+  The exported type `DelegatedSigner` has been renamed to `Signer`. `DelegatedSignerInput` → `SignerInput`, `AdminSignerConfig` → `RecoverySignerConfig`. The internal `Signer` interface (signing mechanism adapter) has been renamed to `SignerAdapter` and is now publicly exported for consumers using `additionalSigners`.
+
+### Patch Changes
+
+- 2d92c5a: fix: preserve external-wallet recovery signer config (onSign callback) during wallet instantiation
+- 512015a: Default for recovery or one server signer
+- 05f3feb: Fix createDeviceSigner always generating a new key instead of reusing an existing one for the same address on the same device
+
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- 72a6c13: Fix server recovery wallets auto-approve for addSigner
+
+  - Preserve user-provided recovery config (with secret) during wallet creation so server recovery signers can properly auto-approve addSigner operations
+  - Use buildInternalSignerConfig for recovery signer assembly in addSigner, which correctly derives server signer keys
+
+- 7f45e33: Remove @stellar/stellar-sdk dependency by replacing it with tweetnacl (already a dependency) for ed25519 operations and a local Stellar StrKey encoder ported from open-signer.
+
+## 1.0.0-beta.3
+
+### Minor Changes
+
+- d5c0df7: Add human-readable device name to device signers.
+
+  - Added `name` field to `DeviceSignerConfig` and `DeviceSignerDescriptor`
+  - Added abstract `getDeviceName()` method to `DeviceSignerKeyStorage`
+  - `IframeDeviceSignerKeyStorage` derives the name from `navigator.userAgent` (e.g. "Chrome on Mac")
+  - `NativeDeviceSignerKeyStorage` uses `expo-device` APIs for real native device names (e.g. "iPhone 15 (iOS)")
+  - Both `registerSigners` (wallet creation) and `addSigner` (recovery) now send the device name to the API
+
+- 6038b09: Breaking: `useSigner()` now only accepts signer config objects + recovery signer support
+
+  - **Breaking:** `useSigner()` no longer accepts locator strings — only signer config objects (`SignerConfigForChain<C>`)
+  - `useSigner()` now accepts the wallet's recovery (admin) signer in addition to delegated signers
+  - Recovery signers skip the delegated signer registration check
+  - External-wallet signers (both recovery and delegated) require the full config object with an `onSign` callback
+  - All signer types must be passed as config objects (e.g. `{ type: "email", email: "..." }`)
+
+### Patch Changes
+
+- 4e5bc75: Add client-side validation for recipient addresses in wallet.send(). Invalid addresses now throw an `InvalidAddressError` immediately instead of making a round-trip to the server.
+- d66aacc: Fix createWallet failing when a device signer descriptor from createDeviceSigner() is passed in signers[]. The publicKey.x/y hex values are now normalized to decimal before comparison during idempotency validation.
+- 116111d: fix: make tokens and status optional in wallet.transfers()
+- 5ae2806: Validate transfer amount in wallet.send() to reject zero, negative, and non-numeric values before sending on-chain. Throws InvalidTransferAmountError for invalid amounts.
+- 6eb5217: Reject unknown chain names in createWallet and getWallet with an InvalidChainError before any wallet resource is created
+- d0c8820: Defaulting signer
+- 09e9ce2: Simplify null check in recover() and make apiClient publicly accessible
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/common-sdk-auth@1.1.0-beta.1
+
+## 1.0.0-beta.2
+
+### Minor Changes
+
+- 534e27d: Homogenize signer management to always use full objects with approval status
+
+  - `addSigner()` now accepts full signer config objects (`SignerConfigForChain<C>`) instead of locator strings
+  - `addSigner()` returns a `DelegatedSigner` with approval status
+  - `signers()` returns full `DelegatedSigner` objects, filtered to only include signers that exist for the instantiated chain
+  - New `SignerStatus` and `DelegatedSigner` types are exported
+
+### Patch Changes
+
+- d09537e: fix: check device signer approval instead of needsRecovery flag in recover()
+
+  Replaces the needsRecovery() flag check with an actual signerIsRegistered() call to verify
+  whether the device signer is approved on the wallet. This fixes the case where the recovery
+  signer does not require auth and there is no device signer, causing recover() to skip
+  registration.
+
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- e60df98: fix: prevent duplicate TEE initialization race condition in NonCustodialSigner
+
+  Stores the constructor's initialize() promise in \_initializationPromise so that
+  getTEEConnection() can detect an in-flight initialization and await it instead
+  of starting a parallel one, preventing duplicate iframe/TEE attestation.
+
+## 1.0.0-beta.0
+
+### Major Changes
+
+- c51a407: Make device signer the default operational signer (WAL-9287).
+
+  BREAKING CHANGES:
+
+  - Removed `signer` property from `WalletArgsFor` and `WalletCreateArgs`
+  - `recovery` is now required on `WalletCreateArgs`
+  - Removed `assembleSigner` public method from `CrossmintWallets`
+  - Removed `onChangeSigner` callback
+  - Removed `getOrCreateWallet` from React provider public API; use `getWallet` and `createWallet` separately
+  - `getWallet` now accepts `alias` instead of `signer`
+
+- 67920a5: Add support for Delegated Signers.
+- 820c2ec: Remove experimental\_ prefixes from wallets SDK public API
+
+  BREAKING CHANGE: All experimental\_ prefixed APIs have been graduated to stable with new names:
+
+  - `experimental_prepareOnly` -> `prepareOnly`
+  - `experimental_callbacks` -> `_callbacks`
+  - `experimental_loginWithOAuth` -> `loginWithOAuth`
+  - `experimental_getNfts` -> `getNfts` / `nfts`
+  - `experimental_activity` -> `getTransfers` / `transfers`
+  - `experimental_signer` -> `signer`
+  - `experimental_approval` -> `approval`
+  - `experimental_transaction` -> `transaction`
+  - `experimental_transactions` -> `transactions`
+
+- ede1aac: BREAKING CHANGE: Remove owner parameter from client-side getOrCreateWallet calls
+
+  The `owner` field can no longer be specified in client-side `getOrCreateWallet` calls. Owner is now determined from JWT authentication.
+
+  Migration: Remove the `owner` parameter from any client-side wallet creation calls. The owner is automatically determined from the authenticated user's JWT token.
+
+- 5e1e86e: Split getOrCreateWallet into separate getWallet and createWallet methods, both working client and server side. Make signer optional for read-only wallets. Add device signer resolution logic in getWallet. Add createDeviceSigner helper function. Support device signers with pre-existing locators.
+- 6e3fa39: BREAKING: Rename SDK-facing terminology: adminSigner to recovery, delegatedSigners to signers, addDelegatedSigner() to addSigner(), delegatedSigners() to signers(). API layer unchanged.
+
+### Minor Changes
+
+- 8c079bd: Device signer can be used in new devices. During the first transaction it will automatically create a device signer before running the transaction
+- eb975c9: Browser Device Key support with Iframe Key Storage
+- d29b7d3: Remove biometric policy from device signers. Only "none" policies are now created, which is the default for the iframe.
+- 9b9f9db: Remove deprecated customAuth (experimental_customAuth, experimental_setCustomAuth, CustomAuth type) from the SDK. All authentication now uses the setJwt/crossmint.jwt pattern instead.
+- 2445716: Add device signer support
+- 74a05a1: feat: unify OTP signer API with useWalletOtpSigner hook
+
+  - Rename `sendEmailWithOtp` to `sendOtp` across the SDK to unify email and phone OTP signer APIs
+  - Add new `useWalletOtpSigner` hook in react-base, exported from both react-ui and react-native-ui
+  - Deprecate `useWalletEmailSigner` in react-native in favor of `useWalletOtpSigner`
+
+### Patch Changes
+
+- 5b77229: Add SDK logger decorator to device signer key storage methods for improved observability
+- 522b486: Handle device signer IDB fatal errors with iframe reload and retry
+- d5283ab: Support Solana Device Signer
+- Updated dependencies [9b9f9db]
+- Updated dependencies [bf792d2]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+
+## 0.21.0
+
+### Minor Changes
+
+- e912d18: Add server key signers for EVM, Solana, and Stellar using HKDF-SHA256 key derivation, enabling server-to-server wallet operations without client-side key management.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
+
+## 0.20.2
+
+### Patch Changes
+
+- Updated dependencies [d5ce427]
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-auth@1.0.72
+  - @crossmint/common-sdk-base@0.9.20
+
+## 0.20.1
+
+### Patch Changes
+
+- 803e351: Add Tempo mainnet chain support
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/common-sdk-auth@1.0.71
+
+## 0.20.0
+
+### Minor Changes
+
+- 454a9cc: Chain environment validation now throws an error when using testnet chains in production and automatically converts mainnet chains to their testnet equivalents in staging/development environments.
+
+### Patch Changes
+
+- f5bcec1: update tempo testnet details
+- f969a28: Category: improvements
+  Product Area: wallets
+
+  Validate/auto-convert chains in Wallet balances/send/activity methods.
+
+- Updated dependencies [f5bcec1]
+  - @crossmint/common-sdk-base@0.9.18
+  - @crossmint/common-sdk-auth@1.0.70
+
+## 0.19.0
+
+### Minor Changes
+
+- 41ad396: Add chain environment validation for EVM wallets
+
+  When creating or fetching an EVM wallet, the SDK now validates that the chain matches the environment:
+
+  - Production environment: Only mainnet chains are allowed
+    This prevents accidental use of testnet chains in production or mainnet chains in non-production environments. A warning is logged with a descriptive message when there is a mismatch, but the wallet operation still completes successfully.
+
+  Category: improvements
+  Product Area: wallets
+
+### Patch Changes
+
+- 4dc0dbf: Add missing JSDoc comments to wallet methods
+- a356f13: Improve logging across approve/send transaction flow: remove verbose console.log noise from EventEmitter/Handshake/Transport layers, replace console.warn/error with structured walletsLogger in NCS signers, add timing for TEE operations
+- ce13788: Add the transactionType field
+- Updated dependencies [a356f13]
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/client-sdk-window@1.0.9
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/common-sdk-auth@1.0.69
+
+## 0.18.15
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/common-sdk-auth@1.0.68
+
+## 0.18.14
+
+### Patch Changes
+
+- 38b9087: Fix issue where email signer was not found when creating wallet without createOnLogin
+
+  client-sdk-react-base entry point should be now `CrossmintWalletBaseProvider` instead of `CrossmintWalletUIBaseProvider`
+
+- 38b9087: Adds logs for email signer otp modal flow
+
+## 0.18.13
+
+### Patch Changes
+
+- dbb338a: Remove chains parameter from balances() method - the wallet's default chain is now always used for balance queries, fixing a bug where passed chains were ignored during response processing.
+- c0e68b2: Fix approval signer locator bug: use correct signer's locator in approval submissions instead of always using this.signer.locator(). This makes the additionalSigners option work correctly for delegated signers.
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/common-sdk-auth@1.0.67
+
 ## 0.18.12
 
 ### Patch Changes

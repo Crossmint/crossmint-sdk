@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "2.6.13",
+    "version": "4.0.10",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -13,14 +13,15 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "LICENSE"],
+    "files": ["dist", "LICENSE", "README.md"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup --watch",
-        "test:vitest": "vitest run"
+        "test:vitest": "vitest run",
+        "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
-        "@basis-theory-ai/react": "^1.0.1-beta.9",
+        "@basis-theory/react-agentic": "1.5.0",
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
@@ -36,7 +37,6 @@
         "@emotion/react": "^11.11.0",
         "@emotion/styled": "11.14.1",
         "@ethersproject/transactions": "5.7.0",
-        "@farcaster/auth-kit": "0.6.0",
         "@mysten/sui": "1.24.0",
         "@solana/web3.js": "1.98.1",
         "bs58": "5.0.0",
@@ -59,7 +59,8 @@
         "@types/react-transition-group": "4.4.12",
         "pino-pretty": "^7.6.0",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0"
+        "react-dom": "^19.1.0",
+        "typedoc": "0.28.16"
     },
     "peerDependencies": {
         "@solana/web3.js": "^1.98.1",

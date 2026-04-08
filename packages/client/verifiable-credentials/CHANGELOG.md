@@ -1,5 +1,101 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.82
+
+### Patch Changes
+
+- Updated dependencies [76099c7]
+  - @crossmint/client-sdk-base@2.2.0
+
+## 3.4.81
+
+### Patch Changes
+
+- Updated dependencies [2a63ea6]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 3.4.80
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 3.4.80-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+
+## 3.4.80-beta.0
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 3.4.80
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 3.4.79
+
+### Patch Changes
+
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/client-sdk-base@2.0.2
+
+## 3.4.78
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/client-sdk-base@2.0.1
+
+## 3.4.77
+
+### Patch Changes
+
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+
+## 3.4.76
+
+### Patch Changes
+
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/client-sdk-base@1.7.14
+
+## 3.4.75
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/client-sdk-base@1.7.13
+
+## 3.4.74
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/client-sdk-base@1.7.12
+
 ## 3.4.73
 
 ### Patch Changes

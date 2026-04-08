@@ -38,7 +38,7 @@
     },
     "packageManager": "pnpm@9.3.0",
     "engines": {
-        "node": ">=20.19.4 <21",
+        "node": ">=20.19.4",
         "npm": "please-use-pnpm",
         "pnpm": ">=9",
         "yarn": "please-use-pnpm"
@@ -64,7 +64,16 @@
             "expo-demo>react-dom": "19.1.1",
             "@crossmint/client-sdk-react-native-ui>react": "19.1.1",
             "@crossmint/client-sdk-rn-window>react": "19.1.1",
-            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1"
+            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1",
+            "@isaacs/brace-expansion": "5.0.1",
+            "tar@6": "7.5.7",
+            "tar@7": "7.5.7",
+            "h3": "1.15.5",
+            "@remix-run/router": "1.23.2",
+            "@remix-run/react": "2.17.3",
+            "preact": "10.28.2",
+            "qs": "6.14.1",
+            "valibot": "1.2.0"
         }
     }
 }

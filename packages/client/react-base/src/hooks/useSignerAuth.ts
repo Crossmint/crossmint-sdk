@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, type MutableRefObject } from "react";
-import type { CreateOnLogin } from "@/types";
+import type { Callbacks } from "@crossmint/wallets-sdk";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -19,9 +19,14 @@ export interface SignerAuthState {
     setPhoneSignerDialogOpen: (open: boolean) => void;
     setPhoneSignerDialogStep: (step: DialogStep) => void;
 
-    sendEmailWithOtpRef: MutableRefObject<() => Promise<void>>;
+    /** The email address from the active auth flow (set by onAuthRequired callback). */
+    activeAuthEmail: string | undefined;
+    /** The phone number from the active auth flow (set by onAuthRequired callback). */
+    activeAuthPhone: string | undefined;
+
+    sendEmailOtpRef: MutableRefObject<() => Promise<void>>;
     verifyOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
-    sendPhoneWithOtpRef: MutableRefObject<() => Promise<void>>;
+    sendPhoneOtpRef: MutableRefObject<() => Promise<void>>;
     verifyPhoneOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
     rejectRef: MutableRefObject<(error?: Error) => void>;
 }
@@ -35,29 +40,26 @@ export interface SignerAuthHandlers {
     phonesigners_handleOTPSubmit: (otp: string) => Promise<void>;
     phonesigners_handleResendOTP: () => Promise<void>;
 
-    onAuthRequired: (
-        needsAuth: boolean,
-        sendMessageWithOtp: () => Promise<void>,
-        verifyOtp: (otp: string) => Promise<void>,
-        reject: () => void
-    ) => Promise<void>;
+    onAuthRequired: Callbacks["onAuthRequired"];
 }
 
-export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & SignerAuthHandlers {
+export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<DialogStep>("initial");
+    const [activeAuthEmail, setActiveAuthEmail] = useState<string | undefined>(undefined);
+    const [activeAuthPhone, setActiveAuthPhone] = useState<string | undefined>(undefined);
 
-    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendEmailOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
-    const sendPhoneWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneWithOtp"));
+    const sendPhoneOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneOtp"));
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
     const emailsigners_handleSendEmailOTP = useCallback(async () => {
         try {
-            await sendEmailWithOtpRef.current();
+            await sendEmailOtpRef.current();
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
@@ -70,6 +72,7 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
             await verifyOtpRef.current(otp);
             setEmailSignerDialogOpen(false);
             setEmailSignerDialogStep("initial");
+            setActiveAuthEmail(undefined);
         } catch (error) {
             console.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
@@ -78,7 +81,7 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
 
     const emailsigners_handleResendOTP = useCallback(async () => {
         try {
-            await sendEmailWithOtpRef.current();
+            await sendEmailOtpRef.current();
         } catch (error) {
             console.error("Failed to resend email OTP", error);
             rejectRef.current(new Error("Failed to resend email OTP"));
@@ -88,7 +91,7 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
     // Phone authentication handlers
     const phonesigners_handleSendPhoneOTP = useCallback(async () => {
         try {
-            await sendPhoneWithOtpRef.current();
+            await sendPhoneOtpRef.current();
             setPhoneSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send phone OTP", error);
@@ -101,6 +104,7 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
             await verifyPhoneOtpRef.current(otp);
             setPhoneSignerDialogOpen(false);
             setPhoneSignerDialogStep("initial");
+            setActiveAuthPhone(undefined);
         } catch (error) {
             console.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
@@ -109,32 +113,38 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
 
     const phonesigners_handleResendOTP = useCallback(async () => {
         try {
-            await sendPhoneWithOtpRef.current();
+            await sendPhoneOtpRef.current();
         } catch (error) {
             console.error("Failed to resend phone OTP", error);
             rejectRef.current(new Error("Failed to resend phone OTP"));
         }
     }, []);
 
-    const onAuthRequired = useCallback(
-        async (
+    const onAuthRequired: Callbacks["onAuthRequired"] = useCallback(
+        (
+            signerType: "email" | "phone",
+            signerLocator: string,
             needsAuth: boolean,
             sendMessageWithOtp: () => Promise<void>,
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
-        ): Promise<void> => {
-            if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
+        ) => {
+            const signerValue = signerLocator.split(":")[1];
+            if (signerType === "phone" && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
-                sendPhoneWithOtpRef.current = sendMessageWithOtp;
+                setActiveAuthPhone(needsAuth ? signerValue : undefined);
+                sendPhoneOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
-            } else {
+            } else if (signerType === "email" && signerValue != null) {
                 setEmailSignerDialogOpen(needsAuth);
-                sendEmailWithOtpRef.current = sendMessageWithOtp;
+                setActiveAuthEmail(needsAuth ? signerValue : undefined);
+                sendEmailOtpRef.current = sendMessageWithOtp;
                 verifyOtpRef.current = verifyOtp;
             }
             rejectRef.current = reject;
+            return Promise.resolve();
         },
-        [createOnLogin?.signer.type, createOnLogin?.signer]
+        []
     );
 
     return {
@@ -146,10 +156,12 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
         phoneSignerDialogStep,
         setPhoneSignerDialogOpen,
         setPhoneSignerDialogStep,
+        activeAuthEmail,
+        activeAuthPhone,
 
-        sendEmailWithOtpRef,
+        sendEmailOtpRef,
         verifyOtpRef,
-        sendPhoneWithOtpRef,
+        sendPhoneOtpRef,
         verifyPhoneOtpRef,
         rejectRef,
 

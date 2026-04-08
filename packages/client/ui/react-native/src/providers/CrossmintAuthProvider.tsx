@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { type AuthStatus, CrossmintAuthBaseProvider, useCrossmintAuthBase } from "@crossmint/client-sdk-react-base";
-import { useAuth, useCrossmint } from "../hooks";
+import { useCrossmintAuth, useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
 import type { RNAuthContext, RNCrossmintAuthProviderProps } from "@/types/auth";
 
@@ -17,7 +17,7 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 const defaultContextValue: RNAuthContext = {
     crossmintAuth: undefined,
     login: () => {},
-    logout: () => {},
+    logout: async () => {},
     jwt: undefined,
     user: undefined,
     status: "initializing",
@@ -29,20 +29,12 @@ const defaultContextValue: RNAuthContext = {
 export const AuthContext = createContext<RNAuthContext>(defaultContextValue);
 
 function CrossmintAuthSync({ children }: { children: ReactNode }) {
-    const { experimental_setCustomAuth, experimental_customAuth } = useCrossmint();
-    const { user, jwt } = useAuth();
+    const { setJwt } = useCrossmint();
+    const { jwt } = useCrossmintAuth();
 
     useEffect(() => {
-        if (jwt == null && experimental_customAuth?.jwt != null) {
-            experimental_setCustomAuth(undefined);
-        }
-        if (jwt != null) {
-            experimental_setCustomAuth({
-                jwt,
-                email: user?.email,
-            });
-        }
-    }, [experimental_setCustomAuth, jwt, user]);
+        setJwt(jwt);
+    }, [setJwt, jwt]);
 
     return children;
 }

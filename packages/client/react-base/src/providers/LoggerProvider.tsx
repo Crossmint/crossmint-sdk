@@ -1,7 +1,7 @@
 import { type Context, createContext, useContext } from "react";
 import type { SdkLogger } from "@crossmint/common-sdk-base";
 
-type LoggerContext = Context<SdkLogger | null>;
+export type LoggerContext = Context<SdkLogger | null>;
 
 export const createLoggerContext = (): LoggerContext => createContext<SdkLogger | null>(null);
 

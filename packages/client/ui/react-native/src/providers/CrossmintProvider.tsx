@@ -2,24 +2,40 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import Constants from "expo-constants";
 import { CrossmintProvider as BaseCrossmintProvider, createLoggerContext } from "@crossmint/client-sdk-react-base";
-import type { CrossmintConfig } from "@crossmint/common-sdk-base";
+import type { CrossmintConfig, ConsoleLogLevel } from "@crossmint/common-sdk-base";
 import { initReactNativeLogger } from "../logger/init";
 
 export const LoggerContext = createLoggerContext();
 
+export interface CrossmintProviderProps extends Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl" | "appId"> {
+    /**
+     * Minimum log level for console output (or "silent" to suppress all output).
+     * Logs below this level will not be written to the console.
+     * Set to "silent" to completely suppress console output.
+     * Defaults to "debug" (all logs shown) for backward compatibility.
+     */
+    consoleLogLevel?: ConsoleLogLevel;
+    /** @internal */
+    children: ReactNode;
+}
+
+/**
+ * Root provider for the Crossmint SDK. Must wrap your entire application.
+ * Initializes the SDK with your API key and sets up logging.
+ */
 export function CrossmintProvider({
     children,
     apiKey,
     overrideBaseUrl,
-}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
-    children: ReactNode;
-}) {
+    appId: appIdProp,
+    consoleLogLevel,
+}: CrossmintProviderProps) {
     const logger = useMemo(() => {
-        return initReactNativeLogger(apiKey);
-    }, [apiKey]);
+        return initReactNativeLogger(apiKey, consoleLogLevel);
+    }, [apiKey, consoleLogLevel]);
 
-    // Get app ID from Expo constants
-    const appId = Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
+    // Use provided appId prop, or auto-detect from Expo constants
+    const appId = appIdProp ?? Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
 
     return (
         <LoggerContext.Provider value={logger}>

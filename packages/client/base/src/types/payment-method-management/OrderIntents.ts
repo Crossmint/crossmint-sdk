@@ -15,13 +15,12 @@ export interface OrderIntentBase {
 
 export interface OrderIntent extends OrderIntentBase {
     payment: {
-        paymentMethodId: string;
-        externalOrderIntentId: string;
+        btAgentId: string;
+        btInstructionId: string;
     };
 }
 
 export interface VerificationConfig {
-    btProjectId: string;
-    btJwt: string;
+    btApiKey: string;
     environment: "production" | "sandbox";
 }

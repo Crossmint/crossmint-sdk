@@ -7,13 +7,14 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
 export {
-    type Activity,
+    type Transfers,
     type Balances,
     type Chain,
-    type DelegatedSigner,
+    type Signer,
     type Transaction,
     type Signature,
     EVMWallet,
     SolanaWallet,
+    StellarWallet,
     Wallet,
 } from "@crossmint/wallets-sdk";

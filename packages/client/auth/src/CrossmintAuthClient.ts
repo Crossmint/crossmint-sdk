@@ -1,4 +1,3 @@
-import type { UseSignInData } from "@farcaster/auth-kit";
 import {
     AUTH_SDK_ROOT_ENDPOINT,
     type AuthMaterialWithUser,
@@ -239,36 +238,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
         } catch (error) {
             throw new CrossmintAuthenticationError(
                 `Failed to confirm email OTP: ${error instanceof Error ? error.message : "Unknown error"}`
-            );
-        }
-    }
-
-    public async signInWithFarcaster(data: UseSignInData) {
-        try {
-            const queryParams = new URLSearchParams({
-                signinAuthenticationMethod: "farcaster",
-                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
-            });
-
-            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...data,
-                    domain: data.signatureParams.domain,
-                    redirect: true,
-                    callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(JSON.parse(await response.text())?.message);
-            }
-
-            const resData = await response.json();
-            return resData.oneTimeSecret;
-        } catch (error) {
-            throw new CrossmintAuthenticationError(
-                `Failed to sign in with Farcaster: ${error instanceof Error ? error.message : "Unknown error"}`
             );
         }
     }

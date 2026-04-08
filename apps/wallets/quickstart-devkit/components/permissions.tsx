@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type Signer, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
 
 export function Permissions() {
@@ -11,13 +11,13 @@ export function Permissions() {
     const { wallet } = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [permissions, setPermissions] = useState<DelegatedSigner[]>([]);
+    const [permissions, setPermissions] = useState<Signer[]>([]);
     const [newSigner, setNewSigner] = useState<string>("");
 
     useEffect(() => {
         const fetchPermissions = async () => {
             if (wallet != null) {
-                const signers = await wallet.delegatedSigners();
+                const signers = await wallet.signers();
                 setPermissions(signers);
             }
         };
@@ -34,8 +34,8 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.addDelegatedSigner({ signer: newSigner });
-            const signers = await wallet.delegatedSigners();
+            await wallet.addSigner({ type: "external-wallet", address: newSigner });
+            const signers = await wallet.signers();
             setPermissions(signers);
         } catch (err) {
             console.error("Permissions: ", err);
@@ -52,7 +52,7 @@ export function Permissions() {
                 <p className="text-sm text-gray-500">
                     Allow third parties to sign transactions on behalf of your wallet.{" "}
                     <a
-                        href="https://docs.crossmint.com/wallets/advanced/delegated-keys"
+                        href="https://docs.crossmint.com/wallets/guides/delegated-signers"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-accent underline"
@@ -64,11 +64,13 @@ export function Permissions() {
             </div>
             <input
                 type="text"
+                data-testid="delegated-signer-input"
                 className="w-full px-3 py-2 border rounded-md text-sm"
                 placeholder="Ex: 5YNmS1R9nNSCDzb5a7mMJ1dwK9uHeAAF4CmPEwKgVWr8"
                 onChange={(e) => setNewSigner(e.target.value)}
             />
             <button
+                data-testid="add-delegated-signer-button"
                 className={cn(
                     "w-full py-2 px-4 rounded-md text-sm font-medium transition-colors",
                     isLoading
@@ -82,13 +84,17 @@ export function Permissions() {
             </button>
             {/* List of permissions */}
             {permissions.length > 0 && (
-                <div className="bg-gray-50 py-2 px-3 rounded-md">
+                <div className="bg-gray-50 py-2 px-3 rounded-md" data-testid="registered-signers-list">
                     <p className="text-xs text-gray-500 mb-1.5">Registered signers</p>
                     <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
-                        <ul className="flex flex-col gap-1">
-                            {permissions.map(({ signer }, index) => (
-                                <li key={index} className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600">
-                                    {signer}
+                        <ul className="flex flex-col gap-1" data-testid="delegated-signers-list">
+                            {permissions.map((delegatedSigner, index) => (
+                                <li
+                                    key={index}
+                                    data-testid={`delegated-signer-item-${index}`}
+                                    className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
+                                >
+                                    {delegatedSigner.locator}
                                 </li>
                             ))}
                         </ul>

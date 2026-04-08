@@ -1,0 +1,16 @@
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
+        "jsx": "react-jsx",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["__tests__"]
+}

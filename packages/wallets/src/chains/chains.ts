@@ -1,4 +1,6 @@
-import { BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+import { walletsLogger } from "../logger";
+import { InvalidChainError, InvalidEnvironmentError } from "../utils/errors";
 import type { Chain as ViemChain } from "viem";
 import {
     baseSepolia,
@@ -26,6 +28,7 @@ import {
 import { arcTestnet } from "./definitions/arcTestnet";
 import { story } from "./definitions/story";
 import { storyTestnet } from "./definitions/storyTestnet";
+import { tempo } from "./definitions/tempo";
 import { tempoTestnet } from "./definitions/tempoTestnet";
 
 const TESTNET_AA_CHAINS = [
@@ -66,6 +69,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.SEI_PACIFIC_1,
     Blockchain.SHAPE,
     Blockchain.STORY,
+    Blockchain.TEMPO,
     Blockchain.WORLDCHAIN,
     Blockchain.ZORA,
 ] as const;
@@ -122,6 +126,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return plume;
         case Blockchain.ARC_TESTNET:
             return arcTestnet;
+        case Blockchain.TEMPO:
+            return tempo;
         case Blockchain.TEMPO_TESTNET:
             return tempoTestnet;
         case Blockchain.ABSTRACT:
@@ -149,3 +155,93 @@ export type StellarChain = "stellar";
 export type EVMChain = EVMSmartWalletChain;
 
 export type Chain = SolanaChain | EVMChain | StellarChain;
+
+export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletTestnet {
+    return (TESTNET_AA_CHAINS as readonly string[]).includes(chain);
+}
+
+export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
+    return (PRODUCTION_AA_CHAINS as readonly string[]).includes(chain);
+}
+
+const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWalletTestnet>> = {
+    [Blockchain.ABSTRACT]: Blockchain.ABSTRACT_TESTNET,
+    [Blockchain.APECHAIN]: Blockchain.CURTIS,
+    [Blockchain.ARBITRUM]: Blockchain.ARBITRUM_SEPOLIA,
+    [Blockchain.BASE]: Blockchain.BASE_SEPOLIA,
+    [Blockchain.FLOW]: Blockchain.FLOW_TESTNET,
+    [Blockchain.MANTLE]: Blockchain.MANTLE_SEPOLIA,
+    [Blockchain.MODE]: Blockchain.MODE_SEPOLIA,
+    [Blockchain.OPTIMISM]: Blockchain.OPTIMISM_SEPOLIA,
+    [Blockchain.PLUME]: Blockchain.PLUME_TESTNET,
+    [Blockchain.POLYGON]: Blockchain.POLYGON_AMOY,
+    [Blockchain.SCROLL]: Blockchain.SCROLL_SEPOLIA,
+    [Blockchain.SEI_PACIFIC_1]: Blockchain.SEI_ATLANTIC_2_TESTNET,
+    [Blockchain.STORY]: Blockchain.STORY_TESTNET,
+    [Blockchain.WORLDCHAIN]: Blockchain.WORLD_CHAIN_SEPOLIA,
+    [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
+    [Blockchain.TEMPO]: Blockchain.TEMPO_TESTNET,
+};
+
+export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {
+    return MAINNET_TO_TESTNET_MAP[chain];
+}
+
+/**
+ * Validates that a chain is appropriate for the given environment.
+ * In production, only mainnet chains are allowed - throws if a testnet chain is used.
+ * In non-production environments, mainnet chains are automatically converted to their testnet equivalent.
+ *
+ * @param chain - The chain to validate
+ * @param environment - The API key environment prefix
+ * @returns The validated (and potentially converted) chain
+ */
+export function isValidChain(chain: string): chain is Chain {
+    return (
+        chain === "solana" ||
+        chain === "stellar" ||
+        isTestnetChain(chain as EVMSmartWalletChain) ||
+        isMainnetChain(chain as EVMSmartWalletChain)
+    );
+}
+
+export function validateChainForEnvironment<C extends Chain>(chain: C, environment: APIKeyEnvironmentPrefix): C {
+    if (!isValidChain(chain)) {
+        throw new InvalidChainError(
+            `Unknown chain "${chain}". Please use a supported chain name (e.g. "base-sepolia", "polygon", "solana", "stellar").`
+        );
+    }
+
+    if (chain === "solana" || chain === "stellar") {
+        return chain;
+    }
+
+    const evmChain = chain as EVMSmartWalletChain;
+    const isProductionEnv = environment === APIKeyEnvironmentPrefix.PRODUCTION;
+
+    if (isProductionEnv && isTestnetChain(evmChain)) {
+        throw new InvalidEnvironmentError(
+            `Chain "${chain}" is a testnet chain and cannot be used in production. Please use a mainnet chain instead.`
+        );
+    }
+
+    if (!isProductionEnv && isMainnetChain(evmChain)) {
+        const testnetEquivalent = mainnetToTestnet(evmChain);
+        if (testnetEquivalent != null) {
+            walletsLogger.debug("validateChainForEnvironment.autoConverted", {
+                chain,
+                convertedTo: testnetEquivalent,
+                environment,
+                message: `Chain "${chain}" is a mainnet chain and cannot be used in ${environment} environment. Automatically converted to "${testnetEquivalent}".`,
+            });
+            return testnetEquivalent as unknown as C;
+        }
+        walletsLogger.debug("validateChainForEnvironment.mismatch", {
+            chain,
+            environment,
+            message: `Chain "${chain}" is a mainnet chain and should not be used in ${environment} environment. No testnet equivalent is available. Please use a testnet chain instead.`,
+        });
+    }
+
+    return chain;
+}

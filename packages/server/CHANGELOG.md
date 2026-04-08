@@ -1,5 +1,111 @@
 # @crossmint/server-sdk
 
+## 1.2.66
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- Updated dependencies [fc14bbf]
+  - @crossmint/common-sdk-auth@1.1.3
+
+## 1.2.65
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.2
+
+## 1.2.64
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.1
+
+## 1.2.63
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/common-sdk-auth@1.1.0
+
+## 1.2.63-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/common-sdk-auth@1.1.0-beta.1
+
+## 1.2.63-beta.0
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+- Updated dependencies [bf792d2]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/common-sdk-auth@1.1.0-beta.0
+
+## 1.2.63
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.73
+
+## 1.2.62
+
+### Patch Changes
+
+- Updated dependencies [d5ce427]
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-auth@1.0.72
+  - @crossmint/common-sdk-base@0.9.20
+
+## 1.2.61
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/common-sdk-auth@1.0.71
+
+## 1.2.60
+
+### Patch Changes
+
+- Updated dependencies [f5bcec1]
+  - @crossmint/common-sdk-base@0.9.18
+  - @crossmint/common-sdk-auth@1.0.70
+
+## 1.2.59
+
+### Patch Changes
+
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/common-sdk-auth@1.0.69
+
+## 1.2.58
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/common-sdk-auth@1.0.68
+
+## 1.2.57
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/common-sdk-auth@1.0.67
+
 ## 1.2.56
 
 ### Patch Changes

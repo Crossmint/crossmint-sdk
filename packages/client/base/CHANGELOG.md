@@ -1,5 +1,94 @@
 # @crossmint/client-sdk-base
 
+## 2.2.0
+
+### Minor Changes
+
+- 76099c7: chore: bump client sdk base
+
+## 2.1.0
+
+### Minor Changes
+
+- 2a63ea6: chore: bump to fix versions
+
+## 2.0.3
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+
+## 2.0.3-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+
+## 2.0.3-beta.0
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+
+## 2.1.0
+
+### Minor Changes
+
+- 402001f: Add orderId + clientSecret support to hosted checkout for pre-created orders
+
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-base@0.9.20
+
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+
+## 2.0.0
+
+### Major Changes
+
+- 25e989f: vic: verification migration
+
+### Patch Changes
+
+- Updated dependencies [f5bcec1]
+  - @crossmint/common-sdk-base@0.9.18
+
+## 1.7.14
+
+### Patch Changes
+
+- Updated dependencies [a356f13]
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/client-sdk-window@1.0.9
+  - @crossmint/common-sdk-base@0.9.17
+
+## 1.7.13
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+
+## 1.7.12
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+
 ## 1.7.11
 
 ### Patch Changes

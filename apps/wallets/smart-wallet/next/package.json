@@ -1,9 +1,8 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-next-starter",
-    "version": "0.1.198",
+    "version": "0.1.202",
     "private": true,
     "scripts": {
-        "build": "next build",
         "dev": "next dev",
         "lint": "next lint",
         "start": "next start"
@@ -20,7 +19,7 @@
         "clsx": "2.1.1",
         "framer-motion": "12.9.2",
         "lucide-react": "0.419.0",
-        "next": "14.2.35",
+        "next": "15.3.9",
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",

@@ -1,13 +1,12 @@
-import { useAuth, useCrossmint, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet, useWalletOtpSigner } from "@crossmint/client-sdk-react-native-ui";
 import { useState } from "react";
 import { Button, Text, View, TextInput, Alert, StyleSheet } from "react-native";
 
 export function HeadlessSigning() {
-    const { user } = useAuth();
-    const { experimental_customAuth } = useCrossmint();
-    const { getOrCreateWallet } = useWallet();
-    const loggedInUserEmail = experimental_customAuth?.email ?? null;
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
+    const { user } = useCrossmintAuth();
+    const { createDeviceSigner, wallet } = useWallet();
+    const loggedInUserEmail = user?.email ?? null;
+    const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -35,9 +34,14 @@ export function HeadlessSigning() {
             console.log("User not logged in");
             return;
         }
+        if (wallet == null) {
+            console.error("Cannot initialize device signer: wallet is not available");
+            return;
+        }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
+            const descriptor = await createDeviceSigner();
+            await wallet.addSigner({ type: "device", locator: descriptor?.locator });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -51,7 +55,7 @@ export function HeadlessSigning() {
             return;
         }
 
-        await handleAction(sendEmailWithOtp);
+        await handleAction(sendOtp);
     };
 
     const handleVerifyOtpInput = async () => {
@@ -64,6 +68,7 @@ export function HeadlessSigning() {
             setOtp("");
         });
     };
+
     return (
         <View>
             <Text>Headless Signing Component</Text>
@@ -74,9 +79,9 @@ export function HeadlessSigning() {
             {needsAuth && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
+                    <Button title="Send OTP" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
                     <TextInput
-                        placeholder="Enter OTP from Email"
+                        placeholder="Enter OTP"
                         value={otp}
                         onChangeText={setOtp}
                         style={styles.input}

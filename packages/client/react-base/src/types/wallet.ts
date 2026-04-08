@@ -1,18 +1,13 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type {
-    DelegatedSigner,
-    EVMChain,
-    SignerConfigForChain,
-    SolanaChain,
-    StellarChain,
-    WalletPlugin,
-} from "@crossmint/wallets-sdk";
+import type { ClientSideWalletCreateArgs, EVMChain, SolanaChain, StellarChain } from "@crossmint/wallets-sdk";
 
 export type {
     Balances,
     Chain,
+    ClientSideWalletArgsFor,
+    ClientSideWalletCreateArgs,
     EvmExternalWalletSignerConfig,
-    DelegatedSigner,
+    Signer,
     SolanaExternalWalletSignerConfig,
     Wallet,
     WalletPlugin,
@@ -20,34 +15,17 @@ export type {
 
 export { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
 
+/** Configuration for automatic wallet creation on user login. */
 export type CreateOnLogin =
-    | {
-          chain: SolanaChain;
-          signer: SignerConfigForChain<SolanaChain>;
-          owner?: string;
-          plugins?: WalletPlugin<SolanaChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
-          alias?: string;
-      }
-    | {
-          chain: EVMChain;
-          signer: SignerConfigForChain<EVMChain>;
-          owner?: string;
-          plugins?: WalletPlugin<EVMChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
-          alias?: string;
-      }
-    | {
-          chain: StellarChain;
-          signer: SignerConfigForChain<StellarChain>;
-          owner?: string;
-          plugins?: WalletPlugin<StellarChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
-          alias?: string;
-      };
+    | ClientSideWalletCreateArgs<SolanaChain>
+    | ClientSideWalletCreateArgs<EVMChain>
+    | ClientSideWalletCreateArgs<StellarChain>;
 
 export type BaseCrossmintWalletProviderProps = {
+    /** Configuration for automatic wallet creation on login. */
     createOnLogin?: CreateOnLogin;
+    /** Whether to show passkey helper UI. Default: true. */
     showPasskeyHelpers?: boolean;
+    /** Appearance configuration for wallet UI components. */
     appearance?: UIConfig;
 };

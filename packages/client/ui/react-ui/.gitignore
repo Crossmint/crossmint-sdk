@@ -2,3 +2,7 @@ dist
 package
 package.tgz
 yarn-error.log
+
+# Generated docs artifacts
+api.json
+docs/

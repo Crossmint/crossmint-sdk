@@ -1,5 +1,118 @@
 # @crossmint/common-sdk-auth
 
+## 1.1.3
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [76099c7]
+  - @crossmint/client-sdk-base@2.2.0
+
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [2a63ea6]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 1.1.0
+
+### Minor Changes
+
+- 02ac7bc: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+
+### Patch Changes
+
+- Updated dependencies [02ac7bc]
+- Updated dependencies [02ac7bc]
+  - @crossmint/common-sdk-base@0.10.0
+  - @crossmint/client-sdk-base@2.0.3
+
+## 1.1.0-beta.1
+
+### Patch Changes
+
+- Updated dependencies [4e5bc75]
+  - @crossmint/common-sdk-base@0.10.0-beta.1
+  - @crossmint/client-sdk-base@2.0.3-beta.1
+
+## 1.1.0-beta.0
+
+### Minor Changes
+
+- bf792d2: Remove Farcaster authentication. All Farcaster-related types, components, methods, and dependencies have been removed. The `signInWithFarcaster` method, `FarcasterSignIn` component, `FarcasterProvider`, `FarcasterMetadata` type, and `"farcaster"` login method are no longer available.
+
+### Patch Changes
+
+- Updated dependencies [9b9f9db]
+  - @crossmint/common-sdk-base@0.10.0-beta.0
+  - @crossmint/client-sdk-base@2.0.3-beta.0
+
+## 1.0.73
+
+### Patch Changes
+
+- Updated dependencies [402001f]
+  - @crossmint/client-sdk-base@2.1.0
+
+## 1.0.72
+
+### Patch Changes
+
+- d5ce427: Deprecate Farcaster authentication. All Farcaster-related types, components, and methods are now marked as `@deprecated` and will emit console warnings when used. Farcaster login will be removed in a future release.
+- Updated dependencies [ec44b25]
+  - @crossmint/common-sdk-base@0.9.20
+  - @crossmint/client-sdk-base@2.0.2
+
+## 1.0.71
+
+### Patch Changes
+
+- Updated dependencies [803e351]
+  - @crossmint/common-sdk-base@0.9.19
+  - @crossmint/client-sdk-base@2.0.1
+
+## 1.0.70
+
+### Patch Changes
+
+- Updated dependencies [25e989f]
+- Updated dependencies [f5bcec1]
+  - @crossmint/client-sdk-base@2.0.0
+  - @crossmint/common-sdk-base@0.9.18
+
+## 1.0.69
+
+### Patch Changes
+
+- Updated dependencies [27194e5]
+- Updated dependencies [4dc0dbf]
+  - @crossmint/common-sdk-base@0.9.17
+  - @crossmint/client-sdk-base@1.7.14
+
+## 1.0.68
+
+### Patch Changes
+
+- Updated dependencies [4eb0dc6]
+  - @crossmint/common-sdk-base@0.9.16
+  - @crossmint/client-sdk-base@1.7.13
+
+## 1.0.67
+
+### Patch Changes
+
+- Updated dependencies [944f239]
+  - @crossmint/common-sdk-base@0.9.15
+  - @crossmint/client-sdk-base@1.7.12
+
 ## 1.0.66
 
 ### Patch Changes

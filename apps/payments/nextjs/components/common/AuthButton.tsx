@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 
 export function AuthButton({ style }: { style?: React.CSSProperties }) {
-    const { login, logout, user } = useAuth();
+    const { login, logout, user } = useCrossmintAuth();
 
     return (
         <>

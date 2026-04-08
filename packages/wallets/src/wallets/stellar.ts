@@ -10,6 +10,7 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
+import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 export class StellarWallet extends Wallet<StellarChain> {
@@ -19,9 +20,11 @@ export class StellarWallet extends Wallet<StellarChain> {
                 chain: wallet.chain,
                 address: wallet.address,
                 owner: wallet.owner,
-                signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
+                recovery: Wallet.getRecovery(wallet),
+                signer: wallet.signer,
+                signers: Wallet.getInitialSigners(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -35,6 +38,11 @@ export class StellarWallet extends Wallet<StellarChain> {
         return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
+    /**
+     * Send a raw Stellar transaction (serialized transaction or contract call).
+     * @param params - The transaction parameters
+     * @returns The transaction result
+     */
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "stellarWallet.sendTransaction",
@@ -50,7 +58,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
-        if (params.options?.experimental_prepareOnly) {
+        if (params.options?.prepareOnly) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -73,7 +81,14 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = options?.experimental_signer ?? this.signer.locator();
+        let signer: string;
+        if (options?.signer == null) {
+            signer = this.requireSigner().locator();
+        } else if (typeof options.signer === "string") {
+            signer = options.signer;
+        } else {
+            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        }
 
         let transaction: any;
 

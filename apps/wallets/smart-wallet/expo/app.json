@@ -35,7 +35,8 @@
                 }
             ],
             "expo-font",
-            "expo-secure-store"
+            "expo-secure-store",
+            "@crossmint/client-sdk-react-native-ui"
         ],
         "experiments": {
             "typedRoutes": true

@@ -1,5 +1,6 @@
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
+import { walletsLogger } from "../../logger";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -14,6 +15,8 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
+        walletsLogger.info("sign: sending request", { keyType: "ed25519" });
+        const startTime = Date.now();
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
@@ -29,6 +32,10 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
+        });
+        walletsLogger.info("sign: response received", {
+            status: res?.status,
+            durationMs: Date.now() - startTime,
         });
 
         if (res?.status === "error") {
