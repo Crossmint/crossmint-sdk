@@ -69,15 +69,11 @@ export type ApiSourcedServerSignerConfig = {
     address: string;
 };
 
-export function isApiSourcedServerSignerConfig(
-    config: { type: string }
-): config is ApiSourcedServerSignerConfig {
+export function isApiSourcedServerSignerConfig(config: { type: string }): config is ApiSourcedServerSignerConfig {
     return config.type === "server" && !("secret" in config);
 }
 
-export type RecoverySignerConfigForChain<C extends Chain> =
-    | SignerConfigForChain<C>
-    | ApiSourcedServerSignerConfig;
+export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
 
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>

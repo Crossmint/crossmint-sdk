@@ -1123,6 +1123,12 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
+        if (isApiSourcedServerSignerConfig(this.#recovery)) {
+            throw new Error(
+                "Cannot resume pending approval: no secret available. " +
+                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+            );
+        }
         const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
