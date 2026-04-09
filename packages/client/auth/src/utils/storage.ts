@@ -1,5 +1,5 @@
 import { validateAPIKey } from "@crossmint/common-sdk-base";
-import { REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
+import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
 import { deleteCookie, getCookie, setCookie } from "./cookies";
 
 export interface StorageProvider {
@@ -55,13 +55,13 @@ export function getProjectIdFromApiKey(apiKey: string | undefined | null): strin
  * Cookie storage that scopes cookies by project ID.
  * This prevents JWT conflicts when switching between different projects.
  *
- * For JWTs: Only reads from scoped cookies to prevent using wrong project's JWT.
- * For refresh tokens: Falls back to legacy cookies to allow migration.
- * If a legacy refresh token is used with the wrong project, the server will reject it
- * and the SDK will call logout(), cleaning up the legacy cookie.
+ * On first use, migrates any legacy unscoped cookies to the scoped format
+ * for the current project, then deletes the legacy cookies so they are
+ * never picked up by a different project on the same domain.
  */
 export class ScopedCookieStorage implements StorageProvider {
     private projectId: string;
+    private migrationDone = false;
 
     constructor(apiKey: string) {
         this.projectId = getProjectIdFromApiKey(apiKey);
@@ -71,24 +71,40 @@ export class ScopedCookieStorage implements StorageProvider {
         return `${key}-${this.projectId}`;
     }
 
+    /**
+     * One-time migration: if scoped cookies don't exist yet but legacy unscoped
+     * cookies do, copy them into the scoped keys and delete the legacy ones.
+     * This runs at most once per ScopedCookieStorage instance.
+     */
+    private migrateLegacyCookies(): void {
+        if (this.migrationDone || typeof document === "undefined") {
+            return;
+        }
+        this.migrationDone = true;
+
+        for (const key of [SESSION_PREFIX, REFRESH_TOKEN_PREFIX]) {
+            const scopedKey = this.getScopedKey(key);
+            const scopedValue = getCookie(scopedKey);
+            if (scopedValue != null) {
+                // Scoped cookie already exists — no migration needed for this key
+                continue;
+            }
+            const legacyValue = getCookie(key);
+            if (legacyValue != null) {
+                // Migrate: copy to scoped key, then remove legacy cookie
+                setCookie(scopedKey, legacyValue);
+                deleteCookie(key);
+            }
+        }
+    }
+
     async get(key: string): Promise<string | undefined> {
         if (typeof document === "undefined") {
             console.debug(`[ScopedCookieStorage] Skipping cookie read for "${key}" - document is undefined (SSR)`);
             return undefined;
         }
-        // First try the scoped cookie
-        const scopedValue = await getCookie(this.getScopedKey(key));
-        if (scopedValue != null) {
-            return scopedValue;
-        }
-        // Only fall back to legacy cookies for refresh tokens, not JWTs.
-        // This prevents using a JWT from the wrong project (which causes audience mismatch warnings).
-        // For refresh tokens, if the legacy token is for a different project, the server will reject
-        // the refresh attempt and the SDK will call logout(), cleaning up the legacy cookie.
-        if (key === REFRESH_TOKEN_PREFIX) {
-            return await getCookie(key);
-        }
-        return undefined;
+        this.migrateLegacyCookies();
+        return getCookie(this.getScopedKey(key));
     }
 
     async set(key: string, value: string, expiresAt?: string): Promise<void> {
@@ -103,7 +119,7 @@ export class ScopedCookieStorage implements StorageProvider {
         if (typeof document === "undefined") {
             return;
         }
-        // Remove scoped cookie (also remove legacy cookie for cleanup during logout)
+        // Remove scoped cookie (also remove legacy cookie for cleanup)
         await deleteCookie(this.getScopedKey(key));
         await deleteCookie(key);
     }
