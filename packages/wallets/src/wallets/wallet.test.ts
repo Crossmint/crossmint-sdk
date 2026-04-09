@@ -1273,7 +1273,7 @@ describe("Wallet - useSigner()", () => {
                 type: "external-wallet",
                 address: "0xRecoveryWallet",
                 onSign: vi.fn().mockResolvedValue("0xsigned"),
-            } as any);
+            });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("external-wallet");
@@ -1392,7 +1392,7 @@ describe("Wallet - useSigner()", () => {
             } as any);
 
             // Should NOT throw TypeError about 'startsWith'
-            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+            await wallet.useSigner({ type: "server", secret: "test-secret" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("server");
