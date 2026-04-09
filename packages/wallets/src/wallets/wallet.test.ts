@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
-import type { ApiSourcedServerSignerConfig, SignerAdapter } from "../signers/types";
+import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -1616,6 +1616,51 @@ describe("Wallet - useSigner()", () => {
             // so withRecoverySigner will fail when trying to build the internal config.
             await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
                 "no secret available"
+            );
+        });
+
+        it("addSigner should throw when recovery is external-wallet but useSigner was never called (no onSign)", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    // Recovery config without onSign — as the API would provide it
+                    recovery: {
+                        type: "external-wallet",
+                        address: "0xRecoveryWallet",
+                    } as unknown as SignerConfigForChain<"base-sepolia">,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            // registerSigner returns a pending signature that requires the recovery signer to approve
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "email",
+                address: "0xNewEmail",
+                locator: "email:new@example.com",
+                chains: {
+                    "base-sepolia": { id: "sig-new", status: "awaiting-approval" },
+                },
+            } as any);
+
+            // getSignature returns a pending approval addressed to the recovery signer
+            mockApiClient.getSignature.mockResolvedValue({
+                id: "sig-new",
+                status: "awaiting-approval",
+                approvals: {
+                    pending: [
+                        {
+                            message: "0xdeadbeef",
+                            signer: { locator: "external-wallet:0xRecoveryWallet" },
+                        },
+                    ],
+                },
+            } as any);
+
+            // useSigner is never called — #recovery has no onSign callback
+            await expect(wallet.addSigner({ type: "email", email: "new@example.com" })).rejects.toThrow(
+                "[EVMExternalWalletSigner] No onSign callback provided"
             );
         });
     });
