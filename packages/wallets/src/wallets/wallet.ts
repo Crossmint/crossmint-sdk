@@ -582,11 +582,12 @@ export class Wallet<C extends Chain> {
         },
     })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
-        this.requireSigner();
         walletsLogger.info("wallet.approve.start", {
             transactionId: params.transactionId,
             signatureId: params.signatureId,
         });
+
+        await this.preAuthIfNeeded();
 
         if (params.transactionId != null) {
             const result = (await this.approveTransactionAndWait(
