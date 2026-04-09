@@ -59,8 +59,8 @@ export function getProjectIdFromApiKey(apiKey: string | undefined | null): strin
  * falls back to legacy unscoped cookies so the token can be sent to the
  * server for validation. The caller (CrossmintAuthClient) is responsible
  * for verifying the JWT audience after refresh and calling
- * `completeLegacyMigration()` to promote the legacy cookies to scoped
- * ones and delete the originals.
+ * `deleteLegacyCookies()` to clean up the legacy cookies once the
+ * audience has been verified.
  */
 export class ScopedCookieStorage implements StorageProvider {
     private projectId: string;
