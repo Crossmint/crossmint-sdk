@@ -331,6 +331,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         } catch (err) {
             walletsLogger.error("complete-onboarding: error", { error: err });
             this._needsAuth = true;
+            this._lastAuthSuccessTimestamp = 0;
             this._authPromise?.reject(err as Error);
             throw err;
         }
@@ -355,6 +356,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         walletsLogger.error("complete-onboarding: OTP validation failed", { status: response?.status });
         this._needsAuth = true;
+        this._lastAuthSuccessTimestamp = 0;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);
         this._authPromise?.reject(error);
