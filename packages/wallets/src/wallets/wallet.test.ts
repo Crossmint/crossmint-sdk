@@ -1292,7 +1292,7 @@ describe("Wallet - useSigner()", () => {
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             // No delegated passkeys → falls back to recovery signer
-            await wallet.useSigner({ type: "passkey" } as any);
+            await wallet.useSigner({ type: "passkey" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
@@ -1311,7 +1311,7 @@ describe("Wallet - useSigner()", () => {
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             // Not a registered delegated signer, but matches recovery type → accepted as recovery
-            await wallet.useSigner({ type: "passkey", id: "recovery-credential" } as any);
+            await wallet.useSigner({ type: "passkey", id: "recovery-credential" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
@@ -1338,7 +1338,7 @@ describe("Wallet - useSigner()", () => {
             ]);
 
             // This id matches a registered delegated signer → used as delegated, not recovery
-            await wallet.useSigner({ type: "passkey", id: "delegated-credential" } as any);
+            await wallet.useSigner({ type: "passkey", id: "delegated-credential" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("passkey");
@@ -1357,7 +1357,7 @@ describe("Wallet - useSigner()", () => {
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             // An email signer that is NOT the recovery signer and NOT registered should fail
-            await expect(wallet.useSigner({ type: "email", email: "unknown@example.com" } as any)).rejects.toThrow(
+            await expect(wallet.useSigner({ type: "email", email: "unknown@example.com" })).rejects.toThrow(
                 'Signer "email:unknown@example.com" is not registered in this wallet.'
             );
         });
@@ -1420,7 +1420,7 @@ describe("Wallet - useSigner()", () => {
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
             // Should throw "not registered" rather than a TypeError
-            await expect(wallet.useSigner({ type: "server", secret: "wrong-secret" } as any)).rejects.toThrow(
+            await expect(wallet.useSigner({ type: "server", secret: "wrong-secret" })).rejects.toThrow(
                 "is not registered in this wallet"
             );
         });
@@ -1440,7 +1440,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", secret: "recovery-secret" } as any,
+                    recovery: { type: "server", secret: "recovery-secret" },
                 },
                 mockApiClient as unknown as ApiClient
             );
@@ -1454,7 +1454,7 @@ describe("Wallet - useSigner()", () => {
                 },
             } as any);
 
-            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+            await wallet.useSigner({ type: "server", secret: "test-secret" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("server");
@@ -1489,7 +1489,7 @@ describe("Wallet - useSigner()", () => {
                 },
             } as any);
 
-            await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
+            await wallet.useSigner({ type: "email", email: "delegated@example.com" });
 
             expect(wallet.signer).toBeDefined();
             expect(wallet.signer?.type).toBe("email");
