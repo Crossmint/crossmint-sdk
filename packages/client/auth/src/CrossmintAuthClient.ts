@@ -11,8 +11,8 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
-import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
-import { type StorageProvider, getScopedStorageProvider } from "./utils/storage";
+import { getJWTExpiration, getJWTAudience, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
+import { type StorageProvider, ScopedCookieStorage, getScopedStorageProvider } from "./utils/storage";
 
 // Global flag to prevent multiple concurrent initial refresh calls across all instances
 let globalInitialRefreshInProgress = false;
@@ -136,6 +136,24 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
             // Await the shared promise - this handles concurrent calls to the same refresh
             const authMaterial = await this.refreshPromise;
+
+            // If the refresh token came from a legacy unscoped cookie, verify that
+            // the returned JWT belongs to the current project before storing it.
+            if (this.storageProvider instanceof ScopedCookieStorage) {
+                const audience = getJWTAudience(authMaterial.jwt);
+                const expectedProjectId = this.storageProvider.getProjectId();
+                if (audience != null && audience !== expectedProjectId) {
+                    // JWT is for a different project — don't store, clean up and logout
+                    console.debug(
+                        `[CrossmintAuthClient] JWT audience "${audience}" does not match current project "${expectedProjectId}". Logging out.`
+                    );
+                    this.storageProvider.deleteLegacyCookies();
+                    await this.logout();
+                    return null;
+                }
+                // Audience matches (or is absent) — safe to store. Clean up legacy cookies.
+                this.storageProvider.deleteLegacyCookies();
+            }
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {

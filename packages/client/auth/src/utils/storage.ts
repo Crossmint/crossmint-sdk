@@ -55,47 +55,26 @@ export function getProjectIdFromApiKey(apiKey: string | undefined | null): strin
  * Cookie storage that scopes cookies by project ID.
  * This prevents JWT conflicts when switching between different projects.
  *
- * On first use, migrates any legacy unscoped cookies to the scoped format
- * for the current project, then deletes the legacy cookies so they are
- * never picked up by a different project on the same domain.
+ * For reads: scoped cookies are checked first. For refresh tokens only,
+ * falls back to legacy unscoped cookies so the token can be sent to the
+ * server for validation. The caller (CrossmintAuthClient) is responsible
+ * for verifying the JWT audience after refresh and calling
+ * `completeLegacyMigration()` to promote the legacy cookies to scoped
+ * ones and delete the originals.
  */
 export class ScopedCookieStorage implements StorageProvider {
     private projectId: string;
-    private migrationDone = false;
 
     constructor(apiKey: string) {
         this.projectId = getProjectIdFromApiKey(apiKey);
     }
 
-    private getScopedKey(key: string): string {
-        return `${key}-${this.projectId}`;
+    public getProjectId(): string {
+        return this.projectId;
     }
 
-    /**
-     * One-time migration: if scoped cookies don't exist yet but legacy unscoped
-     * cookies do, copy them into the scoped keys and delete the legacy ones.
-     * This runs at most once per ScopedCookieStorage instance.
-     */
-    private migrateLegacyCookies(): void {
-        if (this.migrationDone || typeof document === "undefined") {
-            return;
-        }
-        this.migrationDone = true;
-
-        for (const key of [SESSION_PREFIX, REFRESH_TOKEN_PREFIX]) {
-            const scopedKey = this.getScopedKey(key);
-            const scopedValue = getCookie(scopedKey);
-            if (scopedValue != null) {
-                // Scoped cookie already exists — no migration needed for this key
-                continue;
-            }
-            const legacyValue = getCookie(key);
-            if (legacyValue != null) {
-                // Migrate: copy to scoped key, then remove legacy cookie
-                setCookie(scopedKey, legacyValue);
-                deleteCookie(key);
-            }
-        }
+    private getScopedKey(key: string): string {
+        return `${key}-${this.projectId}`;
     }
 
     async get(key: string): Promise<string | undefined> {
@@ -103,8 +82,18 @@ export class ScopedCookieStorage implements StorageProvider {
             console.debug(`[ScopedCookieStorage] Skipping cookie read for "${key}" - document is undefined (SSR)`);
             return undefined;
         }
-        this.migrateLegacyCookies();
-        return getCookie(this.getScopedKey(key));
+        // First try the scoped cookie
+        const scopedValue = getCookie(this.getScopedKey(key));
+        if (scopedValue != null) {
+            return scopedValue;
+        }
+        // Only fall back to legacy cookies for refresh tokens, not JWTs.
+        // The refresh token is sent to the server, which returns a JWT whose
+        // audience is then verified by the caller before storing.
+        if (key === REFRESH_TOKEN_PREFIX) {
+            return getCookie(key);
+        }
+        return undefined;
     }
 
     async set(key: string, value: string, expiresAt?: string): Promise<void> {
@@ -122,6 +111,23 @@ export class ScopedCookieStorage implements StorageProvider {
         // Remove scoped cookie (also remove legacy cookie for cleanup)
         await deleteCookie(this.getScopedKey(key));
         await deleteCookie(key);
+    }
+
+    /**
+     * Delete legacy unscoped cookies after a successful, verified refresh.
+     * Called by CrossmintAuthClient once the JWT audience has been confirmed
+     * to match the current project.
+     */
+    deleteLegacyCookies(): void {
+        if (typeof document === "undefined") {
+            return;
+        }
+        for (const key of [SESSION_PREFIX, REFRESH_TOKEN_PREFIX]) {
+            // Only delete if the legacy cookie actually exists
+            if (getCookie(key) != null) {
+                deleteCookie(key);
+            }
+        }
     }
 }
 
