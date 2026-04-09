@@ -430,6 +430,8 @@ export class Wallet<C extends Chain> {
             signatureId: params.signatureId,
         });
 
+        await this.preAuthIfNeeded();
+
         if (params.transactionId != null) {
             const result = (await this.approveTransactionAndWait(
                 params.transactionId,
