@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
+import { WalletFactory } from "./wallet-factory";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain } from "../signers/types";
 import {
@@ -1619,20 +1620,88 @@ describe("Wallet - useSigner()", () => {
             );
         });
 
+        it("addSigner should succeed when recovery is external-wallet and useSigner was called with onSign", async () => {
+            mockApiClient = createMockApiClient();
+
+            // Fetch the wallet from the API — recovery comes in as {type, address} with no onSign
+            mockApiClient.getWallet.mockResolvedValue({
+                chainType: "evm",
+                type: "smart",
+                address: "0x1234567890123456789012345678901234567890",
+                config: {
+                    adminSigner: { type: "external-wallet", address: "0xRecoveryWallet" },
+                    delegatedSigners: [],
+                },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+            const walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+
+            // No delegated signers — useSigner will fall through to isRecoverySigner
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // Call useSigner with the full config including onSign — upgrades #recovery
+            const onSign = vi.fn().mockResolvedValue("0xsigned");
+            await wallet.useSigner({
+                type: "external-wallet",
+                address: "0xRecoveryWallet",
+                onSign,
+            } as unknown as SignerConfigForChain<"base-sepolia">);
+
+            // registerSigner returns a pending signature that requires the recovery signer to approve
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "email",
+                address: "0xNewEmail",
+                locator: "email:new@example.com",
+                chains: {
+                    "base-sepolia": { id: "sig-new", status: "awaiting-approval" },
+                },
+            } as any);
+
+            // getSignature returns a pending approval addressed to the recovery signer
+            mockApiClient.getSignature.mockResolvedValue({
+                id: "sig-new",
+                status: "awaiting-approval",
+                approvals: {
+                    pending: [
+                        {
+                            message: "0xdeadbeef",
+                            signer: { locator: "external-wallet:0xRecoveryWallet" },
+                        },
+                    ],
+                },
+            } as any);
+
+            // approveSignature returns success immediately so no polling is needed
+            mockApiClient.approveSignature.mockResolvedValue({
+                id: "sig-new",
+                status: "success",
+                outputSignature: "0xfinalsig",
+            } as any);
+
+            const result = await wallet.addSigner({ type: "email", email: "new@example.com" } as unknown as SignerConfigForChain<"base-sepolia">);
+
+            expect(onSign).toHaveBeenCalledWith("0xdeadbeef");
+            expect(result.type).toBe("email");
+            expect(result.locator).toBe("email:new@example.com");
+        });
+
         it("addSigner should throw when recovery is external-wallet but useSigner was never called (no onSign)", async () => {
             mockApiClient = createMockApiClient();
-            const wallet = new Wallet(
-                {
-                    chain: "base-sepolia" as const,
-                    address: "0x1234567890123456789012345678901234567890",
-                    // Recovery config without onSign — as the API would provide it
-                    recovery: {
-                        type: "external-wallet",
-                        address: "0xRecoveryWallet",
-                    } as unknown as SignerConfigForChain<"base-sepolia">,
+
+            // Fetch the wallet from the API — recovery comes in as {type, address} with no onSign
+            mockApiClient.getWallet.mockResolvedValue({
+                chainType: "evm",
+                type: "smart",
+                address: "0x1234567890123456789012345678901234567890",
+                config: {
+                    adminSigner: { type: "external-wallet", address: "0xRecoveryWallet" },
+                    delegatedSigners: [],
                 },
-                mockApiClient as unknown as ApiClient
-            );
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+            const walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
 
             // registerSigner returns a pending signature that requires the recovery signer to approve
             mockApiClient.registerSigner.mockResolvedValue({
