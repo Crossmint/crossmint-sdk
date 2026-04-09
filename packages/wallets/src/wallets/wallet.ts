@@ -65,7 +65,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
-import { isApiSourcedServerSignerConfig } from "../signers/types";
+import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
@@ -1346,21 +1346,20 @@ export class Wallet<C extends Chain> {
         // For server signers, the API-sourced recovery config has no secret, so we
         // can't derive a locator from it. Compare using the address field instead.
         if (signerConfig.type === "server" && recovery.type === "server") {
-            const inputDerived = deriveServerSignerDetails(
-                signerConfig,
-                this.chain,
-                this.#apiClient.projectId,
-                this.#apiClient.environment
-            ).derivedAddress;
-            const recoveryDerived = isApiSourcedServerSignerConfig(recovery)
-                ? recovery.address
-                : deriveServerSignerDetails(
-                      recovery,
-                      this.chain,
-                      this.#apiClient.projectId,
-                      this.#apiClient.environment
-                  ).derivedAddress;
-            if (inputDerived !== recoveryDerived) {
+            const resolveAddress = (config: ServerSignerConfig | ApiSourcedServerSignerConfig) =>
+                isApiSourcedServerSignerConfig(config)
+                    ? config.address
+                    : deriveServerSignerDetails(
+                          config,
+                          this.chain,
+                          this.#apiClient.projectId,
+                          this.#apiClient.environment
+                      ).derivedAddress;
+
+            const signerAddress = resolveAddress(signerConfig);
+            const recoveryAddress = resolveAddress(recovery);
+
+            if (signerAddress !== recoveryAddress) {
                 return false;
             }
         } else {
