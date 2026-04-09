@@ -155,6 +155,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                     // Audience matches (or is absent) — safe to store. Clean up legacy cookies.
                     this.storageProvider.deleteLegacyCookies();
                 }
+            }
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
