@@ -22,6 +22,17 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
     private _lastAuthSuccessTimestamp = 0;
+
+    /**
+     * Resets the client-side auth cache so the next operation will re-check
+     * signer status with the frame. Subclasses should call this when they
+     * receive an auth-related error during signing (e.g. frame was silently
+     * reloaded and lost its master secret).
+     */
+    protected invalidateAuthCache(): void {
+        this._needsAuth = true;
+        this._lastAuthSuccessTimestamp = 0;
+    }
     private _authPromise: {
         promise: Promise<void>;
         resolve: () => void;
