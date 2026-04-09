@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.9
+
+### Patch Changes
+
+- 3a91c39: Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
+- Updated dependencies [3a91c39]
+  - @crossmint/client-sdk-auth@1.3.4
+
 ## 2.0.8
 
 ### Patch Changes
