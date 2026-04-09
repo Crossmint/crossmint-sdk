@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.3.4
+
+### Patch Changes
+
+- 3a91c39: Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
+
 ## 1.3.3
 
 ### Patch Changes
