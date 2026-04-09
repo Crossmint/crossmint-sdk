@@ -2198,7 +2198,7 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
         expect(wallet.signer).toBeUndefined();
     });
 
-    it("should auto-assemble device signer when deviceSignerKeyStorage is available", async () => {
+    it("should auto-assemble device signer via isAutoAssemblableSignerConfig when deviceSignerKeyStorage is available", async () => {
         const mockApiClient = createMockApiClient();
         const mockStorage = {
             generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
@@ -2219,11 +2219,13 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
             chains: { "base-sepolia": { status: "success" } },
         } as any);
 
+        // Include signers with device entry + deviceSignerKeyStorage to hit isAutoAssemblableSignerConfig("device") -> true
         const wallet = new Wallet(
             {
                 chain: "base-sepolia",
                 address: "0x1234567890123456789012345678901234567890",
                 recovery: { type: "email", email: "test@example.com" } as any,
+                signers: [{ type: "device", locator: "device:testkey123", publicKey: { x: "0x1", y: "0x2" } }] as any,
                 options: { deviceSignerKeyStorage: mockStorage as any },
             },
             mockApiClient as unknown as ApiClient
@@ -2232,7 +2234,7 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
         // Wait for constructor's initDefaultSigner to complete
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        // The device signer should have been assembled
+        // The device signer should have been assembled via isAutoAssemblableSignerConfig
         expect(wallet.signer).toBeDefined();
         expect(wallet.signer?.type).toBe("device");
     });
