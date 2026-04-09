@@ -1555,8 +1555,9 @@ export class Wallet<C extends Chain> {
             case "phone":
             case "passkey":
             case "api-key":
-            case "device":
                 return true;
+            case "device":
+                return this.#options?.deviceSignerKeyStorage != null;
             case "server":
                 return "secret" in config && typeof config.secret === "string";
             case "external-wallet":
