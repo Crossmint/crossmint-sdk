@@ -188,7 +188,7 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (!this.isAutoAssemblableSignerConfig(signerToAssemble as SignerConfigForChain<C>)) {
+        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
             return;
         }
 
@@ -917,6 +917,12 @@ export class Wallet<C extends Chain> {
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.signer;
+        if (isApiSourcedServerSignerConfig(this.#recovery)) {
+            throw new Error(
+                "Cannot assemble server signer: no secret available. " +
+                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+            );
+        }
         const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
@@ -1537,12 +1543,6 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                 } as InternalSignerConfig<C>;
             case "server": {
-                if (!("secret" in config) || !config.secret) {
-                    throw new Error(
-                        "Cannot assemble server signer: no secret available. " +
-                            'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
-                    );
-                }
                 const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
                     config,
                     this.chain,
@@ -1567,7 +1567,7 @@ export class Wallet<C extends Chain> {
      * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
      * Server signers also require the secret to be present in the config.
      */
-    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C>): boolean {
+    private isAutoAssemblableSignerConfig(config: RecoverySignerConfigForChain<C>): boolean {
         switch (config.type) {
             case "email":
             case "phone":
@@ -1576,7 +1576,7 @@ export class Wallet<C extends Chain> {
             case "device":
                 return true;
             case "server":
-                return "secret" in config && typeof config.secret === "string";
+                return !isApiSourcedServerSignerConfig(config);
             case "external-wallet":
                 return "onSign" in config && typeof config.onSign === "function";
             default:
