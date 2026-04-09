@@ -58,12 +58,14 @@ import type {
     ExternalWalletRegistrationConfig,
     InternalSignerConfig,
     PasskeySignerConfig,
+    RecoverySignerConfigForChain,
     ServerSignerConfig,
     ServerSignerLocator,
     SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
+import { isApiSourcedServerSignerConfig } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
@@ -79,7 +81,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: SignerConfigForChain<C>;
+    recovery: RecoverySignerConfigForChain<C>;
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
@@ -92,7 +94,7 @@ export class Wallet<C extends Chain> {
     #signer?: SignerAdapter;
     #options?: WalletOptions;
     #apiClient: ApiClient;
-    #recovery: SignerConfigForChain<C>;
+    #recovery: RecoverySignerConfigForChain<C>;
     #initialSigners: SignerConfigForChain<C>[];
     #needsRecovery = false;
     #deviceSignerApproved = false;
@@ -186,12 +188,12 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
+        if (!this.isAutoAssemblableSignerConfig(signerToAssemble as SignerConfigForChain<C>)) {
             return;
         }
 
         try {
-            const internalConfig = this.buildInternalSignerConfig(signerToAssemble);
+            const internalConfig = this.buildInternalSignerConfig(signerToAssemble as SignerConfigForChain<C>);
             this.#signer = await this.assembleFullSigner(internalConfig);
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
@@ -211,7 +213,7 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C> {
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): RecoverySignerConfigForChain<C> {
         return wallet.#recovery;
     }
 
@@ -233,7 +235,7 @@ export class Wallet<C extends Chain> {
      * @experimental This API is experimental and may change in the future
      */
     public get recovery(): SignerConfigForChain<C> {
-        return this.#recovery;
+        return this.#recovery as SignerConfigForChain<C>;
     }
 
     /**
@@ -915,7 +917,7 @@ export class Wallet<C extends Chain> {
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1115,7 +1117,7 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1322,6 +1324,7 @@ export class Wallet<C extends Chain> {
         if (recovery == null) {
             return false;
         }
+
         if (recovery.type !== signerConfig.type) {
             return false;
         }
@@ -1349,21 +1352,20 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryDerived =
-                "secret" in recovery && recovery.secret
-                    ? deriveServerSignerDetails(
-                          recovery,
-                          this.chain,
-                          this.#apiClient.projectId,
-                          this.#apiClient.environment
-                      ).derivedAddress
-                    : (recovery as { address?: string }).address;
-            if (recoveryDerived == null || inputDerived !== recoveryDerived) {
+            const recoveryDerived = isApiSourcedServerSignerConfig(recovery)
+                ? recovery.address
+                : deriveServerSignerDetails(
+                      recovery,
+                      this.chain,
+                      this.#apiClient.projectId,
+                      this.#apiClient.environment
+                  ).derivedAddress;
+            if (inputDerived !== recoveryDerived) {
                 return false;
             }
         } else {
             // For all other types, compare locators
-            if (getSignerLocator(signerConfig) !== getSignerLocator(recovery)) {
+            if (getSignerLocator(signerConfig) !== getSignerLocator(recovery as SignerConfigForChain<C>)) {
                 return false;
             }
         }

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
-import type { SignerAdapter } from "../signers/types";
+import type { ApiSourcedServerSignerConfig, SignerAdapter } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -1377,7 +1377,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", address: "0xDerivedServerAddress" } as any,
+                    recovery: { type: "server", address: "0xDerivedServerAddress" } as ApiSourcedServerSignerConfig,
                 },
                 mockApiClient as unknown as ApiClient
             );
@@ -1413,7 +1413,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", address: "0xRecoveryAddress" } as any,
+                    recovery: { type: "server", address: "0xRecoveryAddress" } as ApiSourcedServerSignerConfig,
                 },
                 mockApiClient as unknown as ApiClient
             );
@@ -1519,7 +1519,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", address: "0xRecoveryAddress" } as any,
+                    recovery: { type: "server", address: "0xRecoveryAddress" } as ApiSourcedServerSignerConfig,
                 },
                 mockApiClient as unknown as ApiClient
             );
@@ -1561,7 +1561,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", address: "0xRecoveryAddress" } as any,
+                    recovery: { type: "server", address: "0xRecoveryAddress" } as ApiSourcedServerSignerConfig,
                 },
                 mockApiClient as unknown as ApiClient
             );
@@ -1586,7 +1586,7 @@ describe("Wallet - useSigner()", () => {
                 {
                     chain: "base-sepolia" as const,
                     address: "0x1234567890123456789012345678901234567890",
-                    recovery: { type: "server", address: "0xRecoveryAddress" } as any,
+                    recovery: { type: "server", address: "0xRecoveryAddress" } as ApiSourcedServerSignerConfig,
                 },
                 mockApiClient as unknown as ApiClient
             );
