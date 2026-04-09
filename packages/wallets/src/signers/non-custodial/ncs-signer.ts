@@ -13,9 +13,15 @@ import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 
+// Client-side TTL for caching a successful "ready" status from the frame.
+// Avoids redundant get-status round-trips that can trigger unnecessary OTP
+// prompts when the frame's own cache has expired or the JWT was refreshed.
+const AUTH_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
+    private _lastAuthSuccessTimestamp = 0;
     private _authPromise: {
         promise: Promise<void>;
         resolve: () => void;
@@ -124,6 +130,16 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             );
         }
 
+        // Skip the get-status round-trip if we recently confirmed the signer is ready.
+        // This prevents unnecessary OTP prompts caused by frame cache expiry or JWT refresh.
+        const timeSinceLastAuth = Date.now() - this._lastAuthSuccessTimestamp;
+        if (!this._needsAuth && timeSinceLastAuth < AUTH_CACHE_TTL_MS) {
+            walletsLogger.info("get-status: skipping, recently authenticated", {
+                timeSinceLastAuthMs: timeSinceLastAuth,
+            });
+            return;
+        }
+
         // Determine if we need to authenticate the user via OTP or not
         walletsLogger.info("get-status: sending request");
         const startTime = Date.now();
@@ -156,9 +172,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             return;
         } else {
             this._needsAuth = true;
+            this._lastAuthSuccessTimestamp = 0;
         }
 
         walletsLogger.info("Auth required, initiating OTP flow", { needsAuth: this._needsAuth });
@@ -258,6 +276,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "success" && response.signerStatus === "ready") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             return;
         }
 
@@ -307,6 +326,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "success") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             // We call onAuthRequired again so the needsAuth state is updated for the dev
             if (this.config.onAuthRequired != null) {
                 await this.config.onAuthRequired(
