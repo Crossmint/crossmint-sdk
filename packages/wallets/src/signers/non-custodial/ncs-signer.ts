@@ -390,6 +390,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         });
 
         if (response?.status === "error") {
+            this.invalidateAuthCache();
             throw new Error(response.error || "Failed to export private key");
         }
     }
