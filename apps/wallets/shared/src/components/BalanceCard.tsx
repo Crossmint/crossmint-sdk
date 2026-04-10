@@ -9,6 +9,7 @@ export function BalanceCard({ wallet }: { wallet: any }) {
         if (!wallet) return;
         const res = await wallet.balances([...TOKENS]);
         const map: Record<string, string> = {};
+        map[res.usdc.symbol] = res.usdc.amount;
         for (const t of res.tokens) {
             map[t.symbol] = t.amount;
         }
