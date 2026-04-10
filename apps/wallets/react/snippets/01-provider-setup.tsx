@@ -1,5 +1,6 @@
 "use client";
 
+import type { Chain } from "@crossmint/client-sdk-react-ui";
 import { CrossmintProvider, CrossmintAuthProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 
 /**
@@ -25,12 +26,10 @@ function getRecoveryConfig(mode: AuthMode) {
 }
 
 function getCreateOnLoginConfig(mode: AuthMode) {
-    const chain = (process.env.NEXT_PUBLIC_CHAIN as any) || "base-sepolia";
-    const base: any = { chain, recovery: getRecoveryConfig(mode) };
-    if (mode === "passkey") {
-        base.signers = [{ type: "passkey" }];
-    }
-    return base;
+    const chain = (process.env.NEXT_PUBLIC_CHAIN as Chain) || "base-sepolia";
+    const recovery = getRecoveryConfig(mode);
+    const signers = mode === "passkey" ? [{ type: "passkey" as const }] : undefined;
+    return { chain, recovery, ...(signers ? { signers } : {}) };
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {

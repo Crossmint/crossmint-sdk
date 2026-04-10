@@ -256,8 +256,8 @@ export function Permissions({
                     autoCapitalize="none"
                 />
             )}
-            {signerType === "external-wallet" && (
-                buildExternalWalletSignerFn ? (
+            {signerType === "external-wallet" &&
+                (buildExternalWalletSignerFn ? (
                     <TextInput
                         style={inputStyle}
                         secureTextEntry
@@ -274,8 +274,7 @@ export function Permissions({
                         onChangeText={(v) => setField("address", v)}
                         autoCapitalize="none"
                     />
-                )
-            )}
+                ))}
             <TouchableOpacity
                 style={{
                     backgroundColor: "#fff",
