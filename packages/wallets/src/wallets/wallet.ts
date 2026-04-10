@@ -1351,13 +1351,25 @@ export class Wallet<C extends Chain> {
                 this.#apiClient.projectId,
                 this.#apiClient.environment
             ).derivedAddress;
-            const recoveryDerived = deriveServerSignerDetails(
-                recovery,
-                this.chain,
-                this.#apiClient.projectId,
-                this.#apiClient.environment
-            ).derivedAddress;
-            return inputDerived === recoveryDerived;
+
+            // When the recovery config comes from the API (via getWallet), it has
+            // {type: "server", address: "..."} without the secret — use it directly.
+            // When it comes from the user (via createWallet), it has a secret so we can derive.
+            if ("address" in recovery && typeof recovery.address === "string") {
+                return inputDerived === recovery.address;
+            }
+            if ("secret" in recovery && typeof recovery.secret === "string") {
+                return (
+                    inputDerived ===
+                    deriveServerSignerDetails(
+                        recovery,
+                        this.chain,
+                        this.#apiClient.projectId,
+                        this.#apiClient.environment
+                    ).derivedAddress
+                );
+            }
+            return false;
         }
 
         // For other types, compare locators
