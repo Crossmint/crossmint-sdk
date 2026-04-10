@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
+        "@crossmint/wallets-playground-shared": "workspace:*",
         "@stellar/stellar-sdk": "^14.6.1",
         "buffer": "^6.0.3",
         "expo": "~54.0.33",

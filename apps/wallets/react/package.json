@@ -8,7 +8,9 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "workspace:*",
+        "@crossmint/wallets-playground-shared": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
+        "react-native-web": "~0.21.2",
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "^14.6.1",
         "next": "^15.3.3",

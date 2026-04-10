@@ -16,3 +16,5 @@ docs
 .env
 
 .claude
+.next
+*.tsbuildinfo
