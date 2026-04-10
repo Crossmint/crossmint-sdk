@@ -2055,7 +2055,8 @@ describe("Wallet - recover()", () => {
             );
             vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
 
-            // registerSigner succeeds but approval triggers OTP which user cancels
+            // In production the error comes from approveSignatureAndWait (OTP dismissed),
+            // but we simulate it as a registerSigner rejection to exercise the catch block.
             mockApiClient.registerSigner.mockRejectedValue(new AuthRejectedError());
 
             await expect(wallet.recover()).rejects.toThrow(AuthRejectedError);
