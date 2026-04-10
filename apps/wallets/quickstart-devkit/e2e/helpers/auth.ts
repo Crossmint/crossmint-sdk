@@ -31,9 +31,10 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         const otpInput = page.locator('input[data-input-otp="true"]').first();
         await otpInput.waitFor({ timeout: 10000 });
         await page.waitForTimeout(1000);
-        await otpInput.fill(otpCode);
 
-        const response = await page.waitForResponse(
+        // Set up the response listener BEFORE filling the OTP to avoid a race condition
+        // where auto-submit fires the request before waitForResponse is registered.
+        const responsePromise = page.waitForResponse(
             (response) => {
                 const url = response.url();
                 return (
@@ -41,8 +42,12 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
                     url.includes("signinAuthenticationMethod=email")
                 );
             },
-            { timeout: 10000 }
+            { timeout: 30000 }
         );
+
+        await otpInput.fill(otpCode);
+
+        const response = await responsePromise;
         if (response.status() >= 400) {
             throw new Error(`Email OTP authentication failed with status ${response.status()}`);
         }
