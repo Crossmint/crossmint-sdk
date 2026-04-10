@@ -96,9 +96,9 @@ export class CrossmintAuthClient extends CrossmintAuth {
         ]);
     }
 
-    public async logout() {
-        // Store the old refresh token to pass it to the logout route before deleting the storage
-        const oldRefreshToken = await this.storageProvider.get(REFRESH_TOKEN_PREFIX);
+    public async logout(knownRefreshToken?: string) {
+        // Use the provided refresh token (e.g. from audience-mismatch path) or read from storage
+        const oldRefreshToken = knownRefreshToken ?? (await this.storageProvider.get(REFRESH_TOKEN_PREFIX));
 
         // Even if there's a server error, we want to clear the storage and we do it first to load faster
         await Promise.all([
@@ -143,12 +143,14 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 const audience = getJWTAudience(authMaterial.jwt);
                 const expectedProjectId = this.storageProvider.getProjectId();
                 if (audience != null && audience !== expectedProjectId) {
-                    // JWT is for a different project — don't store, clean up and logout
+                    // JWT is for a different project — don't store, clean up and logout.
+                    // Capture the refresh token before cleanup so logout() can revoke it server-side.
+                    const staleRefreshToken = refreshToken;
                     console.debug(
                         `[CrossmintAuthClient] JWT audience "${audience}" does not match current project "${expectedProjectId}". Logging out.`
                     );
                     this.storageProvider.deleteLegacyCookies();
-                    await this.logout();
+                    await this.logout(staleRefreshToken);
                     return null;
                 }
                 if (this.refreshRoute == null) {
