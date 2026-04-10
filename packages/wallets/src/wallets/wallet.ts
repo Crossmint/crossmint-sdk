@@ -1056,7 +1056,10 @@ export class Wallet<C extends Chain> {
                     reason: "Device signer already approved",
                     signerLocator: newDeviceSigner.locator,
                 });
-            } else if (error instanceof AuthRejectedError) {
+            } else if (
+                error instanceof AuthRejectedError ||
+                (error instanceof Error && error.name === "AuthRejectedError")
+            ) {
                 // User canceled OTP — keep the local key so findLocalDeviceSigner()
                 // can match the server-side pending signer on the next recover() attempt.
                 walletsLogger.info("wallet.recover.device.authRejected", {

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import type { SignerAdapter } from "../signers/types";
+import { AuthRejectedError } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -2038,6 +2039,30 @@ describe("Wallet - recover()", () => {
             await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
 
             expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
+        });
+
+        it("should preserve local key and rethrow when addSigner fails with AuthRejectedError", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            // registerSigner succeeds but approval triggers OTP which user cancels
+            mockApiClient.registerSigner.mockRejectedValue(new AuthRejectedError());
+
+            await expect(wallet.recover()).rejects.toThrow(AuthRejectedError);
+
+            // Local key should NOT be deleted — it will be needed to match the
+            // server-side pending signer on the next recover() attempt
+            expect(mockStorage.deleteKey).not.toHaveBeenCalled();
         });
 
         it("should not false-positive on error containing 'already' and 'approved' without 'delegated signer'", async () => {
