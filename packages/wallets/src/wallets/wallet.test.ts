@@ -1517,7 +1517,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should skip recovery when current signer is non-device type (email)", async () => {
+        it("should skip recovery and reset needsRecovery when current signer is non-device type (email)", async () => {
             const emailSigner: SignerAdapter = {
                 type: "email",
                 status: "success",
@@ -1539,6 +1539,8 @@ describe("Wallet - recover()", () => {
 
             // Should not call getSigner at all — non-device signer is skipped
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            // needsRecovery should be reset to false even on the non-device early-return path
+            expect(wallet.needsRecovery()).toBe(false);
         });
 
         it("should return silently when no deviceSignerKeyStorage and !needsRecovery", async () => {
@@ -2172,6 +2174,83 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.registerSigner).toHaveBeenCalled();
             expect(wallet.signer?.type).toBe("device");
         });
+    });
+});
+
+describe("Wallet - waitForInit()", () => {
+    let mockApiClient: MockedApiClient;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockApiClient = createMockApiClient();
+    });
+
+    it("should resolve needsRecovery accurately after waitForInit when no device key exists", async () => {
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockResolvedValue(null),
+            hasKey: vi.fn().mockResolvedValue(false),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        // Mock signers() to return no device signers
+        mockApiClient.getWallet.mockResolvedValue({
+            type: "smart",
+            address: "0x1234567890123456789012345678901234567890",
+            config: {
+                adminSigner: { type: "api-key", locator: "api-key" },
+                delegatedSigners: [],
+            },
+        } as any);
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "api-key" } as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        // After waitForInit, needsRecovery should reflect the real state
+        await wallet.waitForInit();
+        expect(wallet.needsRecovery()).toBe(true);
+    });
+
+    it("should resolve needsRecovery as false after waitForInit when device key exists", async () => {
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockResolvedValue("existingKeyBase64"),
+            hasKey: vi.fn().mockResolvedValue(true),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:existingKeyBase64",
+            publicKey: { x: "1", y: "2" },
+            chains: { "base-sepolia": { status: "success" } },
+        } as any);
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "api-key" } as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        await wallet.waitForInit();
+        expect(wallet.needsRecovery()).toBe(false);
     });
 });
 
