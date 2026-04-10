@@ -2194,7 +2194,7 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
         );
 
         // Wait for constructor's initDefaultSigner to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await wallet.waitForInit();
 
         // The signer should be undefined (not auto-assembled) and no error should have been thrown
         expect(wallet.signer).toBeUndefined();
@@ -2234,9 +2234,9 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
         );
 
         // Wait for constructor's initDefaultSigner to complete
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await wallet.waitForInit();
 
-        // The device signer should have been assembled via isAutoAssemblableSignerConfig
+        // The device signer should have been assembled (via initDeviceSigner)
         expect(wallet.signer).toBeDefined();
         expect(wallet.signer?.type).toBe("device");
     });
