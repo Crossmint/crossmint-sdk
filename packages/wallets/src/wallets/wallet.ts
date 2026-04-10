@@ -749,10 +749,13 @@ export class Wallet<C extends Chain> {
         options?: AddSignerOptions
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
         if (options?.prepareOnly) {
+            if (pendingOperation == null) {
+                return { ...signer } as AddSignerReturnType<C>;
+            }
             const operationId =
-                pendingOperation?.type === "transaction"
+                pendingOperation.type === "transaction"
                     ? { transactionId: pendingOperation.id }
-                    : { signatureId: pendingOperation?.id };
+                    : { signatureId: pendingOperation.id };
             walletsLogger.info("wallet.addSigner.prepared", operationId);
             return { ...signer, ...operationId } as AddSignerReturnType<C>;
         }

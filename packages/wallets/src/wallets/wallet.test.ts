@@ -2157,6 +2157,8 @@ describe("Wallet - recover()", () => {
                 error: true,
                 message: "Delegated signer is already 'approved'",
             } as any);
+            // addSigner's upfront getSigner check — signer not yet found
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
             // assembleFullSigner after the catch still needs getSigner
             mockGetSignerApproved("base-sepolia", "device:mockNewKey");
 
