@@ -118,6 +118,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Wait for the wallet's internal signer initialization to complete.
+     * After this resolves, `needsRecovery()` reflects the true state.
+     */
+    public async waitForInit(): Promise<void> {
+        await this.#signerInitialization;
+    }
+
+    /**
      * Initialize the device signer by resolving key availability.
      * If a device key is found locally, assembles the signer immediately.
      * If not, flags the wallet for recovery so a key is generated during the next transaction.
@@ -1000,6 +1008,7 @@ export class Wallet<C extends Chain> {
         // with email/passkey/server), skip device recovery to avoid overwriting their choice.
         if (this.#signer != null && this.#signer.type !== "device") {
             walletsLogger.warn("wallet.recover.skipped", { reason: "Recovery is only supported for device signers" });
+            this.#needsRecovery = false;
             return;
         }
 
