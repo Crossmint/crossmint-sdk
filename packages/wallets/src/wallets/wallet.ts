@@ -657,7 +657,7 @@ export class Wallet<C extends Chain> {
                 // Signer already fully approved — return immediately (idempotent)
                 if (this.isApprovedSignerStatus(existingState.signer.status)) {
                     walletsLogger.info("wallet.addSigner.alreadyApproved");
-                    return { ...existingState.signer, status: "success" as const } as WalletSigner;
+                    return this.completeSignerRegistration(existingState.signer, null, options);
                 }
 
                 // Pending operation from a previous attempt — resume instead of re-registering
