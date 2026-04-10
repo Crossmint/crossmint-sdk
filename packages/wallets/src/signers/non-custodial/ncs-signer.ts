@@ -101,6 +101,9 @@ export abstract class NonCustodialSigner implements Signer {
         methodName: "handleAuthRequired",
     })
     protected async handleAuthRequired() {
+        if (!this._needsAuth) {
+            return;
+        }
         const clientTEEConnection = await this.getTEEConnection();
 
         if (this.config.onAuthRequired == null) {
