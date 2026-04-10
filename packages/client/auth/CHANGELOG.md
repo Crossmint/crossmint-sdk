@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-auth
 
+## 1.3.5
+
+### Patch Changes
+
+- 0535c3a: Fix legacy cookie fallback causing cross-project token usage. Legacy unscoped cookies are now migrated to scoped cookies on first use and then deleted, preventing a different project on the same domain from picking them up.
+
+## 1.3.4
+
+### Patch Changes
+
+- 3a91c39: Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
+
 ## 1.3.3
 
 ### Patch Changes
