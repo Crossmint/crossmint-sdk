@@ -2177,6 +2177,71 @@ describe("Wallet - recover()", () => {
     });
 });
 
+describe("Wallet - initDefaultSigner() server-side device signer", () => {
+    it("should not attempt to auto-assemble device signer when deviceSignerKeyStorage is unavailable", async () => {
+        const mockApiClient = createMockApiClient();
+
+        // Simulate server-side: wallet has a device signer in initialSigners but no deviceSignerKeyStorage
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "email", email: "test@example.com" } as any,
+                signers: [{ type: "device", locator: "device:testkey123", publicKey: { x: "0x1", y: "0x2" } }] as any,
+                // No options.deviceSignerKeyStorage — simulates server-side
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        // Wait for constructor's initDefaultSigner to complete
+        await wallet.waitForInit();
+
+        // The signer should be undefined (not auto-assembled) and no error should have been thrown
+        expect(wallet.signer).toBeUndefined();
+    });
+
+    it("should auto-assemble device signer via isAutoAssemblableSignerConfig when deviceSignerKeyStorage is available", async () => {
+        const mockApiClient = createMockApiClient();
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockResolvedValue("testkey123"),
+            hasKey: vi.fn().mockResolvedValue(true),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+            apiKey: "test-api-key",
+        };
+
+        // Mock getSigner for assembleFullSigner call
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:testkey123",
+            publicKey: { x: "0x1", y: "0x2" },
+            chains: { "base-sepolia": { status: "success" } },
+        } as any);
+
+        // Include signers with device entry + deviceSignerKeyStorage to hit isAutoAssemblableSignerConfig("device") -> true
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "email", email: "test@example.com" } as any,
+                signers: [{ type: "device", locator: "device:testkey123", publicKey: { x: "0x1", y: "0x2" } }] as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        // Wait for constructor's initDefaultSigner to complete
+        await wallet.waitForInit();
+
+        // The device signer should have been assembled (via initDeviceSigner)
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("device");
+    });
+});
+
 describe("Wallet - waitForInit()", () => {
     let mockApiClient: MockedApiClient;
 
@@ -2253,7 +2318,6 @@ describe("Wallet - waitForInit()", () => {
         expect(wallet.needsRecovery()).toBe(false);
     });
 });
-
 describe("Wallet - isSignerApproved()", () => {
     it("should return true only when signer status is success", async () => {
         const mockApiClient = createMockApiClient();
