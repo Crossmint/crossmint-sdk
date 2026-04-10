@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.8-beta.0
+
+### Patch Changes
+
+- 612d768: Ensure signer is authenticated before calling approve
+
 ## 1.0.7
 
 ### Patch Changes
