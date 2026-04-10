@@ -190,6 +190,9 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     public async ensureAuthenticated(): Promise<void> {
+        if (!this._needsAuth) {
+            return;
+        }
         await this.handleAuthRequired();
     }
 
