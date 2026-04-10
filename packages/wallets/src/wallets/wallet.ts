@@ -64,6 +64,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
+import { AuthRejectedError } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
@@ -1055,6 +1056,13 @@ export class Wallet<C extends Chain> {
                     reason: "Device signer already approved",
                     signerLocator: newDeviceSigner.locator,
                 });
+            } else if (error instanceof AuthRejectedError) {
+                // User canceled OTP — keep the local key so findLocalDeviceSigner()
+                // can match the server-side pending signer on the next recover() attempt.
+                walletsLogger.info("wallet.recover.device.authRejected", {
+                    signerLocator: newDeviceSigner.locator,
+                });
+                throw error;
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.address);
