@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 1.0.9
+
+### Patch Changes
+
+- 60f31bd: Fix false "Device signer key storage is required" error when creating wallets server-side with a client-created device signer
+- b9225cf: Fix `needsRecovery()` returning stale `false` after `getWallet()` by awaiting signer initialization in the wallet factory. Also fix `recover()` non-device signer early-return not clearing `needsRecovery`.
+  - @crossmint/common-sdk-auth@1.1.4
+
 ## 1.0.8
 
 ### Patch Changes
