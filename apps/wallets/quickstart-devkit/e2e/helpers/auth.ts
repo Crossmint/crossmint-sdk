@@ -116,7 +116,10 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
                     (url.includes("/api/") && url.includes("/confirm") && method === "POST")
                 );
             },
-            { timeout: 30000 }
+            // Use a short timeout: this pattern reliably matches for email but not for phone
+            // (the phone OTP send endpoint uses a different URL). We catch the timeout and
+            // continue regardless, so a long timeout only wastes time on phone signers.
+            { timeout: 10000 }
         );
 
         await sendCodeButton.click();
@@ -136,11 +139,12 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
         await page.waitForTimeout(2000);
 
         // Wait for UI confirmation instead of network response - more reliable and works for both client-side and server-side requests
+        // Use a generous timeout (90s) to accommodate slow SMS delivery on phone signers, especially on retries.
         console.log("⏳ Waiting for 'Check your email/phone' message...");
         if (signerType === "email") {
-            await page.locator("text=/Check your email/i").waitFor({ timeout: 60000 });
+            await page.locator("text=/Check your email/i").waitFor({ timeout: 90000 });
         } else if (signerType === "phone") {
-            await page.locator("text=/Check your phone/i").first().waitFor({ timeout: 60000 });
+            await page.locator("text=/Check your phone/i").first().waitFor({ timeout: 90000 });
         }
         console.log("✅ 'Check your email/phone' message appeared");
 
