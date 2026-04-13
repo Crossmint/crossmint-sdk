@@ -1573,7 +1573,7 @@ export class Wallet<C extends Chain> {
      * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
      * Server signers also require the secret to be present in the config.
      */
-    private isAutoAssemblableSignerConfig(config: RecoverySignerConfigForChain<C>): boolean {
+    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig): boolean {
         switch (config.type) {
             case "email":
             case "phone":
