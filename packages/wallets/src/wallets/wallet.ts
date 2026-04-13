@@ -923,6 +923,12 @@ export class Wallet<C extends Chain> {
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
+        if (this.#recovery != null && this.#recovery.type === "external-wallet" && !this.isAutoAssemblableSignerConfig(this.#recovery)) {
+            throw new Error(
+                "Cannot assemble external wallet signer: no onSign callback available. " +
+                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
+            );
+        }
         const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
@@ -1127,6 +1133,12 @@ export class Wallet<C extends Chain> {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+            );
+        }
+        if (this.#recovery != null && this.#recovery.type === "external-wallet" && !this.isAutoAssemblableSignerConfig(this.#recovery)) {
+            throw new Error(
+                "Cannot resume pending approval: no onSign callback available. " +
+                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
         const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);

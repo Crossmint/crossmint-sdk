@@ -1729,7 +1729,7 @@ describe("Wallet - useSigner()", () => {
 
             // useSigner is never called — #recovery has no onSign callback
             await expect(wallet.addSigner({ type: "email", email: "new@example.com" })).rejects.toThrow(
-                "[EVMExternalWalletSigner] No onSign callback provided"
+                "Cannot assemble external wallet signer: no onSign callback available."
             );
         });
     });
