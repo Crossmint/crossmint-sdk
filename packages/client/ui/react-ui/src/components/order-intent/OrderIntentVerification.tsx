@@ -37,8 +37,8 @@ function OrderIntentVerificationContent({
         errorRef.current = onVerificationError;
     }, [onVerificationError]);
 
-    const agentId = orderIntent.payment.paymentMethodId;
-    const instructionId = orderIntent.payment.paymentMethodId;
+    const agentId = orderIntent.verificationConfig.agentId;
+    const instructionId = orderIntent.verificationConfig.instructionId;
 
     useEffect(() => {
         if (!ready) {
