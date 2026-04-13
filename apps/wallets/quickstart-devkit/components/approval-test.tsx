@@ -14,7 +14,7 @@ export function ApprovalTest() {
 
     // State for creating transactions that need approval
     const [prepareTransfer, setPrepareTransfer] = useState({
-        token: (isEVMWallet ? "eth" : isSolanaWallet ? "sol" : "usdxm") as "eth" | "usdc" | "sol" | "usdxm",
+        token: "usdxm" as "eth" | "usdc" | "sol" | "usdxm",
         recipient: "",
         amount: "",
     });
