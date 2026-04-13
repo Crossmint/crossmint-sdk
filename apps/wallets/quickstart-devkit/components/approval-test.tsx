@@ -44,7 +44,7 @@ export function ApprovalTest() {
             }
         } else if (isStellarWallet) {
             // Stellar addresses start with G or C and are 56 characters (base32)
-            return /^[GC][A-Z0-9]{55}$/.test(address);
+            return /^[GC][A-Z2-7]{55}$/.test(address);
         }
         return false;
     };
