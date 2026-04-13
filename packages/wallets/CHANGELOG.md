@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 1.0.10
+
+### Patch Changes
+
+- e03e7b1: Fix: preserve local device key when user cancels OTP during recovery, preventing duplicate device signers on page refresh
+- 560fbf0: fix: require `status` in `wallet.transfers()` types to match backend validation
+- 0792f9e: fix: make addSigner idempotent by resuming pending operations on retry
+
 ## 1.0.9
 
 ### Patch Changes
