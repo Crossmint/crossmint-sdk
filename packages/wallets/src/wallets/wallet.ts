@@ -752,23 +752,39 @@ export class Wallet<C extends Chain> {
             if (pendingOperation == null) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
-            const operationId =
-                pendingOperation.type === "transaction"
-                    ? { transactionId: pendingOperation.id }
-                    : { signatureId: pendingOperation.id };
-            walletsLogger.info("wallet.addSigner.prepared", operationId);
-            return { ...signer, ...operationId } as AddSignerReturnType<C>;
+            switch (pendingOperation.type) {
+                case "transaction": {
+                    const operationId = { transactionId: pendingOperation.id };
+                    walletsLogger.info("wallet.addSigner.prepared", operationId);
+                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
+                }
+                case "signature": {
+                    const operationId = { signatureId: pendingOperation.id };
+                    walletsLogger.info("wallet.addSigner.prepared", operationId);
+                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
+                }
+                default: {
+                    const _exhaustive: never = pendingOperation.type;
+                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+                }
+            }
         }
 
         if (pendingOperation != null) {
-            if (pendingOperation.type === "transaction") {
-                await this.approveTransactionAndWait(pendingOperation.id);
-            } else {
-                await this.approveSignatureAndWait(pendingOperation.id);
+            switch (pendingOperation.type) {
+                case "transaction":
+                    await this.approveTransactionAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.addSigner.success", { transactionId: pendingOperation.id });
+                    break;
+                case "signature":
+                    await this.approveSignatureAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.addSigner.success", { signatureId: pendingOperation.id });
+                    break;
+                default: {
+                    const _exhaustive: never = pendingOperation.type;
+                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+                }
             }
-            walletsLogger.info("wallet.addSigner.success", {
-                [pendingOperation.type === "transaction" ? "transactionId" : "signatureId"]: pendingOperation.id,
-            });
         } else {
             walletsLogger.info("wallet.addSigner.success");
         }
