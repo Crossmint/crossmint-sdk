@@ -1,6 +1,6 @@
 export function getCookie(name: string): string | undefined {
-    const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(name));
-    return crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
+    const cookie = document.cookie.split("; ").find((row) => row.startsWith(name + "="));
+    return cookie ? cookie.slice(cookie.indexOf("=") + 1) : undefined;
 }
 
 export function setCookie(name: string, value: string, expiresAt?: string) {

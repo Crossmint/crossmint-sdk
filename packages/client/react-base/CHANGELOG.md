@@ -1,5 +1,55 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.12
+
+### Patch Changes
+
+- Updated dependencies [e03e7b1]
+- Updated dependencies [560fbf0]
+- Updated dependencies [0792f9e]
+  - @crossmint/wallets-sdk@1.0.10
+
+## 2.0.11
+
+### Patch Changes
+
+- Updated dependencies [11f2089]
+- Updated dependencies [60f31bd]
+- Updated dependencies [b9225cf]
+  - @crossmint/client-sdk-base@2.3.0
+  - @crossmint/wallets-sdk@1.0.9
+  - @crossmint/client-sdk-auth@1.3.6
+  - @crossmint/common-sdk-auth@1.1.4
+
+## 2.0.10
+
+### Patch Changes
+
+- Updated dependencies [0535c3a]
+- Updated dependencies [612d768]
+  - @crossmint/client-sdk-auth@1.3.5
+  - @crossmint/wallets-sdk@1.0.8
+
+## 2.0.9
+
+### Patch Changes
+
+- 3a91c39: Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
+- Updated dependencies [3a91c39]
+  - @crossmint/client-sdk-auth@1.3.4
+
+## 2.0.8
+
+### Patch Changes
+
+- 448d797: fix(rn): defer clientTEEConnection evaluation in getWallet to avoid "WebView not ready" error when using BYOA with setJwt
+
+## 2.0.7
+
+### Patch Changes
+
+- @crossmint/wallets-sdk@1.0.7
+
 ## 2.0.6
 
 ### Patch Changes

@@ -177,10 +177,10 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, validatedArgs);
     }
 
-    private createWalletInstance<C extends Chain>(
+    private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
-    ): Wallet<C> {
+    ): Promise<Wallet<C>> {
         this.validateExistingWalletConfig(walletResponse, args);
 
         // For server and external-wallet signers, use the user-provided recovery config to preserve
@@ -204,7 +204,7 @@ export class WalletFactory {
             signers = createArgs.signers as SignerResponse[];
         }
 
-        return new Wallet(
+        const wallet = new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,
@@ -216,6 +216,12 @@ export class WalletFactory {
             },
             this.apiClient
         );
+
+        // Await signer initialization so that needsRecovery() returns the correct
+        // value immediately after getWallet() / createWallet() resolves.
+        await wallet.waitForInit();
+
+        return wallet;
     }
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {

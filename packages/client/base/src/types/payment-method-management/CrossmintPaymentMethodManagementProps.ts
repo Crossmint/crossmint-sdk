@@ -1,20 +1,10 @@
 import type { EmbeddedCheckoutV3Appearance } from "../embed";
-import type { VerificationConfig } from "./OrderIntents";
 
 export interface CrossmintPaymentMethodManagementProps {
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
-    onAgenticEnrollmentCreated?: (
-        agentEnrollment: AgenticEnrollment,
-        verificationConfig: VerificationConfig
-    ) => void | Promise<void>;
 }
-
-export type AgenticEnrollment = {
-    enrollmentId: string;
-    status: "active" | "pending";
-};
 
 export type CrossmintPaymentMethod = {
     type: "card";
@@ -32,6 +22,10 @@ export type CrossmintPaymentMethod = {
             // 4 digit year
             year: string;
         };
+    };
+    default?: boolean;
+    display?: {
+        imageUrl?: string;
     };
 };
 
