@@ -33,9 +33,6 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
         }
         iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
         iframeClient.on("payment-method:selected", (data) => props.onPaymentMethodSelected?.(data));
-        iframeClient.on("agentic-enrollment:created", (data) =>
-            props.onAgenticEnrollmentCreated?.(data.agenticEnrollment, data.verificationConfig)
-        );
 
         return () => {
             iframeClient.off("ui:height.changed");
