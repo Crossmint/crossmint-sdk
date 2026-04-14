@@ -64,6 +64,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
+import { AuthRejectedError } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { deriveServerSignerDetails } from "../signers/server";
@@ -454,12 +455,12 @@ export class Wallet<C extends Chain> {
      * @returns The transfers
      * @throws {Error} If the transfers cannot be retrieved
      */
-    public async transfers(params?: { tokens?: string; status?: "successful" | "failed" }): Promise<Transfers> {
+    public async transfers(params: { tokens?: string; status: "successful" | "failed" }): Promise<Transfers> {
         const resolvedChain = this.resolveChainForEnvironment();
         const response = await this.apiClient.getTransfers(this.walletLocator, {
             chain: resolvedChain,
-            tokens: params?.tokens,
-            status: params?.status,
+            tokens: params.tokens,
+            status: params.status,
         });
         if ("error" in response) {
             throw new Error(`Failed to get transfers: ${JSON.stringify(response.message)}`);
@@ -656,6 +657,33 @@ export class Wallet<C extends Chain> {
                 : signer;
 
         return this.withRecoverySigner(async () => {
+            // Check for an existing signer registration (e.g. from a previous interrupted attempt)
+            const signerLocator =
+                typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
+            const existingState = await this.getSignerState(signerLocator);
+
+            if (existingState.signer != null) {
+                // Signer already fully approved — return immediately (idempotent)
+                if (this.isApprovedSignerStatus(existingState.signer.status)) {
+                    walletsLogger.info("wallet.addSigner.alreadyApproved");
+                    return this.completeSignerRegistration(existingState.signer, null, options);
+                }
+
+                // Pending operation from a previous attempt — resume instead of re-registering
+                if (existingState.pendingOperation != null) {
+                    walletsLogger.info("wallet.addSigner.resuming", {
+                        operationType: existingState.pendingOperation.type,
+                        operationId: existingState.pendingOperation.id,
+                    });
+                    return this.completeSignerRegistration(
+                        existingState.signer,
+                        existingState.pendingOperation,
+                        options
+                    );
+                }
+            }
+
+            // --- Fresh registration ---
             // For server signers, resolvedSigner is already a locator string.
             // For passkeys, always pass the full config so the API receives the publicKey.
             // For everything else, convert to a locator string via getSignerLocator.
@@ -688,6 +716,13 @@ export class Wallet<C extends Chain> {
 
             const registeredSigner = mapApiSignerToSigner(response, this.chain);
 
+            if (registeredSigner == null) {
+                throw new Error(`No approval found for chain ${this.chain} in register signer response`);
+            }
+
+            // Extract the pending operation from the registration response
+            let pendingOperation: { type: "signature" | "transaction"; id: string } | null = null;
+
             if (this.chain === "solana" || this.chain === "stellar") {
                 if (!("transaction" in response) || response.transaction == null) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -695,25 +730,7 @@ export class Wallet<C extends Chain> {
                     });
                     throw new Error("Expected transaction in response for Solana/Stellar chain");
                 }
-
-                const transactionId = response.transaction.id;
-
-                if (registeredSigner == null) {
-                    throw new Error(`No approval found for chain ${this.chain} in register signer response`);
-                }
-
-                if (options?.prepareOnly) {
-                    walletsLogger.info("wallet.addSigner.prepared", {
-                        transactionId,
-                    });
-                    return { ...registeredSigner, transactionId } as AddSignerReturnType<C>;
-                }
-
-                await this.approveTransactionAndWait(transactionId);
-                walletsLogger.info("wallet.addSigner.success", {
-                    transactionId,
-                });
-                return { ...registeredSigner, status: "success" } as WalletSigner;
+                pendingOperation = { type: "transaction", id: response.transaction.id };
             } else {
                 if (!("chains" in response)) {
                     walletsLogger.error("wallet.addSigner.error", {
@@ -721,37 +738,67 @@ export class Wallet<C extends Chain> {
                     });
                     throw new Error("Expected chains in response for EVM chain");
                 }
-
-                const chainResponse = response.chains?.[this.chain];
-
-                if (registeredSigner == null) {
-                    throw new Error(`No approval found for chain ${this.chain} in register signer response`);
-                }
-
-                const pendingOperation = getPendingSignerOperation(response, this.chain);
-                const signatureId = pendingOperation?.type === "signature" ? pendingOperation.id : undefined;
-
-                if (options?.prepareOnly) {
-                    walletsLogger.info("wallet.addSigner.prepared", {
-                        signatureId,
-                    });
-                    return { ...registeredSigner, signatureId } as AddSignerReturnType<C>;
-                }
-
-                if (pendingOperation?.type === "signature") {
-                    await this.approveSignatureAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", {
-                        signatureId: pendingOperation.id,
-                    });
-                } else if (chainResponse?.status === "failed") {
+                if (response.chains?.[this.chain]?.status === "failed") {
                     throw new Error(`Signer registration failed for chain ${this.chain}`);
-                } else {
-                    walletsLogger.info("wallet.addSigner.success");
                 }
-
-                return { ...registeredSigner, status: "success" as const } as WalletSigner;
+                pendingOperation = getPendingSignerOperation(response, this.chain);
             }
+
+            return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
+    }
+
+    /**
+     * Complete a signer registration by approving the pending operation (if any).
+     * Shared by both fresh registrations and resumed pending ones.
+     */
+    private async completeSignerRegistration(
+        signer: WalletSigner,
+        pendingOperation: { type: "signature" | "transaction"; id: string } | null,
+        options?: AddSignerOptions
+    ): Promise<AddSignerReturnType<C> | WalletSigner> {
+        if (options?.prepareOnly) {
+            if (pendingOperation == null) {
+                return { ...signer } as AddSignerReturnType<C>;
+            }
+            switch (pendingOperation.type) {
+                case "transaction": {
+                    const operationId = { transactionId: pendingOperation.id };
+                    walletsLogger.info("wallet.addSigner.prepared", operationId);
+                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
+                }
+                case "signature": {
+                    const operationId = { signatureId: pendingOperation.id };
+                    walletsLogger.info("wallet.addSigner.prepared", operationId);
+                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
+                }
+                default: {
+                    const _exhaustive: never = pendingOperation.type;
+                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+                }
+            }
+        }
+
+        if (pendingOperation != null) {
+            switch (pendingOperation.type) {
+                case "transaction":
+                    await this.approveTransactionAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.addSigner.success", { transactionId: pendingOperation.id });
+                    break;
+                case "signature":
+                    await this.approveSignatureAndWait(pendingOperation.id);
+                    walletsLogger.info("wallet.addSigner.success", { signatureId: pendingOperation.id });
+                    break;
+                default: {
+                    const _exhaustive: never = pendingOperation.type;
+                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+                }
+            }
+        } else {
+            walletsLogger.info("wallet.addSigner.success");
+        }
+
+        return { ...signer, status: "success" as const } as WalletSigner;
     }
 
     /**
@@ -1064,6 +1111,16 @@ export class Wallet<C extends Chain> {
                     reason: "Device signer already approved",
                     signerLocator: newDeviceSigner.locator,
                 });
+            } else if (
+                error instanceof AuthRejectedError ||
+                (error instanceof Error && error.name === "AuthRejectedError")
+            ) {
+                // User canceled OTP — keep the local key so findLocalDeviceSigner()
+                // can match the server-side pending signer on the next recover() attempt.
+                walletsLogger.info("wallet.recover.device.authRejected", {
+                    signerLocator: newDeviceSigner.locator,
+                });
+                throw error;
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.address);

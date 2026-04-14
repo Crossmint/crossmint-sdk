@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Wallet } from "./wallet";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import type { SignerAdapter } from "../signers/types";
+import { AuthRejectedError } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -790,6 +791,156 @@ describe("Wallet - addSigner()", () => {
             await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Expected chains in response for EVM chain"
             );
+        });
+    });
+
+    describe("retry / idempotency", () => {
+        it("should resume pending EVM signature instead of re-registering", async () => {
+            // First call: getSigner returns a pending signer with awaiting-approval signature
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-pending", status: "awaiting-approval" },
+                },
+            } as any);
+
+            const mockSignatureResponse = {
+                id: "sig-pending",
+                status: "success",
+                outputSignature: "0xsigned",
+            };
+            mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
+
+            const addPromise = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+            await vi.runAllTimersAsync();
+            const result = await addPromise;
+
+            // Should NOT have called registerSigner — resumed the pending operation instead
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(result.status).toBe("success");
+            expect(result.type).toBe("external-wallet");
+        });
+
+        it("should resume pending Solana transaction instead of re-registering", async () => {
+            // getSigner returns a pending signer with a pending transaction
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "ABC123",
+                locator: "external-wallet:ABC123",
+                transaction: { id: "txn-pending", status: "pending" },
+            } as any);
+
+            const mockTransactionResponse = {
+                id: "txn-pending",
+                status: "success",
+                onChain: {
+                    txId: "sol-tx-hash",
+                    explorerLink: "https://explorer.solana.com/tx/sol-tx-hash",
+                },
+            };
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            const addPromise = solanaWallet.addSigner({ type: "external-wallet", address: "ABC123" });
+            await vi.runAllTimersAsync();
+            const result = await addPromise;
+
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(result.status).toBe("success");
+        });
+
+        it("should return early without registering when signer is already approved", async () => {
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-done", status: "success" },
+                },
+            } as any);
+
+            const result = await evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(result.status).toBe("success");
+        });
+
+        it("should be idempotent — calling addSigner twice yields the same result", async () => {
+            // First addSigner call: signer not found → fresh registration
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+            mockApiClient.registerSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-123", status: "success" },
+                },
+            } as any);
+
+            const result1 = await evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            // Second addSigner call: signer already approved → early return
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-123", status: "success" },
+                },
+            } as any);
+
+            const result2 = await evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledTimes(1);
+            expect(result1.status).toBe("success");
+            expect(result2.status).toBe("success");
+            expect(result1.type).toBe(result2.type);
+        });
+
+        it("should return prepareOnly result when resuming a pending operation", async () => {
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-pending", status: "awaiting-approval" },
+                },
+            } as any);
+
+            const result = await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { prepareOnly: true }
+            );
+
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(result.signatureId).toBe("sig-pending");
+        });
+
+        it("should fall through to fresh registration when signer is in failed state", async () => {
+            // getSigner returns a signer with failed status and no pending op
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-old", status: "failed" },
+                },
+            } as any);
+
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-new", status: "success" },
+                },
+            } as any);
+
+            const result = await evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
+            expect(result.status).toBe("success");
         });
     });
 });
@@ -1977,6 +2128,9 @@ describe("Wallet - recover()", () => {
                 publicKey: { x: "0x01", y: "0x02" },
                 chains: { "base-sepolia": { status: "success" } },
             } as any);
+            // addSigner's getSignerState check — signer not yet registered
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+            // assembleFullSigner's getSignerState — signer now approved after registration
             mockGetSignerApproved("base-sepolia", "device:mockNewKey");
 
             await wallet.recover();
@@ -2006,6 +2160,8 @@ describe("Wallet - recover()", () => {
                 error: true,
                 message: "Delegated signer is already 'approved'",
             } as any);
+            // addSigner's upfront getSigner check — signer not yet found
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
             // assembleFullSigner after the catch still needs getSigner
             mockGetSignerApproved("base-sepolia", "device:mockNewKey");
 
@@ -2040,6 +2196,31 @@ describe("Wallet - recover()", () => {
             await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
 
             expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
+        });
+
+        it("should preserve local key and rethrow when addSigner fails with AuthRejectedError", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            // In production the error comes from approveSignatureAndWait (OTP dismissed),
+            // but we simulate it as a registerSigner rejection to exercise the catch block.
+            mockApiClient.registerSigner.mockRejectedValue(new AuthRejectedError());
+
+            await expect(wallet.recover()).rejects.toThrow(AuthRejectedError);
+
+            // Local key should NOT be deleted — it will be needed to match the
+            // server-side pending signer on the next recover() attempt
+            expect(mockStorage.deleteKey).not.toHaveBeenCalled();
         });
 
         it("should not false-positive on error containing 'already' and 'approved' without 'delegated signer'", async () => {
@@ -2152,7 +2333,10 @@ describe("Wallet - recover()", () => {
                 chains: { "base-sepolia": { status: "failed" } },
             } as any);
 
-            // Second getSigner call (for assembleFullSigner after createDeviceSigner)
+            // Second getSigner call (addSigner's getSignerState check — signer not yet registered)
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+
+            // Third getSigner call (for assembleFullSigner after createDeviceSigner)
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "device",
                 locator: "device:mockNewKey",

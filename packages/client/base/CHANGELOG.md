@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-base
 
+## 2.3.1
+
+### Patch Changes
+
+- 79d0e8f: Change BasisTheory environment type from "sandbox" to "test" to use mock providers instead of real Visa SDK in non-production environments
+
+## 2.3.0
+
+### Minor Changes
+
+- 11f2089: change enrollment + order intent verification interfaces
+
 ## 2.2.0
 
 ### Minor Changes

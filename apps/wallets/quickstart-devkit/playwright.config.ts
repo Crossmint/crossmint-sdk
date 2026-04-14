@@ -11,7 +11,10 @@ export default defineConfig({
     workers: 1,
     maxFailures: undefined, // Don't stop after a certain number of failures - run all tests
     reporter: process.env.CI ? [["json", { outputFile: "test-results/playwright-results.json" }], ["list"]] : "html",
-    timeout: 120000, // 2 minutes for tests that may take longer (e.g., wallet address retrieval, funding)
+    timeout: 180000, // 3 minutes — phone OTP confirmation can take 90s+ on retries (slow SMS delivery)
+    expect: {
+        timeout: 15000, // webkit + phone configs can be slow to render on CI
+    },
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
         trace: "on-first-retry",

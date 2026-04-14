@@ -1,5 +1,27 @@
 # @crossmint/wallets-sdk
 
+## 1.0.11
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.5
+
+## 1.0.10
+
+### Patch Changes
+
+- e03e7b1: Fix: preserve local device key when user cancels OTP during recovery, preventing duplicate device signers on page refresh
+- 560fbf0: fix: require `status` in `wallet.transfers()` types to match backend validation
+- 0792f9e: fix: make addSigner idempotent by resuming pending operations on retry
+
+## 1.0.9
+
+### Patch Changes
+
+- 60f31bd: Fix false "Device signer key storage is required" error when creating wallets server-side with a client-created device signer
+- b9225cf: Fix `needsRecovery()` returning stale `false` after `getWallet()` by awaiting signer initialization in the wallet factory. Also fix `recover()` non-device signer early-return not clearing `needsRecovery`.
+  - @crossmint/common-sdk-auth@1.1.4
+
 ## 1.0.8
 
 ### Patch Changes

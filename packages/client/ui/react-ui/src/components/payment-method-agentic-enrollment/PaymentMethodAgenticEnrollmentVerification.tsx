@@ -1,24 +1,24 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
-import type { VerificationConfig } from "@crossmint/client-sdk-base";
+import type { PaymentMethodAgenticEnrollmentWithVerificationConfig } from "@crossmint/client-sdk-base";
 import { useEffect, useRef } from "react";
 
 export interface PaymentMethodAgenticEnrollmentVerificationProps {
-    config: VerificationConfig;
-    agentEnrollmentId: string;
-    onVerificationComplete?: (enrollment: unknown) => void;
-    onVerificationError?: (error: Error) => void;
+    paymentMethodAgenticEnrollment: PaymentMethodAgenticEnrollmentWithVerificationConfig;
+    onVerificationComplete?: () => void;
+    onVerificationError?: (error: unknown) => void;
 }
 
 export function PaymentMethodAgenticEnrollmentVerification(props: PaymentMethodAgenticEnrollmentVerificationProps) {
+    const verificationConfig = props.paymentMethodAgenticEnrollment.verificationConfig;
     return (
-        <BasisTheoryAIProvider apiKey={props.config.btApiKey} environment={props.config.environment}>
+        <BasisTheoryAIProvider apiKey={verificationConfig.publicApiKey} environment={verificationConfig.environment}>
             <PaymentMethodAgenticEnrollmentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
 }
 
 function PaymentMethodAgenticEnrollmentVerificationContent({
-    agentEnrollmentId,
+    paymentMethodAgenticEnrollment,
     onVerificationComplete,
     onVerificationError,
 }: PaymentMethodAgenticEnrollmentVerificationProps) {
@@ -45,13 +45,13 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
         let cancelled = false;
 
         verifyRef
-            .current(agentEnrollmentId)
-            .then((enrollment: unknown) => {
+            .current(paymentMethodAgenticEnrollment.enrollmentId)
+            .then(() => {
                 if (!cancelled) {
-                    completeRef.current?.(enrollment);
+                    completeRef.current?.();
                 }
             })
-            .catch((error: Error) => {
+            .catch((error) => {
                 if (!cancelled) {
                     errorRef.current?.(error);
                 }
@@ -60,7 +60,7 @@ function PaymentMethodAgenticEnrollmentVerificationContent({
         return () => {
             cancelled = true;
         };
-    }, [ready, agentEnrollmentId]);
+    }, [ready, paymentMethodAgenticEnrollment.enrollmentId]);
 
     return null;
 }

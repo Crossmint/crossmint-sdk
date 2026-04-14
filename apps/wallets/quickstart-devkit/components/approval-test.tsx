@@ -8,12 +8,13 @@ import { isAddress } from "viem";
 export function ApprovalTest() {
     const { wallet } = useWallet();
 
-    const isEVMWallet = wallet?.chain !== "solana";
+    const isStellarWallet = wallet?.chain === "stellar";
     const isSolanaWallet = wallet?.chain === "solana";
+    const isEVMWallet = !isStellarWallet && !isSolanaWallet;
 
     // State for creating transactions that need approval
     const [prepareTransfer, setPrepareTransfer] = useState({
-        token: (isEVMWallet ? "eth" : "sol") as "eth" | "usdc" | "sol" | "usdxm",
+        token: "usdxm" as "eth" | "usdc" | "sol" | "usdxm",
         recipient: "",
         amount: "",
     });
@@ -41,6 +42,9 @@ export function ApprovalTest() {
             } catch {
                 return false;
             }
+        } else if (isStellarWallet) {
+            // Stellar addresses start with G or C and are 56 characters (base32)
+            return /^[GC][A-Z2-7]{55}$/.test(address);
         }
         return false;
     };
@@ -229,8 +233,11 @@ export function ApprovalTest() {
                         <label className="text-sm font-medium block mb-1">Recipient</label>
                         <input
                             type="text"
+                            data-testid="prepare-recipient"
                             className="w-full px-3 py-2 border rounded-md text-sm"
-                            placeholder={isEVMWallet ? "0x..." : "Base58 address"}
+                            placeholder={
+                                isEVMWallet ? "0x..." : isSolanaWallet ? "Base58 address" : "G... or C... (Stellar)"
+                            }
                             value={prepareTransfer.recipient}
                             onChange={(e) =>
                                 setPrepareTransfer((prev) => ({
