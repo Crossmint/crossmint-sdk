@@ -8,7 +8,7 @@ export interface PaymentMethodAgenticEnrollmentWithVerificationConfig {
     verificationConfig: PaymentMethodAgenticEnrollmentVerificationConfig;
 }
 export interface PaymentMethodAgenticEnrollmentVerificationConfig {
-    environment: "production" | "sandbox";
+    environment: "production" | "test";
     // This is the BT client-side api key, we are intentionally not using "basis theory" in the name
     publicApiKey: string;
 }
