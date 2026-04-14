@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.0.11
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.5
+
 ## 1.0.10
 
 ### Patch Changes
