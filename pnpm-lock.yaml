@@ -687,8 +687,8 @@ importers:
   packages/client/ui/react-ui:
     dependencies:
       '@basis-theory/react-agentic':
-        specifier: 1.5.0
-        version: 1.5.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: 1.8.0
+        version: 1.8.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@crossmint/client-sdk-auth':
         specifier: workspace:*
         version: link:../../auth
@@ -1582,8 +1582,8 @@ packages:
   '@base-org/account@2.4.0':
     resolution: {integrity: sha512-A4Umpi8B9/pqR78D1Yoze4xHyQaujioVRqqO3d6xuDFw9VRtjg6tK3bPlwE0aW+nVH/ntllCpPa2PbI8Rnjcug==}
 
-  '@basis-theory/react-agentic@1.5.0':
-    resolution: {integrity: sha512-GX1rDevz6RVc2sdQzENTFHXoMVGFzqWgzoP/gFYSS1zD9y4YDxxnM/esUNoXCTUI6V3ZoekZ9OT1O9s1K1owng==}
+  '@basis-theory/react-agentic@1.8.0':
+    resolution: {integrity: sha512-esjiqcsDE0p6a8QRHjK8QrIK9gKwacmvTBwYDJQkY0PHvRD11mBH0yCKkkOLcjXkP4X9U6+XSrmQvgjJOLpn9g==}
     peerDependencies:
       react: 19.1.1
       react-dom: 19.1.1
@@ -13079,7 +13079,7 @@ snapshots:
       - zod
     optional: true
 
-  '@basis-theory/react-agentic@1.5.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@basis-theory/react-agentic@1.8.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
