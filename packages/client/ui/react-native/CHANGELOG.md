@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.31
+
+### Patch Changes
+
+- fix: republish with workspace:\* protocol references correctly resolved at publish time (0.13.30 was published with unresolved workspace:\* deps)
+
 ## 0.13.30
 
 ### Patch Changes
