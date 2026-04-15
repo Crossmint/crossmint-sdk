@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.31
+
+### Patch Changes
+
+- fix: resolve workspace:\* protocol references in published dependencies so the package installs correctly outside the monorepo
+
 ## 0.13.30
 
 ### Patch Changes
