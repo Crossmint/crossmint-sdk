@@ -51,7 +51,7 @@ jobs:
               run: |
                   if [ "$DRY_RUN" = "true" ]; then
                     echo "=== DRY RUN ==="
-                    pnpm --filter "$PACKAGE" publish --access public --no-git-checks --dry-run
+                    pnpm --filter "$PACKAGE" publish --access public --no-git-checks --provenance --dry-run
                   else
-                    pnpm --filter "$PACKAGE" publish --access public --no-git-checks
+                    pnpm --filter "$PACKAGE" publish --access public --no-git-checks --provenance
                   fi
