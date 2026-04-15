@@ -1,16 +1,63 @@
-import type { VerificationAppearance } from "@crossmint/client-sdk-base";
+import type {
+    VerificationAppearance,
+    VerificationAppearanceVariables,
+} from "@crossmint/client-sdk-base";
+import Color from "color";
+
+type VerificationColors = NonNullable<VerificationAppearanceVariables["colors"]>;
+
+function safeColor(cssColor: string): Color | null {
+    try {
+        return Color(cssColor);
+    } catch {
+        return null;
+    }
+}
+
+function darken(cssColor: string, ratio: number): string {
+    return safeColor(cssColor)?.darken(ratio).hex() ?? cssColor;
+}
+
+function lighten(cssColor: string, ratio: number): string {
+    return safeColor(cssColor)?.lighten(ratio).hex() ?? cssColor;
+}
 
 /**
- * Darken a hex color by a given factor (0–1).
- * E.g. darkenHex("#4CAF50", 0.1) darkens by 10%.
+ * Best-effort inference: fill in missing color tokens from the ones provided
+ * so that even a single token (e.g. backgroundPrimary) produces a coherent
+ * palette rather than clashing with BT's unrelated defaults.
  */
-function darkenHex(hex: string, factor: number): string {
-    const cleaned = hex.replace("#", "");
-    const num = Number.parseInt(cleaned, 16);
-    const r = Math.max(0, Math.round(((num >> 16) & 0xff) * (1 - factor)));
-    const g = Math.max(0, Math.round(((num >> 8) & 0xff) * (1 - factor)));
-    const b = Math.max(0, Math.round((num & 0xff) * (1 - factor)));
-    return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+function resolveColors(explicit: VerificationColors): VerificationColors {
+    const resolved = { ...explicit };
+
+    const bgRaw = resolved.backgroundPrimary;
+    const bg = bgRaw ? safeColor(bgRaw) : null;
+    const isLight = bg?.isLight() ?? true;
+
+    if (bg && bgRaw) {
+        if (!resolved.textPrimary) {
+            resolved.textPrimary = isLight ? bg.darken(0.85).hex() : bg.lighten(0.85).hex();
+        }
+        if (!resolved.textSecondary) {
+            resolved.textSecondary = isLight ? bg.darken(0.5).hex() : bg.lighten(0.5).hex();
+        }
+        if (!resolved.backgroundSecondary) {
+            resolved.backgroundSecondary = isLight ? darken(bgRaw, 0.04) : lighten(bgRaw, 0.08);
+        }
+        if (!resolved.border) {
+            resolved.border = isLight ? darken(bgRaw, 0.15) : lighten(bgRaw, 0.2);
+        }
+    }
+
+    // textPrimary -> textSecondary (muted variant)
+    if (!resolved.textSecondary && resolved.textPrimary) {
+        const tp = safeColor(resolved.textPrimary);
+        if (tp) {
+            resolved.textSecondary = tp.alpha(0.6).hexa();
+        }
+    }
+
+    return resolved;
 }
 
 type BtTheme = Record<string, unknown>;
@@ -42,7 +89,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     }
 
     const theme: BtTheme = {};
-    const colors = variables?.colors;
+    const colors = variables?.colors ? resolveColors(variables.colors) : undefined;
 
     // --- variables -> BT theme ---
 
@@ -50,7 +97,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.primary", colors?.accent);
     setIfDefined(theme, "colors.background.button.primary", colors?.accent);
     if (colors?.accent) {
-        setIfDefined(theme, "colors.background.button.primaryHover", darkenHex(colors.accent, 0.1));
+        setIfDefined(theme, "colors.background.button.primaryHover", darken(colors.accent, 0.1));
     }
     setIfDefined(theme, "colors.border.focus", colors?.accent);
     setIfDefined(theme, "colors.border.selected", colors?.accent);
@@ -74,7 +121,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.background.input", colors?.backgroundSecondary);
     setIfDefined(theme, "colors.background.button.secondary", colors?.backgroundSecondary);
     if (colors?.backgroundSecondary) {
-        setIfDefined(theme, "colors.background.button.secondaryHover", darkenHex(colors.backgroundSecondary, 0.1));
+        setIfDefined(theme, "colors.background.button.secondaryHover", darken(colors.backgroundSecondary, 0.1));
     }
 
     // border
