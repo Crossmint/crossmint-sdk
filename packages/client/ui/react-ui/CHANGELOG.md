@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.1.3
+
+### Patch Changes
+
+- c5de4b9: verifications: theming
+- Updated dependencies [28a7957]
+- Updated dependencies [c5de4b9]
+  - @crossmint/wallets-sdk@1.0.12
+  - @crossmint/client-sdk-base@2.3.2
+  - @crossmint/client-sdk-react-base@2.0.14
+  - @crossmint/client-sdk-auth@1.3.8
+  - @crossmint/common-sdk-auth@1.1.6
+
 ## 4.1.2
 
 ### Patch Changes

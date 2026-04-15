@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 1.0.12
+
+### Patch Changes
+
+- 28a7957: fix: handle API-sourced recovery configs without secret in isRecoverySigner
+  - @crossmint/common-sdk-auth@1.1.6
+
 ## 1.0.11
 
 ### Patch Changes

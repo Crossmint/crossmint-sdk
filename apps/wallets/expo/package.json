@@ -1,7 +1,7 @@
 {
     "name": "@crossmint/wallets-playground-expo",
     "private": true,
-    "version": "0.0.1",
+    "version": "0.0.2",
     "main": "index.ts",
     "scripts": {
         "ios": "npx expo run:ios",
