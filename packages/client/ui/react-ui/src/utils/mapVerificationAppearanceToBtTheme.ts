@@ -1,7 +1,4 @@
-import type {
-    VerificationAppearance,
-    VerificationAppearanceVariables,
-} from "@crossmint/client-sdk-base";
+import type { VerificationAppearance, VerificationAppearanceVariables } from "@crossmint/client-sdk-base";
 import Color from "color";
 
 type VerificationColors = NonNullable<VerificationAppearanceVariables["colors"]>;
