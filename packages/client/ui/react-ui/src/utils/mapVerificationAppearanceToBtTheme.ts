@@ -15,6 +15,38 @@ function darken(cssColor: string, ratio: number): string {
     return safeColor(cssColor)?.darken(ratio).hex() ?? cssColor;
 }
 
+/**
+ * Parse a CSS length (e.g. "16px", "1.2rem") into its numeric value and unit,
+ * then return a new length scaled by the given ratio.
+ */
+function scaleCssLength(base: string, ratio: number): string {
+    const match = base.match(/^([0-9]*\.?[0-9]+)\s*(.+)$/);
+    if (!match) {
+        return base;
+    }
+    const value = Number.parseFloat(match[1]) * ratio;
+    const rounded = Math.round(value * 100) / 100;
+    return `${rounded}${match[2]}`;
+}
+
+// BT default ratios — derived from their defaultTheme so we preserve
+// the typographic / spacing hierarchy when the user sets a base unit.
+const FONT_SIZE_RATIOS = {
+    title: 24 / 14,
+    body: 1,
+    small: 12 / 14,
+    error: 13 / 14,
+    input: 18 / 14,
+    passkey: 16 / 14,
+} as const;
+
+const SPACING_RATIOS = {
+    modal: 32 / 16,
+    section: 1,
+    input: 8 / 16,
+    buttonGap: 8 / 16,
+    optionGap: 12 / 16,
+} as const;
 
 /**
  * Best-effort inference: fill in missing color tokens from the ones provided
@@ -31,14 +63,10 @@ function resolveColors(explicit: VerificationColors): VerificationColors {
     if (bg && bgRaw) {
         const bgHsl = bg.hsl();
         if (!resolved.textPrimary) {
-            resolved.textPrimary = isLight
-                ? bgHsl.lightness(10).hex()
-                : bgHsl.lightness(90).hex();
+            resolved.textPrimary = isLight ? bgHsl.lightness(10).hex() : bgHsl.lightness(90).hex();
         }
         if (!resolved.textSecondary) {
-            resolved.textSecondary = isLight
-                ? bgHsl.lightness(35).hex()
-                : bgHsl.lightness(65).hex();
+            resolved.textSecondary = isLight ? bgHsl.lightness(35).hex() : bgHsl.lightness(65).hex();
         }
         if (!resolved.backgroundSecondary) {
             const l = bgHsl.lightness();
@@ -155,25 +183,20 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     // fontFamily
     setIfDefined(theme, "typography.fontFamily", variables?.fontFamily);
 
-    // fontSizeUnit — apply uniformly to all fontSize slots
+    // fontSizeUnit — treated as the body base; other slots are scaled proportionally
     if (variables?.fontSizeUnit) {
-        const unit = variables.fontSizeUnit;
-        setIfDefined(theme, "typography.fontSize.title", unit);
-        setIfDefined(theme, "typography.fontSize.body", unit);
-        setIfDefined(theme, "typography.fontSize.small", unit);
-        setIfDefined(theme, "typography.fontSize.error", unit);
-        setIfDefined(theme, "typography.fontSize.input", unit);
-        setIfDefined(theme, "typography.fontSize.passkey", unit);
+        const base = variables.fontSizeUnit;
+        for (const [slot, ratio] of Object.entries(FONT_SIZE_RATIOS)) {
+            setIfDefined(theme, `typography.fontSize.${slot}`, scaleCssLength(base, ratio));
+        }
     }
 
-    // spacingUnit — apply uniformly to all spacing slots
+    // spacingUnit — treated as the section base; other slots are scaled proportionally
     if (variables?.spacingUnit) {
-        const unit = variables.spacingUnit;
-        setIfDefined(theme, "spacing.modal", unit);
-        setIfDefined(theme, "spacing.section", unit);
-        setIfDefined(theme, "spacing.input", unit);
-        setIfDefined(theme, "spacing.buttonGap", unit);
-        setIfDefined(theme, "spacing.optionGap", unit);
+        const base = variables.spacingUnit;
+        for (const [slot, ratio] of Object.entries(SPACING_RATIOS)) {
+            setIfDefined(theme, `spacing.${slot}`, scaleCssLength(base, ratio));
+        }
     }
 
     // borderRadius
