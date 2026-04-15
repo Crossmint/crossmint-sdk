@@ -39,7 +39,7 @@ export function Permissions({
     const setField = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
 
     const loadSigners = useCallback(async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         const res = await wallet.signers();
         setSigners(res ?? []);
     }, [wallet]);
@@ -55,10 +55,10 @@ export function Permissions({
     };
 
     const handleUseSigner = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         setStatus("");
         try {
-            if (!selectedSigner) {
+            if (selectedSigner == null) {
                 setStatus("Select a registered signer first");
                 return;
             }
@@ -77,18 +77,18 @@ export function Permissions({
     };
 
     const handleAddSigner = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         setStatus("");
         try {
             let signer: any;
             if (signerType === "device") {
                 const descriptor = await createDeviceSigner?.();
-                if (!descriptor) throw new Error("createDeviceSigner not available");
+                if (descriptor == null) throw new Error("createDeviceSigner not available");
                 signer = descriptor;
             } else if (signerType === "passkey") {
                 const name = fields.name || "passkey";
                 const descriptor = await createPasskeySigner?.(name);
-                if (!descriptor) throw new Error("createPasskeySigner not available");
+                if (descriptor == null) throw new Error("createPasskeySigner not available");
                 signer = descriptor;
             } else if (signerType === "external-wallet" && buildExternalWalletSignerFn && fields.privateKey) {
                 signer = buildExternalWalletSignerFn(wallet.chain, fields.privateKey);
@@ -104,12 +104,12 @@ export function Permissions({
     };
 
     const checkRecovery = () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         setRecoveryNeeded(wallet.needsRecovery());
     };
 
     const handleRecover = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         setStatus("");
         try {
             await wallet.recover();
@@ -138,7 +138,7 @@ export function Permissions({
                 {wallet &&
                     (() => {
                         const recovery = (wallet as any).recovery;
-                        if (!recovery) return null;
+                        if (recovery == null) return null;
                         const locator = getSignerLocator(recovery);
                         const isSelected = locator === selectedLocator;
                         return (

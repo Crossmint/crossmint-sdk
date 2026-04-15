@@ -8,7 +8,7 @@ export function WalletDisplay() {
     const [copied, setCopied] = useState(false);
 
     const copyAddress = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         await Clipboard.setStringAsync(wallet.address);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -18,7 +18,7 @@ export function WalletDisplay() {
         return <Text style={{ color: "#6B7280" }}>Fetching wallet...</Text>;
     }
 
-    if (!wallet) {
+    if (wallet == null) {
         return <Text style={{ color: "#6B7280" }}>No wallet connected</Text>;
     }
 

@@ -14,7 +14,7 @@ export function ChainTest() {
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState("");
 
-    if (!wallet) return null;
+    if (wallet == null) return null;
 
     const run = async (label: string, fn: () => Promise<string>) => {
         setLoading(label);
@@ -116,36 +116,36 @@ export function ChainTest() {
     const chain = wallet.chain;
 
     return (
-        <div className="qs-card qs-card--nested">
-            <p className="qs-label">Chain Test ({chain})</p>
-            <div className="qs-flex qs-flex--gap-sm qs-mt-sm" style={{ flexWrap: "wrap" }}>
+        <div className="xm-card xm-card--nested">
+            <p className="xm-label">Chain Test ({chain})</p>
+            <div className="xm-flex xm-flex--gap-sm xm-mt-sm" style={{ flexWrap: "wrap" }}>
                 {isEvm(chain) && (
                     <>
-                        <button className="qs-btn qs-btn--secondary" onClick={evmSendTx} disabled={!!loading}>
+                        <button className="xm-btn xm-btn--secondary" onClick={evmSendTx} disabled={!!loading}>
                             {loading === "sendTransaction" ? "Sending..." : "Send Tx"}
                         </button>
-                        <button className="qs-btn qs-btn--secondary" onClick={evmSignMessage} disabled={!!loading}>
+                        <button className="xm-btn xm-btn--secondary" onClick={evmSignMessage} disabled={!!loading}>
                             {loading === "signMessage" ? "Signing..." : "Sign Message"}
                         </button>
-                        <button className="qs-btn qs-btn--secondary" onClick={evmSignTypedData} disabled={!!loading}>
+                        <button className="xm-btn xm-btn--secondary" onClick={evmSignTypedData} disabled={!!loading}>
                             {loading === "signTypedData" ? "Signing..." : "Sign Typed Data"}
                         </button>
                     </>
                 )}
                 {chain.startsWith("solana") && (
-                    <button className="qs-btn qs-btn--secondary" onClick={solanaSendTx} disabled={!!loading}>
+                    <button className="xm-btn xm-btn--secondary" onClick={solanaSendTx} disabled={!!loading}>
                         {loading === "sendTransaction" ? "Sending..." : "Send Tx"}
                     </button>
                 )}
                 {chain.startsWith("stellar") && (
-                    <button className="qs-btn qs-btn--secondary" onClick={stellarSendTx} disabled={!!loading}>
+                    <button className="xm-btn xm-btn--secondary" onClick={stellarSendTx} disabled={!!loading}>
                         {loading === "sendTransaction" ? "Sending..." : "Send Tx"}
                     </button>
                 )}
             </div>
             {result && (
                 <pre
-                    className="qs-mt-sm"
+                    className="xm-mt-sm"
                     style={{
                         fontSize: 11,
                         maxHeight: 120,

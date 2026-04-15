@@ -5,7 +5,7 @@ export function ActivityList({ wallet }: { wallet: any }) {
     const [transfers, setTransfers] = useState<any[]>([]);
 
     const loadActivity = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         const res = await wallet.transfers({ tokens: "usdxm,usdc", status: "successful" });
         setTransfers(res?.data ?? []);
     };

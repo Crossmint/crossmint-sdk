@@ -22,7 +22,7 @@ function AppContent() {
         );
     }
 
-    if (!user) {
+    if (user == null) {
         return <LoginScreen />;
     }
 

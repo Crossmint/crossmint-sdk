@@ -6,7 +6,7 @@ export function BalanceCard({ wallet }: { wallet: any }) {
     const [balances, setBalances] = useState<Record<string, string>>({});
 
     const refreshBalance = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         const res = await wallet.balances([...TOKENS]);
         const map: Record<string, string> = {};
         map[res.usdc.symbol] = res.usdc.amount;
@@ -17,7 +17,7 @@ export function BalanceCard({ wallet }: { wallet: any }) {
     };
 
     const handleFund = async () => {
-        if (!wallet) return;
+        if (wallet == null) return;
         await wallet.stagingFund(10);
         await refreshBalance();
     };

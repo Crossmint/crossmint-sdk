@@ -18,7 +18,7 @@ export function signerLabel(s: any): string {
     const loc = getSignerLocator(s);
     const [type] = loc.split(":");
     const rest = loc.slice(type.length + 1);
-    if (!rest) return loc;
+    if (rest == null || rest === "") return loc;
     if (rest.length > 20) return `${type}: ${rest.slice(0, 8)}...${rest.slice(-8)}`;
     return `${type}: ${rest}`;
 }

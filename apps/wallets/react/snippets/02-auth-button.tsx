@@ -7,14 +7,14 @@ export function AuthButton() {
 
     if (user) {
         return (
-            <button className="qs-btn qs-btn--ghost" onClick={logout}>
+            <button className="xm-btn xm-btn--ghost" onClick={logout}>
                 Log out
             </button>
         );
     }
 
     return (
-        <button className="qs-btn qs-btn--primary" onClick={login}>
+        <button className="xm-btn xm-btn--primary" onClick={login}>
             Sign In
         </button>
     );

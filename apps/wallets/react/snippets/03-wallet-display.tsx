@@ -6,26 +6,26 @@ export function WalletDisplay() {
     const { wallet, status } = useWallet();
 
     if (status === "in-progress") {
-        return <p className="qs-text-muted">Fetching wallet...</p>;
+        return <p className="xm-text-muted">Fetching wallet...</p>;
     }
 
-    if (!wallet) {
-        return <p className="qs-text-muted">No wallet connected</p>;
+    if (wallet == null) {
+        return <p className="xm-text-muted">No wallet connected</p>;
     }
 
     return (
-        <div className="qs-details">
-            <div className="qs-details__row">
-                <span className="qs-details__label">Address</span>
-                <span className="qs-details__value">{wallet.address}</span>
+        <div className="xm-details">
+            <div className="xm-details__row">
+                <span className="xm-details__label">Address</span>
+                <span className="xm-details__value">{wallet.address}</span>
             </div>
-            <div className="qs-details__row">
-                <span className="qs-details__label">Owner</span>
-                <span className="qs-details__value">{wallet?.owner ?? "—"}</span>
+            <div className="xm-details__row">
+                <span className="xm-details__label">Owner</span>
+                <span className="xm-details__value">{wallet?.owner ?? "—"}</span>
             </div>
-            <div className="qs-details__row">
-                <span className="qs-details__label">Chain</span>
-                <span className="qs-details__value">{wallet.chain}</span>
+            <div className="xm-details__row">
+                <span className="xm-details__label">Chain</span>
+                <span className="xm-details__value">{wallet.chain}</span>
             </div>
         </div>
     );

@@ -1,8 +1,9 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { Keypair as SolanaKeypair, type VersionedTransaction } from "@solana/web3.js";
 import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
+import type { ExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
 
-export function buildExternalWalletSigner(chain: string, privateKey: string): any {
+export function buildExternalWalletSigner(chain: string, privateKey: string): ExternalWalletSignerConfig {
     if (chain === "solana") {
         const secretKey = Uint8Array.from(JSON.parse(privateKey));
         const kp = SolanaKeypair.fromSecretKey(secretKey);

@@ -17,28 +17,28 @@ function Dashboard() {
     const { wallet, status } = useWallet();
 
     return (
-        <div className="qs-card__body">
-            {status === "in-progress" && <p className="qs-text-muted">Fetching wallet...</p>}
-            {status === "error" && <p className="qs-text-error">Error loading wallet</p>}
+        <div className="xm-card__body">
+            {status === "in-progress" && <p className="xm-text-muted">Fetching wallet...</p>}
+            {status === "error" && <p className="xm-text-error">Error loading wallet</p>}
             {status === "loaded" && wallet && (
                 <>
-                    <div className="qs-grid qs-grid--2">
+                    <div className="xm-grid xm-grid--2">
                         <BalanceCard />
                         <TransferForm />
                     </div>
-                    <div className="qs-grid qs-grid--2 qs-mt-md">
+                    <div className="xm-grid xm-grid--2 xm-mt-md">
                         <Activity />
                         <Permissions />
                     </div>
-                    <div className="qs-mt-md">
+                    <div className="xm-mt-md">
                         <ApprovalTest />
                     </div>
-                    <div className="qs-mt-md">
+                    <div className="xm-mt-md">
                         <ChainTest />
                     </div>
-                    <div className="qs-card qs-card--nested qs-mt-md">
-                        <div className="qs-card__body">
-                            <p className="qs-label">Wallet Details</p>
+                    <div className="xm-card xm-card--nested xm-mt-md">
+                        <div className="xm-card__body">
+                            <p className="xm-label">Wallet Details</p>
                             <WalletDisplay />
                         </div>
                     </div>
@@ -53,20 +53,20 @@ function JwtLogin() {
     const [jwt, setJwt] = useState("");
 
     const applyJwt = () => {
-        if (!jwt) return;
+        if (jwt == null || jwt === "") return;
         setCrossmintJwt(jwt);
     };
 
     return (
-        <div className="qs-card qs-card--nested" style={{ maxWidth: 480 }}>
-            <p className="qs-label">JWT / BYOA Login</p>
+        <div className="xm-card xm-card--nested" style={{ maxWidth: 480 }}>
+            <p className="xm-label">JWT / BYOA Login</p>
             <input
-                className="qs-input qs-mt-sm"
+                className="xm-input xm-mt-sm"
                 placeholder="Paste your JWT token"
                 value={jwt}
                 onChange={(e) => setJwt(e.target.value)}
             />
-            <button className="qs-btn qs-btn--primary qs-btn--full qs-mt-md" onClick={applyJwt} disabled={!jwt}>
+            <button className="xm-btn xm-btn--primary xm-btn--full xm-mt-md" onClick={applyJwt} disabled={!jwt}>
                 Connect with JWT
             </button>
         </div>
@@ -77,12 +77,12 @@ function JwtLogin() {
 function JwtModeHome() {
     const { wallet, status } = useWallet();
 
-    if (!wallet && status !== "in-progress") {
+    if (wallet == null && status !== "in-progress") {
         return (
-            <div className="qs-page">
-                <div className="qs-center">
-                    <h1 className="qs-title">Wallets Playground</h1>
-                    <p className="qs-subtitle qs-mb-lg">Test Crossmint wallet operations</p>
+            <div className="xm-page">
+                <div className="xm-center">
+                    <h1 className="xm-title">Wallets Playground</h1>
+                    <p className="xm-subtitle xm-mb-lg">Test Crossmint wallet operations</p>
                     <JwtLogin />
                 </div>
             </div>
@@ -90,14 +90,14 @@ function JwtModeHome() {
     }
 
     return (
-        <div className="qs-page">
-            <header className="qs-header">
-                <span className="qs-header__brand">Wallets Playground</span>
+        <div className="xm-page">
+            <header className="xm-header">
+                <span className="xm-header__brand">Wallets Playground</span>
             </header>
-            <main className="qs-container">
-                <div className="qs-card">
-                    <div className="qs-card__header">
-                        <h2 className="qs-card__title">Dashboard</h2>
+            <main className="xm-container">
+                <div className="xm-card">
+                    <div className="xm-card__header">
+                        <h2 className="xm-card__title">Dashboard</h2>
                     </div>
                     <Dashboard />
                 </div>
@@ -110,12 +110,12 @@ function JwtModeHome() {
 function AuthModeHome() {
     const { user } = useCrossmintAuth();
 
-    if (!user) {
+    if (user == null) {
         return (
-            <div className="qs-page">
-                <div className="qs-center">
-                    <h1 className="qs-title">Wallets Playground</h1>
-                    <p className="qs-subtitle qs-mb-lg">Test Crossmint wallet operations</p>
+            <div className="xm-page">
+                <div className="xm-center">
+                    <h1 className="xm-title">Wallets Playground</h1>
+                    <p className="xm-subtitle xm-mb-lg">Test Crossmint wallet operations</p>
                     <AuthButton />
                 </div>
             </div>
@@ -123,15 +123,15 @@ function AuthModeHome() {
     }
 
     return (
-        <div className="qs-page">
-            <header className="qs-header">
-                <span className="qs-header__brand">Wallets Playground</span>
+        <div className="xm-page">
+            <header className="xm-header">
+                <span className="xm-header__brand">Wallets Playground</span>
                 <AuthButton />
             </header>
-            <main className="qs-container">
-                <div className="qs-card">
-                    <div className="qs-card__header">
-                        <h2 className="qs-card__title">Dashboard</h2>
+            <main className="xm-container">
+                <div className="xm-card">
+                    <div className="xm-card__header">
+                        <h2 className="xm-card__title">Dashboard</h2>
                     </div>
                     <Dashboard />
                 </div>

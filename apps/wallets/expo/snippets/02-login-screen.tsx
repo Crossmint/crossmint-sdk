@@ -10,14 +10,14 @@ export function LoginScreen() {
     const [otpSent, setOtpSent] = useState(false);
 
     const sendOtp = async () => {
-        if (!crossmintAuth) return;
+        if (crossmintAuth == null) return;
         const res = await crossmintAuth.sendEmailOtp(email);
         setEmailId(res.emailId);
         setOtpSent(true);
     };
 
     const verifyOtp = async () => {
-        if (!crossmintAuth) return;
+        if (crossmintAuth == null) return;
         const secret = await crossmintAuth.confirmEmailOtp(email, emailId, otp);
         await createAuthSession(secret);
     };
