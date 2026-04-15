@@ -15,9 +15,6 @@ function darken(cssColor: string, ratio: number): string {
     return safeColor(cssColor)?.darken(ratio).hex() ?? cssColor;
 }
 
-function lighten(cssColor: string, ratio: number): string {
-    return safeColor(cssColor)?.lighten(ratio).hex() ?? cssColor;
-}
 
 /**
  * Best-effort inference: fill in missing color tokens from the ones provided
@@ -32,17 +29,28 @@ function resolveColors(explicit: VerificationColors): VerificationColors {
     const isLight = bg?.isLight() ?? true;
 
     if (bg && bgRaw) {
+        const bgHsl = bg.hsl();
         if (!resolved.textPrimary) {
-            resolved.textPrimary = isLight ? bg.darken(0.85).hex() : bg.lighten(0.85).hex();
+            resolved.textPrimary = isLight
+                ? bgHsl.lightness(10).hex()
+                : bgHsl.lightness(90).hex();
         }
         if (!resolved.textSecondary) {
-            resolved.textSecondary = isLight ? bg.darken(0.5).hex() : bg.lighten(0.5).hex();
+            resolved.textSecondary = isLight
+                ? bgHsl.lightness(35).hex()
+                : bgHsl.lightness(65).hex();
         }
         if (!resolved.backgroundSecondary) {
-            resolved.backgroundSecondary = isLight ? darken(bgRaw, 0.04) : lighten(bgRaw, 0.08);
+            const l = bgHsl.lightness();
+            resolved.backgroundSecondary = isLight
+                ? bgHsl.lightness(Math.max(0, l - 4)).hex()
+                : bgHsl.lightness(Math.min(100, l + 6)).hex();
         }
         if (!resolved.border) {
-            resolved.border = isLight ? darken(bgRaw, 0.15) : lighten(bgRaw, 0.2);
+            const l = bgHsl.lightness();
+            resolved.border = isLight
+                ? bgHsl.lightness(Math.max(0, l - 15)).hex()
+                : bgHsl.lightness(Math.min(100, l + 15)).hex();
         }
     }
 
@@ -106,6 +114,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.text.primary", colors?.textPrimary);
     // BT nests button text colors under colors.background.button (not colors.text)
     setIfDefined(theme, "colors.background.button.primaryText", colors?.textPrimary);
+    setIfDefined(theme, "colors.background.button.secondaryText", colors?.textPrimary);
 
     // textSecondary
     setIfDefined(theme, "colors.text.secondary", colors?.textSecondary);
@@ -119,7 +128,11 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.background.input", colors?.backgroundSecondary);
     setIfDefined(theme, "colors.background.button.secondary", colors?.backgroundSecondary);
     if (colors?.backgroundSecondary) {
-        setIfDefined(theme, "colors.background.button.secondaryHover", darken(colors.backgroundSecondary, 0.1));
+        const bgSecondary = safeColor(colors.backgroundSecondary);
+        const hoverColor = bgSecondary?.isLight()
+            ? darken(colors.backgroundSecondary, 0.1)
+            : bgSecondary?.lighten(0.2).hex() ?? colors.backgroundSecondary;
+        setIfDefined(theme, "colors.background.button.secondaryHover", hoverColor);
     }
 
     // border
