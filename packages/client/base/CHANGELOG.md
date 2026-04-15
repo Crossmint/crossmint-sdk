@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.3.2
+
+### Patch Changes
+
+- c5de4b9: verifications: theming
+
 ## 2.3.1
 
 ### Patch Changes
