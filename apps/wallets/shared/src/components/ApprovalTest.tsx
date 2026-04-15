@@ -71,10 +71,17 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
             </TouchableOpacity>
             {pendingTxId ? (
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, gap: 6 }}>
-                    <Text style={{ fontSize: 11, color: "#6B7280", flex: 1 }} numberOfLines={1}>TX ID: {pendingTxId}</Text>
+                    <Text style={{ fontSize: 11, color: "#6B7280", flex: 1 }} numberOfLines={1}>
+                        TX ID: {pendingTxId}
+                    </Text>
                     <TouchableOpacity
                         onPress={() => copyToClipboard?.(pendingTxId)}
-                        style={{ backgroundColor: "#E5E7EB", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}
+                        style={{
+                            backgroundColor: "#E5E7EB",
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 6,
+                        }}
                     >
                         <Text style={{ fontSize: 11, color: "#374151" }}>Copy</Text>
                     </TouchableOpacity>
