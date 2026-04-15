@@ -137,6 +137,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.spinner.indicator", colors?.accent);
     setIfDefined(theme, "colors.radio.borderSelected", colors?.accent);
     setIfDefined(theme, "colors.radio.backgroundSelected", colors?.accent);
+    setIfDefined(theme, "colors.radio.dot", colors?.accent);
 
     // textPrimary
     setIfDefined(theme, "colors.text.primary", colors?.textPrimary);
@@ -148,9 +149,17 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "colors.text.secondary", colors?.textSecondary);
     setIfDefined(theme, "colors.text.placeholder", colors?.textSecondary);
 
-    // backgroundPrimary
+    // backgroundPrimary — surface is the base, card is slightly elevated
     setIfDefined(theme, "colors.background.surface", colors?.backgroundPrimary);
-    setIfDefined(theme, "colors.background.card", colors?.backgroundPrimary);
+    if (colors?.backgroundPrimary) {
+        const bgParsed = safeColor(colors.backgroundPrimary);
+        if (bgParsed) {
+            const cardBg = bgParsed.isLight() ? bgParsed.darken(0.06).hex() : bgParsed.lighten(0.3).hex();
+            setIfDefined(theme, "colors.background.card", cardBg);
+        } else {
+            setIfDefined(theme, "colors.background.card", colors.backgroundPrimary);
+        }
+    }
 
     // backgroundSecondary
     setIfDefined(theme, "colors.background.input", colors?.backgroundSecondary);
@@ -226,22 +235,23 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
     setIfDefined(theme, "borders.radius.button", rules?.PrimaryButton?.borderRadius);
     setIfDefined(theme, "colors.background.button.primaryText", rules?.PrimaryButton?.colors?.text);
     setIfDefined(theme, "colors.background.button.primary", rules?.PrimaryButton?.colors?.background);
-    setIfDefined(theme, "colors.background.button.primaryHover", rules?.PrimaryButton?.colors?.backgroundHover);
+    setIfDefined(theme, "colors.background.button.primaryHover", rules?.PrimaryButton?.hover?.colors?.background);
+    setIfDefined(theme, "colors.background.button.disabled", rules?.PrimaryButton?.disabled?.colors?.background);
 
     // SecondaryButton
     setIfDefined(theme, "colors.background.button.secondaryText", rules?.SecondaryButton?.colors?.text);
     setIfDefined(theme, "colors.background.button.secondary", rules?.SecondaryButton?.colors?.background);
-    setIfDefined(theme, "colors.background.button.secondaryHover", rules?.SecondaryButton?.colors?.backgroundHover);
+    setIfDefined(theme, "colors.background.button.secondaryHover", rules?.SecondaryButton?.hover?.colors?.background);
 
     // CloseButton
     setIfDefined(theme, "colors.closeButton.background", rules?.CloseButton?.colors?.background);
-    setIfDefined(theme, "colors.closeButton.backgroundHover", rules?.CloseButton?.colors?.backgroundHover);
+    setIfDefined(theme, "colors.closeButton.backgroundHover", rules?.CloseButton?.hover?.colors?.background);
 
     // Radio
     setIfDefined(theme, "colors.radio.border", rules?.Radio?.colors?.border);
-    setIfDefined(theme, "colors.radio.borderSelected", rules?.Radio?.colors?.borderSelected);
-    setIfDefined(theme, "colors.radio.backgroundSelected", rules?.Radio?.colors?.backgroundSelected);
-    setIfDefined(theme, "colors.radio.dot", rules?.Radio?.colors?.dot);
+    setIfDefined(theme, "colors.radio.borderSelected", rules?.Radio?.selected?.colors?.border);
+    setIfDefined(theme, "colors.radio.backgroundSelected", rules?.Radio?.selected?.colors?.background);
+    setIfDefined(theme, "colors.radio.dot", rules?.Radio?.selected?.colors?.dot);
 
     return theme;
 }
