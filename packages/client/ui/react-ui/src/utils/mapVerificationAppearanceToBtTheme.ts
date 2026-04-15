@@ -104,6 +104,7 @@ export function mapVerificationAppearanceToBtTheme(appearance?: VerificationAppe
 
     // textPrimary
     setIfDefined(theme, "colors.text.primary", colors?.textPrimary);
+    // BT nests button text colors under colors.background.button (not colors.text)
     setIfDefined(theme, "colors.background.button.primaryText", colors?.textPrimary);
 
     // textSecondary
