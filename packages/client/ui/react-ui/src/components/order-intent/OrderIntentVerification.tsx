@@ -1,17 +1,25 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
-import type { OrderIntentWithVerification } from "@crossmint/client-sdk-base";
-import { useEffect, useRef } from "react";
+import type { OrderIntentWithVerification, VerificationAppearance } from "@crossmint/client-sdk-base";
+import { useMemo, useEffect, useRef } from "react";
+
+import { mapVerificationAppearanceToBtTheme } from "../../utils/mapVerificationAppearanceToBtTheme";
 
 export interface OrderIntentVerificationProps {
     orderIntent: OrderIntentWithVerification;
+    appearance?: VerificationAppearance;
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
 }
 
 export function OrderIntentVerification(props: OrderIntentVerificationProps) {
     const verificationConfig = props.orderIntent.verificationConfig;
+    const btTheme = useMemo(() => mapVerificationAppearanceToBtTheme(props.appearance), [props.appearance]);
     return (
-        <BasisTheoryAIProvider apiKey={verificationConfig.publicApiKey} environment={verificationConfig.environment}>
+        <BasisTheoryAIProvider
+            apiKey={verificationConfig.publicApiKey}
+            environment={verificationConfig.environment}
+            theme={btTheme}
+        >
             <OrderIntentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
