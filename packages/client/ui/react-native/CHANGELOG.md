@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- fix: resolve workspace:\* protocol references in published dependencies so the package installs correctly outside the monorepo
+- fix: republish with workspace:\* protocol references correctly resolved at publish time (0.13.30 was published with unresolved workspace:\* deps)
 
 ## 0.13.30
 

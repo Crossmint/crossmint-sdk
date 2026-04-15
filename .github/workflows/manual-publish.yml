@@ -1,0 +1,54 @@
+name: Manual Publish (Legacy Branches)
+
+on:
+    workflow_dispatch:
+        inputs:
+            package:
+                description: "Package filter for pnpm --filter (e.g. @crossmint/client-sdk-react-native-ui)"
+                required: true
+                type: string
+            dry-run:
+                description: "Dry run — validate without publishing"
+                required: false
+                type: boolean
+                default: true
+
+env:
+    NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    publish:
+        name: Publish
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Setup Node.js 24 for OIDC trusted publishing
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Update npm for OIDC trusted publishing
+              run: npm install -g npm@11.6.2
+
+            - name: Build libraries
+              run: pnpm build:libs:prod
+
+            - name: Publish package
+              run: |
+                  if [ "${{ inputs.dry-run }}" = "true" ]; then
+                    echo "=== DRY RUN ==="
+                    pnpm --filter "${{ inputs.package }}" publish --access public --no-git-checks --dry-run
+                  else
+                    pnpm --filter "${{ inputs.package }}" publish --access public --no-git-checks
+                  fi
