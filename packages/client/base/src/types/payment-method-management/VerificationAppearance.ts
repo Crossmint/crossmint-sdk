@@ -48,7 +48,6 @@ export type VerificationAppearanceRules = {
         };
     };
     SecondaryButton?: {
-        borderRadius?: string;
         colors?: {
             text?: string;
             background?: string;
