@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.30
+
+### Patch Changes
+
+- b039cb9: fix: enable WebView scrolling so keyboard no longer covers inputs in embedded checkout
+
 ## 0.13.24
 
 ### Patch Changes
