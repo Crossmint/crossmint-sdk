@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.1.4
+
+### Patch Changes
+
+- 66afdd1: tweak verification theme colors
+- Updated dependencies [66afdd1]
+  - @crossmint/client-sdk-base@2.3.3
+  - @crossmint/client-sdk-auth@1.3.9
+  - @crossmint/client-sdk-react-base@2.0.15
+  - @crossmint/common-sdk-auth@1.1.7
+  - @crossmint/wallets-sdk@1.0.13
+
 ## 4.1.3
 
 ### Patch Changes
