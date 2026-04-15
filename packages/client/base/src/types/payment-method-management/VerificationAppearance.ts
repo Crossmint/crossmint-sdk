@@ -44,28 +44,49 @@ export type VerificationAppearanceRules = {
         colors?: {
             text?: string;
             background?: string;
-            backgroundHover?: string;
+        };
+        hover?: {
+            colors?: {
+                background?: string;
+            };
+        };
+        disabled?: {
+            colors?: {
+                background?: string;
+            };
         };
     };
     SecondaryButton?: {
         colors?: {
             text?: string;
             background?: string;
-            backgroundHover?: string;
+        };
+        hover?: {
+            colors?: {
+                background?: string;
+            };
         };
     };
     CloseButton?: {
         colors?: {
             background?: string;
-            backgroundHover?: string;
+        };
+        hover?: {
+            colors?: {
+                background?: string;
+            };
         };
     };
     Radio?: {
         colors?: {
             border?: string;
-            borderSelected?: string;
-            backgroundSelected?: string;
-            dot?: string;
+        };
+        selected?: {
+            colors?: {
+                border?: string;
+                background?: string;
+                dot?: string;
+            };
         };
     };
 };
