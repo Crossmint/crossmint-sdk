@@ -45,12 +45,16 @@
             "path": "packages/client/ui/react-ui"
         },
         {
-            "name": "[DEPRECATED] ⚛️🔒 Smart Wallet + Auth Demo",
-            "path": "apps/wallets/smart-wallet/next"
+            "name": "[LEGACY] ⚛️🔒 Wallets Quickstart Devkit",
+            "path": "apps/wallets/quickstart-devkit"
         },
         {
-            "name": "⚛️🔒 Wallets Quickstart Devkit",
-            "path": "apps/wallets/quickstart-devkit"
+            "name": "⚛️🔒 Wallets Testing Playground",
+            "path": "apps/wallets/react"
+        },
+        {
+            "name": "⚛️📱 EXPO Wallets Testing Playground",
+            "path": "apps/wallets/expo"
         },
         {
             "name": "✅ @crossmint/client-sdk-verifiable-credentials",
