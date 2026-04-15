@@ -43,7 +43,7 @@ function AppContent() {
             </View>
 
             {walletStatus === "in-progress" && (
-                <Text style={{ color: "#6B7280", marginBottom: 16 }}>Creating wallet...</Text>
+                <Text style={{ color: "#6B7280", marginBottom: 16 }}>Fetching wallet...</Text>
             )}
 
             {walletStatus === "loaded" && wallet && (

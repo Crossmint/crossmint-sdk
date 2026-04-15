@@ -5,5 +5,5 @@ import { ApprovalTest as ApprovalTestShared } from "@crossmint/wallets-playgroun
 
 export function ApprovalTest() {
     const { wallet } = useWallet();
-    return <ApprovalTestShared wallet={wallet} />;
+    return <ApprovalTestShared wallet={wallet} copyToClipboard={(text) => navigator.clipboard.writeText(text)} />;
 }

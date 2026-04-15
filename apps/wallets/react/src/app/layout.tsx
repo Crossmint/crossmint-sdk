@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "../../snippets/01-provider-setup";
 
 export const metadata: Metadata = {
-    title: "Crossmint Wallets - React Quickstart",
+    title: "Wallets - React Playground",
     description: "Create user wallets from your frontend in under 5 minutes",
 };
 

@@ -18,7 +18,7 @@ function Dashboard() {
 
     return (
         <div className="qs-card__body">
-            {status === "in-progress" && <p className="qs-text-muted">Creating wallet...</p>}
+            {status === "in-progress" && <p className="qs-text-muted">Fetching wallet...</p>}
             {status === "error" && <p className="qs-text-error">Error loading wallet</p>}
             {status === "loaded" && wallet && (
                 <>

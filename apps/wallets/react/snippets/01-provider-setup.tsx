@@ -25,11 +25,13 @@ function getRecoveryConfig(mode: AuthMode) {
     return { type: "email" as const };
 }
 
-function getCreateOnLoginConfig(mode: AuthMode) {
+type CreateOnLogin = NonNullable<React.ComponentProps<typeof CrossmintWalletProvider>["createOnLogin"]>;
+
+function getCreateOnLoginConfig(mode: AuthMode): CreateOnLogin {
     const chain = (process.env.NEXT_PUBLIC_CHAIN as Chain) || "base-sepolia";
     const recovery = getRecoveryConfig(mode);
     const signers = mode === "passkey" ? [{ type: "passkey" as const }] : undefined;
-    return { chain, recovery, ...(signers ? { signers } : {}) };
+    return { chain, recovery, signers } as CreateOnLogin;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {

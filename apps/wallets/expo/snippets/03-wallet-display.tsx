@@ -15,7 +15,7 @@ export function WalletDisplay() {
     };
 
     if (status === "in-progress") {
-        return <Text style={{ color: "#6B7280" }}>Creating wallet...</Text>;
+        return <Text style={{ color: "#6B7280" }}>Fetching wallet...</Text>;
     }
 
     if (!wallet) {

@@ -6,7 +6,7 @@ export function WalletDisplay() {
     const { wallet, status } = useWallet();
 
     if (status === "in-progress") {
-        return <p className="qs-text-muted">Creating wallet...</p>;
+        return <p className="qs-text-muted">Fetching wallet...</p>;
     }
 
     if (!wallet) {

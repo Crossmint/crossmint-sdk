@@ -10,7 +10,7 @@ const inputStyle = {
     backgroundColor: "#fff",
 } as const;
 
-export function ApprovalTest({ wallet }: { wallet: any }) {
+export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToClipboard?: (text: string) => void }) {
     const [recipient, setRecipient] = useState("");
     const [amount, setAmount] = useState("");
     const [pendingTxId, setPendingTxId] = useState("");
@@ -70,7 +70,15 @@ export function ApprovalTest({ wallet }: { wallet: any }) {
                 <Text style={{ fontWeight: "500" }}>Prepare Transaction</Text>
             </TouchableOpacity>
             {pendingTxId ? (
-                <Text style={{ fontSize: 11, color: "#6B7280", marginTop: 8 }}>TX ID: {pendingTxId}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, gap: 6 }}>
+                    <Text style={{ fontSize: 11, color: "#6B7280", flex: 1 }} numberOfLines={1}>TX ID: {pendingTxId}</Text>
+                    <TouchableOpacity
+                        onPress={() => copyToClipboard?.(pendingTxId)}
+                        style={{ backgroundColor: "#E5E7EB", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}
+                    >
+                        <Text style={{ fontSize: 11, color: "#374151" }}>Copy</Text>
+                    </TouchableOpacity>
+                </View>
             ) : null}
             <View style={{ height: 1, backgroundColor: "#E5E7EB", marginVertical: 12 }} />
             <TextInput

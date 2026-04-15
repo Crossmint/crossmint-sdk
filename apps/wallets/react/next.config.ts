@@ -7,12 +7,10 @@ const nextConfig: NextConfig = {
         "@crossmint/wallets-playground-shared",
         "react-native-web",
     ],
-    webpack: (config) => {
-        config.resolve.alias = {
-            ...(config.resolve.alias || {}),
-            "react-native$": "react-native-web",
-        };
-        return config;
+    turbopack: {
+        resolveAlias: {
+            "react-native": "react-native-web",
+        },
     },
 };
 
