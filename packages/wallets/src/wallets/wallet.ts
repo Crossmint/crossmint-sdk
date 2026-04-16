@@ -510,6 +510,8 @@ export class Wallet<C extends Chain> {
 
         if (!options?.prepareOnly) {
             await this.preAuthIfNeeded();
+        } else {
+            await this.#signerInitialization;
         }
         const walletSigner = this.requireSigner();
 
