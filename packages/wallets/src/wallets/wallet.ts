@@ -508,7 +508,9 @@ export class Wallet<C extends Chain> {
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         });
 
-        await this.preAuthIfNeeded();
+        if (!options?.prepareOnly) {
+            await this.preAuthIfNeeded();
+        }
         const walletSigner = this.requireSigner();
 
         let signer: string;
