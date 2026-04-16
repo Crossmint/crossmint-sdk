@@ -2111,10 +2111,16 @@ declare const orderSchema: z.ZodObject<
                         "requires-quote",
                         "requires-crypto-payer-address",
                         "requires-email",
+                        "requires-kyc",
+                        "manual-kyc",
+                        "failed-kyc",
+                        "requires-recipient-verification",
                         "crypto-payer-insufficient-funds",
+                        "crypto-payer-insufficient-funds-for-gas",
                         "awaiting-payment",
                         "in-progress",
                         "completed",
+                        "pending-kyc-review",
                     ]
                 >;
                 failureReason: z.ZodOptional<
@@ -3269,7 +3275,13 @@ declare const orderSchema: z.ZodObject<
                     | "requires-quote"
                     | "requires-crypto-payer-address"
                     | "requires-email"
-                    | "crypto-payer-insufficient-funds";
+                    | "requires-kyc"
+                    | "manual-kyc"
+                    | "failed-kyc"
+                    | "pending-kyc-review"
+                    | "requires-recipient-verification"
+                    | "crypto-payer-insufficient-funds"
+                    | "crypto-payer-insufficient-funds-for-gas";
                 method:
                     | "ethereum"
                     | "polygon"
@@ -3692,7 +3704,13 @@ declare const orderSchema: z.ZodObject<
                     | "requires-quote"
                     | "requires-crypto-payer-address"
                     | "requires-email"
-                    | "crypto-payer-insufficient-funds";
+                    | "requires-kyc"
+                    | "manual-kyc"
+                    | "failed-kyc"
+                    | "pending-kyc-review"
+                    | "requires-recipient-verification"
+                    | "crypto-payer-insufficient-funds"
+                    | "crypto-payer-insufficient-funds-for-gas";
                 method:
                     | "ethereum"
                     | "polygon"
@@ -4159,7 +4177,13 @@ declare const orderSchema: z.ZodObject<
                 | "requires-quote"
                 | "requires-crypto-payer-address"
                 | "requires-email"
-                | "crypto-payer-insufficient-funds";
+                | "requires-kyc"
+                | "manual-kyc"
+                | "failed-kyc"
+                | "pending-kyc-review"
+                | "requires-recipient-verification"
+                | "crypto-payer-insufficient-funds"
+                | "crypto-payer-insufficient-funds-for-gas";
             method:
                 | "ethereum"
                 | "polygon"
@@ -4905,7 +4929,13 @@ declare const orderSchema: z.ZodObject<
                 | "requires-quote"
                 | "requires-crypto-payer-address"
                 | "requires-email"
-                | "crypto-payer-insufficient-funds";
+                | "requires-kyc"
+                | "manual-kyc"
+                | "failed-kyc"
+                | "pending-kyc-review"
+                | "requires-recipient-verification"
+                | "crypto-payer-insufficient-funds"
+                | "crypto-payer-insufficient-funds-for-gas";
             method:
                 | "ethereum"
                 | "polygon"
