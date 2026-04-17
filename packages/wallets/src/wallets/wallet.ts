@@ -200,9 +200,10 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        const isAdminSigner = signerToAssemble === this.#recovery;
         try {
             const internalConfig = this.buildInternalSignerConfig(signerToAssemble as SignerConfigForChain<C>);
-            this.#signer = await this.assembleFullSigner(internalConfig);
+            this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#recovery.type,
@@ -878,23 +879,35 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.useSigner.start");
         this.validateSignerInput(signer);
 
+        let isAdminSigner = false;
         if (signer.type === "device") {
             await this.resolveDeviceSignerAvailability(signer);
         } else {
-            await this.resolveNonDeviceSigner(signer);
+            isAdminSigner = await this.resolveNonDeviceSigner(signer);
         }
 
         const internalConfig = this.buildInternalSignerConfig(signer);
         const signerLocator = getSignerLocator(signer);
-        this.#signer = await this.assembleFullSigner(internalConfig);
+        this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
 
     /**
      * Resolve a non-device signer: check registration first, then fall back to recovery.
      * For passkeys without an explicit credential id, auto-selects from registered signers.
+     * Returns true if the signer is an admin (recovery) signer.
      */
-    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<void> {
+    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<boolean> {
+        // For non-passkey signers, check if this is the recovery (admin) signer first.
+        // Admin signers are always approved — skip the registration check and getSigner API call
+        // which only works for delegated signers (returns 404/400 for admin signers).
+        // Passkeys are excluded because isRecoverySigner matches by type only, which could
+        // incorrectly match a delegated passkey.
+        if (signer.type !== "passkey" && this.isRecoverySigner(signer)) {
+            this.#needsRecovery = false;
+            return true;
+        }
+
         // Passkey without id: try to auto-select from registered signers
         if (signer.type === "passkey" && this.isPasskeyMissingId(signer)) {
             const selected = await this.tryAutoSelectPasskey(signer);
@@ -902,7 +915,7 @@ export class Wallet<C extends Chain> {
                 // No registered passkeys — use recovery if this is the recovery signer
                 if (this.isRecoverySigner(signer)) {
                     this.#needsRecovery = false;
-                    return;
+                    return true;
                 }
                 throw new Error("No passkey signer is registered on this wallet.");
             }
@@ -912,13 +925,13 @@ export class Wallet<C extends Chain> {
         const locator = this.resolveSignerLocator(signer);
         if (await this.signerIsRegistered(locator)) {
             this.#needsRecovery = false;
-            return;
+            return false;
         }
 
         // Not a registered signer — fall back to recovery
         if (this.isRecoverySigner(signer)) {
             this.#needsRecovery = false;
-            return;
+            return true;
         }
 
         throw new Error(`Signer "${locator}" is not registered in this wallet.`);
@@ -1546,11 +1559,18 @@ export class Wallet<C extends Chain> {
 
     private async assembleFullSigner(
         internalConfig: InternalSignerConfig<C>,
-        deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage
+        deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage,
+        options?: { isAdminSigner?: boolean }
     ): Promise<SignerAdapter> {
         const signer = assembleSigner(this.chain, internalConfig, deviceSignerKeyStorage);
-        const signerState = await this.getSignerState(signer.locator());
-        signer.status = signerState.signer?.status;
+        if (options?.isAdminSigner) {
+            // Admin signers are always approved for their wallet — skip the getSigner API call
+            // which only works for delegated signers (returns 404/400 for admin signers).
+            signer.status = "active";
+        } else {
+            const signerState = await this.getSignerState(signer.locator());
+            signer.status = signerState.signer?.status;
+        }
         return signer;
     }
 
