@@ -1,5 +1,60 @@
 # @crossmint/client-sdk-auth
 
+## 1.3.9
+
+### Patch Changes
+
+- Updated dependencies [66afdd1]
+  - @crossmint/client-sdk-base@2.3.3
+  - @crossmint/common-sdk-auth@1.1.7
+
+## 1.3.8
+
+### Patch Changes
+
+- Updated dependencies [c5de4b9]
+  - @crossmint/client-sdk-base@2.3.2
+  - @crossmint/common-sdk-auth@1.1.6
+
+## 1.3.7
+
+### Patch Changes
+
+- Updated dependencies [79d0e8f]
+  - @crossmint/client-sdk-base@2.3.1
+  - @crossmint/common-sdk-auth@1.1.5
+
+## 1.3.6
+
+### Patch Changes
+
+- Updated dependencies [11f2089]
+  - @crossmint/client-sdk-base@2.3.0
+  - @crossmint/common-sdk-auth@1.1.4
+
+## 1.3.5
+
+### Patch Changes
+
+- 0535c3a: Fix legacy cookie fallback causing cross-project token usage. Legacy unscoped cookies are now migrated to scoped cookies on first use and then deleted, preventing a different project on the same domain from picking them up.
+
+## 1.3.4
+
+### Patch Changes
+
+- 3a91c39: Moved JWT cookie scoping to allow for multiple project cookies in the same domain, and prevent issues of cookie mismatch during development.
+
+## 1.3.3
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- Updated dependencies [fc14bbf]
+  - @crossmint/common-sdk-auth@1.1.3
+
 ## 1.3.2
 
 ### Patch Changes

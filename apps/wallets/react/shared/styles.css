@@ -1,0 +1,539 @@
+/*
+ *  Crossmint Playground Design System
+  * Shared styles for all playground apps
+ */
+
+/* ============================================
+   Design Tokens
+   ============================================ */
+:root {
+  /* Brand */
+  --xm-color-primary: #13b601;
+  --xm-color-primary-hover: #26a64b;
+  --xm-color-primary-light: #E8F5E9;
+
+  /* Backgrounds */
+  --xm-color-bg: #F7F8FA;
+  --xm-color-card: #FFFFFF;
+
+  /* Text */
+  --xm-color-text: #1A1A1A;
+  --xm-color-text-secondary: #6B7280;
+  --xm-color-text-muted: #9CA3AF;
+
+  /* Borders */
+  --xm-color-border: #E5E7EB;
+  --xm-color-border-light: #F3F4F6;
+
+  /* Status */
+  --xm-color-success: #10B981;
+  --xm-color-error: #EF4444;
+
+  /* Shadows */
+  --xm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --xm-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --xm-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* Radius */
+  --xm-radius-sm: 6px;
+  --xm-radius: 8px;
+  --xm-radius-lg: 12px;
+  --xm-radius-xl: 16px;
+
+  /* Typography */
+  --xm-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --xm-font-mono: 'SF Mono', Monaco, 'Courier New', monospace;
+
+  /* Spacing */
+  --xm-space-xs: 4px;
+  --xm-space-sm: 8px;
+  --xm-space-md: 16px;
+  --xm-space-lg: 24px;
+  --xm-space-xl: 32px;
+}
+
+/* ============================================
+   Base Reset
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--xm-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--xm-color-text);
+  background: var(--xm-color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+.xm-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.xm-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--xm-space-lg);
+}
+
+.xm-container--narrow {
+  max-width: 480px;
+}
+
+/* ============================================
+   Header
+   ============================================ */
+.xm-header {
+  padding: var(--xm-space-md) var(--xm-space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--xm-color-bg);
+}
+
+.xm-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--xm-space-sm);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--xm-color-text);
+  text-decoration: none;
+}
+
+.xm-header__logo {
+  width: 32px;
+  height: 32px;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.xm-card {
+  background: var(--xm-color-card);
+  border-radius: var(--xm-radius-lg);
+  border: 1px solid var(--xm-color-border-light);
+  box-shadow: var(--xm-shadow-sm);
+}
+
+.xm-card__header {
+  padding: var(--xm-space-md) var(--xm-space-lg);
+  border-bottom: 1px solid var(--xm-color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.xm-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.xm-card__body {
+  padding: var(--xm-space-lg);
+}
+
+.xm-card--nested {
+  background: var(--xm-color-bg);
+  border: 1px solid var(--xm-color-border);
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+.xm-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 var(--xm-space-xs);
+}
+
+.xm-subtitle {
+  font-size: 14px;
+  color: var(--xm-color-text-secondary);
+  margin: 0;
+}
+
+.xm-label {
+  font-size: 12px;
+  color: var(--xm-color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--xm-space-xs);
+}
+
+.xm-value {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.xm-value--sm {
+  font-size: 24px;
+}
+
+.xm-text-muted {
+  color: var(--xm-color-text-muted);
+}
+
+.xm-text-success {
+  color: var(--xm-color-success);
+}
+
+.xm-text-error {
+  color: var(--xm-color-error);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.xm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xm-space-sm);
+  padding: 10px 20px;
+  font-family: var(--xm-font);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--xm-radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.xm-btn--primary {
+  background: var(--xm-color-primary);
+  color: white;
+}
+
+.xm-btn--primary:hover {
+  background: var(--xm-color-primary-hover);
+}
+
+.xm-btn--secondary {
+  background: var(--xm-color-card);
+  color: var(--xm-color-text);
+  border: 1px solid var(--xm-color-border);
+}
+
+.xm-btn--secondary:hover {
+  background: var(--xm-color-bg);
+}
+
+.xm-btn--ghost {
+  background: transparent;
+  color: var(--xm-color-text-secondary);
+  padding: var(--xm-space-sm) var(--xm-space-md);
+}
+
+.xm-btn--ghost:hover {
+  color: var(--xm-color-text);
+  background: var(--xm-color-border-light);
+}
+
+.xm-btn--full {
+  width: 100%;
+}
+
+.xm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+.xm-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--xm-font);
+  font-size: 14px;
+  color: var(--xm-color-text);
+  background: var(--xm-color-card);
+  border: 1px solid var(--xm-color-border);
+  border-radius: var(--xm-radius);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.xm-input:focus {
+  border-color: var(--xm-color-primary);
+}
+
+.xm-input::placeholder {
+  color: var(--xm-color-text-muted);
+}
+
+/* ============================================
+   Grid
+   ============================================ */
+.xm-grid {
+  display: grid;
+  gap: var(--xm-space-md);
+}
+
+.xm-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.xm-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+
+  .xm-grid--2,
+  .xm-grid--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   Flex utilities
+   ============================================ */
+.xm-flex {
+  display: flex;
+}
+
+.xm-flex--between {
+  justify-content: space-between;
+}
+
+.xm-flex--center {
+  align-items: center;
+}
+
+.xm-flex--gap-sm {
+  gap: var(--xm-space-sm);
+}
+
+.xm-flex--gap-md {
+  gap: var(--xm-space-md);
+}
+
+/* ============================================
+   Activity List
+   ============================================ */
+.xm-activity {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.xm-activity__item {
+  display: flex;
+  align-items: center;
+  gap: var(--xm-space-md);
+  padding: var(--xm-space-md) 0;
+  border-bottom: 1px solid var(--xm-color-border-light);
+}
+
+.xm-activity__item:last-child {
+  border-bottom: none;
+}
+
+.xm-activity__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--xm-color-primary-light);
+  color: var(--xm-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.xm-activity__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.xm-activity__title {
+  font-weight: 500;
+  margin: 0;
+}
+
+.xm-activity__meta {
+  font-size: 13px;
+  color: var(--xm-color-text-muted);
+  margin: 0;
+}
+
+.xm-activity__amount {
+  text-align: right;
+  font-weight: 500;
+}
+
+.xm-activity__amount--positive {
+  color: var(--xm-color-success);
+}
+
+.xm-activity__amount--negative {
+  color: var(--xm-color-text);
+}
+
+/* ============================================
+   Detail rows
+   ============================================ */
+.xm-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xm-space-sm);
+}
+
+.xm-details__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--xm-space-sm) 0;
+}
+
+.xm-details__label {
+  color: var(--xm-color-text-secondary);
+}
+
+.xm-details__value {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--xm-space-xs);
+}
+
+.xm-copy-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--xm-color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--xm-radius-sm);
+}
+
+.xm-copy-btn:hover {
+  color: var(--xm-color-text);
+  background: var(--xm-color-border-light);
+}
+
+.xm-tx-link {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--xm-color-primary);
+  text-decoration: none;
+  margin-top: var(--xm-space-xs);
+}
+
+.xm-tx-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   Code / Address
+   ============================================ */
+.xm-code {
+  font-family: var(--xm-font-mono);
+  font-size: 13px;
+  background: var(--xm-color-bg);
+  padding: 2px 6px;
+  border-radius: var(--xm-radius-sm);
+}
+
+.xm-address {
+  font-family: var(--xm-font-mono);
+  font-size: 13px;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.xm-footer {
+  margin-top: auto;
+  padding: var(--xm-space-lg);
+  text-align: center;
+  color: var(--xm-color-text-muted);
+  font-size: 13px;
+}
+
+.xm-footer__links {
+  display: flex;
+  justify-content: center;
+  gap: var(--xm-space-lg);
+  margin-bottom: var(--xm-space-md);
+}
+
+.xm-footer__link {
+  color: var(--xm-color-text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--xm-space-xs);
+}
+
+.xm-footer__link:hover {
+  color: var(--xm-color-text);
+}
+
+.xm-footer__powered {
+  height: 24px;
+  opacity: 0.6;
+}
+
+/* ============================================
+   Login / Centered content
+   ============================================ */
+.xm-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: var(--xm-space-xl);
+}
+
+.xm-center__icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--xm-space-lg);
+}
+
+/* ============================================
+   Spacing utilities
+   ============================================ */
+.xm-mt-sm {
+  margin-top: var(--xm-space-sm);
+}
+
+.xm-mt-md {
+  margin-top: var(--xm-space-md);
+}
+
+.xm-mt-lg {
+  margin-top: var(--xm-space-lg);
+}
+
+.xm-mb-sm {
+  margin-bottom: var(--xm-space-sm);
+}
+
+.xm-mb-md {
+  margin-bottom: var(--xm-space-md);
+}
+
+.xm-mb-lg {
+  margin-bottom: var(--xm-space-lg);
+}

@@ -276,7 +276,7 @@ export async function createPreparedTransaction(
 
         const recipientInput = approvalSection
             .locator("..")
-            .locator('input[placeholder*="0x" i], input[placeholder*="Base58" i]')
+            .locator('[data-testid="prepare-recipient"], input[placeholder*="0x" i], input[placeholder*="Base58" i]')
             .first();
         await recipientInput.waitFor({ timeout: 30000 });
         await recipientInput.fill(recipientAddress);

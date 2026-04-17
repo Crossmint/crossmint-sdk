@@ -13,7 +13,12 @@ import type {
 } from "../api";
 import { InvalidSignerError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type { ExternalWalletRegistrationConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
+import type {
+    ExternalWalletRegistrationConfig,
+    PasskeySignerConfig,
+    RecoverySignerConfigForChain,
+    SignerConfigForChain,
+} from "../signers/types";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
@@ -172,10 +177,10 @@ export class WalletFactory {
         return await this.createWalletInstance(walletResponse, validatedArgs);
     }
 
-    private createWalletInstance<C extends Chain>(
+    private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
-    ): Wallet<C> {
+    ): Promise<Wallet<C>> {
         this.validateExistingWalletConfig(walletResponse, args);
 
         // For server and external-wallet signers, use the user-provided recovery config to preserve
@@ -184,7 +189,7 @@ export class WalletFactory {
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
-        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as SignerConfigForChain<C>;
+        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as RecoverySignerConfigForChain<C>;
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
@@ -199,7 +204,7 @@ export class WalletFactory {
             signers = createArgs.signers as SignerResponse[];
         }
 
-        return new Wallet(
+        const wallet = new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,
@@ -211,6 +216,12 @@ export class WalletFactory {
             },
             this.apiClient
         );
+
+        // Await signer initialization so that needsRecovery() returns the correct
+        // value immediately after getWallet() / createWallet() resolves.
+        await wallet.waitForInit();
+
+        return wallet;
     }
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {

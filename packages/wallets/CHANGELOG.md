@@ -1,5 +1,72 @@
 # @crossmint/wallets-sdk
 
+## 1.0.13
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.7
+
+## 1.0.12
+
+### Patch Changes
+
+- 28a7957: fix: handle API-sourced recovery configs without secret in isRecoverySigner
+  - @crossmint/common-sdk-auth@1.1.6
+
+## 1.0.11
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.5
+
+## 1.0.10
+
+### Patch Changes
+
+- e03e7b1: Fix: preserve local device key when user cancels OTP during recovery, preventing duplicate device signers on page refresh
+- 560fbf0: fix: require `status` in `wallet.transfers()` types to match backend validation
+- 0792f9e: fix: make addSigner idempotent by resuming pending operations on retry
+
+## 1.0.9
+
+### Patch Changes
+
+- 60f31bd: Fix false "Device signer key storage is required" error when creating wallets server-side with a client-created device signer
+- b9225cf: Fix `needsRecovery()` returning stale `false` after `getWallet()` by awaiting signer initialization in the wallet factory. Also fix `recover()` non-device signer early-return not clearing `needsRecovery`.
+  - @crossmint/common-sdk-auth@1.1.4
+
+## 1.0.8
+
+### Patch Changes
+
+- 612d768: Ensure signer is authenticated before calling approve
+
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [80538a9]
+  - @crossmint/client-signers-cryptography@0.0.5
+
+## 1.0.6
+
+### Patch Changes
+
+- 8743da2: Fix device signer recovery when local key lookup fails
+
+  - Prevent assembling a device signer with an empty locator when `getKey()` returns null during initialization
+  - Make `recover()` search all registered device signers for a local key match before generating a new one
+  - Make "already approved" error detection more robust with looser string matching
+  - Extract `resumePendingDeviceSignerApproval` and `findLocalDeviceSigner` helpers for clarity
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- cf42378: Can remove a signer from a wallet
+- Updated dependencies [fc14bbf]
+  - @crossmint/common-sdk-auth@1.1.3
+
 ## 1.0.5
 
 ### Patch Changes

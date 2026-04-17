@@ -1,17 +1,25 @@
 import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
-import type { OrderIntent, VerificationConfig } from "@crossmint/client-sdk-base";
-import { useEffect, useRef } from "react";
+import type { OrderIntentWithVerification, VerificationAppearance } from "@crossmint/client-sdk-base";
+import { useMemo, useEffect, useRef } from "react";
+
+import { mapVerificationAppearanceToBtTheme } from "../../utils/mapVerificationAppearanceToBtTheme";
 
 export interface OrderIntentVerificationProps {
-    config: VerificationConfig;
-    orderIntent: OrderIntent;
-    onVerificationComplete?: (instruction: unknown) => void;
-    onVerificationError?: (error: Error) => void;
+    orderIntent: OrderIntentWithVerification;
+    appearance?: VerificationAppearance;
+    onVerificationComplete?: () => void;
+    onVerificationError?: (error: unknown) => void;
 }
 
 export function OrderIntentVerification(props: OrderIntentVerificationProps) {
+    const verificationConfig = props.orderIntent.verificationConfig;
+    const btTheme = useMemo(() => mapVerificationAppearanceToBtTheme(props.appearance), [props.appearance]);
     return (
-        <BasisTheoryAIProvider apiKey={props.config.btApiKey} environment={props.config.environment}>
+        <BasisTheoryAIProvider
+            apiKey={verificationConfig.publicApiKey}
+            environment={verificationConfig.environment}
+            theme={btTheme}
+        >
             <OrderIntentVerificationContent {...props} />
         </BasisTheoryAIProvider>
     );
@@ -37,8 +45,8 @@ function OrderIntentVerificationContent({
         errorRef.current = onVerificationError;
     }, [onVerificationError]);
 
-    const agentId = orderIntent.payment.btAgentId;
-    const instructionId = orderIntent.payment.btInstructionId;
+    const agentId = orderIntent.verificationConfig.agentId;
+    const instructionId = orderIntent.verificationConfig.instructionId;
 
     useEffect(() => {
         if (!ready) {
@@ -49,12 +57,12 @@ function OrderIntentVerificationContent({
 
         verifyRef
             .current(agentId, instructionId)
-            .then((instruction: unknown) => {
+            .then(() => {
                 if (!cancelled) {
-                    completeRef.current?.(instruction);
+                    completeRef.current?.();
                 }
             })
-            .catch((error: Error) => {
+            .catch((error) => {
                 if (!cancelled) {
                     errorRef.current?.(error);
                 }

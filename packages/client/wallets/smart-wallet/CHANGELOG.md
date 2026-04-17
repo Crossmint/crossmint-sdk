@@ -1,5 +1,41 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.61
+
+### Patch Changes
+
+- Updated dependencies [66afdd1]
+  - @crossmint/client-sdk-base@2.3.3
+
+## 0.3.60
+
+### Patch Changes
+
+- Updated dependencies [c5de4b9]
+  - @crossmint/client-sdk-base@2.3.2
+
+## 0.3.59
+
+### Patch Changes
+
+- Updated dependencies [79d0e8f]
+  - @crossmint/client-sdk-base@2.3.1
+
+## 0.3.58
+
+### Patch Changes
+
+- Updated dependencies [11f2089]
+  - @crossmint/client-sdk-base@2.3.0
+
+## 0.3.57
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
 ## 0.3.56
 
 ### Patch Changes

@@ -17,7 +17,10 @@
         "clean:node_modules": "pnpm dlx rimraf \"**/node_modules\" --glob",
         "lint": "biome check --diagnostic-level=error --max-diagnostics=200",
         "lint:fix": "biome check --write",
-        "test:vitest": "pnpm turbo test:vitest"
+        "test:vitest": "pnpm turbo test:vitest",
+        "playground:react": "pnpm --filter @crossmint/wallets-playground-react dev",
+        "playground:expo:ios": "pnpm --filter @crossmint/wallets-playground-expo ios",
+        "playground:expo:android": "pnpm --filter @crossmint/wallets-playground-expo android"
     },
     "devDependencies": {
         "@biomejs/biome": "1.8.3",
@@ -58,13 +61,8 @@
             "trim@0": "0.0.3",
             "ws@7": "7.5.10",
             "ws@8": "8.18.2",
-            "react": "19.1.2",
-            "react-dom": "19.1.2",
-            "expo-demo>react": "19.1.1",
-            "expo-demo>react-dom": "19.1.1",
-            "@crossmint/client-sdk-react-native-ui>react": "19.1.1",
-            "@crossmint/client-sdk-rn-window>react": "19.1.1",
-            "@crossmint/client-sdk-rn-window>react-dom": "19.1.1",
+            "react": "19.1.1",
+            "react-dom": "19.1.1",
             "@isaacs/brace-expansion": "5.0.1",
             "tar@6": "7.5.7",
             "tar@7": "7.5.7",

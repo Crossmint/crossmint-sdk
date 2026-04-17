@@ -1,5 +1,115 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.1.12
+
+### Patch Changes
+
+- Updated dependencies [66afdd1]
+  - @crossmint/client-sdk-base@2.3.3
+  - @crossmint/client-sdk-auth@1.3.9
+  - @crossmint/client-sdk-react-base@2.0.15
+  - @crossmint/common-sdk-auth@1.1.7
+  - @crossmint/wallets-sdk@1.0.13
+
+## 1.1.11
+
+### Patch Changes
+
+- Updated dependencies [28a7957]
+- Updated dependencies [c5de4b9]
+  - @crossmint/wallets-sdk@1.0.12
+  - @crossmint/client-sdk-base@2.3.2
+  - @crossmint/client-sdk-react-base@2.0.14
+  - @crossmint/client-sdk-auth@1.3.8
+  - @crossmint/common-sdk-auth@1.1.6
+
+## 1.1.10
+
+### Patch Changes
+
+- Updated dependencies [79d0e8f]
+  - @crossmint/client-sdk-base@2.3.1
+  - @crossmint/client-sdk-auth@1.3.7
+  - @crossmint/client-sdk-react-base@2.0.13
+  - @crossmint/common-sdk-auth@1.1.5
+  - @crossmint/wallets-sdk@1.0.11
+
+## 1.1.9
+
+### Patch Changes
+
+- Updated dependencies [e03e7b1]
+- Updated dependencies [560fbf0]
+- Updated dependencies [0792f9e]
+  - @crossmint/wallets-sdk@1.0.10
+  - @crossmint/client-sdk-react-base@2.0.12
+
+## 1.1.8
+
+### Patch Changes
+
+- Updated dependencies [11f2089]
+- Updated dependencies [60f31bd]
+- Updated dependencies [b9225cf]
+  - @crossmint/client-sdk-base@2.3.0
+  - @crossmint/wallets-sdk@1.0.9
+  - @crossmint/client-sdk-auth@1.3.6
+  - @crossmint/client-sdk-react-base@2.0.11
+  - @crossmint/common-sdk-auth@1.1.4
+
+## 1.1.7
+
+### Patch Changes
+
+- Updated dependencies [0535c3a]
+- Updated dependencies [612d768]
+  - @crossmint/client-sdk-auth@1.3.5
+  - @crossmint/wallets-sdk@1.0.8
+  - @crossmint/client-sdk-react-base@2.0.10
+
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies [3a91c39]
+  - @crossmint/client-sdk-auth@1.3.4
+  - @crossmint/client-sdk-react-base@2.0.9
+
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies [448d797]
+  - @crossmint/client-sdk-react-base@2.0.8
+
+## 1.1.4
+
+### Patch Changes
+
+- @crossmint/wallets-sdk@1.0.7
+- @crossmint/client-sdk-react-base@2.0.7
+
+## 1.1.3
+
+### Patch Changes
+
+- fc14bbf: Include README.md in published npm packages
+
+  The `files` field in package.json was missing `README.md`, which prevented READMEs from appearing on npm package pages.
+
+- 6e15b46: fix: enable WebView scrolling for keyboard visibility in embedded checkout (PAY-11522)
+
+  - Changed `scrollEnabled` from `false` to `true` on the embedded checkout WebView to allow scrolling when the keyboard opens
+  - Removed `overflow: "hidden"` from the WebView inline style
+
+- Updated dependencies [8743da2]
+- Updated dependencies [fc14bbf]
+- Updated dependencies [cf42378]
+  - @crossmint/wallets-sdk@1.0.6
+  - @crossmint/client-sdk-auth@1.3.3
+  - @crossmint/common-sdk-auth@1.1.3
+  - @crossmint/client-sdk-react-base@2.0.6
+
 ## 1.1.2
 
 ### Patch Changes

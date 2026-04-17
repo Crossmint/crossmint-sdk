@@ -16,3 +16,10 @@ docs
 .env
 
 .claude
+.next
+*.tsbuildinfo
+
+# Expo prebuild native folders (generated, do not commit)
+/android/
+/ios/
+/.expo/

@@ -1,4 +1,5 @@
 import type { ObjectValues } from "@crossmint/common-sdk-base";
+import type { PaymentMethodAgenticEnrollmentVerificationConfig } from "./PaymentMethodAgenticEnrollment";
 
 export const OrderIntentPhase = {
     REQUIRES_PAYMENT: "requires-payment-method",
@@ -7,20 +8,23 @@ export const OrderIntentPhase = {
     EXPIRED: "expired",
 };
 export type OrderIntentPhase = ObjectValues<typeof OrderIntentPhase>;
-export interface OrderIntentBase {
-    orderIntentId: string;
-    phase: OrderIntentPhase;
-    mandates: any[];
-}
 
-export interface OrderIntent extends OrderIntentBase {
+interface OrderIntentBase {
+    orderIntentId: string;
+    mandates: any[];
     payment: {
-        btAgentId: string;
-        btInstructionId: string;
+        paymentMethodId: string;
     };
 }
-
-export interface VerificationConfig {
-    btApiKey: string;
-    environment: "production" | "sandbox";
+export interface OrderIntentWithVerification extends OrderIntentBase {
+    phase: "requires-verification";
+    verificationConfig: OrderIntentVerificationConfig;
 }
+export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
+    agentId: string;
+    instructionId: string;
+}
+export interface OrderIntentWithoutVerification extends OrderIntentBase {
+    phase: Exclude<OrderIntentPhase, "requires-verification">;
+}
+export type OrderIntent = OrderIntentWithVerification | OrderIntentWithoutVerification;
