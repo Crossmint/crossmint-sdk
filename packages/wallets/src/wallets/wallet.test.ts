@@ -2088,7 +2088,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should return early for Solana chain (defense-in-depth)", async () => {
+        it("should proceed with recovery for Solana chain (validation is server-side)", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             const wallet = new Wallet(
                 {
@@ -2099,17 +2099,36 @@ describe("Wallet - recover()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
 
-            // Flush init so any constructor-driven API calls complete first
-            await new Promise((resolve) => setTimeout(resolve, 0));
-            mockApiClient.getWallet.mockClear();
-            mockApiClient.getSigner.mockClear();
+            // addSigner's upfront getSigner check — signer not yet found
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+
+            // registerSigner returns a pending transaction for Solana
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                transaction: { id: "tx-1", status: "pending", onChain: { transaction: "serialized-tx" } },
+            } as any);
+
+            // getTransaction for approveTransactionAndWait
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "tx-1",
+                status: "success",
+                chainType: "solana",
+                onChain: { txId: "solana-hash", explorerLink: "https://explorer.solana.com/tx/solana-hash" },
+            } as any);
+
+            // assembleFullSigner after registration needs getSigner
+            mockGetSignerApproved("solana", "device:mockNewKey");
 
             await wallet.recover();
 
-            // recover() itself should not call signers() or getSigner — early Solana guard
-            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
-            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            // recover() should proceed normally for Solana — no early guard
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
+            expect(wallet.signer?.type).toBe("device");
+            expect(wallet.needsRecovery()).toBe(false);
         });
     });
 
@@ -2547,7 +2566,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
-        it("should delete key and rethrow when addSigner fails with non-'already approved' error", async () => {
+        it("should delete key, set needsRecovery to false, and rethrow when addSigner fails with non-'already approved' error", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2570,6 +2589,16 @@ describe("Wallet - recover()", () => {
             await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
 
             expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
+            // needsRecovery should be set to false to prevent repeated failure loops
+            expect(wallet.needsRecovery()).toBe(false);
+
+            // Verify the retry loop is actually broken: a second recover() call should
+            // short-circuit via the #deviceSignerApproved fast-path, NOT re-generate a key.
+            mockStorage.generateKey.mockClear();
+            mockApiClient.registerSigner.mockClear();
+            await wallet.recover(); // should return immediately
+            expect(mockStorage.generateKey).not.toHaveBeenCalled();
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
 
         it("should preserve local key and rethrow when addSigner fails with AuthRejectedError", async () => {

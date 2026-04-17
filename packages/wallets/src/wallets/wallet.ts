@@ -131,11 +131,11 @@ export class Wallet<C extends Chain> {
      * Initialize the device signer by resolving key availability.
      * If a device key is found locally, assembles the signer immediately.
      * If not, flags the wallet for recovery so a key is generated during the next transaction.
-     * Device signers are not supported for Solana (Squads does not support device signer registration).
+     * Device signer support depends on the wallet provider; validation is handled server-side.
      */
     private async initDeviceSigner(): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
-        if (deviceSignerKeyStorage == null || this.chain === "solana") {
+        if (deviceSignerKeyStorage == null) {
             return;
         }
 
@@ -645,13 +645,6 @@ export class Wallet<C extends Chain> {
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
-        // Device signers are not supported for Solana wallets
-        if (signer.type === "device" && this.chain === "solana") {
-            throw new InvalidSignerError(
-                "Device signers are not currently supported for Solana wallets. Contact sales (https://www.crossmint.com/contact/sales) for access."
-            );
-        }
-
         // Resolve server signer config to locator string
         const resolvedSigner =
             typeof signer === "object" && "type" in signer && signer.type === "server"
@@ -713,7 +706,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.addSigner.error", {
                     error: response,
                 });
-                throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
+                throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
 
             const registeredSigner = mapApiSignerToSigner(response, this.chain);
@@ -1099,14 +1092,6 @@ export class Wallet<C extends Chain> {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
 
-        // Defense-in-depth: device signers are not supported on Solana (Squads).
-        // initDeviceSigner already guards against this and never sets needsRecovery for Solana,
-        // but guard here too in case recover() is called directly.
-        if (this.chain === "solana") {
-            walletsLogger.warn("wallet.recover.skipped", { reason: "Device signers are not supported on Solana" });
-            return;
-        }
-
         const matchedSigner = await this.findLocalDeviceSigner(deviceSignerKeyStorage);
         if (matchedSigner != null) {
             if (await this.checkAndResumeDeviceSigner(matchedSigner)) {
@@ -1154,6 +1139,11 @@ export class Wallet<C extends Chain> {
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.address);
+                // Prevent repeated failure loops: mark recovery as complete so that
+                // preAuthIfNeeded() → recover() short-circuits on subsequent transactions
+                // via the #deviceSignerApproved fast-path check at the top of recover().
+                this.#needsRecovery = false;
+                this.#deviceSignerApproved = true;
                 throw error;
             }
         }

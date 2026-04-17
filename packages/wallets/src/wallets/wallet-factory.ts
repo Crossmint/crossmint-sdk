@@ -11,7 +11,7 @@ import type {
     Signer as SignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { InvalidSignerError, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
     ExternalWalletRegistrationConfig,
@@ -252,15 +252,11 @@ export class WalletFactory {
     /**
      * Ensures device signer is included in the signers array for wallet creation.
      * If no device signer is present in args.signers, adds one.
-     * Device signers are not supported for Solana (Squads does not support device signer registration).
+     * Device signer support depends on the wallet provider; validation is handled server-side.
      */
     private ensureDeviceSignerInSigners<C extends Chain>(
         args: WalletCreateArgs<C>
     ): Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig> {
-        // Skip device signer for Solana wallets
-        if (args.chain === "solana") {
-            return args.signers ?? [];
-        }
         const signers = args.signers ?? [];
         const hasDeviceSigner = signers.some((s) => s.type === "device");
         if (!hasDeviceSigner) {
@@ -411,12 +407,6 @@ export class WalletFactory {
                         return { signer };
                     }
                     if (signer.type === "device") {
-                        // Device signers are not supported for Solana wallets
-                        if (chain === "solana") {
-                            throw new InvalidSignerError(
-                                "Device signers are not currently supported for Solana wallets. Contact sales (https://www.crossmint.com/contact/sales) for access."
-                            );
-                        }
                         // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
                         if (signer.publicKey != null) {
                             return {
