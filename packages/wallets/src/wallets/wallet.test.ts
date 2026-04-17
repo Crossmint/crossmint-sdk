@@ -2591,6 +2591,14 @@ describe("Wallet - recover()", () => {
             expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
             // needsRecovery should be set to false to prevent repeated failure loops
             expect(wallet.needsRecovery()).toBe(false);
+
+            // Verify the retry loop is actually broken: a second recover() call should
+            // short-circuit via the #deviceSignerApproved fast-path, NOT re-generate a key.
+            mockStorage.generateKey.mockClear();
+            mockApiClient.registerSigner.mockClear();
+            await wallet.recover(); // should return immediately
+            expect(mockStorage.generateKey).not.toHaveBeenCalled();
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
 
         it("should preserve local key and rethrow when addSigner fails with AuthRejectedError", async () => {
