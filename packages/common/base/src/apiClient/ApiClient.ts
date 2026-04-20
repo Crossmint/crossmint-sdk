@@ -10,15 +10,31 @@ export class ApiClientError extends Error {
     }
 }
 
+export class ApiRequestTimeoutError extends Error {
+    constructor(public readonly path: string) {
+        super(`API request to "${path}" timed out`);
+        this.name = "ApiRequestTimeoutError";
+    }
+}
+
 export abstract class ApiClient {
     abstract get commonHeaders(): HeadersInit;
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
-        const response = await fetch(this.buildUrl(path), {
-            ...init,
-            headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
-        });
+        let response: Response;
+        try {
+            response = await fetch(this.buildUrl(path), {
+                ...init,
+                headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
+                signal: init.signal ?? AbortSignal.timeout(30_000),
+            });
+        } catch (error: unknown) {
+            if (error instanceof DOMException && error.name === "TimeoutError") {
+                throw new ApiRequestTimeoutError(path);
+            }
+            throw error;
+        }
 
         // Only throw on server errors (5xx) where the response body is likely
         // non-JSON (e.g. HTML 502 from load balancer). 4xx responses are passed

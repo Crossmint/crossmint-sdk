@@ -473,6 +473,51 @@ describe("Wallet - send()", () => {
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
     });
+
+    describe("preAuthIfNeeded gating", () => {
+        it("should NOT call preAuthIfNeeded when prepareOnly is true", async () => {
+            const mockSendResponse = {
+                id: "txn-prep-1",
+            } as unknown as SendResponse;
+
+            mockApiClient.send.mockResolvedValue(mockSendResponse);
+
+            const preAuthSpy = vi.spyOn(wallet as any, "preAuthIfNeeded");
+
+            await wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0", {
+                prepareOnly: true,
+            });
+
+            expect(preAuthSpy).not.toHaveBeenCalled();
+            expect(mockApiClient.send).toHaveBeenCalled();
+        });
+
+        it("should call preAuthIfNeeded when prepareOnly is not set", async () => {
+            const mockSendResponse = {
+                id: "txn-normal-1",
+            } as unknown as SendResponse;
+
+            const mockTransactionResponse = {
+                id: "txn-normal-1",
+                status: "success",
+                onChain: {
+                    txId: "0xabc",
+                    explorerLink: "https://explorer.example.com/tx/0xabc",
+                },
+            };
+
+            mockApiClient.send.mockResolvedValue(mockSendResponse);
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            const preAuthSpy = vi.spyOn(wallet as any, "preAuthIfNeeded").mockResolvedValue(undefined);
+
+            const sendPromise = wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0");
+            await vi.runAllTimersAsync();
+            await sendPromise;
+
+            expect(preAuthSpy).toHaveBeenCalled();
+        });
+    });
 });
 
 describe("Wallet - approve()", () => {
