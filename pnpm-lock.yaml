@@ -554,6 +554,9 @@ importers:
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../window
+      '@crossmint/common-sdk-base':
+        specifier: workspace:*
+        version: link:../../common/base
       react-native-get-random-values:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))
