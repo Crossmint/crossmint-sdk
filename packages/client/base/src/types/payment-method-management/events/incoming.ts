@@ -14,12 +14,28 @@ const cardTokenSelectedSchema = z.object({
 
 const cardPaymentMethodSelectedSchema = z.object({
     type: z.literal("card"),
-    paymentMethod: z
-        .object({
-            type: z.literal("card"),
-            paymentMethodId: z.string(),
-        })
-        .passthrough(),
+    paymentMethod: z.object({
+        type: z.literal("card"),
+        paymentMethodId: z.string(),
+        card: z.object({
+            source: z.object({
+                type: z.literal("basis-theory-token"),
+                id: z.string(),
+            }),
+            brand: z.string(),
+            last4: z.string(),
+            expiration: z.object({
+                month: z.string(),
+                year: z.string(),
+            }),
+        }),
+        default: z.boolean().optional(),
+        display: z
+            .object({
+                imageUrl: z.string().optional(),
+            })
+            .optional(),
+    }),
 });
 
 export const paymentMethodManagementIncomingEvents = {
