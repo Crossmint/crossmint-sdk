@@ -363,6 +363,203 @@ describe("StellarWallet - sendTransaction()", () => {
     });
 });
 
+describe("StellarWallet - upgrade() / migrate()", () => {
+    let mockApiClient: MockedApiClient;
+    let stellarWallet: StellarWallet;
+
+    const makeTxResponse = (id: string, type: "upgrade-wallet" | "migrate-wallet", txHash?: string) =>
+        ({
+            id,
+            status: txHash != null ? "success" : "pending",
+            chainType: "stellar",
+            walletType: "smart" as const,
+            ...(txHash != null
+                ? {
+                      onChain: {
+                          txId: txHash,
+                          explorerLink: `https://stellar.expert/explorer/public/tx/${txHash}`,
+                      },
+                  }
+                : {}),
+            params: {
+                transaction: { type },
+                signer: "api-key:test",
+            },
+            createdAt: Date.now(),
+        }) as unknown as CreateTransactionSuccessResponse;
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        mockApiClient = createMockApiClient();
+        const wallet = await createMockWallet("stellar", mockApiClient, "api-key");
+        stellarWallet = StellarWallet.from(wallet);
+        vi.spyOn(stellarWallet, "signers").mockImplementation(() =>
+            Promise.resolve([{ type: "api-key", locator: "api-key", status: "success" } as any])
+        );
+        await stellarWallet.useSigner(createMockSigner("api-key", "stellar"));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    const mockGetTransactionById = (responsesById: Record<string, unknown>) => {
+        mockApiClient.getTransaction.mockImplementation(async (_walletLocator, txId) => {
+            const res = responsesById[txId];
+            if (res == null) {
+                throw new Error(`Test: unexpected getTransaction call for ${txId}`);
+            }
+            return res as any;
+        });
+    };
+
+    it("upgrade() runs both phases and returns the migrate result", async () => {
+        const upgradeTx = makeTxResponse("upgrade-tx-1", "upgrade-wallet", "hash-upgrade");
+        const migrateTx = makeTxResponse("migrate-tx-1", "migrate-wallet", "hash-migrate");
+
+        mockApiClient.createTransaction.mockResolvedValueOnce(upgradeTx).mockResolvedValueOnce(migrateTx);
+        mockGetTransactionById({
+            "upgrade-tx-1": upgradeTx,
+            "migrate-tx-1": migrateTx,
+        });
+
+        const promise = stellarWallet.upgrade();
+        await vi.runAllTimersAsync();
+        const result = await promise;
+
+        expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(2);
+        expect(mockApiClient.createTransaction).toHaveBeenNthCalledWith(
+            1,
+            "me:stellar:smart",
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    transaction: { type: "upgrade-wallet" },
+                    signer: "api-key",
+                }),
+            })
+        );
+        expect(mockApiClient.createTransaction).toHaveBeenNthCalledWith(
+            2,
+            "me:stellar:smart",
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    transaction: { type: "migrate-wallet" },
+                    signer: "api-key",
+                }),
+            })
+        );
+        expect(result.transactionId).toBe("migrate-tx-1");
+        expect(result.hash).toBe("hash-migrate");
+    });
+
+    it("upgrade({ prepareOnly: true }) returns only the phase-1 prepared transaction", async () => {
+        const upgradeTx = makeTxResponse("upgrade-tx-prep", "upgrade-wallet");
+        mockApiClient.createTransaction.mockResolvedValueOnce(upgradeTx);
+
+        const result = await stellarWallet.upgrade({ prepareOnly: true });
+
+        expect(result.transactionId).toBe("upgrade-tx-prep");
+        expect(result.hash).toBeUndefined();
+        expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(1);
+        expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+    });
+
+    it("upgrade() is idempotent when the wallet is already locked (409 on phase 1)", async () => {
+        const lockedError = {
+            error: true,
+            message: "Wallet is being upgraded. Submit a migrate-wallet transaction to complete the upgrade.",
+            statusCode: 409,
+        };
+        const migrateTx = makeTxResponse("migrate-tx-idem", "migrate-wallet", "hash-migrate-idem");
+
+        mockApiClient.createTransaction.mockResolvedValueOnce(lockedError as any).mockResolvedValueOnce(migrateTx);
+        mockGetTransactionById({ "migrate-tx-idem": migrateTx });
+
+        const promise = stellarWallet.upgrade();
+        await vi.runAllTimersAsync();
+        const result = await promise;
+
+        expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(2);
+        const secondCall = mockApiClient.createTransaction.mock.calls[1][1];
+        expect((secondCall.params as any).transaction).toEqual({ type: "migrate-wallet" });
+        expect(result.transactionId).toBe("migrate-tx-idem");
+    });
+
+    it("upgrade() throws when the API returns a non-409 error on phase 1", async () => {
+        const errorResponse = {
+            error: true,
+            message: "Wallet is already on the latest version",
+            statusCode: 400,
+        };
+        mockApiClient.createTransaction.mockResolvedValueOnce(errorResponse as any);
+
+        await expect(stellarWallet.upgrade()).rejects.toThrow(TransactionNotCreatedError);
+        expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(1);
+    });
+
+    it("migrate() sends a migrate-wallet transaction and returns the result", async () => {
+        const migrateTx = makeTxResponse("migrate-solo", "migrate-wallet", "hash-migrate-solo");
+        mockApiClient.createTransaction.mockResolvedValueOnce(migrateTx);
+        mockGetTransactionById({ "migrate-solo": migrateTx });
+
+        const promise = stellarWallet.migrate();
+        await vi.runAllTimersAsync();
+        const result = await promise;
+
+        expect(mockApiClient.createTransaction).toHaveBeenCalledWith(
+            "me:stellar:smart",
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    transaction: { type: "migrate-wallet" },
+                }),
+            })
+        );
+        expect(result.transactionId).toBe("migrate-solo");
+        expect(result.hash).toBe("hash-migrate-solo");
+    });
+
+    it("migrate({ prepareOnly: true }) does not trigger approval", async () => {
+        const migrateTx = makeTxResponse("migrate-prep", "migrate-wallet");
+        mockApiClient.createTransaction.mockResolvedValueOnce(migrateTx);
+
+        const result = await stellarWallet.migrate({ prepareOnly: true });
+
+        expect(result.transactionId).toBe("migrate-prep");
+        expect(result.hash).toBeUndefined();
+        expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+    });
+
+    it("migrate() rethrows when submitted against a wallet that is not locked (400)", async () => {
+        const errorResponse = {
+            error: true,
+            message: "No upgrade in progress. Submit an upgrade-wallet transaction first.",
+            statusCode: 400,
+        };
+        mockApiClient.createTransaction.mockResolvedValueOnce(errorResponse as any);
+
+        await expect(stellarWallet.migrate()).rejects.toThrow(TransactionNotCreatedError);
+    });
+
+    it("forwards an explicit signer override to both phases", async () => {
+        const upgradeTx = makeTxResponse("upgrade-sig", "upgrade-wallet", "hash-up");
+        const migrateTx = makeTxResponse("migrate-sig", "migrate-wallet", "hash-mig");
+        mockApiClient.createTransaction.mockResolvedValueOnce(upgradeTx).mockResolvedValueOnce(migrateTx);
+        mockGetTransactionById({
+            "upgrade-sig": upgradeTx,
+            "migrate-sig": migrateTx,
+        });
+
+        const promise = stellarWallet.upgrade({ signer: "external-wallet:Gcustom999" });
+        await vi.runAllTimersAsync();
+        await promise;
+
+        for (const call of mockApiClient.createTransaction.mock.calls) {
+            expect((call[1].params as any).signer).toBe("external-wallet:Gcustom999");
+        }
+    });
+});
+
 describe("StellarWallet - from()", () => {
     let mockApiClient: MockedApiClient;
 

@@ -2,16 +2,21 @@ import { isValidStellarAddress, WithLoggerContext } from "@crossmint/common-sdk-
 import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
+    MigrateOptions,
     PrepareOnly,
     StellarTransactionInput,
     Transaction,
     TransactionInputOptions,
+    UpgradeOptions,
 } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
+import type { ServerSignerConfig } from "../signers/types";
+
+const WALLET_LOCKED_STATUS_CODE = 409;
 
 export class StellarWallet extends Wallet<StellarChain> {
     constructor(wallet: Wallet<StellarChain>) {
@@ -79,18 +84,113 @@ export class StellarWallet extends Wallet<StellarChain> {
         return result;
     }
 
-    private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const { contractId, options } = params;
-        let signer: string;
-        if (options?.signer == null) {
-            signer = this.requireSigner().locator();
-        } else if (typeof options.signer === "string") {
-            signer = options.signer;
+    /**
+     * Upgrade this Stellar smart wallet to the latest contract version.
+     *
+     * Stellar wallet upgrades are a two-phase on-chain process: first an `upgrade-wallet`
+     * transaction swaps the contract bytecode (leaving the wallet temporarily locked),
+     * then a `migrate-wallet` transaction transforms the signer storage layout and
+     * unlocks the wallet. This method orchestrates both phases.
+     *
+     * Idempotent: if the wallet is already locked from a previous upgrade attempt,
+     * the phase-1 call is skipped and only the migration is executed.
+     *
+     * @param options - Optional prepareOnly / signer override. When `prepareOnly` is
+     *   true, returns the phase-1 prepared transaction; the developer must then approve
+     *   it and call `migrate()` for phase 2.
+     * @returns The final migrate transaction result (or the prepared phase-1 transaction
+     *   when `prepareOnly` is true).
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "stellarWallet.upgrade",
+        buildContext(thisArg: StellarWallet) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async upgrade<T extends UpgradeOptions | undefined = undefined>(
+        options?: T
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        walletsLogger.info("stellarWallet.upgrade.start");
+
+        await this.preAuthIfNeeded();
+
+        const upgradeTxId = await this.createWalletLifecycleTransaction("upgrade-wallet", options);
+
+        if (upgradeTxId != null) {
+            if (options?.prepareOnly) {
+                walletsLogger.info("stellarWallet.upgrade.prepared", { transactionId: upgradeTxId });
+                return {
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: upgradeTxId,
+                } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            }
+
+            await this.approveTransactionAndWait(upgradeTxId);
+            walletsLogger.info("stellarWallet.upgrade.phase1.success", { transactionId: upgradeTxId });
         } else {
-            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+            walletsLogger.info("stellarWallet.upgrade.phase1.skipped", {
+                reason: "wallet already locked from a prior upgrade",
+            });
         }
 
-        let transaction: any;
+        const migrateResult = await this.migrate({ signer: options?.signer });
+        walletsLogger.info("stellarWallet.upgrade.success", {
+            transactionId: migrateResult.transactionId,
+            hash: migrateResult.hash,
+        });
+        return migrateResult as Transaction<T extends PrepareOnly<true> ? true : false>;
+    }
+
+    /**
+     * Run only the migration phase of a Stellar wallet upgrade. Use this when the
+     * upgrade transaction has already confirmed on-chain (e.g. from a previous
+     * `upgrade({ prepareOnly: true })` flow) and the wallet is in the locked state.
+     *
+     * @param options - Optional prepareOnly / signer override.
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "stellarWallet.migrate",
+        buildContext(thisArg: StellarWallet) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async migrate<T extends MigrateOptions | undefined = undefined>(
+        options?: T
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        walletsLogger.info("stellarWallet.migrate.start");
+
+        await this.preAuthIfNeeded();
+
+        const migrateTxId = await this.createWalletLifecycleTransaction("migrate-wallet", options);
+        if (migrateTxId == null) {
+            throw new TransactionNotCreatedError("Failed to create migrate-wallet transaction");
+        }
+
+        if (options?.prepareOnly) {
+            walletsLogger.info("stellarWallet.migrate.prepared", { transactionId: migrateTxId });
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: migrateTxId,
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+        }
+
+        const result = await this.approveTransactionAndWait(migrateTxId);
+        walletsLogger.info("stellarWallet.migrate.success", {
+            transactionId: migrateTxId,
+            hash: result.hash,
+        });
+        return result as Transaction<T extends PrepareOnly<true> ? true : false>;
+    }
+
+    private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
+        const { contractId, options } = params;
+        const signer = this.resolveStellarSigner(options?.signer);
+
+        let transaction: unknown;
 
         if ("transaction" in params) {
             transaction = {
@@ -109,12 +209,13 @@ export class StellarWallet extends Wallet<StellarChain> {
             };
         }
 
+        // biome-ignore lint/suspicious/noExplicitAny: stellar transaction payload variants include types not yet in generated DTOs
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction,
                 signer,
             },
-        });
+        } as any);
 
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
@@ -122,4 +223,53 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         return transactionCreationResponse;
     }
+
+    /**
+     * Creates an `upgrade-wallet` or `migrate-wallet` transaction. Returns the
+     * transaction id on success, or `null` if the server returned a 409 indicating
+     * the wallet is already in the locked state — callers should treat this as a
+     * signal to skip the phase and proceed to the next one.
+     */
+    private async createWalletLifecycleTransaction(
+        type: "upgrade-wallet" | "migrate-wallet",
+        options: { signer?: string | ServerSignerConfig } | undefined
+    ): Promise<string | null> {
+        const signer = this.resolveStellarSigner(options?.signer);
+
+        // biome-ignore lint/suspicious/noExplicitAny: upgrade-wallet/migrate-wallet types not yet in generated DTOs
+        const response = await this.apiClient.createTransaction(this.walletLocator, {
+            params: {
+                transaction: { type },
+                signer,
+            },
+        } as any);
+
+        if ("error" in response) {
+            if (type === "upgrade-wallet" && isWalletLockedError(response)) {
+                return null;
+            }
+            throw new TransactionNotCreatedError(JSON.stringify(response));
+        }
+
+        return response.id;
+    }
+
+    private resolveStellarSigner(signerOverride: string | ServerSignerConfig | undefined): string {
+        if (signerOverride == null) {
+            return this.requireSigner().locator();
+        }
+        if (typeof signerOverride === "string") {
+            return signerOverride;
+        }
+        return `server:${deriveServerSignerDetails(signerOverride, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+    }
+}
+
+function isWalletLockedError(response: unknown): boolean {
+    return (
+        typeof response === "object" &&
+        response !== null &&
+        "statusCode" in response &&
+        (response as { statusCode?: unknown }).statusCode === WALLET_LOCKED_STATUS_CODE
+    );
 }
