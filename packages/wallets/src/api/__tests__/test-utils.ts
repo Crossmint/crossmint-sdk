@@ -359,7 +359,7 @@ export async function ensureWalletExists(
         chainType,
         type,
         ...(owner && { owner: ownerId }),
-    });
+    } as Parameters<typeof apiClient.createWallet>[0]);
 
     if (isSuccessWalletResponse(createResult)) {
         testData.addWallet(createResult.address);
