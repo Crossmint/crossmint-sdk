@@ -96,10 +96,14 @@ export class StellarWallet extends Wallet<StellarChain> {
      * the phase-1 call is skipped and only the migration is executed.
      *
      * @param options - Optional prepareOnly / signer override. When `prepareOnly` is
-     *   true, returns the phase-1 prepared transaction; the developer must then approve
-     *   it and call `migrate()` for phase 2.
-     * @returns The final migrate transaction result (or the prepared phase-1 transaction
-     *   when `prepareOnly` is true).
+     *   true, returns a prepared transaction without approving it; the developer must
+     *   then approve it and (if it was the phase-1 tx) call `migrate()` for phase 2.
+     * @returns
+     *   - When `prepareOnly` is true and the wallet is not already locked: the prepared
+     *     phase-1 `upgrade-wallet` transaction.
+     *   - When `prepareOnly` is true and the wallet is already locked (idempotent path):
+     *     the prepared phase-2 `migrate-wallet` transaction.
+     *   - Otherwise: the confirmed migrate transaction result.
      */
     @WithLoggerContext({
         logger: walletsLogger,
