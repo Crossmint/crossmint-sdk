@@ -202,32 +202,30 @@ export class StellarWallet extends Wallet<StellarChain> {
         const { contractId, options } = params;
         const signer = this.resolveStellarSigner(options?.signer);
 
-        let transaction: unknown;
+        // The `serialized-transaction` variant is accepted at runtime but not part of
+        // the curated public OpenAPI spec, so its shape is not in the generated DTOs.
+        // biome-ignore lint/suspicious/noExplicitAny: serialized-transaction variant not surfaced in public DTOs
+        const transaction: any =
+            "transaction" in params
+                ? {
+                      type: "serialized-transaction",
+                      serializedTransaction: params.transaction,
+                      contractId,
+                  }
+                : {
+                      type: "contract-call" as const,
+                      contractId,
+                      method: params.method,
+                      memo: params.memo != null ? { type: "text" as const, value: params.memo } : undefined,
+                      args: params.args,
+                  };
 
-        if ("transaction" in params) {
-            transaction = {
-                type: "serialized-transaction",
-                serializedTransaction: params.transaction,
-                contractId,
-            };
-        } else {
-            const { method, memo, args } = params;
-            transaction = {
-                type: "contract-call",
-                contractId,
-                method,
-                memo: memo != null ? { type: "text", value: memo } : undefined,
-                args,
-            };
-        }
-
-        // biome-ignore lint/suspicious/noExplicitAny: stellar transaction payload variants include types not yet in generated DTOs
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction,
                 signer,
             },
-        } as any);
+        });
 
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
@@ -252,13 +250,12 @@ export class StellarWallet extends Wallet<StellarChain> {
         // DTO rejects.
         const signer = options?.signer != null ? this.resolveStellarSigner(options.signer) : undefined;
 
-        // biome-ignore lint/suspicious/noExplicitAny: upgrade-wallet/migrate-wallet types not yet in generated DTOs
         const response = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction: { type },
                 ...(signer != null ? { signer } : {}),
             },
-        } as any);
+        });
 
         if ("error" in response) {
             if (type === "upgrade-wallet" && isWalletLockedError(response)) {
