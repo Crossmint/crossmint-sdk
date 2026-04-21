@@ -486,6 +486,42 @@ describe("StellarWallet - upgrade() / migrate()", () => {
         expect(result.transactionId).toBe("migrate-tx-idem");
     });
 
+    it("upgrade({ prepareOnly: true }) on a locked wallet returns a prepared migrate tx (no approval)", async () => {
+        const lockedError = {
+            error: true,
+            message: "Wallet is being upgraded. Submit a migrate-wallet transaction to complete the upgrade.",
+            statusCode: 409,
+        };
+        const migratePrepTx = makeTxResponse("migrate-locked-prep", "migrate-wallet");
+
+        mockApiClient.createTransaction.mockResolvedValueOnce(lockedError as any).mockResolvedValueOnce(migratePrepTx);
+
+        const result = await stellarWallet.upgrade({ prepareOnly: true });
+
+        expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(2);
+        expect(result.transactionId).toBe("migrate-locked-prep");
+        expect(result.hash).toBeUndefined();
+        expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+    });
+
+    it("upgrade() calls preAuthIfNeeded() exactly once across both phases", async () => {
+        const upgradeTx = makeTxResponse("upgrade-preauth", "upgrade-wallet", "hash-up-preauth");
+        const migrateTx = makeTxResponse("migrate-preauth", "migrate-wallet", "hash-mig-preauth");
+        mockApiClient.createTransaction.mockResolvedValueOnce(upgradeTx).mockResolvedValueOnce(migrateTx);
+        mockGetTransactionById({
+            "upgrade-preauth": upgradeTx,
+            "migrate-preauth": migrateTx,
+        });
+
+        const preAuthSpy = vi.spyOn(stellarWallet as any, "preAuthIfNeeded");
+
+        const promise = stellarWallet.upgrade();
+        await vi.runAllTimersAsync();
+        await promise;
+
+        expect(preAuthSpy).toHaveBeenCalledTimes(1);
+    });
+
     it("upgrade() throws when the API returns a non-409 error on phase 1", async () => {
         const errorResponse = {
             error: true,

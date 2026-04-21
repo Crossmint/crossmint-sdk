@@ -135,7 +135,10 @@ export class StellarWallet extends Wallet<StellarChain> {
             });
         }
 
-        const migrateResult = await this.migrate({ signer: options?.signer });
+        const migrateResult = await this.migrateInternal({
+            signer: options?.signer,
+            prepareOnly: options?.prepareOnly,
+        });
         walletsLogger.info("stellarWallet.upgrade.success", {
             transactionId: migrateResult.transactionId,
             hash: migrateResult.hash,
@@ -160,9 +163,14 @@ export class StellarWallet extends Wallet<StellarChain> {
     public async migrate<T extends MigrateOptions | undefined = undefined>(
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        walletsLogger.info("stellarWallet.migrate.start");
-
         await this.preAuthIfNeeded();
+        return (await this.migrateInternal(options)) as Transaction<T extends PrepareOnly<true> ? true : false>;
+    }
+
+    // Migration path without preAuth — used directly by upgrade() (which preAuths once
+    // up front) and by public migrate() (which preAuths and wraps this call).
+    private async migrateInternal(options: MigrateOptions | undefined): Promise<Transaction<boolean>> {
+        walletsLogger.info("stellarWallet.migrate.start");
 
         const migrateTxId = await this.createWalletLifecycleTransaction("migrate-wallet", options);
         if (migrateTxId == null) {
@@ -175,7 +183,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: migrateTxId,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            };
         }
 
         const result = await this.approveTransactionAndWait(migrateTxId);
@@ -183,7 +191,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             transactionId: migrateTxId,
             hash: result.hash,
         });
-        return result as Transaction<T extends PrepareOnly<true> ? true : false>;
+        return result;
     }
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
