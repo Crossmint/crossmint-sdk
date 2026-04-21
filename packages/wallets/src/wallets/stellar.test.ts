@@ -435,7 +435,6 @@ describe("StellarWallet - upgrade() / migrate()", () => {
             expect.objectContaining({
                 params: expect.objectContaining({
                     transaction: { type: "upgrade-wallet" },
-                    signer: "api-key",
                 }),
             })
         );
@@ -445,10 +444,12 @@ describe("StellarWallet - upgrade() / migrate()", () => {
             expect.objectContaining({
                 params: expect.objectContaining({
                     transaction: { type: "migrate-wallet" },
-                    signer: "api-key",
                 }),
             })
         );
+        // No explicit signer override → SDK must NOT send the signer field; server defaults to admin.
+        expect((mockApiClient.createTransaction.mock.calls[0][1].params as any).signer).toBeUndefined();
+        expect((mockApiClient.createTransaction.mock.calls[1][1].params as any).signer).toBeUndefined();
         expect(result.transactionId).toBe("migrate-tx-1");
         expect(result.hash).toBe("hash-migrate");
     });

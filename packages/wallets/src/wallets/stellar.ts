@@ -246,13 +246,17 @@ export class StellarWallet extends Wallet<StellarChain> {
         type: "upgrade-wallet" | "migrate-wallet",
         options: { signer?: string | ServerSignerConfig } | undefined
     ): Promise<string | null> {
-        const signer = this.resolveStellarSigner(options?.signer);
+        // Only forward an explicit signer override. When unset, the server defaults to
+        // the wallet's admin signer — the correct behavior for wallet-lifecycle ops,
+        // and it avoids passing the unqualified "api-key" locator which the upgrade
+        // DTO rejects.
+        const signer = options?.signer != null ? this.resolveStellarSigner(options.signer) : undefined;
 
         // biome-ignore lint/suspicious/noExplicitAny: upgrade-wallet/migrate-wallet types not yet in generated DTOs
         const response = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction: { type },
-                signer,
+                ...(signer != null ? { signer } : {}),
             },
         } as any);
 
