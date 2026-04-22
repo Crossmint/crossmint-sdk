@@ -71,7 +71,7 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
         } catch (error) {
             console.error("Failed to export private key:", error);
         }
-    }, [wallet, frameUrl]);
+    }, [wallet, frameUrl, onExport]);
 
     if (
         frameUrl.toString() === "" ||
