@@ -11,6 +11,8 @@ import { IFrameWindow, SignersWindowTransport } from "@crossmint/client-sdk-wind
 export interface ExportPrivateKeyButtonProps {
     /** Optional appearance configuration for styling the export button. */
     appearance?: UIConfig;
+    /** Optional callback invoked after the user successfully exports (copies) their private key. */
+    onExport?: () => void | Promise<void>;
 }
 
 const ExportFrame = styled.iframe<{ appearance?: UIConfig }>`
@@ -25,7 +27,7 @@ const ExportFrame = styled.iframe<{ appearance?: UIConfig }>`
     box-shadow: none;
 `;
 
-export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonProps) {
+export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -64,7 +66,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
                     SignersWindowTransport
                 );
                 await connection.handshakeWithChild();
-                await wallet.signer._exportPrivateKey(connection);
+                await wallet.signer._exportPrivateKey(connection, onExport);
             }
         } catch (error) {
             console.error("Failed to export private key:", error);

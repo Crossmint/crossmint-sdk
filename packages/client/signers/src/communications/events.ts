@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 import {
     GetStatusPayloadSchema,
@@ -38,6 +38,7 @@ export const exportSignerInboundEvents = {
 
 export const exportSignerOutboundEvents = {
     "response:export-signer": ExportSignerPayloadSchema.response,
+    "event:key-exported": z.object({}),
 } as const;
 
 export type ExportSignerInputEvent<E extends ExportSignerEventName> = z.infer<

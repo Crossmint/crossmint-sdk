@@ -226,7 +226,10 @@ export interface SignerAdapter<T extends keyof SignResultMap = keyof SignResultM
 }
 
 export interface ExportableSignerAdapter extends SignerAdapter {
-    _exportPrivateKey: (exportTEEConnection: ExportSignerTEEConnection) => Promise<void>;
+    _exportPrivateKey: (
+        exportTEEConnection: ExportSignerTEEConnection,
+        onExport?: () => void | Promise<void>
+    ) => Promise<void>;
 }
 
 export function isExportableSignerAdapter(signer: SignerAdapter): signer is ExportableSignerAdapter {
