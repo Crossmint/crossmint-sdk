@@ -11,13 +11,15 @@ import { WebViewParent, RNWebView } from "@crossmint/client-sdk-rn-window";
 export interface ExportPrivateKeyButtonProps {
     /** Optional appearance configuration for styling the export button. */
     appearance?: UIConfig;
+    /** Optional callback invoked after the user successfully exports (copies) their private key. */
+    onExport?: () => void | Promise<void>;
 }
 
 /**
  * Renders a button that allows the user to export their wallet's private key.
  * Only works with email and phone signers. Will not render for passkey or external wallet signers.
  */
-export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonProps) {
+export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
     const webViewRef = useRef<WebView>(null);
@@ -55,14 +57,14 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
                     });
                     connectionRef.current = connection;
                     await connection.handshakeWithChild();
-                    await wallet.signer._exportPrivateKey(connection);
+                    await wallet.signer._exportPrivateKey(connection, onExport);
                 }
             } catch (error) {
                 console.error("Failed to export private key:", error);
                 Alert.alert("Export Failed", "Failed to export private key. Please try again.");
             }
         },
-        [wallet]
+        [wallet, onExport]
     );
 
     const handleWebViewError = useCallback((syntheticEvent: { nativeEvent: unknown }) => {
