@@ -345,13 +345,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (onExport != null) {
             exportTEEConnection.on("event:key-exported", () => {
-                try {
-                    Promise.resolve(onExport()).catch((err) => {
+                Promise.resolve()
+                    .then(() => onExport())
+                    .catch((err) => {
                         console.error("[NCS Signer] onExport callback error:", err);
                     });
-                } catch (err) {
-                    console.error("[NCS Signer] onExport callback error:", err);
-                }
             });
         }
 

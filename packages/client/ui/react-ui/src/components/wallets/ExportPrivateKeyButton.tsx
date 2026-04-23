@@ -31,7 +31,12 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const onExportRef = useRef(onExport);
     const [frameUrl, setFrameUrl] = useState<string>("");
+
+    useEffect(() => {
+        onExportRef.current = onExport;
+    }, [onExport]);
 
     useEffect(() => {
         if (crossmint != null) {
@@ -66,12 +71,12 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
                     SignersWindowTransport
                 );
                 await connection.handshakeWithChild();
-                await wallet.signer._exportPrivateKey(connection, onExport);
+                await wallet.signer._exportPrivateKey(connection, () => onExportRef.current?.());
             }
         } catch (error) {
             console.error("Failed to export private key:", error);
         }
-    }, [wallet, frameUrl, onExport]);
+    }, [wallet, frameUrl]);
 
     if (
         frameUrl.toString() === "" ||

@@ -27,7 +27,12 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
         typeof exportSignerOutboundEvents,
         typeof exportSignerInboundEvents
     > | null>(null);
+    const onExportRef = useRef(onExport);
     const [frameUrl, setFrameUrl] = useState<string>("");
+
+    useEffect(() => {
+        onExportRef.current = onExport;
+    }, [onExport]);
 
     useEffect(() => {
         if (crossmint != null) {
@@ -57,14 +62,14 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
                     });
                     connectionRef.current = connection;
                     await connection.handshakeWithChild();
-                    await wallet.signer._exportPrivateKey(connection, onExport);
+                    await wallet.signer._exportPrivateKey(connection, () => onExportRef.current?.());
                 }
             } catch (error) {
                 console.error("Failed to export private key:", error);
                 Alert.alert("Export Failed", "Failed to export private key. Please try again.");
             }
         },
-        [wallet, onExport]
+        [wallet]
     );
 
     const handleWebViewError = useCallback((syntheticEvent: { nativeEvent: unknown }) => {
