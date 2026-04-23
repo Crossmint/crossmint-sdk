@@ -62,7 +62,10 @@ export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKe
                     });
                     connectionRef.current = connection;
                     await connection.handshakeWithChild();
-                    await wallet.signer._exportPrivateKey(connection, () => onExportRef.current?.());
+                    await wallet.signer._exportPrivateKey(
+                        connection,
+                        onExportRef.current != null ? () => onExportRef.current?.() : undefined
+                    );
                 }
             } catch (error) {
                 console.error("Failed to export private key:", error);
