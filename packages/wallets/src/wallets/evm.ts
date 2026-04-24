@@ -172,7 +172,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                         verifyingContract,
                         salt,
                     },
-                    message,
+                    message: stringifyBigInts(message),
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
@@ -265,4 +265,15 @@ export class EVMWallet extends Wallet<EVMChain> {
             }),
         };
     }
+}
+
+function stringifyBigInts<T>(value: T): T {
+    if (typeof value === "bigint") return value.toString() as unknown as T;
+    if (Array.isArray(value)) return value.map(stringifyBigInts) as unknown as T;
+    if (value !== null && typeof value === "object") {
+        return Object.fromEntries(
+            Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, stringifyBigInts(v)])
+        ) as T;
+    }
+    return value;
 }
