@@ -385,6 +385,64 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
+        it("should stringify bigint values in the typed data message", async () => {
+            const mockSignatureResponse = {
+                id: "sig-bigint-123",
+                status: "success",
+                outputSignature: "0xsignedbigintdata",
+            };
+
+            mockApiClient.createSignature.mockResolvedValue(mockSignatureResponse as any);
+            mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
+
+            const signPromise = evmWallet.signTypedData({
+                domain: {
+                    name: "MyDApp",
+                    version: "1",
+                    chainId: 84532,
+                    verifyingContract: "0x1234567890123456789012345678901234567890" as `0x${string}`,
+                },
+                types: {
+                    Permit: [
+                        { name: "owner", type: "address" },
+                        { name: "spender", type: "address" },
+                        { name: "value", type: "uint256" },
+                        { name: "nonce", type: "uint256" },
+                        { name: "deadline", type: "uint256" },
+                    ],
+                },
+                primaryType: "Permit",
+                message: {
+                    owner: "0xowner",
+                    spender: "0xspender",
+                    value: BigInt("1000000000000000000"),
+                    nonce: BigInt(0),
+                    deadline: BigInt("1234567890"),
+                },
+                chain: "base-sepolia",
+            });
+            await vi.runAllTimersAsync();
+            await signPromise;
+
+            expect(mockApiClient.createSignature).toHaveBeenCalledWith(
+                "me:evm:smart",
+                expect.objectContaining({
+                    type: "typed-data",
+                    params: expect.objectContaining({
+                        typedData: expect.objectContaining({
+                            message: {
+                                owner: "0xowner",
+                                spender: "0xspender",
+                                value: "1000000000000000000",
+                                nonce: "0",
+                                deadline: "1234567890",
+                            },
+                        }),
+                    }),
+                })
+            );
+        });
+
         it("should return prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
