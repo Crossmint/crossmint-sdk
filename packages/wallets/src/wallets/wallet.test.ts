@@ -2367,6 +2367,9 @@ describe("Wallet - recover()", () => {
             } as any);
             mockSignatureApprovalSuccess("sig-local-1");
 
+            // Ensure constructor's init completes before calling recover, so both
+            // don't race to assemble the device signer concurrently.
+            await wallet.waitForInit();
             await wallet.recover();
 
             expect(mockApiClient.getSignature).toHaveBeenCalledWith("me:evm:smart", "sig-local-1");
@@ -2871,6 +2874,10 @@ describe("Wallet - waitForInit()", () => {
         // After waitForInit, needsRecovery should reflect the real state
         await wallet.waitForInit();
         expect(wallet.needsRecovery()).toBe(true);
+
+        // Even though device signer is unavailable, a fallback recovery signer should be assembled
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("api-key");
     });
 
     it("should resolve needsRecovery as false after waitForInit when device key exists", async () => {
@@ -2904,7 +2911,73 @@ describe("Wallet - waitForInit()", () => {
         await wallet.waitForInit();
         expect(wallet.needsRecovery()).toBe(false);
     });
+    it("should fall back to email recovery signer when device signer iframe throws (Safari ITP)", async () => {
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockRejectedValue(new Error("Device signer iframe blocked by ITP")),
+            hasKey: vi.fn().mockResolvedValue(false),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "email", email: "user@example.com" } as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        await wallet.waitForInit();
+
+        // Device signer failed, so recovery is needed
+        expect(wallet.needsRecovery()).toBe(true);
+        // But the email recovery signer should have been assembled as fallback
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("email");
+    });
+
+    it("should fall back to email recovery signer when device signer init times out", async () => {
+        vi.useFakeTimers();
+
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockImplementation(() => new Promise(() => {})), // never resolves
+            hasKey: vi.fn().mockResolvedValue(false),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "email", email: "user@example.com" } as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        const initPromise = wallet.waitForInit();
+        await vi.advanceTimersByTimeAsync(11_000);
+        await initPromise;
+
+        // Device signer timed out, so recovery is needed
+        expect(wallet.needsRecovery()).toBe(true);
+        // But the email recovery signer should have been assembled as fallback
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("email");
+
+        vi.useRealTimers();
+    });
 });
+
 describe("Wallet - isSignerApproved()", () => {
     it("should return true only when signer status is success", async () => {
         const mockApiClient = createMockApiClient();

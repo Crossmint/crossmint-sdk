@@ -51,7 +51,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
 } from "../utils/errors";
-import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { STATUS_POLLING_INTERVAL_MS, DEVICE_SIGNER_INIT_TIMEOUT_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
@@ -140,14 +140,25 @@ export class Wallet<C extends Chain> {
         }
 
         const deviceConfig: DeviceSignerConfig = { type: "device" };
+        let initTimeoutId: ReturnType<typeof setTimeout> | undefined;
         try {
-            await this.resolveDeviceSignerAvailability(deviceConfig);
+            await Promise.race([
+                this.resolveDeviceSignerAvailability(deviceConfig),
+                new Promise<never>((_, reject) => {
+                    initTimeoutId = setTimeout(
+                        () => reject(new Error("Device signer initialization timed out")),
+                        DEVICE_SIGNER_INIT_TIMEOUT_MS
+                    );
+                }),
+            ]);
         } catch (error) {
             walletsLogger.error("wallet.initDeviceSigner.error", {
                 error,
             });
             this.#needsRecovery = true;
             return;
+        } finally {
+            clearTimeout(initTimeoutId);
         }
 
         // If no local key was found, skip signer assembly — recovery will handle it
@@ -180,10 +191,14 @@ export class Wallet<C extends Chain> {
         // Step 1: Try device signer (existing behavior)
         await this.initDeviceSigner();
 
-        // If device signer was found or recovery is pending, we're done
-        if (this.#signer != null || this.#needsRecovery) {
+        // If device signer was assembled successfully, we're done
+        if (this.#signer != null) {
             return;
         }
+
+        // When needsRecovery is true (device signer unavailable), fall through to
+        // try the recovery/delegated signer as a fallback so the wallet is usable
+        // even when the device signer iframe is blocked (e.g. Safari ITP).
 
         const signerToAssemble =
             this.#initialSigners.length === 0
