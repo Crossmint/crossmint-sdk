@@ -2976,6 +2976,37 @@ describe("Wallet - waitForInit()", () => {
 
         vi.useRealTimers();
     });
+
+    it("should fall back to email recovery signer when device signer fails and delegated server signer cannot be auto-assembled", async () => {
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockRejectedValue(new Error("Device signer iframe blocked")),
+            hasKey: vi.fn().mockResolvedValue(false),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "email", email: "admin@example.com" } as any,
+                signers: [{ type: "server", address: "0x1111111111111111111111111111111111111111" }] as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        await wallet.waitForInit();
+
+        expect(wallet.needsRecovery()).toBe(true);
+        // The server signer can't be auto-assembled (no secret), so the email
+        // recovery signer should be assembled as the fallback instead.
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("email");
+    });
 });
 
 describe("Wallet - isSignerApproved()", () => {

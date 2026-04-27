@@ -206,18 +206,26 @@ export class Wallet<C extends Chain> {
         // Fall through to assemble the recovery/delegated signer as a fallback so
         // the wallet is usable even when the device signer iframe is unavailable.
 
-        const signerToAssemble =
+        const candidateSigner =
             this.#initialSigners.length === 0
                 ? this.#recovery
                 : this.#initialSigners.length === 1
                   ? this.#initialSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        if (signerToAssemble == null) {
+        if (candidateSigner == null) {
             return;
         }
 
-        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
+        // If the selected delegated signer can't be auto-assembled (e.g. server
+        // signer without a secret), fall back to the recovery signer (e.g. email).
+        const signerToAssemble = this.isAutoAssemblableSignerConfig(candidateSigner)
+            ? candidateSigner
+            : this.isAutoAssemblableSignerConfig(this.#recovery)
+              ? this.#recovery
+              : null;
+
+        if (signerToAssemble == null) {
             return;
         }
 
