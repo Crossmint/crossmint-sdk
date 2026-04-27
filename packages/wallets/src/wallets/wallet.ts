@@ -98,6 +98,7 @@ export class Wallet<C extends Chain> {
     #initialSigners: SignerConfigForChain<C>[];
     #needsRecovery = false;
     #deviceSignerApproved = false;
+    #deviceSignerInitFailed = false;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -142,8 +143,10 @@ export class Wallet<C extends Chain> {
         const deviceConfig: DeviceSignerConfig = { type: "device" };
         let initTimeoutId: ReturnType<typeof setTimeout> | undefined;
         try {
+            const availabilityPromise = this.resolveDeviceSignerAvailability(deviceConfig);
+            availabilityPromise.catch(() => {}); // Prevent unhandled rejection if timeout wins
             await Promise.race([
-                this.resolveDeviceSignerAvailability(deviceConfig),
+                availabilityPromise,
                 new Promise<never>((_, reject) => {
                     initTimeoutId = setTimeout(
                         () => reject(new Error("Device signer initialization timed out")),
@@ -156,6 +159,7 @@ export class Wallet<C extends Chain> {
                 error,
             });
             this.#needsRecovery = true;
+            this.#deviceSignerInitFailed = true;
             return;
         } finally {
             clearTimeout(initTimeoutId);
@@ -191,14 +195,16 @@ export class Wallet<C extends Chain> {
         // Step 1: Try device signer (existing behavior)
         await this.initDeviceSigner();
 
-        // If device signer was assembled successfully, we're done
-        if (this.#signer != null) {
+        // If device signer was assembled successfully, or if the device key simply
+        // hasn't been generated yet (normal new-wallet path), we're done — recovery
+        // will handle device key generation later.
+        if (this.#signer != null || !this.#deviceSignerInitFailed) {
             return;
         }
 
-        // When needsRecovery is true (device signer unavailable), fall through to
-        // try the recovery/delegated signer as a fallback so the wallet is usable
-        // even when the device signer iframe is blocked (e.g. Safari ITP).
+        // Device signer init actually failed (e.g. Safari ITP blocked the iframe).
+        // Fall through to assemble the recovery/delegated signer as a fallback so
+        // the wallet is usable even when the device signer iframe is unavailable.
 
         const signerToAssemble =
             this.#initialSigners.length === 0

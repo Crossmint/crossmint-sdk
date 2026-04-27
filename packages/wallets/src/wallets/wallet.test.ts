@@ -2851,9 +2851,9 @@ describe("Wallet - waitForInit()", () => {
             getDeviceName: vi.fn().mockReturnValue("Test Device"),
         };
 
-        // Mock signers() to return no device signers
         mockApiClient.getWallet.mockResolvedValue({
             type: "smart",
+            chainType: "evm",
             address: "0x1234567890123456789012345678901234567890",
             config: {
                 adminSigner: { type: "api-key", locator: "api-key" },
@@ -2875,9 +2875,9 @@ describe("Wallet - waitForInit()", () => {
         await wallet.waitForInit();
         expect(wallet.needsRecovery()).toBe(true);
 
-        // Even though device signer is unavailable, a fallback recovery signer should be assembled
-        expect(wallet.signer).toBeDefined();
-        expect(wallet.signer?.type).toBe("api-key");
+        // No fallback signer assembled — the device key simply hasn't been generated
+        // yet (normal new-wallet path). recover() will handle device key generation.
+        expect(wallet.signer).toBeUndefined();
     });
 
     it("should resolve needsRecovery as false after waitForInit when device key exists", async () => {
