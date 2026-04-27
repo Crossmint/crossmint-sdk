@@ -198,7 +198,7 @@ export class Wallet<C extends Chain> {
         // If device signer was assembled successfully, or if the device key simply
         // hasn't been generated yet (normal new-wallet path), we're done — recovery
         // will handle device key generation later.
-        if (this.#signer != null || !this.#deviceSignerInitFailed) {
+        if (this.#signer != null || (this.#needsRecovery && !this.#deviceSignerInitFailed)) {
             return;
         }
 
@@ -218,10 +218,11 @@ export class Wallet<C extends Chain> {
         }
 
         // If the selected delegated signer can't be auto-assembled (e.g. server
-        // signer without a secret), fall back to the recovery signer (e.g. email).
+        // signer without a secret) AND device signer init actually failed (not just
+        // absent), fall back to the recovery signer (e.g. email).
         const signerToAssemble = this.isAutoAssemblableSignerConfig(candidateSigner)
             ? candidateSigner
-            : this.isAutoAssemblableSignerConfig(this.#recovery)
+            : this.#deviceSignerInitFailed && this.isAutoAssemblableSignerConfig(this.#recovery)
               ? this.#recovery
               : null;
 

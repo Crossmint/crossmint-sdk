@@ -3007,6 +3007,23 @@ describe("Wallet - waitForInit()", () => {
         expect(wallet.signer).toBeDefined();
         expect(wallet.signer?.type).toBe("email");
     });
+
+    it("should auto-assemble recovery signer for server-side wallets without deviceSignerKeyStorage", async () => {
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "api-key" } as any,
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        await wallet.waitForInit();
+
+        expect(wallet.needsRecovery()).toBe(false);
+        expect(wallet.signer).toBeDefined();
+        expect(wallet.signer?.type).toBe("api-key");
+    });
 });
 
 describe("Wallet - isSignerApproved()", () => {
