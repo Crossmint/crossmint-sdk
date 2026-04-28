@@ -61,7 +61,7 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
             "popupWindow",
             createPopupString(options.width, options.height, options?.crossOrigin || false)
         );
-        if (!_window) {
+        if (_window == null) {
             throw new Error("Failed to open popup window");
         }
         return new PopupWindow<IncomingEvents, OutgoingEvents>(_window, options.targetOrigin || "*", options);

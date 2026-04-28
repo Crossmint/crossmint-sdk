@@ -48,7 +48,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
 
                 const prefetchedUrl = oauthUrlMap[provider];
                 const resolvedUrl = prefetchedUrl || (await crossmintAuth?.getOAuthUrl(provider));
-                if (!resolvedUrl) {
+                if (resolvedUrl == null) {
                     throw new Error("Failed to resolve OAuth URL");
                 }
                 baseUrl = new URL(resolvedUrl);
