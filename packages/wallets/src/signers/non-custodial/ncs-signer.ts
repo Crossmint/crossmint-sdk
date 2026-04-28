@@ -344,8 +344,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const { scheme, encoding } = this.getChainKeyParams();
 
         if (onExport != null) {
-            const listenerId = exportTEEConnection.on("event:key-exported", () => {
+            const listenerId = exportTEEConnection.on("event:key-exported", (data) => {
                 exportTEEConnection.off(listenerId);
+                if (data.status !== "success") return;
                 Promise.resolve()
                     .then(() => onExport())
                     .catch(() => {
