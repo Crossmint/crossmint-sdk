@@ -34,17 +34,18 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             setActiveOAuthProvider(provider);
             setError(null);
 
-            // Open the popup synchronously with a blank URL so it isn't blocked by the popup blocker,
-            // then resolve the OAuth URL (using the prefetched value if present) and navigate the popup.
-            const popup = PopupWindow.initEmpty<IncomingEvents, OutgoingEvents>({
-                crossOrigin: true,
-                width: 400,
-                height: 700,
-                incomingEvents,
-            });
-
+            let popup: PopupWindow<IncomingEvents, OutgoingEvents>;
             let baseUrl: URL;
             try {
+                // Open the popup synchronously with a blank URL so it isn't blocked by the popup blocker,
+                // then resolve the OAuth URL (using the prefetched value if present) and navigate the popup.
+                popup = PopupWindow.initEmpty<IncomingEvents, OutgoingEvents>({
+                    crossOrigin: true,
+                    width: 400,
+                    height: 700,
+                    incomingEvents,
+                });
+
                 const prefetchedUrl = oauthUrlMap[provider];
                 const resolvedUrl = prefetchedUrl || (await crossmintAuth?.getOAuthUrl(provider));
                 if (!resolvedUrl) {
@@ -52,7 +53,6 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 }
                 baseUrl = new URL(resolvedUrl);
             } catch (e) {
-                popup.window?.close();
                 setActiveOAuthProvider(null);
                 setError(e instanceof Error ? e.message : "Failed to start OAuth login");
                 return;
