@@ -110,6 +110,10 @@ export const SignPayloadSchema = {
     ),
 };
 
+export const KeyExportedPayloadSchema = {
+    event: ResultResponse(z.object({})),
+};
+
 export const ExportSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
