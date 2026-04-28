@@ -50,6 +50,22 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
             options
         );
     }
+
+    // Opens an empty popup synchronously so it's not blocked by the popup blocker, then lets the
+    // caller navigate it once an async URL resolves. Use `window.location.href = url` to navigate.
+    static initEmpty<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
+        options: PopupWindowOptions & EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
+    ) {
+        const _window = window.open(
+            "about:blank",
+            "popupWindow",
+            createPopupString(options.width, options.height, options?.crossOrigin || false)
+        );
+        if (!_window) {
+            throw new Error("Failed to open popup window");
+        }
+        return new PopupWindow<IncomingEvents, OutgoingEvents>(_window, options.targetOrigin || "*", options);
+    }
 }
 
 function createPopupSync(url: string, options: PopupWindowOptions) {

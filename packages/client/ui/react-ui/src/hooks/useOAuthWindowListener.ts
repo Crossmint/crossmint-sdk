@@ -34,11 +34,29 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             setActiveOAuthProvider(provider);
             setError(null);
 
-            console.log("createPopupAndSetupListeners", provider, providerLoginHint);
-            console.log("oauthUrlMap", oauthUrlMap);
-            console.log("oauthUrlMap[provider]", oauthUrlMap[provider]);
+            // Open the popup synchronously with a blank URL so it isn't blocked by the popup blocker,
+            // then resolve the OAuth URL (using the prefetched value if present) and navigate the popup.
+            const popup = PopupWindow.initEmpty<IncomingEvents, OutgoingEvents>({
+                crossOrigin: true,
+                width: 400,
+                height: 700,
+                incomingEvents,
+            });
 
-            const baseUrl = new URL(oauthUrlMap[provider]);
+            let baseUrl: URL;
+            try {
+                const prefetchedUrl = oauthUrlMap[provider];
+                const resolvedUrl = prefetchedUrl || (await crossmintAuth?.getOAuthUrl(provider));
+                if (!resolvedUrl) {
+                    throw new Error("Failed to resolve OAuth URL");
+                }
+                baseUrl = new URL(resolvedUrl);
+            } catch (e) {
+                popup.window?.close();
+                setActiveOAuthProvider(null);
+                setError(e instanceof Error ? e.message : "Failed to start OAuth login");
+                return;
+            }
 
             // The provider_login_hint is a parameter that can be used to pre-fill the email field of the OAuth provider to allow auto-login if session exists.
             // Stytch Docs: https://stytch.com/docs/api/oauth-google-start#additional-provider-parameters
@@ -58,12 +76,9 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 });
             }
 
-            const popup = await PopupWindow.init(baseUrl.toString(), {
-                awaitToLoad: false,
-                crossOrigin: true,
-                width: 400,
-                height: 700,
-            });
+            if (popup.window != null) {
+                popup.window.location.href = baseUrl.toString();
+            }
 
             const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
                 await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
