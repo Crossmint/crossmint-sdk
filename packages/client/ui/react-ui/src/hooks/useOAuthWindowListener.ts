@@ -34,7 +34,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             setActiveOAuthProvider(provider);
             setError(null);
 
-            let popup: PopupWindow<IncomingEvents, OutgoingEvents>;
+            let popup: PopupWindow<IncomingEvents, OutgoingEvents> | undefined;
             let baseUrl: URL;
             try {
                 // Open the popup synchronously with a blank URL so it isn't blocked by the popup blocker,
@@ -53,6 +53,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 }
                 baseUrl = new URL(resolvedUrl);
             } catch (e) {
+                popup?.window?.close();
                 setActiveOAuthProvider(null);
                 setError(e instanceof Error ? e.message : "Failed to start OAuth login");
                 return;
