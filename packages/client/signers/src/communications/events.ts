@@ -6,6 +6,7 @@ import {
     StartOnboardingPayloadSchema,
     CompleteOnboardingPayloadSchema,
     ExportSignerPayloadSchema,
+    KeyExportedPayloadSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = ["start-onboarding", "complete-onboarding", "sign", "get-status"] as const;
@@ -38,6 +39,7 @@ export const exportSignerInboundEvents = {
 
 export const exportSignerOutboundEvents = {
     "response:export-signer": ExportSignerPayloadSchema.response,
+    "event:key-exported": KeyExportedPayloadSchema.event,
 } as const;
 
 export type ExportSignerInputEvent<E extends ExportSignerEventName> = z.infer<

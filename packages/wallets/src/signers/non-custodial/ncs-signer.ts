@@ -334,11 +334,26 @@ export abstract class NonCustodialSigner implements SignerAdapter {
      * Export the private key for this signer
      * @throws {Error} If signer is not authenticated
      */
-    async _exportPrivateKey(exportTEEConnection: ExportSignerTEEConnection): Promise<void> {
+    async _exportPrivateKey(
+        exportTEEConnection: ExportSignerTEEConnection,
+        onExport?: () => void | Promise<void>
+    ): Promise<void> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
         const { scheme, encoding } = this.getChainKeyParams();
+
+        if (onExport != null) {
+            const listenerId = exportTEEConnection.on("event:key-exported", (data) => {
+                exportTEEConnection.off(listenerId);
+                if (data.status !== "success") return;
+                Promise.resolve()
+                    .then(() => onExport())
+                    .catch(() => {
+                        console.error("[NCS Signer] onExport callback error");
+                    });
+            });
+        }
 
         const response = await exportTEEConnection.sendAction({
             event: "request:export-signer",
