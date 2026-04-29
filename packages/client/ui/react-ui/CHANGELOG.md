@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.2.0
+
+### Minor Changes
+
+- 709cbd4: Add key export event reporting: new `onExport` callback prop on `ExportPrivateKeyButton` (React and React Native), `event:key-exported` outbound event schema, and listener wiring in NCS signer.
+
+### Patch Changes
+
+- Updated dependencies [709cbd4]
+  - @crossmint/wallets-sdk@1.1.0
+  - @crossmint/client-signers@0.2.0
+  - @crossmint/client-sdk-react-base@2.0.18
+
 ## 4.1.6
 
 ### Patch Changes
