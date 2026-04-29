@@ -7969,6 +7969,67 @@
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
                                     }
                                 ]
+                            },
+                            "scopes": {
+                                "description": "Optional array of scopes to restrict the signer's capabilities",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["transfer"]
+                                        },
+                                        "tokenLocator": {
+                                            "type": "string"
+                                        },
+                                        "recipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "spendingLimit": {
+                                            "type": "object",
+                                            "properties": {
+                                                "amount": {
+                                                    "type": "string"
+                                                },
+                                                "interval": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "required": ["amount"]
+                                        }
+                                    },
+                                    "required": ["type", "tokenLocator"],
+                                    "title": "Transfer",
+                                    "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                    "example": {
+                                        "type": "transfer",
+                                        "tokenLocator": "stellar:usdc",
+                                        "recipients": ["GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"],
+                                        "spendingLimit": {
+                                            "amount": "100",
+                                            "interval": 86400
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "type": "transfer",
+                                    "tokenLocator": "solana:sol",
+                                    "spendingLimit": {
+                                        "amount": "1"
+                                    }
+                                }
+                            },
+                            "expiresAt": {
+                                "description": "The expiry date of the signer in ISO 8601 format",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
                             }
                         },
                         "required": ["signer"],
@@ -8550,78 +8611,126 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string",
-                                                "description": "The type of transaction to execute",
-                                                "enum": ["contract-call"]
-                                            },
-                                            "contractId": {
-                                                "type": "string",
-                                                "description": "The recipient address for this transaction call",
-                                                "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "description": "The name of the function to call"
-                                            },
-                                            "memo": {
-                                                "description": "The memo for the transaction",
-                                                "oneOf": [
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["text"]
-                                                            },
-                                                            "value": {
-                                                                "type": "string",
-                                                                "maxLength": 28
-                                                            }
-                                                        },
-                                                        "required": ["type", "value"]
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["contract-call"]
                                                     },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["id"]
-                                                            },
-                                                            "value": {
-                                                                "type": "string"
-                                                            }
-                                                        },
-                                                        "required": ["type", "value"]
+                                                    "contractId": {
+                                                        "type": "string",
+                                                        "description": "The recipient address for this transaction call",
+                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["hash"]
+                                                    "method": {
+                                                        "type": "string",
+                                                        "description": "The name of the function to call"
+                                                    },
+                                                    "memo": {
+                                                        "description": "The memo for the transaction",
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["text"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "maxLength": 28
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
                                                             },
-                                                            "value": {
-                                                                "type": "string"
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["id"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["hash"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
                                                             }
-                                                        },
-                                                        "required": ["type", "value"]
+                                                        ],
+                                                        "example": {
+                                                            "type": "text",
+                                                            "value": "Hello, world!"
+                                                        }
+                                                    },
+                                                    "args": {
+                                                        "type": "object",
+                                                        "additionalProperties": true,
+                                                        "description": "The arguments to pass to the function"
                                                     }
-                                                ],
+                                                },
+                                                "required": ["type", "contractId", "method", "args"],
+                                                "title": "Stellar contract call transaction parameters",
+                                                "description": "Parameters for a transaction to execute a smart contract function",
                                                 "example": {
-                                                    "type": "text",
-                                                    "value": "Hello, world!"
+                                                    "type": "contract-call",
+                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                    "method": "transfer",
+                                                    "args": {
+                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "amount": "1000000000000000000"
+                                                    }
                                                 }
                                             },
-                                            "args": {
+                                            {
                                                 "type": "object",
-                                                "additionalProperties": true,
-                                                "description": "The arguments to pass to the function"
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["upgrade-wallet"]
+                                                    }
+                                                },
+                                                "required": ["type"],
+                                                "title": "Stellar upgrade wallet transaction",
+                                                "description": "Upgrades the wallet's on-chain contract to a new version. The wallet will be locked until a migrate-wallet transaction completes the upgrade.",
+                                                "example": {
+                                                    "type": "upgrade-wallet"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["migrate-wallet"]
+                                                    }
+                                                },
+                                                "required": ["type"],
+                                                "title": "Stellar migrate wallet transaction",
+                                                "description": "Completes a pending wallet upgrade by migrating on-chain signer data to the new contract version. Must be called after upgrade-wallet.",
+                                                "example": {
+                                                    "type": "migrate-wallet"
+                                                }
                                             }
-                                        },
-                                        "required": ["type", "contractId", "method", "args"],
+                                        ],
                                         "description": "Stellar transaction to execute"
                                     },
                                     "signer": {
@@ -9027,18 +9136,7 @@
                                 "additionalProperties": false
                             },
                             "owner": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "description": "Set the owner of a wallet to COMPANY for the wallet to be a treasury wallet and have regulated transfers enforced",
-                                        "enum": ["COMPANY"],
-                                        "example": "COMPANY"
-                                    },
-                                    {
-                                        "description": "A user locator can be of the format:\n- `email:<email>`\n- `userId:<userId>`\n- `phoneNumber:<phoneNumber>`\n- `twitter:<handle>`\n- `x:<handle>`",
-                                        "type": "string"
-                                    }
-                                ]
+                                "type": "string"
                             },
                             "alias": {
                                 "description": "The wallet alias",
@@ -9046,7 +9144,7 @@
                                 "example": "my-usdc-wallet"
                             }
                         },
-                        "required": ["chainType"],
+                        "required": ["chainType", "config"],
                         "title": "EVM smart wallet creation input",
                         "description": "EVM smart wallet creation input"
                     },
@@ -9386,6 +9484,69 @@
                                                             "example": "external-wallet:0x1234567890123456789012345678901234567890"
                                                         }
                                                     ]
+                                                },
+                                                "scopes": {
+                                                    "description": "Optional array of scopes to restrict the signer's capabilities",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["transfer"]
+                                                            },
+                                                            "tokenLocator": {
+                                                                "type": "string"
+                                                            },
+                                                            "recipients": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "spendingLimit": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "interval": {
+                                                                        "type": "integer",
+                                                                        "minimum": 1,
+                                                                        "maximum": 9007199254740991
+                                                                    }
+                                                                },
+                                                                "required": ["amount"]
+                                                            }
+                                                        },
+                                                        "required": ["type", "tokenLocator"],
+                                                        "title": "Transfer",
+                                                        "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                                        "example": {
+                                                            "type": "transfer",
+                                                            "tokenLocator": "stellar:usdc",
+                                                            "recipients": [
+                                                                "GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"
+                                                            ],
+                                                            "spendingLimit": {
+                                                                "amount": "100",
+                                                                "interval": 86400
+                                                            }
+                                                        }
+                                                    },
+                                                    "example": {
+                                                        "type": "transfer",
+                                                        "tokenLocator": "solana:sol",
+                                                        "spendingLimit": {
+                                                            "amount": "1"
+                                                        }
+                                                    }
+                                                },
+                                                "expiresAt": {
+                                                    "description": "The expiry date of the signer in ISO 8601 format",
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
                                                 }
                                             },
                                             "required": ["signer"],
@@ -9398,18 +9559,7 @@
                                 "additionalProperties": false
                             },
                             "owner": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "description": "Set the owner of a wallet to COMPANY for the wallet to be a treasury wallet and have regulated transfers enforced",
-                                        "enum": ["COMPANY"],
-                                        "example": "COMPANY"
-                                    },
-                                    {
-                                        "description": "A user locator can be of the format:\n- `email:<email>`\n- `userId:<userId>`\n- `phoneNumber:<phoneNumber>`\n- `twitter:<handle>`\n- `x:<handle>`",
-                                        "type": "string"
-                                    }
-                                ]
+                                "type": "string"
                             },
                             "alias": {
                                 "description": "The wallet alias",
@@ -9417,7 +9567,7 @@
                                 "example": "my-usdc-wallet"
                             }
                         },
-                        "required": ["chainType"],
+                        "required": ["chainType", "config"],
                         "title": "Solana smart wallet creation input",
                         "description": "Solana smart wallet creation input"
                     },
@@ -9885,18 +10035,7 @@
                                 "additionalProperties": false
                             },
                             "owner": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "description": "Set the owner of a wallet to COMPANY for the wallet to be a treasury wallet and have regulated transfers enforced",
-                                        "enum": ["COMPANY"],
-                                        "example": "COMPANY"
-                                    },
-                                    {
-                                        "description": "A user locator can be of the format:\n- `email:<email>`\n- `userId:<userId>`\n- `phoneNumber:<phoneNumber>`\n- `twitter:<handle>`\n- `x:<handle>`",
-                                        "type": "string"
-                                    }
-                                ]
+                                "type": "string"
                             },
                             "alias": {
                                 "description": "The wallet alias",
@@ -10161,6 +10300,75 @@
                             {
                                 "type": "object",
                                 "properties": {
+                                    "scopes": {
+                                        "description": "Optional array of scopes restricting the signer's capabilities",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["transfer"]
+                                                },
+                                                "tokenLocator": {
+                                                    "type": "string"
+                                                },
+                                                "recipients": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "spendingLimit": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "interval": {
+                                                            "type": "integer",
+                                                            "minimum": 1,
+                                                            "maximum": 9007199254740991
+                                                        }
+                                                    },
+                                                    "required": ["amount"]
+                                                }
+                                            },
+                                            "required": ["type", "tokenLocator"],
+                                            "title": "Transfer",
+                                            "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                            "example": {
+                                                "type": "transfer",
+                                                "tokenLocator": "stellar:usdc",
+                                                "recipients": [
+                                                    "GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"
+                                                ],
+                                                "spendingLimit": {
+                                                    "amount": "100",
+                                                    "interval": 86400
+                                                }
+                                            }
+                                        },
+                                        "example": {
+                                            "type": "transfer",
+                                            "tokenLocator": "solana:sol",
+                                            "spendingLimit": {
+                                                "amount": "1"
+                                            }
+                                        }
+                                    },
+                                    "expiresAt": {
+                                        "description": "The expiry date of the signer in ISO 8601 format",
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO timestamp when the signature was created",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ]
+                                    },
                                     "transaction": {
                                         "description": "The transaction for the signer",
                                         "type": "object",
@@ -10748,6 +10956,38 @@
                                                     }
                                                 },
                                                 "required": ["token", "params"]
+                                            },
+                                            "fees": {
+                                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                                "type": "object",
+                                                "properties": {
+                                                    "mode": {
+                                                        "type": "string",
+                                                        "enum": ["user-native", "user-fungible", "project"]
+                                                    },
+                                                    "estimate": {},
+                                                    "actual": {},
+                                                    "billed": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "usd": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["usd"]
+                                                    },
+                                                    "billing": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "status": {
+                                                                "type": "string",
+                                                                "enum": ["pending", "settled", "failed"]
+                                                            }
+                                                        },
+                                                        "required": ["status"]
+                                                    }
+                                                },
+                                                "required": ["mode"]
                                             },
                                             "walletType": {
                                                 "type": "string",
@@ -12422,6 +12662,38 @@
                                                     }
                                                 },
                                                 "required": ["token", "params"]
+                                            },
+                                            "fees": {
+                                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                                "type": "object",
+                                                "properties": {
+                                                    "mode": {
+                                                        "type": "string",
+                                                        "enum": ["user-native", "user-fungible", "project"]
+                                                    },
+                                                    "estimate": {},
+                                                    "actual": {},
+                                                    "billed": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "usd": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["usd"]
+                                                    },
+                                                    "billing": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "status": {
+                                                                "type": "string",
+                                                                "enum": ["pending", "settled", "failed"]
+                                                            }
+                                                        },
+                                                        "required": ["status"]
+                                                    }
+                                                },
+                                                "required": ["mode"]
                                             },
                                             "walletType": {
                                                 "type": "string",
@@ -16866,6 +17138,38 @@
                                                 }
                                             },
                                             "required": ["token", "params"]
+                                        },
+                                        "fees": {
+                                            "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                            "type": "object",
+                                            "properties": {
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": ["user-native", "user-fungible", "project"]
+                                                },
+                                                "estimate": {},
+                                                "actual": {},
+                                                "billed": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "usd": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["usd"]
+                                                },
+                                                "billing": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "status": {
+                                                            "type": "string",
+                                                            "enum": ["pending", "settled", "failed"]
+                                                        }
+                                                    },
+                                                    "required": ["status"]
+                                                }
+                                            },
+                                            "required": ["mode"]
                                         }
                                     },
                                     "required": [
@@ -17601,6 +17905,38 @@
                                                 }
                                             },
                                             "required": ["token", "params"]
+                                        },
+                                        "fees": {
+                                            "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                            "type": "object",
+                                            "properties": {
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": ["user-native", "user-fungible", "project"]
+                                                },
+                                                "estimate": {},
+                                                "actual": {},
+                                                "billed": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "usd": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["usd"]
+                                                },
+                                                "billing": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "status": {
+                                                            "type": "string",
+                                                            "enum": ["pending", "settled", "failed"]
+                                                        }
+                                                    },
+                                                    "required": ["status"]
+                                                }
+                                            },
+                                            "required": ["mode"]
                                         }
                                     },
                                     "required": [
@@ -18540,6 +18876,38 @@
                                                 }
                                             },
                                             "required": ["token", "params"]
+                                        },
+                                        "fees": {
+                                            "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                            "type": "object",
+                                            "properties": {
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": ["user-native", "user-fungible", "project"]
+                                                },
+                                                "estimate": {},
+                                                "actual": {},
+                                                "billed": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "usd": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["usd"]
+                                                },
+                                                "billing": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "status": {
+                                                            "type": "string",
+                                                            "enum": ["pending", "settled", "failed"]
+                                                        }
+                                                    },
+                                                    "required": ["status"]
+                                                }
+                                            },
+                                            "required": ["mode"]
                                         }
                                     },
                                     "required": [
@@ -19294,6 +19662,38 @@
                                                 }
                                             },
                                             "required": ["token", "params"]
+                                        },
+                                        "fees": {
+                                            "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                            "type": "object",
+                                            "properties": {
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": ["user-native", "user-fungible", "project"]
+                                                },
+                                                "estimate": {},
+                                                "actual": {},
+                                                "billed": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "usd": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["usd"]
+                                                },
+                                                "billing": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "status": {
+                                                            "type": "string",
+                                                            "enum": ["pending", "settled", "failed"]
+                                                        }
+                                                    },
+                                                    "required": ["status"]
+                                                }
+                                            },
+                                            "required": ["mode"]
                                         }
                                     },
                                     "required": [
@@ -19324,78 +19724,126 @@
                                             "type": "object",
                                             "properties": {
                                                 "transaction": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "type": {
-                                                            "type": "string",
-                                                            "description": "The type of transaction to execute",
-                                                            "enum": ["contract-call"]
-                                                        },
-                                                        "contractId": {
-                                                            "type": "string",
-                                                            "description": "The recipient address for this transaction call",
-                                                            "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                        },
-                                                        "method": {
-                                                            "type": "string",
-                                                            "description": "The name of the function to call"
-                                                        },
-                                                        "memo": {
-                                                            "description": "The memo for the transaction",
-                                                            "oneOf": [
-                                                                {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "type": {
-                                                                            "type": "string",
-                                                                            "enum": ["text"]
-                                                                        },
-                                                                        "value": {
-                                                                            "type": "string",
-                                                                            "maxLength": 28
-                                                                        }
-                                                                    },
-                                                                    "required": ["type", "value"]
+                                                    "oneOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "The type of transaction to execute",
+                                                                    "enum": ["contract-call"]
                                                                 },
-                                                                {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "type": {
-                                                                            "type": "string",
-                                                                            "enum": ["id"]
-                                                                        },
-                                                                        "value": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["type", "value"]
+                                                                "contractId": {
+                                                                    "type": "string",
+                                                                    "description": "The recipient address for this transaction call",
+                                                                    "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                                 },
-                                                                {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "type": {
-                                                                            "type": "string",
-                                                                            "enum": ["hash"]
+                                                                "method": {
+                                                                    "type": "string",
+                                                                    "description": "The name of the function to call"
+                                                                },
+                                                                "memo": {
+                                                                    "description": "The memo for the transaction",
+                                                                    "oneOf": [
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["text"]
+                                                                                },
+                                                                                "value": {
+                                                                                    "type": "string",
+                                                                                    "maxLength": 28
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "value"]
                                                                         },
-                                                                        "value": {
-                                                                            "type": "string"
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["id"]
+                                                                                },
+                                                                                "value": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "value"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["hash"]
+                                                                                },
+                                                                                "value": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "value"]
                                                                         }
-                                                                    },
-                                                                    "required": ["type", "value"]
+                                                                    ],
+                                                                    "example": {
+                                                                        "type": "text",
+                                                                        "value": "Hello, world!"
+                                                                    }
+                                                                },
+                                                                "args": {
+                                                                    "type": "object",
+                                                                    "additionalProperties": true,
+                                                                    "description": "The arguments to pass to the function"
                                                                 }
-                                                            ],
+                                                            },
+                                                            "required": ["type", "contractId", "method", "args"],
+                                                            "title": "Stellar contract call transaction parameters",
+                                                            "description": "Parameters for a transaction to execute a smart contract function",
                                                             "example": {
-                                                                "type": "text",
-                                                                "value": "Hello, world!"
+                                                                "type": "contract-call",
+                                                                "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                                "method": "transfer",
+                                                                "args": {
+                                                                    "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                                    "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                                    "amount": "1000000000000000000"
+                                                                }
                                                             }
                                                         },
-                                                        "args": {
+                                                        {
                                                             "type": "object",
-                                                            "additionalProperties": true,
-                                                            "description": "The arguments to pass to the function"
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "The type of transaction to execute",
+                                                                    "enum": ["upgrade-wallet"]
+                                                                }
+                                                            },
+                                                            "required": ["type"],
+                                                            "title": "Stellar upgrade wallet transaction",
+                                                            "description": "Upgrades the wallet's on-chain contract to a new version. The wallet will be locked until a migrate-wallet transaction completes the upgrade.",
+                                                            "example": {
+                                                                "type": "upgrade-wallet"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "The type of transaction to execute",
+                                                                    "enum": ["migrate-wallet"]
+                                                                }
+                                                            },
+                                                            "required": ["type"],
+                                                            "title": "Stellar migrate wallet transaction",
+                                                            "description": "Completes a pending wallet upgrade by migrating on-chain signer data to the new contract version. Must be called after upgrade-wallet.",
+                                                            "example": {
+                                                                "type": "migrate-wallet"
+                                                            }
                                                         }
-                                                    },
-                                                    "required": ["type", "contractId", "method", "args"],
+                                                    ],
                                                     "description": "Stellar transaction to execute"
                                                 },
                                                 "signer": {
@@ -19994,6 +20442,38 @@
                                                 }
                                             },
                                             "required": ["token", "params"]
+                                        },
+                                        "fees": {
+                                            "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                            "type": "object",
+                                            "properties": {
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": ["user-native", "user-fungible", "project"]
+                                                },
+                                                "estimate": {},
+                                                "actual": {},
+                                                "billed": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "usd": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": ["usd"]
+                                                },
+                                                "billing": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "status": {
+                                                            "type": "string",
+                                                            "enum": ["pending", "settled", "failed"]
+                                                        }
+                                                    },
+                                                    "required": ["status"]
+                                                }
+                                            },
+                                            "required": ["mode"]
                                         }
                                     },
                                     "required": [
@@ -22052,6 +22532,38 @@
                                     }
                                 },
                                 "required": ["token", "params"]
+                            },
+                            "fees": {
+                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["user-native", "user-fungible", "project"]
+                                    },
+                                    "estimate": {},
+                                    "actual": {},
+                                    "billed": {
+                                        "type": "object",
+                                        "properties": {
+                                            "usd": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["usd"]
+                                    },
+                                    "billing": {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string",
+                                                "enum": ["pending", "settled", "failed"]
+                                            }
+                                        },
+                                        "required": ["status"]
+                                    }
+                                },
+                                "required": ["mode"]
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -22779,6 +23291,38 @@
                                     }
                                 },
                                 "required": ["token", "params"]
+                            },
+                            "fees": {
+                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["user-native", "user-fungible", "project"]
+                                    },
+                                    "estimate": {},
+                                    "actual": {},
+                                    "billed": {
+                                        "type": "object",
+                                        "properties": {
+                                            "usd": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["usd"]
+                                    },
+                                    "billing": {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string",
+                                                "enum": ["pending", "settled", "failed"]
+                                            }
+                                        },
+                                        "required": ["status"]
+                                    }
+                                },
+                                "required": ["mode"]
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -23710,6 +24254,38 @@
                                     }
                                 },
                                 "required": ["token", "params"]
+                            },
+                            "fees": {
+                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["user-native", "user-fungible", "project"]
+                                    },
+                                    "estimate": {},
+                                    "actual": {},
+                                    "billed": {
+                                        "type": "object",
+                                        "properties": {
+                                            "usd": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["usd"]
+                                    },
+                                    "billing": {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string",
+                                                "enum": ["pending", "settled", "failed"]
+                                            }
+                                        },
+                                        "required": ["status"]
+                                    }
+                                },
+                                "required": ["mode"]
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -24456,6 +25032,38 @@
                                     }
                                 },
                                 "required": ["token", "params"]
+                            },
+                            "fees": {
+                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["user-native", "user-fungible", "project"]
+                                    },
+                                    "estimate": {},
+                                    "actual": {},
+                                    "billed": {
+                                        "type": "object",
+                                        "properties": {
+                                            "usd": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["usd"]
+                                    },
+                                    "billing": {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string",
+                                                "enum": ["pending", "settled", "failed"]
+                                            }
+                                        },
+                                        "required": ["status"]
+                                    }
+                                },
+                                "required": ["mode"]
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -24478,78 +25086,126 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "type": "string",
-                                                "description": "The type of transaction to execute",
-                                                "enum": ["contract-call"]
-                                            },
-                                            "contractId": {
-                                                "type": "string",
-                                                "description": "The recipient address for this transaction call",
-                                                "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "description": "The name of the function to call"
-                                            },
-                                            "memo": {
-                                                "description": "The memo for the transaction",
-                                                "oneOf": [
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["text"]
-                                                            },
-                                                            "value": {
-                                                                "type": "string",
-                                                                "maxLength": 28
-                                                            }
-                                                        },
-                                                        "required": ["type", "value"]
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["contract-call"]
                                                     },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["id"]
-                                                            },
-                                                            "value": {
-                                                                "type": "string"
-                                                            }
-                                                        },
-                                                        "required": ["type", "value"]
+                                                    "contractId": {
+                                                        "type": "string",
+                                                        "description": "The recipient address for this transaction call",
+                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     },
-                                                    {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "type": {
-                                                                "type": "string",
-                                                                "enum": ["hash"]
+                                                    "method": {
+                                                        "type": "string",
+                                                        "description": "The name of the function to call"
+                                                    },
+                                                    "memo": {
+                                                        "description": "The memo for the transaction",
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["text"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "maxLength": 28
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
                                                             },
-                                                            "value": {
-                                                                "type": "string"
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["id"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["hash"]
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
                                                             }
-                                                        },
-                                                        "required": ["type", "value"]
+                                                        ],
+                                                        "example": {
+                                                            "type": "text",
+                                                            "value": "Hello, world!"
+                                                        }
+                                                    },
+                                                    "args": {
+                                                        "type": "object",
+                                                        "additionalProperties": true,
+                                                        "description": "The arguments to pass to the function"
                                                     }
-                                                ],
+                                                },
+                                                "required": ["type", "contractId", "method", "args"],
+                                                "title": "Stellar contract call transaction parameters",
+                                                "description": "Parameters for a transaction to execute a smart contract function",
                                                 "example": {
-                                                    "type": "text",
-                                                    "value": "Hello, world!"
+                                                    "type": "contract-call",
+                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                    "method": "transfer",
+                                                    "args": {
+                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "amount": "1000000000000000000"
+                                                    }
                                                 }
                                             },
-                                            "args": {
+                                            {
                                                 "type": "object",
-                                                "additionalProperties": true,
-                                                "description": "The arguments to pass to the function"
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["upgrade-wallet"]
+                                                    }
+                                                },
+                                                "required": ["type"],
+                                                "title": "Stellar upgrade wallet transaction",
+                                                "description": "Upgrades the wallet's on-chain contract to a new version. The wallet will be locked until a migrate-wallet transaction completes the upgrade.",
+                                                "example": {
+                                                    "type": "upgrade-wallet"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of transaction to execute",
+                                                        "enum": ["migrate-wallet"]
+                                                    }
+                                                },
+                                                "required": ["type"],
+                                                "title": "Stellar migrate wallet transaction",
+                                                "description": "Completes a pending wallet upgrade by migrating on-chain signer data to the new contract version. Must be called after upgrade-wallet.",
+                                                "example": {
+                                                    "type": "migrate-wallet"
+                                                }
                                             }
-                                        },
-                                        "required": ["type", "contractId", "method", "args"],
+                                        ],
                                         "description": "Stellar transaction to execute"
                                     },
                                     "signer": {
@@ -25148,6 +25804,38 @@
                                     }
                                 },
                                 "required": ["token", "params"]
+                            },
+                            "fees": {
+                                "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["user-native", "user-fungible", "project"]
+                                    },
+                                    "estimate": {},
+                                    "actual": {},
+                                    "billed": {
+                                        "type": "object",
+                                        "properties": {
+                                            "usd": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["usd"]
+                                    },
+                                    "billing": {
+                                        "type": "object",
+                                        "properties": {
+                                            "status": {
+                                                "type": "string",
+                                                "enum": ["pending", "settled", "failed"]
+                                            }
+                                        },
+                                        "required": ["status"]
+                                    }
+                                },
+                                "required": ["mode"]
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -29180,6 +29868,75 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
+                                                        "scopes": {
+                                                            "description": "Optional array of scopes restricting the signer's capabilities",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["transfer"]
+                                                                    },
+                                                                    "tokenLocator": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "recipients": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "spendingLimit": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "amount": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "interval": {
+                                                                                "type": "integer",
+                                                                                "minimum": 1,
+                                                                                "maximum": 9007199254740991
+                                                                            }
+                                                                        },
+                                                                        "required": ["amount"]
+                                                                    }
+                                                                },
+                                                                "required": ["type", "tokenLocator"],
+                                                                "title": "Transfer",
+                                                                "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                                                "example": {
+                                                                    "type": "transfer",
+                                                                    "tokenLocator": "stellar:usdc",
+                                                                    "recipients": [
+                                                                        "GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"
+                                                                    ],
+                                                                    "spendingLimit": {
+                                                                        "amount": "100",
+                                                                        "interval": 86400
+                                                                    }
+                                                                }
+                                                            },
+                                                            "example": {
+                                                                "type": "transfer",
+                                                                "tokenLocator": "solana:sol",
+                                                                "spendingLimit": {
+                                                                    "amount": "1"
+                                                                }
+                                                            }
+                                                        },
+                                                        "expiresAt": {
+                                                            "description": "The expiry date of the signer in ISO 8601 format",
+                                                            "anyOf": [
+                                                                {
+                                                                    "description": "ISO timestamp when the signature was created",
+                                                                    "type": "number"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                }
+                                                            ]
+                                                        },
                                                         "transaction": {
                                                             "description": "The transaction for the signer",
                                                             "type": "object",
@@ -29867,6 +30624,46 @@
                                                                         }
                                                                     },
                                                                     "required": ["token", "params"]
+                                                                },
+                                                                "fees": {
+                                                                    "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "mode": {
+                                                                            "type": "string",
+                                                                            "enum": [
+                                                                                "user-native",
+                                                                                "user-fungible",
+                                                                                "project"
+                                                                            ]
+                                                                        },
+                                                                        "estimate": {},
+                                                                        "actual": {},
+                                                                        "billed": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "usd": {
+                                                                                    "type": "number"
+                                                                                }
+                                                                            },
+                                                                            "required": ["usd"]
+                                                                        },
+                                                                        "billing": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "status": {
+                                                                                    "type": "string",
+                                                                                    "enum": [
+                                                                                        "pending",
+                                                                                        "settled",
+                                                                                        "failed"
+                                                                                    ]
+                                                                                }
+                                                                            },
+                                                                            "required": ["status"]
+                                                                        }
+                                                                    },
+                                                                    "required": ["mode"]
                                                                 },
                                                                 "walletType": {
                                                                     "type": "string",
@@ -31211,6 +32008,46 @@
                                                                         }
                                                                     },
                                                                     "required": ["token", "params"]
+                                                                },
+                                                                "fees": {
+                                                                    "description": "Transaction fee information including actual gas costs, billed amounts, and billing status",
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "mode": {
+                                                                            "type": "string",
+                                                                            "enum": [
+                                                                                "user-native",
+                                                                                "user-fungible",
+                                                                                "project"
+                                                                            ]
+                                                                        },
+                                                                        "estimate": {},
+                                                                        "actual": {},
+                                                                        "billed": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "usd": {
+                                                                                    "type": "number"
+                                                                                }
+                                                                            },
+                                                                            "required": ["usd"]
+                                                                        },
+                                                                        "billing": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "status": {
+                                                                                    "type": "string",
+                                                                                    "enum": [
+                                                                                        "pending",
+                                                                                        "settled",
+                                                                                        "failed"
+                                                                                    ]
+                                                                                }
+                                                                            },
+                                                                            "required": ["status"]
+                                                                        }
+                                                                    },
+                                                                    "required": ["mode"]
                                                                 },
                                                                 "walletType": {
                                                                     "type": "string",

@@ -40,6 +40,14 @@ export type AddSignerOptions = PrepareOnly;
 
 export type RemoveSignerOptions = PrepareOnly;
 
+export type UpgradeOptions = Partial<PrepareOnly> & {
+    signer?: string | ServerSignerConfig;
+};
+
+export type MigrateOptions = Partial<PrepareOnly> & {
+    signer?: string | ServerSignerConfig;
+};
+
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? Signer & { transactionId: string }
     : Signer & { signatureId?: string };
