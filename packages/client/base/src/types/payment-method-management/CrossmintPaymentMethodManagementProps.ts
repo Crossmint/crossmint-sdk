@@ -1,12 +1,17 @@
 import type { EmbeddedCheckoutV3Appearance } from "../embed";
 
+export type PaymentMethodManagementMode = "select-or-add" | "add-only";
+export type PaymentMethodManagementAllowedType = "card";
+
 export interface CrossmintPaymentMethodManagementProps {
-    jwt: string;
-    appearance?: PaymentMethodManagementAppearance;
+    jwt?: string;
+    mode?: PaymentMethodManagementMode;
+    allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
+    appearance?: EmbeddedCheckoutV3Appearance;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 
-export type CrossmintPaymentMethod = {
+export type CrossmintCardPaymentMethod = {
     type: "card";
     paymentMethodId: string;
     card: {
@@ -29,7 +34,13 @@ export type CrossmintPaymentMethod = {
     };
 };
 
-export type PaymentMethodManagementAppearance = {
-    fonts?: EmbeddedCheckoutV3Appearance["fonts"];
-    variables?: EmbeddedCheckoutV3Appearance["variables"];
+export type CrossmintCardToken = {
+    id: string;
+    billing?: {
+        name?: string;
+    };
 };
+
+export type CrossmintPaymentMethod =
+    | { type: "card"; paymentMethod: CrossmintCardPaymentMethod }
+    | { type: "card-token"; cardToken: CrossmintCardToken };
