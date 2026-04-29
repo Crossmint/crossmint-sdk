@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.10
+
+### Patch Changes
+
+- 1398b65: Adds a `PopupWindow.initEmpty()` helper to open about:blank synchronously.
+
 ## 1.0.9
 
 ### Patch Changes

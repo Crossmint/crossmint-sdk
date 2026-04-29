@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.0.15
+
+### Patch Changes
+
+- 41547a3: Add `StellarWallet.upgrade()` and `StellarWallet.migrate()` for moving a Stellar smart wallet to a newer contract version. `upgrade()` orchestrates the two on-chain phases (bytecode swap, then storage migration) behind a single call and is idempotent against the 409 the API returns once phase 1 has landed — retrying after a crash skips straight to migration. Both methods support `prepareOnly` for non-custodial flows where the developer drives approvals manually.
+- 858470a: Remove client-side guards that blanket-block device signers for all Solana wallets. Device signer support now depends on the wallet provider, with validation handled server-side. Added proper error handling to prevent repeated failure loops when the backend rejects a device signer.
+- Updated dependencies [1398b65]
+  - @crossmint/client-sdk-window@1.0.10
+  - @crossmint/common-sdk-auth@1.1.8
+
 ## 1.0.14
 
 ### Patch Changes
