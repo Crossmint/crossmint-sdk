@@ -369,7 +369,7 @@ export class Wallet<C extends Chain> {
         const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
         const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
-        const requestedTokenSet = new Set((requestedTokens ?? []).map((t) => t.toLowerCase()));
+        const requestedTokenSet = requestedTokens != null ? new Set(requestedTokens.map((t) => t.toLowerCase())) : null;
 
         const otherTokens = apiResponse.filter((token) => {
             return (
@@ -417,8 +417,11 @@ export class Wallet<C extends Chain> {
      * Check whether a token from the API response matches any of the requested token identifiers.
      * Supports matching by symbol, raw address/mint/contractId, or chain-prefixed locator.
      */
-    private matchesRequestedToken(token: GetBalanceSuccessResponse[number], requestedTokenSet: Set<string>): boolean {
-        if (requestedTokenSet.size === 0) return true;
+    private matchesRequestedToken(
+        token: GetBalanceSuccessResponse[number],
+        requestedTokenSet: Set<string> | null
+    ): boolean {
+        if (requestedTokenSet == null) return true;
 
         const symbol = (token.symbol ?? "").toLowerCase();
         if (requestedTokenSet.has(symbol)) return true;
