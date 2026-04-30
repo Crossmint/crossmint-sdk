@@ -259,6 +259,294 @@ describe("Wallet - balances()", () => {
             });
         });
 
+        it("should match tokens requested by EVM contractAddress locator", async () => {
+            const contractAddr = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+            const mockBalanceResponse: GetBalanceSuccessResponse = [
+                {
+                    symbol: "eth",
+                    name: "Ethereum",
+                    amount: "1.0",
+                    rawAmount: "1000000000000000000",
+                    decimals: 18,
+                    chains: {
+                        "base-sepolia": {
+                            locator: "base-sepolia:eth",
+                            amount: "1.0",
+                            rawAmount: "1000000000000000000",
+                        },
+                    },
+                },
+                {
+                    symbol: "usdc",
+                    name: "USD Coin",
+                    amount: "100.0",
+                    rawAmount: "100000000",
+                    decimals: 6,
+                    chains: {
+                        "base-sepolia": {
+                            locator: "base-sepolia:usdc",
+                            amount: "100.0",
+                            rawAmount: "100000000",
+                            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                        },
+                    },
+                },
+                {
+                    symbol: "dai",
+                    name: "Dai Stablecoin",
+                    amount: "50.0",
+                    rawAmount: "50000000000000000000",
+                    decimals: 18,
+                    chains: {
+                        "base-sepolia": {
+                            locator: `base-sepolia:${contractAddr}`,
+                            amount: "50.0",
+                            rawAmount: "50000000000000000000",
+                            contractAddress: contractAddr,
+                        },
+                    },
+                },
+            ];
+
+            mockApiClient.getBalance.mockResolvedValue(mockBalanceResponse);
+
+            const balances = await wallet.balances([`base-sepolia:${contractAddr}`]);
+
+            expect(balances.tokens).toHaveLength(1);
+            expect(balances.tokens[0].symbol).toBe("dai");
+        });
+
+        it("should match tokens requested by bare EVM contractAddress", async () => {
+            const contractAddr = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+            const mockBalanceResponse: GetBalanceSuccessResponse = [
+                {
+                    symbol: "eth",
+                    name: "Ethereum",
+                    amount: "1.0",
+                    rawAmount: "1000000000000000000",
+                    decimals: 18,
+                    chains: {
+                        "base-sepolia": {
+                            locator: "base-sepolia:eth",
+                            amount: "1.0",
+                            rawAmount: "1000000000000000000",
+                        },
+                    },
+                },
+                {
+                    symbol: "usdc",
+                    name: "USD Coin",
+                    amount: "100.0",
+                    rawAmount: "100000000",
+                    decimals: 6,
+                    chains: {
+                        "base-sepolia": {
+                            locator: "base-sepolia:usdc",
+                            amount: "100.0",
+                            rawAmount: "100000000",
+                            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                        },
+                    },
+                },
+                {
+                    symbol: "dai",
+                    name: "Dai Stablecoin",
+                    amount: "50.0",
+                    rawAmount: "50000000000000000000",
+                    decimals: 18,
+                    chains: {
+                        "base-sepolia": {
+                            locator: `base-sepolia:${contractAddr}`,
+                            amount: "50.0",
+                            rawAmount: "50000000000000000000",
+                            contractAddress: contractAddr,
+                        },
+                    },
+                },
+            ];
+
+            mockApiClient.getBalance.mockResolvedValue(mockBalanceResponse);
+
+            const balances = await wallet.balances([contractAddr]);
+
+            expect(balances.tokens).toHaveLength(1);
+            expect(balances.tokens[0].symbol).toBe("dai");
+        });
+
+        it("should match tokens requested by Solana mintHash locator", async () => {
+            const solanaWallet = await createMockWallet("solana", mockApiClient);
+            const mintHash = "XsbEhpSupF7MgvGDjRBj9VXMbRzNmj7ECqcNQNHPPPP";
+            const mockBalanceResponse: GetBalanceSuccessResponse = [
+                {
+                    symbol: "sol",
+                    name: "Solana",
+                    amount: "10.0",
+                    rawAmount: "10000000000",
+                    decimals: 9,
+                    chains: {
+                        solana: {
+                            locator: "solana:sol",
+                            amount: "10.0",
+                            rawAmount: "10000000000",
+                        },
+                    },
+                },
+                {
+                    symbol: "usdc",
+                    name: "USD Coin",
+                    amount: "50.0",
+                    rawAmount: "50000000",
+                    decimals: 6,
+                    chains: {
+                        solana: {
+                            locator: "solana:usdc",
+                            amount: "50.0",
+                            rawAmount: "50000000",
+                            mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        },
+                    },
+                },
+                {
+                    symbol: "AAPLx",
+                    name: "Apple Token",
+                    amount: "5.0",
+                    rawAmount: "5000000",
+                    decimals: 6,
+                    chains: {
+                        solana: {
+                            locator: `solana:${mintHash}`,
+                            amount: "5.0",
+                            rawAmount: "5000000",
+                            mintHash,
+                        },
+                    },
+                },
+            ];
+
+            mockApiClient.getBalance.mockResolvedValue(mockBalanceResponse);
+
+            const balances = await solanaWallet.balances([`solana:${mintHash}`]);
+
+            expect(balances.tokens).toHaveLength(1);
+            expect(balances.tokens[0].symbol).toBe("AAPLx");
+        });
+
+        it("should match tokens requested by Stellar contractId locator", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient);
+            const contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+            const mockBalanceResponse: GetBalanceSuccessResponse = [
+                {
+                    symbol: "xlm",
+                    name: "Stellar Lumens",
+                    amount: "100.0",
+                    rawAmount: "1000000000",
+                    decimals: 7,
+                    chains: {
+                        stellar: {
+                            locator: "stellar:xlm",
+                            amount: "100.0",
+                            rawAmount: "1000000000",
+                        },
+                    },
+                },
+                {
+                    symbol: "usdc",
+                    name: "USD Coin",
+                    amount: "25.0",
+                    rawAmount: "25000000",
+                    decimals: 6,
+                    chains: {
+                        stellar: {
+                            locator: "stellar:usdc",
+                            amount: "25.0",
+                            rawAmount: "25000000",
+                            contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+                        },
+                    },
+                },
+                {
+                    symbol: "yUSDC",
+                    name: "Yield USDC",
+                    amount: "10.0",
+                    rawAmount: "10000000",
+                    decimals: 6,
+                    chains: {
+                        stellar: {
+                            locator: `stellar:${contractId}`,
+                            amount: "10.0",
+                            rawAmount: "10000000",
+                            contractId,
+                        },
+                    },
+                },
+            ];
+
+            mockApiClient.getBalance.mockResolvedValue(mockBalanceResponse);
+
+            const balances = await stellarWallet.balances([`stellar:${contractId}`]);
+
+            expect(balances.tokens).toHaveLength(1);
+            expect(balances.tokens[0].symbol).toBe("yUSDC");
+        });
+
+        it("should perform case-insensitive matching for locators", async () => {
+            const solanaWallet = await createMockWallet("solana", mockApiClient);
+            const mintHash = "XsbEhpSupF7MgvGDjRBj9VXMbRzNmj7ECqcNQNHPPPP";
+            const mockBalanceResponse: GetBalanceSuccessResponse = [
+                {
+                    symbol: "sol",
+                    name: "Solana",
+                    amount: "10.0",
+                    rawAmount: "10000000000",
+                    decimals: 9,
+                    chains: {
+                        solana: {
+                            locator: "solana:sol",
+                            amount: "10.0",
+                            rawAmount: "10000000000",
+                        },
+                    },
+                },
+                {
+                    symbol: "usdc",
+                    name: "USD Coin",
+                    amount: "50.0",
+                    rawAmount: "50000000",
+                    decimals: 6,
+                    chains: {
+                        solana: {
+                            locator: "solana:usdc",
+                            amount: "50.0",
+                            rawAmount: "50000000",
+                            mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        },
+                    },
+                },
+                {
+                    symbol: "AAPLx",
+                    name: "Apple Token",
+                    amount: "5.0",
+                    rawAmount: "5000000",
+                    decimals: 6,
+                    chains: {
+                        solana: {
+                            locator: `solana:${mintHash}`,
+                            amount: "5.0",
+                            rawAmount: "5000000",
+                            mintHash,
+                        },
+                    },
+                },
+            ];
+
+            mockApiClient.getBalance.mockResolvedValue(mockBalanceResponse);
+
+            const balances = await solanaWallet.balances([`SOLANA:${mintHash.toUpperCase()}`]);
+
+            expect(balances.tokens).toHaveLength(1);
+            expect(balances.tokens[0].symbol).toBe("AAPLx");
+        });
+
         it("should handle missing native token by returning zero balance", async () => {
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {

@@ -369,11 +369,13 @@ export class Wallet<C extends Chain> {
         const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
         const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
+        const requestedTokenSet = requestedTokens != null ? new Set(requestedTokens.map((t) => t.toLowerCase())) : null;
+
         const otherTokens = apiResponse.filter((token) => {
             return (
                 token.symbol !== nativeTokenSymbol &&
                 token.symbol !== "usdc" &&
-                (requestedTokens == null || requestedTokens.includes(token.symbol ?? ""))
+                this.matchesRequestedToken(token, requestedTokenSet)
             );
         });
 
@@ -409,6 +411,53 @@ export class Wallet<C extends Chain> {
             usdc: usdcData != null ? transformTokenBalance(usdcData) : createDefaultToken("usdc"),
             tokens: otherTokens.map(transformTokenBalance),
         };
+    }
+
+    /**
+     * Check whether a token from the API response matches any of the requested token identifiers.
+     * Supports matching by symbol, raw address/mint/contractId, or chain-prefixed locator.
+     */
+    private matchesRequestedToken(
+        token: GetBalanceSuccessResponse[number],
+        requestedTokenSet: Set<string> | null
+    ): boolean {
+        if (requestedTokenSet == null) return true;
+
+        const symbol = (token.symbol ?? "").toLowerCase();
+        if (requestedTokenSet.has(symbol)) return true;
+
+        const chainData = token.chains?.[this.chain];
+
+        if (this.chain === "solana" && chainData != null && "mintHash" in chainData) {
+            const mint = (chainData.mintHash as string | undefined)?.toLowerCase();
+            if (mint != null) {
+                if (requestedTokenSet.has(mint)) return true;
+                if (requestedTokenSet.has(`solana:${mint}`)) return true;
+            }
+        }
+
+        if (
+            this.chain !== "solana" &&
+            this.chain !== "stellar" &&
+            chainData != null &&
+            "contractAddress" in chainData
+        ) {
+            const addr = (chainData.contractAddress as string | undefined)?.toLowerCase();
+            if (addr != null) {
+                if (requestedTokenSet.has(addr)) return true;
+                if (requestedTokenSet.has(`${this.chain}:${addr}`)) return true;
+            }
+        }
+
+        if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
+            const contractId = (chainData.contractId as string | undefined)?.toLowerCase();
+            if (contractId != null) {
+                if (requestedTokenSet.has(contractId)) return true;
+                if (requestedTokenSet.has(`stellar:${contractId}`)) return true;
+            }
+        }
+
+        return false;
     }
 
     /**
