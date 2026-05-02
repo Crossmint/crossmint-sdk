@@ -34,10 +34,10 @@ const MAX_REDACTION_DEPTH = 10;
 
 /**
  * Truncates a string value for redacted output, showing first and last 4 chars.
- * For short strings (<=8 chars), returns '[REDACTED]'.
+ * For short strings (<=20 chars), returns '[REDACTED]'.
  */
 function redactValue(value: unknown): string {
-    if (typeof value === "string" && value.length > 8) {
+    if (typeof value === "string" && value.length > 20) {
         return `${value.slice(0, 4)}...${value.slice(-4)}`;
     }
     return "[REDACTED]";
