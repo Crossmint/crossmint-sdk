@@ -37,13 +37,13 @@ jobs:
                   echo "react_ui=false" >> $GITHUB_OUTPUT
                   echo "react_native=false" >> $GITHUB_OUTPUT
                   echo "wallets=false" >> $GITHUB_OUTPUT
-                  if echo "$PACKAGES" | grep -q "react-ui"; then
+                  if echo ",$PACKAGES," | grep -q ",react-ui,"; then
                     echo "react_ui=true" >> $GITHUB_OUTPUT
                   fi
-                  if echo "$PACKAGES" | grep -q "react-native"; then
+                  if echo ",$PACKAGES," | grep -q ",react-native,"; then
                     echo "react_native=true" >> $GITHUB_OUTPUT
                   fi
-                  if echo "$PACKAGES" | grep -q "wallets"; then
+                  if echo ",$PACKAGES," | grep -q ",wallets,"; then
                     echo "wallets=true" >> $GITHUB_OUTPUT
                   fi
 
