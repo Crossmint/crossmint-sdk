@@ -96,13 +96,10 @@ jobs:
               run: |
                   if [ -z "$(find sdk-reference/ -name '*.mdx' -print -quit)" ]; then
                     echo "No MDX files generated — no valid packages matched"
-                    echo "has_docs=false" >> $GITHUB_OUTPUT
-                  else
-                    echo "has_docs=true" >> $GITHUB_OUTPUT
+                    exit 1
                   fi
 
             - name: Upload generated docs artifact
-              if: steps.verify.outputs.has_docs == 'true'
               uses: actions/upload-artifact@v4
               with:
                   name: sdk-reference-docs
@@ -110,17 +107,16 @@ jobs:
                   retention-days: 7
 
             - name: Generate App Token
-              if: steps.verify.outputs.has_docs == 'true'
               id: generate_app_token
               uses: actions/create-github-app-token@v2
               with:
                   app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
                   private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
                   owner: Paella-Labs
+                  repositories: crossbit-main
 
             - name: Dispatch to crossbit-main
-              if: steps.verify.outputs.has_docs == 'true'
-              uses: peter-evans/repository-dispatch@v3
+              uses: peter-evans/repository-dispatch@ce57bf9958701f3a8aa0f5e7fe00d698f32de22a  # v3.0.0
               with:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
