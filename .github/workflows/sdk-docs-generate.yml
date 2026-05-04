@@ -70,24 +70,39 @@ jobs:
                   fi
 
             - name: Collect generated files
+              env:
+                  REACT_UI_ENABLED: ${{ steps.packages.outputs.react_ui }}
+                  REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.react_native }}
+                  WALLETS_ENABLED: ${{ steps.packages.outputs.wallets }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
                   mkdir -p sdk-reference/wallets/typescript
 
-                  if [ "${{ steps.packages.outputs.react_ui }}" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
+                  if [ "$REACT_UI_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
                     cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
                   fi
 
-                  if [ "${{ steps.packages.outputs.react_native }}" == "true" ] && [ -d packages/client/ui/react-native/docs/wallets ]; then
+                  if [ "$REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/wallets ]; then
                     cp -r packages/client/ui/react-native/docs/wallets/. sdk-reference/wallets/react-native/
                   fi
 
-                  if [ "${{ steps.packages.outputs.wallets }}" == "true" ] && [ -d packages/wallets/docs ]; then
+                  if [ "$WALLETS_ENABLED" == "true" ] && [ -d packages/wallets/docs ]; then
                     cp -r packages/wallets/docs/. sdk-reference/wallets/typescript/
                   fi
 
+            - name: Verify at least one package was generated
+              id: verify
+              run: |
+                  if [ -z "$(find sdk-reference/ -name '*.mdx' -print -quit)" ]; then
+                    echo "No MDX files generated — no valid packages matched"
+                    echo "has_docs=false" >> $GITHUB_OUTPUT
+                  else
+                    echo "has_docs=true" >> $GITHUB_OUTPUT
+                  fi
+
             - name: Upload generated docs artifact
+              if: steps.verify.outputs.has_docs == 'true'
               uses: actions/upload-artifact@v4
               with:
                   name: sdk-reference-docs
@@ -95,6 +110,7 @@ jobs:
                   retention-days: 7
 
             - name: Generate App Token
+              if: steps.verify.outputs.has_docs == 'true'
               id: generate_app_token
               uses: actions/create-github-app-token@v2
               with:
@@ -103,6 +119,7 @@ jobs:
                   owner: Paella-Labs
 
             - name: Dispatch to crossbit-main
+              if: steps.verify.outputs.has_docs == 'true'
               uses: peter-evans/repository-dispatch@v3
               with:
                   token: ${{ steps.generate_app_token.outputs.token }}
