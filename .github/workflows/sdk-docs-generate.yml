@@ -1,0 +1,109 @@
+name: SDK Docs Generate
+
+on:
+    workflow_dispatch:
+        inputs:
+            packages:
+                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, wallets). Defaults to all."
+                required: false
+                default: "react-ui,react-native,wallets"
+                type: string
+
+permissions:
+    contents: read
+
+jobs:
+    generate-docs:
+        name: Generate SDK Reference Docs
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: main
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Build libraries
+              run: pnpm build:libs
+
+            - name: Parse package selection
+              id: packages
+              run: |
+                  PACKAGES="${{ inputs.packages || 'react-ui,react-native,wallets' }}"
+                  echo "react_ui=false" >> $GITHUB_OUTPUT
+                  echo "react_native=false" >> $GITHUB_OUTPUT
+                  echo "wallets=false" >> $GITHUB_OUTPUT
+                  if echo "$PACKAGES" | grep -q "react-ui"; then
+                    echo "react_ui=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo "$PACKAGES" | grep -q "react-native"; then
+                    echo "react_native=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo "$PACKAGES" | grep -q "wallets"; then
+                    echo "wallets=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Generate React UI docs
+              if: steps.packages.outputs.react_ui == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs
+
+            - name: Generate React Native docs
+              if: steps.packages.outputs.react_native == 'true'
+              working-directory: packages/client/ui/react-native
+              run: pnpm generate:docs
+
+            - name: Generate Wallets SDK docs
+              if: steps.packages.outputs.wallets == 'true'
+              working-directory: packages/wallets
+              run: |
+                  pnpm generate:docs
+                  if [ -f docs/globals.mdx ]; then
+                    mv docs/globals.mdx docs/reference.mdx
+                  fi
+                  if [ -f docs/README.mdx ]; then
+                    mv docs/README.mdx docs/overview.mdx
+                  fi
+
+            - name: Collect generated files
+              run: |
+                  mkdir -p sdk-reference/wallets/react
+                  mkdir -p sdk-reference/wallets/react-native
+                  mkdir -p sdk-reference/wallets/typescript
+
+                  if [ "${{ steps.packages.outputs.react_ui }}" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
+                    cp -r packages/client/ui/react-ui/docs/wallets/* sdk-reference/wallets/react/
+                  fi
+
+                  if [ "${{ steps.packages.outputs.react_native }}" == "true" ] && [ -d packages/client/ui/react-native/docs/wallets ]; then
+                    cp -r packages/client/ui/react-native/docs/wallets/* sdk-reference/wallets/react-native/
+                  fi
+
+                  if [ "${{ steps.packages.outputs.wallets }}" == "true" ] && [ -d packages/wallets/docs ]; then
+                    cp -r packages/wallets/docs/* sdk-reference/wallets/typescript/
+                  fi
+
+            - name: Upload generated docs artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: sdk-reference-docs
+                  path: sdk-reference/
+                  retention-days: 7
+
+            - name: Generate App Token
+              id: generate_app_token
+              uses: actions/create-github-app-token@v2
+              with:
+                  app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
+                  private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
+                  owner: Paella-Labs
+
+            - name: Dispatch to crossbit-main
+              uses: peter-evans/repository-dispatch@v3
+              with:
+                  token: ${{ steps.generate_app_token.outputs.token }}
+                  repository: Paella-Labs/crossbit-main
+                  event-type: sdk-docs-update
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": "${{ inputs.packages || ''react-ui,react-native,wallets'' }}"}'
