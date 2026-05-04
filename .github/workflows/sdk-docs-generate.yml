@@ -30,8 +30,10 @@ jobs:
 
             - name: Parse package selection
               id: packages
+              env:
+                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,wallets' }}
               run: |
-                  PACKAGES="${{ inputs.packages || 'react-ui,react-native,wallets' }}"
+                  PACKAGES="$PACKAGES_INPUT"
                   echo "react_ui=false" >> $GITHUB_OUTPUT
                   echo "react_native=false" >> $GITHUB_OUTPUT
                   echo "wallets=false" >> $GITHUB_OUTPUT
@@ -106,4 +108,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": "${{ inputs.packages || ''react-ui,react-native,wallets'' }}"}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || 'react-ui,react-native,wallets') }}}'
