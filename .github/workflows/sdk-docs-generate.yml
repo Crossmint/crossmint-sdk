@@ -108,4 +108,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || 'react-ui,react-native,wallets') }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,wallets'') }}}'
