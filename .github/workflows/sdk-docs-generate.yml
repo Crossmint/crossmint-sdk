@@ -76,15 +76,15 @@ jobs:
                   mkdir -p sdk-reference/wallets/typescript
 
                   if [ "${{ steps.packages.outputs.react_ui }}" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
-                    cp -r packages/client/ui/react-ui/docs/wallets/* sdk-reference/wallets/react/
+                    cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
                   fi
 
                   if [ "${{ steps.packages.outputs.react_native }}" == "true" ] && [ -d packages/client/ui/react-native/docs/wallets ]; then
-                    cp -r packages/client/ui/react-native/docs/wallets/* sdk-reference/wallets/react-native/
+                    cp -r packages/client/ui/react-native/docs/wallets/. sdk-reference/wallets/react-native/
                   fi
 
                   if [ "${{ steps.packages.outputs.wallets }}" == "true" ] && [ -d packages/wallets/docs ]; then
-                    cp -r packages/wallets/docs/* sdk-reference/wallets/typescript/
+                    cp -r packages/wallets/docs/. sdk-reference/wallets/typescript/
                   fi
 
             - name: Upload generated docs artifact
