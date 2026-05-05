@@ -4,9 +4,9 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, wallets). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets). Defaults to all."
                 required: false
-                default: "react-ui,react-native,wallets"
+                default: "react-ui,react-native,node-wallets"
                 type: string
             ref:
                 description: "Git ref to check out (branch, tag, or SHA). Defaults to main. Use the input-fix branch when generating docs against updated examples.json or generate-reference.mjs."
@@ -36,20 +36,20 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,wallets' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,node-wallets' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "react_ui=false" >> $GITHUB_OUTPUT
                   echo "react_native=false" >> $GITHUB_OUTPUT
-                  echo "wallets=false" >> $GITHUB_OUTPUT
+                  echo "node_wallets=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",react-ui,"; then
                     echo "react_ui=true" >> $GITHUB_OUTPUT
                   fi
                   if echo ",$PACKAGES," | grep -q ",react-native,"; then
                     echo "react_native=true" >> $GITHUB_OUTPUT
                   fi
-                  if echo ",$PACKAGES," | grep -q ",wallets,"; then
-                    echo "wallets=true" >> $GITHUB_OUTPUT
+                  if echo ",$PACKAGES," | grep -q ",node-wallets,"; then
+                    echo "node_wallets=true" >> $GITHUB_OUTPUT
                   fi
 
             - name: Generate React UI docs
@@ -62,8 +62,8 @@ jobs:
               working-directory: packages/client/ui/react-native
               run: pnpm generate:docs
 
-            - name: Generate Wallets SDK docs
-              if: steps.packages.outputs.wallets == 'true'
+            - name: Generate Node Wallets SDK docs
+              if: steps.packages.outputs.node_wallets == 'true'
               working-directory: packages/wallets
               run: |
                   pnpm generate:docs
@@ -78,7 +78,7 @@ jobs:
               env:
                   REACT_UI_ENABLED: ${{ steps.packages.outputs.react_ui }}
                   REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.react_native }}
-                  WALLETS_ENABLED: ${{ steps.packages.outputs.wallets }}
+                  NODE_WALLETS_ENABLED: ${{ steps.packages.outputs.node_wallets }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
@@ -92,7 +92,7 @@ jobs:
                     cp -r packages/client/ui/react-native/docs/wallets/. sdk-reference/wallets/react-native/
                   fi
 
-                  if [ "$WALLETS_ENABLED" == "true" ] && [ -d packages/wallets/docs ]; then
+                  if [ "$NODE_WALLETS_ENABLED" == "true" ] && [ -d packages/wallets/docs ]; then
                     cp -r packages/wallets/docs/. sdk-reference/wallets/typescript/
                   fi
 
@@ -126,4 +126,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,wallets'') }}, "source_ref": ${{ toJSON(inputs.ref || ''main'') }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets'') }}, "source_ref": ${{ toJSON(inputs.ref || ''main'') }}}'
