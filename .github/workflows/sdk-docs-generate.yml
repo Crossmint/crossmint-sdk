@@ -1,17 +1,26 @@
 name: SDK Docs Generate
 
 on:
+    push:
+        branches: [main]
+        paths:
+            - "packages/wallets/src/**"
+            - "packages/wallets/typedoc.json"
+            - "packages/wallets/typedoc-custom-plugin.mjs"
+            - "packages/client/ui/react-ui/src/**"
+            - "packages/client/ui/react-ui/scripts/**"
+            - "packages/client/ui/react-ui/examples.json"
+            - "packages/client/ui/react-native/src/**"
+            - "packages/client/ui/react-native/scripts/**"
+            - "packages/client/ui/react-native/examples.json"
+            - "packages/client/ui/scripts/**"
+            - "packages/client/react-base/src/**"
     workflow_dispatch:
         inputs:
             packages:
                 description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets). Defaults to all."
                 required: false
                 default: "react-ui,react-native,node-wallets"
-                type: string
-            ref:
-                description: "Git ref to check out (branch, tag, or SHA). Defaults to main. Use the input-fix branch when generating docs against updated examples.json or generate-reference.mjs."
-                required: false
-                default: "main"
                 type: string
 
 permissions:
@@ -24,8 +33,6 @@ jobs:
         timeout-minutes: 30
         steps:
             - uses: actions/checkout@v4
-              with:
-                  ref: ${{ inputs.ref || 'main' }}
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
@@ -126,4 +133,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets'') }}, "source_ref": ${{ toJSON(inputs.ref || ''main'') }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets'') }}, "source_ref": ${{ toJSON(github.ref_name) }}}'
