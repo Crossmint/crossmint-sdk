@@ -270,12 +270,14 @@ function CrossmintWalletProviderInternal({
                 const parsed = JSON.parse(rawData);
                 if (parsed?.type === "identity-key-backup" && parsed.jwk != null) {
                     const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
-                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk)).catch((e) =>
-                        logger.warn("react-native.wallet.identity-key-backup.save-failed", {
-                            error: String(e),
-                        })
-                    );
-                    logger.info("react-native.wallet.identity-key-backup.saved");
+                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk))
+                        .then(() => logger.info("react-native.wallet.identity-key-backup.saved"))
+                        .catch((e) =>
+                            logger.warn("react-native.wallet.identity-key-backup.save-failed", {
+                                error: String(e),
+                            })
+                        );
+                    setIdentityKeyBackup(parsed.jwk);
                     return;
                 }
             } catch {
