@@ -6,13 +6,18 @@ on:
         paths:
             - "packages/wallets/src/**"
             - "packages/wallets/typedoc.json"
+            - "packages/wallets/tsconfig.typedoc.json"
             - "packages/wallets/typedoc-custom-plugin.mjs"
             - "packages/client/ui/react-ui/src/**"
             - "packages/client/ui/react-ui/scripts/**"
             - "packages/client/ui/react-ui/examples.json"
+            - "packages/client/ui/react-ui/typedoc.json"
+            - "packages/client/ui/react-ui/tsconfig.typedoc.json"
             - "packages/client/ui/react-native/src/**"
             - "packages/client/ui/react-native/scripts/**"
             - "packages/client/ui/react-native/examples.json"
+            - "packages/client/ui/react-native/typedoc.json"
+            - "packages/client/ui/react-native/tsconfig.typedoc.json"
             - "packages/client/ui/scripts/**"
             - "packages/client/react-base/src/**"
     workflow_dispatch:
