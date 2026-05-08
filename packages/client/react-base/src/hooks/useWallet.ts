@@ -1,10 +1,7 @@
 import { useContext } from "react";
-import {
-    CrossmintWalletBaseContext,
-    type CrossmintWalletBaseContext as WalletContextType,
-} from "@/providers/CrossmintWalletBaseProvider";
+import { CrossmintWalletBaseContext } from "@/providers/CrossmintWalletBaseProvider";
 
-export function useWallet(): WalletContextType {
+export function useWallet(): CrossmintWalletBaseContext {
     const walletContext = useContext(CrossmintWalletBaseContext);
     if (!walletContext) {
         throw new Error("useWallet must be used within CrossmintWalletProvider");

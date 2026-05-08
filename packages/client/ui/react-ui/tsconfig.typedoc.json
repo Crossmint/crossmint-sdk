@@ -4,7 +4,11 @@
         "rootDir": "src",
         "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["src/*"],
+            "@crossmint/client-sdk-react-base": ["../../react-base/src/index.ts"],
+            "@crossmint/client-sdk-react-base/*": ["../../react-base/src/*"],
+            "@crossmint/wallets-sdk": ["../../../wallets/src/index.ts"],
+            "@crossmint/wallets-sdk/*": ["../../../wallets/src/*"]
         },
         "jsx": "react-jsx",
         "module": "commonjs",

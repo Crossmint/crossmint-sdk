@@ -3,6 +3,8 @@ export {
     type Transfers,
     type Balances,
     type Chain,
+    type ClientSideWalletArgsFor,
+    type ClientSideWalletCreateArgs,
     type Signer,
     type Transaction,
     type Signature,
