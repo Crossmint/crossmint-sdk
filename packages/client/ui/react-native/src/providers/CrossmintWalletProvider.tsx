@@ -1,8 +1,10 @@
 import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, useContext, type RefObject } from "react";
 import { Platform, View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import * as SecureStore from "expo-secure-store";
 
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import type { SafeInjectableGlobals } from "@crossmint/client-sdk-rn-window";
 import {
     environmentUrlConfig,
     signerInboundEvents,
@@ -133,17 +135,22 @@ function CrossmintWalletProviderInternal({
     );
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
+    const [identityKeyBackup, setIdentityKeyBackup] = useState<Record<string, unknown> | null>(null);
     const handshakeTriggeredRef = useRef<boolean>(false);
     const handshakeInProgressRef = useRef<boolean>(false);
     const handshakeGenerationRef = useRef<number>(0);
     const handshakeStartTimeRef = useRef<number>(0);
 
     const secureGlobals = useMemo(() => {
+        const globals: SafeInjectableGlobals = {};
         if (appId != null) {
-            return { crossmintAppId: appId };
+            globals.crossmintAppId = appId;
         }
-        return {};
-    }, [appId]);
+        if (identityKeyBackup != null) {
+            globals.__CROSSMINT_IDENTITY_KEY_BACKUP = identityKeyBackup;
+        }
+        return globals;
+    }, [appId, identityKeyBackup]);
 
     const performHandshake = useCallback(
         async (trigger: "frame-ready" | "onLoadEnd" | "eager") => {
@@ -257,6 +264,24 @@ function CrossmintWalletProviderInternal({
 
             const rawData = event.nativeEvent.data;
 
+            // Handle identity key backup from the frame — persists the JWK in native SecureStore
+            // so the identity key survives WebKit IndexedDB eviction.
+            try {
+                const parsed = JSON.parse(rawData);
+                if (parsed?.type === "identity-key-backup" && parsed.jwk != null) {
+                    const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
+                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk)).catch((e) =>
+                        logger.warn("react-native.wallet.identity-key-backup.save-failed", {
+                            error: String(e),
+                        })
+                    );
+                    logger.info("react-native.wallet.identity-key-backup.saved");
+                    return;
+                }
+            } catch {
+                // Not JSON or not a backup message — fall through
+            }
+
             // Handle "frame-ready" signal from child — child is ready to handshake.
             // With eager handshake, the parent is already polling, so the handshake
             // should already be in progress or complete. Log for diagnostics.
@@ -322,7 +347,7 @@ function CrossmintWalletProviderInternal({
 
             parent.handleMessage(event);
         },
-        [logger, performHandshake]
+        [logger, performHandshake, parsedAPIKey.environment]
     );
 
     const getClientTEEConnection = () => {
@@ -346,6 +371,21 @@ function CrossmintWalletProviderInternal({
 
     const initializeWebView = async () => {
         logger.info("react-native.wallet.webview.init.start");
+
+        // Load identity key backup from native before mounting the WebView.
+        // React 18+ batches both setState calls into one render, so the WebView
+        // always mounts with the backup already injected as a global.
+        const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
+        try {
+            const raw = await SecureStore.getItemAsync(backupKey);
+            if (raw != null) {
+                setIdentityKeyBackup(JSON.parse(raw));
+                logger.info("react-native.wallet.identity-key-backup.loaded");
+            }
+        } catch (e) {
+            logger.warn("react-native.wallet.identity-key-backup.load-failed", { error: String(e) });
+        }
+
         setNeedsWebView(true);
 
         let attempts = 0;

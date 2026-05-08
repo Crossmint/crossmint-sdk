@@ -114,6 +114,7 @@ const INJECTED_BRIDGE_JS = `
 const AllowedGlobalsSchema = z
     .object({
         crossmintAppId: z.string().optional(),
+        __CROSSMINT_IDENTITY_KEY_BACKUP: z.record(z.unknown()).optional(),
     })
     .strict();
 export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
