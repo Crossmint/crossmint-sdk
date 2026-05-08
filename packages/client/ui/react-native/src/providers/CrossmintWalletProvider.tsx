@@ -268,7 +268,12 @@ function CrossmintWalletProviderInternal({
             // so the identity key survives WebKit IndexedDB eviction.
             try {
                 const parsed = JSON.parse(rawData);
-                if (parsed?.type === "identity-key-backup" && parsed.jwk != null && typeof parsed.jwk === "object" && !Array.isArray(parsed.jwk)) {
+                if (
+                    parsed?.type === "identity-key-backup" &&
+                    parsed.jwk != null &&
+                    typeof parsed.jwk === "object" &&
+                    !Array.isArray(parsed.jwk)
+                ) {
                     const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
                     SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk))
                         .then(() => logger.info("react-native.wallet.identity-key-backup.saved"))
