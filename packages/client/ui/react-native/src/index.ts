@@ -6,10 +6,14 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
+export type { CrossmintWalletBaseContext, OtpSignerFunctions } from "@crossmint/client-sdk-react-base";
+
 export {
     type Transfers,
     type Balances,
     type Chain,
+    type ClientSideWalletArgsFor,
+    type ClientSideWalletCreateArgs,
     type Signer,
     type Transaction,
     type Signature,

@@ -390,13 +390,18 @@ export function generate(config) {
                 const resolved = typeof t.target === "number" ? byId.get(t.target) : null;
                 if (resolved?.children) {
                     allProps.push(...resolved.children);
+                    return;
                 }
-                if (!resolved && t.name) {
-                    const byName = api.children.find(
-                        (c) => c.name === t.name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
+                // Fallback: target is an object descriptor or unresolved.
+                // Look up by qualifiedName/name; prefer the variant that has children.
+                const name = t.target?.qualifiedName || t.name;
+                if (name) {
+                    const matches = api.children.filter(
+                        (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
                     );
-                    if (byName?.children) {
-                        allProps.push(...byName.children);
+                    const withChildren = matches.find((m) => m.children?.length);
+                    if (withChildren) {
+                        allProps.push(...withChildren.children);
                     }
                 }
             }
@@ -409,9 +414,21 @@ export function generate(config) {
         const sig = node?.signatures?.[0];
         const retType = sig?.type;
         if (!retType) return [];
-        if (retType.type === "reference" && typeof retType.target === "number") {
-            const resolved = byId.get(retType.target);
-            return resolved?.children || [];
+        if (retType.type === "reference") {
+            if (typeof retType.target === "number") {
+                const resolved = byId.get(retType.target);
+                if (resolved?.children) return resolved.children;
+            }
+            // Fallback: target is an object descriptor (cross-package or unresolved local).
+            // Look up the type by name; prefer the variant that has children.
+            const name = retType.target?.qualifiedName || retType.name;
+            if (name) {
+                const matches = api.children.filter(
+                    (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
+                );
+                const withChildren = matches.find((m) => m.children?.length);
+                if (withChildren) return withChildren.children;
+            }
         }
         if (retType.type === "reflection" && retType.declaration?.children) {
             return retType.declaration.children;
@@ -470,6 +487,12 @@ export function generate(config) {
     // Page generators
     // =========================================================================
 
+    function emitBanner(emit, product, pageName) {
+        if (!product.versionBanner) return;
+        emit(product.versionBanner.replaceAll("{page}", pageName));
+        emit("");
+    }
+
     function buildGetStarted(product) {
         const L = [];
         const emit = (...a) => L.push(a.join(""));
@@ -479,6 +502,7 @@ export function generate(config) {
         emit(`description: Installation and setup for the ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "get-started");
 
         // Version shield badge
         if (product.npmUrl && product.packageName) {
@@ -541,6 +565,7 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} context providers for ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "providers");
 
         const { providers } = classifyExports(product.exports);
 
@@ -595,6 +620,7 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} hooks for ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "hooks");
 
         const { hooks } = classifyExports(product.exports);
 
