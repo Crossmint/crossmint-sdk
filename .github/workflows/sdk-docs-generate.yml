@@ -137,7 +137,7 @@ jobs:
                   repositories: crossbit-main
 
             - name: Dispatch to crossbit-main
-              uses: peter-evans/repository-dispatch@ce57bf9958701f3a8aa0f5e7fe00d698f32de22a  # v3.0.0
+              uses: peter-evans/repository-dispatch@v4
               with:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
