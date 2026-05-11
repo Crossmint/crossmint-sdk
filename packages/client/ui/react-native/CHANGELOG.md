@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.2.1
+
+### Patch Changes
+
+- 6992883: Auto-derive React/RN SDK reference docs from JSDoc; removes ~390 LOC of hand-maintained MANUAL_RETURNS blocks.
+- Updated dependencies [6992883]
+  - @crossmint/client-sdk-react-base@2.0.19
+
 ## 1.2.0
 
 ### Minor Changes
