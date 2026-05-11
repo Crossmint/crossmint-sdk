@@ -264,34 +264,6 @@ function CrossmintWalletProviderInternal({
 
             const rawData = event.nativeEvent.data;
 
-            // Handle identity key backup from the frame — persists the JWK in native SecureStore
-            // so the identity key survives WebKit IndexedDB eviction.
-            try {
-                const parsed = JSON.parse(rawData);
-                if (
-                    parsed?.type === "identity-key-backup" &&
-                    parsed.jwk != null &&
-                    typeof parsed.jwk === "object" &&
-                    !Array.isArray(parsed.jwk)
-                ) {
-                    const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
-                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk))
-                        .then(() => logger.info("react-native.wallet.identity-key-backup.saved"))
-                        .catch((e) =>
-                            logger.warn("react-native.wallet.identity-key-backup.save-failed", {
-                                error: String(e),
-                            })
-                        );
-                    setIdentityKeyBackup(parsed.jwk);
-                    return;
-                }
-            } catch {
-                // Not JSON or not a backup message — fall through
-            }
-
-            // Handle "frame-ready" signal from child — child is ready to handshake.
-            // With eager handshake, the parent is already polling, so the handshake
-            // should already be in progress or complete. Log for diagnostics.
             if (rawData === "frame-ready") {
                 logger.info("react-native.wallet.webview.frame-ready.received", {
                     handshakeInProgress: handshakeInProgressRef.current,
@@ -305,10 +277,24 @@ function CrossmintWalletProviderInternal({
             }
 
             try {
-                const messageData = JSON.parse(rawData);
-                if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
-                    const consoleMethod = messageData.type.split(".")[1];
-                    const args = (messageData.data || []).map((argStr: string) => {
+                const parsed = JSON.parse(rawData);
+
+                if (parsed?.type === "identity-key-backup" && typeof parsed.jwk === "object" && parsed.jwk != null) {
+                    const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
+                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk))
+                        .then(() => logger.info("react-native.wallet.identity-key-backup.saved"))
+                        .catch((e) =>
+                            logger.warn("react-native.wallet.identity-key-backup.save-failed", {
+                                error: String(e),
+                            })
+                        );
+                    setIdentityKeyBackup(parsed.jwk);
+                    return;
+                }
+
+                if (typeof parsed?.type === "string" && parsed.type.startsWith("console.")) {
+                    const consoleMethod = parsed.type.split(".")[1];
+                    const args = (parsed.data || []).map((argStr: string) => {
                         try {
                             if (
                                 argStr === "[Function]" ||
