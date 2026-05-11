@@ -281,6 +281,7 @@ function CrossmintWalletProviderInternal({
 
                 if (
                     parsed?.type === "identity-key-backup" &&
+                    parsed.jwk != null &&
                     typeof parsed.jwk === "object" &&
                     !Array.isArray(parsed.jwk)
                 ) {
