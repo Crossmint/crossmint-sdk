@@ -286,7 +286,9 @@ function CrossmintWalletProviderInternal({
                     !Array.isArray(parsed.jwk)
                 ) {
                     const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
-                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk))
+                    SecureStore.setItemAsync(backupKey, JSON.stringify(parsed.jwk), {
+                        keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+                    })
                         .then(() => logger.info("react-native.wallet.identity-key-backup.saved"))
                         .catch((e) =>
                             logger.warn("react-native.wallet.identity-key-backup.save-failed", {
@@ -372,7 +374,9 @@ function CrossmintWalletProviderInternal({
 
         const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
         try {
-            const raw = await SecureStore.getItemAsync(backupKey);
+            const raw = await SecureStore.getItemAsync(backupKey, {
+                keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+            });
             if (raw != null) {
                 const parsed = JSON.parse(raw);
                 if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
