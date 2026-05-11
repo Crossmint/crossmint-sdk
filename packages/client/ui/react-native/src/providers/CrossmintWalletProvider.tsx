@@ -379,9 +379,6 @@ function CrossmintWalletProviderInternal({
     const initializeWebView = async () => {
         logger.info("react-native.wallet.webview.init.start");
 
-        // Load identity key backup from native before mounting the WebView.
-        // React 18+ batches both setState calls into one render, so the WebView
-        // always mounts with the backup already injected as a global.
         const backupKey = `crossmint_identity_key_backup_${parsedAPIKey.environment}`;
         try {
             const raw = await SecureStore.getItemAsync(backupKey);
