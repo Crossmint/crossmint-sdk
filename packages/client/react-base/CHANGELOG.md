@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.19
+
+### Patch Changes
+
+- 6992883: Auto-derive React/RN SDK reference docs from JSDoc; removes ~390 LOC of hand-maintained MANUAL_RETURNS blocks.
+
 ## 2.0.18
 
 ### Patch Changes
