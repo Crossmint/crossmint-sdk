@@ -338,7 +338,7 @@ export async function approveDelegatedSigner(...): Promise<void> { ... }
 | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | E2E       | `.spec.ts`                                                                                                                   |
 | Unit      | `.test.ts`                                                                                                                   |
-| Naming    | Same BDD style — describe/when/it, no verb prefix                                                                            |
+| Naming    | Same BDD style — describe/when/test, no verb prefix                                                                          |
 | Selectors | [Testing Library](https://testing-library.com/) (`getByRole`, `getByTestId`) — same semantic strategy as Playwright UI tests |
 
 ---
