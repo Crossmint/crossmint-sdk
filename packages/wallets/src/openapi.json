@@ -30689,7 +30689,7 @@
                                     "provider": {
                                         "type": "string",
                                         "enum": ["squads", "swig", "crossmint"],
-                                        "description": "The underlying provider used to back this Solana smart wallet. Determines provider-specific capabilities (e.g. only 'swig' and 'crossmint' support device signers)."
+                                        "description": "The underlying provider used to back this Solana smart wallet. If the field is absent from the response, the wallet was created with the 'squads' provider (the field was added later, so older wallets do not have it stored). Only 'swig' and 'crossmint' support device signers."
                                     }
                                 },
                                 "required": ["adminSigner"]

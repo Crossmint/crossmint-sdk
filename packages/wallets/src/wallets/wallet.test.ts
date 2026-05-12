@@ -2157,6 +2157,32 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
             expect(wallet.needsRecovery()).toBe(false);
         });
+
+        it("should skip recovery for legacy Solana wallet with no provider (treated as squads)", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            // Legacy wallets created before the `provider` field was added to the API response
+            // have solanaProvider === undefined; those are squads-backed and must not attempt
+            // device-signer registration.
+            const wallet = new Wallet(
+                {
+                    chain: "solana",
+                    address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            await wallet.waitForInit();
+            mockApiClient.getSigner.mockClear();
+            mockApiClient.registerSigner.mockClear();
+
+            await wallet.recover();
+
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            expect(wallet.needsRecovery()).toBe(false);
+        });
     });
 
     describe("existing device signer on wallet (this.#signer)", () => {

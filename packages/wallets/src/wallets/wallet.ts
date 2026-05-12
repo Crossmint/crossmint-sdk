@@ -130,12 +130,17 @@ export class Wallet<C extends Chain> {
      * Solana wallets backed by the "squads" provider do not support device signers — those
      * wallets default to the recovery signer for signing. For all other providers (and for
      * non-Solana chains) device signers are supported.
+     *
+     * Legacy Solana wallets created before the `provider` field was added to the API
+     * response have no provider value; those are squads-backed, so an absent provider is
+     * treated the same as an explicit "squads".
      */
     private providerSupportsDeviceSigner(): boolean {
         if (this.chain !== "solana") {
             return true;
         }
-        return this.#solanaProvider !== "squads";
+        const provider = this.#solanaProvider ?? "squads";
+        return provider !== "squads";
     }
 
     public get signer(): SignerAdapter | undefined {
