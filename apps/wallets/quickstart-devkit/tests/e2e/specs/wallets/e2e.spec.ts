@@ -1,4 +1,4 @@
-import { test, expectAuth, TEST_CONFIGURATIONS } from "./fixtures/auth";
+import { test, expectAuth, TEST_CONFIGURATIONS } from "../../../shared/fixtures/auth.fixture";
 import {
     approveTransactionById,
     createPreparedTransaction,
@@ -7,16 +7,16 @@ import {
     getWalletBalance,
     getWalletBalances,
     transferFunds,
-} from "./helpers";
-import { TEST_RECIPIENT_WALLET_ADDRESSES } from "./config/constants";
+} from "../../../shared/utils";
+import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../../../shared/constants/globalConstants";
 
-test.describe("Crossmint Wallet E2E Tests", () => {
+test.describe("Wallet E2E", { tag: "@critical" }, () => {
     for (const config of TEST_CONFIGURATIONS) {
         test.describe(`${config.provider} - ${config.chain} - ${config.signer}`, () => {
             test.describe.configure({ mode: "serial" });
             test.use({ testConfig: config });
 
-            test("should authenticate and fetch wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
+            test("authenticates and fetches wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
                 console.log(`🔐 Testing ${testConfig.provider}/${testConfig.chain}/${testConfig.signer}`);
 
                 await testInfo.attach("authenticated-page", {
@@ -49,7 +49,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 console.log(`✅ ${testConfig.chain}:${testConfig.signer}:${walletAddress} retrieved`);
             });
 
-            test("should transfer funds", async ({ authenticatedPage, testConfig }) => {
+            test("transfers funds", async ({ authenticatedPage, testConfig }) => {
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
                 // Fund wallet before transfer test
@@ -86,7 +86,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 );
             });
 
-            test("should create and approve a prepared transaction", async ({ authenticatedPage, testConfig }) => {
+            test("creates and approves a prepared transaction", async ({ authenticatedPage, testConfig }) => {
                 let recipientAddress: string;
                 if (testConfig.chain === "evm") {
                     recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
@@ -157,7 +157,7 @@ test.describe("Crossmint Wallet E2E Tests", () => {
                 expectAuth(resultText?.toLowerCase()).toContain("transaction");
             });
 
-            test("should display wallet balances correctly", async ({ authenticatedPage, testConfig }) => {
+            test("displays wallet balances", async ({ authenticatedPage, testConfig }) => {
                 const nativeTokenBalance = authenticatedPage.locator('[data-testid="native-token-balance"]').first();
                 await nativeTokenBalance.waitFor({ state: "visible", timeout: 30000 });
                 await expectAuth(nativeTokenBalance).toBeVisible();

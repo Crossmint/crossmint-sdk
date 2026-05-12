@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { AUTH_CONFIG, getEmailForSigner, type SignerType } from "../config/constants";
+import { AUTH_CONFIG, getEmailForSigner, type SignerType } from "../constants/globalConstants";
 import { clearEmailsForAddress, getEmailOTPCode, getPhoneOTPCode } from "./email";
 
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
