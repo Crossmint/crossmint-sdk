@@ -30685,6 +30685,11 @@
                                             "title": "Solana Delegated Signer Response",
                                             "description": "Complete delegated signer response including the signer and authorization transaction"
                                         }
+                                    },
+                                    "provider": {
+                                        "type": "string",
+                                        "enum": ["squads", "swig", "crossmint"],
+                                        "description": "The underlying provider used to back this Solana smart wallet. Determines provider-specific capabilities (e.g. only 'swig' and 'crossmint' support device signers)."
                                     }
                                 },
                                 "required": ["adminSigner"]

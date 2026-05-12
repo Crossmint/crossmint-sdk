@@ -9,6 +9,7 @@ export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams } from 
 
 // Wallets
 export { Wallet } from "./wallets/wallet";
+export type { SolanaSmartWalletProvider } from "./wallets/wallet";
 export { SolanaWallet } from "./wallets/solana";
 export { EVMWallet } from "./wallets/evm";
 export { StellarWallet } from "./wallets/stellar";

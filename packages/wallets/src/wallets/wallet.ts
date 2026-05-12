@@ -75,6 +75,12 @@ import { getSignerLocator } from "../utils/signer-locator";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
+/**
+ * Provider used to back a Solana smart wallet. Only "swig" and "crossmint" support device signers.
+ * Wallets with provider "squads" must default to the recovery signer for signing.
+ */
+export type SolanaSmartWalletProvider = "squads" | "swig" | "crossmint";
+
 type WalletContructorType<C extends Chain> = {
     chain: C;
     address: string;
@@ -84,6 +90,8 @@ type WalletContructorType<C extends Chain> = {
     recovery: RecoverySignerConfigForChain<C>;
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
+    /** Solana-only: provider backing the wallet. Used to decide whether device signers are supported. */
+    solanaProvider?: SolanaSmartWalletProvider;
 };
 
 export class Wallet<C extends Chain> {
@@ -100,9 +108,10 @@ export class Wallet<C extends Chain> {
     #deviceSignerApproved = false;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
+    #solanaProvider?: SolanaSmartWalletProvider;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, options, alias, recovery, signers, signer } = args;
+        const { chain, address, owner, options, alias, recovery, signers, signer, solanaProvider } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -112,7 +121,21 @@ export class Wallet<C extends Chain> {
         this.#recovery = recovery;
         this.#initialSigners = signers ?? [];
         this.#signer = signer; // Can be set by useSigner
+        this.#solanaProvider = solanaProvider;
         this.#signerInitialization = this.initDefaultSigner();
+    }
+
+    /**
+     * Whether the wallet's provider supports device signers.
+     * Solana wallets backed by the "squads" provider do not support device signers — those
+     * wallets default to the recovery signer for signing. For all other providers (and for
+     * non-Solana chains) device signers are supported.
+     */
+    private providerSupportsDeviceSigner(): boolean {
+        if (this.chain !== "solana") {
+            return true;
+        }
+        return this.#solanaProvider !== "squads";
     }
 
     public get signer(): SignerAdapter | undefined {
@@ -136,6 +159,18 @@ export class Wallet<C extends Chain> {
     private async initDeviceSigner(): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
+            return;
+        }
+
+        // Solana wallets on providers that don't support device signers (e.g. "squads") must
+        // default to the recovery signer. Skip the device signer flow entirely so that
+        // initDefaultSigner falls back to recovery — without flagging needsRecovery, which
+        // would otherwise trigger an unsupported addSigner call on the next transaction.
+        if (!this.providerSupportsDeviceSigner()) {
+            walletsLogger.info("wallet.initDeviceSigner.skipped", {
+                reason: "provider does not support device signers",
+                provider: this.#solanaProvider,
+            });
             return;
         }
 
@@ -1058,6 +1093,18 @@ export class Wallet<C extends Chain> {
         // Fast-path: skip the API call if we've already verified the device signer is approved
         if (this.#deviceSignerApproved) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
+            return;
+        }
+
+        // Wallets whose provider does not support device signers have nothing to recover —
+        // signing relies on the recovery signer instead.
+        if (!this.providerSupportsDeviceSigner()) {
+            walletsLogger.info("wallet.recover.skipped", {
+                reason: "provider does not support device signers",
+                provider: this.#solanaProvider,
+            });
+            this.#needsRecovery = false;
+            this.#deviceSignerApproved = true;
             return;
         }
 
