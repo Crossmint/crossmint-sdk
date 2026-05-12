@@ -28811,6 +28811,10 @@
                         "type": "string",
                         "description": "Error message",
                         "example": "<error message>"
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Optional stable error code identifying the specific failure case. Present when the backend raises a structured error that consumers may want to detect programmatically."
                     }
                 },
                 "required": ["error", "message"]
@@ -30685,11 +30689,6 @@
                                             "title": "Solana Delegated Signer Response",
                                             "description": "Complete delegated signer response including the signer and authorization transaction"
                                         }
-                                    },
-                                    "provider": {
-                                        "type": "string",
-                                        "enum": ["squads", "swig", "crossmint"],
-                                        "description": "The underlying provider used to back this Solana smart wallet. If the field is absent from the response, treat the wallet as backed by the 'squads' provider. Only 'swig' and 'crossmint' support device signers."
                                     }
                                 },
                                 "required": ["adminSigner"]

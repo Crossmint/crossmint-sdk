@@ -19,7 +19,7 @@ import type {
     RecoverySignerConfigForChain,
     SignerConfigForChain,
 } from "../signers/types";
-import { Wallet, type SolanaSmartWalletProvider } from "./wallet";
+import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
@@ -33,7 +33,6 @@ const SIGNER_MISMATCH_ERROR =
 type SmartWalletConfig = {
     adminSigner: RecoverySignerConfig | PasskeySignerConfig;
     delegatedSigners?: SignerResponse[];
-    provider?: SolanaSmartWalletProvider;
 };
 
 export class WalletFactory {
@@ -127,9 +126,10 @@ export class WalletFactory {
         }
 
         // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side).
-        // Solana smart wallets are excluded: the provider that backs the wallet is only known after
-        // creation, and some providers (e.g. "squads") reject device signers. For Solana we defer
-        // device-signer registration to the wallet's post-creation flow, which checks the provider.
+        // Solana smart wallets are excluded: some underlying providers reject device signers and
+        // the SDK cannot tell which provider backs the wallet upfront. We defer device-signer
+        // registration to the wallet's post-creation flow, where a rejection with the stable
+        // DEVICE_SIGNER_NOT_SUPPORTED error code is caught and falls back to the recovery signer.
         const shouldEagerlyAddDeviceSigner =
             validatedArgs.options?.deviceSignerKeyStorage != null && validatedArgs.chain !== "solana";
         const signersWithDevice = shouldEagerlyAddDeviceSigner
@@ -209,9 +209,6 @@ export class WalletFactory {
             signers = createArgs.signers as SignerResponse[];
         }
 
-        const solanaProvider =
-            args.chain === "solana" ? (walletResponse.config as SmartWalletConfig).provider : undefined;
-
         const wallet = new Wallet(
             {
                 chain: args.chain,
@@ -221,7 +218,6 @@ export class WalletFactory {
                 alias: args.alias,
                 recovery,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
-                solanaProvider,
             },
             this.apiClient
         );

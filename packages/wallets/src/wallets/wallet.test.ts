@@ -2088,7 +2088,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should proceed with recovery for Solana chain when provider supports device signers", async () => {
+        it("should proceed with recovery for Solana chain when backend accepts device-signer registration", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             const wallet = new Wallet(
                 {
@@ -2096,16 +2096,13 @@ describe("Wallet - recover()", () => {
                     address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
                     recovery: { type: "api-key" } as any,
                     options: { deviceSignerKeyStorage: mockStorage as any },
-                    solanaProvider: "swig",
                 },
                 mockApiClient as unknown as ApiClient
             );
             vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
 
-            // addSigner's upfront getSigner check — signer not yet found
             mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
 
-            // registerSigner returns a pending transaction for Solana
             mockApiClient.registerSigner.mockResolvedValue({
                 type: "device",
                 locator: "device:mockNewKey",
@@ -2113,7 +2110,6 @@ describe("Wallet - recover()", () => {
                 transaction: { id: "tx-1", status: "pending", onChain: { transaction: "serialized-tx" } },
             } as any);
 
-            // getTransaction for approveTransactionAndWait
             mockApiClient.getTransaction.mockResolvedValue({
                 id: "tx-1",
                 status: "success",
@@ -2121,18 +2117,16 @@ describe("Wallet - recover()", () => {
                 onChain: { txId: "solana-hash", explorerLink: "https://explorer.solana.com/tx/solana-hash" },
             } as any);
 
-            // assembleFullSigner after registration needs getSigner
             mockGetSignerApproved("solana", "device:mockNewKey");
 
             await wallet.recover();
 
-            // recover() should proceed normally for Solana — no early guard
             expect(mockApiClient.registerSigner).toHaveBeenCalled();
             expect(wallet.signer?.type).toBe("device");
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should skip recovery for Solana wallet when provider does not support device signers (squads)", async () => {
+        it("should fall back to recovery signer when backend rejects device-signer with DEVICE_SIGNER_NOT_SUPPORTED", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             const wallet = new Wallet(
                 {
@@ -2140,29 +2134,31 @@ describe("Wallet - recover()", () => {
                     address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
                     recovery: { type: "api-key" } as any,
                     options: { deviceSignerKeyStorage: mockStorage as any },
-                    solanaProvider: "squads",
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
 
-            // Flush init so any constructor-driven work completes first
-            await wallet.waitForInit();
-            mockApiClient.getSigner.mockClear();
-            mockApiClient.registerSigner.mockClear();
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+
+            // Backend rejects device-signer registration with the stable error code.
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "Device signers are not currently supported for this Solana wallet.",
+                code: "DEVICE_SIGNER_NOT_SUPPORTED",
+            } as any);
 
             await wallet.recover();
 
-            // Squads doesn't support device signers — recover must be a no-op (no signer registration).
-            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
-            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
+            // Local device key must be wiped after the backend rejects it.
+            expect(mockStorage.deleteKey).toHaveBeenCalledWith("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
+            // Fallback completes without throwing; wallet is ready (no further recovery needed).
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should skip recovery for legacy Solana wallet with no provider (treated as squads)", async () => {
+        it("should cache DEVICE_SIGNER_NOT_SUPPORTED and skip registration on subsequent recover() calls", async () => {
             const mockStorage = createMockDeviceKeyStorage();
-            // Legacy wallets created before the `provider` field was added to the API response
-            // have solanaProvider === undefined; those are squads-backed and must not attempt
-            // device-signer registration.
             const wallet = new Wallet(
                 {
                     chain: "solana",
@@ -2172,15 +2168,26 @@ describe("Wallet - recover()", () => {
                 },
                 mockApiClient as unknown as ApiClient
             );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
 
-            await wallet.waitForInit();
-            mockApiClient.getSigner.mockClear();
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "Device signers are not currently supported for this Solana wallet.",
+                code: "DEVICE_SIGNER_NOT_SUPPORTED",
+            } as any);
+
+            await wallet.recover();
+            expect(mockApiClient.registerSigner).toHaveBeenCalledTimes(1);
+
             mockApiClient.registerSigner.mockClear();
+            mockApiClient.getSigner.mockClear();
 
             await wallet.recover();
 
+            // Cached unsupported state — no further registration attempts.
             expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
-            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
             expect(wallet.needsRecovery()).toBe(false);
         });
     });

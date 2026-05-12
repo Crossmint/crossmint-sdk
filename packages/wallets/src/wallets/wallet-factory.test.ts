@@ -91,7 +91,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet with device signer", () => {
-        it("should NOT inject device signer for Solana wallets at creation time (deferred to provider-aware post-creation flow)", async () => {
+        it("should NOT inject device signer for Solana wallets at creation time (deferred to try-and-fallback post-creation flow)", async () => {
             const solanaWallet = {
                 chainType: "solana" as const,
                 type: "smart" as const,
@@ -130,9 +130,10 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await walletFactory.createWallet(args);
 
-            // Device signers must not be sent in the Solana createWallet call: the provider that
-            // backs the wallet is only known after creation, and some providers (e.g. "squads")
-            // reject device signers. The post-creation flow handles registration when supported.
+            // Device signers must not be sent in the Solana createWallet call: some underlying
+            // providers reject device signers and the SDK cannot tell which provider backs the
+            // wallet upfront. The post-creation flow registers device signers and falls back
+            // to the recovery signer when the backend returns DEVICE_SIGNER_NOT_SUPPORTED.
             const call = mockApiClient.createWallet.mock.calls[0]?.[0];
             expect(call?.config?.delegatedSigners ?? []).toHaveLength(0);
             expect(mockDeviceSignerKeyStorage.generateKey).not.toHaveBeenCalled();
