@@ -345,7 +345,7 @@ export async function approveDelegatedSigner(...): Promise<void> { ... }
 
 ## 10. Migration Checklist
 
--   [ ] Move file to `tests/<suite>/<version>/specs/<domain>/<feature>.spec.ts`
+-   [ ] Move file to `tests/<suite>/specs/<domain>/<feature>.spec.ts` (API tests: `tests/api/<version>/specs/<domain>/<feature>.spec.ts`)
 -   [ ] Rename file to `kebab-case.spec.ts`
 -   [ ] Rename data files to `camelCase.ts`
 -   [ ] Extract inline helpers to `tests/api/<version>/helpers/<domain>/<scope>-helpers.ts`
