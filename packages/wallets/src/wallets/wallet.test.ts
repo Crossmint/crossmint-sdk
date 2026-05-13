@@ -563,6 +563,55 @@ describe("Wallet - approve()", () => {
             );
         });
     });
+
+    describe("empty pending approvals", () => {
+        let externalWallet: Wallet<"base-sepolia">;
+
+        beforeEach(async () => {
+            externalWallet = await createMockWallet("base-sepolia", mockApiClient, "external-wallet");
+        });
+
+        it("should not submit an approval when transaction.approvals.pending is empty", async () => {
+            const mockTransactionResponse = {
+                id: "txn-empty",
+                status: "success",
+                approvals: { pending: [], submitted: [{ signer: "external-wallet:0x123" }] },
+                onChain: {
+                    txId: "0xabcdef",
+                    explorerLink: "https://explorer.example.com/tx/0xabcdef",
+                },
+            };
+
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            const approvePromise = externalWallet.approve({ transactionId: "txn-empty" });
+            await vi.runAllTimersAsync();
+            const result = await approvePromise;
+
+            expect(result.hash).toBe("0xabcdef");
+            expect(result.transactionId).toBe("txn-empty");
+            expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
+        });
+
+        it("should not submit an approval when signature.approvals.pending is empty", async () => {
+            const mockSignatureResponse = {
+                id: "sig-empty",
+                status: "success",
+                outputSignature: "0xsigned",
+                approvals: { pending: [], submitted: [{ signer: "external-wallet:0x123" }] },
+            };
+
+            mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
+
+            const approvePromise = externalWallet.approve({ signatureId: "sig-empty" });
+            await vi.runAllTimersAsync();
+            const result = await approvePromise;
+
+            expect(result.signature).toBe("0xsigned");
+            expect(result.signatureId).toBe("sig-empty");
+            expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
+        });
+    });
 });
 
 describe("Wallet - addSigner()", () => {

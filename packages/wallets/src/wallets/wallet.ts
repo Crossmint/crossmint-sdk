@@ -1752,7 +1752,7 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = signature.approvals?.pending;
 
-        if (pendingApprovals == null) {
+        if (pendingApprovals == null || pendingApprovals.length === 0) {
             return signature;
         }
 
@@ -1803,7 +1803,7 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = transaction.approvals?.pending;
 
-        if (pendingApprovals == null) {
+        if (pendingApprovals == null || pendingApprovals.length === 0) {
             return transaction;
         }
 
