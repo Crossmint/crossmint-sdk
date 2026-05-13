@@ -21,7 +21,7 @@ describe("Lit", () => {
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
     });
 
-    it("should connect to the Lit network", async () => {
+    it("connects to the Lit network", async () => {
         const mockConnect = jest.fn();
         litSpy.mockImplementation(() => {
             return { connect: mockConnect } as any;

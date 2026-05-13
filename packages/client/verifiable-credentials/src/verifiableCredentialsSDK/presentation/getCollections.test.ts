@@ -5,7 +5,7 @@ import { bundleNfts, getCredentialNfts } from "./getCollections";
 jest.mock("./contractMetadata");
 
 describe("bundleNfts", () => {
-    it("should group NFTs by contract address", () => {
+    it("groups NFTs by contract address", () => {
         const nfts: Nft[] = [
             { contractAddress: "address1" } as any,
             { contractAddress: "address1" } as any,
@@ -25,13 +25,13 @@ describe("getCredentialCollections", () => {
     const getNftsFunction = jest.fn().mockResolvedValue([] as any);
     beforeEach(() => {});
 
-    it("should throw error if chain is not polygon", async () => {
+    it("throws error if chain is not polygon", async () => {
         await expect(getCredentialNfts("someChain" as any, "wallet", getNftsFunction, {})).rejects.toThrow(
             "Verifiable credentials are not supported on someChain chain"
         );
     });
 
-    it("should filter collections by types if filter is provided", async () => {
+    it("filters collections by types if filter is provided", async () => {
         const collections: CredentialsCollection[] = [
             { metadata: { credentialMetadata: { type: ["type1"] } } } as any,
             { metadata: { credentialMetadata: { type: ["type2"] } } } as any,

@@ -10,13 +10,13 @@ describe("VerifiableCredentialSignatureService", () => {
         jest.resetAllMocks();
     });
 
-    it("should verify a valid credential", async () => {
+    it("verifies a valid credential", async () => {
         const result = await service.verify(mockCredential);
 
         expect(result).toBe(true);
     });
 
-    it("should fail a invalid credential", async () => {
+    it("fails a invalid credential", async () => {
         const invalidCredential: VerifiableCredential = {
             ...mockCredential,
             proof: {
@@ -31,7 +31,7 @@ describe("VerifiableCredentialSignatureService", () => {
         expect(result).toBe(false);
     });
 
-    it("should throw error for invalid issuer DID", async () => {
+    it("throws error for invalid issuer DID", async () => {
         const mockCredential: VerifiableCredential = {
             issuer: { id: "invalidDID" },
             proof: {},
@@ -42,7 +42,7 @@ describe("VerifiableCredentialSignatureService", () => {
         )) as any;
     });
 
-    it("should throw error for missing proof", async () => {
+    it("throws error for missing proof", async () => {
         const mockCredential: VerifiableCredential = {
             issuer: { id: "did:chain:address" },
         } as any;
@@ -50,7 +50,7 @@ describe("VerifiableCredentialSignatureService", () => {
         await expect(service.verify(mockCredential)).rejects.toThrow("No proof associated with credential");
     });
 
-    it("should throw error for tampered issuer address", async () => {
+    it("throws error for tampered issuer address", async () => {
         const mockCredential: VerifiableCredential = {
             issuer: { id: "did:chain:address" },
             proof: {},

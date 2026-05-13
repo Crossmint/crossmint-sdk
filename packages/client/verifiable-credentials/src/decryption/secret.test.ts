@@ -8,7 +8,7 @@ describe("VCSymmetricEncryptionService", () => {
     });
 
     describe("decrypt", () => {
-        it("should throw error if the data is malformed", async () => {
+        it("throws error if the data is malformed", async () => {
             const encrypted = {
                 id: "testId",
                 payload:
@@ -20,7 +20,7 @@ describe("VCSymmetricEncryptionService", () => {
             );
         });
 
-        it("should return decrypted data", async () => {
+        it("returns decrypted data", async () => {
             const encrypted = {
                 id: "urn:uuid:c00ffbfa-4dc3-4e22-8b24-ce2f720c7a58",
                 payload:
