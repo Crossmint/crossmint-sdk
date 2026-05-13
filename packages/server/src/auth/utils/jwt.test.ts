@@ -36,7 +36,7 @@ describe("JWT Verification", () => {
     });
 
     describe("verifyCrossmintJwt", () => {
-        it("should successfully verify a valid JWT", async () => {
+        it("successfully verifies a valid JWT", async () => {
             vi.mocked(jwtVerify).mockResolvedValue({ payload: mockPayload } as any);
 
             const result = await verifyCrossmintJwt(mockToken, mockJwksUri);
@@ -46,7 +46,7 @@ describe("JWT Verification", () => {
             expect(result).toEqual(mockPayload);
         });
 
-        it("should throw error for expired JWT", async () => {
+        it("throws error for expired JWT", async () => {
             const expiredTimestamp = 1234567890;
             const expiredDate = new Date(expiredTimestamp * 1000).toISOString();
 
@@ -57,7 +57,7 @@ describe("JWT Verification", () => {
             );
         });
 
-        it("should handle expired JWT with unknown expiration", async () => {
+        it("handles expired JWT with unknown expiration", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWTExpired("token expired", { exp: undefined }));
 
             await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(
@@ -65,26 +65,26 @@ describe("JWT Verification", () => {
             );
         });
 
-        it("should throw error for signature verification failure", async () => {
+        it("throws error for signature verification failure", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWSSignatureVerificationFailed());
 
             await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("signature verification failed");
         });
 
-        it("should throw error for invalid algorithm", async () => {
+        it("throws error for invalid algorithm", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new Error("invalid algorithm"));
 
             await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("invalid algorithm");
         });
 
-        it("should propagate unknown errors", async () => {
+        it("propagates unknown errors", async () => {
             const unknownError = new Error("unknown error");
             vi.mocked(jwtVerify).mockRejectedValue(unknownError);
 
             await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(unknownError);
         });
 
-        it("should propagate JWKS client errors", async () => {
+        it("propagates JWKS client errors", async () => {
             const jwksError = new Error("JWKS client error");
             vi.mocked(createJWKSClient).mockImplementation(() => {
                 throw jwksError;
