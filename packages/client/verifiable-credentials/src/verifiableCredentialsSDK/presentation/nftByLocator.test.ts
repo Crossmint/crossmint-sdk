@@ -18,7 +18,7 @@ describe("getCredentialNFTFromLocator", () => {
         );
     });
 
-    it("fetches and return the NFT and its collection", async () => {
+    it("fetches and returns the NFT and its collection", async () => {
         const mockNftUri = "ipfs://uri";
         const mockNftMetadata = { name: "NFT Name" };
         const collectionMetadata = {

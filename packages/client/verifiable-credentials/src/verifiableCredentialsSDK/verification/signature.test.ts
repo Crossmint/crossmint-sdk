@@ -16,7 +16,7 @@ describe("VerifiableCredentialSignatureService", () => {
         expect(result).toBe(true);
     });
 
-    it("fails a invalid credential", async () => {
+    it("fails an invalid credential", async () => {
         const invalidCredential: VerifiableCredential = {
             ...mockCredential,
             proof: {
