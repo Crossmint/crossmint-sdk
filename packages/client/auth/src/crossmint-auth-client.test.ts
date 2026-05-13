@@ -116,7 +116,7 @@ describe("CrossmintAuthClient", () => {
             mockApiClient.post.mockReset();
         });
 
-        it("calls logout endpoint, clear auth cookies and call onLogout callback", async () => {
+        it("calls logout endpoint, clears auth cookies and calls onLogout callback", async () => {
             const mockCallbacks = { onLogout: vi.fn() };
             const mockRefreshToken = "mock-refresh-token";
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
@@ -177,7 +177,7 @@ describe("CrossmintAuthClient", () => {
             (crossmintAuthClient as any).refreshPromise = null;
         });
 
-        it("refreshes auth material and schedule next refresh", async () => {
+        it("refreshes auth material and schedules next refresh", async () => {
             crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {
                 callbacks: mockCallbacks,
             });
@@ -209,7 +209,7 @@ describe("CrossmintAuthClient", () => {
             expect(mockCallback).toHaveBeenCalledWith(mockAuthMaterial);
         });
 
-        it("handles errors and call logout", async () => {
+        it("handles errors and calls logout", async () => {
             const mockError = new Error("Refresh failed");
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockRejectedValue(mockError);
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
@@ -319,7 +319,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("confirmEmailOtp", () => {
-        it("confirms email OTP and return oneTimeSecret", async () => {
+        it("confirms email OTP and returns oneTimeSecret", async () => {
             const mockEmail = "user@example.com";
             const mockEmailId = "email-id-123";
             const mockToken = "otp-token-456";
