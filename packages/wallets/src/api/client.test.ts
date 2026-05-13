@@ -44,7 +44,7 @@ describe("ApiClient - createWallet()", () => {
     });
 
     describe("success cases", () => {
-        it("should create EVM smart wallet successfully (client-side)", async () => {
+        it("creates EVM smart wallet successfully (client-side)", async () => {
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -66,7 +66,7 @@ describe("ApiClient - createWallet()", () => {
             validateRequest(extractFetchCall(mockPost), "api/2025-06-09/wallets/me", params);
         });
 
-        it("should create wallet successfully (server-side)", async () => {
+        it("creates wallet successfully (server-side)", async () => {
             const serverClient = createServerSideApiClient();
             const serverMockPost = vi.spyOn(serverClient, "post") as MockedFunction<ApiClient["post"]>;
 
@@ -90,7 +90,7 @@ describe("ApiClient - createWallet()", () => {
             validateRequest(extractFetchCall(serverMockPost), "api/2025-06-09/wallets", params);
         });
 
-        it("should create Solana wallet successfully", async () => {
+        it("creates Solana wallet successfully", async () => {
             const mockResponse = createMockWalletResponse({
                 address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
                 chainType: "solana",
@@ -123,7 +123,7 @@ describe("ApiClient - createWallet()", () => {
             validateRequest(extractFetchCall(mockPost), "api/2025-06-09/wallets/me", params);
         });
 
-        it("should create MPC wallet successfully", async () => {
+        it("creates MPC wallet successfully", async () => {
             const mockResponse = createMockWalletResponse({ type: "mpc" });
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -139,7 +139,7 @@ describe("ApiClient - createWallet()", () => {
             validateRequest(extractFetchCall(mockPost), "api/2025-06-09/wallets/me", params);
         });
 
-        it("should create Stellar wallet successfully", async () => {
+        it("creates Stellar wallet successfully", async () => {
             const mockResponse = createMockWalletResponse({
                 address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
                 chainType: "stellar",
@@ -173,7 +173,7 @@ describe("ApiClient - createWallet()", () => {
     });
 
     describe("error cases", () => {
-        it("should handle API error response with error field", async () => {
+        it("handles API error response with error field", async () => {
             const errorResponse = {
                 error: true,
                 message: "Wallet creation failed: invalid configuration",
@@ -187,7 +187,7 @@ describe("ApiClient - createWallet()", () => {
             );
         });
 
-        it("should handle 400 Bad Request error", async () => {
+        it("handles 400 Bad Request error", async () => {
             const errorResponse = {
                 error: true,
                 message: "Invalid request parameters",
@@ -206,7 +206,7 @@ describe("ApiClient - createWallet()", () => {
             );
         });
 
-        it("should handle common HTTP error status codes", async () => {
+        it("handles common HTTP error status codes", async () => {
             await testCommonHttpErrors(
                 () => apiClient.createWallet({ chainType: "evm", type: "smart" }),
                 mockPost,
@@ -214,19 +214,19 @@ describe("ApiClient - createWallet()", () => {
             );
         });
 
-        it("should handle network errors", async () => {
+        it("handles network errors", async () => {
             await testNetworkError(() => apiClient.createWallet({ chainType: "evm", type: "smart" }), mockPost);
         });
 
-        it("should handle invalid JSON response", async () => {
+        it("handles invalid JSON response", async () => {
             await testInvalidJsonResponse(() => apiClient.createWallet({ chainType: "evm", type: "smart" }), mockPost);
         });
 
-        it("should handle timeout errors", async () => {
+        it("handles timeout errors", async () => {
             await testTimeoutError(() => apiClient.createWallet({ chainType: "evm", type: "smart" }), mockPost);
         });
 
-        it("should handle error response without message field", async () => {
+        it("handles error response without message field", async () => {
             const errorResponse = { error: true };
             await testHttpErrorResponse(
                 () => apiClient.createWallet({ chainType: "evm", type: "smart" }),
@@ -236,7 +236,7 @@ describe("ApiClient - createWallet()", () => {
             );
         });
 
-        it("should handle error response with additional fields", async () => {
+        it("handles error response with additional fields", async () => {
             const errorResponse = {
                 error: true,
                 message: "Custom error",
@@ -252,7 +252,7 @@ describe("ApiClient - createWallet()", () => {
     });
 
     describe("request validation", () => {
-        it("should serialize request body correctly", async () => {
+        it("serializes request body correctly", async () => {
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -275,7 +275,7 @@ describe("ApiClient - createWallet()", () => {
             }
         });
 
-        it("should include correct headers", async () => {
+        it("includes correct headers", async () => {
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -287,7 +287,7 @@ describe("ApiClient - createWallet()", () => {
             }
         });
 
-        it("should handle MPC wallet without config", async () => {
+        it("handles MPC wallet without config", async () => {
             const mockResponse = createMockWalletResponse({ config: undefined, type: "mpc" });
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -307,7 +307,7 @@ describe("ApiClient - createWallet()", () => {
     });
 
     describe("response validation", () => {
-        it("should parse response correctly with all required fields", async () => {
+        it("parses response correctly with all required fields", async () => {
             const mockResponse = createMockWalletResponse({
                 address: "0x9876543210987654321098765432109876543210",
                 chainType: "evm",
@@ -323,7 +323,7 @@ describe("ApiClient - createWallet()", () => {
             expect((result as any).address).toBe((mockResponse as any).address);
         });
 
-        it("should preserve additional response fields", async () => {
+        it("preserves additional response fields", async () => {
             const mockResponse = {
                 ...createMockWalletResponse(),
                 unexpectedField: "should be preserved",
@@ -336,7 +336,7 @@ describe("ApiClient - createWallet()", () => {
             expect((result as any).unexpectedField).toBe("should be preserved");
         });
 
-        it("should handle response with partial fields", async () => {
+        it("handles response with partial fields", async () => {
             const partialResponse = {
                 address: "0x1234567890123456789012345678901234567890",
             };
@@ -345,7 +345,7 @@ describe("ApiClient - createWallet()", () => {
             expect(result).toHaveProperty("address");
         });
 
-        it("should handle response with null address", async () => {
+        it("handles response with null address", async () => {
             const mockResponse = {
                 ...createMockWalletResponse(),
                 address: null,
@@ -357,7 +357,7 @@ describe("ApiClient - createWallet()", () => {
     });
 
     describe("edge cases", () => {
-        it("should handle createWallet with minimal params", async () => {
+        it("handles createWallet with minimal params", async () => {
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -366,7 +366,7 @@ describe("ApiClient - createWallet()", () => {
             expect(result).toEqual(mockResponse);
         });
 
-        it("should handle createWallet with complex nested config", async () => {
+        it("handles createWallet with complex nested config", async () => {
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -389,7 +389,7 @@ describe("ApiClient - createWallet()", () => {
             }
         });
 
-        it("should handle createWallet with all chain types", async () => {
+        it("handles createWallet with all chain types", async () => {
             const testCases = [
                 { chainType: "evm" as const, type: "smart" as const },
                 {
@@ -440,7 +440,7 @@ describe("ApiClient - getWallet()", () => {
     });
 
     describe("success cases", () => {
-        it("should get wallet successfully with me: locator", async () => {
+        it("gets wallet successfully with me: locator", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -452,7 +452,7 @@ describe("ApiClient - getWallet()", () => {
             validateRequest(extractFetchCall(mockGet), `api/2025-06-09/wallets/${locator}`);
         });
 
-        it("should get wallet successfully with EVM address locator", async () => {
+        it("gets wallet successfully with EVM address locator", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -464,7 +464,7 @@ describe("ApiClient - getWallet()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${locator}`);
         });
 
-        it("should get Solana wallet successfully", async () => {
+        it("gets Solana wallet successfully", async () => {
             const mockResponse = createMockWalletResponse({
                 address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
                 chainType: "solana",
@@ -480,7 +480,7 @@ describe("ApiClient - getWallet()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${locator}`);
         });
 
-        it("should get MPC wallet successfully", async () => {
+        it("gets MPC wallet successfully", async () => {
             const mockResponse = createMockWalletResponse({ type: "mpc" });
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -491,7 +491,7 @@ describe("ApiClient - getWallet()", () => {
             expectRequestPath(extractFetchCall(mockGet), `api/2025-06-09/wallets/${locator}`);
         });
 
-        it("should get wallet with Solana address locator", async () => {
+        it("gets wallet with Solana address locator", async () => {
             const solanaAddress = WALLET_LOCATORS.solanaAddress;
             const mockResponse = createMockWalletResponse({
                 address: solanaAddress,
@@ -508,7 +508,7 @@ describe("ApiClient - getWallet()", () => {
     });
 
     describe("error cases", () => {
-        it("should handle 404 error (wallet not found)", async () => {
+        it("handles 404 error (wallet not found)", async () => {
             const errorResponse = {
                 error: true,
                 message: "Wallet not found",
@@ -522,23 +522,23 @@ describe("ApiClient - getWallet()", () => {
             );
         });
 
-        it("should handle common HTTP error status codes", async () => {
+        it("handles common HTTP error status codes", async () => {
             await testCommonHttpErrors(() => apiClient.getWallet(WALLET_LOCATORS.evmSmart), mockGet);
         });
 
-        it("should handle network errors", async () => {
+        it("handles network errors", async () => {
             await testNetworkError(() => apiClient.getWallet(WALLET_LOCATORS.evmSmart), mockGet);
         });
 
-        it("should handle invalid JSON response", async () => {
+        it("handles invalid JSON response", async () => {
             await testInvalidJsonResponse(() => apiClient.getWallet(WALLET_LOCATORS.evmSmart), mockGet);
         });
 
-        it("should handle timeout errors", async () => {
+        it("handles timeout errors", async () => {
             await testTimeoutError(() => apiClient.getWallet(WALLET_LOCATORS.evmSmart), mockGet);
         });
 
-        it("should handle error response without message field", async () => {
+        it("handles error response without message field", async () => {
             const errorResponse = { error: true };
             await testHttpErrorResponse(
                 () => apiClient.getWallet(WALLET_LOCATORS.evmSmart),
@@ -548,7 +548,7 @@ describe("ApiClient - getWallet()", () => {
             );
         });
 
-        it("should handle 404 with detailed error message", async () => {
+        it("handles 404 with detailed error message", async () => {
             const errorResponse = {
                 error: true,
                 message: "Wallet not found",
@@ -562,7 +562,7 @@ describe("ApiClient - getWallet()", () => {
     });
 
     describe("request validation", () => {
-        it("should encode wallet locator in URL path correctly", async () => {
+        it("encodes wallet locator in URL path correctly", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -573,7 +573,7 @@ describe("ApiClient - getWallet()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${locator}`);
         });
 
-        it("should include correct headers", async () => {
+        it("includes correct headers", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -587,7 +587,7 @@ describe("ApiClient - getWallet()", () => {
     });
 
     describe("response validation", () => {
-        it("should parse response correctly with all required fields", async () => {
+        it("parses response correctly with all required fields", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -598,7 +598,7 @@ describe("ApiClient - getWallet()", () => {
             expect(result).toHaveProperty("type");
         });
 
-        it("should preserve additional response fields", async () => {
+        it("preserves additional response fields", async () => {
             const mockResponse = {
                 ...createMockWalletResponse(),
                 unexpectedField: "should be preserved",
@@ -612,7 +612,7 @@ describe("ApiClient - getWallet()", () => {
             expect((result as any).unexpectedField).toBe("should be preserved");
         });
 
-        it("should handle response with partial fields", async () => {
+        it("handles response with partial fields", async () => {
             const partialResponse = {
                 address: "0x1234567890123456789012345678901234567890",
             };
@@ -623,7 +623,7 @@ describe("ApiClient - getWallet()", () => {
     });
 
     describe("edge cases", () => {
-        it("should handle getWallet with various locator formats", async () => {
+        it("handles getWallet with various locator formats", async () => {
             const locators = [
                 WALLET_LOCATORS.evmSmart,
                 WALLET_LOCATORS.evmMpc,
@@ -645,7 +645,7 @@ describe("ApiClient - getWallet()", () => {
             expect(mockGet).toHaveBeenCalledTimes(locators.length);
         });
 
-        it("should handle getWallet with special characters in address", async () => {
+        it("handles getWallet with special characters in address", async () => {
             const mockResponse = createMockWalletResponse();
             mockGet.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -672,7 +672,7 @@ describe("ApiClient - send()", () => {
     });
 
     describe("success cases", () => {
-        it("should send tokens successfully", async () => {
+        it("sends tokens successfully", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -694,7 +694,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should send tokens with custom token locator (contract address)", async () => {
+        it("sends tokens with custom token locator (contract address)", async () => {
             const mockResponse = createMockSendResponse({ id: "txn-456" });
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -712,7 +712,7 @@ describe("ApiClient - send()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`);
         });
 
-        it("should send tokens for Solana wallet", async () => {
+        it("sends tokens for Solana wallet", async () => {
             const mockResponse = createMockSendResponse({
                 id: "txn-sol-789",
                 chainType: "solana",
@@ -748,7 +748,7 @@ describe("ApiClient - send()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`);
         });
 
-        it("should send with very large amount", async () => {
+        it("sends with very large amount", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -766,7 +766,7 @@ describe("ApiClient - send()", () => {
             }
         });
 
-        it("should send with small amount", async () => {
+        it("sends with small amount", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -780,7 +780,7 @@ describe("ApiClient - send()", () => {
             expect(result).toEqual(mockResponse);
         });
 
-        it("should send with zero amount", async () => {
+        it("sends with zero amount", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -796,7 +796,7 @@ describe("ApiClient - send()", () => {
     });
 
     describe("error cases", () => {
-        it("should handle API error response with error field", async () => {
+        it("handles API error response with error field", async () => {
             const errorResponse = {
                 error: true,
                 message: "Insufficient balance",
@@ -814,7 +814,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle 400 Bad Request (invalid recipient)", async () => {
+        it("handles 400 Bad Request (invalid recipient)", async () => {
             const errorResponse = {
                 error: true,
                 message: "Invalid recipient address",
@@ -832,7 +832,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle common HTTP error status codes", async () => {
+        it("handles common HTTP error status codes", async () => {
             await testCommonHttpErrors(
                 () =>
                     apiClient.send(WALLET_LOCATORS.evmSmart, TOKEN_LOCATORS.eth, {
@@ -843,7 +843,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle network errors", async () => {
+        it("handles network errors", async () => {
             await testNetworkError(
                 () =>
                     apiClient.send(WALLET_LOCATORS.evmSmart, TOKEN_LOCATORS.eth, {
@@ -854,7 +854,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle invalid JSON response", async () => {
+        it("handles invalid JSON response", async () => {
             await testInvalidJsonResponse(
                 () =>
                     apiClient.send(WALLET_LOCATORS.evmSmart, TOKEN_LOCATORS.eth, {
@@ -865,7 +865,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle timeout errors", async () => {
+        it("handles timeout errors", async () => {
             await testTimeoutError(
                 () =>
                     apiClient.send(WALLET_LOCATORS.evmSmart, TOKEN_LOCATORS.eth, {
@@ -876,7 +876,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle error response without message field", async () => {
+        it("handles error response without message field", async () => {
             const errorResponse = { error: true };
             await testHttpErrorResponse(
                 () =>
@@ -890,7 +890,7 @@ describe("ApiClient - send()", () => {
             );
         });
 
-        it("should handle 400 error with insufficient balance details", async () => {
+        it("handles 400 error with insufficient balance details", async () => {
             const errorResponse = {
                 error: true,
                 message: "Insufficient balance",
@@ -910,7 +910,7 @@ describe("ApiClient - send()", () => {
     });
 
     describe("request validation", () => {
-        it("should serialize request body correctly", async () => {
+        it("serializes request body correctly", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -927,7 +927,7 @@ describe("ApiClient - send()", () => {
             }
         });
 
-        it("should construct URL path correctly with wallet and token locators", async () => {
+        it("constructs URL path correctly with wallet and token locators", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -943,7 +943,7 @@ describe("ApiClient - send()", () => {
             expectRequestPath(call, `api/2025-06-09/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`);
         });
 
-        it("should include correct headers", async () => {
+        it("includes correct headers", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -960,7 +960,7 @@ describe("ApiClient - send()", () => {
     });
 
     describe("response validation", () => {
-        it("should parse response correctly with all required fields", async () => {
+        it("parses response correctly with all required fields", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -975,7 +975,7 @@ describe("ApiClient - send()", () => {
             expect(result).toHaveProperty("walletType");
         });
 
-        it("should preserve additional response fields", async () => {
+        it("preserves additional response fields", async () => {
             const mockResponse = {
                 ...createMockSendResponse(),
                 unexpectedField: "should be preserved",
@@ -991,7 +991,7 @@ describe("ApiClient - send()", () => {
             expect((result as any).unexpectedField).toBe("should be preserved");
         });
 
-        it("should handle response with partial fields", async () => {
+        it("handles response with partial fields", async () => {
             const partialResponse = {
                 id: "txn-123",
                 status: "pending",
@@ -1007,7 +1007,7 @@ describe("ApiClient - send()", () => {
     });
 
     describe("edge cases", () => {
-        it("should handle send with different token locator formats", async () => {
+        it("handles send with different token locator formats", async () => {
             const tokenLocators = [
                 TOKEN_LOCATORS.eth,
                 TOKEN_LOCATORS.usdc,
@@ -1035,7 +1035,7 @@ describe("ApiClient - send()", () => {
             expect(mockPost).toHaveBeenCalledTimes(tokenLocators.length);
         });
 
-        it("should handle send with very long recipient address", async () => {
+        it("handles send with very long recipient address", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -1053,7 +1053,7 @@ describe("ApiClient - send()", () => {
             }
         });
 
-        it("should handle send with scientific notation amount", async () => {
+        it("handles send with scientific notation amount", async () => {
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
 
@@ -1084,7 +1084,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
     });
 
     describe("concurrent requests", () => {
-        it("should handle concurrent createWallet calls", async () => {
+        it("handles concurrent createWallet calls", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
 
             const mockResponse1 = createMockWalletResponse({
@@ -1108,7 +1108,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect(mockPost).toHaveBeenCalledTimes(2);
         });
 
-        it("should handle concurrent getWallet calls", async () => {
+        it("handles concurrent getWallet calls", async () => {
             const mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
 
             const mockResponse1 = createMockWalletResponse({
@@ -1132,7 +1132,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect(mockGet).toHaveBeenCalledTimes(2);
         });
 
-        it("should handle concurrent send calls", async () => {
+        it("handles concurrent send calls", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
 
             const mockResponse1 = createMockSendResponse({ id: "txn-111" });
@@ -1160,7 +1160,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
     });
 
     describe("response parsing edge cases", () => {
-        it("should handle empty response body gracefully", async () => {
+        it("handles empty response body gracefully", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const emptyResponse = {
                 json: vi.fn().mockResolvedValue({}),
@@ -1174,7 +1174,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect(result).toEqual({});
         });
 
-        it("should handle response with null values in nested objects", async () => {
+        it("handles response with null values in nested objects", async () => {
             const mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
             const mockResponse = {
                 ...createMockWalletResponse(),
@@ -1187,7 +1187,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect((result as any).config).toBeNull();
         });
 
-        it("should handle response with undefined fields", async () => {
+        it("handles response with undefined fields", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const mockResponse = {
                 address: "0x1234567890123456789012345678901234567890",
@@ -1202,7 +1202,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect((result as any).config).toBeUndefined();
         });
 
-        it("should handle response with array fields", async () => {
+        it("handles response with array fields", async () => {
             const mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
             const mockResponse = {
                 ...createMockWalletResponse(),
@@ -1215,7 +1215,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect((result as any).tags).toEqual(["tag1", "tag2"]);
         });
 
-        it("should handle malformed response data", async () => {
+        it("handles malformed response data", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const malformedData = {};
             mockPost.mockResolvedValue(createMockSuccessResponse(malformedData));
@@ -1226,7 +1226,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
     });
 
     describe("server-side vs client-side behavior", () => {
-        it("should use correct endpoint for createWallet on server-side", async () => {
+        it("uses correct endpoint for createWallet on server-side", async () => {
             const serverClient = createServerSideApiClient();
             const mockPost = vi.spyOn(serverClient, "post") as MockedFunction<ApiClient["post"]>;
             const mockResponse = createMockWalletResponse();
@@ -1238,7 +1238,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expectRequestPath(call, "api/2025-06-09/wallets");
         });
 
-        it("should use correct endpoint for createWallet on client-side", async () => {
+        it("uses correct endpoint for createWallet on client-side", async () => {
             const client = createTestApiClient();
             const mockPost = vi.spyOn(client, "post") as MockedFunction<ApiClient["post"]>;
             const mockResponse = createMockWalletResponse();
@@ -1252,7 +1252,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
     });
 
     describe("error response structure variations", () => {
-        it("should handle error with only error field", async () => {
+        it("handles error with only error field", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const errorResponse = { error: true };
             mockPost.mockResolvedValue(createMockErrorResponse(errorResponse, 400));
@@ -1262,7 +1262,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect((result as any).error).toBe(true);
         });
 
-        it("should handle error with error and message fields", async () => {
+        it("handles error with error and message fields", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const errorResponse = { error: true, message: "Error occurred" };
             mockPost.mockResolvedValue(createMockErrorResponse(errorResponse, 400));
@@ -1273,7 +1273,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             expect((result as any).message).toBe("Error occurred");
         });
 
-        it("should handle error with nested error details", async () => {
+        it("handles error with nested error details", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const errorResponse = {
                 error: true,
@@ -1293,7 +1293,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
     });
 
     describe("request serialization edge cases", () => {
-        it("should handle request with special characters in JSON", async () => {
+        it("handles request with special characters in JSON", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const mockResponse = createMockWalletResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
@@ -1318,7 +1318,7 @@ describe("ApiClient - edge cases and integration scenarios", () => {
             }
         });
 
-        it("should handle request with unicode characters", async () => {
+        it("handles request with unicode characters", async () => {
             const mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
             const mockResponse = createMockSendResponse();
             mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));

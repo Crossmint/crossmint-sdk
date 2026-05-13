@@ -18,9 +18,9 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
-import type { ApiClient } from "../client";
+import type { ApiClient } from "./client";
 import type { Crossmint } from "@crossmint/common-sdk-base";
-import type { CreateWalletParams, SendParams, WalletLocator } from "../types";
+import type { CreateWalletParams, SendParams, WalletLocator } from "./types";
 import {
     fundWallet,
     sendTokenAndApprove,
@@ -36,7 +36,7 @@ import {
     expectSuccessTransactionResponse,
     isErrorResponse,
     isSuccessWalletResponse,
-} from "./test-utils";
+} from "./__tests__/test-utils";
 import {
     TIMEOUT_SHORT,
     TIMEOUT_MEDIUM,
@@ -46,7 +46,7 @@ import {
     DELAY_RATE_LIMIT_WINDOW,
     TEST_ADDRESSES,
     TEST_VALUES,
-} from "./constants";
+} from "./__tests__/constants";
 
 const API_KEY = process.env.CROSSMINT_API_KEY;
 const BASE_URL = process.env.CROSSMINT_BASE_URL;
@@ -70,7 +70,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("createWallet() - Happy Path", () => {
-        it("should create EVM MPC wallet successfully", async () => {
+        it("creates EVM MPC wallet successfully", async () => {
             const params: CreateWalletParams = {
                 chainType: "evm",
                 type: "mpc",
@@ -85,7 +85,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expect(isValidEthereumAddress(result.address)).toBe(true);
         });
 
-        it("should create EVM smart wallet with external wallet admin signer", async () => {
+        it("creates EVM smart wallet with external wallet admin signer", async () => {
             const params: CreateWalletParams = {
                 chainType: "evm",
                 type: "smart",
@@ -106,7 +106,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expect(result.config?.adminSigner).toBeDefined();
         });
 
-        it("should create Solana smart wallet", async () => {
+        it("creates Solana smart wallet", async () => {
             const params: CreateWalletParams = {
                 chainType: "solana",
                 type: "smart",
@@ -126,7 +126,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         });
 
         it(
-            "should create wallet with different chain types",
+            "creates wallet with different chain types",
             async () => {
                 const chainTypes = ["evm", "solana"] as const;
 
@@ -150,7 +150,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("createWallet() - Error Cases", () => {
-        it("should handle invalid API key", async () => {
+        it("handles invalid API key", async () => {
             const invalidKey = `sk_staging_${base58.encode(
                 new TextEncoder().encode(
                     "invalid_data:invalid_signature_12345678901234567890123456789012345678901234567890"
@@ -164,7 +164,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }).toThrow("Invalid API key");
         });
 
-        it("should handle invalid chain type", async () => {
+        it("handles invalid chain type", async () => {
             const params = {
                 chainType: "invalid_chain" as any,
                 type: "mpc" as const,
@@ -174,7 +174,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should handle invalid wallet type", async () => {
+        it("handles invalid wallet type", async () => {
             const params = {
                 chainType: "evm" as const,
                 type: "invalid_type" as any,
@@ -184,7 +184,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should handle invalid admin signer address", async () => {
+        it("handles invalid admin signer address", async () => {
             const params: CreateWalletParams = {
                 chainType: "evm",
                 type: "smart",
@@ -200,7 +200,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result, "message");
         });
 
-        it("should handle missing required fields", async () => {
+        it("handles missing required fields", async () => {
             const params = {} as CreateWalletParams;
             const result = await apiClient.createWallet(params);
             expectErrorResponse(result);
@@ -208,7 +208,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("getWallet() - Happy Path", () => {
-        it("should get wallet by address", async () => {
+        it("gets wallet by address", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData, {
                 testName: "get-wallet",
             });
@@ -223,17 +223,17 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("getWallet() - Error Cases", () => {
-        it("should handle 404 for non-existent wallet", async () => {
+        it("handles 404 for non-existent wallet", async () => {
             const result = await apiClient.getWallet(TEST_ADDRESSES.EVM_NON_EXISTENT as WalletLocator);
             expectErrorResponse(result);
         });
 
-        it("should handle invalid wallet locator format", async () => {
+        it("handles invalid wallet locator format", async () => {
             const result = await apiClient.getWallet("invalid:locator:format" as WalletLocator);
             expectErrorResponse(result);
         });
 
-        it("should handle empty locator", async () => {
+        it("handles empty locator", async () => {
             const result = await apiClient.getWallet("" as WalletLocator);
             expectErrorResponse(result);
         });
@@ -241,7 +241,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
 
     describe("fundWallet()", () => {
         it(
-            "should fund wallet successfully",
+            "funds wallet successfully",
             async () => {
                 const walletAddress = await ensureWalletExists(apiClient, testData, {
                     testName: "fund-wallet",
@@ -261,7 +261,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         );
 
         it(
-            "should handle funding with different tokens",
+            "handles funding with different tokens",
             async () => {
                 const walletAddress = await ensureWalletExists(apiClient, testData, {
                     testName: "fund-tokens",
@@ -287,7 +287,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
 
     describe("send() - Happy Path", () => {
         it(
-            "should send tokens successfully with funding and approval",
+            "sends tokens successfully with funding and approval",
             async () => {
                 const walletAddress = await ensureWalletExists(apiClient, testData, {
                     testName: "send-tokens",
@@ -318,7 +318,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("send() - Error Cases", () => {
-        it("should handle invalid recipient address", async () => {
+        it("handles invalid recipient address", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -332,7 +332,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should handle invalid amount format", async () => {
+        it("handles invalid amount format", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -346,7 +346,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should handle insufficient balance", async () => {
+        it("handles insufficient balance", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -360,7 +360,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should handle invalid token locator", async () => {
+        it("handles invalid token locator", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -376,7 +376,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("API Security - Authentication & Authorization", () => {
-        it("should reject requests without API key", async () => {
+        it("rejects requests without API key", async () => {
             try {
                 const noKeyClient = createApiClient({ apiKey: "" });
                 const result = await noKeyClient.createWallet({
@@ -389,7 +389,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should validate API key format", async () => {
+        it("validates API key format", async () => {
             try {
                 const invalidFormatClient = createApiClient({
                     apiKey: "not-a-valid-api-key-format",
@@ -404,7 +404,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should reject requests with invalid API key signature", async () => {
+        it("rejects requests with invalid API key signature", async () => {
             try {
                 const invalidKey = API_KEY!.slice(0, -10) + "invalid123";
                 const invalidClient = createApiClient({ apiKey: invalidKey });
@@ -418,7 +418,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should validate API key environment matches base URL", async () => {
+        it("validates API key environment matches base URL", async () => {
             try {
                 const stagingKey = "test_api_key_staging_123456789012345678901234567890";
                 const stagingClient = createApiClient({ apiKey: stagingKey });
@@ -441,7 +441,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should include required authentication headers", async () => {
+        it("includes required authentication headers", async () => {
             const originalFetch = global.fetch;
             let capturedHeaders: HeadersInit | undefined;
 
@@ -464,7 +464,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should include Authorization header when JWT is provided", async () => {
+        it("includes Authorization header when JWT is provided", async () => {
             const jwtClient = createApiClient({ jwt: "test-jwt-token-12345" });
             const originalFetch = global.fetch;
             let capturedHeaders: HeadersInit | undefined;
@@ -484,7 +484,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should reject requests with expired or invalid JWT", async () => {
+        it("rejects requests with expired or invalid JWT", async () => {
             const expiredJwtClient = createApiClient({ jwt: "expired.jwt.token" });
 
             const result = await expiredJwtClient.createWallet({
@@ -497,7 +497,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should validate appId and extensionId headers when provided", async () => {
+        it("validates appId and extensionId headers when provided", async () => {
             const appClient = createApiClient({
                 appId: "test-app-id",
                 extensionId: "test-extension-id",
@@ -521,12 +521,12 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should prevent unauthorized access to other users wallets", async () => {
+        it("prevents unauthorized access to other users wallets", async () => {
             const result = await apiClient.getWallet(TEST_ADDRESSES.EVM_NON_EXISTENT as WalletLocator);
             expectErrorResponse(result);
         });
 
-        it("should validate API key signature cryptographically", async () => {
+        it("validates API key signature cryptographically", async () => {
             try {
                 const tamperedKey = API_KEY!.slice(0, -5) + "XXXXX";
                 const tamperedClient = createApiClient({ apiKey: tamperedKey });
@@ -540,7 +540,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should enforce environment-specific API key restrictions", async () => {
+        it("enforces environment-specific API key restrictions", async () => {
             try {
                 const stagingKey = "test_api_key_staging_123456789012345678901234567890";
                 const stagingClient = createApiClient({ apiKey: stagingKey });
@@ -556,13 +556,13 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("API Security - Input Sanitization", () => {
-        it("should sanitize SQL injection attempts in wallet locator", async () => {
+        it("sanitizes SQL injection attempts in wallet locator", async () => {
             const sqlInjection = "'; DROP TABLE wallets; --";
             const result = await apiClient.getWallet(sqlInjection as WalletLocator);
             expectErrorResponse(result);
         });
 
-        it("should sanitize XSS attempts in parameters", async () => {
+        it("sanitizes XSS attempts in parameters", async () => {
             const xssPayload = "<script>alert('xss')</script>";
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -577,7 +577,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should sanitize command injection attempts", async () => {
+        it("sanitizes command injection attempts", async () => {
             const commandInjection = "; rm -rf /; #";
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -592,7 +592,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should sanitize path traversal attempts", async () => {
+        it("sanitizes path traversal attempts", async () => {
             const pathTraversal = "../../../etc/passwd";
             try {
                 const result = await apiClient.getWallet(pathTraversal as WalletLocator);
@@ -602,7 +602,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should sanitize null byte injection", async () => {
+        it("sanitizes null byte injection", async () => {
             const nullByte = "0x123\0DROP TABLE";
             try {
                 const result = await apiClient.getWallet(nullByte as WalletLocator);
@@ -612,7 +612,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should sanitize special characters in recipient address", async () => {
+        it("sanitizes special characters in recipient address", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -625,7 +625,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should sanitize extremely long input strings", async () => {
+        it("sanitizes extremely long input strings", async () => {
             const longString = "A".repeat(TEST_VALUES.LONG_STRING_LENGTH);
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -640,7 +640,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should sanitize unicode and special character sequences", async () => {
+        it("sanitizes unicode and special character sequences", async () => {
             const unicodePayload = "\u0000\u0001\u0002\u0003\u0004\u0005";
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -655,7 +655,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should sanitize nested object injection", async () => {
+        it("sanitizes nested object injection", async () => {
             const nestedInjection = {
                 chainType: "evm",
                 type: "smart",
@@ -672,13 +672,13 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expect(isErrorResponse(result) || isSuccessWalletResponse(result)).toBe(true);
         });
 
-        it("should sanitize LDAP injection attempts", async () => {
+        it("sanitizes LDAP injection attempts", async () => {
             const ldapInjection = ")(&(cn=*))";
             const result = await apiClient.getWallet(ldapInjection as WalletLocator);
             expectErrorResponse(result);
         });
 
-        it("should sanitize XML injection attempts", async () => {
+        it("sanitizes XML injection attempts", async () => {
             const xmlInjection = "<?xml version='1.0'?><malicious></malicious>";
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -693,7 +693,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should sanitize NoSQL injection attempts", async () => {
+        it("sanitizes NoSQL injection attempts", async () => {
             const nosqlInjection = { $ne: null };
             const result = await apiClient.createWallet({
                 chainType: "evm",
@@ -710,7 +710,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("API Security - Encryption & Transport", () => {
-        it("should use HTTPS for all API requests", async () => {
+        it("uses HTTPS for all API requests", async () => {
             const originalFetch = global.fetch;
             let capturedUrl: string | undefined;
 
@@ -730,7 +730,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should not expose sensitive data in URL parameters", async () => {
+        it("does not expose sensitive data in URL parameters", async () => {
             const originalFetch = global.fetch;
             let capturedUrl: string | undefined;
 
@@ -751,7 +751,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should send sensitive data only in request body or headers", async () => {
+        it("sends sensitive data only in request body or headers", async () => {
             const originalFetch = global.fetch;
             let capturedUrl: string | undefined;
             let capturedBody: string | undefined;
@@ -783,7 +783,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should not log sensitive data in error messages", async () => {
+        it("does not log sensitive data in error messages", async () => {
             const result = await apiClient.createWallet({
                 chainType: "evm",
                 type: "mpc",
@@ -795,7 +795,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should use secure HTTP methods", async () => {
+        it("uses secure HTTP methods", async () => {
             const originalFetch = global.fetch;
             let capturedMethod: string | undefined;
 
@@ -817,7 +817,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("API Security - Rate Limiting", () => {
-        it("should handle rate limiting gracefully", async () => {
+        it("handles rate limiting gracefully", async () => {
             const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_RAPID_COUNT }, () =>
                 apiClient.createWallet({
                     chainType: "evm",
@@ -841,7 +841,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should return 429 status when rate limit exceeded", async () => {
+        it("returns 429 status when rate limit exceeded", async () => {
             const rapidRequests = Array.from({ length: TEST_VALUES.RATE_LIMIT_STRESS_COUNT }, (_, i) =>
                 apiClient
                     .createWallet({
@@ -867,7 +867,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should allow requests after rate limit window", async () => {
+        it("allows requests after rate limit window", async () => {
             await delay(DELAY_RATE_LIMIT_WINDOW);
 
             const result = await apiClient.createWallet({
@@ -878,7 +878,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expect(result).toBeDefined();
         });
 
-        it("should handle concurrent requests without overwhelming server", async () => {
+        it("handles concurrent requests without overwhelming server", async () => {
             for (let batch = 0; batch < TEST_VALUES.RATE_LIMIT_BATCHES; batch++) {
                 const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_BATCH_SIZE }, () =>
                     apiClient.createWallet({
@@ -894,13 +894,13 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("API Security - Request Validation", () => {
-        it("should validate request body structure", async () => {
+        it("validates request body structure", async () => {
             const invalidBody = { invalidField: "value" };
             const result = await apiClient.createWallet(invalidBody as any);
             expectErrorResponse(result);
         });
 
-        it("should reject malformed JSON in request body", async () => {
+        it("rejects malformed JSON in request body", async () => {
             const originalFetch = global.fetch;
 
             global.fetch = (async (url, init) => {
@@ -917,12 +917,12 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             }
         });
 
-        it("should validate required fields are present", async () => {
+        it("validates required fields are present", async () => {
             const result = await apiClient.createWallet({} as CreateWalletParams);
             expectErrorResponse(result);
         });
 
-        it("should validate field types", async () => {
+        it("validates field types", async () => {
             const result = await apiClient.createWallet({
                 chainType: 123 as any,
                 type: "mpc",
@@ -930,7 +930,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should validate enum values", async () => {
+        it("validates enum values", async () => {
             const result = await apiClient.createWallet({
                 chainType: "invalid_chain" as any,
                 type: "mpc",
@@ -938,7 +938,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should validate address formats", async () => {
+        it("validates address formats", async () => {
             const result = await apiClient.createWallet({
                 chainType: "evm",
                 type: "smart",
@@ -952,7 +952,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             expectErrorResponse(result);
         });
 
-        it("should validate amount is numeric string", async () => {
+        it("validates amount is numeric string", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -966,7 +966,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("Edge Cases", () => {
-        it("should handle very large amounts", async () => {
+        it("handles very large amounts", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -981,7 +981,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         });
 
         // TODO: Fix zero amount handling - see WAL-7928
-        it.skip("should handle zero amount", async () => {
+        it.skip("handles zero amount", async () => {
             const walletAddress = await ensureWalletExists(apiClient, testData);
 
             if (walletAddress) {
@@ -996,7 +996,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         });
 
         it(
-            "should handle very small amounts",
+            "handles very small amounts",
             async () => {
                 const walletAddress = await ensureWalletExists(apiClient, testData, {
                     testName: "small-amounts",
@@ -1025,7 +1025,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             TIMEOUT_MEDIUM
         );
 
-        it("should handle concurrent wallet creation", async () => {
+        it("handles concurrent wallet creation", async () => {
             const promises = Array.from({ length: TEST_VALUES.CONCURRENT_REQUESTS }, (_, i) =>
                 apiClient.createWallet({
                     chainType: "evm",
@@ -1045,7 +1045,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         });
 
         it(
-            "should handle rapid sequential requests",
+            "handles rapid sequential requests",
             async () => {
                 for (let i = 0; i < TEST_VALUES.RAPID_SEQUENTIAL_COUNT; i++) {
                     const result = await apiClient.createWallet({
@@ -1067,7 +1067,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("Response Validation", () => {
-        it("should return properly structured wallet response", async () => {
+        it("returns properly structured wallet response", async () => {
             const result = await apiClient.createWallet({
                 chainType: "evm",
                 type: "mpc",
@@ -1081,7 +1081,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
         });
 
         it(
-            "should return properly structured send response",
+            "returns properly structured send response",
             async () => {
                 const walletAddress = await ensureWalletExists(apiClient, testData, {
                     testName: "structured-send",
@@ -1112,7 +1112,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
             TIMEOUT_MEDIUM
         );
 
-        it("should handle error response structure", async () => {
+        it("handles error response structure", async () => {
             const result = await apiClient.createWallet({
                 chainType: "evm",
                 type: "smart",
@@ -1131,7 +1131,7 @@ describe.skipIf(!shouldRunTests)("ApiClient - Integration Tests (Real HTTP)", ()
     });
 
     describe("Server-Side vs Client-Side", () => {
-        it("should use correct endpoint for createWallet", async () => {
+        it("uses correct endpoint for createWallet", async () => {
             const testClient = createApiClient();
             const originalFetch = global.fetch;
             let capturedUrl: string | undefined;
