@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
-import { AUTH_CONFIG } from "../config/constants";
+import { AUTH_CONFIG } from "../constants/globalConstants";
 
 /**
  * Funds a wallet using the Crossmint faucet API
