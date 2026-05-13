@@ -30,7 +30,7 @@ describe("EVMWallet - sendTransaction()", () => {
     });
 
     describe("success cases", () => {
-        it("should send transaction with transaction string", async () => {
+        it("sends transaction with transaction string", async () => {
             const mockTransactionResponse = {
                 id: "txn-123",
                 status: "pending",
@@ -73,7 +73,7 @@ describe("EVMWallet - sendTransaction()", () => {
             );
         });
 
-        it("should send transaction with to, value, and data", async () => {
+        it("sends transaction with to, value, and data", async () => {
             const mockTransactionResponse = {
                 id: "txn-456",
                 status: "success",
@@ -118,7 +118,7 @@ describe("EVMWallet - sendTransaction()", () => {
             );
         });
 
-        it("should send transaction with ABI and function call", async () => {
+        it("sends transaction with ABI and function call", async () => {
             const mockTransactionResponse = {
                 id: "txn-789",
                 status: "success",
@@ -164,7 +164,7 @@ describe("EVMWallet - sendTransaction()", () => {
             expect(mockApiClient.createTransaction).toHaveBeenCalled();
         });
 
-        it("should return prepared transaction with prepareOnly", async () => {
+        it("returns prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-prepare",
                 status: "pending",
@@ -192,7 +192,7 @@ describe("EVMWallet - sendTransaction()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw TransactionNotCreatedError when API returns error", async () => {
+        it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
                 error: {
                     message: "Transaction creation failed",
@@ -209,7 +209,7 @@ describe("EVMWallet - sendTransaction()", () => {
             ).rejects.toThrow(TransactionNotCreatedError);
         });
 
-        it("should throw error when functionName is provided without abi", async () => {
+        it("throws error when functionName is provided without abi", async () => {
             await expect(
                 evmWallet.sendTransaction({
                     to: "0xrecipient",
@@ -242,7 +242,7 @@ describe("EVMWallet - signMessage()", () => {
     });
 
     describe("success cases", () => {
-        it("should sign message successfully", async () => {
+        it("signs message successfully", async () => {
             const mockSignatureResponse = {
                 id: "sig-123",
                 status: "success",
@@ -272,7 +272,7 @@ describe("EVMWallet - signMessage()", () => {
             );
         });
 
-        it("should return prepared signature with prepareOnly", async () => {
+        it("returns prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-prepare",
                 status: "pending",
@@ -292,7 +292,7 @@ describe("EVMWallet - signMessage()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw SignatureNotCreatedError when API returns error", async () => {
+        it("throws SignatureNotCreatedError when API returns error", async () => {
             const errorResponse = {
                 error: {
                     message: "Signature creation failed",
@@ -331,7 +331,7 @@ describe("EVMWallet - signTypedData()", () => {
     });
 
     describe("success cases", () => {
-        it("should sign typed data successfully", async () => {
+        it("signs typed data successfully", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-123",
                 status: "success",
@@ -385,7 +385,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should stringify bigint values in the typed data message", async () => {
+        it("stringifies bigint values in the typed data message", async () => {
             const mockSignatureResponse = {
                 id: "sig-bigint-123",
                 status: "success",
@@ -443,7 +443,7 @@ describe("EVMWallet - signTypedData()", () => {
             );
         });
 
-        it("should return prepared signature with prepareOnly", async () => {
+        it("returns prepared signature with prepareOnly", async () => {
             const mockSignatureResponse = {
                 id: "sig-typed-prepare",
                 status: "pending",
@@ -473,7 +473,7 @@ describe("EVMWallet - signTypedData()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw InvalidTypedDataError when domain is missing required fields", async () => {
+        it("throws InvalidTypedDataError when domain is missing required fields", async () => {
             await expect(
                 evmWallet.signTypedData({
                     domain: {
@@ -488,7 +488,7 @@ describe("EVMWallet - signTypedData()", () => {
             ).rejects.toThrow(InvalidTypedDataError);
         });
 
-        it("should throw InvalidTypedDataError when domain is missing", async () => {
+        it("throws InvalidTypedDataError when domain is missing", async () => {
             await expect(
                 evmWallet.signTypedData({
                     domain: undefined as any,
@@ -500,7 +500,7 @@ describe("EVMWallet - signTypedData()", () => {
             ).rejects.toThrow(InvalidTypedDataError);
         });
 
-        it("should throw SignatureNotCreatedError when API returns error", async () => {
+        it("throws SignatureNotCreatedError when API returns error", async () => {
             const errorResponse = {
                 error: {
                     message: "Typed data signature creation failed",
@@ -538,7 +538,7 @@ describe("EVMWallet - getViemClient()", () => {
         evmWallet = EVMWallet.from(wallet);
     });
 
-    it("should return a viem public client", () => {
+    it("returns a viem public client", () => {
         const client = evmWallet.getViemClient();
 
         expect(client).toBeDefined();
@@ -546,7 +546,7 @@ describe("EVMWallet - getViemClient()", () => {
         expect(client).toHaveProperty("getBalance");
     });
 
-    it("should accept custom transport", () => {
+    it("accepts custom transport", () => {
         const client = evmWallet.getViemClient({
             transport: undefined, // Use default http transport
         });
@@ -562,7 +562,7 @@ describe("EVMWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create EVMWallet from valid EVM wallet", async () => {
+    it("creates EVMWallet from valid EVM wallet", async () => {
         const wallet = await createMockWallet("base-sepolia", mockApiClient);
         const evmWallet = EVMWallet.from(wallet);
 
@@ -570,7 +570,7 @@ describe("EVMWallet - from()", () => {
         expect(evmWallet.chain).toBe("base-sepolia");
     });
 
-    it("should throw error when wallet is not EVM", async () => {
+    it("throws error when wallet is not EVM", async () => {
         const solanaWallet = await createMockWallet("solana", mockApiClient);
 
         expect(() => EVMWallet.from(solanaWallet)).toThrow("Wallet is not an EVM wallet");

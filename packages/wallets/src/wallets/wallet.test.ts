@@ -58,7 +58,7 @@ describe("Wallet - balances()", () => {
     });
 
     describe("success cases", () => {
-        it("should return balances for EVM chain with native token and USDC", async () => {
+        it("returns balances for EVM chain with native token and USDC", async () => {
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
                     symbol: "eth",
@@ -107,7 +107,7 @@ describe("Wallet - balances()", () => {
             });
         });
 
-        it("should return balances for Solana chain", async () => {
+        it("returns balances for Solana chain", async () => {
             const solanaWallet = await createMockWallet("solana", mockApiClient);
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
@@ -153,7 +153,7 @@ describe("Wallet - balances()", () => {
             });
         });
 
-        it("should return balances for Stellar chain", async () => {
+        it("returns balances for Stellar chain", async () => {
             const stellarWallet = await createMockWallet("stellar", mockApiClient);
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
@@ -199,7 +199,7 @@ describe("Wallet - balances()", () => {
             });
         });
 
-        it("should include custom tokens when provided", async () => {
+        it("includes custom tokens when provided", async () => {
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
                     symbol: "eth",
@@ -259,7 +259,7 @@ describe("Wallet - balances()", () => {
             });
         });
 
-        it("should handle missing native token by returning zero balance", async () => {
+        it("handles missing native token by returning zero balance", async () => {
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {
                     symbol: "usdc",
@@ -288,7 +288,7 @@ describe("Wallet - balances()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw error when API returns error response", async () => {
+        it("throws error when API returns error response", async () => {
             const errorResponse = {
                 error: {
                     message: "Failed to fetch balance",
@@ -301,7 +301,7 @@ describe("Wallet - balances()", () => {
             await expect(wallet.balances()).rejects.toThrow("Failed to get balances for wallet");
         });
 
-        it("should throw error when API call fails", async () => {
+        it("throws error when API call fails", async () => {
             mockApiClient.getBalance.mockRejectedValue(new Error("Network error"));
 
             await expect(wallet.balances()).rejects.toThrow("Network error");
@@ -325,7 +325,7 @@ describe("Wallet - send()", () => {
     });
 
     describe("success cases", () => {
-        it("should send tokens successfully and return transaction by default", async () => {
+        it("sends tokens successfully and return transaction by default", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -358,7 +358,7 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should return prepared transaction with prepareOnly", async () => {
+        it("returns prepared transaction with prepareOnly", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -374,7 +374,7 @@ describe("Wallet - send()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should handle user locator as recipient", async () => {
+        it("handles user locator as recipient", async () => {
             const mockSendResponse = {
                 id: "txn-456",
             } as unknown as SendResponse;
@@ -408,7 +408,7 @@ describe("Wallet - send()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw TransactionNotCreatedError when API returns error", async () => {
+        it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
                 message: "Insufficient balance",
             };
@@ -420,17 +420,17 @@ describe("Wallet - send()", () => {
             );
         });
 
-        it("should throw InvalidAddressError for invalid recipient address", async () => {
+        it("throws InvalidAddressError for invalid recipient address", async () => {
             await expect(wallet.send("not-a-valid-address", "usdc", "10.0")).rejects.toThrow(InvalidAddressError);
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidAddressError for short hex address", async () => {
+        it("throws InvalidAddressError for short hex address", async () => {
             await expect(wallet.send("0xrecipient123", "usdc", "10.0")).rejects.toThrow(InvalidAddressError);
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
-        it("should throw error when transaction approval fails", async () => {
+        it("throws error when transaction approval fails", async () => {
             const mockSendResponse = {
                 id: "txn-123",
             } as unknown as SendResponse;
@@ -445,28 +445,28 @@ describe("Wallet - send()", () => {
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow();
         });
 
-        it("should throw InvalidTransferAmountError when amount is zero", async () => {
+        it("throws InvalidTransferAmountError when amount is zero", async () => {
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "0")).rejects.toThrow(
                 InvalidTransferAmountError
             );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidTransferAmountError when amount is negative", async () => {
+        it("throws InvalidTransferAmountError when amount is negative", async () => {
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "-5.0")).rejects.toThrow(
                 InvalidTransferAmountError
             );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidTransferAmountError when amount is not a valid number", async () => {
+        it("throws InvalidTransferAmountError when amount is not a valid number", async () => {
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "abc")).rejects.toThrow(
                 InvalidTransferAmountError
             );
             expect(mockApiClient.send).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidTransferAmountError when amount is 0.0", async () => {
+        it("throws InvalidTransferAmountError when amount is 0.0", async () => {
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "0.0")).rejects.toThrow(
                 InvalidTransferAmountError
             );
@@ -491,7 +491,7 @@ describe("Wallet - approve()", () => {
     });
 
     describe("transaction approval", () => {
-        it("should approve transaction successfully", async () => {
+        it("approves transaction successfully", async () => {
             const mockTransactionResponse = {
                 id: "txn-123",
                 status: "success",
@@ -512,7 +512,7 @@ describe("Wallet - approve()", () => {
             expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:evm:smart", "txn-123");
         });
 
-        it("should throw error when transaction not found", async () => {
+        it("throws error when transaction not found", async () => {
             const errorResponse = {
                 error: {
                     message: "Transaction not found",
@@ -526,7 +526,7 @@ describe("Wallet - approve()", () => {
     });
 
     describe("signature approval", () => {
-        it("should approve signature successfully", async () => {
+        it("approves signature successfully", async () => {
             const mockSignatureResponse = {
                 id: "sig-123",
                 status: "success",
@@ -543,7 +543,7 @@ describe("Wallet - approve()", () => {
             expect(result.signatureId).toBe("sig-123");
         });
 
-        it("should throw error when signature not found", async () => {
+        it("throws error when signature not found", async () => {
             const errorResponse = {
                 error: {
                     message: "Signature not found",
@@ -557,7 +557,7 @@ describe("Wallet - approve()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw error when neither transactionId nor signatureId is provided", async () => {
+        it("throws error when neither transactionId nor signatureId is provided", async () => {
             await expect(wallet.approve({} as any)).rejects.toThrow(
                 "Either transactionId or signatureId must be provided"
             );
@@ -583,7 +583,7 @@ describe("Wallet - addSigner()", () => {
     });
 
     describe("EVM chains", () => {
-        it("should add signer successfully for EVM", async () => {
+        it("adds signer successfully for EVM", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -612,7 +612,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should return signatureId with prepareOnly", async () => {
+        it("returns signatureId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -637,7 +637,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("awaiting-approval");
         });
 
-        it("should approve signature when status is awaiting-approval by default", async () => {
+        it("approves signature when status is awaiting-approval by default", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -668,7 +668,7 @@ describe("Wallet - addSigner()", () => {
     });
 
     describe("Solana chains", () => {
-        it("should add signer successfully for Solana", async () => {
+        it("adds signer successfully for Solana", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "ABC123",
@@ -706,7 +706,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should return transactionId with prepareOnly", async () => {
+        it("returns transactionId with prepareOnly", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "ABC123",
@@ -730,7 +730,7 @@ describe("Wallet - addSigner()", () => {
     });
 
     describe("passkey signers", () => {
-        it("should pass full passkey config including publicKey to API", async () => {
+        it("passes full passkey config including publicKey to API", async () => {
             const mockRegisterResponse = {
                 type: "passkey",
                 locator: "passkey:pk-123",
@@ -769,7 +769,7 @@ describe("Wallet - addSigner()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw error when API returns error", async () => {
+        it("throws error when API returns error", async () => {
             const errorResponse = {
                 error: {
                     message: "Failed to register signer",
@@ -783,7 +783,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should throw error when Solana response missing transaction", async () => {
+        it("throws error when Solana response missing transaction", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "ABC123",
@@ -798,7 +798,7 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("should throw error when EVM response missing chains", async () => {
+        it("throws error when EVM response missing chains", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
@@ -815,7 +815,7 @@ describe("Wallet - addSigner()", () => {
     });
 
     describe("retry / idempotency", () => {
-        it("should resume pending EVM signature instead of re-registering", async () => {
+        it("resumes pending EVM signature instead of re-registering", async () => {
             // First call: getSigner returns a pending signer with awaiting-approval signature
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "external-wallet",
@@ -843,7 +843,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.type).toBe("external-wallet");
         });
 
-        it("should resume pending Solana transaction instead of re-registering", async () => {
+        it("resumes pending Solana transaction instead of re-registering", async () => {
             // getSigner returns a pending signer with a pending transaction
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "external-wallet",
@@ -870,7 +870,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should return early without registering when signer is already approved", async () => {
+        it("returns early without registering when signer is already approved", async () => {
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "external-wallet",
                 address: "0x456",
@@ -886,7 +886,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should be idempotent — calling addSigner twice yields the same result", async () => {
+        it("is idempotent — calling addSigner twice yields the same result", async () => {
             // First addSigner call: signer not found → fresh registration
             mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
             mockApiClient.registerSigner.mockResolvedValueOnce({
@@ -918,7 +918,7 @@ describe("Wallet - addSigner()", () => {
             expect(result1.type).toBe(result2.type);
         });
 
-        it("should return prepareOnly result when resuming a pending operation", async () => {
+        it("returns prepareOnly result when resuming a pending operation", async () => {
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "external-wallet",
                 address: "0x456",
@@ -937,7 +937,7 @@ describe("Wallet - addSigner()", () => {
             expect(result.signatureId).toBe("sig-pending");
         });
 
-        it("should fall through to fresh registration when signer is in failed state", async () => {
+        it("falls through to fresh registration when signer is in failed state", async () => {
             // getSigner returns a signer with failed status and no pending op
             mockApiClient.getSigner.mockResolvedValueOnce({
                 type: "external-wallet",
@@ -978,7 +978,7 @@ describe("Wallet - removeSigner()", () => {
     });
 
     describe("success cases", () => {
-        it("should remove signer for EVM chain", async () => {
+        it("removes signer for EVM chain", async () => {
             const mockRemoveResponse = {
                 id: "txn-123",
                 status: "pending",
@@ -1006,7 +1006,7 @@ describe("Wallet - removeSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should remove signer with prepareOnly for EVM", async () => {
+        it("removes signer with prepareOnly for EVM", async () => {
             const mockRemoveResponse = {
                 id: "txn-123",
                 status: "awaiting-approval",
@@ -1027,7 +1027,7 @@ describe("Wallet - removeSigner()", () => {
             expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
         });
 
-        it("should remove signer for Solana chain with transaction", async () => {
+        it("removes signer for Solana chain with transaction", async () => {
             const mockRemoveResponse = {
                 id: "txn-123",
                 status: "pending",
@@ -1050,7 +1050,7 @@ describe("Wallet - removeSigner()", () => {
             expect(result.status).toBe("success");
         });
 
-        it("should remove signer with prepareOnly for Solana", async () => {
+        it("removes signer with prepareOnly for Solana", async () => {
             const mockRemoveResponse = {
                 id: "txn-123",
                 status: "awaiting-approval",
@@ -1073,7 +1073,7 @@ describe("Wallet - removeSigner()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw error on API failure", async () => {
+        it("throws error on API failure", async () => {
             mockApiClient.removeSigner.mockResolvedValue({
                 error: true,
                 message: "Failed to remove signer",
@@ -1084,7 +1084,7 @@ describe("Wallet - removeSigner()", () => {
             );
         });
 
-        it("should throw when removeSigner response omits transaction id", async () => {
+        it("throws when removeSigner response omits transaction id", async () => {
             mockApiClient.removeSigner.mockResolvedValue({
                 status: "pending",
                 approvals: { pending: [], submitted: [] },
@@ -1110,7 +1110,7 @@ describe("Wallet - signers()", () => {
     });
 
     describe("success cases", () => {
-        it("should return list of signers with status for EVM", async () => {
+        it("returns list of signers with status for EVM", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -1168,7 +1168,7 @@ describe("Wallet - signers()", () => {
             expect(signers[1].status).toBe("awaiting-approval");
         });
 
-        it("should filter out signers without approval for current chain", async () => {
+        it("filters out signers without approval for current chain", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -1222,7 +1222,7 @@ describe("Wallet - signers()", () => {
             expect(signers[0].locator).toBe("external-wallet:0xsigner1");
         });
 
-        it("should return empty array when no signers", async () => {
+        it("returns empty array when no signers", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "smart",
@@ -1244,7 +1244,7 @@ describe("Wallet - signers()", () => {
             expect(signers).toHaveLength(0);
         });
 
-        it("should return signer status for Solana from getSigner", async () => {
+        it("returns signer status for Solana from getSigner", async () => {
             const solanaWallet = await createMockWallet("solana", mockApiClient);
             vi.mocked(solanaWallet.signers).mockRestore();
 
@@ -1293,7 +1293,7 @@ describe("Wallet - signers()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw error when wallet not found", async () => {
+        it("throws error when wallet not found", async () => {
             const errorResponse = {
                 error: {
                     message: "Wallet not found",
@@ -1305,7 +1305,7 @@ describe("Wallet - signers()", () => {
             await expect(wallet.signers()).rejects.toThrow(WalletNotAvailableError);
         });
 
-        it("should throw error when wallet type is not smart", async () => {
+        it("throws error when wallet type is not smart", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "evm",
                 type: "mpc",
@@ -1325,7 +1325,7 @@ describe("Wallet - signers()", () => {
             await expect(wallet.signers()).rejects.toThrow(WalletTypeNotSupportedError);
         });
 
-        it("should throw error when chain type is not supported", async () => {
+        it("throws error when chain type is not supported", async () => {
             const mockWalletResponse: GetWalletSuccessResponse = {
                 chainType: "unsupported" as any,
                 type: "smart",
@@ -1355,7 +1355,7 @@ describe("Wallet - useSigner()", () => {
     });
 
     describe("recovery signer support", () => {
-        it("should accept the recovery signer (api-key) without registration check and skip getSigner", async () => {
+        it("accepts the recovery signer (api-key) without registration check and skip getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1375,7 +1375,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept the recovery signer (email) without calling getSigner", async () => {
+        it("accepts the recovery signer (email) without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1395,7 +1395,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept the recovery signer (phone) without calling getSigner", async () => {
+        it("accepts the recovery signer (phone) without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1415,7 +1415,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept recovery external-wallet signer without calling getSigner", async () => {
+        it("accepts recovery external-wallet signer without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1439,7 +1439,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept the recovery signer (passkey) when no delegated passkeys exist", async () => {
+        it("accepts the recovery signer (passkey) when no delegated passkeys exist", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1460,7 +1460,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should accept a passkey with explicit id as recovery when not found in delegated signers", async () => {
+        it("accepts a passkey with explicit id as recovery when not found in delegated signers", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1481,7 +1481,7 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should use passkey with explicit id as delegated when it IS registered, even if recovery is also passkey", async () => {
+        it("uses passkey with explicit id as delegated when it IS registered, even if recovery is also passkey", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1508,7 +1508,7 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("passkey");
         });
 
-        it("should still reject non-recovery, non-registered signers", async () => {
+        it("still rejects non-recovery, non-registered signers", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -1526,7 +1526,7 @@ describe("Wallet - useSigner()", () => {
             );
         });
 
-        it("should accept server recovery signer when recovery config has no secret (API-sourced)", async () => {
+        it("accepts server recovery signer when recovery config has no secret (API-sourced)", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             // The input signer (with secret) derives to this address
@@ -1562,7 +1562,7 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("server");
         });
 
-        it("should reject server signer when derived address does not match API-sourced recovery address", async () => {
+        it("rejects server signer when derived address does not match API-sourced recovery address", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             // The input signer derives to a DIFFERENT address than the recovery
@@ -1589,7 +1589,7 @@ describe("Wallet - useSigner()", () => {
             );
         });
 
-        it("should accept server recovery signer when recovery config has a secret (user-provided)", async () => {
+        it("accepts server recovery signer when recovery config has a secret (user-provided)", async () => {
             const { deriveServerSignerDetails } = await import("@/signers/server");
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             // Both input and recovery derive to the same address
@@ -1624,7 +1624,7 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.type).toBe("server");
         });
 
-        it("should still allow registered delegated signers that are not the recovery signer", async () => {
+        it("still allows registered delegated signers that are not the recovery signer", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(
                 {
@@ -2018,7 +2018,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("early return paths", () => {
-        it("should skip recovery when deviceSignerApproved is already cached", async () => {
+        it("skips recovery when deviceSignerApproved is already cached", async () => {
             // Use undefined status so first recover() must call getSigner to verify approval
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
             const wallet = new Wallet(
@@ -2042,7 +2042,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should skip recovery and reset needsRecovery when current signer is non-device type (email)", async () => {
+        it("skips recovery and reset needsRecovery when current signer is non-device type (email)", async () => {
             const emailSigner: SignerAdapter = {
                 type: "email",
                 status: "success",
@@ -2068,7 +2068,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should return silently when no deviceSignerKeyStorage and !needsRecovery", async () => {
+        it("returns silently when no deviceSignerKeyStorage and !needsRecovery", async () => {
             // Wallet with no signer and no deviceSignerKeyStorage — needsRecovery defaults false
             const wallet = new Wallet(
                 {
@@ -2088,7 +2088,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should proceed with recovery for Solana chain (validation is server-side)", async () => {
+        it("proceeds with recovery for Solana chain (validation is server-side)", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             const wallet = new Wallet(
                 {
@@ -2133,7 +2133,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("existing device signer on wallet (this.#signer)", () => {
-        it("should mark approved when assembled device signer has approved status", async () => {
+        it("marks approved when assembled device signer has approved status", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", "success");
             const wallet = new Wallet(
                 {
@@ -2153,7 +2153,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
-        it("should mark approved when assembled device signer has active status", async () => {
+        it("marks approved when assembled device signer has active status", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", "active");
             const wallet = new Wallet(
                 {
@@ -2170,7 +2170,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should check API and approve when signer status is not yet approved", async () => {
+        it("checks API and approve when signer status is not yet approved", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
             const wallet = new Wallet(
                 {
@@ -2191,7 +2191,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should resume pending signature approval on EVM chain", async () => {
+        it("resumes pending signature approval on EVM chain", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
             const wallet = new Wallet(
                 {
@@ -2213,7 +2213,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
-        it("should resume pending Stellar device signer registration from getSigner", async () => {
+        it("resumes pending Stellar device signer registration from getSigner", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:stellar-device", "pending");
             const wallet = new Wallet(
                 {
@@ -2256,7 +2256,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("findLocalDeviceSigner path", () => {
-        it("should find local device signer and mark approved", async () => {
+        it("finds local device signer and mark approved", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockResolvedValue(true);
 
@@ -2283,7 +2283,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should call mapAddressToKey after confirming signer is approved", async () => {
+        it("calls mapAddressToKey after confirming signer is approved", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockResolvedValue(true);
 
@@ -2310,7 +2310,7 @@ describe("Wallet - recover()", () => {
             );
         });
 
-        it("should tolerate mapAddressToKey failure without losing signer", async () => {
+        it("tolerates mapAddressToKey failure without losing signer", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockImplementation(async (key: string) => key === "localkey456");
             mockStorage.mapAddressToKey.mockRejectedValue(new Error("Storage I/O error"));
@@ -2339,7 +2339,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should resume pending operation on a found local device signer", async () => {
+        it("resumes pending operation on a found local device signer", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockResolvedValue(true);
 
@@ -2374,7 +2374,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
-        it("should skip device signers without local keys and check the next one", async () => {
+        it("skips device signers without local keys and check the next one", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             // Use mockImplementation so both init and recover get consistent key-based behavior
             mockStorage.hasKey.mockImplementation(async (key: string) => key === "mykey789");
@@ -2414,7 +2414,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.type).toBe("device");
         });
 
-        it("should continue checking when hasKey throws for one signer", async () => {
+        it("continues checking when hasKey throws for one signer", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockImplementation(async (key: string) => {
                 if (key === "badkey") throw new Error("Key check failed");
@@ -2447,7 +2447,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.type).toBe("device");
         });
 
-        it("should propagate network errors from signers() instead of silently generating new key", async () => {
+        it("propagates network errors from signers() instead of silently generating new key", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2467,7 +2467,7 @@ describe("Wallet - recover()", () => {
             expect(mockStorage.generateKey).not.toHaveBeenCalled();
         });
 
-        it("should ignore non-device signers when searching for local device signer", async () => {
+        it("ignores non-device signers when searching for local device signer", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2501,7 +2501,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("new key generation fallback (createDeviceSigner + addSigner)", () => {
-        it("should generate new key and register when no local device signer found", async () => {
+        it("generates new key and register when no local device signer found", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2534,7 +2534,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
-        it("should handle 'already approved' error gracefully during addSigner", async () => {
+        it("handles 'already approved' error gracefully during addSigner", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2566,7 +2566,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
-        it("should delete key, set needsRecovery to false, and rethrow when addSigner fails with non-'already approved' error", async () => {
+        it("deletes key, set needsRecovery to false, and rethrow when addSigner fails with non-'already approved' error", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2601,7 +2601,7 @@ describe("Wallet - recover()", () => {
             expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
 
-        it("should preserve local key and rethrow when addSigner fails with AuthRejectedError", async () => {
+        it("preserves local key and rethrow when addSigner fails with AuthRejectedError", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2626,7 +2626,7 @@ describe("Wallet - recover()", () => {
             expect(mockStorage.deleteKey).not.toHaveBeenCalled();
         });
 
-        it("should not false-positive on error containing 'already' and 'approved' without 'delegated signer'", async () => {
+        it("does not false-positive on error containing 'already' and 'approved' without 'delegated signer'", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2653,7 +2653,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("resumePendingDeviceSignerApproval error handling", () => {
-        it("should preserve device signer reference on approval error (not restore null)", async () => {
+        it("preserves device signer reference on approval error (not restore null)", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
             const wallet = new Wallet(
                 {
@@ -2679,7 +2679,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.type).toBe("device");
         });
 
-        it("should resume pending transaction approval on Stellar chain", async () => {
+        it("resumes pending transaction approval on Stellar chain", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:stellar-device", undefined);
             const wallet = new Wallet(
                 {
@@ -2702,7 +2702,7 @@ describe("Wallet - recover()", () => {
     });
 
     describe("findLocalDeviceSigner with pending op on matched signer that fails check", () => {
-        it("should fall through to new key generation when local signer is not approved and has no pending op", async () => {
+        it("falls through to new key generation when local signer is not approved and has no pending op", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             mockStorage.hasKey.mockImplementation(async (key: string) => key === "unapprovedkey");
 
@@ -2765,7 +2765,7 @@ describe("Wallet - recover()", () => {
 });
 
 describe("Wallet - initDefaultSigner() server-side device signer", () => {
-    it("should not attempt to auto-assemble device signer when deviceSignerKeyStorage is unavailable", async () => {
+    it("does not attempt to auto-assemble device signer when deviceSignerKeyStorage is unavailable", async () => {
         const mockApiClient = createMockApiClient();
 
         // Simulate server-side: wallet has a device signer in initialSigners but no deviceSignerKeyStorage
@@ -2787,7 +2787,7 @@ describe("Wallet - initDefaultSigner() server-side device signer", () => {
         expect(wallet.signer).toBeUndefined();
     });
 
-    it("should auto-assemble device signer via isAutoAssemblableSignerConfig when deviceSignerKeyStorage is available", async () => {
+    it("auto-assembles device signer via isAutoAssemblableSignerConfig when deviceSignerKeyStorage is available", async () => {
         const mockApiClient = createMockApiClient();
         const mockStorage = {
             generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
@@ -2837,7 +2837,7 @@ describe("Wallet - waitForInit()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should resolve needsRecovery accurately after waitForInit when no device key exists", async () => {
+    it("resolves needsRecovery accurately after waitForInit when no device key exists", async () => {
         const mockStorage = {
             generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
             getKey: vi.fn().mockResolvedValue(null),
@@ -2873,7 +2873,7 @@ describe("Wallet - waitForInit()", () => {
         expect(wallet.needsRecovery()).toBe(true);
     });
 
-    it("should resolve needsRecovery as false after waitForInit when device key exists", async () => {
+    it("resolves needsRecovery as false after waitForInit when device key exists", async () => {
         const mockStorage = {
             generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
             getKey: vi.fn().mockResolvedValue("existingKeyBase64"),
@@ -2906,7 +2906,7 @@ describe("Wallet - waitForInit()", () => {
     });
 });
 describe("Wallet - isSignerApproved()", () => {
-    it("should return true only when signer status is success", async () => {
+    it("returns true only when signer status is success", async () => {
         const mockApiClient = createMockApiClient();
         const wallet = await createMockWallet("base-sepolia", mockApiClient);
         vi.mocked(wallet.signers).mockRestore();
