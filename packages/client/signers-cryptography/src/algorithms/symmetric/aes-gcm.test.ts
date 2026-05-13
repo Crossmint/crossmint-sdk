@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { AesGcm } from "../../algorithms/symmetric/aes-gcm";
+import { AesGcm } from "./aes-gcm";
 import type { SymmetricKeyProvider } from "../../types/providers";
 
 describe("AesGcm", () => {
@@ -18,7 +18,7 @@ describe("AesGcm", () => {
         vi.restoreAllMocks();
     });
 
-    it("should encrypt and decrypt data successfully", async () => {
+    it("encrypts and decrypts data successfully", async () => {
         const handler = new AesGcm();
         const originalData = new TextEncoder().encode("hello world");
 
@@ -29,7 +29,7 @@ describe("AesGcm", () => {
         expect(new TextDecoder().decode(decryptedData)).toBe("hello world");
     });
 
-    it("should use a different IV for each encryption", async () => {
+    it("uses a different IV for each encryption", async () => {
         const handler = new AesGcm();
         const originalData = new TextEncoder().encode("hello world");
 
