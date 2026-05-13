@@ -9,7 +9,7 @@ const VALID_API_KEY =
 describe("validateAPIKey", () => {
     // All prefix validation tests are in validateAPIKeyPrefix.test.ts
     // This test is just to make sure that validateAPIKey calls validateAPIKeyPrefix
-    test("Should disallow when prefix is invalid", () => {
+    test("disallows when prefix is invalid", () => {
         const result = validateAPIKey("bk_");
         if (result.isValid) {
             throw new Error("Expected API key to be invalid");
@@ -18,7 +18,7 @@ describe("validateAPIKey", () => {
         expect(result.isValid).toBe(false);
     });
 
-    test("Should disallow when signature is invalid", () => {
+    test("disallows when signature is invalid", () => {
         const key = `ck_development_${base58.encode(
             new TextEncoder().encode(
                 "incorrect_data:5gt3DJTWBAw1AjL5pHo6z6NunHZNJqj15iEAveVN5CBUSqBB94Hetn9paFpx9zLFreQGAgy1TkDQaWSUXFMXjgvU"
@@ -34,7 +34,7 @@ describe("validateAPIKey", () => {
         expect(result.message).toBe("Invalid API key. Failed to validate signature");
     });
 
-    test("Should allow when API key is valid", () => {
+    test("allows when API key is valid", () => {
         const result = validateAPIKey(VALID_API_KEY);
         if (!result.isValid) {
             throw new Error("Expected API key to be valid");
