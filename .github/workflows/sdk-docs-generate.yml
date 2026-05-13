@@ -2,7 +2,7 @@ name: SDK Docs Generate
 
 on:
     push:
-        branches: [main]
+        branches: [sdk-doc-sync-action]
         paths:
             - "packages/wallets/src/**"
             - "packages/wallets/typedoc.json"
