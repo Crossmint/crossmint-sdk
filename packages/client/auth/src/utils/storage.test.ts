@@ -18,22 +18,22 @@ describe("CookieStorage", () => {
         documentCookieSpy.mockRestore();
     });
 
-    it("should get a value from cookie", async () => {
+    it("gets a value from cookie", async () => {
         document.cookie = "test_key=test_value; path=/; SameSite=Lax;";
         expect(await storage.get("test_key")).toBe("test_value");
     });
 
-    it("should return undefined for non-existent cookie", async () => {
+    it("returns undefined for non-existent cookie", async () => {
         document.cookie = "";
         expect(await storage.get("test_key")).toBeUndefined();
     });
 
-    it("should set a cookie without expiration", async () => {
+    it("sets a cookie without expiration", async () => {
         await storage.set("test_key", "test_value");
         expect(document.cookie).toBe("test_key=test_value;  path=/; SameSite=Lax;");
     });
 
-    it("should set a cookie with expiration", async () => {
+    it("sets a cookie with expiration", async () => {
         const futureDate = new Date();
         futureDate.setDate(futureDate.getDate() + 1);
         const expiresAt = futureDate.toISOString();
@@ -44,7 +44,7 @@ describe("CookieStorage", () => {
         expect(document.cookie).toContain("path=/; SameSite=Lax;");
     });
 
-    it("should remove a cookie", async () => {
+    it("removes a cookie", async () => {
         document.cookie = "test_key=test_value; path=/; SameSite=Lax;";
         await storage.remove("test_key");
         // When a cookie is removed, it's set with an expiration in the past
