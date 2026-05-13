@@ -25,7 +25,7 @@ describe("getAuthCookies", () => {
         vi.restoreAllMocks();
     });
 
-    it("should extract auth cookies from IncomingMessage", () => {
+    it("extracts auth cookies from IncomingMessage", () => {
         const mockRequest = {
             headers: {
                 cookie: `${SESSION_PREFIX}=mock-jwt-token; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token`,
@@ -41,7 +41,7 @@ describe("getAuthCookies", () => {
         });
     });
 
-    it("should extract auth cookies from Fetch Request", () => {
+    it("extracts auth cookies from Fetch Request", () => {
         const mockRequest = new Request("https://example.com", {
             headers: {
                 Cookie: `${SESSION_PREFIX}=mock-jwt-token; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token`,
@@ -56,7 +56,7 @@ describe("getAuthCookies", () => {
         });
     });
 
-    it("should throw CrossmintAuthenticationError if cookie header is missing in IncomingMessage", () => {
+    it("throws CrossmintAuthenticationError when cookie header is missing in IncomingMessage", () => {
         const mockRequest = {
             headers: {},
             httpVersion: "1.1",
@@ -66,7 +66,7 @@ describe("getAuthCookies", () => {
         expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
     });
 
-    it("should throw CrossmintAuthenticationError if cookie header is missing in Fetch Request", () => {
+    it("throws CrossmintAuthenticationError when cookie header is missing in Fetch Request", () => {
         const mockRequest = new Request("https://example.com");
 
         expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
@@ -97,7 +97,7 @@ describe("setAuthCookies", () => {
         vi.restoreAllMocks();
     });
 
-    it("should set auth cookies for Node.js ServerResponse", () => {
+    it("sets auth cookies for Node.js ServerResponse", () => {
         const mockResponse = {
             setHeader: vi.fn(),
         } as unknown as ServerResponse;
@@ -110,7 +110,7 @@ describe("setAuthCookies", () => {
         ]);
     });
 
-    it("should set auth cookies for Fetch Response", () => {
+    it("sets auth cookies for Fetch Response", () => {
         const mockHeaders = new Headers();
         const appendSpy = vi.spyOn(mockHeaders, "append");
 
@@ -128,7 +128,7 @@ describe("setAuthCookies", () => {
         );
     });
 
-    it("should set expired cookies when setting empty auth material", () => {
+    it("sets expired cookies when setting empty auth material", () => {
         const response = new Response();
         const emptyAuthMaterial = {
             jwt: "",
@@ -150,7 +150,7 @@ describe("setAuthCookies", () => {
         );
     });
 
-    it("should set cookies with custom options", () => {
+    it("sets cookies with custom options", () => {
         const response = new Response();
         const customOptions = {
             sameSite: "Strict" as const,

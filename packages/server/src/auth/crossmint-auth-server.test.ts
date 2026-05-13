@@ -31,14 +31,14 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("from", () => {
-        it("should create a new CrossmintAuthServer instance", () => {
+        it("creates a new CrossmintAuthServer instance", () => {
             expect(crossmintAuthServer).toBeInstanceOf(CrossmintAuthServer);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
         });
     });
 
     describe("verifyCrossmintJwt", () => {
-        it("should call verifyCrossmintJwt with correct parameters", async () => {
+        it("calls verifyCrossmintJwt with correct parameters", async () => {
             const mockToken = "mock.jwt.token";
             const mockDecodedJwt = { sub: "user123" };
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue(mockDecodedJwt);
@@ -69,7 +69,7 @@ describe("CrossmintAuthServer", () => {
             console.error = originalConsoleError;
         });
 
-        it("should return a valid session when JWT is valid", async () => {
+        it("returns a valid session when JWT is valid", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
 
@@ -85,7 +85,7 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("should refresh the session when JWT is invalid", async () => {
+        it("refreshes the session when JWT is invalid", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
             mockApiClient.post.mockResolvedValue({
@@ -117,7 +117,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("should accept AuthMaterialBasic as input", async () => {
+        it("accepts AuthMaterialBasic as input", async () => {
             const mockAuthMaterial = {
                 jwt: "mock.jwt.token",
                 refreshToken: "mock-refresh-token",
@@ -136,7 +136,7 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("should call logout when error occurs and response is provided", async () => {
+        it("calls logout when error occurs and response is provided", async () => {
             const mockRequest = { headers: { cookie: "mock-cookie" } } as GenericRequest;
             const mockResponse = {} as GenericResponse;
 
@@ -158,7 +158,7 @@ describe("CrossmintAuthServer", () => {
             expect(CrossmintAuthServer.prototype.logout).toHaveBeenCalledWith(mockRequest, mockResponse);
         });
 
-        it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {
+        it("throws CrossmintAuthenticationError when refresh token is not found", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({ jwt: "mock.jwt.token" } as AuthMaterialBasic);
 
             await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest)).rejects.toThrow(
@@ -169,7 +169,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("should throw CrossmintAuthenticationError when session retrieval fails", async () => {
+        it("throws CrossmintAuthenticationError when session retrieval fails", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
             mockApiClient.post.mockRejectedValue(new Error("API error"));
@@ -184,7 +184,7 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("getUser", () => {
-        it("should fetch user data for a given external user ID", async () => {
+        it("fetches user data for a given external user ID", async () => {
             const mockExternalUserId = "external-user-123";
             const mockUserData = { id: "user456", email: "user@example.com" };
             mockApiClient.get.mockResolvedValue({
@@ -202,7 +202,7 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("storeAuthMaterial", () => {
-        it("should call setAuthCookies with the provided response and auth material", () => {
+        it("calls setAuthCookies with the provided response and auth material", () => {
             const mockResponse = {} as GenericResponse;
             const mockAuthMaterial = {
                 jwt: "new.jwt.token",
@@ -219,7 +219,7 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("handleCustomRefresh", () => {
-        it("should handle Fetch-based refresh requests", async () => {
+        it("handles Fetch-based refresh requests", async () => {
             const mockRequest = new Request("http://test.com", {
                 method: "POST",
                 body: JSON.stringify({ refresh: "mock-refresh-token" }),
@@ -258,7 +258,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("should handle Fetch-based refresh errors and clear cookies", async () => {
+        it("handles Fetch-based refresh errors and clears cookies", async () => {
             const mockRequest = new Request("http://test.com", {
                 method: "POST",
                 body: JSON.stringify({ refresh: "mock-refresh-token" }),
@@ -284,7 +284,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("should throw error when refresh token is missing", async () => {
+        it("throws error when refresh token is missing", async () => {
             const mockRequest = new Request("http://test.com", {
                 method: "POST",
                 body: JSON.stringify({}),
@@ -300,7 +300,7 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("should handle Node-based refresh requests", async () => {
+        it("handles Node-based refresh requests", async () => {
             const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
 
             const mockRefreshedAuthRes = {
@@ -343,7 +343,7 @@ describe("CrossmintAuthServer", () => {
             expect(result).toBe(mockNodeResponse);
         });
 
-        it("should handle Node-based refresh errors", async () => {
+        it("handles Node-based refresh errors", async () => {
             const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
 
             mockApiClient.post.mockRejectedValue(new Error("API error"));
@@ -379,7 +379,7 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("should clear auth material from response and return it", async () => {
+        it("clears auth material from response and returns it", async () => {
             const mockResponse = {} as GenericResponse;
 
             const result = await crossmintAuthServer.logout(undefined, mockResponse);
@@ -398,7 +398,7 @@ describe("CrossmintAuthServer", () => {
             expect(result).toBe(mockResponse);
         });
 
-        it("should create and return new Response when no response provided", async () => {
+        it("creates and returns new Response when no response provided", async () => {
             const result = await crossmintAuthServer.logout();
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
@@ -415,7 +415,7 @@ describe("CrossmintAuthServer", () => {
             expect(result).toBeInstanceOf(Response);
         });
 
-        it("should attempt to call logout endpoint when request is provided", async () => {
+        it("calls logout endpoint when request is provided", async () => {
             mockApiClient.post.mockResolvedValue({ ok: true });
 
             await crossmintAuthServer.logout(mockRequest);
@@ -428,7 +428,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("should still clear cookies even if logout endpoint call fails", async () => {
+        it("clears cookies even if logout endpoint call fails", async () => {
             const mockResponse = {} as GenericResponse;
             mockApiClient.post.mockRejectedValue(new Error("API Error"));
             const consoleSpy = vi.spyOn(console, "error");
