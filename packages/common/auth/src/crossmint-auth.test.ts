@@ -24,14 +24,14 @@ describe("CrossmintAuth", () => {
     });
 
     describe("from", () => {
-        it("should create a new CrossmintAuth instance", () => {
+        it("creates a new CrossmintAuth instance", () => {
             expect(crossmintAuth).toBeInstanceOf(CrossmintAuth);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
         });
     });
 
     describe("getJwksUri", () => {
-        it("should return the correct JWKS URI", () => {
+        it("returns the correct JWKS URI", () => {
             expect(crossmintAuth.getJwksUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
         });
     });
