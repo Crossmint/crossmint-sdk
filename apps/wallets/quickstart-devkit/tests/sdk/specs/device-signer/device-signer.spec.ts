@@ -3,7 +3,11 @@ import { CrossmintWallets, createCrossmint } from "@crossmint/wallets-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Keypair as SolanaKeypair } from "@solana/web3.js";
 import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
-import { AUTH_CONFIG, TEST_RECIPIENT_WALLET_ADDRESSES, validateAPITestConfig } from "../../../shared/constants/globalConstants";
+import {
+    AUTH_CONFIG,
+    TEST_RECIPIENT_WALLET_ADDRESSES,
+    validateAPITestConfig,
+} from "../../../shared/constants/globalConstants";
 import { MockDeviceSignerKeyStorage } from "../../helpers/mock-device-storage";
 
 const API_KEY = AUTH_CONFIG.crossmintApiKey;

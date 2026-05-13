@@ -27,7 +27,7 @@ export default defineConfig({
         // Smoke tests - fast, single browser, serial execution
         {
             name: "smoke",
-            testDir: "./tests/smoke/specs",
+            testDir: "./tests/smoke",
             testMatch: "**/*.spec.ts",
             fullyParallel: false,
             retries: 0, // No retries to avoid re-running passed tests in serial mode
