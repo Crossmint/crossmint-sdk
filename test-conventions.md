@@ -76,7 +76,7 @@ Root is always `<app-root>/tests/`, where `<app-root>` is the directory that con
 
 | Artifact            | Path                                                       |
 | ------------------- | ---------------------------------------------------------- |
-| Spec file           | `tests/<suite>/<version>/specs/<domain>/<feature>.spec.ts` |
+| Spec file           | `tests/<suite>/specs/<domain>/<feature>.spec.ts` (API tests: `tests/api/<version>/specs/<domain>/<feature>.spec.ts`) |
 | Page Object         | `tests/<suite>/pages/<FeatureName>Page.ts`                 |
 | Scoped helper       | `tests/api/<version>/helpers/<domain>/<scope>-helpers.ts`  |
 | Generic HTTP client | `tests/api/<version>/helpers/request.ts`                   |
@@ -233,11 +233,12 @@ test.describe("Multi-chain Signers", { tag: "@mainonly" }, () => { ... });
 test.describe("Wallet Creation @critical", () => { ... });
 ```
 
-For `@flaky`, use `test.skip` with a `TODO` comment:
+For `@flaky`, skip conditionally in CI and include a `TODO` comment:
 
 ```ts
-test.skip("syncs delegated signers across chains", async () => {
-    // TODO(ENG-1234): @flaky — race condition in chain sync
+test("syncs delegated signers across chains", async () => {
+    test.skip(!!process.env.CI, "TODO(ENG-1234): @flaky — race condition in chain sync");
+    // test body
 });
 ```
 
