@@ -91,8 +91,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet with device signer", () => {
-        it("should inject device signer for Solana wallets (validation is server-side)", async () => {
-            const solanaWalletWithDevice = {
+        it("should not inject device signer for Solana wallets", async () => {
+            const solanaWallet = {
                 chainType: "solana" as const,
                 type: "smart" as const,
                 address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
@@ -103,31 +103,16 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         address: "AdminSignerAddress123",
                         locator: "external-wallet:AdminSignerAddress123",
                     },
-                    delegatedSigners: [
-                        {
-                            type: "device" as const,
-                            locator: "device:someLocator",
-                        },
-                    ],
                 },
                 createdAt: Date.now(),
             } as GetWalletSuccessResponse;
 
-            mockApiClient.createWallet.mockResolvedValue(solanaWalletWithDevice);
-
-            // Create a valid P-256 public key in base64 format:
-            // 0x04 (1 byte) + 32 bytes x + 32 bytes y = 65 bytes total
-            const publicKeyBytes = Buffer.concat([
-                Buffer.from([0x04]), // uncompressed point indicator
-                Buffer.alloc(32, 1), // x coordinate (32 bytes)
-                Buffer.alloc(32, 2), // y coordinate (32 bytes)
-            ]);
-            const publicKeyBase64 = publicKeyBytes.toString("base64");
+            mockApiClient.createWallet.mockResolvedValue(solanaWallet);
 
             const mockDeviceSignerKeyStorage = {
                 getKey: vi.fn().mockResolvedValue(null),
                 saveKey: vi.fn().mockResolvedValue(undefined),
-                generateKey: vi.fn().mockResolvedValue(publicKeyBase64),
+                generateKey: vi.fn().mockResolvedValue("dummyKey"),
                 getDeviceName: vi.fn().mockReturnValue("Unknown Device"),
             };
 
@@ -144,22 +129,13 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await walletFactory.createWallet(args);
 
-            // Verify that a device signer was added to delegatedSigners
+            // Verify that no device signer was added for Solana
             const call = mockApiClient.createWallet.mock.calls[0]?.[0];
-            expect(call?.config?.delegatedSigners).toBeDefined();
-            expect(call?.config?.delegatedSigners).toHaveLength(1);
-            expect(call?.config?.delegatedSigners?.[0]).toEqual(
-                expect.objectContaining({
-                    signer: expect.objectContaining({
-                        type: "device",
-                        publicKey: expect.objectContaining({
-                            x: expect.any(String),
-                            y: expect.any(String),
-                        }),
-                        name: "Unknown Device",
-                    }),
-                })
+            const delegatedSigners = call?.config?.delegatedSigners ?? [];
+            const hasDeviceSigner = delegatedSigners.some(
+                (s: any) => s?.signer?.type === "device" || s?.type === "device"
             );
+            expect(hasDeviceSigner).toBe(false);
         });
 
         it("should inject device signer for EVM wallets when deviceSignerKeyStorage is provided", async () => {

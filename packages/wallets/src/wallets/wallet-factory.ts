@@ -252,11 +252,14 @@ export class WalletFactory {
     /**
      * Ensures device signer is included in the signers array for wallet creation.
      * If no device signer is present in args.signers, adds one.
-     * Device signer support depends on the wallet provider; validation is handled server-side.
+     * Skips injection for Solana chains where device signers are not yet broadly supported.
      */
     private ensureDeviceSignerInSigners<C extends Chain>(
         args: WalletCreateArgs<C>
     ): Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig> {
+        if (args.chain === "solana") {
+            return args.signers ?? [];
+        }
         const signers = args.signers ?? [];
         const hasDeviceSigner = signers.some((s) => s.type === "device");
         if (!hasDeviceSigner) {
