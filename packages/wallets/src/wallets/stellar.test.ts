@@ -30,7 +30,7 @@ describe("StellarWallet - sendTransaction()", () => {
     });
 
     describe("success cases", () => {
-        it("should send transaction with contract call", async () => {
+        it("sends transaction with contract call", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-123",
                 status: "success",
@@ -91,7 +91,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should send transaction with contract call and memo", async () => {
+        it("sends transaction with contract call and memo", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-456",
                 status: "success",
@@ -152,7 +152,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should send transaction with serialized transaction", async () => {
+        it("sends transaction with serialized transaction", async () => {
             const serializedTx = "AAAAAgAAAAA="; // Base64 encoded transaction
             const mockTransactionResponse = {
                 id: "txn-stellar-789",
@@ -202,7 +202,7 @@ describe("StellarWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction with prepareOnly", async () => {
+        it("returns prepared transaction with prepareOnly", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-prepare",
                 status: "pending",
@@ -240,7 +240,7 @@ describe("StellarWallet - sendTransaction()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should use custom signer when signer is provided", async () => {
+        it("uses custom signer when signer is provided", async () => {
             const mockTransactionResponse = {
                 id: "txn-stellar-custom-signer",
                 status: "success",
@@ -293,7 +293,7 @@ describe("StellarWallet - sendTransaction()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw TransactionNotCreatedError when API returns error", async () => {
+        it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
                 error: {
                     message: "Transaction creation failed",
@@ -318,7 +318,7 @@ describe("StellarWallet - sendTransaction()", () => {
             } catch {}
         });
 
-        it("should throw error when transaction approval fails", async () => {
+        it("throws error when transaction approval fails", async () => {
             const mockTransactionResponse = {
                 id: "txn-fail",
                 status: "pending",
@@ -604,7 +604,7 @@ describe("StellarWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create StellarWallet from valid Stellar wallet", async () => {
+    it("creates StellarWallet from valid Stellar wallet", async () => {
         const wallet = await createMockWallet("stellar", mockApiClient);
         const stellarWallet = StellarWallet.from(wallet);
 
@@ -612,7 +612,7 @@ describe("StellarWallet - from()", () => {
         expect(stellarWallet.chain).toBe("stellar");
     });
 
-    it("should throw error when wallet is not Stellar", async () => {
+    it("throws error when wallet is not Stellar", async () => {
         const evmWallet = await createMockWallet("base-sepolia", mockApiClient);
 
         expect(() => StellarWallet.from(evmWallet)).toThrow("Wallet is not a Stellar wallet");
