@@ -133,8 +133,8 @@ jobs:
               with:
                   app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
                   private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
-                  owner: Paella-Labs
-                  repositories: crossbit-main
+                  owner: Crossmint
+                  repositories: crossmint-sdk
 
             - name: Dispatch to crossbit-main
               uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697  # v4
