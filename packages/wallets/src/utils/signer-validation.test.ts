@@ -4,7 +4,7 @@ import { WalletCreationError } from "./errors";
 
 describe("compareSignerConfigs - Email Normalization", () => {
     describe("Gmail email normalization", () => {
-        it("should match dotted Gmail address with normalized version", () => {
+        it("matches dotted Gmail address with normalized version", () => {
             const newConfig = {
                 type: "email",
                 email: "jer.coffey@gmail.com",
@@ -18,7 +18,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should match multiple dots in Gmail address", () => {
+        it("matches multiple dots in Gmail address", () => {
             const newConfig = {
                 type: "email",
                 email: "eugene.wase@gmail.com",
@@ -32,7 +32,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should match dotted Gmail addresses in reverse order", () => {
+        it("matches dotted Gmail addresses in reverse order", () => {
             const newConfig = {
                 type: "email",
                 email: "torisamples@gmail.com",
@@ -46,7 +46,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should match complex dotted Gmail address", () => {
+        it("matches complex dotted Gmail address", () => {
             const newConfig = {
                 type: "email",
                 email: "gabriel.hidalgo@gmail.com",
@@ -60,7 +60,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should handle googlemail.com domain", () => {
+        it("handles googlemail.com domain", () => {
             const newConfig = {
                 type: "email",
                 email: "test.user@googlemail.com",
@@ -74,7 +74,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should handle case insensitivity", () => {
+        it("handles case insensitivity", () => {
             const newConfig = {
                 type: "email",
                 email: "Test.User@Gmail.com",
@@ -90,7 +90,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
     });
 
     describe("Non-Gmail email normalization", () => {
-        it("should preserve dots in non-Gmail addresses", () => {
+        it("preserves dots in non-Gmail addresses", () => {
             const newConfig = {
                 type: "email",
                 email: "user.name@icloud.com",
@@ -104,7 +104,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
         });
 
-        it("should match identical non-Gmail addresses with dots", () => {
+        it("matches identical non-Gmail addresses with dots", () => {
             const newConfig = {
                 type: "email",
                 email: "user.name@stellar.org",
@@ -118,7 +118,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should handle case insensitivity for non-Gmail addresses", () => {
+        it("handles case insensitivity for non-Gmail addresses", () => {
             const newConfig = {
                 type: "email",
                 email: "User.Name@Example.com",
@@ -134,7 +134,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
     });
 
     describe("Error cases", () => {
-        it("should throw error for truly different Gmail addresses", () => {
+        it("throws error for truly different Gmail addresses", () => {
             const newConfig = {
                 type: "email",
                 email: "user1@gmail.com",
@@ -151,7 +151,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             );
         });
 
-        it("should throw error for different non-Gmail addresses", () => {
+        it("throws error for different non-Gmail addresses", () => {
             const newConfig = {
                 type: "email",
                 email: "user1@example.com",
@@ -167,7 +167,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
     });
 
     describe("Nested signer configs", () => {
-        it("should normalize emails in nested objects", () => {
+        it("normalizes emails in nested objects", () => {
             const newConfig = {
                 adminSigner: {
                     type: "email",
@@ -187,7 +187,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
     });
 
     describe("Non-email fields", () => {
-        it("should not affect non-email string comparisons", () => {
+        it("does not affect non-email string comparisons", () => {
             const newConfig = {
                 type: "passkey",
                 id: "test-id-123",
@@ -201,7 +201,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should throw for different non-email strings", () => {
+        it("throws for different non-email strings", () => {
             const newConfig = {
                 type: "passkey",
                 id: "test-id-123",
@@ -217,7 +217,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
     });
 
     describe("Hex/Decimal normalization (device signer publicKey)", () => {
-        it("should match hex publicKey.x with decimal equivalent from API", () => {
+        it("matches hex publicKey.x with decimal equivalent from API", () => {
             const newConfig = {
                 type: "device",
                 publicKey: {
@@ -237,7 +237,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should match large hex values with their decimal equivalents", () => {
+        it("matches large hex values with their decimal equivalents", () => {
             const hexValue = "0xf4f4387d09a234f8b81b842a9755e5c0ab87079e5eab0b0b7e1e4fc88b3be759";
             const decimalValue = BigInt(hexValue).toString();
 
@@ -260,7 +260,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should match when both values are already decimal strings", () => {
+        it("matches when both values are already decimal strings", () => {
             const newConfig = {
                 type: "device",
                 publicKey: {
@@ -280,7 +280,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should throw for numerically different hex and decimal values", () => {
+        it("throws for numerically different hex and decimal values", () => {
             const newConfig = {
                 type: "device",
                 publicKey: {
@@ -300,7 +300,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
         });
 
-        it("should not treat non-hex 0x-like strings as hex", () => {
+        it("does not treat non-hex 0x-like strings as hex", () => {
             const newConfig = {
                 type: "device",
                 publicKey: {
@@ -318,7 +318,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).toThrow(WalletCreationError);
         });
 
-        it("should not normalize hex for non-publicKey fields like addresses", () => {
+        it("does not normalize hex for non-publicKey fields like addresses", () => {
             const newConfig = {
                 type: "external-wallet",
                 address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
@@ -332,7 +332,7 @@ describe("compareSignerConfigs - Email Normalization", () => {
             expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
         });
 
-        it("should treat different hex addresses as different even if numerically close", () => {
+        it("treats different hex addresses as different even if numerically close", () => {
             const newConfig = {
                 type: "external-wallet",
                 address: "0x00ff",
