@@ -28811,6 +28811,10 @@
                         "type": "string",
                         "description": "Error message",
                         "example": "<error message>"
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Optional stable error code identifying the specific failure case. Present when the backend raises a structured error that consumers may want to detect programmatically."
                     }
                 },
                 "required": ["error", "message"]

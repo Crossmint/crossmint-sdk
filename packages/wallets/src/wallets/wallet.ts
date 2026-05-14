@@ -35,6 +35,8 @@ import type {
 } from "./types";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
+    DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
+    DeviceSignerNotSupportedError,
     InvalidAddressError,
     InvalidSignerError,
     InvalidTransferAmountError,
@@ -100,6 +102,12 @@ export class Wallet<C extends Chain> {
     #deviceSignerApproved = false;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
+    /**
+     * Cached once `recover()` learns from the backend that this wallet's Solana provider does
+     * not support device signers (via the stable `DEVICE_SIGNER_NOT_SUPPORTED` error code).
+     * Used to short-circuit subsequent recover() calls without retrying registration.
+     */
+    #deviceSignerUnsupported = false;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const { chain, address, owner, options, alias, recovery, signers, signer } = args;
@@ -136,6 +144,13 @@ export class Wallet<C extends Chain> {
     private async initDeviceSigner(): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
+            return;
+        }
+
+        // If a previous recover() learned the backend doesn't support device signers for this
+        // wallet (DEVICE_SIGNER_NOT_SUPPORTED), short-circuit without setting needsRecovery so
+        // initDefaultSigner falls back to the recovery signer instead of retrying registration.
+        if (this.#deviceSignerUnsupported) {
             return;
         }
 
@@ -211,6 +226,27 @@ export class Wallet<C extends Chain> {
                 error,
             });
             // #signer remains undefined — user will need to call useSigner() explicitly
+        }
+    }
+
+    /**
+     * Attempt to auto-assemble the recovery signer onto the wallet. Used as the fallback
+     * when device-signer registration is rejected by the backend with `DEVICE_SIGNER_NOT_SUPPORTED`
+     * so the consumer's next transaction has a usable signer without re-routing through
+     * initDefaultSigner.
+     */
+    private async assembleRecoverySignerFallback(): Promise<void> {
+        if (!this.isAutoAssemblableSignerConfig(this.#recovery)) {
+            return;
+        }
+        try {
+            const internalConfig = this.buildInternalSignerConfig(this.#recovery as SignerConfigForChain<C>);
+            this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner: true });
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.device.unsupportedFallback.autoAssemblyFailed", {
+                recoveryType: this.#recovery.type,
+                error,
+            });
         }
     }
 
@@ -706,6 +742,9 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.addSigner.error", {
                     error: response,
                 });
+                if (response.code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE) {
+                    throw new DeviceSignerNotSupportedError(response.message);
+                }
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
 
@@ -1061,6 +1100,19 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // Wallets whose provider does not support device signers have nothing to recover —
+        // signing relies on the recovery signer instead. We learn this from the backend by
+        // catching DEVICE_SIGNER_NOT_SUPPORTED on a previous addSigner attempt and caching
+        // the result on the wallet instance.
+        if (this.#deviceSignerUnsupported) {
+            walletsLogger.info("wallet.recover.skipped", {
+                reason: "device signer not supported (cached)",
+            });
+            this.#needsRecovery = false;
+            this.#deviceSignerApproved = true;
+            return;
+        }
+
         const markDeviceSignerApproved = () => {
             this.#needsRecovery = false;
             this.#deviceSignerApproved = true;
@@ -1121,7 +1173,20 @@ export class Wallet<C extends Chain> {
                 error.message.toLowerCase().includes("already") &&
                 error.message.toLowerCase().includes("approved");
 
-            if (isAlreadyApproved) {
+            if (error instanceof DeviceSignerNotSupportedError) {
+                // Backend says this wallet's provider doesn't support device signers.
+                // Swallow the error and fall back to the recovery signer so the consumer's
+                // first transaction works seamlessly without needing to know about providers.
+                walletsLogger.info("wallet.recover.device.unsupportedFallback", {
+                    signerLocator: newDeviceSigner.locator,
+                });
+                await deviceSignerKeyStorage.deleteKey(this.address);
+                this.#deviceSignerUnsupported = true;
+                this.#needsRecovery = false;
+                this.#deviceSignerApproved = true;
+                await this.assembleRecoverySignerFallback();
+                return;
+            } else if (isAlreadyApproved) {
                 walletsLogger.info("wallet.recover.skipped", {
                     reason: "Device signer already approved",
                     signerLocator: newDeviceSigner.locator,

@@ -125,11 +125,16 @@ export class WalletFactory {
             );
         }
 
-        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
-        const signersWithDevice =
-            validatedArgs.options?.deviceSignerKeyStorage != null
-                ? this.ensureDeviceSignerInSigners(validatedArgs)
-                : validatedArgs.signers ?? [];
+        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side).
+        // Solana smart wallets are excluded: some underlying providers reject device signers and
+        // the SDK cannot tell which provider backs the wallet upfront. We defer device-signer
+        // registration to the wallet's post-creation flow, where a rejection with the stable
+        // DEVICE_SIGNER_NOT_SUPPORTED error code is caught and falls back to the recovery signer.
+        const shouldEagerlyAddDeviceSigner =
+            validatedArgs.options?.deviceSignerKeyStorage != null && validatedArgs.chain !== "solana";
+        const signersWithDevice = shouldEagerlyAddDeviceSigner
+            ? this.ensureDeviceSignerInSigners(validatedArgs)
+            : validatedArgs.signers ?? [];
         const builtSigners = await this.registerSigners(
             signersWithDevice,
             validatedArgs.chain,
