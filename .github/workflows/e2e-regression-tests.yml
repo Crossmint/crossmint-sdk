@@ -55,6 +55,11 @@ jobs:
                   mkdir -p test-results
                   # Run regression tests only; testMatch in playwright.config.ts already excludes smoke and sdk projects
                   pnpm exec playwright test --project=chromium --project=firefox --project=webkit || true
+                  # Fail explicitly when no tests were discovered (|| true above would otherwise silently pass)
+                  if [ ! -f test-results/playwright-results.json ]; then
+                      echo "::error::No test results file generated — no tests were discovered. Check testMatch patterns in playwright.config.ts."
+                      exit 1
+                  fi
 
             - name: Generate test report
               if: always()
