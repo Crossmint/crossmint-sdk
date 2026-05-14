@@ -53,8 +53,8 @@ jobs:
 
               run: |
                   mkdir -p test-results
-                  # Run e2e.spec.ts (regression tests) only; exclude smoke project
-                  pnpm exec playwright test e2e/e2e.spec.ts --project=chromium --project=firefox --project=webkit || true
+                  # Run regression tests only; testMatch in playwright.config.ts already excludes smoke and sdk projects
+                  pnpm exec playwright test --project=chromium --project=firefox --project=webkit || true
 
             - name: Generate test report
               if: always()
