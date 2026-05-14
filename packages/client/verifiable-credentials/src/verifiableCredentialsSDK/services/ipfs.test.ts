@@ -17,7 +17,7 @@ describe("IPFSService", () => {
     });
 
     describe("formatUrl", () => {
-        it("should correctly format URL", () => {
+        it("correctly formats URL", () => {
             const baseUrl = "http://example.com/";
             const result = ipfsService.formatUrl(baseUrl, "123");
             expect(result).toEqual("http://example.com/123");
@@ -27,14 +27,14 @@ describe("IPFSService", () => {
     describe("getFile", () => {
         beforeEach(() => {});
 
-        it("should fetch file from gateway", async () => {
+        it("fetches file from gateway", async () => {
             const uri = "ipfs://123";
             const result = await ipfsService.getFile(uri);
             expect(result).toEqual({});
             expect(global.fetch).toHaveBeenCalled();
         });
 
-        it("should throw error when fetch fails", async () => {
+        it("throws error when fetch fails", async () => {
             (global.fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error("Fetch error"));
 
             const uri = "ipfs://123";

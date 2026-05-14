@@ -12,13 +12,13 @@ describe("getCredentialNFTFromLocator", () => {
         jest.resetAllMocks();
     });
 
-    it("should throw error if chain is not supported", async () => {
+    it("throws error if chain is not supported", async () => {
         await expect(getCredentialNFTFromLocator("ethereum:0x1234:1")).rejects.toThrow(
             "Verifiable Credentials are not available on the provided chain: ethereum"
         );
     });
 
-    it("should fetch and return the NFT and its collection", async () => {
+    it("fetches and returns the NFT and its collection", async () => {
         const mockNftUri = "ipfs://uri";
         const mockNftMetadata = { name: "NFT Name" };
         const collectionMetadata = {
