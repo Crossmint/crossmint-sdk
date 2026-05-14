@@ -13,9 +13,26 @@ import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 
+// Client-side TTL for caching a successful "ready" status from the frame.
+// Avoids redundant get-status round-trips that can trigger unnecessary OTP
+// prompts when the frame's own cache has expired or the JWT was refreshed.
+const AUTH_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
+    private _lastAuthSuccessTimestamp = 0;
+
+    /**
+     * Resets the client-side auth cache so the next operation will re-check
+     * signer status with the frame. Subclasses should call this when they
+     * receive an auth-related error during signing (e.g. frame was silently
+     * reloaded and lost its master secret).
+     */
+    protected invalidateAuthCache(): void {
+        this._needsAuth = true;
+        this._lastAuthSuccessTimestamp = 0;
+    }
     private _authPromise: {
         promise: Promise<void>;
         resolve: () => void;
@@ -124,6 +141,16 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             );
         }
 
+        // Skip the get-status round-trip if we recently confirmed the signer is ready.
+        // This prevents unnecessary OTP prompts caused by frame cache expiry or JWT refresh.
+        const timeSinceLastAuth = Date.now() - this._lastAuthSuccessTimestamp;
+        if (!this._needsAuth && timeSinceLastAuth < AUTH_CACHE_TTL_MS) {
+            walletsLogger.info("get-status: skipping, recently authenticated", {
+                timeSinceLastAuthMs: timeSinceLastAuth,
+            });
+            return;
+        }
+
         // Determine if we need to authenticate the user via OTP or not
         walletsLogger.info("get-status: sending request");
         const startTime = Date.now();
@@ -156,9 +183,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             return;
         } else {
             this._needsAuth = true;
+            this._lastAuthSuccessTimestamp = 0;
         }
 
         walletsLogger.info("Auth required, initiating OTP flow", { needsAuth: this._needsAuth });
@@ -258,6 +287,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "success" && response.signerStatus === "ready") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             return;
         }
 
@@ -301,12 +331,14 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         } catch (err) {
             walletsLogger.error("complete-onboarding: error", { error: err });
             this._needsAuth = true;
+            this._lastAuthSuccessTimestamp = 0;
             this._authPromise?.reject(err as Error);
             throw err;
         }
 
         if (response?.status === "success") {
             this._needsAuth = false;
+            this._lastAuthSuccessTimestamp = Date.now();
             // We call onAuthRequired again so the needsAuth state is updated for the dev
             if (this.config.onAuthRequired != null) {
                 await this.config.onAuthRequired(
@@ -324,6 +356,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         walletsLogger.error("complete-onboarding: OTP validation failed", { status: response?.status });
         this._needsAuth = true;
+        this._lastAuthSuccessTimestamp = 0;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
         const error = new Error(errorMessage);
         this._authPromise?.reject(error);
@@ -372,6 +405,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         });
 
         if (response?.status === "error") {
+            this.invalidateAuthCache();
             throw new Error(response.error || "Failed to export private key");
         }
     }
