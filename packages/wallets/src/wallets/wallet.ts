@@ -52,6 +52,7 @@ import {
     WalletTypeNotSupportedError,
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { assertApprovalSignatureFormat } from "../utils/signature-validation";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
@@ -1743,8 +1744,9 @@ export class Wallet<C extends Chain> {
             return signature;
         }
 
-        // If an external signature is provided, use it to approve the transaction
+        // If an external signature is provided, validate and use it to approve the signature
         if (options?.approval != null) {
+            assertApprovalSignatureFormat(options.approval);
             const approvals = [options.approval];
 
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
@@ -1794,8 +1796,9 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        // If an external signature is provided, use it to approve the transaction
+        // If an external signature is provided, validate and use it to approve the transaction
         if (options?.approval != null) {
+            assertApprovalSignatureFormat(options.approval);
             const approvals = [options.approval];
 
             return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
