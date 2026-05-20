@@ -26,7 +26,7 @@ type PasskeyApproval = P256Approval & {
 function isValidP256Component(value: string): boolean {
     try {
         const n = BigInt(value);
-        return n > 0n && n < P256_ORDER;
+        return n > BigInt(0) && n < P256_ORDER;
     } catch {
         return false;
     }
