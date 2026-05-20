@@ -168,6 +168,12 @@ export class InvalidAddressError extends CrossmintSDKError {
     }
 }
 
+export class InvalidSignatureForApprovalError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -196,4 +202,5 @@ export type WalletError =
     | TransactionHashNotFoundError
     | TransactionFailedError
     | PendingApprovalsError
-    | InvalidAddressError;
+    | InvalidAddressError
+    | InvalidSignatureForApprovalError;
