@@ -2996,8 +2996,7 @@ describe("Wallet - waitForInit()", () => {
         // and resumes the pending operation via checkAndResumeDeviceSigner rather
         // than generating a brand-new device key.
         expect(wallet.signer?.type).toBe("device");
-        expect(wallet.signer?.status).not.toBe("success");
-        expect(wallet.signer?.status).not.toBe("active");
+        expect(wallet.signer?.status).toBe("awaiting-approval");
     });
 });
 describe("Wallet - isSignerApproved()", () => {
