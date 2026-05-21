@@ -2953,6 +2953,51 @@ describe("Wallet - waitForInit()", () => {
         await wallet.waitForInit();
         expect(wallet.needsRecovery()).toBe(false);
     });
+
+    it("flags needsRecovery=true after waitForInit when local device key exists but backend signer is still pending (interrupted recover)", async () => {
+        // Scenario: previous recover() ran createDeviceSigner (wrote local key) and
+        // started addSigner, but the app was killed mid-approval. On restart the
+        // local key resolves a locator pointing at a still-pending backend signer.
+        // Without the fix, resolveDeviceSignerAvailability would leave
+        // needsRecovery=false even though the signer is unusable.
+        const mockStorage = {
+            generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+            getKey: vi.fn().mockResolvedValue("pendingKeyBase64"),
+            hasKey: vi.fn().mockResolvedValue(true),
+            mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+            deleteKey: vi.fn().mockResolvedValue(undefined),
+            signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        };
+
+        // Backend reports the device signer as still awaiting approval
+        mockApiClient.getSigner.mockResolvedValue({
+            type: "device",
+            locator: "device:pendingKeyBase64",
+            publicKey: { x: "1", y: "2" },
+            chains: { "base-sepolia": { status: "awaiting-approval", id: "sig-pending-1" } },
+        } as any);
+
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: { type: "api-key" } as any,
+                options: { deviceSignerKeyStorage: mockStorage as any },
+            },
+            mockApiClient as unknown as ApiClient
+        );
+
+        await wallet.waitForInit();
+
+        // needsRecovery must reflect that approval is still pending
+        expect(wallet.needsRecovery()).toBe(true);
+        // The signer is still assembled so recover() takes the device fast-path
+        // and resumes the pending operation via checkAndResumeDeviceSigner rather
+        // than generating a brand-new device key.
+        expect(wallet.signer?.type).toBe("device");
+        expect(wallet.signer?.status).toBe("awaiting-approval");
+    });
 });
 describe("Wallet - isSignerApproved()", () => {
     it("returns true only when signer status is success", async () => {
