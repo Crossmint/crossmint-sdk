@@ -14,7 +14,7 @@ const SECRET_PREFIX = "xmsk1_";
  * @param secret - Master secret (with or without xmsk1_ prefix), 64-char hex
  * @param projectId - Project ID from the API key
  * @param environment - Environment from the API key (staging, production)
- * @param chain - Chain identifier (e.g., "base-sepolia", "ethereum")
+ * @param chain - Chain type identifier ("evm", "solana", or "stellar")
  * @returns Raw 32-byte derived key
  */
 export function deriveKeyBytes(secret: string, projectId: string, environment: string, chain: string): Uint8Array {
@@ -29,6 +29,12 @@ export function deriveKeyBytes(secret: string, projectId: string, environment: s
 /**
  * Derives a deterministic wallet alias from a master secret.
  * Uses the same derivation path so the alias is always recoverable.
+ *
+ * @param secret - Master secret (with or without xmsk1_ prefix), 64-char hex
+ * @param projectId - Project ID from the API key
+ * @param environment - Environment from the API key (staging, production)
+ * @param chain - Chain type identifier ("evm", "solana", or "stellar")
+ * @returns Deterministic alias string (max 36 chars)
  */
 export function deriveAlias(secret: string, projectId: string, environment: string, chain: string): string {
     const rawSecret = stripAndValidateSecret(secret);

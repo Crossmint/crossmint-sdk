@@ -25,7 +25,7 @@ function makeConfig(chain: string): ServerInternalSignerConfig {
 }
 
 describe("EVMServerSigner", () => {
-    const config = makeConfig("base-sepolia");
+    const config = makeConfig("evm");
     const signer = new EVMServerSigner(config);
 
     it("has type server", () => {
@@ -38,7 +38,7 @@ describe("EVMServerSigner", () => {
     });
 
     it("returns locator", () => {
-        expect(signer.locator()).toBe("server:test-locator-base-sepolia");
+        expect(signer.locator()).toBe("server:test-locator-evm");
     });
 
     it("signs a message and returns a signature", async () => {
@@ -141,7 +141,7 @@ describe("StellarServerSigner", () => {
 
 describe("assembleServerSigner", () => {
     it("returns EVMServerSigner for EVM chains", () => {
-        const signer = assembleServerSigner("base-sepolia", makeConfig("base-sepolia"));
+        const signer = assembleServerSigner("base-sepolia", makeConfig("evm"));
         expect(signer).toBeInstanceOf(EVMServerSigner);
     });
 
@@ -157,7 +157,7 @@ describe("assembleServerSigner", () => {
 });
 
 describe("deriveServerSignerAddress", () => {
-    const keyBytes = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
+    const keyBytes = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
 
     it("derives EVM address", () => {
         const address = deriveServerSignerAddress(keyBytes, "base-sepolia");

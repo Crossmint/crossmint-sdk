@@ -30,8 +30,8 @@ export function deriveServerSignerDetails(
         throw new Error("Server signers can only be used from server-side code.");
     }
 
-    const chainStr = typeof chain === "string" ? chain : String(chain);
-    const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
+    const chainType = getChainType(chain);
+    const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainType);
     const derivedAddress = deriveServerSignerAddress(derivedKeyBytes, chain);
     return { derivedKeyBytes, derivedAddress };
 }
