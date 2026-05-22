@@ -195,6 +195,7 @@ export type WalletError =
     | WalletTypeMismatchError
     | SignerTypeMismatchError
     | InvalidSignerError
+    | DeviceSignerNotSupportedError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError
