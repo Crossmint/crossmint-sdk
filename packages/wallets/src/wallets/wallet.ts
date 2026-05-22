@@ -99,6 +99,7 @@ export class Wallet<C extends Chain> {
     #needsRecovery = false;
     #deviceSignerApproved = false;
     #resolvedServerDerivation: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null = null;
+    #apiSourcedRecoveryAddress: string | null = null;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -111,6 +112,9 @@ export class Wallet<C extends Chain> {
         this.#options = options;
         this.alias = alias;
         this.#recovery = recovery;
+        if (recovery.type === "server" && isApiSourcedServerSignerConfig(recovery)) {
+            this.#apiSourcedRecoveryAddress = recovery.address;
+        }
         this.#initialSigners = signers ?? [];
         this.#signer = signer; // Can be set by useSigner
         this.#signerInitialization = this.initDefaultSigner();
@@ -255,13 +259,9 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve a ServerSignerConfig to an API locator string.
-     * Uses the cached derivation from useSigner when available (matches on-chain registration),
-     * otherwise falls back to the normalized "evm" derivation (correct for new wallets).
+     * Always derives fresh from the passed config using the normalized chain type.
      */
     protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
-        if (this.#resolvedServerDerivation) {
-            return `server:${this.#resolvedServerDerivation.derivedAddress}`;
-        }
         const { derivedAddress } = deriveServerSignerDetails(
             signer,
             this.chain,
@@ -974,14 +974,15 @@ export class Wallet<C extends Chain> {
                 return false;
             }
             // Neither found as delegated — check if this is the recovery (admin) signer.
-            // Capture the API-sourced recovery address before isRecoverySigner upgrades #recovery.
-            const recoveryAddress =
-                this.#recovery.type === "server" && isApiSourcedServerSignerConfig(this.#recovery)
-                    ? this.#recovery.address
-                    : null;
             if (this.isRecoverySigner(signer)) {
-                // Resolve which derivation matches the on-chain recovery address
-                if (recoveryAddress != null && legacy && legacy.derivedAddress === recoveryAddress) {
+                // Resolve which derivation matches the on-chain recovery address.
+                // #apiSourcedRecoveryAddress is captured once from the original API response
+                // and survives across isRecoverySigner upgrades and repeated useSigner calls.
+                if (
+                    this.#apiSourcedRecoveryAddress != null &&
+                    legacy &&
+                    legacy.derivedAddress === this.#apiSourcedRecoveryAddress
+                ) {
                     this.#resolvedServerDerivation = legacy;
                 } else {
                     this.#resolvedServerDerivation = primary;
