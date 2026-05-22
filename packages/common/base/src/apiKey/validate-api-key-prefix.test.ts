@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { validateAPIKeyPrefix } from "./validateAPIKeyPrefix";
 
 describe("validateAPIKeyPrefix", () => {
-    test("Should disallow API keys with old format", () => {
+    test("disallows API keys with old format", () => {
         const prefixes = ["sk_live", "sk_test"];
 
         for (const prefix of prefixes) {
@@ -19,7 +19,7 @@ describe("validateAPIKeyPrefix", () => {
         }
     });
 
-    test("Should disallow when usage prefix is invalid", () => {
+    test("disallows when usage prefix is invalid", () => {
         const result = validateAPIKeyPrefix("bk_");
         if (result.isValid) {
             throw new Error("Expected API key to be invalid");
@@ -29,7 +29,7 @@ describe("validateAPIKeyPrefix", () => {
         expect(result.message).toBe("Malformed API key. Must start with 'ck' or 'sk'.");
     });
 
-    test("Should disallow when API key does not have expected usage origin", () => {
+    test("disallows when API key does not have expected usage origin", () => {
         const clientDevKey = "ck_development";
         const result1 = validateAPIKeyPrefix(clientDevKey, { usageOrigin: "server" });
         if (result1.isValid) {
@@ -51,7 +51,7 @@ describe("validateAPIKeyPrefix", () => {
         );
     });
 
-    test("Should disallow when environment prefix is invalid", () => {
+    test("disallows when environment prefix is invalid", () => {
         const prefixes = ["ck_badenv", "sk_random"];
 
         for (const prefix of prefixes) {
@@ -67,7 +67,7 @@ describe("validateAPIKeyPrefix", () => {
         }
     });
 
-    test("Should disallow when API key does not have expected environment", () => {
+    test("disallows when API key does not have expected environment", () => {
         const key = "ck_development_2EwmxKnPjzbvK";
 
         const result = validateAPIKeyPrefix(key, { environment: "production" });
@@ -81,7 +81,7 @@ describe("validateAPIKeyPrefix", () => {
         );
     });
 
-    test("Should allow correctly formatted API key", () => {
+    test("allows correctly formatted API key", () => {
         const usageOriginPrefixes = ["ck", "sk"];
         const environmentPrefixes = ["development", "staging", "production"];
 
@@ -102,7 +102,7 @@ describe("validateAPIKeyPrefix", () => {
         }
     });
 
-    test("Should allow when API key has expected usage origin and environment", () => {
+    test("allows when API key has expected usage origin and environment", () => {
         const key = "ck_development_2EwmxKnPjzbvK";
 
         const result = validateAPIKeyPrefix(key, { usageOrigin: "client", environment: "development" });

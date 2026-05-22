@@ -1,4 +1,4 @@
-import { FPE } from "../../algorithms/symmetric/fpe";
+import { FPE } from "./fpe";
 import type { ECDHKeyProvider } from "../../providers/key-providers/ecdh-provider";
 import { mock } from "vitest-mock-extended";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -31,7 +31,7 @@ describe("FPE", () => {
     });
 
     describe("encrypt-decrypt", () => {
-        it("should encrypt and decrypt a number array", async () => {
+        it("encrypts and decrypts a number array", async () => {
             const encrypted = await fpe.encrypt(input, mockCryptoKey);
             const decrypted = await fpe.decrypt(encrypted, mockCryptoKey);
             expect(decrypted).toEqual(input);

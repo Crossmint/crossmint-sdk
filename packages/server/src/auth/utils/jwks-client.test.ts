@@ -20,7 +20,7 @@ describe("createJWKSClient", () => {
         console.error = originalConsoleError;
     });
 
-    it("should create a JWKS client for a valid URI", () => {
+    it("creates a JWKS client for a valid URI", () => {
         const mockJWKSFunction = vi.fn() as unknown as ReturnType<typeof createRemoteJWKSet>;
         vi.mocked(createRemoteJWKSet).mockReturnValue(mockJWKSFunction);
 
@@ -35,7 +35,7 @@ describe("createJWKSClient", () => {
         expect(result).toBe(mockJWKSFunction);
     });
 
-    it("should throw an error when unable to create JWKS client", () => {
+    it("throws an error when unable to create JWKS client", () => {
         vi.mocked(createRemoteJWKSet).mockImplementation(() => {
             throw new Error("Failed to create JWKS client");
         });

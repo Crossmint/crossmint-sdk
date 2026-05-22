@@ -1,5 +1,5 @@
 import MailosaurClient from "mailosaur";
-import { AUTH_CONFIG } from "../config/constants";
+import { AUTH_CONFIG } from "../constants/globalConstants";
 
 const mailosaur = new MailosaurClient(AUTH_CONFIG.mailosaurApiKey);
 

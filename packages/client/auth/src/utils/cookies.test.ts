@@ -11,25 +11,25 @@ describe("cookies", () => {
         });
     });
 
-    it("should return undefined for non-existent cookie", () => {
+    it("returns undefined for non-existent cookie", () => {
         expect(getCookie("non-existent")).toBeUndefined();
     });
 
-    it("should return the correct value for an existing cookie", async () => {
+    it("returns the correct value for an existing cookie", async () => {
         document.cookie = "test-cookie=test-value";
         await waitForSettledState(() => {
             expect(getCookie("test-cookie")).toBe("test-value");
         });
     });
 
-    it("should set a cookie without expiration", async () => {
+    it("sets a cookie without expiration", async () => {
         setCookie("test-cookie", "test-value");
         await waitForSettledState(() => {
             expect(document.cookie).toContain("test-cookie=test-value");
         });
     });
 
-    it("should delete an existing cookie", async () => {
+    it("deletes an existing cookie", async () => {
         document.cookie = "test-cookie=test-value";
         deleteCookie("test-cookie");
         await waitForSettledState(() => {

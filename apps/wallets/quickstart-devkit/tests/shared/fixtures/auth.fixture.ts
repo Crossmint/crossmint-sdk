@@ -1,8 +1,8 @@
 import { test as base, expect } from "@playwright/test";
 import type { Page, BrowserContext } from "@playwright/test";
-import { getEmailForSigner, buildTestUrl, validateUITestConfig } from "../config/constants";
-import type { SignerType, TestConfiguration } from "../config/constants";
-import { performEmailOTPLogin, waitForWalletReady } from "../helpers";
+import { getEmailForSigner, buildTestUrl, validateUITestConfig } from "../constants/globalConstants";
+import type { SignerType, TestConfiguration } from "../constants/globalConstants";
+import { performEmailOTPLogin, waitForWalletReady } from "../utils";
 
 validateUITestConfig();
 // Cache for authenticated pages per configuration to prevent multiple authentications
@@ -79,5 +79,5 @@ process.on("exit", async () => {
     authenticatedPageCache.clear();
 });
 
-export { TEST_CONFIGURATIONS } from "../config/constants";
-export type { TestConfiguration, SignerType } from "../config/constants";
+export { TEST_CONFIGURATIONS } from "../constants/globalConstants";
+export type { TestConfiguration, SignerType } from "../constants/globalConstants";

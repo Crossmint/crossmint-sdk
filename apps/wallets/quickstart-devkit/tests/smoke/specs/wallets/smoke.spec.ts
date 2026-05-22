@@ -1,4 +1,4 @@
-import { test, expectAuth } from "../fixtures/auth";
+import { test, expectAuth } from "../../../shared/fixtures/auth.fixture";
 import {
     getWalletAddress,
     getWalletBalance,
@@ -8,8 +8,8 @@ import {
     createPreparedTransaction,
     approveTransactionById,
     fundWalletWithCrossmintFaucet,
-} from "../helpers";
-import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../config/constants";
+} from "../../../shared/utils";
+import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../../../shared/constants/globalConstants";
 
 const SMOKE_TEST_CONFIG = {
     provider: "crossmint",
@@ -19,11 +19,11 @@ const SMOKE_TEST_CONFIG = {
     alias: undefined,
 } as const;
 
-test.describe("Crossmint Wallet Smoke Tests", () => {
+test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
     test.describe.configure({ mode: "serial" });
     test.use({ testConfig: SMOKE_TEST_CONFIG });
 
-    test("should authenticate and create wallet", async ({ authenticatedPage }, testInfo) => {
+    test("authenticates and creates wallet", async ({ authenticatedPage }, testInfo) => {
         await testInfo.attach("authenticated-page", {
             body: await authenticatedPage.screenshot(),
             contentType: "image/png",
@@ -43,7 +43,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         await expectAuth(addressElement).toBeVisible();
     });
 
-    test("should fetch wallet balances via SDK", async ({ authenticatedPage }) => {
+    test("fetches wallet balances via SDK", async ({ authenticatedPage }) => {
         const balances = await getWalletBalances(authenticatedPage);
 
         expectAuth(balances).toBeTruthy();
@@ -69,7 +69,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         expectAuth(/^\d+(\.\d+)?$/.test(balances.usdxm.amount)).toBe(true);
     });
 
-    test("should fetch wallet activity", async ({ authenticatedPage }) => {
+    test("fetches wallet activity", async ({ authenticatedPage }) => {
         const activity = await getWalletActivity(authenticatedPage);
 
         expectAuth(activity).toBeTruthy();
@@ -102,7 +102,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         }
     });
 
-    test("should transfer funds", async ({ authenticatedPage, testConfig }) => {
+    test("transfers funds", async ({ authenticatedPage, testConfig }) => {
         const walletAddress = await getWalletAddress(authenticatedPage);
 
         // Fund wallet before transfer test
@@ -137,7 +137,7 @@ test.describe("Crossmint Wallet Smoke Tests", () => {
         );
     });
 
-    test("should create and approve a prepared transaction", async ({ authenticatedPage, testConfig }) => {
+    test("creates and approves a prepared transaction", async ({ authenticatedPage, testConfig }) => {
         const recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
         const transferAmount = "10";
         const walletAddress = await getWalletAddress(authenticatedPage);

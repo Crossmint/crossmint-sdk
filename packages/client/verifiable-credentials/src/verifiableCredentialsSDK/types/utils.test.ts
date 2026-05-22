@@ -3,21 +3,21 @@ import { isEncryptedVerifiableCredential, isVcChain, parseLocator } from "./util
 
 describe("utils", () => {
     describe("isPolygon", () => {
-        it("should return true if the chain includes 'poly'", () => {
+        it("returns true if the chain includes 'poly'", () => {
             expect(isVcChain("polygon")).toBe(true);
         });
 
-        it("should return true if the chain is poly-amoy", () => {
+        it("returns true if the chain is poly-amoy", () => {
             expect(isVcChain("poly-amoy")).toBe(true);
         });
 
-        it("should return false if the chain does not include 'poly'", () => {
+        it("returns false if the chain does not include 'poly'", () => {
             expect(isVcChain("ethereum")).toBe(false);
         });
     });
 
     describe("parseLocator", () => {
-        it("should parse a valid locator string", () => {
+        it("parses a valid locator string", () => {
             const locator = "ethereum:0x1234:5678";
             const result = parseLocator(locator);
 
@@ -28,7 +28,7 @@ describe("utils", () => {
             });
         });
 
-        it("should throw an error for an invalid locator string", () => {
+        it("throws an error for an invalid locator string", () => {
             const locator = "ethereum";
 
             expect(() => parseLocator(locator)).toThrowError(
@@ -38,7 +38,7 @@ describe("utils", () => {
     });
 
     describe("isEncryptedVerifiableCredential", () => {
-        it("should return true if the credential is an EncryptedVerifiableCredential", () => {
+        it("returns true if the credential is an EncryptedVerifiableCredential", () => {
             const encryptedCredential: EncryptedVerifiableCredential = {
                 id: "id",
                 payload: "payload",
@@ -47,7 +47,7 @@ describe("utils", () => {
             expect(isEncryptedVerifiableCredential(encryptedCredential)).toBe(true);
         });
 
-        it("should return false if the credential is not an EncryptedVerifiableCredential", () => {
+        it("returns false if the credential is not an EncryptedVerifiableCredential", () => {
             const verifiableCredential: VerifiableCredential = {
                 id: "id",
                 type: ["type"],

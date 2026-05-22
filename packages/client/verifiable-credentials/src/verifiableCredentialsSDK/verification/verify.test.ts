@@ -11,7 +11,7 @@ describe("verifyCredential", () => {
         jest.resetAllMocks();
     });
 
-    it("should verify a valid credential", async () => {
+    it("verifies a valid credential", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: new Date(Date.now() + 86400000).toISOString(),
             nft: {} as any,
@@ -22,7 +22,7 @@ describe("verifyCredential", () => {
         expect(result).toEqual({ validVC: true, error: undefined });
     });
 
-    it("should verify a valid credential without expiration date", async () => {
+    it("verifies a valid credential without expiration date", async () => {
         const mockCredential: VerifiableCredential = {
             nft: {} as any,
         } as any;
@@ -32,7 +32,7 @@ describe("verifyCredential", () => {
         expect(result).toEqual({ validVC: true, error: undefined });
     });
 
-    it("should fail if revoked credential", async () => {
+    it("fails if revoked credential", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: new Date(Date.now() + 86400000).toISOString(),
             nft: {} as any,
@@ -43,7 +43,7 @@ describe("verifyCredential", () => {
         expect(result).toEqual({ validVC: false, error: "Credential has been revoked" });
     });
 
-    it("should fail if invalid proof credential", async () => {
+    it("fails if invalid proof credential", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: new Date(Date.now() + 86400000).toISOString(),
             nft: {} as any,
@@ -54,7 +54,7 @@ describe("verifyCredential", () => {
         expect(result).toEqual({ validVC: false, error: "Invalid proof" });
     });
 
-    it("should fail if expirationDate is not a valid ISO string", async () => {
+    it("fails if expirationDate is not a valid ISO string", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: "not a valid ISO string",
             nft: {} as any,
@@ -63,7 +63,7 @@ describe("verifyCredential", () => {
             "Invalid expiration date: not a valid ISO string"
         );
     });
-    it("should fail if expirationDate is not a string", async () => {
+    it("fails if expirationDate is not a string", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: 1,
             nft: {} as any,
@@ -71,7 +71,7 @@ describe("verifyCredential", () => {
         await expect(verifyCredential(mockCredential)).rejects.toThrow("expirationDate must be a ISO string");
     });
 
-    it("should fail if expirationDate is in the past", async () => {
+    it("fails if expirationDate is in the past", async () => {
         const mockCredential: VerifiableCredential = {
             validUntil: new Date(Date.now() - 86400000).toISOString(), // 1 day in the past
             nft: {} as any,

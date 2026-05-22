@@ -173,6 +173,20 @@ export class Wallet<C extends Chain> {
         // Assemble the device signer with the resolved config
         const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
         this.#signer = await this.assembleFullSigner(internalConfig, deviceSignerKeyStorage);
+
+        // If the backend signer isn't approved yet (e.g. a previous recover() was
+        // interrupted mid-approval), flag for recovery so the next recover() call
+        // resumes the pending operation via checkAndResumeDeviceSigner. The signer
+        // is kept assigned so recover() takes the device fast-path and resumes
+        // rather than creating a new device signer.
+        if (!this.isApprovedSignerStatus(this.#signer.status)) {
+            walletsLogger.info("wallet.initDeviceSigner.pendingApproval", {
+                signerLocator: this.#signer.locator(),
+                status: this.#signer.status,
+            });
+            this.#needsRecovery = true;
+            this.#deviceSignerApproved = false;
+        }
     }
 
     /**
@@ -1817,7 +1831,7 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = signature.approvals?.pending;
 
-        if (pendingApprovals == null) {
+        if (pendingApprovals == null || pendingApprovals.length === 0) {
             return signature;
         }
 
@@ -1868,7 +1882,7 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = transaction.approvals?.pending;
 
-        if (pendingApprovals == null) {
+        if (pendingApprovals == null || pendingApprovals.length === 0) {
             return transaction;
         }
 

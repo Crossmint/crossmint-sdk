@@ -64,7 +64,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("from", () => {
-        it("should create a new CrossmintAuthClient instance with config", () => {
+        it("creates a new CrossmintAuthClient instance with config", () => {
             expect(crossmintAuthClient).toBeInstanceOf(CrossmintAuthClient);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
             expect((crossmintAuthClient as any).callbacks).toEqual(mockConfig.callbacks);
@@ -73,7 +73,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("getUser", () => {
-        it("should fetch user data", async () => {
+        it("fetches user data", async () => {
             const mockUserData = { id: "user123", email: "user@example.com" };
             mockApiClient.get.mockResolvedValue({
                 json: () => Promise.resolve(mockUserData),
@@ -88,7 +88,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("storeAuthMaterial", () => {
-        it("should store auth material in cookies", async () => {
+        it("stores auth material in cookies", async () => {
             const mockAuthMaterial: AuthMaterialWithUser = {
                 jwt: validJwt,
                 refreshToken: { secret: "refresh-token", expiresAt: "2023-12-31T23:59:59Z" },
@@ -116,7 +116,7 @@ describe("CrossmintAuthClient", () => {
             mockApiClient.post.mockReset();
         });
 
-        it("should call logout endpoint, clear auth cookies and call onLogout callback", async () => {
+        it("calls logout endpoint, clears auth cookies and calls onLogout callback", async () => {
             const mockCallbacks = { onLogout: vi.fn() };
             const mockRefreshToken = "mock-refresh-token";
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
@@ -142,7 +142,7 @@ describe("CrossmintAuthClient", () => {
             expect(mockCallbacks.onLogout).toHaveBeenCalled();
         });
 
-        it("should call custom logout route when configured", async () => {
+        it("calls custom logout route when configured", async () => {
             const mockCallbacks = { onLogout: vi.fn() };
             const customLogoutRoute = "/custom/logout";
             const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(new Response());
@@ -177,7 +177,7 @@ describe("CrossmintAuthClient", () => {
             (crossmintAuthClient as any).refreshPromise = null;
         });
 
-        it("should refresh auth material and schedule next refresh", async () => {
+        it("refreshes auth material and schedules next refresh", async () => {
             crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {
                 callbacks: mockCallbacks,
             });
@@ -191,7 +191,7 @@ describe("CrossmintAuthClient", () => {
             expect(queueTask).toHaveBeenCalledWith(expect.any(Function), expect.any(Number));
         });
 
-        it("should not refresh when called twice in a row", async () => {
+        it("does not refresh when called twice in a row", async () => {
             const promise1 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
             const promise2 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
@@ -200,7 +200,7 @@ describe("CrossmintAuthClient", () => {
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledTimes(1);
         });
 
-        it("should call onTokenRefresh callback if provided", async () => {
+        it("calls onTokenRefresh callback if provided", async () => {
             const mockCallback = vi.fn();
             (crossmintAuthClient as any).callbacks.onTokenRefresh = mockCallback;
 
@@ -209,7 +209,7 @@ describe("CrossmintAuthClient", () => {
             expect(mockCallback).toHaveBeenCalledWith(mockAuthMaterial);
         });
 
-        it("should handle errors and call logout", async () => {
+        it("handles errors and calls logout", async () => {
             const mockError = new Error("Refresh failed");
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockRejectedValue(mockError);
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
@@ -221,7 +221,7 @@ describe("CrossmintAuthClient", () => {
             expect(crossmintAuthClient.logout).toHaveBeenCalled();
         });
 
-        it("should use cookie if no refresh token is provided", async () => {
+        it("uses cookie if no refresh token is provided", async () => {
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
 
             await crossmintAuthClient.handleRefreshAuthMaterial();
@@ -229,7 +229,7 @@ describe("CrossmintAuthClient", () => {
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
         });
 
-        it("should not refresh if no refresh token is available and no custom refresh route is set", async () => {
+        it("does not refresh if no refresh token is available and no custom refresh route is set", async () => {
             crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {});
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(mockAuthMaterial);
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(null as any);
@@ -239,7 +239,7 @@ describe("CrossmintAuthClient", () => {
             expect(crossmintAuthClient["refreshAuthMaterial"]).not.toHaveBeenCalled();
         });
 
-        it("should cancel previous refresh task before scheduling a new one", async () => {
+        it("cancels previous refresh task before scheduling a new one", async () => {
             const mockCancelTask = vi.fn();
             (crossmintAuthClient as any).refreshTask = { cancel: mockCancelTask };
 
@@ -249,7 +249,7 @@ describe("CrossmintAuthClient", () => {
             expect(queueTask).toHaveBeenCalled();
         });
 
-        it("should not schedule refresh if JWT is invalid", async () => {
+        it("does not schedule refresh if JWT is invalid", async () => {
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(null);
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
 
@@ -259,7 +259,7 @@ describe("CrossmintAuthClient", () => {
             expect(queueTask).not.toHaveBeenCalled();
         });
 
-        it("should not schedule refresh if time to expire is negative", async () => {
+        it("does not schedule refresh if time to expire is negative", async () => {
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(null);
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
 
@@ -268,7 +268,7 @@ describe("CrossmintAuthClient", () => {
             expect(queueTask).not.toHaveBeenCalled();
         });
 
-        it("should not store auth material if custom refresh route is set", async () => {
+        it("does not store auth material if custom refresh route is set", async () => {
             const spyStoreAuthMaterial = vi.spyOn(crossmintAuthClient, "storeAuthMaterial");
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
@@ -279,7 +279,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("getOAuthUrl", () => {
-        it("should fetch OAuth URL for a given provider", async () => {
+        it("fetches OAuth URL for a given provider", async () => {
             const mockProvider = "google";
             const mockOAuthUrl = "https://oauth.example.com/auth";
             mockApiClient.get.mockResolvedValue({
@@ -298,7 +298,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("sendEmailOtp", () => {
-        it("should send email OTP", async () => {
+        it("sends email OTP", async () => {
             const mockEmail = "user@example.com";
             const mockResponse = { success: true };
             mockApiClient.post.mockResolvedValue({
@@ -319,7 +319,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("confirmEmailOtp", () => {
-        it("should confirm email OTP and return oneTimeSecret", async () => {
+        it("confirms email OTP and returns oneTimeSecret", async () => {
             const mockEmail = "user@example.com";
             const mockEmailId = "email-id-123";
             const mockToken = "otp-token-456";
@@ -340,7 +340,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("signInWithSmartWallet", () => {
-        it("should initiate smart wallet sign in", async () => {
+        it("initiates smart wallet sign in", async () => {
             const mockAddress = "0x1234567890abcdef";
             const mockResponse = {
                 message: "Please sign this message",
@@ -368,7 +368,7 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("authenticateSmartWallet", () => {
-        it("should complete smart wallet authentication", async () => {
+        it("completes smart wallet authentication", async () => {
             const mockAddress = "0x1234567890abcdef";
             const mockSignature = "0xsignature123";
             const mockResponse = {

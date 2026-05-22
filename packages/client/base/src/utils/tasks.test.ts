@@ -11,7 +11,7 @@ describe("queueTask", () => {
         vi.useRealTimers();
     });
 
-    it("should execute the callback when the end time is reached", () => {
+    it("executes the callback when the end time is reached", () => {
         const mockCallback = vi.fn();
         const endTime = Date.now() + 1000; // 1 second from now
 
@@ -24,7 +24,7 @@ describe("queueTask", () => {
         expect(mockCallback).toHaveBeenCalledTimes(1);
     });
 
-    it("should not execute the callback if cancelled", () => {
+    it("does not execute the callback if cancelled", () => {
         const mockCallback = vi.fn();
         const endTime = Date.now() + 1000; // 1 second from now
 
@@ -37,7 +37,7 @@ describe("queueTask", () => {
         expect(mockCallback).not.toHaveBeenCalled();
     });
 
-    it("should execute the callback immediately if end time is in the past", () => {
+    it("executes the callback immediately if end time is in the past", () => {
         const mockCallback = vi.fn();
         const endTime = Date.now() - 1000; // 1 second ago
 
