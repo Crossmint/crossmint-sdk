@@ -259,12 +259,22 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve a ServerSignerConfig to an API locator string.
-     * Uses the cached derivation from useSigner when available (handles legacy wallets),
+     * Uses the cached derivation from useSigner when it belongs to this signer (handles legacy wallets),
      * otherwise falls back to the normalized "evm" derivation (correct for new wallets).
      */
     protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
         if (this.#resolvedServerDerivation) {
-            return `server:${this.#resolvedServerDerivation.derivedAddress}`;
+            const { primary, legacy } = deriveServerSignerCandidates(
+                signer,
+                this.chain,
+                this.#apiClient.projectId,
+                this.#apiClient.environment
+            );
+            const cachedAddr = this.#resolvedServerDerivation.derivedAddress;
+            if (cachedAddr === primary.derivedAddress || (legacy != null && cachedAddr === legacy.derivedAddress)) {
+                return `server:${cachedAddr}`;
+            }
+            return `server:${primary.derivedAddress}`;
         }
         const { derivedAddress } = deriveServerSignerDetails(
             signer,
@@ -1041,10 +1051,19 @@ export class Wallet<C extends Chain> {
      */
     private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
-            // Use cached derivation from resolveNonDeviceSigner when available.
-            // This ensures removeSigner on a legacy wallet uses the correct (legacy) locator.
+            // Use cached derivation when it belongs to this signer (handles legacy wallets).
             if (this.#resolvedServerDerivation) {
-                return `server:${this.#resolvedServerDerivation.derivedAddress}`;
+                const { primary, legacy } = deriveServerSignerCandidates(
+                    signer,
+                    this.chain,
+                    this.#apiClient.projectId,
+                    this.#apiClient.environment
+                );
+                const cachedAddr = this.#resolvedServerDerivation.derivedAddress;
+                if (cachedAddr === primary.derivedAddress || (legacy != null && cachedAddr === legacy.derivedAddress)) {
+                    return `server:${cachedAddr}`;
+                }
+                return `server:${primary.derivedAddress}`;
             }
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
@@ -1742,27 +1761,45 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                 } as InternalSignerConfig<C>;
             case "server": {
-                // Use cached resolution from resolveNonDeviceSigner (matches what is on-chain)
-                if (this.#resolvedServerDerivation) {
-                    return {
-                        type: "server",
-                        derivedKeyBytes: this.#resolvedServerDerivation.derivedKeyBytes,
-                        locator: `server:${this.#resolvedServerDerivation.derivedAddress}` as ServerSignerLocator,
-                        address: this.#resolvedServerDerivation.derivedAddress,
-                    } as InternalSignerConfig<C>;
-                }
-                // Fallback: new "evm" derivation (for recovery signer path where cache may not be set)
-                const { derivedKeyBytes, derivedAddress } = deriveServerSignerDetails(
+                const { primary, legacy } = deriveServerSignerCandidates(
                     config,
                     this.chain,
                     this.#apiClient.projectId,
                     this.#apiClient.environment
                 );
+                // Use cached resolution when it belongs to this signer (matches what is on-chain)
+                if (this.#resolvedServerDerivation) {
+                    const cachedAddr = this.#resolvedServerDerivation.derivedAddress;
+                    if (
+                        cachedAddr === primary.derivedAddress ||
+                        (legacy != null && cachedAddr === legacy.derivedAddress)
+                    ) {
+                        return {
+                            type: "server",
+                            derivedKeyBytes: this.#resolvedServerDerivation.derivedKeyBytes,
+                            locator: `server:${cachedAddr}` as ServerSignerLocator,
+                            address: cachedAddr,
+                        } as InternalSignerConfig<C>;
+                    }
+                }
+                // Fallback: prefer legacy if it matches the original recovery address
+                if (
+                    this.#apiSourcedRecoveryAddress != null &&
+                    legacy != null &&
+                    legacy.derivedAddress === this.#apiSourcedRecoveryAddress
+                ) {
+                    return {
+                        type: "server",
+                        derivedKeyBytes: legacy.derivedKeyBytes,
+                        locator: `server:${legacy.derivedAddress}` as ServerSignerLocator,
+                        address: legacy.derivedAddress,
+                    } as InternalSignerConfig<C>;
+                }
                 return {
                     type: "server",
-                    derivedKeyBytes,
-                    locator: `server:${derivedAddress}` as ServerSignerLocator,
-                    address: derivedAddress,
+                    derivedKeyBytes: primary.derivedKeyBytes,
+                    locator: `server:${primary.derivedAddress}` as ServerSignerLocator,
+                    address: primary.derivedAddress,
                 } as InternalSignerConfig<C>;
             }
             default:
