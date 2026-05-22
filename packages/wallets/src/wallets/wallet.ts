@@ -1037,11 +1037,6 @@ export class Wallet<C extends Chain> {
      */
     private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
-            // Use cached if available (set by resolveNonDeviceSigner)
-            if (this.#resolvedServerDerivation) {
-                return `server:${this.#resolvedServerDerivation.derivedAddress}`;
-            }
-            // Default: new "evm" derivation
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
                 this.chain,
