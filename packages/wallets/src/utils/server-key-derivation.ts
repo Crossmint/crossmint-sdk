@@ -2,6 +2,9 @@ import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex } from "@noble/hashes/utils";
 
+import type { Chain } from "../chains/chains";
+import { getChainType } from "../signers/server/helpers/get-chain-type";
+
 const HKDF_SALT = "crossmint";
 const SECRET_PREFIX = "xmsk1_";
 
@@ -33,13 +36,14 @@ export function deriveKeyBytes(secret: string, projectId: string, environment: s
  * @param secret - Master secret (with or without xmsk1_ prefix), 64-char hex
  * @param projectId - Project ID from the API key
  * @param environment - Environment from the API key (staging, production)
- * @param chain - Chain type identifier ("evm", "solana", or "stellar")
+ * @param chain - Any supported chain (e.g., "base-sepolia", "solana"); normalized to chain type internally
  * @returns Deterministic alias string (max 36 chars)
  */
-export function deriveAlias(secret: string, projectId: string, environment: string, chain: string): string {
+export function deriveAlias(secret: string, projectId: string, environment: string, chain: Chain): string {
+    const chainType = getChainType(chain);
     const rawSecret = stripAndValidateSecret(secret);
     const ikm = hexToBytes(rawSecret);
-    const info = `${projectId}:${environment}:${chain}-alias`;
+    const info = `${projectId}:${environment}:${chainType}-alias`;
 
     // Alias max length is 36 chars. "s-" prefix (2) + 34 hex chars = 36.
     const derived = hkdf(sha256, ikm, HKDF_SALT, info, 17);

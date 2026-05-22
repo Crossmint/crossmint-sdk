@@ -49,30 +49,38 @@ describe("deriveKeyBytes", () => {
 
 describe("deriveAlias", () => {
     it("starts with s- prefix", () => {
-        const alias = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+        const alias = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
         expect(alias.startsWith("s-")).toBe(true);
     });
 
     it("is at most 36 characters", () => {
-        const alias = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+        const alias = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
         expect(alias.length).toBeLessThanOrEqual(36);
     });
 
     it("is deterministic", () => {
-        const a = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
-        const b = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+        const a = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
+        const b = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
         expect(a).toBe(b);
     });
 
     it("strips xmsk1_ prefix and produces same result", () => {
-        const withPrefix = deriveAlias(TEST_SECRET_PREFIXED, PROJECT_ID, ENVIRONMENT, "evm");
-        const withoutPrefix = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+        const withPrefix = deriveAlias(TEST_SECRET_PREFIXED, PROJECT_ID, ENVIRONMENT, "base-sepolia");
+        const withoutPrefix = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
         expect(withPrefix).toBe(withoutPrefix);
     });
 
-    it("produces different aliases for different chains", () => {
-        const evm = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+    it("produces different aliases for different chain types", () => {
+        const evm = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
         const solana = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "solana");
         expect(evm).not.toBe(solana);
+    });
+
+    it("normalizes EVM chains to the same alias", () => {
+        const baseSepolia = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
+        const polygon = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "polygon");
+        const arbitrum = deriveAlias(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "arbitrum");
+        expect(baseSepolia).toBe(polygon);
+        expect(baseSepolia).toBe(arbitrum);
     });
 });
