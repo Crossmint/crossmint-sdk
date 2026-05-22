@@ -252,6 +252,10 @@ export class Wallet<C extends Chain> {
         return wallet.#initialSigners;
     }
 
+    protected static getApiRecoveryAddress<C extends Chain>(wallet: Wallet<C>): string | undefined {
+        return wallet.#apiSourcedRecoveryAddress ?? undefined;
+    }
+
     public get apiClient(): ApiClient {
         return this.#apiClient;
     }
