@@ -907,12 +907,14 @@ export class Wallet<C extends Chain> {
      * Returns true if the signer is an admin (recovery) signer.
      */
     private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<boolean> {
-        // For non-passkey signers, check if this is the recovery (admin) signer first.
+        // For non-passkey, non-server signers, check if this is the recovery (admin) signer first.
         // Admin signers are always approved — skip the registration check and getSigner API call
         // which only works for delegated signers (returns 404/400 for admin signers).
         // Passkeys are excluded because isRecoverySigner matches by type only, which could
         // incorrectly match a delegated passkey.
-        if (signer.type !== "passkey" && this.isRecoverySigner(signer)) {
+        // Server signers are excluded so they always flow through the server signer block below,
+        // which sets #resolvedServerDerivation to the correct (primary or legacy) key.
+        if (signer.type !== "passkey" && signer.type !== "server" && this.isRecoverySigner(signer)) {
             this.#needsRecovery = false;
             return true;
         }
@@ -948,8 +950,19 @@ export class Wallet<C extends Chain> {
                 this.#needsRecovery = false;
                 return false;
             }
-            // Neither found — fall back to recovery
+            // Neither found as delegated — check if this is the recovery (admin) signer.
+            // Capture the API-sourced recovery address before isRecoverySigner upgrades #recovery.
+            const recoveryAddress =
+                this.#recovery.type === "server" && isApiSourcedServerSignerConfig(this.#recovery)
+                    ? this.#recovery.address
+                    : null;
             if (this.isRecoverySigner(signer)) {
+                // Resolve which derivation matches the on-chain recovery address
+                if (recoveryAddress != null && legacy && legacy.derivedAddress === recoveryAddress) {
+                    this.#resolvedServerDerivation = legacy;
+                } else {
+                    this.#resolvedServerDerivation = primary;
+                }
                 this.#needsRecovery = false;
                 return true;
             }
