@@ -259,9 +259,13 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve a ServerSignerConfig to an API locator string.
-     * Always derives fresh from the passed config using the normalized chain type.
+     * Uses the cached derivation from useSigner when available (handles legacy wallets),
+     * otherwise falls back to the normalized "evm" derivation (correct for new wallets).
      */
     protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
+        if (this.#resolvedServerDerivation) {
+            return `server:${this.#resolvedServerDerivation.derivedAddress}`;
+        }
         const { derivedAddress } = deriveServerSignerDetails(
             signer,
             this.chain,
