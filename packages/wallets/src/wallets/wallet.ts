@@ -254,6 +254,24 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Resolve a ServerSignerConfig to an API locator string.
+     * Uses the cached derivation from useSigner when available (matches on-chain registration),
+     * otherwise falls back to the normalized "evm" derivation (correct for new wallets).
+     */
+    protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
+        if (this.#resolvedServerDerivation) {
+            return `server:${this.#resolvedServerDerivation.derivedAddress}`;
+        }
+        const { derivedAddress } = deriveServerSignerDetails(
+            signer,
+            this.chain,
+            this.#apiClient.projectId,
+            this.#apiClient.environment
+        );
+        return `server:${derivedAddress}`;
+    }
+
+    /**
      * Get the recovery signer config
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
@@ -533,7 +551,7 @@ export class Wallet<C extends Chain> {
         } else if (typeof options.signer === "string") {
             signer = options.signer;
         } else {
-            signer = `server:${deriveServerSignerDetails(options.signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}`;
+            signer = this.resolveServerSignerApiLocator(options.signer);
         }
 
         const sendParams = {
@@ -885,7 +903,12 @@ export class Wallet<C extends Chain> {
     })
     public async useSigner(signer: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
-        this.#resolvedServerDerivation = null;
+        // Only reset when processing a fresh server signer; for other signer types the cached
+        // derivation must be preserved so that withRecoverySigner (addSigner / removeSigner)
+        // continues to use the correct primary-or-legacy key for a server recovery signer.
+        if (signer.type === "server") {
+            this.#resolvedServerDerivation = null;
+        }
         this.validateSignerInput(signer);
 
         let isAdminSigner = false;

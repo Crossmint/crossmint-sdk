@@ -23,7 +23,7 @@ import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
-import { deriveServerSignerDetails } from "../signers/server";
+import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
 
@@ -342,13 +342,16 @@ export class WalletFactory {
                     return true;
                 }
                 if (inputSigner.type === "server") {
-                    const { derivedAddress } = deriveServerSignerDetails(
+                    const { primary, legacy } = deriveServerSignerCandidates(
                         inputSigner,
                         chain,
                         this.apiClient.projectId,
                         this.apiClient.environment
                     );
-                    return existingSigner.locator === `server:${derivedAddress}`;
+                    return (
+                        existingSigner.locator === `server:${primary.derivedAddress}` ||
+                        (legacy != null && existingSigner.locator === `server:${legacy.derivedAddress}`)
+                    );
                 }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });
