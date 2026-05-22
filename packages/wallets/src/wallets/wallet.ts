@@ -1037,6 +1037,11 @@ export class Wallet<C extends Chain> {
      */
     private resolveSignerLocator(signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig): string {
         if (signer.type === "server") {
+            // Use cached derivation from resolveNonDeviceSigner when available.
+            // This ensures removeSigner on a legacy wallet uses the correct (legacy) locator.
+            if (this.#resolvedServerDerivation) {
+                return `server:${this.#resolvedServerDerivation.derivedAddress}`;
+            }
             const { derivedAddress } = deriveServerSignerDetails(
                 signer,
                 this.chain,
