@@ -30,8 +30,39 @@ export function deriveServerSignerDetails(
         throw new Error("Server signers can only be used from server-side code.");
     }
 
-    const chainStr = typeof chain === "string" ? chain : String(chain);
-    const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
+    const chainType = getChainType(chain);
+    const derivedKeyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainType);
     const derivedAddress = deriveServerSignerAddress(derivedKeyBytes, chain);
     return { derivedKeyBytes, derivedAddress };
+}
+
+export function deriveServerSignerCandidates(
+    signer: ServerSignerConfig,
+    chain: Chain,
+    projectId: string,
+    environment: string
+): {
+    primary: { derivedKeyBytes: Uint8Array; derivedAddress: string };
+    legacy: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null;
+} {
+    if (typeof window !== "undefined") {
+        throw new Error("Server signers can only be used from server-side code.");
+    }
+
+    const chainType = getChainType(chain);
+
+    // Primary: use normalized chain type ("evm" | "solana" | "stellar")
+    const primaryBytes = deriveKeyBytes(signer.secret, projectId, environment, chainType);
+    const primaryAddress = deriveServerSignerAddress(primaryBytes, chain);
+
+    // Legacy: chain-specific derivation (only matters for EVM where chain !== chainType)
+    const chainStr = typeof chain === "string" ? chain : String(chain);
+    let legacy: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null = null;
+    if (chainType === "evm" && chainStr !== "evm") {
+        const legacyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
+        const legacyAddress = deriveServerSignerAddress(legacyBytes, chain);
+        legacy = { derivedKeyBytes: legacyBytes, derivedAddress: legacyAddress };
+    }
+
+    return { primary: { derivedKeyBytes: primaryBytes, derivedAddress: primaryAddress }, legacy };
 }

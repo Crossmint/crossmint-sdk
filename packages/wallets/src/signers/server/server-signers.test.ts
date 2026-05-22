@@ -8,7 +8,12 @@ import type { ServerInternalSignerConfig } from "../types";
 import { EVMServerSigner } from "./evm-server-signer";
 import { SolanaServerSigner } from "./solana-server-signer";
 import { StellarServerSigner } from "./stellar-server-signer";
-import { assembleServerSigner, deriveServerSignerAddress, deriveServerSignerDetails } from "./index";
+import {
+    assembleServerSigner,
+    deriveServerSignerAddress,
+    deriveServerSignerDetails,
+    deriveServerSignerCandidates,
+} from "./index";
 
 const TEST_SECRET = "a".repeat(64);
 const PROJECT_ID = "project-123";
@@ -187,12 +192,72 @@ describe("deriveServerSignerDetails", () => {
         expect(result.derivedAddress).toMatch(/^0x[0-9a-fA-F]{40}$/);
     });
 
+    it("uses normalized 'evm' chain type for EVM chains", () => {
+        const config = { type: "server" as const, secret: TEST_SECRET };
+        const baseSepolia = deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
+        const ethereum = deriveServerSignerDetails(config, "ethereum", PROJECT_ID, ENVIRONMENT);
+
+        // Both EVM chains should produce the same derivation (both use "evm")
+        expect(baseSepolia.derivedAddress).toBe(ethereum.derivedAddress);
+        expect(baseSepolia.derivedKeyBytes).toEqual(ethereum.derivedKeyBytes);
+    });
+
     it("throws when called in a browser environment", () => {
         const config = { type: "server" as const, secret: TEST_SECRET };
 
         vi.stubGlobal("window", {});
         try {
             expect(() => deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT)).toThrow(
+                "Server signers can only be used from server-side code."
+            );
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+});
+
+describe("deriveServerSignerCandidates", () => {
+    const config = { type: "server" as const, secret: TEST_SECRET };
+
+    it("returns primary (evm) and legacy (chain-specific) for EVM chains", () => {
+        const result = deriveServerSignerCandidates(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
+
+        expect(result.primary.derivedKeyBytes).toBeInstanceOf(Uint8Array);
+        expect(result.primary.derivedAddress).toMatch(/^0x[0-9a-fA-F]{40}$/);
+        expect(result.legacy).not.toBeNull();
+        expect(result.legacy!.derivedKeyBytes).toBeInstanceOf(Uint8Array);
+        expect(result.legacy!.derivedAddress).toMatch(/^0x[0-9a-fA-F]{40}$/);
+
+        // Primary and legacy should produce different addresses for EVM chains
+        expect(result.primary.derivedAddress).not.toBe(result.legacy!.derivedAddress);
+    });
+
+    it("returns null legacy for solana", () => {
+        const result = deriveServerSignerCandidates(config, "solana", PROJECT_ID, ENVIRONMENT);
+
+        expect(result.primary.derivedKeyBytes).toBeInstanceOf(Uint8Array);
+        expect(result.legacy).toBeNull();
+    });
+
+    it("returns null legacy for stellar", () => {
+        const result = deriveServerSignerCandidates(config, "stellar", PROJECT_ID, ENVIRONMENT);
+
+        expect(result.primary.derivedKeyBytes).toBeInstanceOf(Uint8Array);
+        expect(result.legacy).toBeNull();
+    });
+
+    it("primary matches deriveServerSignerDetails output", () => {
+        const candidates = deriveServerSignerCandidates(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
+        const details = deriveServerSignerDetails(config, "base-sepolia", PROJECT_ID, ENVIRONMENT);
+
+        expect(candidates.primary.derivedAddress).toBe(details.derivedAddress);
+        expect(candidates.primary.derivedKeyBytes).toEqual(details.derivedKeyBytes);
+    });
+
+    it("throws when called in a browser environment", () => {
+        vi.stubGlobal("window", {});
+        try {
+            expect(() => deriveServerSignerCandidates(config, "base-sepolia", PROJECT_ID, ENVIRONMENT)).toThrow(
                 "Server signers can only be used from server-side code."
             );
         } finally {

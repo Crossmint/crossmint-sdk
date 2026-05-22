@@ -1,2 +1,6 @@
-export { deriveServerSignerAddress, deriveServerSignerDetails } from "./derive-server-signer";
+export {
+    deriveServerSignerAddress,
+    deriveServerSignerDetails,
+    deriveServerSignerCandidates,
+} from "./derive-server-signer";
 export { getChainType } from "./get-chain-type";
