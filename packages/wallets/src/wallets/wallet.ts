@@ -1011,7 +1011,10 @@ export class Wallet<C extends Chain> {
                 this.#needsRecovery = false;
                 return true;
             }
-            throw new Error(`Signer "server:${primary.derivedAddress}" is not registered in this wallet.`);
+            const tried = legacy
+                ? `"server:${primary.derivedAddress}" or "server:${legacy.derivedAddress}"`
+                : `"server:${primary.derivedAddress}"`;
+            throw new Error(`Signer ${tried} is not registered in this wallet.`);
         }
 
         // Check if this is a registered signer
