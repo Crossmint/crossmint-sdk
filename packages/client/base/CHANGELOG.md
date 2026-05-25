@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-base
 
+## 2.3.5
+
+### Patch Changes
+
+- Updated dependencies [dd7bc0c]
+  - @crossmint/common-sdk-base@0.10.1
+
 ## 2.3.4
 
 ### Patch Changes
