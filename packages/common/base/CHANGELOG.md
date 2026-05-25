@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.10.1
+
+### Patch Changes
+
+- dd7bc0c: Increase redactValue threshold from 8 to 20 chars to prevent near-full exposure of short sensitive values
+
 ## 0.10.0
 
 ### Minor Changes

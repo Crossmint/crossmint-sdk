@@ -1,5 +1,11 @@
 # @crossmint/wallets-playground-expo
 
+## 0.0.9
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.2.3
+
 ## 0.0.8
 
 ### Patch Changes

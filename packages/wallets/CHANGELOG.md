@@ -1,5 +1,16 @@
 # @crossmint/wallets-sdk
 
+## 1.1.2
+
+### Patch Changes
+
+- 7b19253: Fix device signer recovery error handling:
+  - Don't permanently cache `#deviceSignerApproved = true` when recovery fails, which was preventing future recovery attempts from running
+  - Handle "Already has the required number of approvals" response in `resumePendingDeviceSignerApproval` as a success case instead of throwing
+- Updated dependencies [dd7bc0c]
+  - @crossmint/common-sdk-base@0.10.1
+  - @crossmint/common-sdk-auth@1.1.9
+
 ## 1.1.1
 
 ### Patch Changes
