@@ -1239,10 +1239,7 @@ export class Wallet<C extends Chain> {
         } catch (error) {
             // Backend returns HTTP 422 with "Already has the required number of approvals"
             // when a concurrent process already completed the approval. Treat as success.
-            if (
-                error instanceof Error &&
-                error.message.toLowerCase().includes("required number of approvals")
-            ) {
+            if (error instanceof Error && error.message.toLowerCase().includes("required number of approvals")) {
                 deviceSigner.status = "success";
                 this.#signer = deviceSigner;
                 return;
