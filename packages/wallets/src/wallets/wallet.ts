@@ -1237,13 +1237,6 @@ export class Wallet<C extends Chain> {
                 await this.approveTransactionAndWait(pendingOperation.id);
             }
         } catch (error) {
-            // Backend returns HTTP 422 with "Already has the required number of approvals"
-            // when a concurrent process already completed the approval. Treat as success.
-            if (error instanceof Error && error.message.toLowerCase().includes("required number of approvals")) {
-                deviceSigner.status = "success";
-                this.#signer = deviceSigner;
-                return;
-            }
             // Restore the device signer (not null) so the caller has a reference to the
             // signer that was being recovered, rather than masking the failure behind a
             // generic "read-only wallet" error from requireSigner().
