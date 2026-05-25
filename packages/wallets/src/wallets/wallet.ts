@@ -1012,7 +1012,7 @@ export class Wallet<C extends Chain> {
      * (chain-specific) derivation when checking registration. Sets #resolvedServerDerivation
      * to whichever derivation is on-chain. Returns true if the signer is the admin (recovery) signer.
      */
-    private async resolveServerSigner(signer: ServerSignerConfig & SignerConfigForChain<C>): Promise<boolean> {
+    private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
         const { primary, legacy } = this.deriveServerCandidates(signer);
         if (await this.signerIsRegistered(`server:${primary.derivedAddress}`)) {
             this.#resolvedServerDerivation = primary;
@@ -1025,7 +1025,7 @@ export class Wallet<C extends Chain> {
             return false;
         }
         // Neither found as delegated — check if this is the recovery (admin) signer.
-        if (this.isRecoverySigner(signer)) {
+        if (this.isRecoverySigner(signer as SignerConfigForChain<C>)) {
             // Resolve which derivation matches the on-chain recovery address.
             // #apiSourcedRecoveryAddress is captured once from the original API response
             // and survives across isRecoverySigner upgrades and repeated useSigner calls.
