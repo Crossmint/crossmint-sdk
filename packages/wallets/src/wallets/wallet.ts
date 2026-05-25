@@ -1153,11 +1153,6 @@ export class Wallet<C extends Chain> {
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.address);
-                // Prevent repeated failure loops: mark recovery as complete so that
-                // preAuthIfNeeded() → recover() short-circuits on subsequent transactions
-                // via the #deviceSignerApproved fast-path check at the top of recover().
-                this.#needsRecovery = false;
-                this.#deviceSignerApproved = true;
                 throw error;
             }
         }
@@ -1242,6 +1237,17 @@ export class Wallet<C extends Chain> {
                 await this.approveTransactionAndWait(pendingOperation.id);
             }
         } catch (error) {
+            // If the pending operation was already completed (e.g. by a concurrent
+            // process), treat as success rather than propagating a spurious error.
+            if (
+                error instanceof Error &&
+                error.message.toLowerCase().includes("already") &&
+                error.message.toLowerCase().includes("required number of approvals")
+            ) {
+                deviceSigner.status = "success";
+                this.#signer = deviceSigner;
+                return;
+            }
             // Restore the device signer (not null) so the caller has a reference to the
             // signer that was being recovered, rather than masking the failure behind a
             // generic "read-only wallet" error from requireSigner().

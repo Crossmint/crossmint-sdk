@@ -2615,7 +2615,7 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
-        it("deletes key, set needsRecovery to false, and rethrow when addSigner fails with non-'already approved' error", async () => {
+        it("deletes key and rethrows when addSigner fails with non-'already approved' error, allowing retry on next call", async () => {
             const mockStorage = createMockDeviceKeyStorage();
 
             const wallet = new Wallet(
@@ -2638,16 +2638,12 @@ describe("Wallet - recover()", () => {
             await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
 
             expect(mockStorage.deleteKey).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890");
-            // needsRecovery should be set to false to prevent repeated failure loops
-            expect(wallet.needsRecovery()).toBe(false);
 
-            // Verify the retry loop is actually broken: a second recover() call should
-            // short-circuit via the #deviceSignerApproved fast-path, NOT re-generate a key.
-            mockStorage.generateKey.mockClear();
+            // A second recover() call should retry recovery (attempt addSigner again),
+            // not permanently cache a broken state as "approved".
             mockApiClient.registerSigner.mockClear();
-            await wallet.recover(); // should return immediately
-            expect(mockStorage.generateKey).not.toHaveBeenCalled();
-            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            await expect(wallet.recover()).rejects.toThrow("Failed to register signer");
+            expect(mockApiClient.registerSigner).toHaveBeenCalled();
         });
 
         it("preserves local key and rethrow when addSigner fails with AuthRejectedError", async () => {
@@ -2726,6 +2722,31 @@ describe("Wallet - recover()", () => {
             // The device signer should still be set (not null)
             expect(wallet.signer).toBe(deviceSigner);
             expect(wallet.signer?.type).toBe("device");
+        });
+
+        it("treats 'already has required number of approvals' as success during resume", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockGetSignerPendingSignature("sig-already-1");
+            // The signature approval throws because it was already completed
+            mockApiClient.getSignature.mockResolvedValue({
+                error: { message: "Already has the required number of approvals" },
+            } as any);
+
+            await wallet.recover();
+
+            // Should succeed (not throw) — the pending operation was already completed
+            expect(wallet.signer).toBe(deviceSigner);
+            expect(wallet.signer?.status).toBe("success");
         });
 
         it("resumes pending transaction approval on Stellar chain", async () => {
