@@ -1237,11 +1237,10 @@ export class Wallet<C extends Chain> {
                 await this.approveTransactionAndWait(pendingOperation.id);
             }
         } catch (error) {
-            // If the pending operation was already completed (e.g. by a concurrent
-            // process), treat as success rather than propagating a spurious error.
+            // Backend returns HTTP 422 with "Already has the required number of approvals"
+            // when a concurrent process already completed the approval. Treat as success.
             if (
                 error instanceof Error &&
-                error.message.toLowerCase().includes("already") &&
                 error.message.toLowerCase().includes("required number of approvals")
             ) {
                 deviceSigner.status = "success";

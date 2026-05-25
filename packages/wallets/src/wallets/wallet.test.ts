@@ -2749,6 +2749,31 @@ describe("Wallet - recover()", () => {
             expect(wallet.signer?.status).toBe("success");
         });
 
+        it("treats plain 422 error from approval submission as success during resume", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            mockGetSignerPendingSignature("sig-already-2");
+            // Simulate the real production path: approveSignatureAndWait throws a plain
+            // Error with the exact backend 422 message (not wrapped in JSON)
+            vi.spyOn(wallet as any, "approveSignatureAndWait").mockRejectedValue(
+                new Error("Already has the required number of approvals")
+            );
+
+            await wallet.recover();
+
+            expect(wallet.signer).toBe(deviceSigner);
+            expect(wallet.signer?.status).toBe("success");
+        });
+
         it("resumes pending transaction approval on Stellar chain", async () => {
             const deviceSigner = createDeviceSignerAdapter("device:stellar-device", undefined);
             const wallet = new Wallet(
