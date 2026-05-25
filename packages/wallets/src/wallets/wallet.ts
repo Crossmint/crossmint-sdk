@@ -1153,11 +1153,6 @@ export class Wallet<C extends Chain> {
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.address);
-                // Prevent repeated failure loops: mark recovery as complete so that
-                // preAuthIfNeeded() → recover() short-circuits on subsequent transactions
-                // via the #deviceSignerApproved fast-path check at the top of recover().
-                this.#needsRecovery = false;
-                this.#deviceSignerApproved = true;
                 throw error;
             }
         }

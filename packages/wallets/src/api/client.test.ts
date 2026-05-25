@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
 import type { ApiClient } from "./client";
-import type { CreateWalletParams, SendParams } from "./types";
+import type { ApproveSignatureParams, CreateWalletParams, SendParams } from "./types";
 import { WALLET_LOCATORS, TOKEN_LOCATORS } from "./__tests__/constants";
 import {
     createMockWalletResponse,
     createMockSendResponse,
     createMockSuccessResponse,
     createMockErrorResponse,
+    createMockResponse,
     createTestApiClient,
     createServerSideApiClient,
     extractFetchCall,
@@ -1334,5 +1335,61 @@ describe("ApiClient - edge cases and integration scenarios", () => {
                 expect(() => JSON.parse(call.options.body as string)).not.toThrow();
             }
         });
+    });
+});
+
+describe("ApiClient - approveSignature()", () => {
+    let apiClient: ApiClient;
+    let mockPost: MockedFunction<ApiClient["post"]>;
+    let mockGet: MockedFunction<ApiClient["get"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockPost = vi.spyOn(apiClient, "post") as MockedFunction<ApiClient["post"]>;
+        mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("returns the approval response on success", async () => {
+        const mockResponse = { id: "sig-1", status: "success", outputSignature: "0xabc" };
+        mockPost.mockResolvedValue(createMockSuccessResponse(mockResponse));
+
+        const result = await apiClient.approveSignature(WALLET_LOCATORS.evmSmart, "sig-1", {
+            approvals: [],
+        } as unknown as ApproveSignatureParams);
+
+        expect(result).toEqual(mockResponse);
+    });
+
+    it("re-fetches signature state on HTTP 422 instead of returning error body", async () => {
+        const errorBody = { error: true, message: "Already has the required number of approvals" };
+        mockPost.mockResolvedValue(
+            createMockResponse({ data: errorBody, status: 422, ok: false, statusText: "Unprocessable Entity" })
+        );
+
+        const currentSignature = { id: "sig-1", status: "success", outputSignature: "0xabc" };
+        mockGet.mockResolvedValue(createMockSuccessResponse(currentSignature));
+
+        const result = await apiClient.approveSignature(WALLET_LOCATORS.evmSmart, "sig-1", {
+            approvals: [],
+        } as unknown as ApproveSignatureParams);
+
+        expect(result).toEqual(currentSignature);
+        expect(mockGet).toHaveBeenCalledTimes(1);
+    });
+
+    it("returns error body for non-422 error responses", async () => {
+        const errorBody = { error: true, message: "Invalid signature" };
+        mockPost.mockResolvedValue(createMockErrorResponse(errorBody, 400, "Bad Request"));
+
+        const result = await apiClient.approveSignature(WALLET_LOCATORS.evmSmart, "sig-1", {
+            approvals: [],
+        } as unknown as ApproveSignatureParams);
+
+        expect(result).toEqual(errorBody);
+        expect(mockGet).not.toHaveBeenCalled();
     });
 });
