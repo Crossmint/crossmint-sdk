@@ -26,7 +26,11 @@ export function WalletDisplay() {
         <View style={{ gap: 8 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Text style={{ color: "#6B7280" }}>Address</Text>
-                <TouchableOpacity testID="copy-address-button" onPress={copyAddress} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <TouchableOpacity
+                    testID="copy-address-button"
+                    onPress={copyAddress}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
                     <Text
                         testID="wallet-address"
                         style={{ fontWeight: "500" }}

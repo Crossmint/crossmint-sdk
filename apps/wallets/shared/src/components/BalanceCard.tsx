@@ -28,7 +28,9 @@ export function BalanceCard({ wallet }: { wallet: any }) {
             {TOKENS.map((token) => (
                 <View key={token} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
                     <Text style={{ color: "#6B7280" }}>{token.toUpperCase()}</Text>
-                    <Text testID={`${token}-balance`} style={{ fontWeight: "500" }}>{balances[token] ?? "—"}</Text>
+                    <Text testID={`${token}-balance`} style={{ fontWeight: "500" }}>
+                        {balances[token] ?? "—"}
+                    </Text>
                 </View>
             ))}
             <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>

@@ -97,7 +97,11 @@ export function TransferForm({ wallet }: { wallet: any }) {
             </TouchableOpacity>
             {error ? <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
             {txLink ? (
-                <TouchableOpacity testID="successful-tx-link" onPress={() => Linking.openURL(txLink)} style={{ marginTop: 8 }}>
+                <TouchableOpacity
+                    testID="successful-tx-link"
+                    onPress={() => Linking.openURL(txLink)}
+                    style={{ marginTop: 8 }}
+                >
                     <Text style={{ color: "#13b601" }}>View transaction</Text>
                 </TouchableOpacity>
             ) : null}

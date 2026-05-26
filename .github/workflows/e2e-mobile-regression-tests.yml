@@ -186,7 +186,7 @@ jobs:
                   MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
               with:
-                  api-level: 29
+                  api-level: 35
                   arch: x86_64
                   profile: pixel_2
                   avd-name: test
@@ -198,7 +198,13 @@ jobs:
                       adb reverse tcp:8081 tcp:8081
                       cd apps/wallets/expo
                       CI=1 npx expo start --port 8081 --localhost &
-                      sleep 15
+                      for i in $(seq 1 30); do
+                        if curl -sf http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+                          echo "Metro ready after $((i * 2))s"
+                          break
+                        fi
+                        sleep 2
+                      done
                       mkdir -p test-results
                       $HOME/.maestro/bin/maestro test \
                         --format junit \
