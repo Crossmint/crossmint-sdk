@@ -48,6 +48,8 @@ export interface CrossmintWalletProviderProps {
     children: ReactNode;
 }
 
+const MAX_HANDSHAKE_RETRIES = 2;
+
 const PASSKEY_RN_ERROR =
     "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
 
@@ -137,6 +139,7 @@ function CrossmintWalletProviderInternal({
     const handshakeInProgressRef = useRef<boolean>(false);
     const handshakeGenerationRef = useRef<number>(0);
     const handshakeStartTimeRef = useRef<number>(0);
+    const handshakeRetryCountRef = useRef<number>(0);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -180,6 +183,7 @@ function CrossmintWalletProviderInternal({
                     parent.isConnected = false;
                     await parent.handshakeWithChild();
                     const durationMs = Date.now() - handshakeStartTime;
+                    handshakeRetryCountRef.current = 0;
                     logger.info("react-native.wallet.webview.handshake.success", {
                         trigger,
                         generation,
@@ -187,6 +191,38 @@ function CrossmintWalletProviderInternal({
                     });
                 } catch (e) {
                     const durationMs = Date.now() - handshakeStartTime;
+                    const errorMessage = e instanceof Error ? e.message : String(e);
+                    const isTimeout =
+                        typeof e === "string"
+                            ? e.startsWith("Timed out") || e.startsWith("Max retries")
+                            : errorMessage.startsWith("Timed out") || errorMessage.startsWith("Max retries");
+
+                    if (isTimeout && handshakeRetryCountRef.current < MAX_HANDSHAKE_RETRIES) {
+                        handshakeRetryCountRef.current++;
+                        const retryAttempt = handshakeRetryCountRef.current;
+
+                        logger.info("react-native.wallet.webview.handshake.retry", {
+                            trigger,
+                            generation,
+                            durationMs,
+                            retryAttempt,
+                            maxRetries: MAX_HANDSHAKE_RETRIES,
+                            error: errorMessage,
+                        });
+
+                        // Increment generation so stale attempts don't interfere
+                        handshakeGenerationRef.current++;
+                        handshakeTriggeredRef.current = false;
+                        handshakeInProgressRef.current = false;
+                        if (webViewParentRef.current != null) {
+                            webViewParentRef.current.isConnected = false;
+                        }
+                        webviewRef.current?.reload();
+                        performHandshake("eager");
+                        return;
+                    }
+
+                    handshakeRetryCountRef.current = 0;
                     if (generation === handshakeGenerationRef.current) {
                         handshakeTriggeredRef.current = false;
                     }
@@ -194,7 +230,8 @@ function CrossmintWalletProviderInternal({
                         trigger,
                         generation,
                         durationMs,
-                        error: e instanceof Error ? e.message : String(e),
+                        error: errorMessage,
+                        retriesExhausted: isTimeout,
                     });
                     console.error("[CrossmintWalletProvider] Handshake error:", e);
                 } finally {
