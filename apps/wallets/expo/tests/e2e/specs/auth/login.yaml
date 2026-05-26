@@ -7,7 +7,7 @@ env:
 - runScript:
     file: ../../../shared/utils/generateEmail.js
 
-# Step 2: Launch app with clean state (clear keychain to force login screen)
+# Step 2: Launch app with clean state (iOS: clears Keychain; Android: clears AsyncStorage/SecureStore)
 - launchApp:
     clearKeychain: true
     clearState: true

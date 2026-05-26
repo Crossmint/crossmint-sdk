@@ -82,7 +82,6 @@ jobs:
               working-directory: apps/wallets/expo
               run: |
                   CI=1 npx expo start --port 8081 --localhost &
-                  echo "METRO_PID=$!" >> $GITHUB_ENV
                   for i in $(seq 1 30); do
                     if curl -sf http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
                       echo "Metro ready after $((i * 2))s"
@@ -97,7 +96,6 @@ jobs:
                   echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
             - name: Run iOS Maestro tests
-              id: run-ios-tests
               working-directory: apps/wallets/expo
               env:
                   MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
