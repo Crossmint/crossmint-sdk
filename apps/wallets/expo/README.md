@@ -113,9 +113,3 @@ tests/
         ├── generateEmail.js      # Generates a unique Mailosaur test email per run
         └── getOtp.js             # Polls Mailosaur API and extracts the 6-digit OTP
 ```
-
-### CI
-
-Tests run nightly at 07:00 UTC on iOS (`macos-latest`) and Android (`ubuntu-latest` with KVM acceleration) in parallel via `.github/workflows/e2e-mobile-regression-tests.yml`. Results are posted to `#team-qa-regression-test-alerts` on Slack.
-
-To trigger a manual run: go to **Actions → Mobile E2E Regression Tests → Run workflow** (available after the workflow is on `main`).
