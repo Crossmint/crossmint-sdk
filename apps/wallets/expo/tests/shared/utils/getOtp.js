@@ -38,19 +38,16 @@ var startTime = Date.now();
 var message = null;
 
 while (!message && Date.now() - startTime < timeout) {
-    var searchResponse = http.post(
-        "https://mailosaur.com/api/messages/search?server=" + MAILOSAUR_SERVER_ID,
-        {
-            headers: {
-                Authorization: authHeader,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                sentTo: EMAIL,
-                sentFrom: "signin@crossmint.com",
-            }),
+    var searchResponse = http.post("https://mailosaur.com/api/messages/search?server=" + MAILOSAUR_SERVER_ID, {
+        headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/json",
         },
-    );
+        body: JSON.stringify({
+            sentTo: EMAIL,
+            sentFrom: "signin@crossmint.com",
+        }),
+    });
 
     if (searchResponse.ok) {
         var result = json(searchResponse.body);
