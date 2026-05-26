@@ -192,10 +192,7 @@ function CrossmintWalletProviderInternal({
                 } catch (e) {
                     const durationMs = Date.now() - handshakeStartTime;
                     const errorMessage = e instanceof Error ? e.message : String(e);
-                    const isTimeout =
-                        typeof e === "string"
-                            ? e.startsWith("Timed out") || e.startsWith("Max retries")
-                            : errorMessage.startsWith("Timed out") || errorMessage.startsWith("Max retries");
+                    const isTimeout = errorMessage.startsWith("Timed out") || errorMessage.startsWith("Max retries");
 
                     if (isTimeout && handshakeRetryCountRef.current < MAX_HANDSHAKE_RETRIES) {
                         handshakeRetryCountRef.current++;
@@ -454,6 +451,7 @@ function CrossmintWalletProviderInternal({
                             });
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
+                            handshakeRetryCountRef.current = 0;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
@@ -472,6 +470,7 @@ function CrossmintWalletProviderInternal({
                             });
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
+                            handshakeRetryCountRef.current = 0;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
