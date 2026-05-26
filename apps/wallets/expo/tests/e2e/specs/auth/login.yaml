@@ -10,6 +10,7 @@ env:
 # Step 2: Launch app with clean state (clear keychain to force login screen)
 - launchApp:
     clearKeychain: true
+    clearState: true
 # Wait up to 30s for the login screen — Android needs time to reload the JS bundle from Metro
 - extendedWaitUntil:
     visible:
