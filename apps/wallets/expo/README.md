@@ -92,14 +92,6 @@ pnpm test:maestro \
   --env MAILOSAUR_SERVER_ID=<id>
 ```
 
-**Auth suite only:**
-
-```bash
-pnpm test:maestro:auth \
-  --env MAILOSAUR_API_KEY=<key> \
-  --env MAILOSAUR_SERVER_ID=<id>
-```
-
 **Single flow:**
 
 ```bash
@@ -121,15 +113,6 @@ tests/
         ├── generateEmail.js      # Generates a unique Mailosaur test email per run
         └── getOtp.js             # Polls Mailosaur API and extracts the 6-digit OTP
 ```
-
-### How the auth test works
-
-1. Generates a unique `test-email<timestamp>@<serverId>.mailosaur.net` address
-2. Launches the app with clean auth state (`clearKeychain` + `clearState`)
-3. Enters the email and taps **Send Code**
-4. Polls Mailosaur until the OTP email arrives (up to 60s), extracts the 6-digit code
-5. Enters the OTP and taps **Verify**
-6. Asserts the wallet dashboard is visible (`logout-button`)
 
 ### CI
 
