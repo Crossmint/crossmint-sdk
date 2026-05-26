@@ -60,6 +60,21 @@ export class InvalidSignerError extends CrossmintSDKError {
     }
 }
 
+/**
+ * Stable error code returned by the wallets API when a Solana smart wallet's underlying
+ * provider does not support device signers. The SDK catches this code in `recover()` and
+ * transparently falls back to the recovery signer so seamless provider-aware defaults work
+ * without exposing the provider name on the API response. Must match the backend constant
+ * `DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE`.
+ */
+export const DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE = "DEVICE_SIGNER_NOT_SUPPORTED";
+
+export class DeviceSignerNotSupportedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
 export class InvalidMessageFormatError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.MESSAGE_INVALID, details);
@@ -180,6 +195,7 @@ export type WalletError =
     | WalletTypeMismatchError
     | SignerTypeMismatchError
     | InvalidSignerError
+    | DeviceSignerNotSupportedError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError
