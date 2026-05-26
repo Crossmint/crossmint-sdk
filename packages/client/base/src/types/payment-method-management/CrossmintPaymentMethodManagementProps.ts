@@ -32,4 +32,5 @@ export type CrossmintPaymentMethod = {
 export type PaymentMethodManagementAppearance = {
     fonts?: EmbeddedCheckoutV3Appearance["fonts"];
     variables?: EmbeddedCheckoutV3Appearance["variables"];
+    rules?: EmbeddedCheckoutV3Appearance["rules"];
 };
