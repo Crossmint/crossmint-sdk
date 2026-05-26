@@ -44,6 +44,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 {TOKENS.map((t, i) => (
                     <TouchableOpacity
                         key={t}
+                        testID={`token-selector-${t}`}
                         onPress={() => setTokenIdx(i)}
                         style={{
                             padding: 8,
@@ -62,6 +63,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 ))}
             </View>
             <TextInput
+                testID="recipient-input"
                 style={inputStyle}
                 placeholder="Recipient address"
                 value={recipient}
@@ -69,6 +71,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 autoCapitalize="none"
             />
             <TextInput
+                testID="amount-input"
                 style={inputStyle}
                 placeholder="Amount"
                 value={amount}
@@ -76,6 +79,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 keyboardType="numeric"
             />
             <TouchableOpacity
+                testID="transfer-button"
                 style={{
                     backgroundColor: "#13b601",
                     padding: 14,
@@ -93,7 +97,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
             </TouchableOpacity>
             {error ? <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
             {txLink ? (
-                <TouchableOpacity onPress={() => Linking.openURL(txLink)} style={{ marginTop: 8 }}>
+                <TouchableOpacity testID="successful-tx-link" onPress={() => Linking.openURL(txLink)} style={{ marginTop: 8 }}>
                     <Text style={{ color: "#13b601" }}>View transaction</Text>
                 </TouchableOpacity>
             ) : null}

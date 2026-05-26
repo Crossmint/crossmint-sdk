@@ -1,0 +1,371 @@
+name: Mobile E2E Regression Tests
+
+on:
+    schedule:
+        - cron: "0 7 * * *"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    maestro-ios:
+        name: iOS E2E Tests
+        runs-on: macos-latest
+        timeout-minutes: 60
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build workspace dependencies
+              run: pnpm run build --filter=@crossmint/wallets-playground-expo^...
+
+            - name: Write app .env.local
+              working-directory: apps/wallets/expo
+              run: |
+                  printf 'EXPO_PUBLIC_CROSSMINT_API_KEY=%s\nEXPO_PUBLIC_CHAIN=base-sepolia\n' \
+                    "${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}" > .env.local
+
+            - name: Expo prebuild (iOS)
+              working-directory: apps/wallets/expo
+              run: npx expo prebuild --platform ios --no-install
+
+            - name: Install CocoaPods dependencies
+              working-directory: apps/wallets/expo/ios
+              run: pod install
+
+            - name: Build iOS app for simulator
+              working-directory: apps/wallets/expo
+              run: |
+                  SCHEME=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1 | xargs basename | sed 's/\.xcworkspace//')
+                  xcodebuild \
+                    -workspace "ios/${SCHEME}.xcworkspace" \
+                    -scheme "${SCHEME}" \
+                    -configuration Debug \
+                    -sdk iphonesimulator \
+                    -destination 'generic/platform=iOS Simulator' \
+                    -derivedDataPath ios/build \
+                    CODE_SIGNING_ALLOWED=NO \
+                    build
+
+            - name: Boot iOS simulator and install app
+              working-directory: apps/wallets/expo
+              run: |
+                  UDID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro\|Max" | head -1 | grep -oE '\([0-9A-F-]+\)' | tr -d '()')
+                  if [ -z "$UDID" ]; then
+                    UDID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '\([0-9A-F-]+\)' | tr -d '()')
+                  fi
+                  echo "Booting simulator: $UDID"
+                  xcrun simctl boot "$UDID" || true
+                  xcrun simctl bootstatus "$UDID" -b
+                  APP=$(find ios/build -name "*.app" -not -name "*.appex" | head -1)
+                  echo "Installing: $APP"
+                  xcrun simctl install "$UDID" "$APP"
+                  echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+
+            - name: Start Metro bundler
+              working-directory: apps/wallets/expo
+              run: |
+                  CI=1 npx expo start --port 8081 --localhost &
+                  echo "METRO_PID=$!" >> $GITHUB_ENV
+                  for i in $(seq 1 30); do
+                    if curl -sf http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+                      echo "Metro ready after $((i * 2))s"
+                      break
+                    fi
+                    sleep 2
+                  done
+
+            - name: Install Maestro
+              run: |
+                  curl -Ls "https://get.maestro.mobile.dev" | bash
+                  echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+            - name: Run iOS Maestro tests
+              id: run-ios-tests
+              working-directory: apps/wallets/expo
+              env:
+                  MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
+                  MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
+              run: |
+                  mkdir -p test-results
+                  $HOME/.maestro/bin/maestro test \
+                    --format junit \
+                    --output test-results/maestro-ios-results.xml \
+                    --env MAILOSAUR_API_KEY="$MAILOSAUR_API_KEY" \
+                    --env MAILOSAUR_SERVER_ID="$MAILOSAUR_SERVER_ID" \
+                    tests/e2e/specs/ || true
+                  if [ ! -f test-results/maestro-ios-results.xml ]; then
+                    echo "::error::No test results generated — check Maestro startup logs above."
+                    exit 1
+                  fi
+
+            - name: Upload iOS test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: maestro-ios-results
+                  path: apps/wallets/expo/test-results/
+                  retention-days: 30
+
+    maestro-android:
+        name: Android E2E Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build workspace dependencies
+              run: pnpm run build --filter=@crossmint/wallets-playground-expo^...
+
+            - name: Write app .env.local
+              working-directory: apps/wallets/expo
+              run: |
+                  printf 'EXPO_PUBLIC_CROSSMINT_API_KEY=%s\nEXPO_PUBLIC_CHAIN=base-sepolia\n' \
+                    "${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}" > .env.local
+
+            - name: Enable KVM hardware acceleration
+              run: |
+                  echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                  sudo udevadm control --reload-rules
+                  sudo udevadm trigger --name-match=kvm
+
+            - name: Expo prebuild (Android)
+              working-directory: apps/wallets/expo
+              run: npx expo prebuild --platform android --no-install
+
+            - name: Build Android APK
+              working-directory: apps/wallets/expo/android
+              run: ./gradlew assembleDebug --no-daemon
+
+            - name: Install Maestro
+              run: |
+                  curl -Ls "https://get.maestro.mobile.dev" | bash
+                  echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+            - name: Run Android Maestro tests
+              uses: reactivecircus/android-emulator-runner@v2
+              env:
+                  MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
+                  MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
+              with:
+                  api-level: 29
+                  arch: x86_64
+                  profile: pixel_2
+                  avd-name: test
+                  force-avd-creation: false
+                  emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+                  disable-animations: true
+                  script: |
+                      adb install apps/wallets/expo/android/app/build/outputs/apk/debug/app-debug.apk
+                      adb reverse tcp:8081 tcp:8081
+                      cd apps/wallets/expo
+                      CI=1 npx expo start --port 8081 --localhost &
+                      sleep 15
+                      mkdir -p test-results
+                      $HOME/.maestro/bin/maestro test \
+                        --format junit \
+                        --output test-results/maestro-android-results.xml \
+                        --env MAILOSAUR_API_KEY="$MAILOSAUR_API_KEY" \
+                        --env MAILOSAUR_SERVER_ID="$MAILOSAUR_SERVER_ID" \
+                        tests/e2e/specs/ || true
+                      if [ ! -f test-results/maestro-android-results.xml ]; then
+                        echo "::error::No test results generated — check Maestro startup logs above."
+                        exit 1
+                      fi
+
+            - name: Upload Android test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: maestro-android-results
+                  path: apps/wallets/expo/test-results/
+                  retention-days: 30
+
+    notify-slack:
+        name: Notify Slack
+        runs-on: ubuntu-latest
+        needs: [maestro-ios, maestro-android]
+        if: always()
+
+        steps:
+            - name: Download iOS test results
+              uses: actions/download-artifact@v4
+              with:
+                  name: maestro-ios-results
+                  path: test-results/ios
+              continue-on-error: true
+
+            - name: Download Android test results
+              uses: actions/download-artifact@v4
+              with:
+                  name: maestro-android-results
+                  path: test-results/android
+              continue-on-error: true
+
+            - name: Parse results and notify Slack
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_QA_ALERTS_WEBHOOK }}
+                  GITHUB_RUN_ID: ${{ github.run_id }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  GITHUB_SHA: ${{ github.sha }}
+                  IOS_OUTCOME: ${{ needs.maestro-ios.result }}
+                  ANDROID_OUTCOME: ${{ needs.maestro-android.result }}
+              run: |
+                  node << 'EOF'
+                  const fs = require('fs');
+                  const https = require('https');
+
+                  function parseJUnit(filePath) {
+                      if (!fs.existsSync(filePath)) return { total: 0, passed: 0, failed: 0, skipped: 0, time: 0, failures: [] };
+                      const xml = fs.readFileSync(filePath, 'utf8');
+                      const suiteMatch = xml.match(/<testsuite[^>]*>/);
+                      if (!suiteMatch) return { total: 0, passed: 0, failed: 0, skipped: 0, time: 0, failures: [] };
+                      const attrs = suiteMatch[0];
+                      const get = (attr) => { const m = attrs.match(new RegExp(attr + '="([^"]*)"')); return m ? parseFloat(m[1]) : 0; };
+                      const total = get('tests');
+                      const failed = get('failures') + get('errors');
+                      const skipped = get('skipped');
+                      const passed = total - failed - skipped;
+                      const time = get('time');
+                      const failures = [];
+                      for (const m of xml.matchAll(/<testcase[^>]*name="([^"]*)"[^/][^>]*>[\s\S]*?<failure[^>]*>([\s\S]*?)<\/failure>/g)) {
+                          failures.push({ name: m[1], error: m[2].trim().substring(0, 200) });
+                      }
+                      return { total, passed, failed, skipped, time, failures };
+                  }
+
+                  const ios = parseJUnit('test-results/ios/maestro-ios-results.xml');
+                  const android = parseJUnit('test-results/android/maestro-android-results.xml');
+                  const iosOutcome = process.env.IOS_OUTCOME;
+                  const androidOutcome = process.env.ANDROID_OUTCOME;
+
+                  const overallFailed = ios.failed > 0 || android.failed > 0
+                      || iosOutcome === 'failure' || androidOutcome === 'failure';
+                  const statusEmoji = overallFailed ? '\u274C' : '\u2705';
+                  const statusText = overallFailed ? 'Failed' : 'Passed';
+
+                  const runUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+                  const commitUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/commit/${process.env.GITHUB_SHA}`;
+                  const shortSha = process.env.GITHUB_SHA.substring(0, 7);
+
+                  const platformSummary = (label, outcome, stats) => {
+                      if (outcome === 'failure' && stats.total === 0) return `*${label}:*\n\u274C Job failed (build or setup error)`;
+                      if (outcome === 'skipped') return `*${label}:*\n\u23ED Skipped`;
+                      const parts = [`${stats.passed}\u2705`];
+                      if (stats.failed > 0) parts.push(`${stats.failed}\u274C`);
+                      if (stats.skipped > 0) parts.push(`${stats.skipped}\u23ED`);
+                      return `*${label}:*\n${parts.join(' ')} of ${stats.total} tests (${stats.time.toFixed(1)}s)`;
+                  };
+
+                  const allFailures = [
+                      ...ios.failures.map(f => ({ platform: 'iOS', ...f })),
+                      ...android.failures.map(f => ({ platform: 'Android', ...f })),
+                  ];
+
+                  const slackMessage = {
+                      text: `${statusEmoji} Mobile E2E Regression Tests — ${statusText}`,
+                      blocks: [
+                          {
+                              type: 'header',
+                              text: { type: 'plain_text', text: `${statusEmoji} Mobile E2E Regression Tests — ${statusText}` }
+                          },
+                          {
+                              type: 'section',
+                              fields: [
+                                  { type: 'mrkdwn', text: platformSummary('iOS', iosOutcome, ios) },
+                                  { type: 'mrkdwn', text: platformSummary('Android', androidOutcome, android) },
+                              ]
+                          },
+                          {
+                              type: 'section',
+                              text: {
+                                  type: 'mrkdwn',
+                                  text: `*Run:* <${runUrl}|View workflow>\n*Commit:* <${commitUrl}|${shortSha}>`
+                              }
+                          }
+                      ]
+                  };
+
+                  if (allFailures.length > 0) {
+                      const failText = allFailures.slice(0, 10)
+                          .map(f => `\u2022 [${f.platform}] *${f.name}*\n  \`${f.error}${f.error.length >= 200 ? '...' : ''}\``)
+                          .join('\n\n');
+                      slackMessage.blocks.push({
+                          type: 'section',
+                          text: {
+                              type: 'mrkdwn',
+                              text: `*Failed Tests (first ${Math.min(10, allFailures.length)}):*\n\n${failText}` +
+                                  (allFailures.length > 10 ? `\n\n_...and ${allFailures.length - 10} more_` : '')
+                          }
+                      });
+                  }
+
+                  slackMessage.blocks.push({ type: 'divider' });
+                  slackMessage.blocks.push({
+                      type: 'section',
+                      text: { type: 'mrkdwn', text: `\uD83D\uDD17 <${runUrl}|View full logs and artifacts>` }
+                  });
+
+                  const webhookUrl = process.env.SLACK_WEBHOOK;
+                  if (!webhookUrl) { console.error('SLACK_WEBHOOK not set'); process.exit(1); }
+
+                  const url = new URL(webhookUrl);
+                  const postData = JSON.stringify(slackMessage);
+                  const options = {
+                      hostname: url.hostname,
+                      port: 443,
+                      path: url.pathname + url.search,
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) }
+                  };
+
+                  const req = https.request(options, (res) => {
+                      let data = '';
+                      res.on('data', (c) => { data += c; });
+                      res.on('end', () => {
+                          if (res.statusCode === 200) { console.log('\u2705 Slack notification sent'); }
+                          else { console.error(`\u274C Slack POST failed: ${res.statusCode} — ${data}`); process.exit(1); }
+                      });
+                  });
+                  req.on('error', (e) => { console.error('\u274C ' + e.message); process.exit(1); });
+                  req.write(postData);
+                  req.end();
+                  EOF
