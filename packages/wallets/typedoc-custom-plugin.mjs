@@ -7,17 +7,10 @@ const pkg = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url))
 const CURRENT_MAJOR_VERSION = Number.parseInt(pkg.version.split(".")[0], 10);
 const PREVIOUS_MAJOR_VERSION = CURRENT_MAJOR_VERSION - 1;
 
-// globals.mdx → reference.mdx rename happens in the workflow
-const URL_RENAMES = { "globals.mdx": "reference" };
+const PAGE_RENAMES = { "globals.mdx": "reference", "README.mdx": "overview" };
 
 function versionBanner(pageUrl) {
-    if (pageUrl === "README.mdx") {
-        return `<Note>
-**This page has been updated for Wallets SDK V${CURRENT_MAJOR_VERSION}.** If you are using the previous version,
-see the [previous version docs](/wallets/v${PREVIOUS_MAJOR_VERSION}/overview) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
-</Note>`;
-    }
-    const pagePath = URL_RENAMES[pageUrl] ?? pageUrl.replace(/\.mdx$/, "");
+    const pagePath = PAGE_RENAMES[pageUrl] ?? pageUrl.replace(/\.mdx$/, "");
     return `<Note>
 **This page has been updated for Wallets SDK V${CURRENT_MAJOR_VERSION}.** If you are using the previous version,
 see the [previous version of this page](/sdk-reference/wallets/v${PREVIOUS_MAJOR_VERSION}/typescript/${pagePath}) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
