@@ -51,18 +51,17 @@ export function deriveServerSignerCandidates(
 
     const chainType = getChainType(chain);
 
-    // Primary: use normalized chain type ("evm" | "solana" | "stellar")
     const primaryBytes = deriveKeyBytes(signer.secret, projectId, environment, chainType);
     const primaryAddress = deriveServerSignerAddress(primaryBytes, chain);
+    const primary = { derivedKeyBytes: primaryBytes, derivedAddress: primaryAddress };
 
     // Legacy: chain-specific derivation (only matters for EVM where chain !== chainType)
     const chainStr = typeof chain === "string" ? chain : String(chain);
-    let legacy: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null = null;
     if (chainType === "evm" && chainStr !== "evm") {
         const legacyBytes = deriveKeyBytes(signer.secret, projectId, environment, chainStr);
         const legacyAddress = deriveServerSignerAddress(legacyBytes, chain);
-        legacy = { derivedKeyBytes: legacyBytes, derivedAddress: legacyAddress };
+        return { primary, legacy: { derivedKeyBytes: legacyBytes, derivedAddress: legacyAddress } };
     }
 
-    return { primary: { derivedKeyBytes: primaryBytes, derivedAddress: primaryAddress }, legacy };
+    return { primary, legacy: null };
 }
