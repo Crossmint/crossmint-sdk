@@ -89,6 +89,10 @@ jobs:
                     fi
                     sleep 2
                   done
+                  if ! curl -sf http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+                    echo "::error::Metro did not start within 60s — aborting to avoid misleading test failures"
+                    exit 1
+                  fi
 
             - name: Install Maestro
               run: |
@@ -203,6 +207,10 @@ jobs:
                         fi
                         sleep 2
                       done
+                      if ! curl -sf http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+                        echo "::error::Metro did not start within 60s — aborting to avoid misleading test failures"
+                        exit 1
+                      fi
                       mkdir -p test-results
                       $HOME/.maestro/bin/maestro test \
                         --format junit \

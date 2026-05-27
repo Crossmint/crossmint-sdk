@@ -29,7 +29,9 @@ function parseJUnit(filePath) {
     const passed = total - failed - skipped;
     const time = get("time");
     const failures = [];
-    for (const m of xml.matchAll(/<testcase[^>]*name="([^"]*)"[^/][^>]*>[\s\S]*?<failure[^>]*>([\s\S]*?)<\/failure>/g)) {
+    for (const m of xml.matchAll(
+        /<testcase[^>]*name="([^"]*)"[^/][^>]*>[\s\S]*?<failure[^>]*>([\s\S]*?)<\/failure>/g
+    )) {
         failures.push({ name: m[1], error: m[2].trim().substring(0, 200) });
     }
     return { total, passed, failed, skipped, time, failures };
@@ -40,8 +42,7 @@ const android = parseJUnit("test-results/android/maestro-android-results.xml");
 const iosOutcome = process.env.IOS_OUTCOME;
 const androidOutcome = process.env.ANDROID_OUTCOME;
 
-const overallFailed =
-    ios.failed > 0 || android.failed > 0 || iosOutcome === "failure" || androidOutcome === "failure";
+const overallFailed = ios.failed > 0 || android.failed > 0 || iosOutcome === "failure" || androidOutcome === "failure";
 const statusEmoji = overallFailed ? "\u274C" : "\u2705";
 const statusText = overallFailed ? "Failed" : "Passed";
 
