@@ -976,7 +976,7 @@ export class Wallet<C extends Chain> {
         // Passkeys are excluded because isRecoverySigner matches by type only, which could
         // incorrectly match a delegated passkey.
         // Server signers are excluded so they always flow through the server signer block below,
-        // which sets #resolvedServerDerivation to the correct (primary or legacy) key.
+        // which sets #resolvedServerSigner to the correct (primary or legacy) key.
         if (signer.type !== "passkey" && signer.type !== "server" && this.isRecoverySigner(signer)) {
             this.#needsRecovery = false;
             return true;
@@ -1017,7 +1017,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve a server signer: try primary ("evm") derivation first, fall back to legacy
-     * (chain-specific) derivation when checking registration. Sets #resolvedServerDerivation
+     * (chain-specific) derivation when checking registration. Sets #resolvedServerSigner
      * to whichever derivation is on-chain. Returns true if the signer is the admin (recovery) signer.
      */
     private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
