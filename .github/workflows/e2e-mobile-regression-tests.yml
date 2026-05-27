@@ -238,6 +238,9 @@ jobs:
         if: always()
 
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
             - name: Download iOS test results
               uses: actions/download-artifact@v4
               with:
