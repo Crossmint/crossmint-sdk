@@ -79,10 +79,16 @@ export function load(app) {
         // the frontmatter title) and insert the npm version badge.
         if (page.url === "README.mdx") {
             page.contents = page.contents.replace(/^# [^\n]+\n\n?/m, "");
+            const before = page.contents;
             page.contents = page.contents.replace(
                 /Typescript SDK for creating/,
                 `${NPM_BADGE}\n\nTypescript SDK (\`${pkg.name}\`) for creating`
             );
+            if (page.contents === before) {
+                console.warn(
+                    "[typedoc-custom-plugin] npm badge insertion failed — README description may have changed"
+                );
+            }
         }
 
         const frontmatterMatch = page.contents.match(/^---\n[\s\S]*?\n---\n/);
