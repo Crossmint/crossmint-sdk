@@ -1,4 +1,25 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { MarkdownPageEvent } from "typedoc-plugin-markdown";
+
+const pkg = JSON.parse(
+    readFileSync(join(dirname(fileURLToPath(import.meta.url)), "package.json"), "utf8"),
+);
+const CURRENT_MAJOR_VERSION = Number.parseInt(pkg.version.split(".")[0], 10);
+const PREVIOUS_MAJOR_VERSION = CURRENT_MAJOR_VERSION - 1;
+
+const VERSION_BANNER = `<Note>
+**This page has been updated for Wallets SDK V${CURRENT_MAJOR_VERSION}.** If you are using the previous version,
+see the [previous version of this page](/sdk-reference/wallets/v${PREVIOUS_MAJOR_VERSION}/typescript/{page}) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
+</Note>`;
+
+// Mirror the file renames done in .github/workflows/sdk-docs-generate.yml so
+// the {page} link points at the slug the page is actually published under.
+const SLUG_REMAP = {
+    globals: "reference",
+    README: "overview",
+};
 
 export function load(app) {
     app.renderer.postRenderAsyncJobs.push(async (renderer) => {
@@ -44,5 +65,17 @@ export function load(app) {
 
         // add "./" to beginning of links so they open in same tab in mintlify
         page.contents = page.contents.replace(/\]\((?!http|\.{2}\/)/g, "](./");
+
+        const rawSlug = page.url.replace(/\.mdx$/, "");
+        const slug = SLUG_REMAP[rawSlug] ?? rawSlug;
+        const banner = VERSION_BANNER.replaceAll("{page}", slug);
+        const frontmatterMatch = page.contents.match(/^---\n[\s\S]*?\n---\n/);
+        if (frontmatterMatch) {
+            const idx = frontmatterMatch[0].length;
+            const body = page.contents.slice(idx).replace(/^\n+/, "");
+            page.contents = `${frontmatterMatch[0]}\n${banner}\n\n${body}`;
+        } else {
+            page.contents = `${banner}\n\n${page.contents.replace(/^\n+/, "")}`;
+        }
     });
 }
