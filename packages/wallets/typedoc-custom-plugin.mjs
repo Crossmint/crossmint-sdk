@@ -3,15 +3,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MarkdownPageEvent } from "typedoc-plugin-markdown";
 
-const pkg = JSON.parse(
-    readFileSync(join(dirname(fileURLToPath(import.meta.url)), "package.json"), "utf8"),
-);
+const pkg = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "package.json"), "utf8"));
 const CURRENT_MAJOR_VERSION = Number.parseInt(pkg.version.split(".")[0], 10);
 const PREVIOUS_MAJOR_VERSION = CURRENT_MAJOR_VERSION - 1;
 
 const VERSION_BANNER = `<Note>
 **This page has been updated for Wallets SDK V${CURRENT_MAJOR_VERSION}.** If you are using the previous version,
-see the [previous version docs](/wallets/v${PREVIOUS_MAJOR_VERSION}/overview) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
+see the [previous version docs](/sdk-reference/wallets/v${PREVIOUS_MAJOR_VERSION}/typescript/overview) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
 </Note>`;
 
 // README.mdx is renamed to overview.mdx in the workflow; its typedoc-derived
@@ -20,6 +18,8 @@ see the [previous version docs](/wallets/v${PREVIOUS_MAJOR_VERSION}/overview) or
 const TITLE_OVERRIDES = {
     "README.mdx": "Getting Started",
 };
+
+const NPM_BADGE = `### Latest Node.js SDK version - <a href="https://www.npmjs.com/package/${pkg.name}" target="_blank" rel="noopener" style={{display: "inline-block", verticalAlign: "middle", textDecoration: "none", borderBottom: "none"}}><img src="https://img.shields.io/npm/v/${pkg.name}" alt="npm" style={{display: "inline-block", verticalAlign: "middle", margin: 0}} noZoom /></a>`;
 
 export function load(app) {
     app.renderer.postRenderAsyncJobs.push(async (renderer) => {
@@ -70,6 +70,20 @@ export function load(app) {
         // add "./" to bare relative links (so Mintlify keeps them in-tab) — leave
         // absolute paths (/...), parent-relative (../), and full URLs alone.
         page.contents = page.contents.replace(/\]\((?!http|\/|\.{2}\/)/g, "](./");
+
+        // Strip angle brackets from SCREAMING_SNAKE_CASE placeholders in quoted
+        // strings, e.g. "<YOUR_API_KEY>" -> "YOUR_API_KEY" (Mintlify style guide).
+        page.contents = page.contents.replace(/"<([A-Z][A-Z0-9_]+)>"/g, '"$1"');
+
+        // For the overview (README) page: strip the H1 heading (already covered by
+        // the frontmatter title) and insert the npm version badge.
+        if (page.url === "README.mdx") {
+            page.contents = page.contents.replace(/^# [^\n]+\n\n?/m, "");
+            page.contents = page.contents.replace(
+                /Typescript SDK for creating/,
+                `${NPM_BADGE}\n\nTypescript SDK (\`${pkg.name}\`) for creating`
+            );
+        }
 
         const frontmatterMatch = page.contents.match(/^---\n[\s\S]*?\n---\n/);
         if (frontmatterMatch) {
