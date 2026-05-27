@@ -427,34 +427,24 @@ export class Wallet<C extends Chain> {
         if (requestedTokenSet.has(symbol)) return true;
 
         const chainData = token.chains?.[this.chain];
+        if (chainData == null) return false;
 
-        if (this.chain === "solana" && chainData != null && "mintHash" in chainData) {
+        if (this.chain === "solana" && "mintHash" in chainData) {
             const mint = (chainData.mintHash as string | undefined)?.toLowerCase();
-            if (mint != null) {
-                if (requestedTokenSet.has(mint)) return true;
-                if (requestedTokenSet.has(`solana:${mint}`)) return true;
-            }
+            return mint != null && (requestedTokenSet.has(mint) || requestedTokenSet.has(`solana:${mint}`));
         }
 
-        if (
-            this.chain !== "solana" &&
-            this.chain !== "stellar" &&
-            chainData != null &&
-            "contractAddress" in chainData
-        ) {
-            const addr = (chainData.contractAddress as string | undefined)?.toLowerCase();
-            if (addr != null) {
-                if (requestedTokenSet.has(addr)) return true;
-                if (requestedTokenSet.has(`${this.chain}:${addr}`)) return true;
-            }
-        }
-
-        if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
+        if (this.chain === "stellar" && "contractId" in chainData) {
             const contractId = (chainData.contractId as string | undefined)?.toLowerCase();
-            if (contractId != null) {
-                if (requestedTokenSet.has(contractId)) return true;
-                if (requestedTokenSet.has(`stellar:${contractId}`)) return true;
-            }
+            return (
+                contractId != null &&
+                (requestedTokenSet.has(contractId) || requestedTokenSet.has(`stellar:${contractId}`))
+            );
+        }
+
+        if ("contractAddress" in chainData) {
+            const addr = (chainData.contractAddress as string | undefined)?.toLowerCase();
+            return addr != null && (requestedTokenSet.has(addr) || requestedTokenSet.has(`${this.chain}:${addr}`));
         }
 
         return false;
