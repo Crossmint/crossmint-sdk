@@ -5,11 +5,15 @@ name: Trigger Mobile E2E Tests
 
 on:
     pull_request:
-        types: [opened, synchronize, reopened]
+        types: [opened, synchronize, reopened, ready_for_review]
         paths:
             - "apps/wallets/expo/**"
             - "packages/wallets/**"
             - "packages/client/**"
+
+concurrency:
+    group: mobile-e2e-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
 
 permissions:
     contents: read
@@ -18,6 +22,7 @@ jobs:
     dispatch:
         name: Dispatch to mobile E2E test repo
         runs-on: ubuntu-latest
+        if: github.event.pull_request.draft == false
         steps:
             - name: Dispatch e2e tests
               uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
