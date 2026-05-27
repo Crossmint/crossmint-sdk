@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.2.4
+
+### Patch Changes
+
+- 76a1c7f: fix: retry handshake on timeout with WebView reload instead of silently failing
+- Updated dependencies [37d0cce]
+- Updated dependencies [53ff96c]
+  - @crossmint/client-sdk-base@2.4.0
+  - @crossmint/wallets-sdk@1.2.0
+  - @crossmint/client-sdk-auth@1.3.12
+  - @crossmint/client-sdk-react-base@2.0.22
+  - @crossmint/common-sdk-auth@1.1.10
+
 ## 1.2.3
 
 ### Patch Changes
