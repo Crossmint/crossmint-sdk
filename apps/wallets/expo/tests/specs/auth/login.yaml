@@ -5,7 +5,7 @@ env:
 ---
 # Step 1: Generate a unique test email for this run (mirrors web test pattern)
 - runScript:
-    file: ../../../shared/utils/generateEmail.js
+    file: ../../shared/utils/generateEmail.js
 
 # Step 2: Launch app with clean state (iOS: clears Keychain; Android: clears AsyncStorage/SecureStore)
 - launchApp:
@@ -26,7 +26,7 @@ env:
 
 # Step 4: Wait for and retrieve the 6-digit login OTP from Mailosaur
 - runScript:
-    file: ../../../shared/utils/getOtp.js
+    file: ../../shared/utils/getOtp.js
     env:
       EMAIL: ${output.email}
 

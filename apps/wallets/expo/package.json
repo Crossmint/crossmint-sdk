@@ -7,8 +7,8 @@
         "ios": "npx expo run:ios",
         "android": "npx expo run:android",
         "start": "npx expo start",
-        "test:maestro": "maestro test tests/e2e/specs/",
-        "test:maestro:auth": "maestro test tests/e2e/specs/auth/login.yaml"
+        "test:maestro": "maestro test tests/specs/",
+        "test:maestro:auth": "maestro test tests/specs/auth/login.yaml"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",

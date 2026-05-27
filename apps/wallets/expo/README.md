@@ -95,7 +95,7 @@ pnpm test:maestro \
 **Single flow:**
 
 ```bash
-maestro test tests/e2e/specs/auth/login.yaml \
+maestro test tests/specs/auth/login.yaml \
   --env MAILOSAUR_API_KEY=<key> \
   --env MAILOSAUR_SERVER_ID=<id>
 ```
@@ -104,12 +104,13 @@ maestro test tests/e2e/specs/auth/login.yaml \
 
 ```
 tests/
-├── e2e/
-│   └── specs/
-│       └── auth/
-│           └── login.yaml        # Login flow (email OTP → wallet dashboard)
-└── shared/
-    └── utils/
-        ├── generateEmail.js      # Generates a unique Mailosaur test email per run
-        └── getOtp.js             # Polls Mailosaur API and extracts the 6-digit OTP
+├── specs/
+│   └── auth/
+│       └── login.yaml            # Login flow (email OTP → wallet dashboard)
+├── shared/
+│   └── utils/
+│       ├── generateEmail.js      # Generates a unique Mailosaur test email per run
+│       └── getOtp.js             # Polls Mailosaur API and extracts the 6-digit OTP
+└── scripts/
+    └── notify-slack.js           # Parses JUnit results and posts to Slack (used by CI)
 ```
