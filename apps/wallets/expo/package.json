@@ -6,9 +6,7 @@
     "scripts": {
         "ios": "npx expo run:ios",
         "android": "npx expo run:android",
-        "start": "npx expo start",
-        "test:maestro": "maestro test tests/specs/",
-        "test:maestro:auth": "maestro test tests/specs/auth/login.yaml"
+        "start": "npx expo start"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
