@@ -68,10 +68,7 @@ import type {
 import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig, AuthRejectedError } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
-import {
-    deriveServerSignerDetails,
-    deriveServerSignerCandidates as deriveServerSignerCandidatesHelper,
-} from "../signers/server";
+import { deriveServerSignerCandidates as deriveServerSignerCandidatesHelper } from "../signers/server";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
@@ -298,17 +295,33 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Resolve a ServerSignerConfig to an API locator string.
-     * Uses the cached derivation from useSigner when it belongs to this signer (handles legacy wallets),
-     * otherwise falls back to the normalized "evm" derivation (correct for new wallets).
+     * Resolve which derivation (primary "evm" or legacy chain-specific) to use for a server signer.
+     * Priority: cached resolution → legacy if it matches API recovery address → primary.
      */
-    protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
+    private resolveServerSignerDerivation(signer: ServerSignerConfig): {
+        derivedKeyBytes: Uint8Array;
+        derivedAddress: string;
+    } {
         const resolved = this.matchResolvedServerSigner(signer);
         if (resolved != null) {
-            return `server:${resolved.derivedAddress}`;
+            return resolved;
         }
-        const { primary } = this.deriveServerSignerCandidates(signer);
-        return `server:${primary.derivedAddress}`;
+        const { primary, legacy } = this.deriveServerSignerCandidates(signer);
+        if (
+            this.#apiSourcedRecoveryAddress != null &&
+            legacy != null &&
+            legacy.derivedAddress === this.#apiSourcedRecoveryAddress
+        ) {
+            return legacy;
+        }
+        return primary;
+    }
+
+    /**
+     * Resolve a ServerSignerConfig to an API locator string.
+     */
+    protected resolveServerSignerApiLocator(signer: ServerSignerConfig): string {
+        return `server:${this.resolveServerSignerDerivation(signer).derivedAddress}`;
     }
 
     /**
@@ -721,7 +734,7 @@ export class Wallet<C extends Chain> {
         // Resolve server signer config to locator string
         const resolvedSigner =
             typeof signer === "object" && "type" in signer && signer.type === "server"
-                ? (`server:${deriveServerSignerDetails(signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment).derivedAddress}` as const)
+                ? (this.resolveServerSignerApiLocator(signer) as `server:${string}`)
                 : signer;
 
         return this.withRecoverySigner(async () => {
@@ -1769,35 +1782,12 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                 } as InternalSignerConfig<C>;
             case "server": {
-                // Use cached resolution when it belongs to this signer (matches what is on-chain)
-                const resolved = this.matchResolvedServerSigner(config);
-                if (resolved != null) {
-                    return {
-                        type: "server",
-                        derivedKeyBytes: resolved.derivedKeyBytes,
-                        locator: `server:${resolved.derivedAddress}` as ServerSignerLocator,
-                        address: resolved.derivedAddress,
-                    } as InternalSignerConfig<C>;
-                }
-                // Fallback: prefer legacy if it matches the original recovery address
-                const { primary, legacy } = this.deriveServerSignerCandidates(config);
-                if (
-                    this.#apiSourcedRecoveryAddress != null &&
-                    legacy != null &&
-                    legacy.derivedAddress === this.#apiSourcedRecoveryAddress
-                ) {
-                    return {
-                        type: "server",
-                        derivedKeyBytes: legacy.derivedKeyBytes,
-                        locator: `server:${legacy.derivedAddress}` as ServerSignerLocator,
-                        address: legacy.derivedAddress,
-                    } as InternalSignerConfig<C>;
-                }
+                const { derivedKeyBytes, derivedAddress } = this.resolveServerSignerDerivation(config);
                 return {
                     type: "server",
-                    derivedKeyBytes: primary.derivedKeyBytes,
-                    locator: `server:${primary.derivedAddress}` as ServerSignerLocator,
-                    address: primary.derivedAddress,
+                    derivedKeyBytes,
+                    locator: `server:${derivedAddress}` as ServerSignerLocator,
+                    address: derivedAddress,
                 } as InternalSignerConfig<C>;
             }
             default:
