@@ -1051,12 +1051,13 @@ export class Wallet<C extends Chain> {
      */
     private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
         const { primary, legacy } = this.deriveSignerCandidates(signer);
-        if (await this.signerIsRegistered(`server:${primary.derivedAddress}`)) {
+        const existingSigners = await this.signers();
+        if (existingSigners.some((s) => s.locator === `server:${primary.derivedAddress}`)) {
             this.#resolvedServerSigner = primary;
             this.#needsRecovery = false;
             return false;
         }
-        if (legacy != null && (await this.signerIsRegistered(`server:${legacy.derivedAddress}`))) {
+        if (legacy != null && existingSigners.some((s) => s.locator === `server:${legacy.derivedAddress}`)) {
             this.#resolvedServerSigner = legacy;
             this.#needsRecovery = false;
             return false;
