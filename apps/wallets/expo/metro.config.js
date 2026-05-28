@@ -9,10 +9,11 @@ const monorepoRoot = path.resolve(__dirname, "../../..");
 const rootNodeModules = path.resolve(monorepoRoot, "node_modules");
 const appNodeModules = path.resolve(__dirname, "node_modules");
 const packagesDir = path.resolve(monorepoRoot, "packages");
+const sharedDir = path.resolve(__dirname, "../shared");
 
 module.exports = {
     ...config,
-    watchFolders: [monorepoRoot, packagesDir],
+    watchFolders: [monorepoRoot, packagesDir, sharedDir],
     resolver: {
         ...config.resolver,
         extraNodeModules: {

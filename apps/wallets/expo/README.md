@@ -3,10 +3,10 @@
 ## Setup
 
 ```bash
-cp .env.template .env
+cp .env.template .env.local
 ```
 
-Fill in your Crossmint client API key in `.env`.
+Fill in your Crossmint client API key in `.env.local`.
 
 ## Environment Variables
 
@@ -24,3 +24,4 @@ pnpm playground:expo:ios
 # or
 pnpm playground:expo:android
 ```
+
