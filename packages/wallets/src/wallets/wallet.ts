@@ -83,6 +83,7 @@ type WalletContructorType<C extends Chain> = {
     options?: WalletOptions;
     recovery: RecoverySignerConfigForChain<C>;
     apiRecoveryAddress?: string;
+    apiDelegatedSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
@@ -101,11 +102,23 @@ export class Wallet<C extends Chain> {
     #deviceSignerApproved = false;
     #resolvedServerSigner: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null = null;
     #apiSourcedRecoveryAddress: string | null = null;
+    #apiSourcedDelegatedAddresses: string[] = [];
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, options, alias, recovery, apiRecoveryAddress, signers, signer } = args;
+        const {
+            chain,
+            address,
+            owner,
+            options,
+            alias,
+            recovery,
+            apiRecoveryAddress,
+            apiDelegatedSignerAddresses,
+            signers,
+            signer,
+        } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -118,6 +131,7 @@ export class Wallet<C extends Chain> {
         } else if (recovery.type === "server" && isApiSourcedServerSignerConfig(recovery)) {
             this.#apiSourcedRecoveryAddress = recovery.address;
         }
+        this.#apiSourcedDelegatedAddresses = apiDelegatedSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
         this.#signer = signer; // Can be set by useSigner
         this.#signerInitialization = this.initDefaultSigner();
@@ -256,6 +270,10 @@ export class Wallet<C extends Chain> {
         return wallet.#apiSourcedRecoveryAddress ?? undefined;
     }
 
+    protected static getApiDelegatedSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
+        return wallet.#apiSourcedDelegatedAddresses;
+    }
+
     public get apiClient(): ApiClient {
         return this.#apiClient;
     }
@@ -316,7 +334,8 @@ export class Wallet<C extends Chain> {
                 this.#initialSigners.some(
                     (s) =>
                         s.type === "server" && isApiSourcedServerSignerConfig(s) && s.address === legacy.derivedAddress
-                )
+                ) ||
+                this.#apiSourcedDelegatedAddresses.includes(legacy.derivedAddress)
             ) {
                 return legacy;
             }

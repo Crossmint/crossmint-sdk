@@ -195,7 +195,8 @@ export class WalletFactory {
                 ? createArgs.recovery
                 : apiRecovery;
 
-        let signers = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        let signers = apiDelegatedSigners;
         if (
             signers != null &&
             signers.length === 1 &&
@@ -211,6 +212,12 @@ export class WalletFactory {
                 ? (apiRecovery as { address: string }).address
                 : undefined;
 
+        // Preserve the API-sourced delegated signer addresses so the wallet can identify
+        // legacy derivations for delegated server signers (same pattern as apiRecoveryAddress).
+        const apiDelegatedSignerAddresses = (apiDelegatedSigners ?? [])
+            .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
+            .map((s) => (s as { address: string }).address);
+
         const wallet = new Wallet(
             {
                 chain: args.chain,
@@ -220,6 +227,7 @@ export class WalletFactory {
                 alias: args.alias,
                 recovery,
                 apiRecoveryAddress,
+                apiDelegatedSignerAddresses,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
             },
             this.apiClient
