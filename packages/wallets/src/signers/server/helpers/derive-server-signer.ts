@@ -8,6 +8,11 @@ import { deriveKeyBytes } from "../../../utils/server-key-derivation";
 import { ed25519KeypairFromSeed, encodeStellarPublicKey } from "../../../utils/stellar";
 import { getChainType } from "./get-chain-type";
 
+export type DerivedServerSigner = {
+    derivedKeyBytes: Uint8Array;
+    derivedAddress: string;
+};
+
 export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): string {
     const chainType = getChainType(chain);
     switch (chainType) {
@@ -25,7 +30,7 @@ export function deriveServerSignerDetails(
     chain: Chain,
     projectId: string,
     environment: string
-): { derivedKeyBytes: Uint8Array; derivedAddress: string } {
+): DerivedServerSigner {
     if (typeof window !== "undefined") {
         throw new Error("Server signers can only be used from server-side code.");
     }
@@ -42,8 +47,8 @@ export function deriveServerSignerCandidates(
     projectId: string,
     environment: string
 ): {
-    primary: { derivedKeyBytes: Uint8Array; derivedAddress: string };
-    legacy: { derivedKeyBytes: Uint8Array; derivedAddress: string } | null;
+    primary: DerivedServerSigner;
+    legacy: DerivedServerSigner | null;
 } {
     if (typeof window !== "undefined") {
         throw new Error("Server signers can only be used from server-side code.");

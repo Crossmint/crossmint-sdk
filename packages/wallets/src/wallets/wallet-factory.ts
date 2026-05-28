@@ -208,14 +208,14 @@ export class WalletFactory {
         // Preserve the API-sourced recovery address so the wallet can identify
         // legacy derivations even when the user-provided config replaces the API one.
         const apiRecoveryAddress =
-            apiRecovery.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
+            "address" in apiRecovery && !("secret" in apiRecovery)
                 ? (apiRecovery as { address: string }).address
                 : undefined;
 
         // Preserve the API-sourced delegated signer addresses so the wallet can identify
-        // legacy derivations for delegated server signers (same pattern as apiRecoveryAddress).
+        // legacy derivations even when the user-provided config replaces the API one.
         const apiDelegatedSignerAddresses = (apiDelegatedSigners ?? [])
-            .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
+            .filter((s) => "address" in s && !("secret" in s))
             .map((s) => (s as { address: string }).address);
 
         const wallet = new Wallet(

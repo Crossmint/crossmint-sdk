@@ -1,4 +1,5 @@
 export {
+    type DerivedServerSigner,
     deriveServerSignerAddress,
     deriveServerSignerDetails,
     deriveServerSignerCandidates,
