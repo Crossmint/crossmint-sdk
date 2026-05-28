@@ -296,7 +296,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve which derivation (primary "evm" or legacy chain-specific) to use for a server signer.
-     * Priority: cached resolution → legacy if it matches API recovery address → primary.
+     * Priority: cached resolution → legacy if it matches a known on-chain address → primary.
      */
     private resolveServerSignerDerivation(signer: ServerSignerConfig): {
         derivedKeyBytes: Uint8Array;
@@ -307,12 +307,19 @@ export class Wallet<C extends Chain> {
             return resolved;
         }
         const { primary, legacy } = this.deriveServerSignerCandidates(signer);
-        if (
-            this.#apiSourcedRecoveryAddress != null &&
-            legacy != null &&
-            legacy.derivedAddress === this.#apiSourcedRecoveryAddress
-        ) {
-            return legacy;
+        if (legacy != null) {
+            // Use legacy if it matches the recovery address or any known on-chain signer
+            if (legacy.derivedAddress === this.#apiSourcedRecoveryAddress) {
+                return legacy;
+            }
+            if (
+                this.#initialSigners.some(
+                    (s) =>
+                        s.type === "server" && isApiSourcedServerSignerConfig(s) && s.address === legacy.derivedAddress
+                )
+            ) {
+                return legacy;
+            }
         }
         return primary;
     }
