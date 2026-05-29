@@ -105,8 +105,7 @@ function parseResults(filePath) {
 }
 
 const browserResults = {};
-let overallFailed =
-    process.env.MATRIX_RESULT === "failure" || process.env.MATRIX_RESULT === "cancelled";
+let overallFailed = process.env.MATRIX_RESULT === "failure" || process.env.MATRIX_RESULT === "cancelled";
 
 for (const browser of browsers) {
     const filePath = path.join("test-results", browser, "playwright-results.json");
@@ -154,18 +153,17 @@ const slackMessage = {
     ],
 };
 
-const allFailures = browsers.flatMap((b) =>
-    (browserResults[b]?.failures || []).map((f) => ({ browser: b, ...f }))
-);
+const allFailures = browsers.flatMap((b) => (browserResults[b]?.failures || []).map((f) => ({ browser: b, ...f })));
 
 if (allFailures.length > 0) {
     const shown = allFailures.slice(0, 10);
     const failText = shown
         .map((f) => {
             const cleanError =
-                stripAnsi(f.error).split("\n").find((l) => l.trim()) || "No error message";
-            const truncatedError =
-                cleanError.length > 250 ? cleanError.substring(0, 250) + "..." : cleanError;
+                stripAnsi(f.error)
+                    .split("\n")
+                    .find((l) => l.trim()) || "No error message";
+            const truncatedError = cleanError.length > 250 ? cleanError.substring(0, 250) + "..." : cleanError;
             const suiteStr = f.suite ? `\n_${f.suite}_` : "";
             return `\u2022 *[${f.browser}]* ${f.title}${suiteStr}\n\`${truncatedError}\``;
         })
