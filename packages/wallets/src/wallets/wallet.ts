@@ -68,7 +68,10 @@ import type {
 import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig, AuthRejectedError } from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
-import { type DerivedServerSigner, deriveServerSignerCandidates } from "../signers/server";
+import {
+    type DerivedServerSigner,
+    deriveServerSignerCandidates as deriveServerSignerCandidatesHelper,
+} from "../signers/server";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
@@ -285,8 +288,13 @@ export class Wallet<C extends Chain> {
     /**
      * Derive both primary ("evm") and legacy (chain-specific) server signer candidates.
      */
-    private deriveSignerCandidates(signer: ServerSignerConfig) {
-        return deriveServerSignerCandidates(signer, this.chain, this.#apiClient.projectId, this.#apiClient.environment);
+    private deriveServerSignerCandidates(signer: ServerSignerConfig) {
+        return deriveServerSignerCandidatesHelper(
+            signer,
+            this.chain,
+            this.#apiClient.projectId,
+            this.#apiClient.environment
+        );
     }
 
     /**
@@ -297,7 +305,7 @@ export class Wallet<C extends Chain> {
         if (this.#resolvedServerSigner == null) {
             return null;
         }
-        const { primary, legacy } = this.deriveSignerCandidates(signer);
+        const { primary, legacy } = this.deriveServerSignerCandidates(signer);
         const cachedAddr = this.#resolvedServerSigner.derivedAddress;
         if (cachedAddr === primary.derivedAddress || (legacy != null && cachedAddr === legacy.derivedAddress)) {
             return this.#resolvedServerSigner;
@@ -314,7 +322,7 @@ export class Wallet<C extends Chain> {
         if (resolved != null) {
             return resolved;
         }
-        const { primary, legacy } = this.deriveSignerCandidates(signer);
+        const { primary, legacy } = this.deriveServerSignerCandidates(signer);
         if (legacy != null) {
             // Use legacy if it matches the recovery address or any known on-chain signer
             if (legacy.derivedAddress === this.#apiServerRecoveryAddress) {
@@ -1050,7 +1058,7 @@ export class Wallet<C extends Chain> {
      * to whichever derivation is on-chain. Returns true if the signer is the admin (recovery) signer.
      */
     private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
-        const { primary, legacy } = this.deriveSignerCandidates(signer);
+        const { primary, legacy } = this.deriveServerSignerCandidates(signer);
         const existingSigners = await this.signers();
         if (existingSigners.some((s) => s.locator === `server:${primary.derivedAddress}`)) {
             this.#resolvedServerSigner = primary;
@@ -1601,7 +1609,7 @@ export class Wallet<C extends Chain> {
                 if (isApiSourcedServerSignerConfig(config)) {
                     return [config.address];
                 }
-                const { primary, legacy } = this.deriveSignerCandidates(config);
+                const { primary, legacy } = this.deriveServerSignerCandidates(config);
                 const addresses = [primary.derivedAddress];
                 if (legacy != null) {
                     addresses.push(legacy.derivedAddress);
