@@ -134,6 +134,11 @@ jobs:
 
                   const browsers = ['chromium', 'firefox', 'webkit'];
 
+                  // Strip ANSI escape codes produced by Playwright error formatting
+                  function stripAnsi(str) {
+                      return str.replace(/\x1b\[[0-9;]*[mGKHFJA-Za-z]/g, '');
+                  }
+
                   function parseResults(filePath) {
                       if (!fs.existsSync(filePath)) return null;
                       try {
@@ -141,27 +146,50 @@ jobs:
                           let totalTests = 0, passedTests = 0, failedTests = 0, skippedTests = 0, duration = 0;
                           const failures = [];
 
-                          function processTests(tests, suiteName) {
-                              tests.forEach((test) => {
+                          // spec.title is the test name; suite path is built from ancestor describe blocks
+                          function processSpec(spec, suitePath) {
+                              if (!spec.tests) return;
+                              spec.tests.forEach((test) => {
                                   totalTests++;
                                   const result = test.results && test.results[0] ? test.results[0] : null;
                                   const status = result?.status || 'unknown';
                                   if (status === 'passed') passedTests++;
                                   else if (status === 'failed') {
                                       failedTests++;
-                                      failures.push({ title: test.title || 'Unknown Test', suite: suiteName, error: result?.error?.message || 'No error message' });
+                                      failures.push({
+                                          title: spec.title || test.title || 'Unknown Test',
+                                          suite: suitePath,
+                                          error: result?.error?.message || 'No error message',
+                                      });
                                   } else if (status === 'skipped') skippedTests++;
                                   if (result?.duration) duration += result.duration;
                               });
                           }
 
-                          function processSuite(suite) {
-                              if (suite.tests) processTests(suite.tests, suite.title || 'Unknown Suite');
-                              if (suite.specs) suite.specs.forEach(spec => spec.tests && processTests(spec.tests, spec.title || suite.title || 'Unknown Suite'));
-                              if (suite.suites) suite.suites.forEach(processSuite);
+                          function processSuite(suite, parentPath) {
+                              const currentPath = parentPath ? `${parentPath} › ${suite.title}` : suite.title;
+                              if (suite.specs) suite.specs.forEach(spec => processSpec(spec, currentPath));
+                              if (suite.tests) {
+                                  suite.tests.forEach((test) => {
+                                      totalTests++;
+                                      const result = test.results && test.results[0] ? test.results[0] : null;
+                                      const status = result?.status || 'unknown';
+                                      if (status === 'passed') passedTests++;
+                                      else if (status === 'failed') {
+                                          failedTests++;
+                                          failures.push({
+                                              title: test.title || suite.title || 'Unknown Test',
+                                              suite: parentPath || '',
+                                              error: result?.error?.message || 'No error message',
+                                          });
+                                      } else if (status === 'skipped') skippedTests++;
+                                      if (result?.duration) duration += result.duration;
+                                  });
+                              }
+                              if (suite.suites) suite.suites.forEach(s => processSuite(s, currentPath));
                           }
 
-                          if (results.suites) results.suites.forEach(processSuite);
+                          if (results.suites) results.suites.forEach(s => processSuite(s, ''));
 
                           if (totalTests === 0 && results.stats) {
                               passedTests = results.stats.expected || results.stats.passed || 0;
@@ -195,13 +223,15 @@ jobs:
                   const shortSha = process.env.GITHUB_SHA.substring(0, 7);
 
                   function browserSummary(browser, result) {
-                      if (!result) return `*${browser}:*\n\u274C No results (job failed or was cancelled)`;
+                      if (!result) return `*${browser}:* \u274C  No results — job failed or was cancelled`;
                       const durationMin = (result.duration / 60000).toFixed(1);
-                      const parts = [`${result.passedTests}\u2705`];
-                      if (result.failedTests > 0) parts.push(`${result.failedTests}\u274C`);
-                      if (result.skippedTests > 0) parts.push(`${result.skippedTests}\u23ED`);
-                      return `*${browser}:*\n${parts.join(' ')} of ${result.totalTests} tests (${durationMin}m)`;
+                      const counts = [`${result.passedTests} \u2705 passed`];
+                      if (result.failedTests > 0) counts.push(`${result.failedTests} \u274C failed`);
+                      if (result.skippedTests > 0) counts.push(`${result.skippedTests} \u23ED skipped`);
+                      return `*${browser}:*  ${counts.join('  \u00B7  ')}  _of ${result.totalTests} total (${durationMin}m)_`;
                   }
+
+                  const summaryLines = browsers.map(b => browserSummary(b, browserResults[b])).join('\n\n');
 
                   const slackMessage = {
                       text: `${statusEmoji} E2E Regression Tests \u2014 ${statusText}`,
@@ -212,23 +242,33 @@ jobs:
                           },
                           {
                               type: 'section',
-                              fields: browsers.map(b => ({ type: 'mrkdwn', text: browserSummary(b, browserResults[b]) })),
+                              text: { type: 'mrkdwn', text: summaryLines },
                           },
+                          { type: 'divider' },
                           {
                               type: 'section',
-                              text: { type: 'mrkdwn', text: `*Run:* <${runUrl}|View workflow>\n*Commit:* <${commitUrl}|${shortSha}>` },
+                              text: { type: 'mrkdwn', text: `*Run:* <${runUrl}|View workflow>   \u00B7   *Commit:* <${commitUrl}|${shortSha}>` },
                           },
                       ],
                   };
 
                   const allFailures = browsers.flatMap(b => (browserResults[b]?.failures || []).map(f => ({ browser: b, ...f })));
                   if (allFailures.length > 0) {
-                      const failText = allFailures.slice(0, 10)
-                          .map(f => `\u2022 [${f.browser}] *${f.suite}* \u2014 ${f.title}\n  \`${f.error.substring(0, 200)}${f.error.length > 200 ? '...' : ''}\``)
-                          .join('\n\n');
+                      const shown = allFailures.slice(0, 10);
+                      const failText = shown.map(f => {
+                          const cleanError = stripAnsi(f.error).split('\n').find(l => l.trim()) || 'No error message';
+                          const truncatedError = cleanError.length > 250 ? cleanError.substring(0, 250) + '...' : cleanError;
+                          const suiteStr = f.suite ? `\n_${f.suite}_` : '';
+                          return `\u2022 *[${f.browser}]* ${f.title}${suiteStr}\n\`${truncatedError}\``;
+                      }).join('\n\n');
+
+                      slackMessage.blocks.push({ type: 'divider' });
                       slackMessage.blocks.push({
                           type: 'section',
-                          text: { type: 'mrkdwn', text: `*Failed Tests (first ${Math.min(10, allFailures.length)}):*\n\n${failText}${allFailures.length > 10 ? `\n\n_...and ${allFailures.length - 10} more_` : ''}` },
+                          text: {
+                              type: 'mrkdwn',
+                              text: `*\u274C Failed Tests (${Math.min(10, allFailures.length)} of ${allFailures.length}):*\n\n${failText}${allFailures.length > 10 ? `\n\n_...and ${allFailures.length - 10} more failures_` : ''}`,
+                          },
                       });
                   }
 
