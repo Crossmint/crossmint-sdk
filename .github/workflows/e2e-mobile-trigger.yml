@@ -8,8 +8,10 @@ on:
         types: [opened, synchronize, reopened, ready_for_review]
         paths:
             - "apps/wallets/expo/**"
+            - "apps/wallets/shared/**"
             - "packages/wallets/**"
-            - "packages/client/**"
+            - "packages/client/ui/react-native/**"
+            - "packages/client/rn-window/**"
 
 concurrency:
     group: mobile-e2e-${{ github.event.pull_request.number }}
