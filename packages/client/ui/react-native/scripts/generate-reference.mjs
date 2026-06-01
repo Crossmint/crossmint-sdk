@@ -26,6 +26,7 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{
             "CrossmintProvider",
             "CrossmintWalletProvider",
             "useWallet",
+            "useCrossmintAuth",
             "useWalletOtpSigner",
             "ExportPrivateKeyButton",
         ],

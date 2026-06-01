@@ -22,7 +22,13 @@ const PRODUCTS = {
 **This page has been updated for Wallets SDK V1.** If you are using the previous version,
 see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) or the [V1 migration guide](/wallets/guides/migrate-to-v1).
 </Note>`,
-        exports: ["CrossmintProvider", "CrossmintWalletProvider", "useWallet", "ExportPrivateKeyButton"],
+        exports: [
+            "CrossmintProvider",
+            "CrossmintWalletProvider",
+            "useWallet",
+            "useCrossmintAuth",
+            "ExportPrivateKeyButton",
+        ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintWalletProvider: "Wallet creation and management",
