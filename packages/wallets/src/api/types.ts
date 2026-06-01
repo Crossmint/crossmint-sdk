@@ -78,9 +78,23 @@ export type FundWalletResponse = BalanceControllerFundWallet4Responses | Balance
 
 export type RegisterSignerChain = Extract<CreateSignerV2025InputDtoClass, { chain: string }>["chain"];
 export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDtoClass["signer"], { type: "passkey" }>;
+
+export type TransferScope = {
+    type: "transfer";
+    tokenLocator: string;
+    recipients?: string[];
+    spendingLimit?: {
+        amount: string;
+        interval?: number;
+    };
+};
+
+export type Scope = TransferScope;
+
 export type RegisterSignerParams = {
     signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain>;
     chain?: RegisterSignerChain;
+    scopes?: Scope[];
 };
 export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type RemoveSignerParams = {

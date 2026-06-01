@@ -7766,6 +7766,61 @@
                                 "type": "string",
                                 "format": "date-time",
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                            },
+                            "scopes": {
+                                "description": "Optional array of scopes to restrict the signer's capabilities",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["transfer"]
+                                        },
+                                        "tokenLocator": {
+                                            "type": "string"
+                                        },
+                                        "recipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "spendingLimit": {
+                                            "type": "object",
+                                            "properties": {
+                                                "amount": {
+                                                    "type": "string"
+                                                },
+                                                "interval": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "required": ["amount"]
+                                        }
+                                    },
+                                    "required": ["type", "tokenLocator"],
+                                    "title": "Transfer",
+                                    "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                    "example": {
+                                        "type": "transfer",
+                                        "tokenLocator": "base-sepolia:usdc",
+                                        "recipients": ["0x1234567890123456789012345678901234567890"],
+                                        "spendingLimit": {
+                                            "amount": "100",
+                                            "interval": 86400
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "type": "transfer",
+                                    "tokenLocator": "base-sepolia:eth",
+                                    "spendingLimit": {
+                                        "amount": "0.01"
+                                    }
+                                }
                             }
                         },
                         "required": ["signer", "chain"],
@@ -11728,6 +11783,63 @@
                                                     "description": "Delegated signer that is awaiting approval for this chain"
                                                 }
                                             ]
+                                        }
+                                    },
+                                    "scopes": {
+                                        "description": "Optional array of scopes restricting the signer's capabilities",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["transfer"]
+                                                },
+                                                "tokenLocator": {
+                                                    "type": "string"
+                                                },
+                                                "recipients": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "spendingLimit": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "interval": {
+                                                            "type": "integer",
+                                                            "minimum": 1,
+                                                            "maximum": 9007199254740991
+                                                        }
+                                                    },
+                                                    "required": ["amount"]
+                                                }
+                                            },
+                                            "required": ["type", "tokenLocator"],
+                                            "title": "Transfer",
+                                            "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
+                                            "example": {
+                                                "type": "transfer",
+                                                "tokenLocator": "stellar:usdc",
+                                                "recipients": [
+                                                    "GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"
+                                                ],
+                                                "spendingLimit": {
+                                                    "amount": "100",
+                                                    "interval": 86400
+                                                }
+                                            }
+                                        },
+                                        "example": {
+                                            "type": "transfer",
+                                            "tokenLocator": "solana:sol",
+                                            "spendingLimit": {
+                                                "amount": "1"
+                                            }
                                         }
                                     }
                                 }
