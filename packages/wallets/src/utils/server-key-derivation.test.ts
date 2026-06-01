@@ -34,6 +34,12 @@ describe("deriveKeyBytes", () => {
         expect(solana).not.toEqual(stellar);
     });
 
+    it("produces different keys for 'evm' vs chain-specific strings like 'base-sepolia'", () => {
+        const evm = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "evm");
+        const baseSepolia = deriveKeyBytes(TEST_SECRET, PROJECT_ID, ENVIRONMENT, "base-sepolia");
+        expect(evm).not.toEqual(baseSepolia);
+    });
+
     it("produces different keys for different environments", () => {
         const staging = deriveKeyBytes(TEST_SECRET, PROJECT_ID, "staging", "ethereum");
         const production = deriveKeyBytes(TEST_SECRET, PROJECT_ID, "production", "ethereum");

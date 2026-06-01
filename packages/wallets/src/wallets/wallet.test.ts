@@ -23,6 +23,10 @@ vi.mock("@/signers/server", async (importOriginal) => {
             derivedKeyBytes: new Uint8Array(32),
             derivedAddress: "0xDerivedServerAddress",
         }),
+        deriveServerSignerCandidates: vi.fn().mockReturnValue({
+            primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xDerivedServerAddress" },
+            legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyServerAddress" },
+        }),
         assembleServerSigner: vi.fn().mockReturnValue({
             type: "server",
             locator: () => "server:0xDerivedServerAddress",
@@ -1710,11 +1714,18 @@ describe("Wallet - useSigner()", () => {
         });
 
         it("addSigner should succeed after useSigner with matching server signer and API-sourced recovery", async () => {
-            const { deriveServerSignerDetails, assembleServerSigner } = await import("@/signers/server");
+            const { deriveServerSignerDetails, deriveServerSignerCandidates, assembleServerSigner } = await import(
+                "@/signers/server"
+            );
             const mockedDerive = vi.mocked(deriveServerSignerDetails);
             mockedDerive.mockReturnValue({
                 derivedKeyBytes: new Uint8Array(32),
                 derivedAddress: "0xRecoveryAddress",
+            });
+            const mockedCandidates = vi.mocked(deriveServerSignerCandidates);
+            mockedCandidates.mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xRecoveryAddress" },
+                legacy: null,
             });
             // Override assembleServerSigner so the assembled signer address matches recovery
             const mockedAssemble = vi.mocked(assembleServerSigner);
@@ -1737,17 +1748,6 @@ describe("Wallet - useSigner()", () => {
                 mockApiClient as unknown as ApiClient
             );
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
-            mockApiClient.getSigner.mockImplementation((_walletLocator: string, signerLocator: string) => {
-                if (signerLocator === "server:0xRecoveryAddress") {
-                    return Promise.resolve({
-                        type: "server",
-                        address: "0xRecoveryAddress",
-                        locator: "server:0xRecoveryAddress",
-                        chains: { "base-sepolia": { status: "active", id: "sig-server" } },
-                    });
-                }
-                return Promise.reject(new Error("Signer not found"));
-            });
 
             // Set the matching recovery server signer
             await wallet.useSigner({ type: "server", secret: "recovery-secret" } as any);
@@ -1951,6 +1951,161 @@ describe("Wallet - useSigner()", () => {
             await expect(wallet.addSigner({ type: "email", email: "new@example.com" })).rejects.toThrow(
                 "Cannot assemble external wallet signer: no onSign callback available."
             );
+        });
+    });
+
+    describe("server signer EVM normalization fallback", () => {
+        it("useSigner works when only the primary (evm) derivation is registered", async () => {
+            const { deriveServerSignerCandidates } = await import("@/signers/server");
+            const mockedCandidates = vi.mocked(deriveServerSignerCandidates);
+            mockedCandidates.mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xPrimaryAddress" },
+                legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyAddress" },
+            });
+
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            // Primary is registered in the signers list
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                {
+                    type: "server",
+                    address: "0xPrimaryAddress",
+                    locator: "server:0xPrimaryAddress",
+                    status: "success" as const,
+                } as any,
+            ]);
+
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
+        });
+
+        it("useSigner falls back to legacy derivation when primary is not registered", async () => {
+            const { deriveServerSignerCandidates, assembleServerSigner } = await import("@/signers/server");
+            const mockedCandidates = vi.mocked(deriveServerSignerCandidates);
+            mockedCandidates.mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xPrimaryAddress" },
+                legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyAddress" },
+            });
+            const mockedAssemble = vi.mocked(assembleServerSigner);
+            mockedAssemble.mockReturnValue({
+                type: "server",
+                locator: () => "server:0xLegacyAddress",
+                address: () => "0xLegacyAddress",
+                status: undefined,
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+            } as any);
+
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            // Only legacy is in the signers list (not primary)
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                {
+                    type: "server",
+                    address: "0xLegacyAddress",
+                    locator: "server:0xLegacyAddress",
+                    status: "success" as const,
+                } as any,
+            ]);
+
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
+        });
+
+        it("isRecoverySigner matches when recovery address matches legacy derivation and uses legacy key", async () => {
+            const { deriveServerSignerCandidates, assembleServerSigner } = await import("@/signers/server");
+            const mockedCandidates = vi.mocked(deriveServerSignerCandidates);
+            mockedCandidates.mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xPrimaryAddress" },
+                legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyAddress" },
+            });
+            const mockedAssemble = vi.mocked(assembleServerSigner);
+            mockedAssemble.mockReturnValue({
+                type: "server",
+                locator: () => "server:0xLegacyAddress",
+                address: () => "0xLegacyAddress",
+                status: undefined,
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+            } as any);
+
+            mockApiClient = createMockApiClient();
+            // Recovery was registered with the legacy address
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", address: "0xLegacyAddress" } as ApiSourcedServerSignerConfig,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            // Neither primary nor legacy registered as delegated — falls through to isRecoverySigner
+            mockApiClient.getSigner.mockRejectedValue(new Error("Signer not found"));
+
+            // Should succeed because legacy derivation matches the API-sourced recovery address
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
+            // The signer should use the legacy address (not primary), since that matches on-chain
+            expect(wallet.signer?.address()).toBe("0xLegacyAddress");
+        });
+
+        it("recovery server signer uses primary derivation when recovery address matches primary", async () => {
+            const { deriveServerSignerCandidates, assembleServerSigner } = await import("@/signers/server");
+            const mockedCandidates = vi.mocked(deriveServerSignerCandidates);
+            mockedCandidates.mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xPrimaryAddress" },
+                legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyAddress" },
+            });
+            const mockedAssemble = vi.mocked(assembleServerSigner);
+            mockedAssemble.mockReturnValue({
+                type: "server",
+                locator: () => "server:0xPrimaryAddress",
+                address: () => "0xPrimaryAddress",
+                status: undefined,
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+            } as any);
+
+            mockApiClient = createMockApiClient();
+            // Recovery was registered with the primary (evm) address
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", address: "0xPrimaryAddress" } as ApiSourcedServerSignerConfig,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            mockApiClient.getSigner.mockRejectedValue(new Error("Signer not found"));
+
+            await wallet.useSigner({ type: "server", secret: "test-secret" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("server");
+            expect(wallet.signer?.address()).toBe("0xPrimaryAddress");
         });
     });
 });
