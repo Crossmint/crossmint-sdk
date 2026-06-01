@@ -30,6 +30,12 @@ export type TransactionInputOptions = PrepareOnly & {
     signer?: string | ServerSignerConfig;
 };
 
+/**
+ * Options for sending token transactions.
+ *
+ * Extends {@link TransactionInputOptions} with an optional transaction type
+ * that determines routing behavior (onramp, regulated transfer, or direct).
+ */
 export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
