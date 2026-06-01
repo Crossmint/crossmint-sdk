@@ -846,6 +846,7 @@ export class Wallet<C extends Chain> {
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
                 chain: this.getSignerRegistrationChain(),
+                ...(options?.scopes != null && { scopes: options.scopes }),
             });
 
             if ("error" in response) {
