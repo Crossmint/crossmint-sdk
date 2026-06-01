@@ -1,4 +1,4 @@
-import type { Signer as APISigner } from "../api";
+import type { Signer as APISigner, Scope } from "../api";
 import type { Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
 
@@ -67,13 +67,15 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
 export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer | null {
     const base = extractSignerBase(apiSigner);
 
+    const scopes = "scopes" in apiSigner ? (apiSigner.scopes as Scope[] | undefined) : undefined;
+
     if (chain === "solana" || chain === "stellar") {
         // For Solana/Stellar, status comes from the transaction field
         let status: SignerStatus = "success";
         if ("transaction" in apiSigner && apiSigner.transaction != null) {
             status = apiSigner.transaction.status;
         }
-        return { ...base, status } as Signer;
+        return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
 
     // For EVM, status comes from the chains field
@@ -82,11 +84,11 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         if (chainEntry == null) {
             return null; // No approval for this chain
         }
-        return { ...base, status: chainEntry.status } as Signer;
+        return { ...base, status: chainEntry.status, ...(scopes != null && { scopes }) } as Signer;
     }
 
     // If chains field is empty, the signer was created during wallet creation.
-    return { ...base, status: "success" } as Signer;
+    return { ...base, status: "success", ...(scopes != null && { scopes }) } as Signer;
 }
 
 export function getPendingSignerOperation(

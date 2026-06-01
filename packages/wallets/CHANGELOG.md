@@ -1,5 +1,23 @@
 # @crossmint/wallets-sdk
 
+## 1.4.0
+
+### Minor Changes
+
+- c9652c2: Add scopes support for delegated signers (transfer spending limits and recipient restrictions)
+
+## 1.3.0
+
+### Minor Changes
+
+- 4190d12: Normalize EVM server signer key derivation to use "evm" chain type
+
+  - Add `deriveServerSignerCandidates` helper that returns both primary ("evm") and legacy (chain-specific) derivations
+  - Update `deriveServerSignerDetails` to use normalized "evm" chain type for all EVM chains
+  - Implement dual-derivation fallback in `useSigner`: try primary first, fall back to legacy for backward compatibility
+  - Update `isRecoverySigner` to match against either derivation
+  - Cache resolved server derivation in `buildInternalSignerConfig` for signing consistency
+
 ## 1.2.0
 
 ### Minor Changes

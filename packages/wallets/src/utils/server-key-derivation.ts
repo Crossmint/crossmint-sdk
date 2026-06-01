@@ -14,7 +14,8 @@ const SECRET_PREFIX = "xmsk1_";
  * @param secret - Master secret (with or without xmsk1_ prefix), 64-char hex
  * @param projectId - Project ID from the API key
  * @param environment - Environment from the API key (staging, production)
- * @param chain - Chain identifier (e.g., "base-sepolia", "ethereum")
+ * @param chain - Chain identifier. For new EVM derivations, pass "evm" (normalized).
+ *                 Legacy wallets may still use chain-specific strings (e.g., "base-sepolia", "ethereum").
  * @returns Raw 32-byte derived key
  */
 export function deriveKeyBytes(secret: string, projectId: string, environment: string, chain: string): Uint8Array {

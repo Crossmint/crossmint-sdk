@@ -14,7 +14,7 @@ export function ActivityList({ wallet }: { wallet: any }) {
         <View style={{ backgroundColor: "#F7F8FA", borderRadius: 12, padding: 16 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Text style={{ fontSize: 12, color: "#6B7280", textTransform: "uppercase" }}>Activity</Text>
-                <TouchableOpacity onPress={loadActivity}>
+                <TouchableOpacity testID="load-activity-button" onPress={loadActivity}>
                     <Text style={{ color: "#13b601", fontWeight: "500" }}>Load</Text>
                 </TouchableOpacity>
             </View>

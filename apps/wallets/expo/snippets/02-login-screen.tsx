@@ -26,6 +26,7 @@ export function LoginScreen() {
         <View style={{ padding: 20, justifyContent: "center", flex: 1 }}>
             <Text style={{ fontSize: 24, marginBottom: 20, textAlign: "center" }}>Sign In</Text>
             <TextInput
+                testID="email-input"
                 style={{ borderWidth: 1, borderColor: "#ccc", padding: 12, marginBottom: 12, borderRadius: 8 }}
                 placeholder="Email address"
                 value={email}
@@ -36,6 +37,7 @@ export function LoginScreen() {
             />
             {!otpSent ? (
                 <TouchableOpacity
+                    testID="send-code-button"
                     style={{ backgroundColor: "#13b601", padding: 14, borderRadius: 8, alignItems: "center" }}
                     onPress={sendOtp}
                 >
@@ -44,6 +46,7 @@ export function LoginScreen() {
             ) : (
                 <>
                     <TextInput
+                        testID="otp-input"
                         style={{ borderWidth: 1, borderColor: "#ccc", padding: 12, marginBottom: 12, borderRadius: 8 }}
                         placeholder="Enter verification code"
                         value={otp}
@@ -51,6 +54,7 @@ export function LoginScreen() {
                         keyboardType="number-pad"
                     />
                     <TouchableOpacity
+                        testID="verify-button"
                         style={{ backgroundColor: "#13b601", padding: 14, borderRadius: 8, alignItems: "center" }}
                         onPress={verifyOtp}
                     >

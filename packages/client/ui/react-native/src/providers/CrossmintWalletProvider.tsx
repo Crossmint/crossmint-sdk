@@ -423,9 +423,10 @@ function CrossmintWalletProviderInternal({
                 <View
                     style={{
                         position: "absolute",
-                        width: 0,
-                        height: 0,
-                        overflow: "hidden",
+                        width: 1,
+                        height: 1,
+                        opacity: 0,
+                        pointerEvents: "none",
                     }}
                 >
                     <RNWebView

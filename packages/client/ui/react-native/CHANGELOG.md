@@ -1,5 +1,22 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.2.6
+
+### Patch Changes
+
+- b9dc320: Fix iOS WKWebView JS throttling caused by zero-area clipping. Replace `overflow: hidden` + `width: 0, height: 0` wrapper with `opacity: 0` + `pointerEvents: none` so the WebView backing layer stays composited and iOS does not deprioritize the WebContent process.
+- Updated dependencies [c9652c2]
+  - @crossmint/wallets-sdk@1.4.0
+  - @crossmint/client-sdk-react-base@2.0.24
+
+## 1.2.5
+
+### Patch Changes
+
+- Updated dependencies [4190d12]
+  - @crossmint/wallets-sdk@1.3.0
+  - @crossmint/client-sdk-react-base@2.0.23
+
 ## 1.2.4
 
 ### Patch Changes
