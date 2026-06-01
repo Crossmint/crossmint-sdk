@@ -140,10 +140,6 @@ function CrossmintWalletProviderInternal({
     const handshakeGenerationRef = useRef<number>(0);
     const handshakeStartTimeRef = useRef<number>(0);
     const handshakeRetryCountRef = useRef<number>(0);
-    const webViewMountTimeRef = useRef<number>(0);
-    const bridgeFirstMessageTimeRef = useRef<number>(0);
-    const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const heartbeatSeqRef = useRef<number>(0);
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -275,36 +271,16 @@ function CrossmintWalletProviderInternal({
         }
     }, [needsWebView, logger, performHandshake]);
 
-    // Periodic heartbeat: inject JS into the WebView that echoes back via postMessage.
-    // Detects silent JS throttling where the WebContent process is alive but timers are slowed.
-    const startHeartbeat = useCallback(() => {
-        if (heartbeatIntervalRef.current != null) {
-            return;
-        }
-
-        const HEARTBEAT_INTERVAL_MS = 30_000;
-        heartbeatIntervalRef.current = setInterval(() => {
-            const seq = heartbeatSeqRef.current++;
-            const sentAt = Date.now();
-            webviewRef.current?.injectJavaScript(
-                `window.ReactNativeWebView && window.ReactNativeWebView.postMessage("__heartbeat_pong__:" + JSON.stringify({seq:${seq},sentAt:${sentAt}}));true;`
-            );
-        }, HEARTBEAT_INTERVAL_MS);
-    }, []);
-
     const onWebViewLoad = useCallback(async () => {
         // onLoadEnd is a fallback — eager handshake should have started already.
         // This still triggers in case the eager start couldn't run (e.g. ref timing).
-        const msSinceMount = webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
         logger.info("react-native.wallet.webview.onLoadEnd", {
             handshakeInProgress: handshakeInProgressRef.current,
             isConnected: webViewParentRef.current?.isConnected ?? false,
             generation: handshakeGenerationRef.current,
-            msSinceMount,
         });
         await performHandshake("onLoadEnd");
-        startHeartbeat();
-    }, [logger, performHandshake, startHeartbeat]);
+    }, [logger, performHandshake]);
 
     const handleMessage = useCallback(
         (event: WebViewMessageEvent) => {
@@ -314,28 +290,6 @@ function CrossmintWalletProviderInternal({
             }
 
             const rawData = event.nativeEvent.data;
-
-            // Handle heartbeat pong from WebView (check before first-message tracking so pongs
-            // don't skew the mount-to-first-protocol-message latency metric)
-            if (typeof rawData === "string" && rawData.startsWith("__heartbeat_pong__:")) {
-                try {
-                    const pong = JSON.parse(rawData.slice("__heartbeat_pong__:".length));
-                    logger.debug("react-native.wallet.webview.heartbeat.pong", {
-                        seq: pong.seq,
-                        roundTripMs: Date.now() - (pong.sentAt ?? 0),
-                    });
-                } catch {}
-                return;
-            }
-
-            if (bridgeFirstMessageTimeRef.current === 0) {
-                bridgeFirstMessageTimeRef.current = Date.now();
-                const msSinceMount = webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
-                logger.info("react-native.wallet.webview.bridge.firstMessage", {
-                    msSinceMount,
-                    messageType: typeof rawData === "string" ? rawData.slice(0, 50) : "non-string",
-                });
-            }
 
             // Handle "frame-ready" signal from child — child is ready to handshake.
             // With eager handshake, the parent is already polling, so the handshake
@@ -426,8 +380,6 @@ function CrossmintWalletProviderInternal({
 
     const initializeWebView = async () => {
         logger.info("react-native.wallet.webview.init.start");
-        webViewMountTimeRef.current = Date.now();
-        bridgeFirstMessageTimeRef.current = 0;
         setNeedsWebView(true);
 
         let attempts = 0;
@@ -447,21 +399,6 @@ function CrossmintWalletProviderInternal({
 
         logger.info("react-native.wallet.webview.init.success", { attempts });
     };
-
-    useEffect(() => {
-        if (!needsWebView) {
-            return;
-        }
-
-        startHeartbeat();
-
-        return () => {
-            if (heartbeatIntervalRef.current != null) {
-                clearInterval(heartbeatIntervalRef.current);
-                heartbeatIntervalRef.current = null;
-            }
-        };
-    }, [needsWebView, startHeartbeat]);
 
     useEffect(() => {
         if (hasPasskeySigner(createOnLogin)) {
@@ -507,19 +444,15 @@ function CrossmintWalletProviderInternal({
                         onContentProcessDidTerminate={() => {
                             const prevGeneration = handshakeGenerationRef.current;
                             handshakeGenerationRef.current++;
-                            const msSinceMount =
-                                webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
                             logger.warn("react-native.wallet.webview.process.terminated", {
                                 prevGeneration,
                                 newGeneration: handshakeGenerationRef.current,
                                 wasConnected: webViewParentRef.current?.isConnected ?? false,
                                 hadHandshakeInProgress: handshakeInProgressRef.current,
-                                msSinceMount,
                             });
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
                             handshakeRetryCountRef.current = 0;
-                            bridgeFirstMessageTimeRef.current = 0;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
@@ -530,19 +463,15 @@ function CrossmintWalletProviderInternal({
                         onRenderProcessGone={() => {
                             const prevGeneration = handshakeGenerationRef.current;
                             handshakeGenerationRef.current++;
-                            const msSinceMount =
-                                webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
                             logger.warn("react-native.wallet.webview.process.renderGone", {
                                 prevGeneration,
                                 newGeneration: handshakeGenerationRef.current,
                                 wasConnected: webViewParentRef.current?.isConnected ?? false,
                                 hadHandshakeInProgress: handshakeInProgressRef.current,
-                                msSinceMount,
                             });
                             handshakeTriggeredRef.current = false;
                             handshakeInProgressRef.current = false;
                             handshakeRetryCountRef.current = 0;
-                            bridgeFirstMessageTimeRef.current = 0;
                             if (webViewParentRef.current != null) {
                                 webViewParentRef.current.isConnected = false;
                             }
