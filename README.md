@@ -178,5 +178,4 @@ For detailed documentation and guides, visit our [official documentation](https:
 To get in touch with the Crossmint team, please visit our [contact page](https://www.crossmint.com/contact).
 or on [X](https://x.com/crossmint)
 
-<!-- Last reviewed: 2026 -->
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
