@@ -286,7 +286,8 @@ function CrossmintWalletProviderInternal({
             msSinceMount,
         });
         await performHandshake("onLoadEnd");
-    }, [logger, performHandshake]);
+        startHeartbeat();
+    }, [logger, performHandshake, startHeartbeat]);
 
     const handleMessage = useCallback(
         (event: WebViewMessageEvent) => {
@@ -307,9 +308,9 @@ function CrossmintWalletProviderInternal({
             }
 
             // Handle heartbeat pong from WebView
-            if (typeof rawData === "string" && rawData.startsWith('{"type":"heartbeat-pong"')) {
+            if (typeof rawData === "string" && rawData.startsWith("__heartbeat_pong__:")) {
                 try {
-                    const pong = JSON.parse(rawData);
+                    const pong = JSON.parse(rawData.slice("__heartbeat_pong__:".length));
                     logger.debug("react-native.wallet.webview.heartbeat.pong", {
                         seq: pong.seq,
                         roundTripMs: Date.now() - (pong.sentAt ?? 0),
@@ -431,8 +432,8 @@ function CrossmintWalletProviderInternal({
 
     // Periodic heartbeat: inject JS into the WebView that echoes back via postMessage.
     // Detects silent JS throttling where the WebContent process is alive but timers are slowed.
-    useEffect(() => {
-        if (!needsWebView || webviewRef.current == null) {
+    const startHeartbeat = useCallback(() => {
+        if (heartbeatIntervalRef.current != null) {
             return;
         }
 
@@ -441,9 +442,17 @@ function CrossmintWalletProviderInternal({
             const seq = heartbeatSeqRef.current++;
             const sentAt = Date.now();
             webviewRef.current?.injectJavaScript(
-                `window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type:"heartbeat-pong",seq:${seq},sentAt:${sentAt}}));true;`
+                `window.ReactNativeWebView && window.ReactNativeWebView.postMessage("__heartbeat_pong__:" + JSON.stringify({seq:${seq},sentAt:${sentAt}}));true;`
             );
         }, HEARTBEAT_INTERVAL_MS);
+    }, []);
+
+    useEffect(() => {
+        if (!needsWebView) {
+            return;
+        }
+
+        startHeartbeat();
 
         return () => {
             if (heartbeatIntervalRef.current != null) {
@@ -451,7 +460,7 @@ function CrossmintWalletProviderInternal({
                 heartbeatIntervalRef.current = null;
             }
         };
-    }, [needsWebView]);
+    }, [needsWebView, startHeartbeat]);
 
     useEffect(() => {
         if (hasPasskeySigner(createOnLogin)) {
