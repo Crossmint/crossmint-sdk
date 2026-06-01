@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.4.0
+
+### Minor Changes
+
+- c9652c2: Add scopes support for delegated signers (transfer spending limits and recipient restrictions)
+
 ## 1.3.0
 
 ### Minor Changes
