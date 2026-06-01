@@ -85,6 +85,7 @@ export type TransferScope = {
     recipients?: string[];
     spendingLimit?: {
         amount: string;
+        /** Positive integer representing the reset interval in seconds. Must be >= 1. */
         interval?: number;
     };
 };

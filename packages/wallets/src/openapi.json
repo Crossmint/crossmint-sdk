@@ -11824,10 +11824,8 @@
                                             "description": "Scope to transfer tokens with optional spending limits and recipient restrictions",
                                             "example": {
                                                 "type": "transfer",
-                                                "tokenLocator": "stellar:usdc",
-                                                "recipients": [
-                                                    "GDUCX62IF76FFIYRNI25LJDS2V43QEZDY4YNF2DJWVIASN5LKX76Q4TW"
-                                                ],
+                                                "tokenLocator": "base-sepolia:usdc",
+                                                "recipients": ["0x1234567890123456789012345678901234567890"],
                                                 "spendingLimit": {
                                                     "amount": "100",
                                                     "interval": 86400
@@ -11836,9 +11834,9 @@
                                         },
                                         "example": {
                                             "type": "transfer",
-                                            "tokenLocator": "solana:sol",
+                                            "tokenLocator": "base-sepolia:eth",
                                             "spendingLimit": {
-                                                "amount": "1"
+                                                "amount": "0.01"
                                             }
                                         }
                                     }
