@@ -1,4 +1,4 @@
-name: SDK Docs Generate
+name: SDK Reference Docs Generate
 
 on:
     push:
@@ -32,7 +32,7 @@ permissions:
     contents: read
 
 concurrency:
-    group: sdk-docs-generate-${{ github.ref }}
+    group: sdk-reference-docs-generate-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -141,5 +141,5 @@ jobs:
               with:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
-                  event-type: sdk-docs-update
+                  event-type: sdk-reference-docs-update
                   client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets'') }}, "source_ref": ${{ toJSON(github.ref_name) }}}'
