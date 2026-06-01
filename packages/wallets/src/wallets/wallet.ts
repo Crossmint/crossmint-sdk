@@ -85,8 +85,8 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     options?: WalletOptions;
     recovery: RecoverySignerConfigForChain<C>;
-    apiServerRecoveryAddress?: string;
-    apiServerDelegatedAddresses?: string[];
+    apiRecoveryServerSignerAddress?: string;
+    apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
@@ -104,8 +104,8 @@ export class Wallet<C extends Chain> {
     #needsRecovery = false;
     #deviceSignerApproved = false;
     #resolvedServerSigner: DerivedServerSigner | null = null;
-    #apiServerRecoveryAddress: string | null = null;
-    #apiServerDelegatedAddresses: string[] = [];
+    #apiRecoveryServerSignerAddress: string | null = null;
+    #apiDelegatedServerSignerAddresses: string[] = [];
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -117,8 +117,8 @@ export class Wallet<C extends Chain> {
             options,
             alias,
             recovery,
-            apiServerRecoveryAddress,
-            apiServerDelegatedAddresses,
+            apiRecoveryServerSignerAddress,
+            apiDelegatedServerSignerAddresses,
             signers,
             signer,
         } = args;
@@ -129,12 +129,12 @@ export class Wallet<C extends Chain> {
         this.#options = options;
         this.alias = alias;
         this.#recovery = recovery;
-        if (apiServerRecoveryAddress != null) {
-            this.#apiServerRecoveryAddress = apiServerRecoveryAddress;
+        if (apiRecoveryServerSignerAddress != null) {
+            this.#apiRecoveryServerSignerAddress = apiRecoveryServerSignerAddress;
         } else if (recovery.type === "server" && isApiSourcedServerSignerConfig(recovery)) {
-            this.#apiServerRecoveryAddress = recovery.address;
+            this.#apiRecoveryServerSignerAddress = recovery.address;
         }
-        this.#apiServerDelegatedAddresses = apiServerDelegatedAddresses ?? [];
+        this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
         this.#signer = signer; // Can be set by useSigner
         this.#signerInitialization = this.initDefaultSigner();
@@ -269,12 +269,12 @@ export class Wallet<C extends Chain> {
         return wallet.#initialSigners;
     }
 
-    protected static getApiServerRecoveryAddress<C extends Chain>(wallet: Wallet<C>): string | undefined {
-        return wallet.#apiServerRecoveryAddress ?? undefined;
+    protected static getApiRecoveryServerSignerAddress<C extends Chain>(wallet: Wallet<C>): string | undefined {
+        return wallet.#apiRecoveryServerSignerAddress ?? undefined;
     }
 
-    protected static getApiServerDelegatedAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
-        return wallet.#apiServerDelegatedAddresses;
+    protected static getApiDelegatedServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
+        return wallet.#apiDelegatedServerSignerAddresses;
     }
 
     public get apiClient(): ApiClient {
@@ -325,7 +325,7 @@ export class Wallet<C extends Chain> {
         const { primary, legacy } = this.deriveServerSignerCandidates(signer);
         if (legacy != null) {
             // Use legacy if it matches the recovery address or any known on-chain signer
-            if (legacy.derivedAddress === this.#apiServerRecoveryAddress) {
+            if (legacy.derivedAddress === this.#apiRecoveryServerSignerAddress) {
                 return legacy;
             }
             if (
@@ -333,7 +333,7 @@ export class Wallet<C extends Chain> {
                     (s) =>
                         s.type === "server" && isApiSourcedServerSignerConfig(s) && s.address === legacy.derivedAddress
                 ) ||
-                this.#apiServerDelegatedAddresses.includes(legacy.derivedAddress)
+                this.#apiDelegatedServerSignerAddresses.includes(legacy.derivedAddress)
             ) {
                 return legacy;
             }
@@ -1073,12 +1073,12 @@ export class Wallet<C extends Chain> {
         // Neither found as delegated — check if this is the recovery (admin) signer.
         if (this.isRecoverySigner(signer as SignerConfigForChain<C>)) {
             // Resolve which derivation matches the on-chain recovery address.
-            // #apiServerRecoveryAddress is captured once from the original API response
+            // #apiRecoveryServerSignerAddress is captured once from the original API response
             // and survives across isRecoverySigner upgrades and repeated useSigner calls.
             if (
-                this.#apiServerRecoveryAddress != null &&
+                this.#apiRecoveryServerSignerAddress != null &&
                 legacy != null &&
-                legacy.derivedAddress === this.#apiServerRecoveryAddress
+                legacy.derivedAddress === this.#apiRecoveryServerSignerAddress
             ) {
                 this.#resolvedServerSigner = legacy;
             } else {
