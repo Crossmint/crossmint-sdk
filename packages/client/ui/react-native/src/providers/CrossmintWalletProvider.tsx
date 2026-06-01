@@ -315,16 +315,8 @@ function CrossmintWalletProviderInternal({
 
             const rawData = event.nativeEvent.data;
 
-            if (bridgeFirstMessageTimeRef.current === 0) {
-                bridgeFirstMessageTimeRef.current = Date.now();
-                const msSinceMount = webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
-                logger.info("react-native.wallet.webview.bridge.firstMessage", {
-                    msSinceMount,
-                    messageType: typeof rawData === "string" ? rawData.slice(0, 50) : "non-string",
-                });
-            }
-
-            // Handle heartbeat pong from WebView
+            // Handle heartbeat pong from WebView (check before first-message tracking so pongs
+            // don't skew the mount-to-first-protocol-message latency metric)
             if (typeof rawData === "string" && rawData.startsWith("__heartbeat_pong__:")) {
                 try {
                     const pong = JSON.parse(rawData.slice("__heartbeat_pong__:".length));
@@ -334,6 +326,15 @@ function CrossmintWalletProviderInternal({
                     });
                 } catch {}
                 return;
+            }
+
+            if (bridgeFirstMessageTimeRef.current === 0) {
+                bridgeFirstMessageTimeRef.current = Date.now();
+                const msSinceMount = webViewMountTimeRef.current > 0 ? Date.now() - webViewMountTimeRef.current : null;
+                logger.info("react-native.wallet.webview.bridge.firstMessage", {
+                    msSinceMount,
+                    messageType: typeof rawData === "string" ? rawData.slice(0, 50) : "non-string",
+                });
             }
 
             // Handle "frame-ready" signal from child — child is ready to handshake.
