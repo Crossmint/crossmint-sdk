@@ -275,6 +275,23 @@ function CrossmintWalletProviderInternal({
         }
     }, [needsWebView, logger, performHandshake]);
 
+    // Periodic heartbeat: inject JS into the WebView that echoes back via postMessage.
+    // Detects silent JS throttling where the WebContent process is alive but timers are slowed.
+    const startHeartbeat = useCallback(() => {
+        if (heartbeatIntervalRef.current != null) {
+            return;
+        }
+
+        const HEARTBEAT_INTERVAL_MS = 30_000;
+        heartbeatIntervalRef.current = setInterval(() => {
+            const seq = heartbeatSeqRef.current++;
+            const sentAt = Date.now();
+            webviewRef.current?.injectJavaScript(
+                `window.ReactNativeWebView && window.ReactNativeWebView.postMessage("__heartbeat_pong__:" + JSON.stringify({seq:${seq},sentAt:${sentAt}}));true;`
+            );
+        }, HEARTBEAT_INTERVAL_MS);
+    }, []);
+
     const onWebViewLoad = useCallback(async () => {
         // onLoadEnd is a fallback — eager handshake should have started already.
         // This still triggers in case the eager start couldn't run (e.g. ref timing).
@@ -429,23 +446,6 @@ function CrossmintWalletProviderInternal({
 
         logger.info("react-native.wallet.webview.init.success", { attempts });
     };
-
-    // Periodic heartbeat: inject JS into the WebView that echoes back via postMessage.
-    // Detects silent JS throttling where the WebContent process is alive but timers are slowed.
-    const startHeartbeat = useCallback(() => {
-        if (heartbeatIntervalRef.current != null) {
-            return;
-        }
-
-        const HEARTBEAT_INTERVAL_MS = 30_000;
-        heartbeatIntervalRef.current = setInterval(() => {
-            const seq = heartbeatSeqRef.current++;
-            const sentAt = Date.now();
-            webviewRef.current?.injectJavaScript(
-                `window.ReactNativeWebView && window.ReactNativeWebView.postMessage("__heartbeat_pong__:" + JSON.stringify({seq:${seq},sentAt:${sentAt}}));true;`
-            );
-        }, HEARTBEAT_INTERVAL_MS);
-    }, []);
 
     useEffect(() => {
         if (!needsWebView) {
