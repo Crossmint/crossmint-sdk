@@ -41,7 +41,11 @@
       </ul>
     </li>
     <li><a href="#publishing">Publishing</a></li>
-    <li><a href="#documentation">Documentation</a></li>
+    <li><a href="#documentation">Documentation</a>
+      <ul>
+        <li><a href="#sdk-reference-docs-auto-generated">SDK Reference Docs (Auto-Generated)</a></li>
+      </ul>
+    </li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -172,6 +176,32 @@ pnpm install
 ## Documentation
 
 For detailed documentation and guides, visit our [official documentation](https://docs.crossmint.com/).
+
+### SDK Reference Docs (Auto-Generated)
+
+SDK reference pages on docs.crossmint.com are auto-generated from source code JSDoc annotations via TypeDoc. The pipeline:
+
+1. **Trigger**: Push to `main` that touches watched paths (see `.github/workflows/sdk-reference-docs-generate.yml`)
+2. **Generate**: TypeDoc + custom plugins produce MDX files for each package
+3. **Sync**: A `repository_dispatch` sends the generated docs to `crossbit-main`, which opens a PR for review
+
+**Watched paths** (changes here trigger doc generation):
+- `packages/wallets/src/**`, `packages/wallets/typedoc.json`, `packages/wallets/typedoc-custom-plugin.mjs`
+- `packages/client/ui/react-ui/src/**`, `packages/client/ui/react-ui/scripts/**`
+- `packages/client/ui/react-native/src/**`, `packages/client/ui/react-native/scripts/**`
+- `packages/client/react-base/src/**`
+
+**Manual trigger**:
+```bash
+gh workflow run sdk-reference-docs-generate.yml -f packages="react-ui,react-native,node-wallets"
+```
+
+**Key files**:
+| Package | Config | Custom Plugin/Script |
+|---------|--------|---------------------|
+| wallets-sdk | `packages/wallets/typedoc.json` | `packages/wallets/typedoc-custom-plugin.mjs` |
+| react-ui | `packages/client/ui/react-ui/typedoc.json` | `packages/client/ui/react-ui/scripts/generate-reference.mjs` |
+| react-native | `packages/client/ui/react-native/typedoc.json` | `packages/client/ui/react-native/scripts/generate-reference.mjs` |
 
 ## Contact
 
