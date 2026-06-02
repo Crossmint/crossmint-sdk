@@ -39,6 +39,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         });
 
         if (res?.status === "error") {
+            this.invalidateAuthCache();
             throw new Error(res.error);
         }
 
