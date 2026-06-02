@@ -49,7 +49,7 @@
     "pnpm": {
         "overrides": {
             "axios@0": "0.30.0",
-            "axios@1": "1.13.5",
+            "axios@1": "1.16.0",
             "elliptic@6": "6.6.1",
             "form-data@3": "3.0.4",
             "form-data@4": "4.0.4",
@@ -72,7 +72,7 @@
             "preact": "10.28.2",
             "qs": "6.14.2",
             "valibot": "1.2.0",
-            "protobufjs": "7.5.5",
+            "protobufjs": "7.5.6",
             "handlebars": "4.7.9",
             "playwright": "1.55.1",
             "minimatch@3": "3.1.4",
@@ -87,7 +87,10 @@
             "picomatch@3": "3.0.2",
             "picomatch@4": "4.0.4",
             "defu": "6.1.5",
-            "next@15": "15.5.15",
+            "next@15": "15.5.18",
+            "next@16": "16.2.6",
+            "js-cookie": "3.0.7",
+            "fast-uri": "3.1.2",
             "@xmldom/xmldom": "0.8.13",
             "lodash": "4.18.1",
             "lodash-es": "4.18.1"
