@@ -67,7 +67,12 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
-import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig, AuthRejectedError } from "../signers/types";
+import {
+    type ApiSourcedServerSignerConfig,
+    isApiSourcedServerSignerConfig,
+    AuthRejectedError,
+    OtpValidationError,
+} from "../signers/types";
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import {
@@ -1358,6 +1363,18 @@ export class Wallet<C extends Chain> {
                 // can match the server-side pending signer on the next recover() attempt.
                 walletsLogger.info("wallet.recover.device.authRejected", {
                     signerLocator: newDeviceSigner.locator,
+                });
+                throw error;
+            } else if (
+                error instanceof OtpValidationError ||
+                (error instanceof Error && error.name === "OtpValidationError")
+            ) {
+                // OTP verification failed (wrong code, expired, server-side rejection).
+                // Keep the local key so the user can retry the OTP flow on the next
+                // recover() attempt without re-registering the device signer.
+                walletsLogger.warn("wallet.recover.device.otpValidationFailed", {
+                    signerLocator: newDeviceSigner.locator,
+                    code: error instanceof OtpValidationError ? error.code : undefined,
                 });
                 throw error;
             } else {

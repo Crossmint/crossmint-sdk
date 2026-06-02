@@ -3,7 +3,7 @@ import { Wallet } from "./wallet";
 import { WalletFactory } from "./wallet-factory";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain } from "../signers/types";
-import { AuthRejectedError } from "../signers/types";
+import { AuthRejectedError, OtpValidationError } from "../signers/types";
 import {
     InvalidAddressError,
     InvalidTransferAmountError,
@@ -2883,6 +2883,31 @@ describe("Wallet - recover()", () => {
 
             // Local key should NOT be deleted — it will be needed to match the
             // server-side pending signer on the next recover() attempt
+            expect(mockStorage.deleteKey).not.toHaveBeenCalled();
+        });
+
+        it("preserves local key and rethrow when addSigner fails with OtpValidationError", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+
+            mockApiClient.registerSigner.mockRejectedValue(
+                new OtpValidationError("An internal error occurred", "OTP_INVALID")
+            );
+
+            await expect(wallet.recover()).rejects.toThrow(OtpValidationError);
+
+            // Local key should NOT be deleted — the user can retry the OTP flow
+            // on the next recover() attempt without re-registering the device signer
             expect(mockStorage.deleteKey).not.toHaveBeenCalled();
         });
 

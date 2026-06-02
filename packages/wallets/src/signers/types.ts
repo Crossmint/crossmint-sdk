@@ -37,6 +37,16 @@ export class AuthRejectedError extends Error {
     }
 }
 
+export class OtpValidationError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "OtpValidationError";
+        this.code = code;
+    }
+}
+
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
