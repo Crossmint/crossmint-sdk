@@ -3,15 +3,10 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { Keypair as SolanaKeypair } from "@solana/web3.js";
 
 import type { Chain } from "../../../chains/chains";
-import type { ServerSignerConfig } from "../../types";
+import type { DerivedServerSigner, ServerSignerConfig } from "../../types";
 import { deriveKeyBytes } from "../../../utils/server-key-derivation";
 import { ed25519KeypairFromSeed, encodeStellarPublicKey } from "../../../utils/stellar";
 import { getChainType } from "./get-chain-type";
-
-export type DerivedServerSigner = {
-    derivedKeyBytes: Uint8Array;
-    derivedAddress: string;
-};
 
 export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): string {
     const chainType = getChainType(chain);

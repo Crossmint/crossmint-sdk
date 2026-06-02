@@ -64,6 +64,11 @@ export type ServerSignerConfig = {
     secret: string;
 };
 
+export type DerivedServerSigner = {
+    derivedKeyBytes: Uint8Array;
+    derivedAddress: string;
+};
+
 export type ApiSourcedServerSignerConfig = {
     type: "server";
     address: string;
