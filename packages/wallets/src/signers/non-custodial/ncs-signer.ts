@@ -7,7 +7,7 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError } from "../types";
+import { AuthRejectedError, OtpValidationError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
@@ -262,8 +262,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         }
 
         if (response?.status === "error") {
-            walletsLogger.error("start-onboarding: failed", { error: response.error });
-            this._authPromise?.reject(new Error(response.error || "Failed to initiate OTP process."));
+            walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
+            const error = new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
+            this._authPromise?.reject(error);
         }
     }
 
@@ -322,10 +323,15 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             return;
         }
 
-        walletsLogger.error("complete-onboarding: OTP validation failed", { status: response?.status });
+        walletsLogger.error("complete-onboarding: OTP validation failed", {
+            status: response?.status,
+            error: response?.status === "error" ? response.error : undefined,
+            code: response?.status === "error" ? response.code : undefined,
+        });
         this._needsAuth = true;
         const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
-        const error = new Error(errorMessage);
+        const errorCode = response?.status === "error" ? response.code : undefined;
+        const error = new OtpValidationError(errorMessage, errorCode);
         this._authPromise?.reject(error);
         throw error;
     }
