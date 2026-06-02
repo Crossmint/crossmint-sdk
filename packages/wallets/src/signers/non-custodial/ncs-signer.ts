@@ -331,7 +331,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         this._needsAuth = true;
         const errorMessage =
             response?.status === "error"
-                ? (response.error || "Failed to validate encrypted OTP")
+                ? response.error || "Failed to validate encrypted OTP"
                 : "Failed to validate encrypted OTP";
         const errorCode = response?.status === "error" ? response.code : undefined;
         const error = new OtpValidationError(errorMessage, errorCode);
