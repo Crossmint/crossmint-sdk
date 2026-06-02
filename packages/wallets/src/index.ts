@@ -63,6 +63,10 @@ export type {
     ExportSignerTEEConnection,
 } from "./signers/types";
 
+// Server signer key derivation
+export { deriveKeyBytes, deriveAlias } from "./utils/server-key-derivation";
+export { deriveServerSignerAddress, deriveServerSignerDetails } from "./signers/server/helpers/derive-server-signer";
+
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
 export type { BiometricRequestHandler } from "./utils/device-signers";
