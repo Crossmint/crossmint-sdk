@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.4.1
+
+### Patch Changes
+
+- 4be967b: fix: upgrade uuid from 9.0.1 to 11.1.1 to resolve medium severity vulnerability (GHSA-w5hq-g745-h8pq)
+
 ## 2.4.0
 
 ### Minor Changes
