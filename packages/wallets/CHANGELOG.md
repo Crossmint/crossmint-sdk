@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 1.5.0
+
+### Minor Changes
+
+- a4576bb: feat: add Ethereum mainnet to smart wallet supported chains
+
+  Add `Blockchain.ETHEREUM` to `PRODUCTION_AA_CHAINS`, the `toViemChain` switch, and `MAINNET_TO_TESTNET_MAP` so the SDK no longer rejects Ethereum mainnet with an `InvalidChainError` before the API call is made.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.11
+
 ## 1.4.1
 
 ### Patch Changes
