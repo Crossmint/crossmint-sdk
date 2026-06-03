@@ -37,7 +37,7 @@ function AppContent() {
                 }}
             >
                 <Text style={{ fontSize: 20, fontWeight: "600" }}>Wallets Quickstart</Text>
-                <TouchableOpacity onPress={logout}>
+                <TouchableOpacity testID="logout-button" onPress={logout}>
                     <Text style={{ color: "#6B7280" }}>Log out</Text>
                 </TouchableOpacity>
             </View>
