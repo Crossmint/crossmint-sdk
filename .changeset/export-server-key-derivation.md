@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Export server signer key derivation utilities from public entry point: `deriveKeyBytes`, `deriveAlias`, `deriveServerSignerAddress`, `deriveServerSignerDetails`
+Add `createServerSigner` public API for server signer key derivation, mirroring `createDeviceSigner`. Also exports low-level utilities: `deriveKeyBytes`, `deriveAlias`, `deriveServerSignerAddress`, `deriveServerSignerDetails`
