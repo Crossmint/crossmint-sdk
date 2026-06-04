@@ -496,6 +496,55 @@ importers:
 
   apps/wallets/shared: {}
 
+  apps/wallets/wallet-controls-demo:
+    dependencies:
+      '@crossmint/client-sdk-react-ui':
+        specifier: workspace:*
+        version: link:../../../packages/client/ui/react-ui
+      '@crossmint/wallets-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/wallets
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      next:
+        specifier: 15.5.18
+        version: 15.5.18(@babel/core@7.28.5)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react:
+        specifier: 19.1.1
+        version: 19.1.1
+      react-dom:
+        specifier: 19.1.1
+        version: 19.1.1(react@19.1.1)
+      tailwind-merge:
+        specifier: 2.4.0
+        version: 2.4.0
+      tw-animate-css:
+        specifier: 1.2.9
+        version: 1.2.9
+      viem:
+        specifier: 2.33.1
+        version: 2.33.1(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.1.17
+      '@types/node':
+        specifier: ^20
+        version: 20.14.8
+      '@types/react':
+        specifier: 19.1.10
+        version: 19.1.10
+      '@types/react-dom':
+        specifier: 19.1.0
+        version: 19.1.0(@types/react@19.1.10)
+      tailwindcss:
+        specifier: ^4
+        version: 4.1.17
+      typescript:
+        specifier: ^5
+        version: 5.5.3
+
   packages/client/auth:
     dependencies:
       '@crossmint/client-sdk-base':
