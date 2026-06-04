@@ -981,7 +981,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeSigner.error", {
                     error: response,
                 });
-                throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
+                throw new InvalidSignerError(`Failed to remove signer: ${response.message}`, JSON.stringify(response));
             }
 
             const transactionId = response.id;
