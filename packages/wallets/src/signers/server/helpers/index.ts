@@ -1,5 +1,5 @@
+export type { DerivedServerSigner } from "../../types";
 export {
-    type DerivedServerSigner,
     deriveServerSignerAddress,
     deriveServerSignerDetails,
     deriveServerSignerCandidates,
