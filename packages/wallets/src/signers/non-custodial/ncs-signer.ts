@@ -7,7 +7,7 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError, OtpValidationError } from "../types";
+import { AuthRejectedError, KeyExportError, OtpValidationError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
@@ -381,7 +381,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         });
 
         if (response?.status === "error") {
-            throw new Error(response.error || "Failed to export private key");
+            walletsLogger.error("export-signer: failed", {
+                error: response.error,
+                code: response.code,
+            });
+            throw new KeyExportError(response.error || "Failed to export private key", response.code);
         }
     }
 
