@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.5.1
+
+### Patch Changes
+
+- 8bb6235: Add `createServerSigner` public API for server signer key derivation, mirroring `createDeviceSigner`
+
 ## 1.5.0
 
 ### Minor Changes
