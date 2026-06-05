@@ -84,6 +84,7 @@ import { walletsLogger } from "../logger";
 import { getSignerLocator } from "../utils/signer-locator";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
+import { assertApprovalSignatureFormat } from "@/utils/signature-validation";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -1980,6 +1981,7 @@ export class Wallet<C extends Chain> {
 
         // If an external signature is provided, use it to approve the transaction
         if (options?.approval != null) {
+            assertApprovalSignatureFormat(options.approval);
             const approvals = [options.approval];
 
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
@@ -2031,6 +2033,8 @@ export class Wallet<C extends Chain> {
 
         // If an external signature is provided, use it to approve the transaction
         if (options?.approval != null) {
+            assertApprovalSignatureFormat(options.approval);
+
             const approvals = [options.approval];
 
             return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
