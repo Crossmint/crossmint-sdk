@@ -1,5 +1,21 @@
 # @crossmint/wallets-sdk
 
+## 1.5.2
+
+### Patch Changes
+
+- b9f006e: fix: throw typed KeyExportError instead of generic Error when export-signer TEE call fails
+
+  - Add `KeyExportError` class (exported) with optional `.code` from TEE response
+  - `_exportPrivateKey` now throws `KeyExportError` with structured logging instead of a generic `Error`
+
+- 2b8bee9: fix: throw typed SignerStatusError instead of generic Error when get-status TEE call fails
+
+  - Add `SignerStatusError` class (exported) with optional `.code` from TEE response
+  - `handleAuthRequired` now throws `SignerStatusError` instead of `new Error(signerResponse?.error)`, preserving the TEE error code and guarding against undefined messages
+
+- cd7e5f6: Remove browser environment check from `createServerSigner` to allow client-side usage
+
 ## 1.5.1
 
 ### Patch Changes
