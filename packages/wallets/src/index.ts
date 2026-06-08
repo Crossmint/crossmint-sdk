@@ -38,7 +38,13 @@ export type {
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
-export { isExportableSignerAdapter, AuthRejectedError, KeyExportError, OtpValidationError } from "./signers/types";
+export {
+    isExportableSignerAdapter,
+    AuthRejectedError,
+    KeyExportError,
+    OtpValidationError,
+    SignerStatusError,
+} from "./signers/types";
 export type {
     SignerAdapter,
     EmailSignerConfig,
@@ -62,6 +68,10 @@ export type {
     ExportableSignerAdapter,
     ExportSignerTEEConnection,
 } from "./signers/types";
+
+// Server signer
+export { createServerSigner } from "./utils/server-signers";
+export type { CreateServerSignerParams, ServerSigner } from "./utils/server-signers";
 
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
