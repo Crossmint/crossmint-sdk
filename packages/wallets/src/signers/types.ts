@@ -57,6 +57,15 @@ export class SignerStatusError extends Error {
     }
 }
 
+export class KeyExportError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "KeyExportError";
+        this.code = code;
+    }
+}
 export type EmailSignerConfig = {
     type: "email";
     email?: string;

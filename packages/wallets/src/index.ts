@@ -38,7 +38,13 @@ export type {
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
-export { isExportableSignerAdapter, AuthRejectedError, OtpValidationError, SignerStatusError } from "./signers/types";
+export {
+    isExportableSignerAdapter,
+    AuthRejectedError,
+    KeyExportError,
+    OtpValidationError,
+    SignerStatusError,
+} from "./signers/types";
 export type {
     SignerAdapter,
     EmailSignerConfig,
