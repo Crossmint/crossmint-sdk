@@ -1,7 +1,7 @@
 {
     "name": "@crossmint/wallets-playground-react",
     "private": true,
-    "version": "0.0.15",
+    "version": "0.0.16",
     "scripts": {
         "dev": "next dev",
         "start": "next start"
