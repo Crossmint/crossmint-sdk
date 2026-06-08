@@ -891,11 +891,12 @@ export class Wallet<C extends Chain> {
                 if (response.chains?.[this.chain]?.status === "failed") {
                     walletsLogger.error("wallet.addSigner.chainFailed", {
                         chain: this.chain,
-                        signer: signer.type,
+                        signerType: signer.type,
+                        signerLocator,
                         chainStatus: response.chains?.[this.chain],
                     });
                     throw new InvalidSignerError(
-                        `Signer registration failed for chain ${this.chain}`,
+                        `Signer registration failed for chain ${this.chain} (signer: ${signerLocator})`,
                         JSON.stringify(response.chains?.[this.chain])
                     );
                 }
