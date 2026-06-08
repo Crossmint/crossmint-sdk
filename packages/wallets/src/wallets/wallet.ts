@@ -891,6 +891,7 @@ export class Wallet<C extends Chain> {
                 if (response.chains?.[this.chain]?.status === "failed") {
                     walletsLogger.error("wallet.addSigner.chainFailed", {
                         chain: this.chain,
+                        signer: signer.type,
                         chainStatus: response.chains?.[this.chain],
                     });
                     throw new InvalidSignerError(
