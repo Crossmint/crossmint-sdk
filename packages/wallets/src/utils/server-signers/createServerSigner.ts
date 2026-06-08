@@ -39,10 +39,6 @@ export type ServerSigner = {
  * ```
  */
 export function createServerSigner(params: CreateServerSignerParams): ServerSigner {
-    if (typeof window !== "undefined") {
-        throw new Error("Server signers can only be used from server-side code.");
-    }
-
     const { secret, chain, projectId, environment } = params;
     const chainType = getChainType(chain);
     const keyBytes = deriveKeyBytes(secret, projectId, environment, chainType);
