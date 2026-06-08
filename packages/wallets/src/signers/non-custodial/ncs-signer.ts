@@ -7,7 +7,7 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError, OtpValidationError } from "../types";
+import { AuthRejectedError, OtpValidationError, SignerStatusError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
@@ -141,12 +141,18 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
+            const errorMessage =
+                signerResponse?.status === "error"
+                    ? signerResponse.error || "Failed to retrieve signer status"
+                    : "Failed to retrieve signer status";
+            const errorCode = signerResponse?.status === "error" ? signerResponse.code : undefined;
             walletsLogger.error("get-status: failed", {
                 status: signerResponse?.status,
-                error: signerResponse?.error,
+                error: signerResponse?.status === "error" ? signerResponse.error : undefined,
+                code: errorCode,
                 durationMs,
             });
-            throw new Error(signerResponse?.error);
+            throw new SignerStatusError(errorMessage, errorCode);
         }
 
         walletsLogger.info("get-status: response received", {
