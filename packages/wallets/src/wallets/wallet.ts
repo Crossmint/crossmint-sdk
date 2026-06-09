@@ -889,7 +889,16 @@ export class Wallet<C extends Chain> {
                     throw new Error("Expected chains in response for EVM chain");
                 }
                 if (response.chains?.[this.chain]?.status === "failed") {
-                    throw new Error(`Signer registration failed for chain ${this.chain}`);
+                    walletsLogger.error("wallet.addSigner.failed", {
+                        chain: this.chain,
+                        signerType: signer.type,
+                        signerLocator,
+                        chainStatus: response.chains?.[this.chain],
+                    });
+                    throw new InvalidSignerError(
+                        `Signer registration failed for chain ${this.chain} (signer: ${signerLocator})`,
+                        JSON.stringify(response.chains?.[this.chain])
+                    );
                 }
                 pendingOperation = getPendingSignerOperation(response, this.chain);
             }
