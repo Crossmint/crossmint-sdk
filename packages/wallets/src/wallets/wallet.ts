@@ -346,13 +346,12 @@ export class Wallet<C extends Chain> {
     private resolveServerSignerDerivation(
         signer: ServerSignerConfig | ApiSourcedServerSignerConfig
     ): DerivedServerSigner {
-        // If the server signer has already been resolved (e.g. after useSigner), return
-        // the cached derivation directly. The secret may have already been wiped from
-        // #recovery at this point, so we must not attempt to re-derive.
-        if (this.#resolvedServerSigner != null) {
-            return this.#resolvedServerSigner;
-        }
+        // When the signer config has no secret (API-sourced / stripped recovery), we must
+        // rely on the cached resolution — there is nothing to derive from.
         if (isApiSourcedServerSignerConfig(signer)) {
+            if (this.#resolvedServerSigner != null) {
+                return this.#resolvedServerSigner;
+            }
             throw new Error(
                 "Cannot resolve server signer derivation: no secret available and no cached resolution. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first.'
