@@ -889,7 +889,7 @@ export class Wallet<C extends Chain> {
                     throw new Error("Expected chains in response for EVM chain");
                 }
                 if (response.chains?.[this.chain]?.status === "failed") {
-                    walletsLogger.error("wallet.addSigner.chainFailed", {
+                    walletsLogger.error("wallet.addSigner.failed", {
                         chain: this.chain,
                         signerType: signer.type,
                         signerLocator,
