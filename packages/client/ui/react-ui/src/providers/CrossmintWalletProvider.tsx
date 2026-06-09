@@ -55,7 +55,7 @@ export function CrossmintWalletProvider({
             return new IframeDeviceSignerKeyStorage(crossmint.apiKey);
         } catch (error) {
             if (error instanceof UnsupportedBrowserError) {
-                console.error(`[Crossmint] ${error.message}`);
+                console.error(`[Crossmint] ${error.message}`, error);
                 return undefined;
             }
             throw error;

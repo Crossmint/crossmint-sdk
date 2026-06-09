@@ -153,7 +153,10 @@ describe("CrossmintWalletProvider", () => {
 
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
         expect(screen.getByTestId("test-child")).toBeDefined();
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Unsupported browser"));
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining("Unsupported browser"),
+            expect.any(MockUnsupportedBrowserError)
+        );
         consoleSpy.mockRestore();
     });
 });
