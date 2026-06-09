@@ -1046,6 +1046,7 @@ export class Wallet<C extends Chain> {
         // derivation must be preserved so that withRecoverySigner (addSigner / removeSigner)
         // continues to use the correct primary-or-legacy key for a server recovery signer.
         if (signer.type === "server") {
+            secureWipe(this.#resolvedServerSigner?.derivedKeyBytes);
             this.#resolvedServerSigner = null;
         }
         this.validateSignerInput(signer);
@@ -1158,6 +1159,7 @@ export class Wallet<C extends Chain> {
             legacy != null
                 ? `"server:${primary.derivedAddress}" or "server:${legacy.derivedAddress}"`
                 : `"server:${primary.derivedAddress}"`;
+        secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
         throw new Error(`Signer ${tried} is not registered in this wallet.`);
     }
 
@@ -1748,6 +1750,7 @@ export class Wallet<C extends Chain> {
                 if (legacy != null) {
                     addresses.push(legacy.derivedAddress);
                 }
+                secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
                 return addresses;
             };
 
