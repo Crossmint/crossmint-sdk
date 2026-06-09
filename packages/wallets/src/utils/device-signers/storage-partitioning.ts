@@ -23,6 +23,9 @@ export function hasPartitionedStorage(): boolean {
     }
 
     const ua = navigator.userAgent;
+    if (!ua) {
+        return false;
+    }
 
     // Chromium-based browsers (Chrome, Edge, Opera, Brave, etc.)
     // all include "Chrome/<version>" in their UA string.

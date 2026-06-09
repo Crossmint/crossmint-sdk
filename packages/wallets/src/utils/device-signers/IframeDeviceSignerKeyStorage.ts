@@ -48,7 +48,7 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     constructor(apiKey: string) {
         super(apiKey);
 
-        if (!hasPartitionedStorage()) {
+        if (typeof window !== "undefined" && !hasPartitionedStorage()) {
             throw new UnsupportedBrowserError(
                 "Device signer requires a browser with third-party storage partitioning (Chrome ≥ 115, Firefox ≥ 103, or Safari). " +
                     "Without storage partitioning, different embedders of the same iframe can share IndexedDB, " +
