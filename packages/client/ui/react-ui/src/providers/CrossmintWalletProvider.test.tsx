@@ -3,6 +3,20 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
+const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage } = vi.hoisted(() => {
+    class MockUnsupportedBrowserError extends Error {
+        code = "wallet:environment-invalid";
+        constructor(message: string) {
+            super(message);
+            this.name = "UnsupportedBrowserError";
+        }
+    }
+    return {
+        MockUnsupportedBrowserError,
+        mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+    };
+});
+
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         crossmint: { apiKey: "test-api-key" },
@@ -13,9 +27,8 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 
 vi.mock("@crossmint/wallets-sdk", () => ({
-    IframeDeviceSignerKeyStorage: vi.fn(() => ({
-        destroy: vi.fn(),
-    })),
+    IframeDeviceSignerKeyStorage: mockIframeDeviceSignerKeyStorage,
+    UnsupportedBrowserError: MockUnsupportedBrowserError,
 }));
 
 vi.mock("@/components/auth/PasskeyPrompt", () => ({
@@ -124,5 +137,23 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+    });
+
+    it("renders without crashing when browser lacks storage partitioning", () => {
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        mockIframeDeviceSignerKeyStorage.mockImplementationOnce(() => {
+            throw new MockUnsupportedBrowserError("Unsupported browser");
+        });
+
+        render(
+            <CrossmintWalletProvider>
+                <div data-testid="test-child">Test Child</div>
+            </CrossmintWalletProvider>
+        );
+
+        expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+        expect(screen.getByTestId("test-child")).toBeDefined();
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Unsupported browser"));
+        consoleSpy.mockRestore();
     });
 });

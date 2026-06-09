@@ -75,6 +75,18 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
+/**
+ * Thrown when the browser does not support third-party storage partitioning,
+ * making it unsafe to store device-signer keys in IndexedDB. Consumers should
+ * either prompt the user to upgrade their browser or fall back to a non-device
+ * signer (e.g. recovery signer).
+ */
+export class UnsupportedBrowserError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.ENVIRONMENT_INVALID, details);
+    }
+}
+
 export class InvalidMessageFormatError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.MESSAGE_INVALID, details);
@@ -212,4 +224,5 @@ export type WalletError =
     | TransactionHashNotFoundError
     | TransactionFailedError
     | PendingApprovalsError
-    | InvalidAddressError;
+    | InvalidAddressError
+    | UnsupportedBrowserError;

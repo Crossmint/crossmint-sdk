@@ -2,6 +2,8 @@ import { getEnvironmentForKey, APIKeyEnvironmentPrefix, WithLoggerContext } from
 import { WebAuthnP256 } from "ox";
 import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
+import { hasPartitionedStorage } from "./storage-partitioning";
+import { UnsupportedBrowserError } from "../errors";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
     [APIKeyEnvironmentPrefix.DEVELOPMENT]: "https://development.devicekey.store", // "http://localhost:3002"
@@ -45,6 +47,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
     constructor(apiKey: string) {
         super(apiKey);
+
+        if (!hasPartitionedStorage()) {
+            throw new UnsupportedBrowserError(
+                "Device signer requires a browser with third-party storage partitioning (Chrome ≥ 115, Firefox ≥ 103, or Safari). " +
+                    "Without storage partitioning, different embedders of the same iframe can share IndexedDB, " +
+                    "allowing cross-site key access. See https://developer.chrome.com/blog/storage-partitioning"
+            );
+        }
+
         const environment = getEnvironmentForKey(apiKey);
         if (environment == null) {
             throw new Error("Unable to determine environment from API key");

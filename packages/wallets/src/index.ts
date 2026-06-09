@@ -2,7 +2,7 @@
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
 // Errors
-export { WalletNotAvailableError, InvalidTransferAmountError } from "./utils/errors";
+export { WalletNotAvailableError, InvalidTransferAmountError, UnsupportedBrowserError } from "./utils/errors";
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";
@@ -75,4 +75,5 @@ export type { CreateServerSignerParams, ServerSigner } from "./utils/server-sign
 
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
+export { hasPartitionedStorage } from "./utils/device-signers/storage-partitioning";
 export type { BiometricRequestHandler } from "./utils/device-signers";
