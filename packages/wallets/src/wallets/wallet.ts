@@ -349,8 +349,8 @@ export class Wallet<C extends Chain> {
     ): DerivedServerSigner {
         // API-sourced config (stripped recovery): verify the cached address matches.
         if (isApiSourcedServerSignerConfig(signer)) {
-            if (this.#resolvedServerSigner != null && this.#resolvedServerSigner.derivedAddress === signer.address) {
-                return this.#resolvedServerSigner;
+            if (this.hasCachedResolutionFor(signer)) {
+                return this.#resolvedServerSigner!;
             }
             throw new Error(
                 "Cannot resolve server signer derivation: no secret available and no matching cached resolution. " +
@@ -1192,6 +1192,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Check whether the cached server signer resolution matches the given API-sourced config's
+     * address. Returns true when the cache is set and its derived address equals config.address.
+     */
+    private hasCachedResolutionFor(config: ApiSourcedServerSignerConfig): boolean {
+        return this.#resolvedServerSigner != null && this.#resolvedServerSigner.derivedAddress === config.address;
+    }
+
+    /**
      * Try to auto-select a passkey credential from registered signers.
      * Returns true if a credential was auto-selected, false if no passkey signers exist.
      * Throws if multiple passkey signers exist (user must specify an id).
@@ -1233,10 +1241,7 @@ export class Wallet<C extends Chain> {
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.signer;
-        if (
-            isApiSourcedServerSignerConfig(this.#recovery) &&
-            (this.#resolvedServerSigner == null || this.#resolvedServerSigner.derivedAddress !== this.#recovery.address)
-        ) {
+        if (isApiSourcedServerSignerConfig(this.#recovery) && !this.hasCachedResolutionFor(this.#recovery)) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
@@ -1493,10 +1498,7 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
-        if (
-            isApiSourcedServerSignerConfig(this.#recovery) &&
-            (this.#resolvedServerSigner == null || this.#resolvedServerSigner.derivedAddress !== this.#recovery.address)
-        ) {
+        if (isApiSourcedServerSignerConfig(this.#recovery) && !this.hasCachedResolutionFor(this.#recovery)) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
@@ -1982,10 +1984,7 @@ export class Wallet<C extends Chain> {
             case "device":
                 return this.#options?.deviceSignerKeyStorage != null;
             case "server":
-                return (
-                    !isApiSourcedServerSignerConfig(config) ||
-                    (this.#resolvedServerSigner != null && this.#resolvedServerSigner.derivedAddress === config.address)
-                );
+                return !isApiSourcedServerSignerConfig(config) || this.hasCachedResolutionFor(config);
             case "external-wallet":
                 return "onSign" in config && typeof config.onSign === "function";
             default:
