@@ -1951,6 +1951,9 @@ export class Wallet<C extends Chain> {
                 // Copy the derived key bytes so the signer adapter can safely wipe its copy
                 // without corrupting the cached #resolvedServerSigner reference.
                 const keyBytesCopy = new Uint8Array(resolved.derivedKeyBytes);
+                if (resolved !== this.#resolvedServerSigner) {
+                    secureWipe(resolved.derivedKeyBytes);
+                }
                 return {
                     type: "server",
                     derivedKeyBytes: keyBytesCopy,
