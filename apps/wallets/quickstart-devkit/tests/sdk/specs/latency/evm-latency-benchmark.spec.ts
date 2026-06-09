@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { CrossmintWallets, createCrossmint, EVMWallet } from "@crossmint/wallets-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { AUTH_CONFIG, TEST_RECIPIENT_WALLET_ADDRESSES, validateAPITestConfig } from "../../../shared/constants/globalConstants";
+import {
+    AUTH_CONFIG,
+    TEST_RECIPIENT_WALLET_ADDRESSES,
+    validateAPITestConfig,
+} from "../../../shared/constants/globalConstants";
 import { MockDeviceSignerKeyStorage } from "../../helpers/mock-device-storage";
 
 const API_KEY = AUTH_CONFIG.crossmintApiKey;
@@ -135,11 +139,12 @@ test.describe("EVM Latency Benchmark — Device Signer", { tag: "@latency" }, ()
                     durationMs: performance.now() - t1,
                 });
 
-                expect(preparedTx.transactionId).toBeTruthy();
+                const txId = preparedTx.transactionId;
+                expect(txId).toBeTruthy();
 
                 // Phase 2+3+4: Approve (device sign + submit) → Execute → Confirm
                 const t2 = performance.now();
-                const result = await wallet.approve({ transactionId: preparedTx.transactionId! });
+                const result = await wallet.approve({ transactionId: txId as string });
                 timings.push({
                     phase: "Phase 2+3+4: approve() [sign+submit+confirm]",
                     durationMs: performance.now() - t2,
