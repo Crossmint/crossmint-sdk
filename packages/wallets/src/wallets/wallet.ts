@@ -1153,8 +1153,8 @@ export class Wallet<C extends Chain> {
     /**
      * Wipe the derivedKeyBytes of the non-selected candidate to reduce key material in memory.
      */
-    private wipeNonSelectedCandidate(_selected: DerivedServerSigner, other: DerivedServerSigner | null): void {
-        if (other != null && other !== _selected) {
+    private wipeNonSelectedCandidate(selected: DerivedServerSigner, other: DerivedServerSigner | null): void {
+        if (other != null && other !== selected) {
             secureWipe(other.derivedKeyBytes);
         }
     }
@@ -1477,7 +1477,7 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
-        if (isApiSourcedServerSignerConfig(this.#recovery)) {
+        if (isApiSourcedServerSignerConfig(this.#recovery) && this.#resolvedServerSigner == null) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
