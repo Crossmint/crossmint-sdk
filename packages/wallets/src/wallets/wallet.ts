@@ -341,26 +341,38 @@ export class Wallet<C extends Chain> {
 
     /**
      * Resolve which derivation (primary "evm" or legacy chain-specific) to use for a server signer.
-     * Priority: cached resolution → legacy if it matches a known on-chain address → primary.
+     * Priority: cached resolution (with address verification) → legacy if it matches a known
+     * on-chain address → primary.
      */
     private resolveServerSignerDerivation(
         signer: ServerSignerConfig | ApiSourcedServerSignerConfig
     ): DerivedServerSigner {
-        // When the signer config has no secret (API-sourced / stripped recovery), we must
-        // rely on the cached resolution — there is nothing to derive from.
+        // API-sourced config (stripped recovery): verify the cached address matches.
         if (isApiSourcedServerSignerConfig(signer)) {
-            if (this.#resolvedServerSigner != null) {
+            if (this.#resolvedServerSigner != null && this.#resolvedServerSigner.derivedAddress === signer.address) {
                 return this.#resolvedServerSigner;
             }
             throw new Error(
-                "Cannot resolve server signer derivation: no secret available and no cached resolution. " +
+                "Cannot resolve server signer derivation: no secret available and no matching cached resolution. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first.'
             );
         }
+
+        // Full config with secret: derive candidates and check if the cache already
+        // holds a matching derivation (ensures consistent picking with resolveServerSigner).
         const { primary, legacy } = this.deriveServerSignerCandidates(signer);
+        if (this.#resolvedServerSigner != null) {
+            const cachedAddr = this.#resolvedServerSigner.derivedAddress;
+            if (cachedAddr === primary.derivedAddress || (legacy != null && cachedAddr === legacy.derivedAddress)) {
+                secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
+                return this.#resolvedServerSigner;
+            }
+        }
+
+        // No cache or cache from a different secret — apply heuristic picking.
         if (legacy != null) {
-            // Use legacy if it matches the recovery address or any known on-chain signer
             if (legacy.derivedAddress === this.#apiRecoveryServerSignerAddress) {
+                secureWipe(primary.derivedKeyBytes);
                 return legacy;
             }
             if (
@@ -370,8 +382,10 @@ export class Wallet<C extends Chain> {
                 ) ||
                 this.#apiDelegatedServerSignerAddresses.includes(legacy.derivedAddress)
             ) {
+                secureWipe(primary.derivedKeyBytes);
                 return legacy;
             }
+            secureWipe(legacy.derivedKeyBytes);
         }
         return primary;
     }
@@ -1217,7 +1231,10 @@ export class Wallet<C extends Chain> {
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.signer;
-        if (isApiSourcedServerSignerConfig(this.#recovery) && this.#resolvedServerSigner == null) {
+        if (
+            isApiSourcedServerSignerConfig(this.#recovery) &&
+            (this.#resolvedServerSigner == null || this.#resolvedServerSigner.derivedAddress !== this.#recovery.address)
+        ) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
@@ -1474,7 +1491,10 @@ export class Wallet<C extends Chain> {
         pendingOperation: { type: "signature" | "transaction"; id: string }
     ): Promise<void> {
         const originalSigner = this.#signer;
-        if (isApiSourcedServerSignerConfig(this.#recovery) && this.#resolvedServerSigner == null) {
+        if (
+            isApiSourcedServerSignerConfig(this.#recovery) &&
+            (this.#resolvedServerSigner == null || this.#resolvedServerSigner.derivedAddress !== this.#recovery.address)
+        ) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
@@ -1956,7 +1976,10 @@ export class Wallet<C extends Chain> {
             case "device":
                 return this.#options?.deviceSignerKeyStorage != null;
             case "server":
-                return !isApiSourcedServerSignerConfig(config) || this.#resolvedServerSigner != null;
+                return (
+                    !isApiSourcedServerSignerConfig(config) ||
+                    (this.#resolvedServerSigner != null && this.#resolvedServerSigner.derivedAddress === config.address)
+                );
             case "external-wallet":
                 return "onSign" in config && typeof config.onSign === "function";
             default:
