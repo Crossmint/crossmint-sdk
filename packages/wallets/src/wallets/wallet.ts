@@ -1111,14 +1111,12 @@ export class Wallet<C extends Chain> {
         if (existingSigners.some((s) => s.locator === `server:${primary.derivedAddress}`)) {
             this.#resolvedServerSigner = primary;
             this.wipeNonSelectedCandidate(primary, legacy);
-            this.stripSecretFromRecovery();
             this.#needsRecovery = false;
             return false;
         }
         if (legacy != null && existingSigners.some((s) => s.locator === `server:${legacy.derivedAddress}`)) {
             this.#resolvedServerSigner = legacy;
             this.wipeNonSelectedCandidate(legacy, primary);
-            this.stripSecretFromRecovery();
             this.#needsRecovery = false;
             return false;
         }
