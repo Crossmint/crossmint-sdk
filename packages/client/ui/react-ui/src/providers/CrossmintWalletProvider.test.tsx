@@ -3,19 +3,38 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
+const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage, mockLogger } = vi.hoisted(() => {
+    class MockUnsupportedBrowserError extends Error {
+        code = "wallet:environment-invalid";
+        constructor(message: string) {
+            super(message);
+            this.name = "UnsupportedBrowserError";
+        }
+    }
+    return {
+        MockUnsupportedBrowserError,
+        mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+        mockLogger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    };
+});
+
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         crossmint: { apiKey: "test-api-key" },
     })),
+    useLogger: vi.fn(() => mockLogger),
     CrossmintWalletBaseProvider: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="wallet-base-provider">{children}</div>
     ),
 }));
 
+vi.mock("./CrossmintProvider", () => ({
+    LoggerContext: {},
+}));
+
 vi.mock("@crossmint/wallets-sdk", () => ({
-    IframeDeviceSignerKeyStorage: vi.fn(() => ({
-        destroy: vi.fn(),
-    })),
+    IframeDeviceSignerKeyStorage: mockIframeDeviceSignerKeyStorage,
+    UnsupportedBrowserError: MockUnsupportedBrowserError,
 }));
 
 vi.mock("@/components/auth/PasskeyPrompt", () => ({
@@ -124,5 +143,24 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+    });
+
+    it("renders without crashing when browser lacks storage partitioning", () => {
+        mockIframeDeviceSignerKeyStorage.mockImplementationOnce(() => {
+            throw new MockUnsupportedBrowserError("Unsupported browser");
+        });
+
+        render(
+            <CrossmintWalletProvider>
+                <div data-testid="test-child">Test Child</div>
+            </CrossmintWalletProvider>
+        );
+
+        expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+        expect(screen.getByTestId("test-child")).toBeDefined();
+        expect(mockLogger.error).toHaveBeenCalledWith(
+            expect.stringContaining("Unsupported browser"),
+            expect.objectContaining({ error: expect.any(MockUnsupportedBrowserError) })
+        );
     });
 });

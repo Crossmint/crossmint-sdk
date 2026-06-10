@@ -5,8 +5,10 @@ import {
     type UIRenderProps,
     type CreateOnLogin,
     useCrossmint,
+    useLogger,
 } from "@crossmint/client-sdk-react-base";
-import { IframeDeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import { LoggerContext } from "./CrossmintProvider";
+import { IframeDeviceSignerKeyStorage, UnsupportedBrowserError } from "@crossmint/wallets-sdk";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -49,14 +51,22 @@ export function CrossmintWalletProvider({
     callbacks,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const logger = useLogger(LoggerContext);
 
-    const deviceSignerKeyStorage = useMemo(
-        () => new IframeDeviceSignerKeyStorage(crossmint.apiKey),
-        [crossmint.apiKey]
-    );
+    const deviceSignerKeyStorage = useMemo(() => {
+        try {
+            return new IframeDeviceSignerKeyStorage(crossmint.apiKey);
+        } catch (error) {
+            if (error instanceof UnsupportedBrowserError) {
+                logger.error(`[Crossmint] ${error.message}`, { error });
+                return undefined;
+            }
+            throw error;
+        }
+    }, [crossmint.apiKey]);
 
     useEffect(() => {
-        return () => deviceSignerKeyStorage.destroy();
+        return () => deviceSignerKeyStorage?.destroy();
     }, [deviceSignerKeyStorage]);
 
     const renderUI = useMemo(() => createRenderWebUI(showOtpSignerPrompt), [showOtpSignerPrompt]);

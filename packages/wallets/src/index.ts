@@ -2,7 +2,7 @@
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
 // Errors
-export { WalletNotAvailableError, InvalidTransferAmountError } from "./utils/errors";
+export { WalletNotAvailableError, InvalidTransferAmountError, UnsupportedBrowserError } from "./utils/errors";
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";
