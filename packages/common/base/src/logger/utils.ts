@@ -28,6 +28,9 @@ const SENSITIVE_KEYS = new Set([
     "credential",
     "authdata",
     "bearer",
+    "derivedkeybytes",
+    "secretkey",
+    "keypair",
 ]);
 
 const MAX_REDACTION_DEPTH = 10;

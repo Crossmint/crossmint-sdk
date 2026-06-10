@@ -20,4 +20,16 @@ describe("redactSensitiveFields", () => {
         const result = redactSensitiveFields(input) as Record<string, unknown>;
         expect(result.jwt).toBe("[REDACTED]");
     });
+
+    it("should redact server signer sensitive fields", () => {
+        const input = {
+            derivedKeyBytes: new Uint8Array(32),
+            secretKey: new Uint8Array(64),
+            keypair: { publicKey: "abc", secretKey: new Uint8Array(64) },
+        };
+        const result = redactSensitiveFields(input) as Record<string, unknown>;
+        expect(result.derivedKeyBytes).toBe("[REDACTED]");
+        expect(result.secretKey).toBe("[REDACTED]");
+        expect(result.keypair).toBe("[REDACTED]");
+    });
 });
