@@ -1,6 +1,6 @@
 import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha2";
-import { bytesToHex } from "@noble/hashes/utils";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 const HKDF_DOMAIN_SEPARATOR = "crossmint";
 const SECRET_PREFIX = "xmsk1_";
@@ -61,18 +61,4 @@ function getAlgorithmForChain(chain: string): string {
         return "ed25519";
     }
     return "secp256k1";
-}
-
-function hexToBytes(hex: string): Uint8Array {
-    if (hex.length % 2 !== 0) {
-        throw new Error(`Invalid hex string: odd length (${hex.length})`);
-    }
-    if (!/^[0-9a-fA-F]+$/.test(hex)) {
-        throw new Error("Invalid hex string: contains non-hex characters");
-    }
-    const bytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < hex.length; i += 2) {
-        bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
-    }
-    return bytes;
 }
