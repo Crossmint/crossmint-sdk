@@ -1,5 +1,6 @@
 import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
 import { ed25519KeypairFromSeed, ed25519Sign, encodeStellarPublicKey } from "../../utils/stellar";
+import { secureWipe } from "../../utils/secure-wipe";
 
 export class StellarServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
@@ -12,6 +13,8 @@ export class StellarServerSigner implements SignerAdapter<"server"> {
         this._address = encodeStellarPublicKey(keypair.publicKey);
         this._locator = config.locator;
         this.secretKey = keypair.secretKey;
+        // Wipe the input derived key bytes now that the keypair has been constructed
+        secureWipe(config.derivedKeyBytes);
     }
 
     address() {

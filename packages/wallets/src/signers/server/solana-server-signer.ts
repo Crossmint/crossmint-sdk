@@ -2,6 +2,7 @@ import { Keypair, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import nacl from "tweetnacl";
 import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
+import { secureWipe } from "../../utils/secure-wipe";
 
 export class SolanaServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
@@ -13,6 +14,8 @@ export class SolanaServerSigner implements SignerAdapter<"server"> {
         this.keypair = Keypair.fromSeed(config.derivedKeyBytes);
         this._address = this.keypair.publicKey.toBase58();
         this._locator = config.locator;
+        // Wipe the input derived key bytes now that the keypair has been constructed
+        secureWipe(config.derivedKeyBytes);
     }
 
     address() {

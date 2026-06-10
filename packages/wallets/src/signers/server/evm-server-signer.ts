@@ -1,6 +1,7 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { bytesToHex } from "@noble/hashes/utils";
 import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
+import { secureWipe } from "../../utils/secure-wipe";
 
 export class EVMServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
@@ -12,6 +13,8 @@ export class EVMServerSigner implements SignerAdapter<"server"> {
         this.account = privateKeyToAccount(`0x${bytesToHex(config.derivedKeyBytes)}`);
         this._address = this.account.address;
         this._locator = config.locator;
+        // Wipe the input derived key bytes now that the account has been constructed
+        secureWipe(config.derivedKeyBytes);
     }
 
     address() {
