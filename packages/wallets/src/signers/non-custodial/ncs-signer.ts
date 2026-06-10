@@ -381,6 +381,8 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 data: {
                     scheme,
                     encoding,
+                    walletAddress: this.config.address,
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
