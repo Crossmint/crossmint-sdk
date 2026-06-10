@@ -2,7 +2,7 @@ import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex } from "@noble/hashes/utils";
 
-const HKDF_SALT = "crossmint";
+const HKDF_DOMAIN_SEPARATOR = "crossmint";
 const SECRET_PREFIX = "xmsk1_";
 
 /**
@@ -24,7 +24,7 @@ export function deriveKeyBytes(secret: string, projectId: string, environment: s
     const algorithm = getAlgorithmForChain(chain);
     const info = `${projectId}:${environment}:${chain}-${algorithm}`;
 
-    return hkdf(sha256, ikm, HKDF_SALT, info, 32);
+    return hkdf(sha256, ikm, HKDF_DOMAIN_SEPARATOR, info, 32);
 }
 
 /**
@@ -37,7 +37,7 @@ export function deriveAlias(secret: string, projectId: string, environment: stri
     const info = `${projectId}:${environment}:${chain}-alias`;
 
     // Alias max length is 36 chars. "s-" prefix (2) + 34 hex chars = 36.
-    const derived = hkdf(sha256, ikm, HKDF_SALT, info, 17);
+    const derived = hkdf(sha256, ikm, HKDF_DOMAIN_SEPARATOR, info, 17);
     return `s-${bytesToHex(derived).slice(0, 34)}`;
 }
 
