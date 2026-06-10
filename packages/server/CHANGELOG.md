@@ -1,5 +1,13 @@
 # @crossmint/server-sdk
 
+## 1.2.75
+
+### Patch Changes
+
+- Updated dependencies [8589cc6]
+  - @crossmint/common-sdk-base@0.10.2
+  - @crossmint/common-sdk-auth@1.1.12
+
 ## 1.2.74
 
 ### Patch Changes
