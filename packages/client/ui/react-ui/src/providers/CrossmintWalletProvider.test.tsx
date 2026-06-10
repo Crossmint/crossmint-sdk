@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage } = vi.hoisted(() => {
+const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage, mockLogger } = vi.hoisted(() => {
     class MockUnsupportedBrowserError extends Error {
         code = "wallet:environment-invalid";
         constructor(message: string) {
@@ -14,6 +14,7 @@ const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage } = vi.hoi
     return {
         MockUnsupportedBrowserError,
         mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+        mockLogger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     };
 });
 
@@ -21,9 +22,14 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         crossmint: { apiKey: "test-api-key" },
     })),
+    useLogger: vi.fn(() => mockLogger),
     CrossmintWalletBaseProvider: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="wallet-base-provider">{children}</div>
     ),
+}));
+
+vi.mock("./CrossmintProvider", () => ({
+    LoggerContext: {},
 }));
 
 vi.mock("@crossmint/wallets-sdk", () => ({
@@ -140,7 +146,6 @@ describe("CrossmintWalletProvider", () => {
     });
 
     it("renders without crashing when browser lacks storage partitioning", () => {
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         mockIframeDeviceSignerKeyStorage.mockImplementationOnce(() => {
             throw new MockUnsupportedBrowserError("Unsupported browser");
         });
@@ -153,10 +158,9 @@ describe("CrossmintWalletProvider", () => {
 
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
         expect(screen.getByTestId("test-child")).toBeDefined();
-        expect(consoleSpy).toHaveBeenCalledWith(
+        expect(mockLogger.error).toHaveBeenCalledWith(
             expect.stringContaining("Unsupported browser"),
-            expect.any(MockUnsupportedBrowserError)
+            expect.objectContaining({ error: expect.any(MockUnsupportedBrowserError) })
         );
-        consoleSpy.mockRestore();
     });
 });
