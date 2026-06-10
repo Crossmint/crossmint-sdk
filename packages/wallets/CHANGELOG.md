@@ -1,5 +1,37 @@
 # @crossmint/wallets-sdk
 
+## 1.6.0
+
+### Minor Changes
+
+- 49046e9: feat: block device signer on browsers without third-party storage partitioning
+
+  - `IframeDeviceSignerKeyStorage` now throws `UnsupportedBrowserError` in its constructor when the browser lacks third-party storage partitioning (Chrome < 115, Firefox < 103, or unknown browsers)
+  - `CrossmintWalletProvider` catches the error gracefully, logs it, and falls back to non-device signers
+  - Exports `UnsupportedBrowserError` for consumers to handle programmatically
+
+### Patch Changes
+
+- 789ed03: fix: throw typed InvalidSignerError with chain status details when addSigner chain registration fails
+
+  - `addSigner` now throws `InvalidSignerError` (instead of generic `Error`) when `response.chains[chain].status === "failed"`, consistent with the error handling 2 lines above for API-level failures
+  - Adds structured logging with chain status details
+  - Passes the chain status JSON as `details` so consumers can inspect the failure reason
+
+- d224bb0: Add fields needed for our export flow
+- f20c85b: fix: wipe server signer secret from memory after key derivation
+
+  - After `useSigner()` resolves the server signer derivation, the plaintext master secret is stripped from the recovery config and replaced with an address-only reference
+  - Non-selected derivation candidate key bytes are securely zeroed
+  - Signer adapter constructors (EVM, Solana, Stellar) wipe input derived key bytes after constructing their internal key material
+  - `buildInternalSignerConfig` copies derived key bytes so the cached resolution is not corrupted when adapters wipe their input
+
+- Updated dependencies [d224bb0]
+- Updated dependencies [8589cc6]
+  - @crossmint/client-signers@0.2.1
+  - @crossmint/common-sdk-base@0.10.2
+  - @crossmint/common-sdk-auth@1.1.12
+
 ## 1.5.2
 
 ### Patch Changes

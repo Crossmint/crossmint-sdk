@@ -1,5 +1,28 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.2.11
+
+### Patch Changes
+
+- 49046e9: feat: block device signer on browsers without third-party storage partitioning
+
+  - `IframeDeviceSignerKeyStorage` now throws `UnsupportedBrowserError` in its constructor when the browser lacks third-party storage partitioning (Chrome < 115, Firefox < 103, or unknown browsers)
+  - `CrossmintWalletProvider` catches the error gracefully, logs it, and falls back to non-device signers
+  - Exports `UnsupportedBrowserError` for consumers to handle programmatically
+
+- Updated dependencies [49046e9]
+- Updated dependencies [789ed03]
+- Updated dependencies [d224bb0]
+- Updated dependencies [8589cc6]
+- Updated dependencies [f20c85b]
+  - @crossmint/wallets-sdk@1.6.0
+  - @crossmint/client-signers@0.2.1
+  - @crossmint/common-sdk-base@0.10.2
+  - @crossmint/client-sdk-react-base@2.0.29
+  - @crossmint/client-sdk-auth@1.3.14
+  - @crossmint/client-sdk-base@2.4.2
+  - @crossmint/common-sdk-auth@1.1.12
+
 ## 4.2.10
 
 ### Patch Changes

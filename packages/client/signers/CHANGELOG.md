@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.2.1
+
+### Patch Changes
+
+- d224bb0: Add fields needed for our export flow
+
 ## 0.2.0
 
 ### Minor Changes

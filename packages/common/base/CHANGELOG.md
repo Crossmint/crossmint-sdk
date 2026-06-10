@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.10.2
+
+### Patch Changes
+
+- 8589cc6: Add server signer sensitive fields (derivedKeyBytes, secretKey, keypair) to the SENSITIVE_KEYS redaction set so they are masked in log output.
+
 ## 0.10.1
 
 ### Patch Changes
