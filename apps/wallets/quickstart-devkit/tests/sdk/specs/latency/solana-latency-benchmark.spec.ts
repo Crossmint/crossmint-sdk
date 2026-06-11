@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { CrossmintWallets, createCrossmint, SolanaWallet } from "@crossmint/wallets-sdk";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { Connection, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import {
     AUTH_CONFIG,
     TEST_RECIPIENT_WALLET_ADDRESSES,
@@ -21,12 +20,15 @@ function makeSdk() {
     );
 }
 
-function makeEvmRecovery() {
-    const admin = privateKeyToAccount(generatePrivateKey());
+function makeSolanaRecovery() {
+    const keypair = Keypair.generate();
     return {
         type: "external-wallet" as const,
-        address: admin.address,
-        onSign: async (payload: string) => admin.signMessage({ message: { raw: payload as `0x${string}` } }),
+        address: keypair.publicKey.toBase58(),
+        onSign: async (transaction: VersionedTransaction) => {
+            transaction.sign([keypair]);
+            return transaction;
+        },
     };
 }
 
@@ -96,7 +98,7 @@ test.describe("Solana Latency Benchmark", { tag: "@latency" }, () => {
         const t1 = performance.now();
         const wallet = await sdk.createWallet({
             chain: "solana",
-            recovery: makeEvmRecovery(),
+            recovery: makeSolanaRecovery(),
             owner: `userId:latency-solana-e2e-${Date.now()}`,
         });
         timings.push({ phase: "createWallet()", durationMs: performance.now() - t1 });
@@ -131,7 +133,7 @@ test.describe("Solana Latency Benchmark", { tag: "@latency" }, () => {
 
         const wallet = await sdk.createWallet({
             chain: "solana",
-            recovery: makeEvmRecovery(),
+            recovery: makeSolanaRecovery(),
             owner: `userId:latency-solana-phased-${Date.now()}`,
         });
 
