@@ -58,7 +58,7 @@ async function buildZeroTransferTransaction(
     const from = new PublicKey(fromAddress);
     const to = new PublicKey(toAddress);
 
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+    const { blockhash } = await connection.getLatestBlockhash("confirmed");
 
     const instruction = SystemProgram.transfer({
         fromPubkey: from,
