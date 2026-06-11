@@ -1,6 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { CrossmintWallets, createCrossmint, SolanaWallet } from "@crossmint/wallets-sdk";
-import { Connection, Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import {
+    Connection,
+    Keypair,
+    PublicKey,
+    SystemProgram,
+    TransactionMessage,
+    VersionedTransaction,
+} from "@solana/web3.js";
 import {
     AUTH_CONFIG,
     TEST_RECIPIENT_WALLET_ADDRESSES,
