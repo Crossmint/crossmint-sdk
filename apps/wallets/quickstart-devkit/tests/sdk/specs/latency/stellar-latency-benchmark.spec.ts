@@ -48,18 +48,6 @@ function logTimingTable(testName: string, timings: PhaseTimings[]) {
     console.log(`${"=".repeat(70)}\n`);
 }
 
-// Stellar native token transfer via contract-call to the recipient address.
-// The wallet is gas-sponsored, so no balance is needed.
-const ZERO_VALUE_TRANSFER_PARAMS = {
-    contractId: TEST_RECIPIENT_WALLET_ADDRESSES.stellar,
-    method: "transfer",
-    args: {
-        from: "", // Will be set dynamically to wallet address
-        to: TEST_RECIPIENT_WALLET_ADDRESSES.stellar,
-        amount: "0",
-    },
-};
-
 test.describe("Stellar Latency Benchmark", { tag: "@latency" }, () => {
     let sdk: CrossmintWallets;
 
