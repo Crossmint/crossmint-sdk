@@ -25,9 +25,9 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets, checkout). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets, react-checkout). Defaults to all."
                 required: false
-                default: "react-ui,react-native,node-wallets,checkout"
+                default: "react-ui,react-native,node-wallets,react-checkout"
                 type: string
 
 permissions:
@@ -54,13 +54,13 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,node-wallets,checkout' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,node-wallets,react-checkout' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "react_ui=false" >> $GITHUB_OUTPUT
                   echo "react_native=false" >> $GITHUB_OUTPUT
                   echo "node_wallets=false" >> $GITHUB_OUTPUT
-                  echo "checkout=false" >> $GITHUB_OUTPUT
+                  echo "react_checkout=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",react-ui,"; then
                     echo "react_ui=true" >> $GITHUB_OUTPUT
                   fi
@@ -70,8 +70,8 @@ jobs:
                   if echo ",$PACKAGES," | grep -q ",node-wallets,"; then
                     echo "node_wallets=true" >> $GITHUB_OUTPUT
                   fi
-                  if echo ",$PACKAGES," | grep -q ",checkout,"; then
-                    echo "checkout=true" >> $GITHUB_OUTPUT
+                  if echo ",$PACKAGES," | grep -q ",react-checkout,"; then
+                    echo "react_checkout=true" >> $GITHUB_OUTPUT
                   fi
 
             - name: Generate React UI docs (wallets)
@@ -80,7 +80,7 @@ jobs:
               run: pnpm generate:docs --product wallets
 
             - name: Generate React UI docs (checkout)
-              if: steps.packages.outputs.checkout == 'true'
+              if: steps.packages.outputs.react_checkout == 'true'
               working-directory: packages/client/ui/react-ui
               run: pnpm generate:docs --product checkout
 
@@ -106,7 +106,7 @@ jobs:
                   REACT_UI_ENABLED: ${{ steps.packages.outputs.react_ui }}
                   REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.react_native }}
                   NODE_WALLETS_ENABLED: ${{ steps.packages.outputs.node_wallets }}
-                  CHECKOUT_ENABLED: ${{ steps.packages.outputs.checkout }}
+                  CHECKOUT_ENABLED: ${{ steps.packages.outputs.react_checkout }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
@@ -159,4 +159,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets,checkout'') }}, "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets,react-checkout'') }}, "source_ref": ${{ toJSON(github.ref_name) }}}'
