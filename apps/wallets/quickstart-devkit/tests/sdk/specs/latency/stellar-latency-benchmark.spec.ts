@@ -48,6 +48,9 @@ function logTimingTable(testName: string, timings: PhaseTimings[]) {
     console.log(`${"=".repeat(70)}\n`);
 }
 
+// XLM SAC (Stellar Asset Contract) on testnet — the native token wrapper.
+const STELLAR_XLM_SAC_TESTNET = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+
 test.describe("Stellar Latency Benchmark", { tag: "@latency" }, () => {
     let sdk: CrossmintWallets;
 
@@ -77,7 +80,7 @@ test.describe("Stellar Latency Benchmark", { tag: "@latency" }, () => {
 
         const t2 = performance.now();
         const tx = await stellarWallet.sendTransaction({
-            contractId: TEST_RECIPIENT_WALLET_ADDRESSES.stellar,
+            contractId: STELLAR_XLM_SAC_TESTNET,
             method: "transfer",
             args: {
                 from: wallet.address,
@@ -112,7 +115,7 @@ test.describe("Stellar Latency Benchmark", { tag: "@latency" }, () => {
         // Phase 1: Create transaction only (server-side assembleTransaction + simulate)
         const t1 = performance.now();
         const preparedTx = await stellarWallet.sendTransaction({
-            contractId: TEST_RECIPIENT_WALLET_ADDRESSES.stellar,
+            contractId: STELLAR_XLM_SAC_TESTNET,
             method: "transfer",
             args: {
                 from: wallet.address,
