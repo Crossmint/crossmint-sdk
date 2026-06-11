@@ -5,8 +5,9 @@
  * Pipeline: TypeDoc (api.json) + examples.json → Mintlify MDX pages
  *
  * Props, methods, and descriptions are auto-extracted from source JSDoc.
- * MANUAL_RETURNS and EXPANDABLE_CHILDREN are the only hardcoded sections —
- * needed because TypeDoc can't resolve types across packages in our monorepo.
+ * Expandable sub-properties are auto-resolved from TypeDoc type references
+ * where possible. MANUAL_RETURNS and FALLBACK_EXPANDABLE_CHILDREN handle
+ * edge cases where TypeDoc can't resolve types (e.g. cross-package generics).
  *
  * This module exports a `generate(config)` function used by platform-specific
  * callers in react-ui/ and react-native/.
@@ -20,10 +21,9 @@ import { join, resolve } from "path";
 // =============================================================================
 
 /**
- * Expandable sub-properties for props/returns that reference cross-package types
- * TypeDoc can't inline. Keyed by the property name within a component/hook.
- *
- * createOnLogin and getOrCreateWallet share the same WalletArgsFor<Chain> shape.
+ * Fallback expandable sub-properties for generic cross-package types that
+ * TypeDoc can't resolve even with path mappings (e.g. WalletArgsFor<Chain>).
+ * The auto-resolver handles most cases; these are only used when it fails.
  */
 const WALLET_CREATE_ARGS_CHILDREN = [
     {
@@ -297,19 +297,86 @@ function buildFieldsSection(
 }
 
 /**
- * Attaches expandable children to props/return members whose names
- * have a matching entry. This enriches cross-package reference types
- * with expandable sub-property documentation.
+ * Auto-resolves expandable children from TypeDoc type references.
+ * For each member whose type is a reference to a known interface/type-alias
+ * with properties, attaches those properties as `children` for rendering
+ * as expandable sub-fields.
+ *
+ * Falls back to the manual `expandableChildren` map for types that
+ * TypeDoc can't resolve (e.g. cross-package generics like WalletArgsFor<Chain>).
  */
-function attachExpandableChildren(members, expandableChildren) {
+function attachExpandableChildren(members, expandableChildren, { byId, allExports }) {
     if (!members?.length) return members;
     return members.map((m) => {
-        const children = expandableChildren[m.name];
-        if (children && !m.children?.length) {
-            return { ...m, children };
+        // Already has children (e.g. from inline reflection type) — skip
+        if (m.children?.length) return m;
+
+        // Try auto-resolving from TypeDoc type reference
+        const resolved = autoResolveChildren(m.type, { byId, allExports });
+        if (resolved?.length) {
+            return { ...m, children: resolved };
         }
+
+        // Fallback: use manual expandableChildren map (keyed by prop name)
+        const manual = expandableChildren[m.name];
+        if (manual) {
+            return { ...m, children: manual };
+        }
+
         return m;
     });
+}
+
+/**
+ * Given a TypeDoc type descriptor, attempts to resolve it to a list of
+ * child property members. Works for:
+ * - Direct references to interfaces/type-aliases with children
+ * - Reflection types (inline object types)
+ * - Intersection types (merges properties from all branches)
+ *
+ * Returns null if the type can't be resolved to properties.
+ */
+function autoResolveChildren(type, { byId, allExports }) {
+    if (!type) return null;
+
+    if (type.type === "reflection" && type.declaration?.children?.length) {
+        return type.declaration.children;
+    }
+
+    if (type.type === "reference" && type.target != null) {
+        // Try numeric ID first
+        if (typeof type.target === "number") {
+            const resolved = byId.get(type.target);
+            if (resolved?.children?.length) return resolved.children;
+            // Type alias with a nested type (e.g. type Foo = { ... })
+            if (resolved?.type?.type === "reflection" && resolved.type.declaration?.children?.length) {
+                return resolved.type.declaration.children;
+            }
+        }
+
+        // Fallback: look up by name in flattened exports
+        const name = type.target?.qualifiedName || type.name;
+        if (name) {
+            const matches = (allExports || []).filter((c) => c.name === name && (c.kind === 256 || c.kind === 2097152));
+            for (const match of matches) {
+                if (match.children?.length) return match.children;
+                if (match.type?.type === "reflection" && match.type.declaration?.children?.length) {
+                    return match.type.declaration.children;
+                }
+            }
+        }
+    }
+
+    if (type.type === "intersection" && type.types?.length) {
+        const merged = [];
+        for (const t of type.types) {
+            const children = autoResolveChildren(t, { byId, allExports });
+            if (children) merged.push(...children);
+        }
+        return merged.length ? merged : null;
+    }
+
+    return null;
 }
 
 // =============================================================================
@@ -353,6 +420,18 @@ export function generate(config) {
     // TypeDoc JSON helpers (scoped to this api.json)
     // =========================================================================
 
+    // When multiple entry points are used, TypeDoc wraps exports in module
+    // nodes (kind: 2). Flatten all top-level modules so findByName can locate
+    // exports regardless of module structure.
+    const allExports = [];
+    for (const child of api.children || []) {
+        if (child.kind === 2 && child.children?.length) {
+            allExports.push(...child.children);
+        } else {
+            allExports.push(child);
+        }
+    }
+
     const byId = new Map();
     (function index(node) {
         if (node.id != null) byId.set(node.id, node);
@@ -360,7 +439,7 @@ export function generate(config) {
     })(api);
 
     function findByName(name, kind) {
-        return api.children.find((c) => c.name === name && (kind == null || c.kind === kind));
+        return allExports.find((c) => c.name === name && (kind == null || c.kind === kind));
     }
 
     // =========================================================================
@@ -386,28 +465,77 @@ export function generate(config) {
                 allProps.push(...t.declaration.children);
             } else if (t.type === "intersection") {
                 t.types.forEach(collectProps);
+            } else if (t.type === "union") {
+                // For union types (A | B), merge all unique props from all branches.
+                // Props typed as `never` (serialized as "undefined") are discriminators — skip them.
+                // Props present in all branches keep their required status; others become optional.
+                const isNeverType = (prop) =>
+                    prop.type?.type === "intrinsic" && (prop.type.name === "undefined" || prop.type.name === "never");
+
+                const branchProps = [];
+                for (const ut of t.types) {
+                    const branch = [];
+                    const saved = allProps;
+                    allProps = branch;
+                    collectProps(ut);
+                    allProps = saved;
+                    branchProps.push(branch.filter((p) => !isNeverType(p)));
+                }
+                const seen = new Map();
+                const branchCount = branchProps.length;
+                for (const branch of branchProps) {
+                    for (const prop of branch) {
+                        if (!seen.has(prop.name)) {
+                            seen.set(prop.name, { prop, count: 1 });
+                        } else {
+                            seen.get(prop.name).count++;
+                        }
+                    }
+                }
+                // Props not in all branches become optional
+                for (const { prop, count } of seen.values()) {
+                    if (count < branchCount && !prop.flags?.isOptional) {
+                        allProps.push({ ...prop, flags: { ...prop.flags, isOptional: true } });
+                    } else {
+                        allProps.push(prop);
+                    }
+                }
             } else if (t.type === "reference" && t.target != null) {
                 const resolved = typeof t.target === "number" ? byId.get(t.target) : null;
                 if (resolved?.children) {
                     allProps.push(...resolved.children);
                     return;
                 }
+                // If resolved is a type alias, check its underlying type
+                if (resolved?.type) {
+                    collectProps(resolved.type);
+                    return;
+                }
                 // Fallback: target is an object descriptor or unresolved.
                 // Look up by qualifiedName/name; prefer the variant that has children.
                 const name = t.target?.qualifiedName || t.name;
                 if (name) {
-                    const matches = api.children.filter(
+                    const matches = allExports.filter(
                         (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
                     );
                     const withChildren = matches.find((m) => m.children?.length);
                     if (withChildren) {
                         allProps.push(...withChildren.children);
+                    } else {
+                        // Try resolving the type alias's underlying type
+                        const withType = matches.find((m) => m.type);
+                        if (withType) collectProps(withType.type);
                     }
                 }
             }
         }
         collectProps(type);
-        return allProps;
+        // Deduplicate by name (keep first occurrence)
+        const unique = new Map();
+        for (const p of allProps) {
+            if (!unique.has(p.name)) unique.set(p.name, p);
+        }
+        return [...unique.values()];
     }
 
     function extractReturnMembers(node) {
@@ -423,7 +551,7 @@ export function generate(config) {
             // Look up the type by name; prefer the variant that has children.
             const name = retType.target?.qualifiedName || retType.name;
             if (name) {
-                const matches = api.children.filter(
+                const matches = allExports.filter(
                     (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
                 );
                 const withChildren = matches.find((m) => m.children?.length);
@@ -592,7 +720,7 @@ export function generate(config) {
             }
 
             let props = extractProps(node);
-            props = attachExpandableChildren(props, expandableChildren);
+            props = attachExpandableChildren(props, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(props, { skipChildren: true });
             if (fields) {
                 emit("### Props");
@@ -650,7 +778,7 @@ export function generate(config) {
             // Manual returns take priority — they exist precisely because
             // TypeDoc can't resolve the cross-package types
             let members = manualReturns[name] || extractReturnMembers(node);
-            members = attachExpandableChildren(members, expandableChildren);
+            members = attachExpandableChildren(members, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(members, { expandableTitle: "parameters", showRequired: false });
             if (fields) {
                 emit("### Returns");
@@ -727,7 +855,7 @@ export function generate(config) {
             }
 
             let props = extractProps(node);
-            props = attachExpandableChildren(props, expandableChildren);
+            props = attachExpandableChildren(props, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(props, { skipChildren: true });
             if (fields) {
                 emit("### Props");

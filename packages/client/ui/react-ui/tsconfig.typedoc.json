@@ -7,6 +7,8 @@
             "@/*": ["src/*"],
             "@crossmint/client-sdk-react-base": ["../../react-base/src/index.ts"],
             "@crossmint/client-sdk-react-base/*": ["../../react-base/src/*"],
+            "@crossmint/client-sdk-base": ["../../base/src/index.ts"],
+            "@crossmint/client-sdk-base/*": ["../../base/src/*"],
             "@crossmint/wallets-sdk": ["../../../wallets/src/index.ts"],
             "@crossmint/wallets-sdk/*": ["../../../wallets/src/*"]
         },
