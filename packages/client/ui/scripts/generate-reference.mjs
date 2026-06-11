@@ -274,27 +274,32 @@ function buildFieldsSection(
         const comment = getComment(m);
         const requiredAttr = showRequired && !m.flags?.isOptional ? " required" : "";
 
-        L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
-        if (comment) L.push(`  ${comment}`);
+        const hasContent = comment || m.children?.length;
+        if (!hasContent) {
+            L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr} />`);
+        } else {
+            L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
+            if (comment) L.push(`  ${comment}`);
 
-        if (m.children?.length) {
-            L.push(`  <Expandable title="${expandableTitle}">`);
-            for (const sub of m.children) {
-                const subType = escapeForAttr(renderType(sub.type));
-                const subComment = getComment(sub);
-                const subReq = showRequired && !sub.flags?.isOptional ? " required" : "";
-                if (subComment) {
-                    L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
-                    L.push(`      ${subComment}`);
-                    L.push(`    </ResponseField>`);
-                } else {
-                    L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq} />`);
+            if (m.children?.length) {
+                L.push(`  <Expandable title="${expandableTitle}">`);
+                for (const sub of m.children) {
+                    const subType = escapeForAttr(renderType(sub.type));
+                    const subComment = getComment(sub);
+                    const subReq = showRequired && !sub.flags?.isOptional ? " required" : "";
+                    if (subComment) {
+                        L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
+                        L.push(`      ${subComment}`);
+                        L.push(`    </ResponseField>`);
+                    } else {
+                        L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq} />`);
+                    }
                 }
+                L.push(`  </Expandable>`);
             }
-            L.push(`  </Expandable>`);
-        }
 
-        L.push(`</ResponseField>`);
+            L.push(`</ResponseField>`);
+        }
         L.push("");
     }
     return L.join("\n");
