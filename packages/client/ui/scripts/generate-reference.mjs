@@ -377,7 +377,12 @@ function autoResolveChildren(type, { byId, allExports }) {
             const children = autoResolveChildren(t, { byId, allExports });
             if (children) merged.push(...children);
         }
-        return merged.length ? merged : null;
+        if (!merged.length) return null;
+        const unique = new Map();
+        for (const c of merged) {
+            if (!unique.has(c.name)) unique.set(c.name, c);
+        }
+        return [...unique.values()];
     }
 
     return null;
