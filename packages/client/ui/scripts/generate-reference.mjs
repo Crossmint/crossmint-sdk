@@ -283,9 +283,13 @@ function buildFieldsSection(
                 const subType = escapeForAttr(renderType(sub.type));
                 const subComment = getComment(sub);
                 const subReq = showRequired && !sub.flags?.isOptional ? " required" : "";
-                L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
-                if (subComment) L.push(`      ${subComment}`);
-                L.push(`    </ResponseField>`);
+                if (subComment) {
+                    L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
+                    L.push(`      ${subComment}`);
+                    L.push(`    </ResponseField>`);
+                } else {
+                    L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq} />`);
+                }
             }
             L.push(`  </Expandable>`);
         }
