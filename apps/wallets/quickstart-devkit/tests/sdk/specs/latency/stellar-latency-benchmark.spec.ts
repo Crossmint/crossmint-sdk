@@ -24,7 +24,10 @@ function makeStellarRecovery() {
     return {
         type: "external-wallet" as const,
         address: keypair.publicKey(),
-        onSign: async (tx: string) => tx,
+        onSign: async (payload: string) => {
+            const signature = keypair.sign(Buffer.from(payload, "base64"));
+            return Buffer.from(signature).toString("base64");
+        },
     };
 }
 
