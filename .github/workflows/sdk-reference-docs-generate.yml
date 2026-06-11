@@ -25,7 +25,7 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets, checkout). Defaults to all."
                 required: false
                 default: "react-ui,react-native,node-wallets,checkout"
                 type: string
