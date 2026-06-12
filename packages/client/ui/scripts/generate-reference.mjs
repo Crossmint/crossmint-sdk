@@ -481,7 +481,9 @@ export function generate(config) {
                 t.types.forEach(collectProps);
             } else if (t.type === "union") {
                 // For union types (A | B), merge all unique props from all branches.
-                // Props typed as `never` (serialized as "undefined") are discriminators — skip them.
+                // Props absent from a branch appear as intrinsic "undefined" (TypeDoc's serialization
+                // of `never`/missing). These are discriminators — skip them so the merged output only
+                // contains props that are actually defined in at least one branch.
                 // Props present in all branches keep their required status; others become optional.
                 const isNeverType = (prop) =>
                     prop.type?.type === "intrinsic" && (prop.type.name === "undefined" || prop.type.name === "never");

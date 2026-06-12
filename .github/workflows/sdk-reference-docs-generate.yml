@@ -22,6 +22,8 @@ on:
             - "packages/client/react-base/src/**"
             - "packages/client/base/src/types/embed/**"
             - "packages/client/base/src/types/hosted/**"
+            - "packages/client/base/src/types/index.ts"
+            - "packages/common/base/src/types/uiconfig.ts"
     workflow_dispatch:
         inputs:
             packages:
