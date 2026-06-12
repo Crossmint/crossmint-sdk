@@ -718,12 +718,15 @@ export function generate(config) {
         });
         emit("");
 
+        let providerIdx = 0;
         for (const name of providers) {
             const node = findByName(name, KIND.FUNCTION);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (providerIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}`);
             emit("");
 
@@ -766,6 +769,7 @@ export function generate(config) {
 
         const { hooks } = classifyExports(product.exports);
 
+        let hookIdx = 0;
         for (const name of hooks) {
             const aliases = product.aliases?.[name] || [];
 
@@ -773,8 +777,10 @@ export function generate(config) {
             if (!node) node = findByName(name, KIND.VARIABLE);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (hookIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}()`);
             emit("");
 
@@ -853,12 +859,15 @@ export function generate(config) {
 
         const { components } = classifyExports(product.exports);
 
+        let componentIdx = 0;
         for (const name of components) {
             const node = findByName(name, KIND.FUNCTION);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (componentIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}`);
             emit("");
 
