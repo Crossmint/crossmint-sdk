@@ -2176,7 +2176,7 @@ export class Wallet<C extends Chain> {
             const _pollStart = performance.now();
             transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
             console.log(
-                `[STELLAR LATENCY] sdk.poll #${_pollCount}: ${(performance.now() - _pollStart).toFixed(0)}ms (status=${transactionResponse.status}, elapsed=${Date.now() - startTime}ms)`
+                `[STELLAR LATENCY] sdk.poll #${_pollCount}: ${(performance.now() - _pollStart).toFixed(0)}ms (status=${"status" in transactionResponse ? transactionResponse.status : "error"}, elapsed=${Date.now() - startTime}ms)`
             );
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
@@ -2186,7 +2186,7 @@ export class Wallet<C extends Chain> {
             initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
         console.log(
-            `[STELLAR LATENCY] sdk.poll.total: ${Date.now() - startTime}ms (polls=${_pollCount}, finalStatus=${transactionResponse.status})`
+            `[STELLAR LATENCY] sdk.poll.total: ${Date.now() - startTime}ms (polls=${_pollCount}, finalStatus=${"status" in transactionResponse ? transactionResponse.status : "error"})`
         );
 
         if (transactionResponse.status === "failed") {
