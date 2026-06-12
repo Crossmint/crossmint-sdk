@@ -1946,9 +1946,16 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
+        const _approveInternalStart = performance.now();
         await this.approveTransactionInternal(transactionId, options);
+        console.log(
+            `[STELLAR LATENCY] sdk.approveInternal: ${(performance.now() - _approveInternalStart).toFixed(0)}ms`
+        );
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
-        return await this.waitForTransaction(transactionId);
+        const _waitStart = performance.now();
+        const result = await this.waitForTransaction(transactionId);
+        console.log(`[STELLAR LATENCY] sdk.waitForTransaction: ${(performance.now() - _waitStart).toFixed(0)}ms`);
+        return result;
     }
 
     protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
@@ -2023,7 +2030,9 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
+        const _getTxStart = performance.now();
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        console.log(`[STELLAR LATENCY] sdk.approve.getTransaction: ${(performance.now() - _getTxStart).toFixed(0)}ms`);
 
         if ("error" in transaction) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
@@ -2053,6 +2062,7 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
+        const _signStart = performance.now();
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
@@ -2078,8 +2088,14 @@ export class Wallet<C extends Chain> {
                 };
             })
         );
+        console.log(
+            `[STELLAR LATENCY] sdk.approve.sign: ${(performance.now() - _signStart).toFixed(0)}ms (signers=${approvals.length})`
+        );
 
-        return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+        const _submitStart = performance.now();
+        const result = await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+        console.log(`[STELLAR LATENCY] sdk.approve.submitApproval: ${(performance.now() - _submitStart).toFixed(0)}ms`);
+        return result;
     }
 
     private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
@@ -2148,6 +2164,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.approve: waiting for transaction confirmation", { transactionId, timeoutMs });
         const startTime = Date.now();
         let transactionResponse;
+        let _pollCount = 0;
 
         do {
             if (Date.now() - startTime > timeoutMs) {
@@ -2155,7 +2172,12 @@ export class Wallet<C extends Chain> {
                 throw error;
             }
 
+            _pollCount++;
+            const _pollStart = performance.now();
             transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+            console.log(
+                `[STELLAR LATENCY] sdk.poll #${_pollCount}: ${(performance.now() - _pollStart).toFixed(0)}ms (status=${transactionResponse.status}, elapsed=${Date.now() - startTime}ms)`
+            );
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
@@ -2163,6 +2185,9 @@ export class Wallet<C extends Chain> {
             await this.sleep(initialBackoffMs);
             initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
+        console.log(
+            `[STELLAR LATENCY] sdk.poll.total: ${Date.now() - startTime}ms (polls=${_pollCount}, finalStatus=${transactionResponse.status})`
+        );
 
         if (transactionResponse.status === "failed") {
             const error = new TransactionSendingFailedError(
