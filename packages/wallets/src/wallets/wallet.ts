@@ -1,10 +1,9 @@
-import { isValidAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
+import { WithLoggerContext } from "@crossmint/common-sdk-base";
 import type {
     Transfers,
     ApiClient,
     GetSignerResponse,
     GetSignatureResponse,
-    GetBalanceSuccessResponse,
     WalletLocator,
     RegisterSignerChain,
     RegisterSignerParams,
@@ -23,7 +22,6 @@ import type {
     UserLocator,
     Transaction,
     Balances,
-    TokenBalance,
     SignerStatus,
     ApproveParams,
     ApproveOptions,
@@ -37,7 +35,6 @@ import { getPendingSignerOperation, mapApiSignerToSigner } from "../utils/signer
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
-    InvalidAddressError,
     InvalidSignerError,
     InvalidTransferAmountError,
     SignatureFailedError,
@@ -83,6 +80,8 @@ import { secureWipe } from "../utils/secure-wipe";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
+import { toRecipientLocator, toTokenLocator } from "../utils/locators";
+import { formatBalanceResponse } from "./services/balance-formatter";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -451,7 +450,7 @@ export class Wallet<C extends Chain> {
         }
 
         walletsLogger.info("wallet.balances.success");
-        return this.transformBalanceResponse(response, nativeToken, tokens);
+        return formatBalanceResponse(response, this.chain, nativeToken, tokens);
     }
 
     /**
@@ -492,84 +491,6 @@ export class Wallet<C extends Chain> {
         }
         walletsLogger.info("wallet.stagingFund.success");
         return response;
-    }
-
-    /**
-     * Transform the API balance response to the new structure
-     * @private
-     */
-    private transformBalanceResponse(
-        apiResponse: GetBalanceSuccessResponse,
-        nativeTokenSymbol: TokenBalance["symbol"],
-        requestedTokens?: string[]
-    ): Balances<C> {
-        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance<C> => {
-            const chainData = tokenData.chains?.[this.chain];
-
-            let chainSpecificField = {};
-            if (this.chain === "solana" && chainData != null && "mintHash" in chainData) {
-                chainSpecificField = { mintHash: chainData.mintHash };
-            } else if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
-                chainSpecificField = { contractId: chainData.contractId };
-            } else if (chainData != null && "contractAddress" in chainData) {
-                chainSpecificField = {
-                    contractAddress: chainData.contractAddress,
-                };
-            }
-
-            return {
-                symbol: tokenData.symbol ?? "",
-                name: tokenData.name ?? "",
-                amount: tokenData.amount ?? "0",
-                decimals: tokenData.decimals,
-                rawAmount: tokenData.rawAmount ?? "0",
-                ...chainSpecificField,
-            } as TokenBalance<C>;
-        };
-
-        const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
-        const usdcData = apiResponse.find((token) => token.symbol === "usdc");
-
-        const otherTokens = apiResponse.filter((token) => {
-            return (
-                token.symbol !== nativeTokenSymbol &&
-                token.symbol !== "usdc" &&
-                (requestedTokens == null || requestedTokens.includes(token.symbol ?? ""))
-            );
-        });
-
-        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance<C> => {
-            const baseToken = {
-                symbol,
-                name: symbol,
-                amount: "0",
-                decimals: 0,
-                rawAmount: "0",
-            };
-
-            let chainSpecificField = {};
-            if (this.chain === "solana") {
-                chainSpecificField = { mintHash: undefined };
-            } else if (this.chain === "stellar") {
-                chainSpecificField = { contractId: undefined };
-            } else {
-                chainSpecificField = { contractAddress: undefined };
-            }
-
-            return {
-                ...baseToken,
-                ...chainSpecificField,
-            } as TokenBalance<C>;
-        };
-
-        return {
-            nativeToken:
-                nativeTokenData != null
-                    ? transformTokenBalance(nativeTokenData)
-                    : createDefaultToken(nativeTokenSymbol),
-            usdc: usdcData != null ? transformTokenBalance(usdcData) : createDefaultToken("usdc"),
-            tokens: otherTokens.map(transformTokenBalance),
-        };
     }
 
     /**
@@ -2253,39 +2174,4 @@ export class Wallet<C extends Chain> {
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-}
-
-function toRecipientLocator(to: string | UserLocator): string {
-    if (typeof to === "string") {
-        if (!isValidAddress(to)) {
-            throw new InvalidAddressError(
-                `Invalid recipient address: "${to}". Expected a valid EVM (0x...), Solana (base58), or Stellar (G.../C...) address.`
-            );
-        }
-        return to;
-    }
-    if ("email" in to) {
-        return `email:${to.email}`;
-    }
-    if ("x" in to) {
-        return `x:${to.x}`;
-    }
-    if ("twitter" in to) {
-        return `twitter:${to.twitter}`;
-    }
-    if ("phone" in to) {
-        return `phoneNumber:${to.phone}`;
-    }
-    if ("userId" in to) {
-        return `userId:${to.userId}`;
-    }
-    throw new Error("Invalid recipient locator");
-}
-
-function toTokenLocator(token: string, chain: string): string {
-    if (isValidAddress(token)) {
-        return `${chain}:${token}`;
-    }
-    // Otherwise, treat as currency symbol (lowercase)
-    return `${chain}:${token.toLowerCase()}`;
 }
