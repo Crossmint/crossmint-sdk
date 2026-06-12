@@ -16,7 +16,14 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/payment-method-management");
         const queryParams = new URLSearchParams();
 
-        appendObjectToQueryParams(queryParams, props);
+        // An empty `allowedPaymentMethodTypes` array would serialize as `[]`
+        // (appendObjectToQueryParams only skips falsy values, and `![]` is false),
+        // which the iframe would read as "offer no types" instead of the documented
+        // `["card"]` default. Drop the key when empty so the default applies.
+        const { allowedPaymentMethodTypes, ...rest } = props;
+        const serializableProps = allowedPaymentMethodTypes?.length ? props : rest;
+
+        appendObjectToQueryParams(queryParams, serializableProps);
 
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));

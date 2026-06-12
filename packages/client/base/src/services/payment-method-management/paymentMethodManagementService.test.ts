@@ -54,6 +54,16 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(params.has("mode")).toBe(false);
         expect(params.has("allowedPaymentMethodTypes")).toBe(false);
     });
+
+    it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
+        const service = makeService();
+
+        const url = service.iframe.getUrl({ jwt: "jwt-token", allowedPaymentMethodTypes: [] });
+
+        // An empty array must not serialize as `[]` (which the iframe would read as
+        // "offer no types"); the key is dropped so the documented default applies.
+        expect(new URL(url).searchParams.has("allowedPaymentMethodTypes")).toBe(false);
+    });
 });
 
 describe("CrossmintPaymentMethodManagement types", () => {
