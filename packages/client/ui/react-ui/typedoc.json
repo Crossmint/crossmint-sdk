@@ -3,6 +3,7 @@
         "src/index.ts",
         "../../base/src/types/embed/v3/CrossmintEmbeddedCheckoutV3Props.ts",
         "../../base/src/types/hosted/v3/CrossmintHostedCheckoutV3Props.ts",
+        "../../base/src/types/index.ts",
         "../../../common/base/src/types/uiconfig.ts"
     ],
     "tsconfig": "tsconfig.typedoc.json",
