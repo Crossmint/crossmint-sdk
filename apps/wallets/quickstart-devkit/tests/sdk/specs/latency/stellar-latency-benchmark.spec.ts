@@ -26,7 +26,7 @@ function makeStellarRecovery() {
         address: keypair.publicKey(),
         onSign: async (payload: string) => {
             const signature = keypair.sign(Buffer.from(payload, "base64"));
-            return Buffer.from(signature).toString("base64");
+            return signature.toString("base64");
         },
     };
 }
