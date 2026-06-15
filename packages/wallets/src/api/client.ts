@@ -127,6 +127,29 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    /**
+     * Opens an SSE connection to stream transaction status events.
+     * Returns the raw fetch Response with a readable body stream.
+     * The caller is responsible for reading and parsing SSE frames.
+     */
+    async streamTransactionEvents(
+        walletLocator: WalletLocator,
+        transactionId: string,
+        signal?: AbortSignal
+    ): Promise<Response> {
+        const path = `${this.apiPrefix}/${walletLocator}/transactions/${transactionId}/events`;
+        const url = this.buildUrl(path);
+        return fetch(url, {
+            method: "GET",
+            headers: {
+                ...this.commonHeaders,
+                ...this.headers,
+                Accept: "text/event-stream",
+            },
+            signal,
+        });
+    }
+
     async createSignature(
         walletLocator: WalletLocator,
         params: CreateSignatureParams

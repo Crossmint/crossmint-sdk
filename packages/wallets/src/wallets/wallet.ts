@@ -54,6 +54,7 @@ import {
     WalletTypeNotSupportedError,
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { parseSSEEvents } from "../utils/sse-parser";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import type {
     DeviceSignerConfig,
@@ -2162,61 +2163,152 @@ export class Wallet<C extends Chain> {
         } = {}
     ): Promise<Transaction<false>> {
         walletsLogger.info("wallet.approve: waiting for transaction confirmation", { transactionId, timeoutMs });
+
+        try {
+            return await this.waitForTransactionSSE(transactionId, timeoutMs);
+        } catch (sseError) {
+            walletsLogger.info("wallet.approve: SSE unavailable, falling back to polling", {
+                transactionId,
+                error: sseError instanceof Error ? sseError.message : String(sseError),
+            });
+            return this.waitForTransactionPolling(transactionId, timeoutMs, {
+                backoffMultiplier,
+                maxBackoffMs,
+                initialBackoffMs,
+            });
+        }
+    }
+
+    private async waitForTransactionSSE(transactionId: string, timeoutMs: number): Promise<Transaction<false>> {
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
+
+        try {
+            const response = await this.#apiClient.streamTransactionEvents(
+                this.walletLocator,
+                transactionId,
+                abortController.signal
+            );
+
+            if (!response.ok || response.body == null) {
+                throw new Error(`SSE connection failed: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const { events, remainder } = parseSSEEvents(buffer);
+                buffer = remainder;
+
+                for (const event of events) {
+                    if (event.event === "ping" || event.data === "") {
+                        continue;
+                    }
+
+                    const parsed = JSON.parse(event.data);
+                    if (parsed.timeout === true) {
+                        throw new TransactionConfirmationTimeoutError("SSE stream timed out");
+                    }
+
+                    if (parsed.error != null) {
+                        throw new TransactionNotAvailableError(JSON.stringify(parsed));
+                    }
+
+                    if (parsed.status === "failed") {
+                        throw new TransactionSendingFailedError(
+                            `Transaction sending failed: ${JSON.stringify(parsed.error)}`
+                        );
+                    }
+
+                    if (parsed.status === "awaiting-approval") {
+                        throw new TransactionAwaitingApprovalError(
+                            "Transaction is awaiting approval. Please submit required approvals before waiting for completion."
+                        );
+                    }
+
+                    if (parsed.status !== "pending") {
+                        return this.extractTransactionResult(parsed, transactionId);
+                    }
+                }
+            }
+
+            throw new TransactionConfirmationTimeoutError("SSE stream ended without terminal status");
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    private async waitForTransactionPolling(
+        transactionId: string,
+        timeoutMs: number,
+        {
+            backoffMultiplier,
+            maxBackoffMs,
+            initialBackoffMs,
+        }: {
+            initialBackoffMs: number;
+            backoffMultiplier: number;
+            maxBackoffMs: number;
+        }
+    ): Promise<Transaction<false>> {
         const startTime = Date.now();
         let transactionResponse;
-        let _pollCount = 0;
+        let currentBackoff = initialBackoffMs;
 
         do {
             if (Date.now() - startTime > timeoutMs) {
-                const error = new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
-                throw error;
+                throw new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
             }
 
-            _pollCount++;
-            const _pollStart = performance.now();
             transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
-            console.log(
-                `[STELLAR LATENCY] sdk.poll #${_pollCount}: ${(performance.now() - _pollStart).toFixed(0)}ms (status=${"status" in transactionResponse ? transactionResponse.status : "error"}, elapsed=${Date.now() - startTime}ms)`
-            );
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
-            // Wait for the polling interval
-            await this.sleep(initialBackoffMs);
-            initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
+
+            await this.sleep(currentBackoff);
+            currentBackoff = Math.min(currentBackoff * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
-        console.log(
-            `[STELLAR LATENCY] sdk.poll.total: ${Date.now() - startTime}ms (polls=${_pollCount}, finalStatus=${"status" in transactionResponse ? transactionResponse.status : "error"})`
-        );
 
         if (transactionResponse.status === "failed") {
-            const error = new TransactionSendingFailedError(
+            throw new TransactionSendingFailedError(
                 `Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`
             );
-            throw error;
         }
 
         if (transactionResponse.status === "awaiting-approval") {
-            const error = new TransactionAwaitingApprovalError(
-                `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
+            throw new TransactionAwaitingApprovalError(
+                "Transaction is awaiting approval. Please submit required approvals before waiting for completion."
             );
-            throw error;
         }
 
+        return this.extractTransactionResult(transactionResponse, transactionId);
+    }
+
+    private extractTransactionResult(
+        transactionResponse: { status: string; onChain: Record<string, unknown>; id: string },
+        transactionId: string
+    ): Transaction<false> {
         const stellarTransactionHash =
             "txHash" in transactionResponse.onChain && typeof transactionResponse.onChain.txHash === "string"
-                ? transactionResponse.onChain.txHash
+                ? (transactionResponse.onChain.txHash as string)
                 : undefined;
-        const transactionHash = transactionResponse.onChain.txId ?? stellarTransactionHash;
+        const transactionHash = (transactionResponse.onChain.txId as string) ?? stellarTransactionHash;
         if (transactionHash == null) {
-            const error = new TransactionHashNotFoundError("Transaction hash not found on transaction response");
-            throw error;
+            throw new TransactionHashNotFoundError("Transaction hash not found on transaction response");
         }
 
         return {
             hash: transactionHash,
-            explorerLink: transactionResponse.onChain.explorerLink ?? "",
-            transactionId: transactionResponse.id,
+            explorerLink: (transactionResponse.onChain.explorerLink as string) ?? "",
+            transactionId: transactionResponse.id ?? transactionId,
         };
     }
 
