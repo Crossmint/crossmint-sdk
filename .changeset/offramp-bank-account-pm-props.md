@@ -2,9 +2,9 @@
 "@crossmint/client-sdk-base": minor
 ---
 
-payment-method-management: add `mode` and `allowedPaymentMethodTypes` props and a `bank-account-us` return variant.
+payment-method-management: add `allow` and `allowedPaymentMethodTypes` props and a `bank-account-us` return variant.
 
-- `mode?: "new-only" | "new-and-existing"` (default `new-and-existing`).
+- `allow?: Array<"new" | "existing">` (default `["new"]`) — which sections render: `"new"` shows the "add new" form, `"existing"` shows the saved-methods list.
 - `allowedPaymentMethodTypes?: ("card" | "bank-account-us")[]` (default `["card"]`).
 - `CrossmintPaymentMethod` is now a discriminated union on `type`. The new `bank-account-us` variant carries only a safe display summary (`paymentMethodId` + `bankAccount: { accountSuffix, bankName, accountType }`); no token id or raw account number.
 
