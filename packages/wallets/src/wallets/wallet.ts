@@ -3,8 +3,6 @@ import type {
     Transfers,
     ApiClient,
     GetSignerResponse,
-    GetSignatureResponse,
-    GetBalanceSuccessResponse,
     WalletLocator,
     RegisterSignerChain,
     RegisterSignerParams,
