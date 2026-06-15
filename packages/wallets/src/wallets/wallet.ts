@@ -2001,9 +2001,18 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
+        const _approveInternalStart = performance.now();
         await this.approveTransactionInternal(transactionId, options);
+        console.log(
+            `[LATENCY][SDKApprove] approveInternal: ${(performance.now() - _approveInternalStart).toFixed(0)}ms | txId=${transactionId}`
+        );
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
-        return await this.waitForTransaction(transactionId);
+        const _waitStart = performance.now();
+        const result = await this.waitForTransaction(transactionId);
+        console.log(
+            `[LATENCY][SDKApprove] waitForTransaction: ${(performance.now() - _waitStart).toFixed(0)}ms | txId=${transactionId}`
+        );
+        return result;
     }
 
     protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
@@ -2078,7 +2087,11 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
+        const _getTxStart = performance.now();
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        console.log(
+            `[LATENCY][SDKApprove] getTransaction: ${(performance.now() - _getTxStart).toFixed(0)}ms | txId=${transactionId}`
+        );
 
         if ("error" in transaction) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
@@ -2108,6 +2121,7 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
+        const _signStart = performance.now();
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
@@ -2133,8 +2147,16 @@ export class Wallet<C extends Chain> {
                 };
             })
         );
+        console.log(
+            `[LATENCY][SDKApprove] sign: ${(performance.now() - _signStart).toFixed(0)}ms | signers=${approvals.length} | txId=${transactionId}`
+        );
 
-        return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+        const _submitStart = performance.now();
+        const result = await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+        console.log(
+            `[LATENCY][SDKApprove] submitApproval: ${(performance.now() - _submitStart).toFixed(0)}ms | txId=${transactionId}`
+        );
+        return result;
     }
 
     private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
@@ -2203,6 +2225,7 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.approve: waiting for transaction confirmation", { transactionId, timeoutMs });
         const startTime = Date.now();
         let transactionResponse;
+        let _pollCount = 0;
 
         do {
             if (Date.now() - startTime > timeoutMs) {
@@ -2210,7 +2233,14 @@ export class Wallet<C extends Chain> {
                 throw error;
             }
 
+            _pollCount++;
+            const _pollStart = performance.now();
             transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+            const _pollDuration = (performance.now() - _pollStart).toFixed(0);
+            const _status = "status" in transactionResponse ? transactionResponse.status : "error";
+            console.log(
+                `[LATENCY][SDKPoll] poll #${_pollCount}: ${_pollDuration}ms | status=${_status} | elapsed=${Date.now() - startTime}ms | txId=${transactionId}`
+            );
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
@@ -2218,6 +2248,17 @@ export class Wallet<C extends Chain> {
             await this.sleep(initialBackoffMs);
             initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
+
+        const _detectedAt = Date.now();
+        const _finalStatus = "status" in transactionResponse ? transactionResponse.status : "error";
+        const _completedAt = "completedAt" in transactionResponse ? transactionResponse.completedAt : null;
+        const _pollingOverheadMs = _completedAt != null ? _detectedAt - new Date(String(_completedAt)).getTime() : null;
+        console.log(
+            `[LATENCY][SDKPoll] total: ${_detectedAt - startTime}ms | polls=${_pollCount} | finalStatus=${_finalStatus} | txId=${transactionId}`
+        );
+        console.log(
+            `[LATENCY][PollingOverhead] txId=${transactionId} | serverCompletedAt=${_completedAt} | sdkDetectedAt=${_detectedAt} | pollingOverheadMs=${_pollingOverheadMs}`
+        );
 
         if (transactionResponse.status === "failed") {
             const error = new TransactionSendingFailedError(

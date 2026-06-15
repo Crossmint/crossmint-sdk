@@ -46,8 +46,10 @@ export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             ? (message as `0x${string}`)
             : (`0x${Buffer.from(message, "base64").toString("hex")}` as `0x${string}`);
 
-        // Sign raw digest without additional hashing (message is a pre-computed hash)
-        const { r, s } = P256.sign({ payload: messageHex, hash: false, privateKey });
+        // The server sends authenticatorData || sha256(clientDataJSON) (69 bytes).
+        // P256 sign with hash: true so the payload is SHA-256'd before signing,
+        // matching the on-chain WebAuthn signature verification.
+        const { r, s } = P256.sign({ payload: messageHex, hash: true, privateKey });
         return {
             r: `0x${r.toString(16).padStart(64, "0")}`,
             s: `0x${s.toString(16).padStart(64, "0")}`,

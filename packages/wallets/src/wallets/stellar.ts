@@ -60,9 +60,15 @@ export class StellarWallet extends Wallet<StellarChain> {
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
+        const _sdkTotalStart = performance.now();
 
         await this.preAuthIfNeeded();
+
+        const _createStart = performance.now();
         const createdTransaction = await this.createTransaction(params);
+        console.log(
+            `[STELLAR LATENCY] sdk.createTransaction: ${(performance.now() - _createStart).toFixed(0)}ms (txId=${createdTransaction.id})`
+        );
 
         if (params.options?.prepareOnly) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
@@ -77,7 +83,13 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         const options: ApproveOptions = {};
 
+        const _approveStart = performance.now();
         const result = await this.approveTransactionAndWait(createdTransaction.id, options);
+        console.log(`[STELLAR LATENCY] sdk.approveAndWait: ${(performance.now() - _approveStart).toFixed(0)}ms`);
+        console.log(
+            `[STELLAR LATENCY] sdk.sendTransaction.total: ${(performance.now() - _sdkTotalStart).toFixed(0)}ms`
+        );
+
         walletsLogger.info("stellarWallet.sendTransaction.success", {
             transactionId: createdTransaction.id,
             hash: result.hash,
