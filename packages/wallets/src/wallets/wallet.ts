@@ -1949,12 +1949,14 @@ export class Wallet<C extends Chain> {
         const _approveInternalStart = performance.now();
         await this.approveTransactionInternal(transactionId, options);
         console.log(
-            `[STELLAR LATENCY] sdk.approveInternal: ${(performance.now() - _approveInternalStart).toFixed(0)}ms`
+            `[LATENCY][SDKApprove] approveInternal: ${(performance.now() - _approveInternalStart).toFixed(0)}ms | txId=${transactionId}`
         );
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         const _waitStart = performance.now();
         const result = await this.waitForTransaction(transactionId);
-        console.log(`[STELLAR LATENCY] sdk.waitForTransaction: ${(performance.now() - _waitStart).toFixed(0)}ms`);
+        console.log(
+            `[LATENCY][SDKApprove] waitForTransaction: ${(performance.now() - _waitStart).toFixed(0)}ms | txId=${transactionId}`
+        );
         return result;
     }
 
@@ -2032,7 +2034,9 @@ export class Wallet<C extends Chain> {
     protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
         const _getTxStart = performance.now();
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
-        console.log(`[STELLAR LATENCY] sdk.approve.getTransaction: ${(performance.now() - _getTxStart).toFixed(0)}ms`);
+        console.log(
+            `[LATENCY][SDKApprove] getTransaction: ${(performance.now() - _getTxStart).toFixed(0)}ms | txId=${transactionId}`
+        );
 
         if ("error" in transaction) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
@@ -2089,12 +2093,14 @@ export class Wallet<C extends Chain> {
             })
         );
         console.log(
-            `[STELLAR LATENCY] sdk.approve.sign: ${(performance.now() - _signStart).toFixed(0)}ms (signers=${approvals.length})`
+            `[LATENCY][SDKApprove] sign: ${(performance.now() - _signStart).toFixed(0)}ms | signers=${approvals.length} | txId=${transactionId}`
         );
 
         const _submitStart = performance.now();
         const result = await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
-        console.log(`[STELLAR LATENCY] sdk.approve.submitApproval: ${(performance.now() - _submitStart).toFixed(0)}ms`);
+        console.log(
+            `[LATENCY][SDKApprove] submitApproval: ${(performance.now() - _submitStart).toFixed(0)}ms | txId=${transactionId}`
+        );
         return result;
     }
 
@@ -2175,8 +2181,10 @@ export class Wallet<C extends Chain> {
             _pollCount++;
             const _pollStart = performance.now();
             transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+            const _pollDuration = (performance.now() - _pollStart).toFixed(0);
+            const _status = "status" in transactionResponse ? transactionResponse.status : "error";
             console.log(
-                `[STELLAR LATENCY] sdk.poll #${_pollCount}: ${(performance.now() - _pollStart).toFixed(0)}ms (status=${"status" in transactionResponse ? transactionResponse.status : "error"}, elapsed=${Date.now() - startTime}ms)`
+                `[LATENCY][SDKPoll] poll #${_pollCount}: ${_pollDuration}ms | status=${_status} | elapsed=${Date.now() - startTime}ms | txId=${transactionId}`
             );
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
@@ -2185,8 +2193,16 @@ export class Wallet<C extends Chain> {
             await this.sleep(initialBackoffMs);
             initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
+
+        const _detectedAt = Date.now();
+        const _finalStatus = "status" in transactionResponse ? transactionResponse.status : "error";
+        const _completedAt = "completedAt" in transactionResponse ? transactionResponse.completedAt : null;
+        const _pollingOverheadMs = _completedAt != null ? _detectedAt - new Date(String(_completedAt)).getTime() : null;
         console.log(
-            `[STELLAR LATENCY] sdk.poll.total: ${Date.now() - startTime}ms (polls=${_pollCount}, finalStatus=${"status" in transactionResponse ? transactionResponse.status : "error"})`
+            `[LATENCY][SDKPoll] total: ${_detectedAt - startTime}ms | polls=${_pollCount} | finalStatus=${_finalStatus} | txId=${transactionId}`
+        );
+        console.log(
+            `[LATENCY][PollingOverhead] txId=${transactionId} | serverCompletedAt=${_completedAt} | sdkDetectedAt=${_detectedAt} | pollingOverheadMs=${_pollingOverheadMs}`
         );
 
         if (transactionResponse.status === "failed") {
