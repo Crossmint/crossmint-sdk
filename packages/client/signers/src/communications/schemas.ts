@@ -124,6 +124,11 @@ export const ExportSignerPayloadSchema = {
                 encoding: z
                     .union([z.literal("base58"), z.literal("hex"), z.literal("strkey")])
                     .describe("Encoding format for the private key"),
+                walletAddress: z.string().optional().describe("Address of the wallet the signer belongs to"),
+                authId: z
+                    .string()
+                    .optional()
+                    .describe("Locator of the signer being exported, e.g. 'email:foo@bar.com' or 'phone:+1...'"),
             })
             .describe("Data needed to export the signer"),
     }),
