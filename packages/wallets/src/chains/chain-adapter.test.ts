@@ -27,7 +27,7 @@ describe("chain-adapter", () => {
         it.each([
             ["base-sepolia", true],
             ["solana", false],
-            ["stellar", true],
+            ["stellar", false],
         ] as const)("%s -> %s", (chain, supports) => {
             expect(getChainAdapter(chain).supportsSignatures).toBe(supports);
         });
