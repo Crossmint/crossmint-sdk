@@ -342,6 +342,9 @@ function attachExpandableChildren(members, expandableChildren, { byId, allExport
  * - Direct references to interfaces/type-aliases with children
  * - Reflection types (inline object types)
  * - Intersection types (merges properties from all branches)
+ * - Union types (merges unique props, filters never-typed discriminators)
+ * - Array types (resolves the element type)
+ * - Reference → type alias chains (recursively resolves the underlying type)
  *
  * Returns null if the type can't be resolved to properties.
  */
@@ -357,9 +360,9 @@ function autoResolveChildren(type, { byId, allExports }) {
         if (typeof type.target === "number") {
             const resolved = byId.get(type.target);
             if (resolved?.children?.length) return resolved.children;
-            // Type alias with a nested type (e.g. type Foo = { ... })
-            if (resolved?.type?.type === "reflection" && resolved.type.declaration?.children?.length) {
-                return resolved.type.declaration.children;
+            // Type alias — recurse into the underlying type (handles unions, reflections, etc.)
+            if (resolved?.type) {
+                return autoResolveChildren(resolved.type, { byId, allExports });
             }
         }
 
@@ -369,8 +372,9 @@ function autoResolveChildren(type, { byId, allExports }) {
             const matches = (allExports || []).filter((c) => c.name === name && (c.kind === 256 || c.kind === 2097152));
             for (const match of matches) {
                 if (match.children?.length) return match.children;
-                if (match.type?.type === "reflection" && match.type.declaration?.children?.length) {
-                    return match.type.declaration.children;
+                if (match.type) {
+                    const result = autoResolveChildren(match.type, { byId, allExports });
+                    if (result) return result;
                 }
             }
         }
@@ -388,6 +392,45 @@ function autoResolveChildren(type, { byId, allExports }) {
             if (!unique.has(c.name)) unique.set(c.name, c);
         }
         return [...unique.values()];
+    }
+
+    if (type.type === "union" && type.types?.length) {
+        const isNeverType = (prop) =>
+            prop.type?.type === "intrinsic" && (prop.type.name === "undefined" || prop.type.name === "never");
+
+        const branchProps = [];
+        for (const ut of type.types) {
+            const children = autoResolveChildren(ut, { byId, allExports });
+            if (children?.length) {
+                branchProps.push(children.filter((p) => !isNeverType(p)));
+            }
+        }
+        if (!branchProps.length) return null;
+
+        const seen = new Map();
+        const branchCount = branchProps.length;
+        for (const branch of branchProps) {
+            for (const prop of branch) {
+                if (!seen.has(prop.name)) {
+                    seen.set(prop.name, { prop, count: 1 });
+                } else {
+                    seen.get(prop.name).count++;
+                }
+            }
+        }
+        const merged = [];
+        for (const { prop, count } of seen.values()) {
+            if (count < branchCount && !prop.flags?.isOptional) {
+                merged.push({ ...prop, flags: { ...prop.flags, isOptional: true } });
+            } else {
+                merged.push(prop);
+            }
+        }
+        return merged.length ? merged : null;
+    }
+
+    if (type.type === "array" && type.elementType) {
+        return autoResolveChildren(type.elementType, { byId, allExports });
     }
 
     return null;
