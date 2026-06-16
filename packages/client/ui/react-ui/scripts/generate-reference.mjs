@@ -42,6 +42,32 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             quickExampleIntro: "Once providers are set up, use hooks to access wallet state:",
         },
     },
+    checkout: {
+        outdir: "checkout",
+        navPrefix: "sdk-reference/checkout/react",
+        title: "React SDK",
+        description: "React SDK reference for Crossmint checkout",
+        packageName: "@crossmint/client-sdk-react-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
+        installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
+        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides React components and hooks for integrating Crossmint checkout into your application. It supports both embedded checkout (inline iframe) and hosted checkout (popup/new-tab button).",
+        exports: [
+            "CrossmintProvider",
+            "CrossmintCheckoutProvider",
+            "useCrossmintCheckout",
+            "CrossmintEmbeddedCheckout",
+            "CrossmintHostedCheckout",
+        ],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+            CrossmintCheckoutProvider: "Checkout order state management",
+        },
+        getStartedExamples: {
+            setup: "checkoutProviderSetup",
+            quickExample: "checkoutQuickExample",
+            quickExampleIntro: "Once providers are set up, use the checkout components to accept payments:",
+        },
+    },
 };
 
 generate({
