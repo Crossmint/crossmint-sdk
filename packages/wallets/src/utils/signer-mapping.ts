@@ -109,7 +109,8 @@ export function getPendingSignerOperation(
     if ("chains" in apiSigner && apiSigner.chains != null) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry != null && (chainEntry.status === "pending" || chainEntry.status === "awaiting-approval")) {
-            return { type: "signature", id: chainEntry.id };
+            const operationType = "onChain" in chainEntry ? "transaction" : "signature";
+            return { type: operationType, id: chainEntry.id };
         }
     }
 

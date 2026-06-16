@@ -774,10 +774,14 @@ export class Wallet<C extends Chain> {
                           }
                         : getSignerLocator(resolvedSigner);
 
+            const isEvm = this.chain !== "solana" && this.chain !== "stellar";
+            const deployImmediately = options?.deployImmediately ?? (isEvm ? true : undefined);
+
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
                 chain: this.getSignerRegistrationChain(),
                 ...(options?.scopes != null && { scopes: options.scopes }),
+                ...(deployImmediately != null && { deployImmediately }),
             });
 
             if ("error" in response) {

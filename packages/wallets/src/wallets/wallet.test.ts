@@ -658,11 +658,106 @@ describe("Wallet - addSigner()", () => {
                 expect.objectContaining({
                     signer: "external-wallet:0x456",
                     chain: "base-sepolia",
+                    deployImmediately: true,
                 })
             );
             expect(result.type).toBe("external-wallet");
             expect(result.locator).toBe("external-wallet:0x456");
             expect(result.status).toBe("success");
+        });
+
+        it("passes deployImmediately: false when explicitly set", async () => {
+            const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": {
+                        id: "sig-123",
+                        status: "success",
+                    },
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { prepareOnly: false, deployImmediately: false }
+            );
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                "me:evm:smart",
+                expect.objectContaining({
+                    signer: "external-wallet:0x456",
+                    chain: "base-sepolia",
+                    deployImmediately: false,
+                })
+            );
+        });
+
+        it("approves transaction when deployImmediately response has onChain field", async () => {
+            const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": {
+                        id: "tx-789",
+                        status: "awaiting-approval",
+                        onChain: { userOperation: "0xabc", userOperationHash: "0xdef" },
+                        chainType: "evm",
+                        walletType: "smart",
+                    },
+                },
+            };
+
+            const mockTransactionResponse = {
+                id: "tx-789",
+                status: "success",
+                onChain: {
+                    txId: "0xhash",
+                    explorerLink: "https://basescan.org/tx/0xhash",
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            const addPromise = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+            await vi.runAllTimersAsync();
+            const result = await addPromise;
+
+            expect(result.type).toBe("external-wallet");
+            expect(result.status).toBe("success");
+        });
+
+        it("returns transactionId with prepareOnly for deployImmediately flow", async () => {
+            const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": {
+                        id: "tx-789",
+                        status: "awaiting-approval",
+                        onChain: { userOperation: "0xabc", userOperationHash: "0xdef" },
+                        chainType: "evm",
+                        walletType: "smart",
+                    },
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            const result = await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { prepareOnly: true }
+            );
+
+            expect(result.transactionId).toBe("tx-789");
+            expect(result.type).toBe("external-wallet");
+            expect(result.status).toBe("awaiting-approval");
         });
 
         it("returns signatureId with prepareOnly", async () => {
