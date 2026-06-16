@@ -38,6 +38,12 @@ export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly & {
     scopes?: Scope[];
+    /**
+     * If true, the signer is registered on-chain immediately via a transaction (EVM only).
+     * If false, the signer is registered lazily via a signature request.
+     * Defaults to true.
+     */
+    deployImmediately?: boolean;
 };
 
 export type RemoveSignerOptions = PrepareOnly;

@@ -774,10 +774,14 @@ export class Wallet<C extends Chain> {
                           }
                         : getSignerLocator(resolvedSigner);
 
+            const deployImmediately =
+                this.chain !== "solana" && this.chain !== "stellar" ? options?.deployImmediately ?? true : undefined;
+
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
                 chain: this.getSignerRegistrationChain(),
                 ...(options?.scopes != null && { scopes: options.scopes }),
+                ...(deployImmediately != null && { deployImmediately }),
             });
 
             if ("error" in response) {
@@ -799,21 +803,9 @@ export class Wallet<C extends Chain> {
             // Extract the pending operation from the registration response
             let pendingOperation: { type: "signature" | "transaction"; id: string } | null = null;
 
-            if (this.chain === "solana" || this.chain === "stellar") {
-                if (!("transaction" in response) || response.transaction == null) {
-                    walletsLogger.error("wallet.addSigner.error", {
-                        error: "Expected transaction in response for Solana/Stellar chain",
-                    });
-                    throw new Error("Expected transaction in response for Solana/Stellar chain");
-                }
+            if ("transaction" in response && response.transaction != null) {
                 pendingOperation = { type: "transaction", id: response.transaction.id };
-            } else {
-                if (!("chains" in response)) {
-                    walletsLogger.error("wallet.addSigner.error", {
-                        error: "Expected chains in response for EVM chain",
-                    });
-                    throw new Error("Expected chains in response for EVM chain");
-                }
+            } else if ("chains" in response) {
                 if (response.chains?.[this.chain]?.status === "failed") {
                     walletsLogger.error("wallet.addSigner.failed", {
                         chain: this.chain,
@@ -827,6 +819,11 @@ export class Wallet<C extends Chain> {
                     );
                 }
                 pendingOperation = getPendingSignerOperation(response, this.chain);
+            } else {
+                walletsLogger.error("wallet.addSigner.error", {
+                    error: "Expected transaction or chains in register signer response",
+                });
+                throw new Error("Expected transaction or chains in register signer response");
             }
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);

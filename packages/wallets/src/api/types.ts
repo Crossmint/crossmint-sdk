@@ -96,6 +96,7 @@ export type RegisterSignerParams = {
     signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain>;
     chain?: RegisterSignerChain;
     scopes?: Scope[];
+    deployImmediately?: boolean;
 };
 export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type RemoveSignerParams = {
