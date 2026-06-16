@@ -923,16 +923,31 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("throws error when response missing both transaction and chains", async () => {
+        it("throws error when Solana response missing transaction", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "ABC123",
                 locator: "external-wallet:ABC123",
+                chains: {},
             };
 
             mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
 
             await expect(solanaWallet.addSigner({ type: "external-wallet", address: "ABC123" })).rejects.toThrow(
+                "Expected transaction in response for Solana/Stellar chain"
+            );
+        });
+
+        it("throws error when EVM response missing both transaction and chains", async () => {
+            const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Expected transaction or chains in register signer response"
             );
         });

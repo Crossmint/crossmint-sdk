@@ -805,6 +805,11 @@ export class Wallet<C extends Chain> {
 
             if ("transaction" in response && response.transaction != null) {
                 pendingOperation = { type: "transaction", id: response.transaction.id };
+            } else if (this.chain === "solana" || this.chain === "stellar") {
+                walletsLogger.error("wallet.addSigner.error", {
+                    error: "Expected transaction in response for Solana/Stellar chain",
+                });
+                throw new Error("Expected transaction in response for Solana/Stellar chain");
             } else if ("chains" in response) {
                 if (response.chains?.[this.chain]?.status === "failed") {
                     walletsLogger.error("wallet.addSigner.failed", {
