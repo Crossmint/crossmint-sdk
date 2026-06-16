@@ -4,7 +4,6 @@ import type {
     ApiClient,
     GetSignerResponse,
     WalletLocator,
-    RegisterSignerChain,
     RegisterSignerParams,
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
@@ -29,6 +28,7 @@ import type {
     ApproveResult,
     PrepareOnly,
     SendTokenTransactionOptions,
+    PendingSignerOperation,
 } from "./types";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
@@ -46,6 +46,7 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
+import { type ChainAdapter, getChainAdapter } from "../chains/chain-adapter";
 import type {
     DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
@@ -322,6 +323,10 @@ export class Wallet<C extends Chain> {
         return this.#options;
     }
 
+    private get chainAdapter(): ChainAdapter {
+        return getChainAdapter(this.chain);
+    }
+
     /**
      * Derive both primary ("evm") and legacy (chain-specific) server signer candidates.
      */
@@ -420,18 +425,7 @@ export class Wallet<C extends Chain> {
 
         const resolvedChain = this.resolveChainForEnvironment();
 
-        let nativeToken: string;
-        switch (this.chain) {
-            case "solana":
-                nativeToken = "sol";
-                break;
-            case "stellar":
-                nativeToken = "xlm";
-                break;
-            default:
-                nativeToken = "eth";
-                break;
-        }
+        const nativeToken = this.chainAdapter.nativeToken;
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
@@ -776,7 +770,7 @@ export class Wallet<C extends Chain> {
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
-                chain: this.getSignerRegistrationChain(),
+                chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(options?.scopes != null && { scopes: options.scopes }),
             });
 
@@ -796,38 +790,8 @@ export class Wallet<C extends Chain> {
                 throw new Error(`No approval found for chain ${this.chain} in register signer response`);
             }
 
-            // Extract the pending operation from the registration response
-            let pendingOperation: { type: "signature" | "transaction"; id: string } | null = null;
-
-            if (this.chain === "solana" || this.chain === "stellar") {
-                if (!("transaction" in response) || response.transaction == null) {
-                    walletsLogger.error("wallet.addSigner.error", {
-                        error: "Expected transaction in response for Solana/Stellar chain",
-                    });
-                    throw new Error("Expected transaction in response for Solana/Stellar chain");
-                }
-                pendingOperation = { type: "transaction", id: response.transaction.id };
-            } else {
-                if (!("chains" in response)) {
-                    walletsLogger.error("wallet.addSigner.error", {
-                        error: "Expected chains in response for EVM chain",
-                    });
-                    throw new Error("Expected chains in response for EVM chain");
-                }
-                if (response.chains?.[this.chain]?.status === "failed") {
-                    walletsLogger.error("wallet.addSigner.failed", {
-                        chain: this.chain,
-                        signerType: signer.type,
-                        signerLocator,
-                        chainStatus: response.chains?.[this.chain],
-                    });
-                    throw new InvalidSignerError(
-                        `Signer registration failed for chain ${this.chain} (signer: ${signerLocator})`,
-                        JSON.stringify(response.chains?.[this.chain])
-                    );
-                }
-                pendingOperation = getPendingSignerOperation(response, this.chain);
-            }
+            this.chainAdapter.assertAddSignerSucceeded(response, this.chain, signerLocator, signer.type);
+            const pendingOperation = this.chainAdapter.extractAddSignerOperation(response, this.chain);
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
@@ -909,7 +873,7 @@ export class Wallet<C extends Chain> {
 
         return this.withRecoverySigner(async () => {
             const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
-                chain: this.getSignerRegistrationChain(),
+                chain: this.chainAdapter.addSignerChain(this.chain),
             });
 
             if ("error" in response) {
@@ -1140,13 +1104,6 @@ export class Wallet<C extends Chain> {
             return this.resolveServerSignerApiLocator(signer);
         }
         return getSignerLocator(signer);
-    }
-
-    private getSignerRegistrationChain(): RegisterSignerChain | undefined {
-        if (this.chain === "solana" || this.chain === "stellar") {
-            return undefined;
-        }
-        return this.chain as RegisterSignerChain;
     }
 
     private async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
@@ -1560,18 +1517,7 @@ export class Wallet<C extends Chain> {
         if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
-            let baseLocator: string;
-            switch (this.chain) {
-                case "stellar":
-                    baseLocator = `me:stellar:smart`;
-                    break;
-                case "solana":
-                    baseLocator = `me:solana:smart`;
-                    break;
-                default:
-                    baseLocator = `me:evm:smart`;
-                    break;
-            }
+            const baseLocator = this.chainAdapter.walletLocatorPrefix;
             const aliasLocatorPart = this.alias != null ? `:alias:${this.alias}` : "";
             return baseLocator + aliasLocatorPart;
         }
@@ -1778,7 +1724,7 @@ export class Wallet<C extends Chain> {
     private async getSignerState(signerLocator: SignerLocator): Promise<{
         response: GetSignerResponse | null;
         signer: WalletSigner | null;
-        pendingOperation: { type: "signature" | "transaction"; id: string } | null;
+        pendingOperation: PendingSignerOperation | null;
     }> {
         let signerResponse: GetSignerResponse | null = null;
         try {
@@ -1902,10 +1848,6 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    protected get isSolanaWallet(): boolean {
-        return this.chain === "solana";
-    }
-
     protected resolveChainForEnvironment(): C {
         const resolvedChain = validateChainForEnvironment(this.chain, this.#apiClient.environment);
 
@@ -1941,7 +1883,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
-        if (this.isSolanaWallet) {
+        if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
