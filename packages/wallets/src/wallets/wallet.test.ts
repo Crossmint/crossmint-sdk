@@ -729,7 +729,29 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
-        it("returns signatureId with prepareOnly", async () => {
+        it("returns transactionId with prepareOnly and deployImmediately (default)", async () => {
+            const mockRegisterResponse = {
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                transaction: {
+                    id: "txn-789",
+                    status: "pending",
+                },
+            };
+
+            mockApiClient.registerSigner.mockResolvedValue(mockRegisterResponse as any);
+
+            const result = await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { prepareOnly: true }
+            );
+
+            expect(result.transactionId).toBe("txn-789");
+            expect(result.type).toBe("external-wallet");
+        });
+
+        it("returns signatureId with prepareOnly and deployImmediately: false", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
                 address: "0x456",
