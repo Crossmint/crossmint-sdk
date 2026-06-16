@@ -7,7 +7,7 @@ import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-ad
 export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
     walletLocatorPrefix: "me:stellar:smart",
-    supportsSignatures: true,
+    supportsSignatures: false,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;
