@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { InvalidSignerError } from "../../utils/errors";
-import { getChainAdapter } from "../chain-adapter";
+import { InvalidSignerError } from "../utils/errors";
+import { getChainAdapter } from "./chain-adapter";
 
 describe("chain-adapter", () => {
     describe("nativeToken", () => {
