@@ -351,8 +351,9 @@ function attachExpandableChildren(members, expandableChildren, { byId, allExport
  *
  * Returns null if the type can't be resolved to properties.
  */
-function autoResolveChildren(type, { byId, allExports }) {
-    if (!type) return null;
+function autoResolveChildren(type, { byId, allExports }, depth = 0) {
+    const MAX_RESOLVE_DEPTH = 10;
+    if (!type || depth >= MAX_RESOLVE_DEPTH) return null;
 
     if (type.type === "reflection" && type.declaration?.children?.length) {
         return type.declaration.children;
@@ -365,7 +366,7 @@ function autoResolveChildren(type, { byId, allExports }) {
             if (resolved?.children?.length) return resolved.children;
             // Type alias — recurse into the underlying type (handles unions, reflections, etc.)
             if (resolved?.type) {
-                return autoResolveChildren(resolved.type, { byId, allExports });
+                return autoResolveChildren(resolved.type, { byId, allExports }, depth + 1);
             }
         }
 
@@ -376,7 +377,7 @@ function autoResolveChildren(type, { byId, allExports }) {
             for (const match of matches) {
                 if (match.children?.length) return match.children;
                 if (match.type) {
-                    const result = autoResolveChildren(match.type, { byId, allExports });
+                    const result = autoResolveChildren(match.type, { byId, allExports }, depth + 1);
                     if (result) return result;
                 }
             }
@@ -386,7 +387,7 @@ function autoResolveChildren(type, { byId, allExports }) {
     if (type.type === "intersection" && type.types?.length) {
         const merged = [];
         for (const t of type.types) {
-            const children = autoResolveChildren(t, { byId, allExports });
+            const children = autoResolveChildren(t, { byId, allExports }, depth + 1);
             if (children) merged.push(...children);
         }
         if (!merged.length) return null;
@@ -403,7 +404,7 @@ function autoResolveChildren(type, { byId, allExports }) {
 
         const branchProps = [];
         for (const ut of type.types) {
-            const children = autoResolveChildren(ut, { byId, allExports });
+            const children = autoResolveChildren(ut, { byId, allExports }, depth + 1);
             if (children?.length) {
                 branchProps.push(children.filter((p) => !isNeverType(p)));
             }
@@ -433,7 +434,7 @@ function autoResolveChildren(type, { byId, allExports }) {
     }
 
     if (type.type === "array" && type.elementType) {
-        return autoResolveChildren(type.elementType, { byId, allExports });
+        return autoResolveChildren(type.elementType, { byId, allExports }, depth + 1);
     }
 
     return null;
