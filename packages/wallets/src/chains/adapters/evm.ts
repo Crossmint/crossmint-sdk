@@ -1,7 +1,7 @@
-import type { ChainAdapter, AddSignerChain } from "../chain-adapter";
+import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { RegisterSignerChain, RegisterSignerResponse, Signer as APISigner } from "../../api";
 import type { Chain } from "../chains";
-import type { TokenBalance } from "../../wallets/types";
+import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
 import { walletsLogger } from "../../logger";
 import { InvalidSignerError } from "../../utils/errors";
 import { getPendingSignerOperation } from "../../utils/signer-mapping";
@@ -13,12 +13,11 @@ export const evmChainAdapter: ChainAdapter = {
     addSignerChain(chain: Chain): AddSignerChain | undefined {
         return chain as RegisterSignerChain;
     },
-    assertAddSignerSucceeded(
+    extractAddSignerOperation(
         response: RegisterSignerResponse,
         chain: Chain,
-        signerLocator: string,
-        signerType: string
-    ): void {
+        signer: AddSignerContext
+    ): PendingSignerOperation | null {
         if (!("chains" in response)) {
             walletsLogger.error("wallet.addSigner.error", { error: "Expected chains in response for EVM chain" });
             throw new Error("Expected chains in response for EVM chain");
@@ -26,17 +25,15 @@ export const evmChainAdapter: ChainAdapter = {
         if (response.chains?.[chain]?.status === "failed") {
             walletsLogger.error("wallet.addSigner.failed", {
                 chain,
-                signerType,
-                signerLocator,
+                signerType: signer.type,
+                signerLocator: signer.locator,
                 chainStatus: response.chains?.[chain],
             });
             throw new InvalidSignerError(
-                `Signer registration failed for chain ${chain} (signer: ${signerLocator})`,
+                `Signer registration failed for chain ${chain} (signer: ${signer.locator})`,
                 JSON.stringify(response.chains?.[chain])
             );
         }
-    },
-    extractAddSignerOperation(response: RegisterSignerResponse, chain: Chain) {
         return getPendingSignerOperation(response as APISigner, chain);
     },
     balanceTokenFields(chainData: unknown): Partial<TokenBalance> {

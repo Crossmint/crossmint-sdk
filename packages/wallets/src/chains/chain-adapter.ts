@@ -8,18 +8,18 @@ import { stellarChainAdapter } from "./adapters/stellar";
 
 export type AddSignerChain = RegisterSignerChain;
 
+export type AddSignerContext = { locator: string; type: string };
+
 export interface ChainAdapter {
     readonly nativeToken: "eth" | "sol" | "xlm";
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
     readonly supportsSignatures: boolean;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
-    extractAddSignerOperation(response: RegisterSignerResponse, chain: Chain): PendingSignerOperation | null;
-    assertAddSignerSucceeded(
+    extractAddSignerOperation(
         response: RegisterSignerResponse,
         chain: Chain,
-        signerLocator: string,
-        signerType: string
-    ): void;
+        signer: AddSignerContext
+    ): PendingSignerOperation | null;
     balanceTokenFields(chainData: unknown): Partial<TokenBalance>;
     emptyBalanceTokenFields(): Partial<TokenBalance>;
 }

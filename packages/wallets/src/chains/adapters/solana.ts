@@ -1,7 +1,7 @@
 import type { RegisterSignerResponse } from "../../api";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
-import type { AddSignerChain, ChainAdapter } from "../chain-adapter";
+import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { Chain } from "../chains";
 
 export const solanaChainAdapter: ChainAdapter = {
@@ -13,23 +13,16 @@ export const solanaChainAdapter: ChainAdapter = {
         return undefined;
     },
 
-    assertAddSignerSucceeded(
+    extractAddSignerOperation(
         response: RegisterSignerResponse,
         _chain: Chain,
-        _signerLocator: string,
-        _signerType: string
-    ): void {
+        _signer: AddSignerContext
+    ): PendingSignerOperation | null {
         if (!("transaction" in response) || response.transaction == null) {
             walletsLogger.error("wallet.addSigner.error", {
                 error: "Expected transaction in response for Solana/Stellar chain",
             });
             throw new Error("Expected transaction in response for Solana/Stellar chain");
-        }
-    },
-
-    extractAddSignerOperation(response: RegisterSignerResponse, _chain: Chain): PendingSignerOperation | null {
-        if (!("transaction" in response) || response.transaction == null) {
-            return null;
         }
         return { type: "transaction", id: response.transaction.id };
     },

@@ -2,7 +2,7 @@ import type { Chain } from "../chains";
 import type { RegisterSignerResponse } from "../../api";
 import type { TokenBalance, PendingSignerOperation } from "../../wallets/types";
 import { walletsLogger } from "../../logger";
-import type { AddSignerChain, ChainAdapter } from "../chain-adapter";
+import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 
 export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
@@ -13,25 +13,18 @@ export const stellarChainAdapter: ChainAdapter = {
         return undefined;
     },
 
-    extractAddSignerOperation(response: RegisterSignerResponse, _chain: Chain): PendingSignerOperation | null {
-        if (!("transaction" in response) || response.transaction == null) {
-            return null;
-        }
-        return { type: "transaction", id: response.transaction.id };
-    },
-
-    assertAddSignerSucceeded(
+    extractAddSignerOperation(
         response: RegisterSignerResponse,
         _chain: Chain,
-        _signerLocator: string,
-        _signerType: string
-    ): void {
+        _signer: AddSignerContext
+    ): PendingSignerOperation | null {
         if (!("transaction" in response) || response.transaction == null) {
             walletsLogger.error("wallet.addSigner.error", {
                 error: "Expected transaction in response for Solana/Stellar chain",
             });
             throw new Error("Expected transaction in response for Solana/Stellar chain");
         }
+        return { type: "transaction", id: response.transaction.id };
     },
 
     balanceTokenFields(chainData: unknown): Partial<TokenBalance> {

@@ -44,85 +44,48 @@ describe("chain-adapter", () => {
     });
 
     describe("extractAddSignerOperation", () => {
+        const signer = { locator: "me:evm:smart", type: "api-key" };
+
         it.each(["solana", "stellar"] as const)("%s maps transaction to transaction operation", (chain) => {
             expect(
-                getChainAdapter(chain).extractAddSignerOperation({ transaction: { id: "tx-1" } } as any, chain)
+                getChainAdapter(chain).extractAddSignerOperation({ transaction: { id: "tx-1" } } as any, chain, signer)
             ).toEqual({ type: "transaction", id: "tx-1" });
         });
 
-        it("evm delegates to getPendingSignerOperation and returns a pending signature operation", () => {
+        it.each(["solana", "stellar"] as const)("%s throws when transaction missing", (chain) => {
+            expect(() => getChainAdapter(chain).extractAddSignerOperation({} as any, chain, signer)).toThrow(
+                "Expected transaction in response for Solana/Stellar chain"
+            );
+        });
+
+        it("evm returns a pending signature operation from the chains map", () => {
             const response = { chains: { "base-sepolia": { id: "sig-1", status: "pending" } } } as any;
-            expect(getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia")).toEqual({
-                type: "signature",
-                id: "sig-1",
-            });
+            expect(getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia", signer)).toEqual(
+                { type: "signature", id: "sig-1" }
+            );
         });
 
-        it("evm delegates to getPendingSignerOperation and returns null when not pending", () => {
+        it("evm returns null when the chain status is not pending", () => {
             const response = { chains: { "base-sepolia": { id: "sig-1", status: "success" } } } as any;
-            expect(getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia")).toBeNull();
+            expect(
+                getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia", signer)
+            ).toBeNull();
         });
-    });
 
-    describe("assertAddSignerSucceeded", () => {
         it("evm throws when chains missing", () => {
             expect(() =>
-                getChainAdapter("base-sepolia").assertAddSignerSucceeded(
-                    {} as any,
-                    "base-sepolia",
-                    "me:evm:smart",
-                    "api-key"
-                )
+                getChainAdapter("base-sepolia").extractAddSignerOperation({} as any, "base-sepolia", signer)
             ).toThrow("Expected chains in response for EVM chain");
         });
 
         it("evm throws InvalidSignerError when chain status is failed", () => {
             const response = { chains: { "base-sepolia": { id: "sig-1", status: "failed" } } } as any;
             expect(() =>
-                getChainAdapter("base-sepolia").assertAddSignerSucceeded(
-                    response,
-                    "base-sepolia",
-                    "me:evm:smart",
-                    "api-key"
-                )
+                getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia", signer)
             ).toThrow(InvalidSignerError);
             expect(() =>
-                getChainAdapter("base-sepolia").assertAddSignerSucceeded(
-                    response,
-                    "base-sepolia",
-                    "me:evm:smart",
-                    "api-key"
-                )
+                getChainAdapter("base-sepolia").extractAddSignerOperation(response, "base-sepolia", signer)
             ).toThrow("Signer registration failed for chain base-sepolia (signer: me:evm:smart)");
-        });
-
-        it("evm does not throw for a healthy response", () => {
-            const response = { chains: { "base-sepolia": { id: "sig-1", status: "success" } } } as any;
-            expect(() =>
-                getChainAdapter("base-sepolia").assertAddSignerSucceeded(
-                    response,
-                    "base-sepolia",
-                    "me:evm:smart",
-                    "api-key"
-                )
-            ).not.toThrow();
-        });
-
-        it.each(["solana", "stellar"] as const)("%s throws when transaction missing", (chain) => {
-            expect(() =>
-                getChainAdapter(chain).assertAddSignerSucceeded({} as any, chain, "me:smart", "api-key")
-            ).toThrow("Expected transaction in response for Solana/Stellar chain");
-        });
-
-        it.each(["solana", "stellar"] as const)("%s does not throw with transaction", (chain) => {
-            expect(() =>
-                getChainAdapter(chain).assertAddSignerSucceeded(
-                    { transaction: { id: "tx-1" } } as any,
-                    chain,
-                    "me:smart",
-                    "api-key"
-                )
-            ).not.toThrow();
         });
     });
 

@@ -790,8 +790,10 @@ export class Wallet<C extends Chain> {
                 throw new Error(`No approval found for chain ${this.chain} in register signer response`);
             }
 
-            this.chainAdapter.assertAddSignerSucceeded(response, this.chain, signerLocator, signer.type);
-            const pendingOperation = this.chainAdapter.extractAddSignerOperation(response, this.chain);
+            const pendingOperation = this.chainAdapter.extractAddSignerOperation(response, this.chain, {
+                locator: signerLocator,
+                type: signer.type,
+            });
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
