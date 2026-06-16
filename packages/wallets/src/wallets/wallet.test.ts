@@ -749,6 +749,7 @@ describe("Wallet - addSigner()", () => {
 
             expect(result.transactionId).toBe("txn-789");
             expect(result.type).toBe("external-wallet");
+            expect(result.status).toBe("pending");
         });
 
         it("returns signatureId with prepareOnly and deployImmediately: false", async () => {

@@ -58,7 +58,7 @@ export type MigrateOptions = Partial<PrepareOnly> & {
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? Signer & { transactionId: string }
-    : Signer & { signatureId?: string };
+    : Signer & { signatureId?: string; transactionId?: string };
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 

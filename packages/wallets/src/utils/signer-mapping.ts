@@ -78,7 +78,11 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
 
-    // For EVM, status comes from the chains field
+    // For EVM, status comes from the transaction field (deployImmediately) or chains field
+    if ("transaction" in apiSigner && apiSigner.transaction != null) {
+        return { ...base, status: apiSigner.transaction.status, ...(scopes != null && { scopes }) } as Signer;
+    }
+
     if ("chains" in apiSigner && apiSigner.chains != null && Object.keys(apiSigner.chains).length > 0) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry == null) {
