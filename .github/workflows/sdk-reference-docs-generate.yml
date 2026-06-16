@@ -161,4 +161,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets,react-checkout'') }}, "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets,react-checkout'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
