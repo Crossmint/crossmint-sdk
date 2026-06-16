@@ -24,13 +24,18 @@ export interface ChainAdapter {
     emptyBalanceTokenFields(): Partial<TokenBalance>;
 }
 
+const CHAIN_ADAPTERS = {
+    evm: evmChainAdapter,
+    solana: solanaChainAdapter,
+    stellar: stellarChainAdapter,
+} as const;
+
+export type ChainType = keyof typeof CHAIN_ADAPTERS;
+
 export function getChainAdapter(chain: Chain): ChainAdapter {
-    switch (getChainType(chain)) {
-        case "evm":
-            return evmChainAdapter;
-        case "solana":
-            return solanaChainAdapter;
-        case "stellar":
-            return stellarChainAdapter;
-    }
+    return CHAIN_ADAPTERS[getChainType(chain)];
+}
+
+export function isSupportedChainType(chainType: string): chainType is ChainType {
+    return Object.prototype.hasOwnProperty.call(CHAIN_ADAPTERS, chainType);
 }

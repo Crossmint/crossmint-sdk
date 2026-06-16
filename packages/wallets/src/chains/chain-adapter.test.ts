@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { InvalidSignerError } from "../utils/errors";
-import { getChainAdapter } from "./chain-adapter";
+import { getChainAdapter, isSupportedChainType } from "./chain-adapter";
 
 describe("chain-adapter", () => {
     describe("nativeToken", () => {
@@ -41,6 +41,19 @@ describe("chain-adapter", () => {
         it.each(["solana", "stellar"] as const)("%s returns undefined", (chain) => {
             expect(getChainAdapter(chain).addSignerChain(chain)).toBeUndefined();
         });
+    });
+
+    describe("isSupportedChainType", () => {
+        it.each(["evm", "solana", "stellar"])("returns true for supported chain type %o", (chainType) => {
+            expect(isSupportedChainType(chainType)).toBe(true);
+        });
+
+        it.each(["aptos", "bitcoin", "", "EVM", "toString", "constructor"])(
+            "returns false for unsupported chain type %o",
+            (chainType) => {
+                expect(isSupportedChainType(chainType)).toBe(false);
+            }
+        );
     });
 
     describe("extractAddSignerOperation", () => {

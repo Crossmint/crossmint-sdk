@@ -8,6 +8,7 @@ import type {
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
+    GetWalletSuccessResponse,
     FundWalletResponse,
 } from "../api";
 import type {
@@ -46,7 +47,7 @@ import {
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import { type ChainAdapter, getChainAdapter } from "../chains/chain-adapter";
+import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
 import type {
     DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
@@ -1481,16 +1482,13 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
-        if (
-            walletResponse.type !== "smart" ||
-            (walletResponse.chainType !== "evm" &&
-                walletResponse.chainType !== "solana" &&
-                walletResponse.chainType !== "stellar")
-        ) {
-            walletsLogger.error("wallet.signers.error", {
-                error: `Wallet type ${walletResponse.type} not supported`,
-            });
-            throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
+        if (!isSupportedSmartWallet(walletResponse)) {
+            const reason =
+                walletResponse.type !== "smart"
+                    ? `Wallet type ${walletResponse.type} not supported`
+                    : `Wallet chain type ${walletResponse.chainType} not supported`;
+            walletsLogger.error("wallet.signers.error", { error: reason });
+            throw new WalletTypeNotSupportedError(reason);
         }
 
         const configSigners = walletResponse?.config?.delegatedSigners ?? [];
@@ -2050,4 +2048,10 @@ export class Wallet<C extends Chain> {
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
+}
+
+function isSupportedSmartWallet(
+    wallet: GetWalletSuccessResponse
+): wallet is Extract<GetWalletSuccessResponse, { chainType: ChainType }> {
+    return wallet.type === "smart" && isSupportedChainType(wallet.chainType);
 }
