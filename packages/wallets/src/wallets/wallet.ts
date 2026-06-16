@@ -775,7 +775,7 @@ export class Wallet<C extends Chain> {
                         : getSignerLocator(resolvedSigner);
 
             const isEvm = this.chain !== "solana" && this.chain !== "stellar";
-            const deployImmediately = isEvm ? (options?.deployImmediately ?? true) : undefined;
+            const deployImmediately = isEvm ? options?.deployImmediately ?? true : undefined;
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
