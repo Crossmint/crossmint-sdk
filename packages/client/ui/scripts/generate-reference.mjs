@@ -267,42 +267,39 @@ function buildFieldsSection(
     { skipChildren = false, expandableTitle = "properties", showRequired = true } = {}
 ) {
     if (!members?.length) return "";
-    const L = [];
-    for (const m of members) {
-        if (skipChildren && m.name === "children") continue;
-        const typeStr = escapeForAttr(renderType(m.type));
-        const comment = getComment(m);
-        const requiredAttr = showRequired && !m.flags?.isOptional ? " required" : "";
 
-        const hasContent = comment || m.children?.length;
-        if (!hasContent) {
-            L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr} />`);
-        } else {
-            L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
-            if (comment) L.push(`  ${comment}`);
+    function renderFields(fields, indent = 0) {
+        if (!Array.isArray(fields)) return "";
+        const pad = " ".repeat(indent);
+        const L = [];
+        for (const m of fields) {
+            if (skipChildren && m.name === "children") continue;
+            const typeStr = escapeForAttr(renderType(m.type));
+            const comment = getComment(m);
+            const requiredAttr = showRequired && !m.flags?.isOptional ? " required" : "";
+            const childArray = Array.isArray(m.children) ? m.children : [];
 
-            if (m.children?.length) {
-                L.push(`  <Expandable title="${expandableTitle}">`);
-                for (const sub of m.children) {
-                    const subType = escapeForAttr(renderType(sub.type));
-                    const subComment = getComment(sub);
-                    const subReq = showRequired && !sub.flags?.isOptional ? " required" : "";
-                    if (subComment) {
-                        L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
-                        L.push(`      ${subComment}`);
-                        L.push(`    </ResponseField>`);
-                    } else {
-                        L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq} />`);
-                    }
+            const hasContent = comment || childArray.length;
+            if (!hasContent) {
+                L.push(`${pad}<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr} />`);
+            } else {
+                L.push(`${pad}<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
+                if (comment) L.push(`${pad}  ${comment}`);
+
+                if (childArray.length) {
+                    L.push(`${pad}  <Expandable title="${expandableTitle}">`);
+                    L.push(renderFields(childArray, indent + 4));
+                    L.push(`${pad}  </Expandable>`);
                 }
-                L.push(`  </Expandable>`);
-            }
 
-            L.push(`</ResponseField>`);
+                L.push(`${pad}</ResponseField>`);
+            }
+            if (indent === 0) L.push("");
         }
-        L.push("");
+        return L.join("\n");
     }
-    return L.join("\n");
+
+    return renderFields(members);
 }
 
 /**
@@ -314,22 +311,28 @@ function buildFieldsSection(
  * Falls back to the manual `expandableChildren` map for types that
  * TypeDoc can't resolve (e.g. cross-package generics like WalletArgsFor<Chain>).
  */
-function attachExpandableChildren(members, expandableChildren, { byId, allExports }) {
-    if (!members?.length) return members;
+function attachExpandableChildren(members, expandableChildren, { byId, allExports }, depth = 0) {
+    const MAX_DEPTH = 3;
+    if (!Array.isArray(members) || !members.length || depth >= MAX_DEPTH) return members;
     return members.map((m) => {
-        // Already has children (e.g. from inline reflection type) — skip
-        if (m.children?.length) return m;
+        let children = m.children;
 
-        // Try auto-resolving from TypeDoc type reference
-        const resolved = autoResolveChildren(m.type, { byId, allExports });
-        if (resolved?.length) {
-            return { ...m, children: resolved };
+        if (!children?.length) {
+            // Try auto-resolving from TypeDoc type reference
+            const resolved = autoResolveChildren(m.type, { byId, allExports });
+            if (resolved?.length) {
+                children = resolved;
+            } else {
+                // Fallback: use manual expandableChildren map (keyed by prop name)
+                const manual = expandableChildren[m.name];
+                if (manual) children = manual;
+            }
         }
 
-        // Fallback: use manual expandableChildren map (keyed by prop name)
-        const manual = expandableChildren[m.name];
-        if (manual) {
-            return { ...m, children: manual };
+        // Recurse into children to resolve their sub-properties too
+        if (children?.length) {
+            children = attachExpandableChildren(children, expandableChildren, { byId, allExports }, depth + 1);
+            return { ...m, children };
         }
 
         return m;
