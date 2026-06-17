@@ -78,7 +78,11 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
 
-    // For EVM, status comes from the chains field
+    // For EVM, status comes from the transaction field (deployImmediately) or chains field
+    if ("transaction" in apiSigner && apiSigner.transaction != null) {
+        return { ...base, status: apiSigner.transaction.status, ...(scopes != null && { scopes }) } as Signer;
+    }
+
     if ("chains" in apiSigner && apiSigner.chains != null && Object.keys(apiSigner.chains).length > 0) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry == null) {
@@ -95,17 +99,20 @@ export function getPendingSignerOperation(
     apiSigner: APISigner,
     chain: Chain
 ): { type: "signature" | "transaction"; id: string } | null {
+    // Check for a pending transaction first (Solana/Stellar always, EVM with deployImmediately)
+    if (
+        "transaction" in apiSigner &&
+        apiSigner.transaction != null &&
+        (apiSigner.transaction.status === "pending" || apiSigner.transaction.status === "awaiting-approval")
+    ) {
+        return { type: "transaction", id: apiSigner.transaction.id };
+    }
+
     if (chain === "solana" || chain === "stellar") {
-        if (
-            "transaction" in apiSigner &&
-            apiSigner.transaction != null &&
-            (apiSigner.transaction.status === "pending" || apiSigner.transaction.status === "awaiting-approval")
-        ) {
-            return { type: "transaction", id: apiSigner.transaction.id };
-        }
         return null;
     }
 
+    // EVM signature flow (deployImmediately: false)
     if ("chains" in apiSigner && apiSigner.chains != null) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry != null && (chainEntry.status === "pending" || chainEntry.status === "awaiting-approval")) {
