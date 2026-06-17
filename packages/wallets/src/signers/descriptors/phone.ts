@@ -1,0 +1,30 @@
+import type { Chain } from "../../chains/chains";
+import type { InternalSignerConfig, PhoneSignerConfig, SignerConfigForChain, SignerLocator } from "../types";
+import type { SignerDescriptor, SignerDescriptorContext } from "./types";
+
+export const phoneSignerDescriptor: SignerDescriptor = {
+    type: "phone",
+    validateConfig(config: SignerConfigForChain<Chain>): void {
+        if (!("phone" in config) || config.phone == null) {
+            throw new Error("Phone signer requires a phone number");
+        }
+    },
+    buildInternalConfig(
+        config: SignerConfigForChain<Chain>,
+        ctx: SignerDescriptorContext<Chain>
+    ): InternalSignerConfig<Chain> {
+        const phoneConfig = config as PhoneSignerConfig;
+        return {
+            type: "phone",
+            phone: phoneConfig.phone,
+            locator: `phone:${phoneConfig.phone}` as SignerLocator,
+            address: ctx.walletAddress,
+            crossmint: ctx.crossmint,
+            clientTEEConnection: ctx.clientTEEConnection,
+            onAuthRequired: ctx.onAuthRequired,
+        } as InternalSignerConfig<Chain>;
+    },
+    canAutoAssemble(): boolean {
+        return true;
+    },
+};

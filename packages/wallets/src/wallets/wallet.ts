@@ -5,7 +5,6 @@ import type {
     GetSignerResponse,
     WalletLocator,
     RegisterSignerParams,
-    RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
     GetWalletSuccessResponse,
@@ -55,7 +54,6 @@ import type {
     PasskeySignerConfig,
     RecoverySignerConfigForChain,
     ServerSignerConfig,
-    ServerSignerLocator,
     SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
@@ -69,6 +67,7 @@ import {
 import { assembleSigner } from "../signers";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
+import { getSignerDescriptor, type SignerDescriptorContext } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator } from "../utils/signer-locator";
@@ -210,7 +209,10 @@ export class Wallet<C extends Chain> {
         }
 
         // Assemble the device signer with the resolved config
-        const internalConfig = this.buildInternalSignerConfig(deviceConfig as SignerConfigForChain<C>);
+        const internalConfig = getSignerDescriptor<C>(deviceConfig.type).buildInternalConfig(
+            deviceConfig as SignerConfigForChain<C>,
+            this.descriptorContext()
+        );
         this.#signer = await this.assembleFullSigner(internalConfig, deviceSignerKeyStorage);
 
         // If the backend signer isn't approved yet (e.g. a previous recover() was
@@ -264,13 +266,16 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (!this.isAutoAssemblableSignerConfig(signerToAssemble)) {
+        if (!getSignerDescriptor<C>(signerToAssemble.type).canAutoAssemble(signerToAssemble, this.descriptorContext())) {
             return;
         }
 
         const isAdminSigner = signerToAssemble === this.#recovery;
         try {
-            const internalConfig = this.buildInternalSignerConfig(signerToAssemble as SignerConfigForChain<C>);
+            const internalConfig = getSignerDescriptor<C>(signerToAssemble.type).buildInternalConfig(
+                signerToAssemble as SignerConfigForChain<C>,
+                this.descriptorContext()
+            );
             this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
@@ -289,11 +294,14 @@ export class Wallet<C extends Chain> {
      * initDefaultSigner.
      */
     private async assembleRecoverySignerFallback(): Promise<void> {
-        if (!this.isAutoAssemblableSignerConfig(this.#recovery)) {
+        if (!getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())) {
             return;
         }
         try {
-            const internalConfig = this.buildInternalSignerConfig(this.#recovery);
+            const internalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
+                this.#recovery,
+                this.descriptorContext()
+            );
             this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner: true });
         } catch (error) {
             walletsLogger.warn("wallet.recover.device.unsupportedFallback.autoAssemblyFailed", {
@@ -337,6 +345,18 @@ export class Wallet<C extends Chain> {
 
     private get chainAdapter(): ChainAdapter {
         return getChainAdapter(this.chain);
+    }
+
+    private descriptorContext(): SignerDescriptorContext<C> {
+        return {
+            chain: this.chain,
+            walletAddress: this.address,
+            crossmint: this.#apiClient.crossmint,
+            clientTEEConnection: this.#options?.clientTEEConnection,
+            onAuthRequired: this.#options?.callbacks?.onAuthRequired,
+            deviceSignerKeyStorage: this.#options?.deviceSignerKeyStorage,
+            serverSigners: this.#serverSignerResolver,
+        };
     }
 
     /**
@@ -880,7 +900,7 @@ export class Wallet<C extends Chain> {
         if (signer.type === "server") {
             this.#serverSignerResolver.resetDelegatedCache();
         }
-        this.validateSignerInput(signer);
+        getSignerDescriptor<C>(signer.type).validateConfig(signer);
 
         let isAdminSigner = false;
         if (signer.type === "device") {
@@ -889,7 +909,7 @@ export class Wallet<C extends Chain> {
             isAdminSigner = await this.resolveNonDeviceSigner(signer);
         }
 
-        const internalConfig = this.buildInternalSignerConfig(signer);
+        const internalConfig = getSignerDescriptor<C>(signer.type).buildInternalConfig(signer, this.descriptorContext());
         const signerLocator = getSignerLocator(signer);
         this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
@@ -1033,14 +1053,17 @@ export class Wallet<C extends Chain> {
         if (
             this.#recovery != null &&
             this.#recovery.type === "external-wallet" &&
-            !this.isAutoAssemblableSignerConfig(this.#recovery)
+            !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
         ) {
             throw new Error(
                 "Cannot assemble external wallet signer: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
+            this.#recovery,
+            this.descriptorContext()
+        );
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1290,14 +1313,17 @@ export class Wallet<C extends Chain> {
         if (
             this.#recovery != null &&
             this.#recovery.type === "external-wallet" &&
-            !this.isAutoAssemblableSignerConfig(this.#recovery)
+            !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
         ) {
             throw new Error(
                 "Cannot resume pending approval: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = this.buildInternalSignerConfig(this.#recovery);
+        const recoveryInternalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
+            this.#recovery,
+            this.descriptorContext()
+        );
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1453,7 +1479,10 @@ export class Wallet<C extends Chain> {
                         'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
                 );
             }
-            if (this.#recovery.type === "external-wallet" || !this.isAutoAssemblableSignerConfig(this.#recovery)) {
+            if (
+                this.#recovery.type === "external-wallet" ||
+                !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
+            ) {
                 throw new Error(
                     "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
                         'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
@@ -1535,39 +1564,6 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Validate that the signer input has the required values for its type.
-     */
-    private validateSignerInput(config: SignerConfigForChain<C> | RegisterSignerPasskeyParams): void {
-        switch (config.type) {
-            case "email":
-                if (!("email" in config) || config.email == null) {
-                    throw new Error("Email signer requires an email address");
-                }
-                break;
-            case "phone":
-                if (!("phone" in config) || config.phone == null) {
-                    throw new Error("Phone signer requires a phone number");
-                }
-                break;
-            case "external-wallet":
-                if (!("address" in config) || config.address == null) {
-                    throw new Error("External wallet signer requires a wallet address");
-                }
-                if (!("onSign" in config) || typeof config.onSign !== "function") {
-                    throw new Error("External wallet signer requires an onSign callback");
-                }
-                break;
-            case "passkey":
-            case "device":
-            case "api-key":
-                // These are allowed without id/locator
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
      * Check if a device signer key is available locally, or flag for recovery.
      * Looks up device key storage by wallet address, then by matching registered device signers.
      * If no key is found, sets needsRecovery so a new device key is generated during the next transaction.
@@ -1643,104 +1639,6 @@ export class Wallet<C extends Chain> {
             signer,
             pendingOperation: getPendingSignerOperation(signerResponse, this.chain),
         };
-    }
-
-    /**
-     * Build an InternalSignerConfig from a SignerConfigForChain.
-     */
-    private buildInternalSignerConfig(
-        config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig
-    ): InternalSignerConfig<C> {
-        switch (config.type) {
-            case "email":
-                return {
-                    type: "email",
-                    email: config.email,
-                    locator: `email:${config.email}` as SignerLocator,
-                    address: this.address,
-                    crossmint: this.#apiClient.crossmint,
-                    clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?.callbacks?.onAuthRequired,
-                } as InternalSignerConfig<C>;
-            case "phone":
-                return {
-                    type: "phone",
-                    phone: config.phone,
-                    locator: `phone:${config.phone}` as SignerLocator,
-                    address: this.address,
-                    crossmint: this.#apiClient.crossmint,
-                    clientTEEConnection: this.#options?.clientTEEConnection,
-                    onAuthRequired: this.#options?.callbacks?.onAuthRequired,
-                } as InternalSignerConfig<C>;
-            case "passkey": {
-                const id = "id" in config && config.id ? config.id : "";
-                return {
-                    type: "passkey",
-                    id,
-                    locator: `passkey:${id}` as SignerLocator,
-                    name: "name" in config ? config.name : undefined,
-                    publicKey: "publicKey" in config ? config.publicKey : undefined,
-                    onCreatePasskey: config.onCreatePasskey,
-                    onSignWithPasskey: config.onSignWithPasskey,
-                } as InternalSignerConfig<C>;
-            }
-            case "device": {
-                const locator = "locator" in config && config.locator ? config.locator : undefined;
-                return {
-                    type: "device",
-                    locator,
-                    address: this.address,
-                } as InternalSignerConfig<C>;
-            }
-            case "external-wallet":
-                return {
-                    ...config,
-                    locator: `external-wallet:${config.address}` as SignerLocator,
-                } as InternalSignerConfig<C>;
-            case "api-key":
-                return {
-                    type: "api-key",
-                    locator: "api-key" as SignerLocator,
-                    address: this.address,
-                } as InternalSignerConfig<C>;
-            case "server": {
-                const serverConfig = config as ServerSignerConfig | ApiSourcedServerSignerConfig;
-                const { derivedKeyBytes, derivedAddress } =
-                    this.#serverSignerResolver.keyMaterialForAssembly(serverConfig);
-                return {
-                    type: "server",
-                    derivedKeyBytes,
-                    locator: `server:${derivedAddress}` as ServerSignerLocator,
-                    address: derivedAddress,
-                } as InternalSignerConfig<C>;
-            }
-            default:
-                throw new Error(`Unknown signer type: ${(config as unknown as { type?: string })?.type}`);
-        }
-    }
-
-    /**
-     * Returns true if the signer config can be auto-assembled without user interaction.
-     * Types like external-wallet (stored as evm-keypair/solana-keypair in the API) require
-     * the user to provide a signing callback via useSigner(), so they cannot be auto-assembled.
-     * Server signers also require the secret to be present in the config.
-     */
-    private isAutoAssemblableSignerConfig(config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig): boolean {
-        switch (config.type) {
-            case "email":
-            case "phone":
-            case "passkey":
-            case "api-key":
-                return true;
-            case "device":
-                return this.#options?.deviceSignerKeyStorage != null;
-            case "server":
-                return !isApiSourcedServerSignerConfig(config) || this.#serverSignerResolver.hasRecoveryResolution;
-            case "external-wallet":
-                return "onSign" in config && typeof config.onSign === "function";
-            default:
-                return false;
-        }
     }
 
     protected resolveChainForEnvironment(): C {
