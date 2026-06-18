@@ -1,8 +1,10 @@
+import type { RegisterSignerParams } from "../../api";
 import type { Chain } from "../../chains/chains";
 import type {
     ApiSourcedServerSignerConfig,
     InternalSignerConfig,
     PasskeySignerConfig,
+    RecoverySignerConfigForChain,
     SignerConfigForChain,
     SignerLocator,
 } from "../types";
@@ -27,6 +29,15 @@ export const passkeySignerDescriptor: SignerDescriptor = {
         } as InternalSignerConfig<C>;
     },
     canAutoAssemble(): boolean {
+        return true;
+    },
+    addSignerPayload(config: SignerConfigForChain<Chain>): RegisterSignerParams["signer"] {
+        return config as RegisterSignerParams["signer"];
+    },
+    matchesRecovery(_config: SignerConfigForChain<Chain>, _recovery: RecoverySignerConfigForChain<Chain>): boolean {
+        // Compare by type only: the api-sourced recovery config has {type:"passkey"} without a
+        // credential id, so locator comparison ("passkey" vs "passkey:{id}") would fail. Type
+        // already matches by the time this is called.
         return true;
     },
 };

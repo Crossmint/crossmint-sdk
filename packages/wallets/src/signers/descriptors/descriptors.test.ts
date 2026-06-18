@@ -18,7 +18,12 @@ type Config = SignerConfigForChain<EVMChain> | ApiSourcedServerSignerConfig;
 const cfg = (c: object) => c as unknown as Config;
 
 function makeCtx(
-    overrides: { deviceSignerKeyStorage?: DeviceSignerKeyStorage; hasRecoveryResolution?: boolean } = {}
+    overrides: {
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+        hasRecoveryResolution?: boolean;
+        apiLocator?: ServerSignerResolver["apiLocator"];
+        candidateAddresses?: ServerSignerResolver["candidateAddresses"];
+    } = {}
 ): SignerDescriptorContext<EVMChain> {
     return {
         chain: CHAIN,
@@ -30,6 +35,8 @@ function makeCtx(
         serverSigners: {
             keyMaterialForAssembly: vi.fn(() => SERVER_KEY_MATERIAL),
             hasRecoveryResolution: overrides.hasRecoveryResolution ?? false,
+            apiLocator: overrides.apiLocator ?? vi.fn(() => "server:0xDerivedServer"),
+            candidateAddresses: overrides.candidateAddresses ?? vi.fn(() => []),
         } as unknown as ServerSignerResolver,
     };
 }
@@ -161,4 +168,110 @@ it.each<[name: string, config: Config, hasRecoveryResolution: boolean, expected:
 ])("canAutoAssemble: server %s", (_name, config, hasRecoveryResolution, expected) => {
     const ctx = makeCtx({ hasRecoveryResolution });
     expect(getSignerDescriptor("server").canAutoAssemble(config as never, ctx)).toBe(expected);
+});
+
+it("addSignerPayload: passkey returns the full config", () => {
+    const config = cfg({ type: "passkey", id: "cred-1", publicKey });
+    expect(getSignerDescriptor("passkey").addSignerPayload(config as never, makeCtx())).toBe(config);
+});
+
+it("addSignerPayload: device with publicKey returns type/publicKey/name", () => {
+    const config = cfg({ type: "device", publicKey, name: "my-device" });
+    expect(getSignerDescriptor("device").addSignerPayload(config as never, makeCtx())).toEqual({
+        type: "device",
+        publicKey,
+        name: "my-device",
+    });
+});
+
+it("addSignerPayload: device without publicKey returns locator", () => {
+    const config = cfg({ type: "device", locator: "device:pubkey" });
+    expect(getSignerDescriptor("device").addSignerPayload(config as never, makeCtx())).toBe("device:pubkey");
+});
+
+it.each<[type: string, config: Config, expected: string]>([
+    ["email", cfg({ type: "email", email: "a@b.com" }), "email:a@b.com"],
+    ["phone", cfg({ type: "phone", phone: "+15551234" }), "phone:+15551234"],
+    ["api-key", cfg({ type: "api-key" }), "api-key"],
+    ["external-wallet", cfg({ type: "external-wallet", address: "0xabc", onSign: vi.fn() }), "external-wallet:0xabc"],
+])("addSignerPayload: %s returns locator", (type, config, expected) => {
+    expect(getSignerDescriptor(type as never).addSignerPayload(config as never, makeCtx())).toBe(expected);
+});
+
+it("addSignerPayload: server returns serverSigners.apiLocator", () => {
+    const apiLocator = vi.fn(() => "server:0xResolved" as never);
+    const config = cfg({ type: "server", secret: "s" });
+    const ctx = makeCtx({ apiLocator });
+    expect(getSignerDescriptor("server").addSignerPayload(config as never, ctx)).toBe("server:0xResolved");
+    expect(apiLocator).toHaveBeenCalledWith(config);
+});
+
+it("matchesRecovery: device is always false", () => {
+    expect(
+        getSignerDescriptor("device").matchesRecovery(
+            cfg({ type: "device" }) as never,
+            cfg({ type: "device" }) as never,
+            makeCtx()
+        )
+    ).toBe(false);
+});
+
+it("matchesRecovery: passkey is true even with differing ids", () => {
+    expect(
+        getSignerDescriptor("passkey").matchesRecovery(
+            cfg({ type: "passkey", id: "cred-1" }) as never,
+            cfg({ type: "passkey" }) as never,
+            makeCtx()
+        )
+    ).toBe(true);
+});
+
+it.each<[name: string, signerAddrs: string[], recoveryAddrs: string[], expected: boolean]>([
+    ["intersecting addresses", ["0xa", "0xb"], ["0xb"], true],
+    ["disjoint addresses", ["0xa"], ["0xb"], false],
+])("matchesRecovery: server %s", (_name, signerAddrs, recoveryAddrs, expected) => {
+    const candidateAddresses = vi
+        .fn()
+        .mockReturnValueOnce(signerAddrs)
+        .mockReturnValueOnce(recoveryAddrs) as unknown as ServerSignerResolver["candidateAddresses"];
+    const ctx = makeCtx({ candidateAddresses });
+    expect(
+        getSignerDescriptor("server").matchesRecovery(
+            cfg({ type: "server", secret: "s" }) as never,
+            cfg({ type: "server", address: "0xb" }) as never,
+            ctx
+        )
+    ).toBe(expected);
+});
+
+it.each<[name: string, type: string, config: Config, recovery: Config, expected: boolean]>([
+    ["email match", "email", cfg({ type: "email", email: "a@b.com" }), cfg({ type: "email", email: "a@b.com" }), true],
+    [
+        "email mismatch",
+        "email",
+        cfg({ type: "email", email: "a@b.com" }),
+        cfg({ type: "email", email: "c@d.com" }),
+        false,
+    ],
+    ["phone match", "phone", cfg({ type: "phone", phone: "+1" }), cfg({ type: "phone", phone: "+1" }), true],
+    ["phone mismatch", "phone", cfg({ type: "phone", phone: "+1" }), cfg({ type: "phone", phone: "+2" }), false],
+    ["api-key match", "api-key", cfg({ type: "api-key" }), cfg({ type: "api-key" }), true],
+    [
+        "external-wallet match",
+        "external-wallet",
+        cfg({ type: "external-wallet", address: "0xabc", onSign: vi.fn() }),
+        cfg({ type: "external-wallet", address: "0xabc" }),
+        true,
+    ],
+    [
+        "external-wallet mismatch",
+        "external-wallet",
+        cfg({ type: "external-wallet", address: "0xabc", onSign: vi.fn() }),
+        cfg({ type: "external-wallet", address: "0xdef" }),
+        false,
+    ],
+])("matchesRecovery: %s by locator equality", (_name, type, config, recovery, expected) => {
+    expect(getSignerDescriptor(type as never).matchesRecovery(config as never, recovery as never, makeCtx())).toBe(
+        expected
+    );
 });
