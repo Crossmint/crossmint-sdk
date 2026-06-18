@@ -1547,7 +1547,19 @@ export class Wallet<C extends Chain> {
             const publicKeyBase64 = walletSigner.locator.replace("device:", "");
             const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
             if (hasKey) {
-                await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                try {
+                    await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
+                } catch (error) {
+                    // hasKey reported the key as present but the mapping failed, so the
+                    // local key material is not actually usable (e.g. it did not survive a
+                    // restore onto new hardware). Skip this signer and fall through to
+                    // recovery instead of surfacing a hard failure (WAL-10734).
+                    walletsLogger.warn("wallet.resolveDeviceSigner.mapAddressToKey.error", {
+                        signerLocator: walletSigner.locator,
+                        error,
+                    });
+                    continue;
+                }
                 config.locator = walletSigner.locator;
                 return;
             }
