@@ -1,5 +1,13 @@
+import type { RegisterSignerParams } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { ApiSourcedServerSignerConfig, InternalSignerConfig, SignerConfigForChain, SignerLocator } from "../types";
+import { getSignerLocator } from "../../utils/signer-locator";
+import type {
+    ApiSourcedServerSignerConfig,
+    InternalSignerConfig,
+    RecoverySignerConfigForChain,
+    SignerConfigForChain,
+    SignerLocator,
+} from "../types";
 import type { SignerDescriptor, SignerDescriptorContext } from "./types";
 
 export const apiKeySignerDescriptor: SignerDescriptor = {
@@ -18,4 +26,11 @@ export const apiKeySignerDescriptor: SignerDescriptor = {
     canAutoAssemble(): boolean {
         return true;
     },
+    addSignerPayload(config: SignerConfigForChain<Chain>): RegisterSignerParams["signer"] {
+        return getSignerLocator(config);
+    },
+    matchesRecovery(config: SignerConfigForChain<Chain>, recovery: RecoverySignerConfigForChain<Chain>): boolean {
+        return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
+    },
+    adoptsRecoveryConfigOnMatch: true,
 };

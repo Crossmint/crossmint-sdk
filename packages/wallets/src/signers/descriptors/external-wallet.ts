@@ -1,8 +1,11 @@
+import type { RegisterSignerParams } from "../../api";
 import type { Chain } from "../../chains/chains";
+import { getSignerLocator } from "../../utils/signer-locator";
 import type {
     ApiSourcedServerSignerConfig,
     ExternalWalletSignerConfigForChain,
     InternalSignerConfig,
+    RecoverySignerConfigForChain,
     SignerConfigForChain,
     SignerLocator,
 } from "../types";
@@ -33,4 +36,13 @@ export const externalWalletSignerDescriptor: SignerDescriptor = {
     canAutoAssemble(config: SignerConfigForChain<Chain> | ApiSourcedServerSignerConfig): boolean {
         return "onSign" in config && typeof config.onSign === "function";
     },
+
+    addSignerPayload(config: SignerConfigForChain<Chain>): RegisterSignerParams["signer"] {
+        return getSignerLocator(config);
+    },
+
+    matchesRecovery(config: SignerConfigForChain<Chain>, recovery: RecoverySignerConfigForChain<Chain>): boolean {
+        return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
+    },
+    adoptsRecoveryConfigOnMatch: true,
 };

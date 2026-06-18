@@ -715,24 +715,13 @@ export class Wallet<C extends Chain> {
                 }
             }
 
-            // --- Fresh registration ---
-            // For server signers, resolvedSigner is already a locator string.
-            // For passkeys, always pass the full config so the API receives the publicKey.
-            // For everything else, convert to a locator string via getSignerLocator.
             const signerInput =
                 typeof resolvedSigner === "string"
                     ? resolvedSigner
-                    : resolvedSigner.type === "passkey"
-                      ? resolvedSigner
-                      : resolvedSigner.type === "device" &&
-                          "publicKey" in resolvedSigner &&
-                          resolvedSigner.publicKey != null
-                        ? {
-                              type: "device" as const,
-                              publicKey: resolvedSigner.publicKey,
-                              name: (resolvedSigner as DeviceSignerConfig).name,
-                          }
-                        : getSignerLocator(resolvedSigner);
+                    : getSignerDescriptor<C>(resolvedSigner.type).addSignerPayload(
+                          resolvedSigner as SignerConfigForChain<C>,
+                          this.descriptorContext()
+                      );
 
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
@@ -1515,51 +1504,21 @@ export class Wallet<C extends Chain> {
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
         const recovery = this.#recovery;
-        if (recovery == null) {
+        if (recovery == null || recovery.type !== signerConfig.type) {
             return false;
         }
-
-        if (recovery.type !== signerConfig.type) {
+        const descriptor = getSignerDescriptor<C>(signerConfig.type);
+        if (!descriptor.matchesRecovery(signerConfig, recovery, this.descriptorContext())) {
             return false;
         }
-
-        // Device signers cannot be recovery signers
-        if (signerConfig.type === "device") {
-            return false;
+        if (descriptor.adoptsRecoveryConfigOnMatch) {
+            this.adoptRecoveryConfig(signerConfig);
         }
-
-        // For passkey signers, compare by type only.
-        // The API-sourced recovery config has shape {type: "passkey"} without a credential id,
-        // so locator comparison would fail ("passkey" vs "passkey:{id}").
-        // We can't distinguish recovery vs delegated passkeys by id alone since the
-        // developer may pass an id that belongs to either the recovery or a delegated passkey.
-        if (signerConfig.type === "passkey") {
-            return true; // type already matches from the check above
-        }
-
-        // For server signers, the API-sourced recovery config has no secret, so we
-        // can't derive a locator from it. Compare using the address field instead.
-        if (signerConfig.type === "server" && recovery.type === "server") {
-            const signerAddresses = this.#serverSignerResolver.candidateAddresses(signerConfig);
-            const recoveryAddresses = this.#serverSignerResolver.candidateAddresses(recovery);
-
-            // Match if any signer address matches any recovery address
-            const matches = signerAddresses.some((a) => recoveryAddresses.includes(a));
-            if (!matches) {
-                return false;
-            }
-        } else {
-            // For all other types, compare locators
-            if (getSignerLocator(signerConfig) !== getSignerLocator(recovery as SignerConfigForChain<C>)) {
-                return false;
-            }
-        }
-
-        // Match confirmed — upgrade #recovery with the user-provided config so that
-        // downstream code (withRecoverySigner, buildInternalSignerConfig, etc.) has
-        // the complete config including runtime-only fields (secret, onSign, etc.).
-        this.#recovery = signerConfig as SignerConfigForChain<C>;
         return true;
+    }
+
+    private adoptRecoveryConfig(config: SignerConfigForChain<C>): void {
+        this.#recovery = config as RecoverySignerConfigForChain<C>;
     }
 
     /**

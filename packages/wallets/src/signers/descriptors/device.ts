@@ -1,5 +1,12 @@
+import type { RegisterSignerParams } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { ApiSourcedServerSignerConfig, InternalSignerConfig, SignerConfigForChain } from "../types";
+import { getSignerLocator } from "../../utils/signer-locator";
+import type {
+    ApiSourcedServerSignerConfig,
+    DeviceSignerConfig,
+    InternalSignerConfig,
+    SignerConfigForChain,
+} from "../types";
 import type { SignerDescriptor, SignerDescriptorContext } from "./types";
 
 export const deviceSignerDescriptor: SignerDescriptor = {
@@ -22,4 +29,18 @@ export const deviceSignerDescriptor: SignerDescriptor = {
     ): boolean {
         return ctx.deviceSignerKeyStorage != null;
     },
+    addSignerPayload(config: SignerConfigForChain<Chain>): RegisterSignerParams["signer"] {
+        if ("publicKey" in config && config.publicKey != null) {
+            return {
+                type: "device",
+                publicKey: config.publicKey,
+                name: (config as DeviceSignerConfig).name,
+            } as RegisterSignerParams["signer"];
+        }
+        return getSignerLocator(config);
+    },
+    matchesRecovery(): boolean {
+        return false;
+    },
+    adoptsRecoveryConfigOnMatch: true,
 };
