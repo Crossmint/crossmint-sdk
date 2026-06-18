@@ -103,7 +103,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.requireSigner();
+        const signer = this.signerManager.require();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
@@ -150,7 +150,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.requireSigner();
+        const signer = this.signerManager.require();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: "Invalid typed data" });
@@ -220,7 +220,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     ): Promise<CreateTransactionSuccessResponse> {
         let signer: string;
         if (options?.signer == null) {
-            signer = this.requireSigner().locator();
+            signer = this.signerManager.require().locator();
         } else if (typeof options.signer === "string") {
             signer = options.signer;
         } else {

@@ -23,12 +23,12 @@ export type SignerManagerParams<C extends Chain> = {
     serverSignerResolver: ServerSignerResolver;
     recovery: RecoverySignerConfigForChain<C>;
     initialSigners: SignerConfigForChain<C>[];
-    listSigners: () => Promise<WalletSigner[]>;
+    signers: () => Promise<WalletSigner[]>;
     signer?: SignerAdapter;
 };
 
 export class SignerManager<C extends Chain> {
-    #active: SignerAdapter | undefined;
+    #activeSigner: SignerAdapter | undefined;
     #recovery: RecoverySignerConfigForChain<C>;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
@@ -37,7 +37,7 @@ export class SignerManager<C extends Chain> {
     #walletLocator: () => WalletLocator;
     #serverSignerResolver: ServerSignerResolver;
     #initialSigners: SignerConfigForChain<C>[];
-    #listSigners: () => Promise<WalletSigner[]>;
+    #signers: () => Promise<WalletSigner[]>;
 
     constructor(params: SignerManagerParams<C>) {
         this.#apiClient = params.apiClient;
@@ -48,16 +48,16 @@ export class SignerManager<C extends Chain> {
         this.#serverSignerResolver = params.serverSignerResolver;
         this.#recovery = params.recovery;
         this.#initialSigners = params.initialSigners;
-        this.#listSigners = params.listSigners;
-        this.#active = params.signer;
+        this.#signers = params.signers;
+        this.#activeSigner = params.signer;
     }
 
-    get active(): SignerAdapter | undefined {
-        return this.#active;
+    get activeSigner(): SignerAdapter | undefined {
+        return this.#activeSigner;
     }
 
-    setActive(signer: SignerAdapter | undefined): void {
-        this.#active = signer;
+    setActiveSigner(signer: SignerAdapter | undefined): void {
+        this.#activeSigner = signer;
     }
 
     get recovery(): SignerConfigForChain<C> {
@@ -112,7 +112,7 @@ export class SignerManager<C extends Chain> {
     }
 
     require(): SignerAdapter {
-        if (this.#active == null) {
+        if (this.#activeSigner == null) {
             if (this.#initialSigners.length > 1) {
                 throw new Error(
                     "No signer is set. This wallet has multiple signers configured. " +
@@ -138,36 +138,36 @@ export class SignerManager<C extends Chain> {
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
             );
         }
-        return this.#active;
+        return this.#activeSigner;
     }
 
     async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
-        const originalSigner = this.#active;
+        const originalSigner = this.#activeSigner;
         if (isApiSourcedServerSignerConfig(this.#recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
-        const descriptor = getSignerDescriptor<C>(this.#recovery.type);
-        const ctx = this.descriptorContext();
+        const signerDescriptor = getSignerDescriptor<C>(this.#recovery.type);
+        const signerDescriptorContext = this.descriptorContext();
         if (
             this.#recovery != null &&
             this.#recovery.type === "external-wallet" &&
-            !descriptor.canAutoAssemble(this.#recovery, ctx)
+            !signerDescriptor.canAutoAssemble(this.#recovery, signerDescriptorContext)
         ) {
             throw new Error(
                 "Cannot assemble external wallet signer: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = descriptor.buildInternalConfig(this.#recovery, ctx);
-        this.#active = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(this.#recovery, signerDescriptorContext);
+        this.#activeSigner = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
             return await operation();
         } finally {
-            this.#active = originalSigner;
+            this.#activeSigner = originalSigner;
         }
     }
 
@@ -196,7 +196,7 @@ export class SignerManager<C extends Chain> {
     }
 
     async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
-        const existingSigners = await this.#listSigners();
+        const existingSigners = await this.#signers();
         return existingSigners.some((s) => s.locator === signerLocator);
     }
 

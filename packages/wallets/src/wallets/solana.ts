@@ -100,7 +100,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
         let signer: string;
         if (params.options?.signer == null) {
-            signer = this.requireSigner().locator();
+            signer = this.signerManager.require().locator();
         } else if (typeof params.options.signer === "string") {
             signer = params.options.signer;
         } else {

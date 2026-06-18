@@ -14,33 +14,12 @@ vi.mock("../../signers", async (importOriginal) => {
 
 const mockedAssembleSigner = vi.mocked(assembleSigner);
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
-const NULL_STATE = { response: null, signer: null, pendingOperation: null };
-const NOT_THROWN = Symbol("not thrown");
+const NULL_SIGNER_STATE = { response: null, signer: null, pendingOperation: null };
 
-const rec = (config: unknown) => config as RecoverySignerConfigForChain<Chain>;
+const asRecoveryConfig = (config: unknown) => config as RecoverySignerConfigForChain<Chain>;
 type Overrides = Partial<SignerManagerParams<Chain>>;
 
-const MSG = {
-    multiple:
-        "No signer is set. This wallet has multiple signers configured. " +
-        "Call wallet.useSigner() to select which signer to use before signing operations.",
-    serverNoSigner:
-        "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
-        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })',
-    externalNoSigner:
-        "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
-        'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })',
-    readOnly:
-        "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available.",
-    serverGuard:
-        "Cannot assemble server signer: no secret available. " +
-        'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.',
-    externalGuard:
-        "Cannot assemble external wallet signer: no onSign callback available. " +
-        'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.',
-};
-
-function makeAdapter(tag: string): SignerAdapter {
+function makeSigner(tag: string): SignerAdapter {
     return { locator: () => `api-key:${tag}` as SignerLocator, status: undefined } as unknown as SignerAdapter;
 }
 
@@ -48,8 +27,12 @@ function makeApiClient(overrides: Partial<ApiClient> = {}): ApiClient {
     return { crossmint: {}, getSigner: vi.fn(), ...overrides } as unknown as ApiClient;
 }
 
-function makeResolver(o: Partial<ServerSignerResolver> = {}): ServerSignerResolver {
-    return { hasRecoveryResolution: false, resolvedRecoveryAddress: null, ...o } as unknown as ServerSignerResolver;
+function makeResolver(overrides: Partial<ServerSignerResolver> = {}): ServerSignerResolver {
+    return {
+        hasRecoveryResolution: false,
+        resolvedRecoveryAddress: null,
+        ...overrides,
+    } as unknown as ServerSignerResolver;
 }
 
 function makeManager<C extends Chain>(
@@ -65,22 +48,19 @@ function makeManager<C extends Chain>(
         serverSignerResolver: makeResolver(),
         recovery: { type: "api-key" } as RecoverySignerConfigForChain<C>,
         initialSigners: [],
-        listSigners: async () => [],
+        signers: async () => [],
         ...overrides,
     });
 }
 
-async function expectExactError(run: () => unknown, exactMessage: string): Promise<void> {
-    let caught: unknown = NOT_THROWN;
-    try {
-        await run();
-    } catch (e) {
-        caught = e;
-    }
-    expect(caught).not.toBe(NOT_THROWN);
-    expect(caught).toBeInstanceOf(Error);
-    expect((caught as Error).message).toBe(exactMessage);
+// Asserts the call throws an Error whose message matches a stable keyword for that branch. We match a
+// keyword rather than the full string so copy edits to the guidance text don't break the test — only a
+// real change of which branch fires does. The exact wording is pinned in the characterization suite.
+async function expectThrowsMatching(run: () => unknown, branchKeyword: RegExp): Promise<void> {
+    await expect(async () => await run()).rejects.toThrow(branchKeyword);
 }
+
+const apiKeyConfig = { type: "api-key" } as const;
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -88,21 +68,30 @@ beforeEach(() => {
 
 describe("SignerManager", () => {
     it("require() returns the active signer when one is set", () => {
-        const active = makeAdapter("active");
-        expect(makeManager({ signer: active }).require()).toBe(active);
+        const signer = makeSigner("active");
+        expect(makeManager({ signer }).require()).toBe(signer);
     });
 
-    const apiKey = { type: "api-key" } as const;
-    const readOnlyCases: Array<[string, Overrides, string]> = [
-        ["multiple signers", { initialSigners: [apiKey, apiKey] }, MSG.multiple],
-        ["server", { recovery: { type: "server", address: "0xServer" } }, MSG.serverNoSigner],
-        ["external-wallet", { recovery: rec({ type: "external-wallet", address: "0xext" }) }, MSG.externalNoSigner],
-        ["device", { recovery: rec({ type: "device" }) }, MSG.externalNoSigner],
-        ["generic", { recovery: apiKey }, MSG.readOnly],
-    ];
-
-    it.each(readOnlyCases)("require() throws the exact message for %s", async (_name, overrides, message) => {
-        await expectExactError(() => makeManager(overrides).require(), message);
+    it.each([
+        [
+            "multiple configured signers",
+            { initialSigners: [apiKeyConfig, apiKeyConfig] },
+            /multiple signers configured/,
+        ],
+        ["a server recovery signer", { recovery: { type: "server", address: "0xServer" } }, /server secret/],
+        [
+            "an external-wallet recovery signer",
+            { recovery: asRecoveryConfig({ type: "external-wallet", address: "0xExt" }) },
+            /External wallet signers require/,
+        ],
+        [
+            "a non-auto-assemblable recovery signer",
+            { recovery: asRecoveryConfig({ type: "device" }) },
+            /External wallet signers require/,
+        ],
+        ["a read-only wallet", { recovery: apiKeyConfig }, /read-only/],
+    ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
+        await expectThrowsMatching(() => makeManager(overrides as Overrides).require(), branchKeyword);
     });
 
     it.each([
@@ -110,56 +99,77 @@ describe("SignerManager", () => {
         ["active", true],
         ["pending", false],
         [undefined, false],
-    ])("isApprovedSignerStatus() %s -> %s", (status, expected) => {
+    ])("isApprovedSignerStatus(%s) -> %s", (status, expected) => {
         expect(makeManager().isApprovedSignerStatus(status as never)).toBe(expected);
     });
 
-    it.each([true, false])("withRecoverySigner() swaps to recovery then restores original (ok=%s)", async (ok) => {
-        const original = makeAdapter("original");
-        const recovery = makeAdapter("recovery");
-        mockedAssembleSigner.mockReturnValue(recovery);
-        const manager = makeManager({ signer: original, recovery: { type: "api-key" } });
-        const boom = new Error("operation failed");
-        let activeDuringOperation: SignerAdapter | undefined;
-        const run = manager.withRecoverySigner(() => {
-            activeDuringOperation = manager.active;
-            return ok ? Promise.resolve("ok") : Promise.reject(boom);
-        });
-        if (ok) {
-            expect(await run).toBe("ok");
-        } else {
-            await expect(run).rejects.toBe(boom);
+    it.each([true, false])(
+        "withRecoverySigner() swaps to the recovery signer then restores the original (operation succeeds=%s)",
+        async (succeeds) => {
+            const original = makeSigner("original");
+            const recoverySigner = makeSigner("recovery");
+            mockedAssembleSigner.mockReturnValue(recoverySigner);
+            const manager = makeManager({ signer: original, recovery: { type: "api-key" } });
+            const failure = new Error("operation failed");
+            let signerDuringOperation: SignerAdapter | undefined;
+
+            const run = manager.withRecoverySigner(() => {
+                signerDuringOperation = manager.activeSigner;
+                return succeeds ? Promise.resolve("ok") : Promise.reject(failure);
+            });
+
+            if (succeeds) {
+                expect(await run).toBe("ok");
+            } else {
+                await expect(run).rejects.toBe(failure);
+            }
+            expect(signerDuringOperation).toBe(recoverySigner);
+            expect(manager.activeSigner).toBe(original);
         }
-        expect(activeDuringOperation).toBe(recovery);
-        expect(manager.active).toBe(original);
-    });
+    );
 
-    const unresolved = { serverSignerResolver: makeResolver({ hasRecoveryResolution: false }) };
-    const guardCases: Array<[string, Overrides, string]> = [
-        ["server-secret", { recovery: { type: "server", address: "0xS" }, ...unresolved }, MSG.serverGuard],
-        ["external-wallet", { recovery: rec({ type: "external-wallet", address: "0xext" }) }, MSG.externalGuard],
-    ];
-
-    it.each(guardCases)("withRecoverySigner() throws %s", async (_name, overrides, message) => {
-        await expectExactError(() => makeManager(overrides).withRecoverySigner(async () => "unused"), message);
+    it.each([
+        [
+            "the recovery server secret is unavailable",
+            {
+                recovery: { type: "server", address: "0xServer" },
+                serverSignerResolver: makeResolver({ hasRecoveryResolution: false }),
+            },
+            /Cannot assemble server signer/,
+        ],
+        [
+            "the recovery external wallet has no onSign callback",
+            { recovery: asRecoveryConfig({ type: "external-wallet", address: "0xExt" }) },
+            /Cannot assemble external wallet signer/,
+        ],
+    ] as const)("withRecoverySigner() throws when %s", async (_name, overrides, branchKeyword) => {
+        await expectThrowsMatching(
+            () => makeManager(overrides as Overrides).withRecoverySigner(async () => "unused"),
+            branchKeyword
+        );
     });
 
     it("stripSecretFromRecovery() replaces a secret-bearing server recovery with an address-only config", () => {
         const manager = makeManager({
-            recovery: { type: "server", secret: "topsecret" } as unknown as RecoverySignerConfigForChain<Chain>,
+            recovery: asRecoveryConfig({ type: "server", secret: "topsecret" }),
             serverSignerResolver: makeResolver({ resolvedRecoveryAddress: "0xResolved" }),
         });
         manager.stripSecretFromRecovery();
         expect(manager.recovery).toEqual({ type: "server", address: "0xResolved" });
     });
 
-    type StripCase = [string, RecoverySignerConfigForChain<Chain>, Partial<ServerSignerResolver>];
-    const stripNoOpCases: StripCase[] = [
-        ["no resolved address", rec({ type: "server", secret: "topsecret" }), { resolvedRecoveryAddress: null }],
-        ["already api-sourced", rec({ type: "server", address: "0xE" }), { resolvedRecoveryAddress: "0xR" }],
-    ];
-
-    it.each(stripNoOpCases)("stripSecretFromRecovery() leaves recovery untouched: %s", (_name, recovery, resolver) => {
+    it.each([
+        [
+            "there is no resolved recovery address",
+            asRecoveryConfig({ type: "server", secret: "topsecret" }),
+            { resolvedRecoveryAddress: null },
+        ],
+        [
+            "the recovery is already api-sourced",
+            asRecoveryConfig({ type: "server", address: "0xExisting" }),
+            { resolvedRecoveryAddress: "0xResolved" },
+        ],
+    ])("stripSecretFromRecovery() leaves recovery untouched when %s", (_name, recovery, resolver) => {
         const manager = makeManager({ recovery, serverSignerResolver: makeResolver(resolver) });
         manager.stripSecretFromRecovery();
         expect(manager.recovery).toBe(recovery);
@@ -172,13 +182,13 @@ describe("SignerManager", () => {
         ["a non-object response", vi.fn().mockResolvedValue("not-an-object")],
     ])("getSignerState() swallows %s to a null state", async (_name, getSigner) => {
         const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
-        await expect(manager.getSignerState("api-key" as SignerLocator)).resolves.toEqual(NULL_STATE);
+        await expect(manager.getSignerState("api-key" as SignerLocator)).resolves.toEqual(NULL_SIGNER_STATE);
     });
 
     const internalConfig = { type: "api-key", locator: "api-key", address: WALLET_ADDRESS } as never;
 
     it("assemble() marks admin signers active without calling getSigner", async () => {
-        mockedAssembleSigner.mockReturnValue(makeAdapter("admin"));
+        mockedAssembleSigner.mockReturnValue(makeSigner("admin"));
         const getSigner = vi.fn();
         const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
         const result = await manager.assemble(internalConfig, { isAdminSigner: true });
@@ -187,9 +197,12 @@ describe("SignerManager", () => {
     });
 
     it("assemble() reads status from getSigner for delegated signers", async () => {
-        mockedAssembleSigner.mockReturnValue(makeAdapter("delegated"));
-        const chains = { "base-sepolia": { status: "success" } };
-        const getSigner = vi.fn().mockResolvedValue({ type: "api-key", locator: "api-key:delegated", chains });
+        mockedAssembleSigner.mockReturnValue(makeSigner("delegated"));
+        const getSigner = vi.fn().mockResolvedValue({
+            type: "api-key",
+            locator: "api-key:delegated",
+            chains: { "base-sepolia": { status: "success" } },
+        });
         const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
         const result = await manager.assemble(internalConfig);
         expect(getSigner).toHaveBeenCalledTimes(1);
