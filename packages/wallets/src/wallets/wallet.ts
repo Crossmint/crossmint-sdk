@@ -266,7 +266,9 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (!getSignerDescriptor<C>(signerToAssemble.type).canAutoAssemble(signerToAssemble, this.descriptorContext())) {
+        if (
+            !getSignerDescriptor<C>(signerToAssemble.type).canAutoAssemble(signerToAssemble, this.descriptorContext())
+        ) {
             return;
         }
 
@@ -909,7 +911,10 @@ export class Wallet<C extends Chain> {
             isAdminSigner = await this.resolveNonDeviceSigner(signer);
         }
 
-        const internalConfig = getSignerDescriptor<C>(signer.type).buildInternalConfig(signer, this.descriptorContext());
+        const internalConfig = getSignerDescriptor<C>(signer.type).buildInternalConfig(
+            signer,
+            this.descriptorContext()
+        );
         const signerLocator = getSignerLocator(signer);
         this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
