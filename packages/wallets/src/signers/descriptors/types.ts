@@ -24,5 +24,8 @@ export interface SignerDescriptor<C extends Chain = Chain> {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
         ctx: SignerDescriptorContext<C>
     ): InternalSignerConfig<C>;
-    canAutoAssemble(config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig, ctx: SignerDescriptorContext<C>): boolean;
+    canAutoAssemble(
+        config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
+        ctx: SignerDescriptorContext<C>
+    ): boolean;
 }

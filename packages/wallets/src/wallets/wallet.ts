@@ -266,18 +266,15 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        if (
-            !getSignerDescriptor<C>(signerToAssemble.type).canAutoAssemble(signerToAssemble, this.descriptorContext())
-        ) {
+        const descriptor = getSignerDescriptor<C>(signerToAssemble.type);
+        const ctx = this.descriptorContext();
+        if (!descriptor.canAutoAssemble(signerToAssemble, ctx)) {
             return;
         }
 
         const isAdminSigner = signerToAssemble === this.#recovery;
         try {
-            const internalConfig = getSignerDescriptor<C>(signerToAssemble.type).buildInternalConfig(
-                signerToAssemble as SignerConfigForChain<C>,
-                this.descriptorContext()
-            );
+            const internalConfig = descriptor.buildInternalConfig(signerToAssemble as SignerConfigForChain<C>, ctx);
             this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner });
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
@@ -296,14 +293,13 @@ export class Wallet<C extends Chain> {
      * initDefaultSigner.
      */
     private async assembleRecoverySignerFallback(): Promise<void> {
-        if (!getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())) {
+        const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+        const ctx = this.descriptorContext();
+        if (!descriptor.canAutoAssemble(this.#recovery, ctx)) {
             return;
         }
         try {
-            const internalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
-                this.#recovery,
-                this.descriptorContext()
-            );
+            const internalConfig = descriptor.buildInternalConfig(this.#recovery, ctx);
             this.#signer = await this.assembleFullSigner(internalConfig, undefined, { isAdminSigner: true });
         } catch (error) {
             walletsLogger.warn("wallet.recover.device.unsupportedFallback.autoAssemblyFailed", {
@@ -1055,20 +1051,19 @@ export class Wallet<C extends Chain> {
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
+        const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+        const ctx = this.descriptorContext();
         if (
             this.#recovery != null &&
             this.#recovery.type === "external-wallet" &&
-            !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
+            !descriptor.canAutoAssemble(this.#recovery, ctx)
         ) {
             throw new Error(
                 "Cannot assemble external wallet signer: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
-            this.#recovery,
-            this.descriptorContext()
-        );
+        const recoveryInternalConfig = descriptor.buildInternalConfig(this.#recovery, ctx);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
@@ -1315,20 +1310,19 @@ export class Wallet<C extends Chain> {
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
+        const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+        const ctx = this.descriptorContext();
         if (
             this.#recovery != null &&
             this.#recovery.type === "external-wallet" &&
-            !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
+            !descriptor.canAutoAssemble(this.#recovery, ctx)
         ) {
             throw new Error(
                 "Cannot resume pending approval: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = getSignerDescriptor<C>(this.#recovery.type).buildInternalConfig(
-            this.#recovery,
-            this.descriptorContext()
-        );
+        const recoveryInternalConfig = descriptor.buildInternalConfig(this.#recovery, ctx);
         this.#signer = assembleSigner(this.chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {

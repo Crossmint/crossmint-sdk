@@ -20,7 +20,9 @@ export const externalWalletSignerDescriptor: SignerDescriptor = {
         }
     },
 
-    buildInternalConfig(config: SignerConfigForChain<Chain> | ApiSourcedServerSignerConfig): InternalSignerConfig<Chain> {
+    buildInternalConfig(
+        config: SignerConfigForChain<Chain> | ApiSourcedServerSignerConfig
+    ): InternalSignerConfig<Chain> {
         const externalWalletConfig = config as ExternalWalletSignerConfigForChain<Chain>;
         return {
             ...externalWalletConfig,
