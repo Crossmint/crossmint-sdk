@@ -54,4 +54,5 @@ export const serverSignerDescriptor: SignerDescriptor = {
         const b = ctx.serverSigners.candidateAddresses(recovery as ServerSignerConfig | ApiSourcedServerSignerConfig);
         return a.some((x) => b.includes(x));
     },
+    adoptsRecoveryConfigOnMatch: true,
 };

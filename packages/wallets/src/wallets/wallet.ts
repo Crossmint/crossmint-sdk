@@ -1507,12 +1507,13 @@ export class Wallet<C extends Chain> {
         if (recovery == null || recovery.type !== signerConfig.type) {
             return false;
         }
-        if (
-            !getSignerDescriptor<C>(signerConfig.type).matchesRecovery(signerConfig, recovery, this.descriptorContext())
-        ) {
+        const descriptor = getSignerDescriptor<C>(signerConfig.type);
+        if (!descriptor.matchesRecovery(signerConfig, recovery, this.descriptorContext())) {
             return false;
         }
-        this.adoptRecoveryConfig(signerConfig);
+        if (descriptor.adoptsRecoveryConfigOnMatch) {
+            this.adoptRecoveryConfig(signerConfig);
+        }
         return true;
     }
 

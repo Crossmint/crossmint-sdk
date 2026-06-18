@@ -40,4 +40,5 @@ export const passkeySignerDescriptor: SignerDescriptor = {
         // already matches by the time this is called.
         return true;
     },
+    adoptsRecoveryConfigOnMatch: false,
 };

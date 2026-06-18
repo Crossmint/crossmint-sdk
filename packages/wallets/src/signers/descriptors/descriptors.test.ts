@@ -275,3 +275,15 @@ it.each<[name: string, type: string, config: Config, recovery: Config, expected:
         expected
     );
 });
+
+it.each([
+    ["email", true],
+    ["phone", true],
+    ["api-key", true],
+    ["device", true],
+    ["external-wallet", true],
+    ["server", true],
+    ["passkey", false],
+] as const)("adoptsRecoveryConfigOnMatch: %s -> %s", (type, expected) => {
+    expect(getSignerDescriptor(type).adoptsRecoveryConfigOnMatch).toBe(expected);
+});

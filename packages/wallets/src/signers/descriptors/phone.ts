@@ -41,4 +41,5 @@ export const phoneSignerDescriptor: SignerDescriptor = {
     matchesRecovery(config: SignerConfigForChain<Chain>, recovery: RecoverySignerConfigForChain<Chain>): boolean {
         return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
     },
+    adoptsRecoveryConfigOnMatch: true,
 };

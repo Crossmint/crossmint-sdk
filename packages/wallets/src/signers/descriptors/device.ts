@@ -42,4 +42,5 @@ export const deviceSignerDescriptor: SignerDescriptor = {
     matchesRecovery(): boolean {
         return false;
     },
+    adoptsRecoveryConfigOnMatch: true,
 };

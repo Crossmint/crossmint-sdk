@@ -40,4 +40,11 @@ export interface SignerDescriptor<C extends Chain = Chain> {
         recovery: RecoverySignerConfigForChain<C>,
         ctx: SignerDescriptorContext<C>
     ): boolean;
+    /**
+     * When matchesRecovery is true, whether to replace the stored recovery config with the
+     * user-provided one. False for passkey: its recovery match is type-only (the api-sourced
+     * recovery config has no credential id), so adopting the user's id-bearing config could
+     * overwrite the recovery identity with the wrong credential.
+     */
+    readonly adoptsRecoveryConfigOnMatch: boolean;
 }
