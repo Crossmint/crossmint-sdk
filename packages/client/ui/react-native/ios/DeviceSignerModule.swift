@@ -3,28 +3,15 @@ import CrossmintDeviceSigner
 import ExpoModulesCore
 import Security
 
-/// Expo native module that exposes device signer key storage to React Native.
-///
-/// On physical iOS devices the module delegates to ``SecureEnclaveKeyStorage`` so all
-/// key material lives in the Secure Enclave. On simulators it always uses
-/// ``KeychainKeyStorage`` (Secure Enclave is not available on simulators).
-///
-/// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
-/// `NativeDeviceSignerKeyStorage` from `@crossmint/client-sdk-react-native-ui`.
 public class DeviceSignerModule: Module {
-
-    // MARK: - Module definition
 
     public func definition() -> ModuleDefinition {
         Name("CrossmintDeviceSigner")
 
-        // Returns true — the module always has a storage backend available (hardware
-        // on real devices, software fallback on simulators).
         AsyncFunction("isAvailable") { () -> Bool in
             true
         }
 
-        // Generates a new P-256 key and persists it.
         AsyncFunction("generateKey") { (address: String?) async throws -> String in
             do {
                 return try await self.defaultStorage().generateKey(address: address)
@@ -36,7 +23,6 @@ public class DeviceSignerModule: Module {
             }
         }
 
-        // Renames the pending Keychain entry to a wallet-address entry.
         AsyncFunction("mapAddressToKey") { (address: String, publicKeyBase64: String) async throws in
             do {
                 try await self.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
@@ -45,22 +31,14 @@ public class DeviceSignerModule: Module {
             }
         }
 
-        // Returns the stored public key for a wallet address, or nil.
         AsyncFunction("getKey") { (address: String) async -> String? in
             await self.defaultStorage().getKey(address: address)
         }
 
-        // Returns true only if the private key for the given public key is actually
-        // present on this device. Delegates to the storage backend, which inspects the
-        // real Keychain / Secure Enclave item — not a record of past key generation.
-        // A device-bound key does not survive a restore onto new hardware, so reporting
-        // presence from anything other than the live item would send the SDK into a
-        // rename/sign loop that can never succeed (WAL-10734).
         AsyncFunction("hasKey") { (publicKeyBase64: String) -> Bool in
             self.defaultStorage().hasKey(publicKeyBase64: publicKeyBase64)
         }
 
-        // Signs a base64-encoded message; returns { r, s } hex strings.
         AsyncFunction("signMessage") { (address: String, message: String) async throws -> [String: String] in
             do {
                 let sig = try await self.defaultStorage().signMessage(address: address, message: message)
@@ -70,18 +48,14 @@ public class DeviceSignerModule: Module {
             }
         }
 
-        // Deletes the key for a wallet address.
         AsyncFunction("deleteKey") { (address: String) async throws in
             try await self.defaultStorage().deleteKey(address: address)
         }
 
-        // Deletes a pending key that was never promoted to a wallet-address key.
         AsyncFunction("deletePendingKey") { (publicKeyBase64: String) async throws in
             try await self.defaultStorage().deletePendingKey(publicKeyBase64: publicKeyBase64)
         }
     }
-
-    // MARK: - Private helpers
 
     private func defaultStorage() -> any DeviceSignerKeyStorage {
         #if targetEnvironment(simulator)

@@ -3,24 +3,6 @@ import { Wallet } from "./wallet";
 import type { ApiClient } from "../api";
 import { createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 
-/**
- * WAL-10734: a wallet has a device signer registered server-side, but the private
- * key is no longer on the device (for example after a restore onto new hardware,
- * where the `ThisDeviceOnly` Secure Enclave key does not survive).
- *
- * The device signer is registered, so `resolveDeviceSignerAvailability` finds a
- * `device:` signer and asks the key storage `hasKey`. The production bug is that the
- * React Native module answered `hasKey` from a backup-eligible index of
- * once-generated keys rather than from the live key material, so it returned `true`
- * for a key that was gone and the SDK then looped on a `mapAddressToKey` that could
- * never succeed.
- *
- * These tests exercise the orchestration with a key storage mock:
- *  - an honest `hasKey` (false when the key is gone) routes straight to recovery and
- *    never attempts the doomed mapping;
- *  - even with a lying `hasKey` plus a failing map, resolution no longer throws and
- *    the wallet ends up flagged for recovery rather than surfacing a hard error.
- */
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
 const LOST_SIGNER_LOCATOR = "device:LOSTKEY";
 
@@ -60,7 +42,6 @@ describe("Wallet - device signer key loss (WAL-10734)", () => {
             },
             mockApiClient as unknown as ApiClient
         );
-        // A device signer is registered server-side, but its key is gone locally.
         vi.spyOn(wallet, "signers").mockResolvedValue([
             { type: "device", address: WALLET_ADDRESS, locator: LOST_SIGNER_LOCATOR, status: "success" } as never,
         ]);
@@ -97,8 +78,6 @@ describe("Wallet - device signer key loss (WAL-10734)", () => {
         await wallet.waitForInit();
 
         const config: { type: "device"; locator?: string } = { type: "device" };
-        // Direct call to the resolution step (the unguarded useSigner path reaches it):
-        // with the fix this resolves; before the fix the rejected map propagated out.
         await expect(
             (wallet as unknown as { resolveDeviceSignerAvailability(c: unknown): Promise<void> }).resolveDeviceSignerAvailability(
                 config
