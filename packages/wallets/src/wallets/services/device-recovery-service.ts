@@ -280,7 +280,6 @@ export class DeviceRecoveryService<C extends Chain> {
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (
-            recovery != null &&
             recovery.type === "external-wallet" &&
             !signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)
         ) {
