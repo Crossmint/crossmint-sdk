@@ -752,6 +752,305 @@ describe("WalletFactory - Chain Environment Validation", () => {
     });
 });
 
+describe("WalletFactory - Email/Phone Delegated Signers", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+
+        mockApiClient = {
+            isServerSide: false,
+            crossmint: { projectId: "test-project" },
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        walletsLogger.debug = vi.fn();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("createWallet with email delegated signer on EVM", () => {
+        it("sends email signer as locator in delegatedSigners", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0x123",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "email" as const,
+                            email: "user@example.com",
+                            address: "0xEmailSignerAddress",
+                            locator: "email:user@example.com",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminAddress",
+                },
+                signers: [{ type: "email", email: "user@example.com" }],
+            };
+
+            await walletFactory.createWallet(args);
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toHaveLength(1);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual({ signer: "email:user@example.com" });
+        });
+    });
+
+    describe("createWallet with phone delegated signer on EVM", () => {
+        it("sends phone signer as locator in delegatedSigners", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0x456",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "phone" as const,
+                            phone: "+15551234567",
+                            address: "0xPhoneSignerAddress",
+                            locator: "phone:+15551234567",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminAddress",
+                },
+                signers: [{ type: "phone", phone: "+15551234567" }],
+            };
+
+            await walletFactory.createWallet(args);
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toHaveLength(1);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual({ signer: "phone:+15551234567" });
+        });
+    });
+
+    describe("createWallet with multiple email/phone delegated signers on EVM", () => {
+        it("sends multiple email signers in delegatedSigners", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0x789",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "email" as const,
+                            email: "alice@example.com",
+                            address: "0xAliceAddress",
+                            locator: "email:alice@example.com",
+                        },
+                        {
+                            type: "email" as const,
+                            email: "bob@example.com",
+                            address: "0xBobAddress",
+                            locator: "email:bob@example.com",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminAddress",
+                },
+                signers: [
+                    { type: "email", email: "alice@example.com" },
+                    { type: "email", email: "bob@example.com" },
+                ],
+            };
+
+            await walletFactory.createWallet(args);
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toHaveLength(2);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual({ signer: "email:alice@example.com" });
+            expect(call?.config?.delegatedSigners?.[1]).toEqual({ signer: "email:bob@example.com" });
+        });
+
+        it("sends mixed email and phone signers in delegatedSigners", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0xABC",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "email" as const,
+                            email: "alice@example.com",
+                            address: "0xAliceAddress",
+                            locator: "email:alice@example.com",
+                        },
+                        {
+                            type: "phone" as const,
+                            phone: "+15559876543",
+                            address: "0xPhoneAddress",
+                            locator: "phone:+15559876543",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.createWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletCreateArgs<"base-sepolia"> = {
+                chain: "base-sepolia",
+                recovery: {
+                    type: "external-wallet",
+                    address: "0xAdminAddress",
+                },
+                signers: [
+                    { type: "email", email: "alice@example.com" },
+                    { type: "phone", phone: "+15559876543" },
+                ],
+            };
+
+            await walletFactory.createWallet(args);
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.delegatedSigners).toHaveLength(2);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual({ signer: "email:alice@example.com" });
+            expect(call?.config?.delegatedSigners?.[1]).toEqual({ signer: "phone:+15559876543" });
+        });
+    });
+
+    describe("getWallet with existing email/phone delegated signers on EVM", () => {
+        it("loads wallet with email delegated signers", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0xWallet",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "email" as const,
+                            email: "user@example.com",
+                            address: "0xEmailSignerAddress",
+                            locator: "email:user@example.com",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+            };
+
+            const wallet = await walletFactory.getWallet(args);
+
+            expect(wallet).toBeDefined();
+            expect(wallet.address).toBe("0xWallet");
+        });
+
+        it("loads wallet with multiple email/phone delegated signers", async () => {
+            const evmWallet = {
+                chainType: "evm" as const,
+                type: "smart" as const,
+                address: "0xWallet2",
+                owner: "test-owner",
+                config: {
+                    adminSigner: {
+                        type: "external-wallet" as const,
+                        address: "0xAdminAddress",
+                        locator: "external-wallet:0xAdminAddress",
+                    },
+                    delegatedSigners: [
+                        {
+                            type: "email" as const,
+                            email: "alice@example.com",
+                            address: "0xAliceAddress",
+                            locator: "email:alice@example.com",
+                        },
+                        {
+                            type: "phone" as const,
+                            phone: "+15551234567",
+                            address: "0xPhoneAddress",
+                            locator: "phone:+15551234567",
+                        },
+                    ],
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(evmWallet);
+
+            const args: WalletArgsFor<"base-sepolia"> = {
+                chain: "base-sepolia",
+            };
+
+            const wallet = await walletFactory.getWallet(args);
+
+            expect(wallet).toBeDefined();
+            expect(wallet.address).toBe("0xWallet2");
+        });
+    });
+});
+
 describe("WalletFactory - Server Signer", () => {
     let walletFactory: WalletFactory;
     let mockApiClient: MockedApiClient;
