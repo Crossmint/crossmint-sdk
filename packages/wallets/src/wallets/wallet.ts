@@ -1547,15 +1547,7 @@ export class Wallet<C extends Chain> {
             const publicKeyBase64 = walletSigner.locator.replace("device:", "");
             const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
             if (hasKey) {
-                try {
-                    await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
-                } catch (error) {
-                    walletsLogger.warn("wallet.resolveDeviceSigner.mapAddressToKey.error", {
-                        signerLocator: walletSigner.locator,
-                        error,
-                    });
-                    continue;
-                }
+                await deviceSignerKeyStorage.mapAddressToKey(this.address, publicKeyBase64);
                 config.locator = walletSigner.locator;
                 return;
             }

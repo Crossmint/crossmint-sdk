@@ -70,19 +70,4 @@ describe("Wallet - device signer key loss (WAL-10734)", () => {
         expect(wallet.signer).toBeUndefined();
         expect(wallet.needsRecovery()).toBe(true);
     });
-
-    it("resolveDeviceSignerAvailability swallows a failing map instead of throwing", async () => {
-        const mapAddressToKey = vi.fn().mockRejectedValue(new Error("mapAddressToKey failed: storageError(-25300)"));
-        const storage = makeStorage({ hasKey: vi.fn().mockResolvedValue(true), mapAddressToKey });
-        const wallet = buildWallet(storage);
-        await wallet.waitForInit();
-
-        const config: { type: "device"; locator?: string } = { type: "device" };
-        await expect(
-            (wallet as unknown as { resolveDeviceSignerAvailability(c: unknown): Promise<void> }).resolveDeviceSignerAvailability(
-                config
-            )
-        ).resolves.toBeUndefined();
-        expect(config.locator).toBeUndefined();
-    });
 });
