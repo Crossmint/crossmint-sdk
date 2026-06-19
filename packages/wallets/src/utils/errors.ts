@@ -141,6 +141,12 @@ export class SignatureFailedError extends CrossmintSDKError {
     }
 }
 
+export class SignatureConfirmationTimeoutError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+    }
+}
+
 export class InvalidTransferAmountError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);

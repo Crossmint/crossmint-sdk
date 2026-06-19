@@ -1,6 +1,7 @@
 import type { ApiClient, GetSignatureResponse, WalletLocator } from "../../api";
 import type { Signature, Transaction } from "../types";
 import {
+    SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
@@ -48,7 +49,7 @@ export async function waitForTransactionCompletion(
 
     if (transactionResponse.status === "failed") {
         const error = new TransactionSendingFailedError(
-            `Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`
+            `Transaction sending failed: ${JSON.stringify(transactionResponse)}`
         );
         throw error;
     }
@@ -80,11 +81,17 @@ export async function waitForTransactionCompletion(
 export async function waitForSignatureCompletion(
     apiClient: ApiClient,
     walletLocator: WalletLocator,
-    signatureId: string
+    signatureId: string,
+    options?: PollingOptions
 ): Promise<Signature<false>> {
+    const { timeoutMs = 60_000 } = options ?? {};
+    const startTime = Date.now();
     let signatureResponse: GetSignatureResponse | null = null;
 
     do {
+        if (Date.now() - startTime > timeoutMs) {
+            throw new SignatureConfirmationTimeoutError("Signature confirmation timeout");
+        }
         await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
         signatureResponse = await apiClient.getSignature(walletLocator, signatureId);
         if ("error" in signatureResponse) {
