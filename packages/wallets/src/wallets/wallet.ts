@@ -441,16 +441,16 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
-        const resolvedChain = this.resolveChainForEnvironment();
-        const recipient = toRecipientLocator(to);
-        const tokenLocator = toTokenLocator(token, resolvedChain);
-
         const parsedAmount = Number(amount);
         if (Number.isNaN(parsedAmount) || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
             throw new InvalidTransferAmountError(
                 `Invalid transfer amount: "${amount}". Amount must be a positive number greater than zero.`
             );
         }
+
+        const recipient = toRecipientLocator(to);
+        const resolvedChain = this.resolveChainForEnvironment();
+        const tokenLocator = toTokenLocator(token, resolvedChain);
 
         walletsLogger.info("wallet.send.start", {
             recipient,

@@ -14,6 +14,7 @@ import {
     SignatureNotAvailableError,
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
+import { walletsLogger } from "../logger";
 
 vi.mock("@/signers/server", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/signers/server")>();
@@ -320,6 +321,7 @@ describe("Wallet - send()", () => {
     beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
+        walletsLogger.debug = vi.fn();
         mockApiClient = createMockApiClient();
         wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
     });
@@ -475,6 +477,52 @@ describe("Wallet - send()", () => {
                 InvalidTransferAmountError
             );
             expect(mockApiClient.send).not.toHaveBeenCalled();
+        });
+
+        it("does not remap chain when amount is invalid (validates before resolving chain)", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            await expect(
+                polygonWallet.send("0x1111111111111111111111111111111111111111", "usdc", "-5")
+            ).rejects.toThrow(InvalidTransferAmountError);
+
+            expect(mockApiClient.send).not.toHaveBeenCalled();
+            expect(polygonWallet.chain).toBe("polygon");
+        });
+
+        it("does not remap chain when the recipient address is invalid (validates before resolving chain)", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            await expect(polygonWallet.send("not-a-valid-address", "usdc", "10.0")).rejects.toThrow(
+                InvalidAddressError
+            );
+
+            expect(mockApiClient.send).not.toHaveBeenCalled();
+            expect(polygonWallet.chain).toBe("polygon");
+        });
+    });
+
+    describe("chain resolution", () => {
+        it("remaps a staging mainnet chain to its testnet equivalent on a valid send", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            mockApiClient.send.mockResolvedValue({ id: "txn-123" } as unknown as SendResponse);
+
+            const sendPromise = polygonWallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0", {
+                prepareOnly: true,
+            });
+            await vi.runAllTimersAsync();
+            await sendPromise;
+
+            expect(polygonWallet.chain).toBe("polygon-amoy");
+            expect(mockApiClient.send).toHaveBeenCalledWith(
+                "me:evm:smart",
+                "polygon-amoy:usdc",
+                expect.objectContaining({ amount: "10.0" })
+            );
         });
     });
 });
