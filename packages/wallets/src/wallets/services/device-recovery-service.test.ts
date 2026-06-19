@@ -157,6 +157,17 @@ describe("DeviceRecoveryService", () => {
             expect(config.locator).toBe("device:registeredKey");
             expect(service.needsRecovery).toBe(false);
         });
+
+        it("clears a stale recovery need once a local key is adopted (WAL-10668)", async () => {
+            const storage = makeStorage();
+            const { service } = setup({ storage });
+            await service.resolveAvailability({ type: "device" } as never);
+            expect(service.needsRecovery).toBe(true);
+
+            storage.getKey.mockResolvedValue("adoptedKey");
+            await service.resolveAvailability({ type: "device" } as never);
+            expect(service.needsRecovery).toBe(false);
+        });
     });
 
     describe("recover() guards", () => {

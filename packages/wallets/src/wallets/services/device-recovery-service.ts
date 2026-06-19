@@ -225,6 +225,7 @@ export class DeviceRecoveryService<C extends Chain> {
         const existingKey = await deviceSignerKeyStorage.getKey(this.#walletAddress);
         if (existingKey != null) {
             config.locator = `device:${existingKey}`;
+            this.#status = "unknown";
             return;
         }
 
@@ -236,6 +237,7 @@ export class DeviceRecoveryService<C extends Chain> {
             if (hasKey) {
                 await deviceSignerKeyStorage.mapAddressToKey(this.#walletAddress, publicKeyBase64);
                 config.locator = walletSigner.locator;
+                this.#status = "unknown";
                 return;
             }
         }
