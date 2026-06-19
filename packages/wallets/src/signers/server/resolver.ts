@@ -76,7 +76,12 @@ export class ServerSignerResolver {
     }
 
     apiLocator(config: ServerSignerConfig | ApiSourcedServerSignerConfig): ServerSignerLocator {
-        return `server:${this.resolveDerivation(config).derivedAddress}`;
+        const resolved = this.resolveDerivation(config);
+        // Only the address is needed here — wipe the selected candidate's key bytes (never the cached slots).
+        if (resolved !== this.#resolvedServerSigner && resolved !== this.#resolvedRecoveryServerSigner) {
+            secureWipe(resolved.derivedKeyBytes);
+        }
+        return `server:${resolved.derivedAddress}`;
     }
 
     /**

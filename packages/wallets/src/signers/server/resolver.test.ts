@@ -111,9 +111,20 @@ describe("ServerSignerResolver", () => {
             expectWipedAndKept(recorded[0], "legacy", "primary", 7);
         });
     });
-    it("apiLocator formats the resolved derived address as a server locator", () => {
-        installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
-        expect(makeResolver().apiLocator(fullConfig("s"))).toBe("server:0xPrimary");
+    describe("apiLocator", () => {
+        it("formats the resolved derived address as a server locator and wipes the locator-only key bytes (WAL-10667)", () => {
+            const recorded = installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+            expect(makeResolver().apiLocator(fullConfig("s"))).toBe("server:0xPrimary");
+            expect(isZeroed(recorded[0].primary.derivedKeyBytes)).toBe(true);
+        });
+        it("does not wipe a cached resolution's key bytes", () => {
+            const recorded = installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+            const resolver = makeResolver();
+            const cached = cacheDelegated(resolver, recorded, "s", "server:0xPrimary").primary;
+            installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+            expect(resolver.apiLocator(fullConfig("s"))).toBe("server:0xPrimary");
+            expect(everyByteIs(cached.derivedKeyBytes, 7)).toBe(true);
+        });
     });
     describe("resolveForUseSigner", () => {
         it.each([
