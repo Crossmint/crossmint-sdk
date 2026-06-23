@@ -1,5 +1,31 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.2.12
+
+### Patch Changes
+
+- 696adbe: Add checkout product to SDK reference docs generation pipeline
+- cfa3985: Fix device signers failing with `keyNotFound` after restoring a wallet onto a new phone. `hasKey` now checks the live keychain instead of a backup-eligible record, so a key that did not transfer to the new device is detected as missing and the device re-registers a fresh signer.
+- Updated dependencies [fe8f948]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+  - @crossmint/client-sdk-react-base@2.0.30
+
 ## 1.2.11
 
 ### Patch Changes
