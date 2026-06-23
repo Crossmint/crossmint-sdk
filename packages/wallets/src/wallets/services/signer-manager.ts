@@ -119,19 +119,14 @@ export class SignerManager<C extends Chain> {
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            if (this.#recovery.type === "server") {
-                throw new Error(
-                    "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
-                        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
-                );
+            const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+            const typeReason = descriptor.signerUnavailableReason();
+            if (typeReason != null) {
+                throw new Error(typeReason);
             }
-            if (
-                this.#recovery.type === "external-wallet" ||
-                !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
-            ) {
+            if (!descriptor.canAutoAssemble(this.#recovery, this.descriptorContext())) {
                 throw new Error(
-                    "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
-                        'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
+                    "No signer is set. This wallet requires calling wallet.useSigner() before signing operations."
                 );
             }
             throw new Error(

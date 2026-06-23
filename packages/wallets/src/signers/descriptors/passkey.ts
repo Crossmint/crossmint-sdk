@@ -41,4 +41,5 @@ export const passkeySignerDescriptor: SignerDescriptor = {
         return true;
     },
     adoptsRecoveryConfigOnMatch: false,
+    signerUnavailableReason: () => null,
 };

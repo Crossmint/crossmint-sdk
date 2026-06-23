@@ -42,4 +42,5 @@ export const phoneSignerDescriptor: SignerDescriptor = {
         return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
     },
     adoptsRecoveryConfigOnMatch: true,
+    signerUnavailableReason: () => null,
 };

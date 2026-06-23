@@ -287,3 +287,17 @@ it.each([
 ] as const)("adoptsRecoveryConfigOnMatch: %s -> %s", (type, expected) => {
     expect(getSignerDescriptor(type).adoptsRecoveryConfigOnMatch).toBe(expected);
 });
+
+it.each([
+    ["server", /server secret/],
+    ["external-wallet", /onSign callback/],
+] as const)("signerUnavailableReason: %s returns type-specific guidance", (type, pattern) => {
+    expect(getSignerDescriptor(type).signerUnavailableReason()).toMatch(pattern);
+});
+
+it.each(["email", "phone", "api-key", "device", "passkey"] as const)(
+    "signerUnavailableReason: %s returns null so require() applies the generic fallback",
+    (type) => {
+        expect(getSignerDescriptor(type).signerUnavailableReason()).toBeNull();
+    }
+);
