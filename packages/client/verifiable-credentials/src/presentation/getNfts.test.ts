@@ -13,7 +13,7 @@ describe("getNfts", () => {
         crossmintAPI.init("test", { environment: "test" });
         jest.spyOn(crossmintAPI, "getHeaders").mockReturnValue({} as any);
     });
-    it("should fetch wallet NFTs", async () => {
+    it("fetches wallet NFTs", async () => {
         const mockResponse = Array(50).fill({ a: "a" });
         const mockResponse2 = [{ a: "a" }, { b: "b" }];
 
@@ -33,7 +33,7 @@ describe("getNfts", () => {
         expect(fetch).toHaveBeenCalled();
     });
 
-    it("should filter Polygon ERC-721 NFTs", () => {
+    it("filters Polygon ERC-721 NFTs", () => {
         const nfts: CrossmintWalletNft[] = [
             { chain: "polygon", tokenStandard: "erc-721" } as any,
             { chain: "ethereum", tokenStandard: "erc-721" } as any,

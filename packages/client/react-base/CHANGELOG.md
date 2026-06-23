@@ -1,5 +1,106 @@
 # @crossmint/client-sdk-react-base
 
+## 2.0.29
+
+### Patch Changes
+
+- Updated dependencies [49046e9]
+- Updated dependencies [789ed03]
+- Updated dependencies [d224bb0]
+- Updated dependencies [8589cc6]
+- Updated dependencies [f20c85b]
+  - @crossmint/wallets-sdk@1.6.0
+  - @crossmint/client-signers@0.2.1
+  - @crossmint/common-sdk-base@0.10.2
+  - @crossmint/client-sdk-auth@1.3.14
+  - @crossmint/client-sdk-base@2.4.2
+  - @crossmint/common-sdk-auth@1.1.12
+
+## 2.0.28
+
+### Patch Changes
+
+- Updated dependencies [b9f006e]
+- Updated dependencies [2b8bee9]
+- Updated dependencies [cd7e5f6]
+  - @crossmint/wallets-sdk@1.5.2
+
+## 2.0.27
+
+### Patch Changes
+
+- Updated dependencies [8bb6235]
+  - @crossmint/wallets-sdk@1.5.1
+
+## 2.0.26
+
+### Patch Changes
+
+- Updated dependencies [a4576bb]
+- Updated dependencies [4be967b]
+  - @crossmint/wallets-sdk@1.5.0
+  - @crossmint/client-sdk-base@2.4.1
+  - @crossmint/client-sdk-auth@1.3.13
+  - @crossmint/common-sdk-auth@1.1.11
+
+## 2.0.25
+
+### Patch Changes
+
+- Updated dependencies [c91d01f]
+  - @crossmint/wallets-sdk@1.4.1
+
+## 2.0.24
+
+### Patch Changes
+
+- Updated dependencies [c9652c2]
+  - @crossmint/wallets-sdk@1.4.0
+
+## 2.0.23
+
+### Patch Changes
+
+- Updated dependencies [4190d12]
+  - @crossmint/wallets-sdk@1.3.0
+
+## 2.0.22
+
+### Patch Changes
+
+- Updated dependencies [37d0cce]
+- Updated dependencies [53ff96c]
+  - @crossmint/client-sdk-base@2.4.0
+  - @crossmint/wallets-sdk@1.2.0
+  - @crossmint/client-sdk-auth@1.3.12
+  - @crossmint/common-sdk-auth@1.1.10
+
+## 2.0.21
+
+### Patch Changes
+
+- Updated dependencies [dd7bc0c]
+- Updated dependencies [7b19253]
+  - @crossmint/common-sdk-base@0.10.1
+  - @crossmint/wallets-sdk@1.1.2
+  - @crossmint/client-sdk-auth@1.3.11
+  - @crossmint/client-sdk-base@2.3.5
+  - @crossmint/common-sdk-auth@1.1.9
+
+## 2.0.20
+
+### Patch Changes
+
+- Updated dependencies [bf428e7]
+- Updated dependencies [ca9e4b4]
+  - @crossmint/wallets-sdk@1.1.1
+
+## 2.0.19
+
+### Patch Changes
+
+- 6992883: Auto-derive React/RN SDK reference docs from JSDoc; removes ~390 LOC of hand-maintained MANUAL_RETURNS blocks.
+
 ## 2.0.18
 
 ### Patch Changes

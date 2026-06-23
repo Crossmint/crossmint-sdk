@@ -14,6 +14,7 @@ import {
     arbitrumNova,
     modeTestnet,
     mode,
+    mainnet,
     bsc,
     shape,
     zora,
@@ -59,6 +60,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.ARBITRUMNOVA,
     Blockchain.BASE,
     Blockchain.BSC,
+    Blockchain.ETHEREUM,
     Blockchain.FLOW,
     Blockchain.MANTLE,
     Blockchain.MODE,
@@ -116,6 +118,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return zoraSepolia;
         case Blockchain.ETHEREUM_SEPOLIA:
             return sepolia;
+        case Blockchain.ETHEREUM:
+            return mainnet;
         case Blockchain.FLOW:
             return flowMainnet;
         case Blockchain.FLOW_TESTNET:
@@ -169,6 +173,7 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.APECHAIN]: Blockchain.CURTIS,
     [Blockchain.ARBITRUM]: Blockchain.ARBITRUM_SEPOLIA,
     [Blockchain.BASE]: Blockchain.BASE_SEPOLIA,
+    [Blockchain.ETHEREUM]: Blockchain.ETHEREUM_SEPOLIA,
     [Blockchain.FLOW]: Blockchain.FLOW_TESTNET,
     [Blockchain.MANTLE]: Blockchain.MANTLE_SEPOLIA,
     [Blockchain.MODE]: Blockchain.MODE_SEPOLIA,

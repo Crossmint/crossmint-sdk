@@ -1,5 +1,31 @@
 # @crossmint/client-sdk-base
 
+## 2.4.2
+
+### Patch Changes
+
+- Updated dependencies [8589cc6]
+  - @crossmint/common-sdk-base@0.10.2
+
+## 2.4.1
+
+### Patch Changes
+
+- 4be967b: fix: upgrade uuid from 9.0.1 to 11.1.1 to resolve medium severity vulnerability (GHSA-w5hq-g745-h8pq)
+
+## 2.4.0
+
+### Minor Changes
+
+- 37d0cce: Expose `rules` in `PaymentMethodManagementAppearance` so consumers can override `PrimaryButton`, `Input`, and other element-level styles. The iframe runtime already accepts and merges `rules` correctly; this change removes the public type narrowing that was preventing TypeScript consumers from reaching the lever.
+
+## 2.3.5
+
+### Patch Changes
+
+- Updated dependencies [dd7bc0c]
+  - @crossmint/common-sdk-base@0.10.1
+
 ## 2.3.4
 
 ### Patch Changes

@@ -7,7 +7,7 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError } from "../types";
+import { AuthRejectedError, KeyExportError, OtpValidationError, SignerStatusError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
@@ -141,12 +141,18 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
+            const errorMessage =
+                signerResponse?.status === "error"
+                    ? signerResponse.error || "Failed to retrieve signer status"
+                    : "Failed to retrieve signer status";
+            const errorCode = signerResponse?.status === "error" ? signerResponse.code : undefined;
             walletsLogger.error("get-status: failed", {
                 status: signerResponse?.status,
-                error: signerResponse?.error,
+                error: signerResponse?.status === "error" ? signerResponse.error : undefined,
+                code: errorCode,
                 durationMs,
             });
-            throw new Error(signerResponse?.error);
+            throw new SignerStatusError(errorMessage, errorCode);
         }
 
         walletsLogger.info("get-status: response received", {
@@ -262,8 +268,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         }
 
         if (response?.status === "error") {
-            walletsLogger.error("start-onboarding: failed", { error: response.error });
-            this._authPromise?.reject(new Error(response.error || "Failed to initiate OTP process."));
+            walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
+            const error = new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
+            this._authPromise?.reject(error);
         }
     }
 
@@ -322,10 +329,18 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             return;
         }
 
-        walletsLogger.error("complete-onboarding: OTP validation failed", { status: response?.status });
+        walletsLogger.error("complete-onboarding: OTP validation failed", {
+            status: response?.status,
+            error: response?.status === "error" ? response.error : undefined,
+            code: response?.status === "error" ? response.code : undefined,
+        });
         this._needsAuth = true;
-        const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
-        const error = new Error(errorMessage);
+        const errorMessage =
+            response?.status === "error"
+                ? response.error || "Failed to validate encrypted OTP"
+                : "Failed to validate encrypted OTP";
+        const errorCode = response?.status === "error" ? response.code : undefined;
+        const error = new OtpValidationError(errorMessage, errorCode);
         this._authPromise?.reject(error);
         throw error;
     }
@@ -366,13 +381,19 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 data: {
                     scheme,
                     encoding,
+                    walletAddress: this.config.address,
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
 
         if (response?.status === "error") {
-            throw new Error(response.error || "Failed to export private key");
+            walletsLogger.error("export-signer: failed", {
+                error: response.error,
+                code: response.code,
+            });
+            throw new KeyExportError(response.error || "Failed to export private key", response.code);
         }
     }
 

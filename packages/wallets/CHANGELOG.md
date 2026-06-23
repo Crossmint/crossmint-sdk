@@ -1,5 +1,133 @@
 # @crossmint/wallets-sdk
 
+## 1.6.0
+
+### Minor Changes
+
+- 49046e9: feat: block device signer on browsers without third-party storage partitioning
+
+  - `IframeDeviceSignerKeyStorage` now throws `UnsupportedBrowserError` in its constructor when the browser lacks third-party storage partitioning (Chrome < 115, Firefox < 103, or unknown browsers)
+  - `CrossmintWalletProvider` catches the error gracefully, logs it, and falls back to non-device signers
+  - Exports `UnsupportedBrowserError` for consumers to handle programmatically
+
+### Patch Changes
+
+- 789ed03: fix: throw typed InvalidSignerError with chain status details when addSigner chain registration fails
+
+  - `addSigner` now throws `InvalidSignerError` (instead of generic `Error`) when `response.chains[chain].status === "failed"`, consistent with the error handling 2 lines above for API-level failures
+  - Adds structured logging with chain status details
+  - Passes the chain status JSON as `details` so consumers can inspect the failure reason
+
+- d224bb0: Add fields needed for our export flow
+- f20c85b: fix: wipe server signer secret from memory after key derivation
+
+  - After `useSigner()` resolves the server signer derivation, the plaintext master secret is stripped from the recovery config and replaced with an address-only reference
+  - Non-selected derivation candidate key bytes are securely zeroed
+  - Signer adapter constructors (EVM, Solana, Stellar) wipe input derived key bytes after constructing their internal key material
+  - `buildInternalSignerConfig` copies derived key bytes so the cached resolution is not corrupted when adapters wipe their input
+
+- Updated dependencies [d224bb0]
+- Updated dependencies [8589cc6]
+  - @crossmint/client-signers@0.2.1
+  - @crossmint/common-sdk-base@0.10.2
+  - @crossmint/common-sdk-auth@1.1.12
+
+## 1.5.2
+
+### Patch Changes
+
+- b9f006e: fix: throw typed KeyExportError instead of generic Error when export-signer TEE call fails
+
+  - Add `KeyExportError` class (exported) with optional `.code` from TEE response
+  - `_exportPrivateKey` now throws `KeyExportError` with structured logging instead of a generic `Error`
+
+- 2b8bee9: fix: throw typed SignerStatusError instead of generic Error when get-status TEE call fails
+
+  - Add `SignerStatusError` class (exported) with optional `.code` from TEE response
+  - `handleAuthRequired` now throws `SignerStatusError` instead of `new Error(signerResponse?.error)`, preserving the TEE error code and guarding against undefined messages
+
+- cd7e5f6: Remove browser environment check from `createServerSigner` to allow client-side usage
+
+## 1.5.1
+
+### Patch Changes
+
+- 8bb6235: Add `createServerSigner` public API for server signer key derivation, mirroring `createDeviceSigner`
+
+## 1.5.0
+
+### Minor Changes
+
+- a4576bb: feat: add Ethereum mainnet to smart wallet supported chains
+
+  Add `Blockchain.ETHEREUM` to `PRODUCTION_AA_CHAINS`, the `toViemChain` switch, and `MAINNET_TO_TESTNET_MAP` so the SDK no longer rejects Ethereum mainnet with an `InvalidChainError` before the API call is made.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.11
+
+## 1.4.1
+
+### Patch Changes
+
+- c91d01f: fix: preserve OTP validation failure reason instead of collapsing into generic internal error
+
+  - Add `OtpValidationError` class (exported) so consumers can distinguish OTP failures from other signer errors
+  - `verifyOtp` and `sendMessageWithOtp` now throw `OtpValidationError` with the error code from the TEE response
+  - `recover()` handles `OtpValidationError` like `AuthRejectedError`: preserves the local device key so the user can retry the OTP flow without re-registering the signer
+
+## 1.4.0
+
+### Minor Changes
+
+- c9652c2: Add scopes support for delegated signers (transfer spending limits and recipient restrictions)
+
+## 1.3.0
+
+### Minor Changes
+
+- 4190d12: Normalize EVM server signer key derivation to use "evm" chain type
+
+  - Add `deriveServerSignerCandidates` helper that returns both primary ("evm") and legacy (chain-specific) derivations
+  - Update `deriveServerSignerDetails` to use normalized "evm" chain type for all EVM chains
+  - Implement dual-derivation fallback in `useSigner`: try primary first, fall back to legacy for backward compatibility
+  - Update `isRecoverySigner` to match against either derivation
+  - Cache resolved server derivation in `buildInternalSignerConfig` for signing consistency
+
+## 1.2.0
+
+### Minor Changes
+
+- 53ff96c: Solana wallets now seamlessly fall back to the recovery signer when the underlying provider does not support device signers.
+
+  - `WalletFactory.createWallet` no longer eagerly attaches a `device` signer to Solana smart wallet creation. The provider that backs a Solana wallet is determined server-side; the post-creation flow registers the device signer reactively.
+  - When the backend rejects device-signer registration with the stable `DEVICE_SIGNER_NOT_SUPPORTED` error code, `Wallet.recover` swallows the error, deletes any local device key, caches the unsupported state on the wallet instance, and auto-assembles the recovery signer so the next transaction works without any consumer-visible changes.
+  - A new `DeviceSignerNotSupportedError` is thrown from `addSigner` when the backend returns the stable error code, allowing consumers that call `addSigner` directly to detect and handle the case.
+
+  For providers that support device signers and for non-Solana chains, behavior is unchanged: a device signer is still used when `deviceSignerKeyStorage` is configured.
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.10
+
+## 1.1.2
+
+### Patch Changes
+
+- 7b19253: Fix device signer recovery error handling:
+  - Don't permanently cache `#deviceSignerApproved = true` when recovery fails, which was preventing future recovery attempts from running
+  - Handle "Already has the required number of approvals" response in `resumePendingDeviceSignerApproval` as a success case instead of throwing
+- Updated dependencies [dd7bc0c]
+  - @crossmint/common-sdk-base@0.10.1
+  - @crossmint/common-sdk-auth@1.1.9
+
+## 1.1.1
+
+### Patch Changes
+
+- bf428e7: fix issue when device signer is registered on device and api but approval is still pending during wallet initalization
+- ca9e4b4: Fix `wallet.approve()` posting an empty `approvals: []` payload when a transaction or signature has no pending approvals. The SDK now short-circuits and returns the existing transaction/signature instead of calling the API with an invalid empty array, which was being rejected with `approvals: Too small: expected array to have >=1 items`.
+
 ## 1.1.0
 
 ### Minor Changes

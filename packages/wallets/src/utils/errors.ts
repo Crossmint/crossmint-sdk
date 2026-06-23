@@ -60,6 +60,39 @@ export class InvalidSignerError extends CrossmintSDKError {
     }
 }
 
+export class UnknownSignerTypeError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+/**
+ * Stable error code returned by the wallets API when a Solana smart wallet's underlying
+ * provider does not support device signers. The SDK catches this code in `recover()` and
+ * transparently falls back to the recovery signer so seamless provider-aware defaults work
+ * without exposing the provider name on the API response. Must match the backend constant
+ * `DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE`.
+ */
+export const DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE = "DEVICE_SIGNER_NOT_SUPPORTED";
+
+export class DeviceSignerNotSupportedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+/**
+ * Thrown when the browser does not support third-party storage partitioning,
+ * making it unsafe to store device-signer keys in IndexedDB. Consumers should
+ * either prompt the user to upgrade their browser or fall back to a non-device
+ * signer (e.g. recovery signer).
+ */
+export class UnsupportedBrowserError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.ENVIRONMENT_INVALID, details);
+    }
+}
+
 export class InvalidMessageFormatError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.MESSAGE_INVALID, details);
@@ -103,6 +136,12 @@ export class SignatureNotAvailableError extends CrossmintSDKError {
 }
 
 export class SignatureFailedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+    }
+}
+
+export class SignatureConfirmationTimeoutError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNING_FAILED, details);
     }
@@ -180,6 +219,8 @@ export type WalletError =
     | WalletTypeMismatchError
     | SignerTypeMismatchError
     | InvalidSignerError
+    | UnknownSignerTypeError
+    | DeviceSignerNotSupportedError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError
@@ -196,4 +237,5 @@ export type WalletError =
     | TransactionHashNotFoundError
     | TransactionFailedError
     | PendingApprovalsError
-    | InvalidAddressError;
+    | InvalidAddressError
+    | UnsupportedBrowserError;

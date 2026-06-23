@@ -34,7 +34,7 @@
         "rimraf": "6.0.1",
         "ts-jest": "29.1.1",
         "tsup": "8.1.0",
-        "turbo": "2.2.3",
+        "turbo": "2.9.14",
         "typescript": "5.5.3",
         "vitest": "1.6.1",
         "vitest-mock-extended": "2.0.2"
@@ -49,7 +49,7 @@
     "pnpm": {
         "overrides": {
             "axios@0": "0.30.0",
-            "axios@1": "1.13.5",
+            "axios@1": "1.16.0",
             "elliptic@6": "6.6.1",
             "form-data@3": "3.0.4",
             "form-data@4": "4.0.4",
@@ -66,13 +66,13 @@
             "@isaacs/brace-expansion": "5.0.1",
             "tar@6": "7.5.11",
             "tar@7": "7.5.11",
-            "h3": "1.15.6",
+            "h3": "1.15.9",
             "@remix-run/router": "1.23.2",
             "@remix-run/react": "2.17.3",
             "preact": "10.28.2",
-            "qs": "6.14.2",
+            "qs": "6.15.2",
             "valibot": "1.2.0",
-            "protobufjs": "7.5.5",
+            "protobufjs": "7.5.8",
             "handlebars": "4.7.9",
             "playwright": "1.55.1",
             "minimatch@3": "3.1.4",
@@ -87,10 +87,24 @@
             "picomatch@3": "3.0.2",
             "picomatch@4": "4.0.4",
             "defu": "6.1.5",
-            "next@15": "15.5.15",
+            "next@15": "15.5.18",
+            "next@16": "16.2.6",
+            "js-cookie": "3.0.7",
+            "fast-uri": "3.1.2",
             "@xmldom/xmldom": "0.8.13",
             "lodash": "4.18.1",
-            "lodash-es": "4.18.1"
+            "lodash-es": "4.18.1",
+            "postcss": "8.5.10",
+            "bn.js@4": "4.12.3",
+            "bn.js@5": "5.2.3",
+            "markdown-it": "14.1.1",
+            "react-router@6": "6.30.2",
+            "@metamask/sdk": "0.33.1",
+            "@metamask/sdk-communication-layer": "0.33.1",
+            "ajv@6": "6.14.0",
+            "@remix-run/server-runtime": "2.17.3",
+            "uuid": "11.1.1",
+            "estree-util-value-to-estree": "3.3.3"
         }
     }
 }

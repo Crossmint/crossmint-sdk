@@ -1,5 +1,78 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.4.184
+
+### Patch Changes
+
+- Updated dependencies [49046e9]
+  - @crossmint/client-sdk-react-ui@4.2.11
+  - @crossmint/server-sdk@1.2.75
+
+## 0.4.183
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.10
+
+## 0.4.182
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.9
+
+## 0.4.181
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.8
+- @crossmint/server-sdk@1.2.74
+
+## 0.4.180
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.7
+
+## 0.4.179
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.6
+
+## 0.4.178
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.5
+
+## 0.4.177
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.4
+- @crossmint/server-sdk@1.2.73
+
+## 0.4.176
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.3
+- @crossmint/server-sdk@1.2.72
+
+## 0.4.175
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.2
+
+## 0.4.174
+
+### Patch Changes
+
+- Updated dependencies [118cad3]
+- Updated dependencies [6992883]
+  - @crossmint/client-sdk-react-ui@4.2.1
+
 ## 0.4.173
 
 ### Patch Changes

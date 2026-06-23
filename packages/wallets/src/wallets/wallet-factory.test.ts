@@ -63,7 +63,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet with recovery and signers", () => {
-        it("should create wallet with top-level recovery", async () => {
+        it("creates wallet with top-level recovery", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletCreateArgs<"solana"> = {
@@ -91,8 +91,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet with device signer", () => {
-        it("should inject device signer for Solana wallets (validation is server-side)", async () => {
-            const solanaWalletWithDevice = {
+        it("does not inject device signer for Solana wallets at creation time (deferred to try-and-fallback post-creation flow)", async () => {
+            const solanaWallet = {
                 chainType: "solana" as const,
                 type: "smart" as const,
                 address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
@@ -103,31 +103,17 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         address: "AdminSignerAddress123",
                         locator: "external-wallet:AdminSignerAddress123",
                     },
-                    delegatedSigners: [
-                        {
-                            type: "device" as const,
-                            locator: "device:someLocator",
-                        },
-                    ],
+                    delegatedSigners: [],
                 },
                 createdAt: Date.now(),
             } as GetWalletSuccessResponse;
 
-            mockApiClient.createWallet.mockResolvedValue(solanaWalletWithDevice);
-
-            // Create a valid P-256 public key in base64 format:
-            // 0x04 (1 byte) + 32 bytes x + 32 bytes y = 65 bytes total
-            const publicKeyBytes = Buffer.concat([
-                Buffer.from([0x04]), // uncompressed point indicator
-                Buffer.alloc(32, 1), // x coordinate (32 bytes)
-                Buffer.alloc(32, 2), // y coordinate (32 bytes)
-            ]);
-            const publicKeyBase64 = publicKeyBytes.toString("base64");
+            mockApiClient.createWallet.mockResolvedValue(solanaWallet);
 
             const mockDeviceSignerKeyStorage = {
                 getKey: vi.fn().mockResolvedValue(null),
                 saveKey: vi.fn().mockResolvedValue(undefined),
-                generateKey: vi.fn().mockResolvedValue(publicKeyBase64),
+                generateKey: vi.fn(),
                 getDeviceName: vi.fn().mockReturnValue("Unknown Device"),
             };
 
@@ -144,25 +130,16 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await walletFactory.createWallet(args);
 
-            // Verify that a device signer was added to delegatedSigners
+            // Device signers must not be sent in the Solana createWallet call: some underlying
+            // providers reject device signers and the SDK cannot tell which provider backs the
+            // wallet upfront. The post-creation flow registers device signers and falls back
+            // to the recovery signer when the backend returns DEVICE_SIGNER_NOT_SUPPORTED.
             const call = mockApiClient.createWallet.mock.calls[0]?.[0];
-            expect(call?.config?.delegatedSigners).toBeDefined();
-            expect(call?.config?.delegatedSigners).toHaveLength(1);
-            expect(call?.config?.delegatedSigners?.[0]).toEqual(
-                expect.objectContaining({
-                    signer: expect.objectContaining({
-                        type: "device",
-                        publicKey: expect.objectContaining({
-                            x: expect.any(String),
-                            y: expect.any(String),
-                        }),
-                        name: "Unknown Device",
-                    }),
-                })
-            );
+            expect(call?.config?.delegatedSigners ?? []).toHaveLength(0);
+            expect(mockDeviceSignerKeyStorage.generateKey).not.toHaveBeenCalled();
         });
 
-        it("should inject device signer for EVM wallets when deviceSignerKeyStorage is provided", async () => {
+        it("injects device signer for EVM wallets when deviceSignerKeyStorage is provided", async () => {
             const evmWallet = {
                 chainType: "evm" as const,
                 type: "smart" as const,
@@ -235,7 +212,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("getWallet validation", () => {
-        it("should get wallet without signer (device signer resolved automatically)", async () => {
+        it("gets wallet without signer (device signer resolved automatically)", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletArgsFor<"solana"> = {
@@ -252,7 +229,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 mockApiClient.isServerSide = false;
             });
 
-            it("should fetch wallet with single parameter (args only)", async () => {
+            it("fetches wallet with single parameter (args only)", async () => {
                 mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
                 const args: WalletArgsFor<"solana"> = {
@@ -266,7 +243,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(wallet.address).toBe("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
             });
 
-            it("should construct correct locator for EVM chains", async () => {
+            it("constructs correct locator for EVM chains", async () => {
                 const evmWallet = {
                     chainType: "evm" as const,
                     type: "smart" as const,
@@ -292,7 +269,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:evm:smart");
             });
 
-            it("should construct correct locator for Stellar chains", async () => {
+            it("constructs correct locator for Stellar chains", async () => {
                 const stellarWallet = {
                     chainType: "stellar" as const,
                     type: "smart" as const,
@@ -318,7 +295,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:stellar:smart");
             });
 
-            it("should throw when walletLocator parameter is used on client side", async () => {
+            it("throws when walletLocator parameter is used on client side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
                 };
@@ -328,7 +305,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 );
             });
 
-            it("should throw error when wallet not found", async () => {
+            it("throws error when wallet not found", async () => {
                 mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
 
                 const args: WalletArgsFor<"solana"> = {
@@ -344,7 +321,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 mockApiClient.isServerSide = true;
             });
 
-            it("should fetch wallet with walletLocator parameter", async () => {
+            it("fetches wallet with walletLocator parameter", async () => {
                 mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
                 const walletLocator = "email:user@example.com:solana:smart";
@@ -359,7 +336,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 expect(wallet.address).toBe("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
             });
 
-            it("should work with different walletLocator formats", async () => {
+            it("works with different walletLocator formats", async () => {
                 mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
                 const testCases = [
@@ -378,7 +355,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 }
             });
 
-            it("should throw error when walletLocator is not provided on server side", async () => {
+            it("throws error when walletLocator is not provided on server side", async () => {
                 const args: WalletArgsFor<"solana"> = {
                     chain: "solana",
                 };
@@ -390,7 +367,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                 );
             });
 
-            it("should throw error when wallet not found", async () => {
+            it("throws error when wallet not found", async () => {
                 mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
 
                 const args: WalletArgsFor<"solana"> = {
@@ -448,7 +425,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should allow mainnet chain in production environment without warning", async () => {
+        it("allows mainnet chain in production environment without warning", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"base"> = {
@@ -462,7 +439,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should throw error when using testnet chain in production environment", async () => {
+        it("throws error when using testnet chain in production environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -475,7 +452,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should allow solana chain in production environment (no validation)", async () => {
+        it("allows solana chain in production environment (no validation)", async () => {
             const solanaWallet = {
                 chainType: "solana" as const,
                 type: "smart" as const,
@@ -504,7 +481,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should allow stellar chain in production environment (no validation)", async () => {
+        it("allows stellar chain in production environment (no validation)", async () => {
             const stellarWallet = {
                 chainType: "stellar" as const,
                 type: "smart" as const,
@@ -547,7 +524,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should allow testnet chain in staging environment without warning", async () => {
+        it("allows testnet chain in staging environment without warning", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -561,7 +538,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should auto-convert mainnet chain to testnet equivalent in staging environment", async () => {
+        it("auto-converts mainnet chain to testnet equivalent in staging environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"base"> = {
@@ -578,7 +555,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             });
         });
 
-        it("should warn for mainnet chain with no testnet equivalent in staging", async () => {
+        it("warns for mainnet chain with no testnet equivalent in staging", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"arbitrumnova"> = {
@@ -608,7 +585,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should allow testnet chain in development environment without warning", async () => {
+        it("allows testnet chain in development environment without warning", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"polygon-amoy"> = {
@@ -622,7 +599,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should auto-convert mainnet chain to testnet equivalent in development environment", async () => {
+        it("auto-converts mainnet chain to testnet equivalent in development environment", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"polygon"> = {
@@ -653,7 +630,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should throw error when using testnet chain in production with getWallet", async () => {
+        it("throws error when using testnet chain in production with getWallet", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletArgsFor<"base-sepolia"> = {
@@ -665,7 +642,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             );
         });
 
-        it("should allow mainnet chain in production with getWallet without warning", async () => {
+        it("allows mainnet chain in production with getWallet without warning", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockEvmWallet);
 
             const mainnetArgs: WalletArgsFor<"base"> = {
@@ -693,7 +670,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should throw error when using testnet chain in production with createWallet", async () => {
+        it("throws error when using testnet chain in production with createWallet", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockEvmWallet);
 
             const testnetArgs: WalletCreateArgs<"base-sepolia"> = {
@@ -721,7 +698,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
         });
 
-        it("should throw InvalidChainError for unknown chain in createWallet", async () => {
+        it("throws InvalidChainError for unknown chain in createWallet", async () => {
             const args = {
                 chain: "not-a-chain" as any,
                 recovery: {
@@ -735,7 +712,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidChainError for unknown chain in getWallet", async () => {
+        it("throws InvalidChainError for unknown chain in getWallet", async () => {
             const args = {
                 chain: "not-a-chain" as any,
             };
@@ -745,7 +722,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             expect(mockApiClient.getWallet).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidChainError for unknown chain in server-side getWallet", async () => {
+        it("throws InvalidChainError for unknown chain in server-side getWallet", async () => {
             mockApiClient.isServerSide = true;
 
             const args = {
@@ -756,7 +733,7 @@ describe("WalletFactory - Chain Environment Validation", () => {
             expect(mockApiClient.getWallet).not.toHaveBeenCalled();
         });
 
-        it("should throw InvalidChainError for unknown chain regardless of environment", async () => {
+        it("throws InvalidChainError for unknown chain regardless of environment", async () => {
             // Verify that the isValidChain guard fires before the environment check
             mockApiClient.environment = APIKeyEnvironmentPrefix.PRODUCTION;
             walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
@@ -826,7 +803,7 @@ describe("WalletFactory - Server Signer", () => {
     });
 
     describe("createWallet with server recovery", () => {
-        it("should send server type as admin signer to the API", async () => {
+        it("sends server type as admin signer to the API", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockServerWalletResponse);
 
             const args: WalletCreateArgs<"base-sepolia"> = {
@@ -850,7 +827,7 @@ describe("WalletFactory - Server Signer", () => {
     });
 
     describe("createWallet with server signer as delegated signer", () => {
-        it("should resolve server signer to server:<derivedAddress> in signers", async () => {
+        it("resolves server signer to server:<derivedAddress> in signers", async () => {
             const walletResponse = {
                 ...mockServerWalletResponse,
                 config: {
@@ -899,7 +876,7 @@ describe("WalletFactory - Server Signer", () => {
     });
 
     describe("getWallet with server signer", () => {
-        it("should return a wallet when API returns server admin signer type", async () => {
+        it("returns a wallet when API returns server admin signer type", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockServerWalletResponse);
 
             const args: WalletArgsFor<"base-sepolia"> = {

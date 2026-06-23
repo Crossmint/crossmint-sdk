@@ -1,0 +1,164 @@
+name: SDK Reference Docs Generate
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "packages/wallets/src/**"
+            - "packages/wallets/typedoc.json"
+            - "packages/wallets/tsconfig.typedoc.json"
+            - "packages/wallets/typedoc-custom-plugin.mjs"
+            - "packages/client/ui/react-ui/src/**"
+            - "packages/client/ui/react-ui/scripts/**"
+            - "packages/client/ui/react-ui/examples.json"
+            - "packages/client/ui/react-ui/typedoc.json"
+            - "packages/client/ui/react-ui/tsconfig.typedoc.json"
+            - "packages/client/ui/react-native/src/**"
+            - "packages/client/ui/react-native/scripts/**"
+            - "packages/client/ui/react-native/examples.json"
+            - "packages/client/ui/react-native/typedoc.json"
+            - "packages/client/ui/react-native/tsconfig.typedoc.json"
+            - "packages/client/ui/scripts/**"
+            - "packages/client/react-base/src/**"
+            - "packages/client/base/src/types/embed/**"
+            - "packages/client/base/src/types/hosted/**"
+            - "packages/client/base/src/types/index.ts"
+            - "packages/common/base/src/types/uiconfig.ts"
+    workflow_dispatch:
+        inputs:
+            packages:
+                description: "Comma-separated list of packages to generate docs for (react-ui, react-native, node-wallets, react-checkout). Defaults to all."
+                required: false
+                default: "react-ui,react-native,node-wallets,react-checkout"
+                type: string
+
+permissions:
+    contents: read
+
+concurrency:
+    group: sdk-reference-docs-generate-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    generate-docs:
+        name: Generate SDK Reference Docs
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Build libraries
+              run: pnpm build:libs
+
+            - name: Parse package selection
+              id: packages
+              env:
+                  PACKAGES_INPUT: ${{ inputs.packages || 'react-ui,react-native,node-wallets,react-checkout' }}
+              run: |
+                  PACKAGES="$PACKAGES_INPUT"
+                  echo "react_ui=false" >> $GITHUB_OUTPUT
+                  echo "react_native=false" >> $GITHUB_OUTPUT
+                  echo "node_wallets=false" >> $GITHUB_OUTPUT
+                  echo "react_checkout=false" >> $GITHUB_OUTPUT
+                  if echo ",$PACKAGES," | grep -q ",react-ui,"; then
+                    echo "react_ui=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",react-native,"; then
+                    echo "react_native=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",node-wallets,"; then
+                    echo "node_wallets=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",react-checkout,"; then
+                    echo "react_checkout=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Generate React UI docs (wallets)
+              if: steps.packages.outputs.react_ui == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs --product wallets
+
+            - name: Generate React UI docs (checkout)
+              if: steps.packages.outputs.react_checkout == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs --product checkout
+
+            - name: Generate React Native docs
+              if: steps.packages.outputs.react_native == 'true'
+              working-directory: packages/client/ui/react-native
+              run: pnpm generate:docs
+
+            - name: Generate Node Wallets SDK docs
+              if: steps.packages.outputs.node_wallets == 'true'
+              working-directory: packages/wallets
+              run: |
+                  pnpm generate:docs
+                  if [ -f docs/globals.mdx ]; then
+                    mv docs/globals.mdx docs/reference.mdx
+                  fi
+                  if [ -f docs/README.mdx ]; then
+                    mv docs/README.mdx docs/overview.mdx
+                  fi
+
+            - name: Collect generated files
+              env:
+                  REACT_UI_ENABLED: ${{ steps.packages.outputs.react_ui }}
+                  REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.react_native }}
+                  NODE_WALLETS_ENABLED: ${{ steps.packages.outputs.node_wallets }}
+                  CHECKOUT_ENABLED: ${{ steps.packages.outputs.react_checkout }}
+              run: |
+                  mkdir -p sdk-reference/wallets/react
+                  mkdir -p sdk-reference/wallets/react-native
+                  mkdir -p sdk-reference/wallets/typescript
+                  mkdir -p sdk-reference/checkout/react
+
+                  if [ "$REACT_UI_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
+                    cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
+                  fi
+
+                  if [ "$REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/wallets ]; then
+                    cp -r packages/client/ui/react-native/docs/wallets/. sdk-reference/wallets/react-native/
+                  fi
+
+                  if [ "$NODE_WALLETS_ENABLED" == "true" ] && [ -d packages/wallets/docs ]; then
+                    cp -r packages/wallets/docs/. sdk-reference/wallets/typescript/
+                  fi
+
+                  if [ "$CHECKOUT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/checkout ]; then
+                    cp -r packages/client/ui/react-ui/docs/checkout/. sdk-reference/checkout/react/
+                  fi
+
+            - name: Verify at least one package was generated
+              id: verify
+              run: |
+                  if [ -z "$(find sdk-reference/ -name '*.mdx' -print -quit)" ]; then
+                    echo "No MDX files generated — no valid packages matched"
+                    exit 1
+                  fi
+
+            - name: Upload generated docs artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: sdk-reference-docs
+                  path: sdk-reference/
+                  retention-days: 7
+
+            - name: Generate App Token
+              id: generate_app_token
+              uses: actions/create-github-app-token@v2
+              with:
+                  app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
+                  private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
+                  owner: Paella-Labs
+                  repositories: crossbit-main
+
+            - name: Dispatch to crossbit-main
+              uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697  # v4
+              with:
+                  token: ${{ steps.generate_app_token.outputs.token }}
+                  repository: Paella-Labs/crossbit-main
+                  event-type: sdk-reference-docs-update
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''react-ui,react-native,node-wallets,react-checkout'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'

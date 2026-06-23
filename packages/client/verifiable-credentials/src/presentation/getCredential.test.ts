@@ -23,7 +23,7 @@ describe("getCredentialFromId", () => {
         jest.clearAllMocks();
     });
 
-    it("should fetch credential by id", async () => {
+    it("fetches credential by id", async () => {
         jest.spyOn(crossmintAPI, "getBaseUrl").mockReturnValue("test.com");
         const credential = await credentialService.getById("test-id");
         expect(credential).toEqual({ id: "test", type: "VerifiableCredential" });
@@ -33,7 +33,7 @@ describe("getCredentialFromId", () => {
         });
     });
 
-    it("should throw if fetch throws an error", async () => {
+    it("throws if fetch throws an error", async () => {
         jest.spyOn(crossmintAPI, "getBaseUrl").mockReturnValue("test-env");
         (fetch as jest.Mock).mockRejectedValue(new Error("Fetch error"));
         const credential = credentialService.getById("test-id");

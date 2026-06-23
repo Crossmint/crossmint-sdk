@@ -22,7 +22,7 @@ describe("NFTStatusService", () => {
         });
     });
 
-    it("should return false if NFT is not burnt", async () => {
+    it("returns false if NFT is not burnt", async () => {
         const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
@@ -34,7 +34,7 @@ describe("NFTStatusService", () => {
         expect(result).toBe(false);
     });
 
-    it("should return true if NFT is burnt", async () => {
+    it("returns true if NFT is burnt", async () => {
         const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
@@ -46,7 +46,7 @@ describe("NFTStatusService", () => {
         expect(result).toBe(true);
     });
 
-    it("should return true if NFT is burnt", async () => {
+    it("returns true if NFT is burnt", async () => {
         const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
@@ -58,7 +58,7 @@ describe("NFTStatusService", () => {
         expect(result).toBe(true);
     });
 
-    it("should throw error if chain is not polygon", async () => {
+    it("throws error if chain is not polygon", async () => {
         const mockNFT: Nft = {
             chain: "someChain" as any,
             contractAddress: "mockContractAddress",
@@ -70,7 +70,7 @@ describe("NFTStatusService", () => {
         );
     });
 
-    it("should throw error if failed to check if NFT is burned", async () => {
+    it("throws error if failed to check if NFT is burned", async () => {
         const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",

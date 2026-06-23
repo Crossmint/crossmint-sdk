@@ -31,7 +31,7 @@ describe("SolanaWallet - sendTransaction()", () => {
     });
 
     describe("success cases", () => {
-        it("should send transaction with serialized transaction string", async () => {
+        it("sends transaction with serialized transaction string", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -75,7 +75,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("should send transaction with serialized transaction string", async () => {
+        it("sends transaction with serialized transaction string", async () => {
             const serializedTx =
                 "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 
@@ -120,7 +120,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("should return prepared transaction with prepareOnly", async () => {
+        it("returns prepared transaction with prepareOnly", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -147,7 +147,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("should handle additional signers", async () => {
+        it("handles additional signers", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -180,7 +180,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             expect(result.transactionId).toBe("txn-sol-with-signers");
         });
 
-        it("should use custom signer when signer is provided", async () => {
+        it("uses custom signer when signer is provided", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -222,7 +222,7 @@ describe("SolanaWallet - sendTransaction()", () => {
     });
 
     describe("error cases", () => {
-        it("should throw TransactionNotCreatedError when API returns error", async () => {
+        it("throws TransactionNotCreatedError when API returns error", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
             const errorResponse = {
                 error: {
@@ -243,7 +243,7 @@ describe("SolanaWallet - sendTransaction()", () => {
             } catch {}
         });
 
-        it("should throw error when transaction approval fails", async () => {
+        it("throws error when transaction approval fails", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
             const mockTransactionResponse = {
                 id: "txn-fail",
@@ -283,7 +283,7 @@ describe("SolanaWallet - from()", () => {
         mockApiClient = createMockApiClient();
     });
 
-    it("should create SolanaWallet from valid Solana wallet", async () => {
+    it("creates SolanaWallet from valid Solana wallet", async () => {
         const wallet = await createMockWallet("solana", mockApiClient);
         const solanaWallet = SolanaWallet.from(wallet);
 
@@ -291,7 +291,7 @@ describe("SolanaWallet - from()", () => {
         expect(solanaWallet.chain).toBe("solana");
     });
 
-    it("should throw error when wallet is not Solana", async () => {
+    it("throws error when wallet is not Solana", async () => {
         const { isValidSolanaAddress } = await import("@crossmint/common-sdk-base");
         vi.mocked(isValidSolanaAddress).mockReturnValueOnce(false);
 
@@ -300,7 +300,7 @@ describe("SolanaWallet - from()", () => {
         expect(() => SolanaWallet.from(evmWallet)).toThrow("Wallet is not a Solana wallet");
     });
 
-    it("should throw error when address is invalid Solana address", async () => {
+    it("throws error when address is invalid Solana address", async () => {
         const { isValidSolanaAddress } = await import("@crossmint/common-sdk-base");
         vi.mocked(isValidSolanaAddress).mockReturnValueOnce(false);
 

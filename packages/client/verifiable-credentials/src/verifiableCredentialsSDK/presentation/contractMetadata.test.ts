@@ -27,7 +27,7 @@ describe("getMetadata", () => {
             configManager.init({ ipfsGateways: ["gateway1", "gateway2"] });
         });
 
-        it("should fetch metadata", async () => {
+        it("fetches metadata", async () => {
             const mockResponse = { a: "a" };
             (IPFSService.prototype.getFile as jest.Mock).mockResolvedValue(mockResponse);
 
@@ -38,7 +38,7 @@ describe("getMetadata", () => {
     });
 
     describe("getContractWithVCMetadata", () => {
-        it("should fetch contract with VC metadata", async () => {
+        it("fetches contract with VC metadata", async () => {
             const mockResponse = {
                 a: "a",
                 credentialMetadata: {

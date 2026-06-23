@@ -23,7 +23,7 @@ describe("Lit", () => {
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
     });
 
-    it("should connect to the Lit network", async () => {
+    it("connects to the Lit network", async () => {
         const mockConnect = jest.fn();
         litSpy.mockImplementation(() => {
             return { connect: mockConnect } as any;
@@ -33,7 +33,7 @@ describe("Lit", () => {
         expect(mockConnect).toHaveBeenCalled();
     });
 
-    it("should throw an error when decryption fails", async () => {
+    it("throws an error when decryption fails", async () => {
         const mockDecryptZipFileWithMetadata = jest.fn().mockResolvedValue({});
         jest.spyOn(LitJsSdk, "decryptZipFileWithMetadata").mockImplementation(mockDecryptZipFileWithMetadata);
 
@@ -42,7 +42,7 @@ describe("Lit", () => {
         );
     });
 
-    it("should decrypt a base64 ciphertext", async () => {
+    it("decrypts a base64 ciphertext", async () => {
         const mockDecryptZipFileWithMetadata = jest.fn().mockResolvedValue({
             decryptedFile: [1, 2, 3],
         });

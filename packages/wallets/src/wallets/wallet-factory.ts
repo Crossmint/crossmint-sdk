@@ -23,7 +23,7 @@ import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
-import { deriveServerSignerDetails } from "../signers/server";
+import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
 
@@ -125,11 +125,16 @@ export class WalletFactory {
             );
         }
 
-        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side)
-        const signersWithDevice =
-            validatedArgs.options?.deviceSignerKeyStorage != null
-                ? this.ensureDeviceSignerInSigners(validatedArgs)
-                : validatedArgs.signers ?? [];
+        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side).
+        // Solana smart wallets are excluded: some underlying providers reject device signers and
+        // the SDK cannot tell which provider backs the wallet upfront. We defer device-signer
+        // registration to the wallet's post-creation flow, where a rejection with the stable
+        // DEVICE_SIGNER_NOT_SUPPORTED error code is caught and falls back to the recovery signer.
+        const shouldEagerlyAddDeviceSigner =
+            validatedArgs.options?.deviceSignerKeyStorage != null && validatedArgs.chain !== "solana";
+        const signersWithDevice = shouldEagerlyAddDeviceSigner
+            ? this.ensureDeviceSignerInSigners(validatedArgs)
+            : validatedArgs.signers ?? [];
         const builtSigners = await this.registerSigners(
             signersWithDevice,
             validatedArgs.chain,
@@ -195,7 +200,8 @@ export class WalletFactory {
                 ? createArgs.recovery
                 : apiRecovery;
 
-        let signers = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        let signers = apiDelegatedSigners;
         if (
             signers != null &&
             signers.length === 1 &&
@@ -203,6 +209,19 @@ export class WalletFactory {
         ) {
             signers = createArgs.signers as SignerResponse[];
         }
+
+        // Preserve the API-sourced server signer recovery address so the wallet can identify
+        // legacy derivations even when the user-provided config replaces the API one.
+        const apiRecoveryServerSignerAddress =
+            apiRecovery.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
+                ? (apiRecovery as { address: string }).address
+                : undefined;
+
+        // Preserve the API-sourced server signer delegated addresses so the wallet can identify
+        // legacy derivations even when the user-provided config replaces the API one.
+        const apiDelegatedServerSignerAddresses = (apiDelegatedSigners ?? [])
+            .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
+            .map((s) => (s as { address: string }).address);
 
         const wallet = new Wallet(
             {
@@ -212,6 +231,8 @@ export class WalletFactory {
                 options: args.options,
                 alias: args.alias,
                 recovery,
+                apiRecoveryServerSignerAddress,
+                apiDelegatedServerSignerAddresses,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
             },
             this.apiClient
@@ -342,13 +363,16 @@ export class WalletFactory {
                     return true;
                 }
                 if (inputSigner.type === "server") {
-                    const { derivedAddress } = deriveServerSignerDetails(
+                    const { primary, legacy } = deriveServerSignerCandidates(
                         inputSigner,
                         chain,
                         this.apiClient.projectId,
                         this.apiClient.environment
                     );
-                    return existingSigner.locator === `server:${derivedAddress}`;
+                    return (
+                        existingSigner.locator === `server:${primary.derivedAddress}` ||
+                        (legacy != null && existingSigner.locator === `server:${legacy.derivedAddress}`)
+                    );
                 }
                 return existingSigner.locator === getSignerLocator(inputSigner);
             });

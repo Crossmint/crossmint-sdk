@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-base",
-    "version": "2.3.4",
+    "version": "2.4.2",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -24,12 +24,12 @@
         "@crossmint/common-sdk-base": "workspace:*",
         "@datadog/browser-logs": "6.24.1",
         "exponential-backoff": "3.1.1",
-        "uuid": "9.0.1",
+        "uuid": "11.1.1",
         "zod": "3.22.4"
     },
     "devDependencies": {
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.98.1",
-        "@types/uuid": "9.0.4"
+        "@types/uuid": "11.0.0"
     }
 }

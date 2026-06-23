@@ -3,7 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse } from "../api";
+import type { CreateTransactionSuccessResponse, Scope } from "../api";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
@@ -18,7 +18,7 @@ import type {
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
-export type { Transfers } from "../api/types";
+export type { Transfers, Scope, TransferScope } from "../api/types";
 
 export type PrepareOnly<T extends boolean = boolean> = {
     prepareOnly: T;
@@ -36,7 +36,9 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly;
 
-export type AddSignerOptions = PrepareOnly;
+export type AddSignerOptions = PrepareOnly & {
+    scopes?: Scope[];
+};
 
 export type RemoveSignerOptions = PrepareOnly;
 
@@ -126,6 +128,8 @@ export type FormattedEVMTransaction =
 
 export type SignerStatus = "success" | "active" | "pending" | "awaiting-approval" | "failed";
 
+export type PendingSignerOperation = { type: "signature" | "transaction"; id: string };
+
 export type SignerInput = {
     signer: string | ServerSignerConfig;
 };
@@ -139,18 +143,21 @@ export type Signer =
           validatorContractVersion: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "api-key";
           address: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "external-wallet";
           address: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "email";
@@ -158,6 +165,7 @@ export type Signer =
           address: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "phone";
@@ -165,18 +173,21 @@ export type Signer =
           address: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "device";
           publicKey: { x: string; y: string };
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       }
     | {
           type: "server";
           address: string;
           locator: string;
           status: SignerStatus;
+          scopes?: Scope[];
       };
 
 // Approvals

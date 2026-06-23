@@ -5,8 +5,9 @@
  * Pipeline: TypeDoc (api.json) + examples.json → Mintlify MDX pages
  *
  * Props, methods, and descriptions are auto-extracted from source JSDoc.
- * MANUAL_RETURNS and EXPANDABLE_CHILDREN are the only hardcoded sections —
- * needed because TypeDoc can't resolve types across packages in our monorepo.
+ * Expandable sub-properties are auto-resolved from TypeDoc type references
+ * where possible. MANUAL_RETURNS and FALLBACK_EXPANDABLE_CHILDREN handle
+ * edge cases where TypeDoc can't resolve types (e.g. cross-package generics).
  *
  * This module exports a `generate(config)` function used by platform-specific
  * callers in react-ui/ and react-native/.
@@ -20,10 +21,9 @@ import { join, resolve } from "path";
 // =============================================================================
 
 /**
- * Expandable sub-properties for props/returns that reference cross-package types
- * TypeDoc can't inline. Keyed by the property name within a component/hook.
- *
- * createOnLogin and getOrCreateWallet share the same WalletArgsFor<Chain> shape.
+ * Fallback expandable sub-properties for generic cross-package types that
+ * TypeDoc can't resolve even with path mappings (e.g. WalletArgsFor<Chain>).
+ * The auto-resolver handles most cases; these are only used when it fails.
  */
 const WALLET_CREATE_ARGS_CHILDREN = [
     {
@@ -267,49 +267,177 @@ function buildFieldsSection(
     { skipChildren = false, expandableTitle = "properties", showRequired = true } = {}
 ) {
     if (!members?.length) return "";
-    const L = [];
-    for (const m of members) {
-        if (skipChildren && m.name === "children") continue;
-        const typeStr = escapeForAttr(renderType(m.type));
-        const comment = getComment(m);
-        const requiredAttr = showRequired && !m.flags?.isOptional ? " required" : "";
 
-        L.push(`<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
-        if (comment) L.push(`  ${comment}`);
+    function renderFields(fields, indent = 0) {
+        if (!Array.isArray(fields)) return "";
+        const pad = " ".repeat(indent);
+        const L = [];
+        for (const m of fields) {
+            if (skipChildren && m.name === "children") continue;
+            const typeStr = escapeForAttr(renderType(m.type));
+            const comment = getComment(m);
+            const requiredAttr = showRequired && !m.flags?.isOptional ? " required" : "";
+            const childArray = Array.isArray(m.children) ? m.children : [];
 
-        if (m.children?.length) {
-            L.push(`  <Expandable title="${expandableTitle}">`);
-            for (const sub of m.children) {
-                const subType = escapeForAttr(renderType(sub.type));
-                const subComment = getComment(sub);
-                const subReq = showRequired && !sub.flags?.isOptional ? " required" : "";
-                L.push(`    <ResponseField name="${sub.name}" type="${subType}"${subReq}>`);
-                if (subComment) L.push(`      ${subComment}`);
-                L.push(`    </ResponseField>`);
+            const hasContent = comment || childArray.length;
+            if (!hasContent) {
+                L.push(`${pad}<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr} />`);
+            } else {
+                L.push(`${pad}<ResponseField name="${m.name}" type="${typeStr}"${requiredAttr}>`);
+                if (comment) L.push(`${pad}  ${comment}`);
+
+                if (childArray.length) {
+                    L.push(`${pad}  <Expandable title="${expandableTitle}">`);
+                    L.push(renderFields(childArray, indent + 4));
+                    L.push(`${pad}  </Expandable>`);
+                }
+
+                L.push(`${pad}</ResponseField>`);
             }
-            L.push(`  </Expandable>`);
+            if (indent === 0) L.push("");
         }
-
-        L.push(`</ResponseField>`);
-        L.push("");
+        return L.join("\n");
     }
-    return L.join("\n");
+
+    return renderFields(members);
 }
 
 /**
- * Attaches expandable children to props/return members whose names
- * have a matching entry. This enriches cross-package reference types
- * with expandable sub-property documentation.
+ * Auto-resolves expandable children from TypeDoc type references.
+ * For each member whose type is a reference to a known interface/type-alias
+ * with properties, attaches those properties as `children` for rendering
+ * as expandable sub-fields.
+ *
+ * Falls back to the manual `expandableChildren` map for types that
+ * TypeDoc can't resolve (e.g. cross-package generics like WalletArgsFor<Chain>).
  */
-function attachExpandableChildren(members, expandableChildren) {
-    if (!members?.length) return members;
+function attachExpandableChildren(members, expandableChildren, { byId, allExports }, depth = 0) {
+    const MAX_DEPTH = 3;
+    if (!Array.isArray(members) || !members.length || depth >= MAX_DEPTH) return members;
     return members.map((m) => {
-        const children = expandableChildren[m.name];
-        if (children && !m.children?.length) {
+        let children = m.children;
+
+        if (!children?.length) {
+            // Try auto-resolving from TypeDoc type reference
+            const resolved = autoResolveChildren(m.type, { byId, allExports });
+            if (resolved?.length) {
+                children = resolved;
+            } else {
+                // Fallback: use manual expandableChildren map (keyed by prop name)
+                const manual = expandableChildren[m.name];
+                if (manual) children = manual;
+            }
+        }
+
+        // Recurse into children to resolve their sub-properties too
+        if (children?.length) {
+            children = attachExpandableChildren(children, expandableChildren, { byId, allExports }, depth + 1);
             return { ...m, children };
         }
+
         return m;
     });
+}
+
+/**
+ * Given a TypeDoc type descriptor, attempts to resolve it to a list of
+ * child property members. Works for:
+ * - Direct references to interfaces/type-aliases with children
+ * - Reflection types (inline object types)
+ * - Intersection types (merges properties from all branches)
+ * - Union types (merges unique props, filters never-typed discriminators)
+ * - Array types (resolves the element type)
+ * - Reference → type alias chains (recursively resolves the underlying type)
+ *
+ * Returns null if the type can't be resolved to properties.
+ */
+function autoResolveChildren(type, { byId, allExports }, depth = 0) {
+    const MAX_RESOLVE_DEPTH = 10;
+    if (!type || depth >= MAX_RESOLVE_DEPTH) return null;
+
+    if (type.type === "reflection" && type.declaration?.children?.length) {
+        return type.declaration.children;
+    }
+
+    if (type.type === "reference" && type.target != null) {
+        // Try numeric ID first
+        if (typeof type.target === "number") {
+            const resolved = byId.get(type.target);
+            if (resolved?.children?.length) return resolved.children;
+            // Type alias — recurse into the underlying type (handles unions, reflections, etc.)
+            if (resolved?.type) {
+                return autoResolveChildren(resolved.type, { byId, allExports }, depth + 1);
+            }
+        }
+
+        // Fallback: look up by name in flattened exports
+        const name = type.target?.qualifiedName || type.name;
+        if (name) {
+            const matches = (allExports || []).filter((c) => c.name === name && (c.kind === 256 || c.kind === 2097152));
+            for (const match of matches) {
+                if (match.children?.length) return match.children;
+                if (match.type) {
+                    const result = autoResolveChildren(match.type, { byId, allExports }, depth + 1);
+                    if (result) return result;
+                }
+            }
+        }
+    }
+
+    if (type.type === "intersection" && type.types?.length) {
+        const merged = [];
+        for (const t of type.types) {
+            const children = autoResolveChildren(t, { byId, allExports }, depth + 1);
+            if (children) merged.push(...children);
+        }
+        if (!merged.length) return null;
+        const unique = new Map();
+        for (const c of merged) {
+            if (!unique.has(c.name)) unique.set(c.name, c);
+        }
+        return [...unique.values()];
+    }
+
+    if (type.type === "union" && type.types?.length) {
+        const isNeverType = (prop) =>
+            prop.type?.type === "intrinsic" && (prop.type.name === "undefined" || prop.type.name === "never");
+
+        const branchProps = [];
+        for (const ut of type.types) {
+            const children = autoResolveChildren(ut, { byId, allExports }, depth + 1);
+            if (children?.length) {
+                branchProps.push(children.filter((p) => !isNeverType(p)));
+            }
+        }
+        if (!branchProps.length) return null;
+
+        const seen = new Map();
+        const branchCount = branchProps.length;
+        for (const branch of branchProps) {
+            for (const prop of branch) {
+                if (!seen.has(prop.name)) {
+                    seen.set(prop.name, { prop, count: 1 });
+                } else {
+                    seen.get(prop.name).count++;
+                }
+            }
+        }
+        const merged = [];
+        for (const { prop, count } of seen.values()) {
+            if (count < branchCount && !prop.flags?.isOptional) {
+                merged.push({ ...prop, flags: { ...prop.flags, isOptional: true } });
+            } else {
+                merged.push(prop);
+            }
+        }
+        return merged.length ? merged : null;
+    }
+
+    if (type.type === "array" && type.elementType) {
+        return autoResolveChildren(type.elementType, { byId, allExports }, depth + 1);
+    }
+
+    return null;
 }
 
 // =============================================================================
@@ -353,6 +481,18 @@ export function generate(config) {
     // TypeDoc JSON helpers (scoped to this api.json)
     // =========================================================================
 
+    // When multiple entry points are used, TypeDoc wraps exports in module
+    // nodes (kind: 2). Flatten all top-level modules so findByName can locate
+    // exports regardless of module structure.
+    const allExports = [];
+    for (const child of api.children || []) {
+        if (child.kind === 2 && child.children?.length) {
+            allExports.push(...child.children);
+        } else {
+            allExports.push(child);
+        }
+    }
+
     const byId = new Map();
     (function index(node) {
         if (node.id != null) byId.set(node.id, node);
@@ -360,7 +500,7 @@ export function generate(config) {
     })(api);
 
     function findByName(name, kind) {
-        return api.children.find((c) => c.name === name && (kind == null || c.kind === kind));
+        return allExports.find((c) => c.name === name && (kind == null || c.kind === kind));
     }
 
     // =========================================================================
@@ -386,32 +526,100 @@ export function generate(config) {
                 allProps.push(...t.declaration.children);
             } else if (t.type === "intersection") {
                 t.types.forEach(collectProps);
+            } else if (t.type === "union") {
+                // For union types (A | B), merge all unique props from all branches.
+                // Props absent from a branch appear as intrinsic "undefined" (TypeDoc's serialization
+                // of `never`/missing). These are discriminators — skip them so the merged output only
+                // contains props that are actually defined in at least one branch.
+                // Props present in all branches keep their required status; others become optional.
+                const isNeverType = (prop) =>
+                    prop.type?.type === "intrinsic" && (prop.type.name === "undefined" || prop.type.name === "never");
+
+                const branchProps = [];
+                for (const ut of t.types) {
+                    const branch = [];
+                    const saved = allProps;
+                    allProps = branch;
+                    collectProps(ut);
+                    allProps = saved;
+                    branchProps.push(branch.filter((p) => !isNeverType(p)));
+                }
+                const seen = new Map();
+                const branchCount = branchProps.length;
+                for (const branch of branchProps) {
+                    for (const prop of branch) {
+                        if (!seen.has(prop.name)) {
+                            seen.set(prop.name, { prop, count: 1 });
+                        } else {
+                            seen.get(prop.name).count++;
+                        }
+                    }
+                }
+                // Props not in all branches become optional
+                for (const { prop, count } of seen.values()) {
+                    if (count < branchCount && !prop.flags?.isOptional) {
+                        allProps.push({ ...prop, flags: { ...prop.flags, isOptional: true } });
+                    } else {
+                        allProps.push(prop);
+                    }
+                }
             } else if (t.type === "reference" && t.target != null) {
                 const resolved = typeof t.target === "number" ? byId.get(t.target) : null;
                 if (resolved?.children) {
                     allProps.push(...resolved.children);
+                    return;
                 }
-                if (!resolved && t.name) {
-                    const byName = api.children.find(
-                        (c) => c.name === t.name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
+                // If resolved is a type alias, check its underlying type
+                if (resolved?.type) {
+                    collectProps(resolved.type);
+                    return;
+                }
+                // Fallback: target is an object descriptor or unresolved.
+                // Look up by qualifiedName/name; prefer the variant that has children.
+                const name = t.target?.qualifiedName || t.name;
+                if (name) {
+                    const matches = allExports.filter(
+                        (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
                     );
-                    if (byName?.children) {
-                        allProps.push(...byName.children);
+                    const withChildren = matches.find((m) => m.children?.length);
+                    if (withChildren) {
+                        allProps.push(...withChildren.children);
+                    } else {
+                        // Try resolving the type alias's underlying type
+                        const withType = matches.find((m) => m.type);
+                        if (withType) collectProps(withType.type);
                     }
                 }
             }
         }
         collectProps(type);
-        return allProps;
+        // Deduplicate by name (keep first occurrence)
+        const unique = new Map();
+        for (const p of allProps) {
+            if (!unique.has(p.name)) unique.set(p.name, p);
+        }
+        return [...unique.values()];
     }
 
     function extractReturnMembers(node) {
         const sig = node?.signatures?.[0];
         const retType = sig?.type;
         if (!retType) return [];
-        if (retType.type === "reference" && typeof retType.target === "number") {
-            const resolved = byId.get(retType.target);
-            return resolved?.children || [];
+        if (retType.type === "reference") {
+            if (typeof retType.target === "number") {
+                const resolved = byId.get(retType.target);
+                if (resolved?.children) return resolved.children;
+            }
+            // Fallback: target is an object descriptor (cross-package or unresolved local).
+            // Look up the type by name; prefer the variant that has children.
+            const name = retType.target?.qualifiedName || retType.name;
+            if (name) {
+                const matches = allExports.filter(
+                    (c) => c.name === name && (c.kind === KIND.INTERFACE || c.kind === KIND.TYPE_ALIAS)
+                );
+                const withChildren = matches.find((m) => m.children?.length);
+                if (withChildren) return withChildren.children;
+            }
         }
         if (retType.type === "reflection" && retType.declaration?.children) {
             return retType.declaration.children;
@@ -470,6 +678,12 @@ export function generate(config) {
     // Page generators
     // =========================================================================
 
+    function emitBanner(emit, product, pageName) {
+        if (!product.versionBanner) return;
+        emit(product.versionBanner.replaceAll("{page}", pageName));
+        emit("");
+    }
+
     function buildGetStarted(product) {
         const L = [];
         const emit = (...a) => L.push(a.join(""));
@@ -479,6 +693,7 @@ export function generate(config) {
         emit(`description: Installation and setup for the ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "get-started");
 
         // Version shield badge
         if (product.npmUrl && product.packageName) {
@@ -541,6 +756,7 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} context providers for ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "providers");
 
         const { providers } = classifyExports(product.exports);
 
@@ -551,12 +767,15 @@ export function generate(config) {
         });
         emit("");
 
+        let providerIdx = 0;
         for (const name of providers) {
             const node = findByName(name, KIND.FUNCTION);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (providerIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}`);
             emit("");
 
@@ -567,7 +786,7 @@ export function generate(config) {
             }
 
             let props = extractProps(node);
-            props = attachExpandableChildren(props, expandableChildren);
+            props = attachExpandableChildren(props, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(props, { skipChildren: true });
             if (fields) {
                 emit("### Props");
@@ -595,9 +814,11 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} hooks for ${product.description}`);
         emit("---");
         emit("");
+        emitBanner(emit, product, "hooks");
 
         const { hooks } = classifyExports(product.exports);
 
+        let hookIdx = 0;
         for (const name of hooks) {
             const aliases = product.aliases?.[name] || [];
 
@@ -605,8 +826,10 @@ export function generate(config) {
             if (!node) node = findByName(name, KIND.VARIABLE);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (hookIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}()`);
             emit("");
 
@@ -624,7 +847,7 @@ export function generate(config) {
             // Manual returns take priority — they exist precisely because
             // TypeDoc can't resolve the cross-package types
             let members = manualReturns[name] || extractReturnMembers(node);
-            members = attachExpandableChildren(members, expandableChildren);
+            members = attachExpandableChildren(members, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(members, { expandableTitle: "parameters", showRequired: false });
             if (fields) {
                 emit("### Returns");
@@ -685,12 +908,15 @@ export function generate(config) {
 
         const { components } = classifyExports(product.exports);
 
+        let componentIdx = 0;
         for (const name of components) {
             const node = findByName(name, KIND.FUNCTION);
             if (!node) continue;
 
-            emit("---");
-            emit("");
+            if (componentIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
             emit(`## ${name}`);
             emit("");
 
@@ -701,7 +927,7 @@ export function generate(config) {
             }
 
             let props = extractProps(node);
-            props = attachExpandableChildren(props, expandableChildren);
+            props = attachExpandableChildren(props, expandableChildren, { byId, allExports });
             const fields = buildFieldsSection(props, { skipChildren: true });
             if (fields) {
                 emit("### Props");

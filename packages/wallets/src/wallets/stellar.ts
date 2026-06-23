@@ -12,7 +12,6 @@ import type {
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
-import { deriveServerSignerDetails } from "../signers/server";
 import { walletsLogger } from "../logger";
 import type { ServerSignerConfig } from "../signers/types";
 
@@ -28,6 +27,8 @@ export class StellarWallet extends Wallet<StellarChain> {
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
                 recovery: Wallet.getRecovery(wallet),
+                apiRecoveryServerSignerAddress: Wallet.getApiRecoveryServerSignerAddress(wallet),
+                apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
             },
@@ -269,12 +270,12 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private resolveStellarSigner(signerOverride: string | ServerSignerConfig | undefined): string {
         if (signerOverride == null) {
-            return this.requireSigner().locator();
+            return this.signerManager.require().locator();
         }
         if (typeof signerOverride === "string") {
             return signerOverride;
         }
-        return `server:${deriveServerSignerDetails(signerOverride, this.chain, this.apiClient.projectId, this.apiClient.environment).derivedAddress}`;
+        return this.resolveServerSignerApiLocator(signerOverride);
     }
 }
 

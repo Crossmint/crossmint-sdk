@@ -28,17 +28,21 @@ export function BalanceCard({ wallet }: { wallet: any }) {
             {TOKENS.map((token) => (
                 <View key={token} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
                     <Text style={{ color: "#6B7280" }}>{token.toUpperCase()}</Text>
-                    <Text style={{ fontWeight: "500" }}>{balances[token] ?? "—"}</Text>
+                    <Text testID={`${token}-balance`} style={{ fontWeight: "500" }}>
+                        {balances[token] ?? "—"}
+                    </Text>
                 </View>
             ))}
             <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
                 <TouchableOpacity
+                    testID="fund-button"
                     style={{ backgroundColor: "#13b601", padding: 10, borderRadius: 8, flex: 1, alignItems: "center" }}
                     onPress={handleFund}
                 >
                     <Text style={{ color: "#fff", fontWeight: "500" }}>Fund 10 USDXM</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                    testID="refresh-balance-button"
                     style={{
                         backgroundColor: "#fff",
                         padding: 10,

@@ -37,6 +37,35 @@ export class AuthRejectedError extends Error {
     }
 }
 
+export class OtpValidationError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "OtpValidationError";
+        this.code = code;
+    }
+}
+
+export class SignerStatusError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "SignerStatusError";
+        this.code = code;
+    }
+}
+
+export class KeyExportError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "KeyExportError";
+        this.code = code;
+    }
+}
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
@@ -62,6 +91,11 @@ export type ApiKeySignerConfig = { type: "api-key" };
 export type ServerSignerConfig = {
     type: "server";
     secret: string;
+};
+
+export type DerivedServerSigner = {
+    derivedKeyBytes: Uint8Array;
+    derivedAddress: string;
 };
 
 export type ApiSourcedServerSignerConfig = {

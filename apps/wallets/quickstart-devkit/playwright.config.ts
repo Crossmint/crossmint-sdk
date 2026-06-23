@@ -5,7 +5,7 @@ import path from "path";
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
-    testDir: "./e2e",
+    testDir: "./tests",
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: 1,
@@ -27,8 +27,8 @@ export default defineConfig({
         // Smoke tests - fast, single browser, serial execution
         {
             name: "smoke",
-            testDir: "./e2e/smoke-tests",
-            testMatch: "smoke.spec.ts",
+            testDir: "./tests/smoke",
+            testMatch: "**/*.spec.ts",
             fullyParallel: false,
             retries: 0, // No retries to avoid re-running passed tests in serial mode
             timeout: 300000, // 5 minutes for smoke tests
@@ -40,23 +40,26 @@ export default defineConfig({
         // Full e2e tests - multiple browsers, parallel execution
         {
             name: "chromium",
-            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
+            testDir: "./tests/e2e",
+            testMatch: "**/*.spec.ts",
             use: { ...devices["Desktop Chrome"] },
         },
         {
             name: "firefox",
-            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
+            testDir: "./tests/e2e",
+            testMatch: "**/*.spec.ts",
             use: { ...devices["Desktop Firefox"] },
         },
         {
             name: "webkit",
-            testMatch: /^(?!.*smoke)(?!.*\/sdk\/).*\.spec\.ts$/, // Exclude smoke tests and SDK-only tests
+            testDir: "./tests/e2e",
+            testMatch: "**/*.spec.ts",
             use: { ...devices["Desktop Safari"] },
         },
         // SDK integration tests — no browser, tests SDK classes directly
         {
             name: "sdk",
-            testDir: "./e2e/sdk",
+            testDir: "./tests/sdk",
             testMatch: "**/*.spec.ts",
             fullyParallel: false,
             retries: 1,

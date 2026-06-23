@@ -3,7 +3,7 @@ export * from "./hooks";
 export * from "./providers";
 export * from "./types/wallet";
 
-export type { LoginMethod } from "@crossmint/client-sdk-react-base";
+export type { CrossmintWalletBaseContext, LoginMethod } from "@crossmint/client-sdk-react-base";
 export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {

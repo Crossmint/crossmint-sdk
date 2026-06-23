@@ -40,6 +40,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
         <View style={{ backgroundColor: "#F7F8FA", borderRadius: 12, padding: 16 }}>
             <Text style={{ fontSize: 12, color: "#6B7280", textTransform: "uppercase" }}>Approval Test</Text>
             <TextInput
+                testID="approval-recipient-input"
                 style={inputStyle}
                 placeholder="Recipient"
                 value={recipient}
@@ -47,6 +48,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
                 autoCapitalize="none"
             />
             <TextInput
+                testID="approval-amount-input"
                 style={inputStyle}
                 placeholder="Amount"
                 value={amount}
@@ -54,6 +56,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
                 keyboardType="numeric"
             />
             <TouchableOpacity
+                testID="prepare-tx-button"
                 style={{
                     backgroundColor: "#fff",
                     padding: 10,
@@ -89,6 +92,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
             ) : null}
             <View style={{ height: 1, backgroundColor: "#E5E7EB", marginVertical: 12 }} />
             <TextInput
+                testID="transaction-id-input"
                 style={{ ...inputStyle, marginTop: 0 }}
                 placeholder="Transaction or Signature ID"
                 value={approveId}
@@ -97,6 +101,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
             />
             <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
+                    testID="approve-tx-button"
                     style={{
                         backgroundColor: "#13b601",
                         padding: 10,
@@ -111,6 +116,7 @@ export function ApprovalTest({ wallet, copyToClipboard }: { wallet: any; copyToC
                     <Text style={{ color: "#fff", fontWeight: "500" }}>Approve TX</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                    testID="approve-sig-button"
                     style={{
                         backgroundColor: "#fff",
                         padding: 10,

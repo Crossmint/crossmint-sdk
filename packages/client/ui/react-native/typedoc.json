@@ -1,5 +1,5 @@
 {
-    "entryPoints": ["src/index.ts"],
+    "entryPoints": ["src/index.ts", "../../../common/base/src/types/uiconfig.ts"],
     "tsconfig": "tsconfig.typedoc.json",
     "json": "api.json",
     "skipErrorChecking": true,
