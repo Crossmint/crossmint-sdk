@@ -87,7 +87,7 @@ describe("SignerManager", () => {
         [
             "a non-auto-assemblable recovery signer",
             { recovery: asRecoveryConfig({ type: "device" }) },
-            /External wallet signers require/,
+            /requires calling wallet\.useSigner\(\)/,
         ],
         ["a read-only wallet", { recovery: apiKeyConfig }, /read-only/],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {

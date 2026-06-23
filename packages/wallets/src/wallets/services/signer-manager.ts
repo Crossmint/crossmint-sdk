@@ -1,7 +1,6 @@
 import type { ApiClient, GetSignerResponse, WalletLocator } from "../../api";
 import type { Chain } from "../../chains/chains";
 import { getSignerDescriptor, type SignerDescriptorContext } from "../../signers/descriptors";
-import { EXTERNAL_WALLET_UNAVAILABLE_MESSAGE } from "../../signers/descriptors/external-wallet";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
 import { assembleSigner } from "../../signers";
 import {
@@ -126,7 +125,9 @@ export class SignerManager<C extends Chain> {
                 throw new Error(typeReason);
             }
             if (!descriptor.canAutoAssemble(this.#recovery, this.descriptorContext())) {
-                throw new Error(EXTERNAL_WALLET_UNAVAILABLE_MESSAGE);
+                throw new Error(
+                    "No signer is set. This wallet requires calling wallet.useSigner() before signing operations."
+                );
             }
             throw new Error(
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
