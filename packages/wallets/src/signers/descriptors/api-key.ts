@@ -33,4 +33,5 @@ export const apiKeySignerDescriptor: SignerDescriptor = {
         return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
     },
     adoptsRecoveryConfigOnMatch: true,
+    signerUnavailableReason: () => null,
 };

@@ -43,4 +43,5 @@ export const deviceSignerDescriptor: SignerDescriptor = {
         return false;
     },
     adoptsRecoveryConfigOnMatch: true,
+    signerUnavailableReason: () => null,
 };

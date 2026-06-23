@@ -11,6 +11,10 @@ import {
 } from "../types";
 import type { SignerDescriptor, SignerDescriptorContext } from "./types";
 
+const SERVER_SIGNER_UNAVAILABLE_MESSAGE =
+    "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
+    'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })';
+
 export const serverSignerDescriptor: SignerDescriptor = {
     type: "server",
 
@@ -55,4 +59,5 @@ export const serverSignerDescriptor: SignerDescriptor = {
         return a.some((x) => b.includes(x));
     },
     adoptsRecoveryConfigOnMatch: true,
+    signerUnavailableReason: () => SERVER_SIGNER_UNAVAILABLE_MESSAGE,
 };

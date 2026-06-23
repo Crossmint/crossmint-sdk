@@ -47,4 +47,11 @@ export interface SignerDescriptor<C extends Chain = Chain> {
      * overwrite the recovery identity with the wrong credential.
      */
     readonly adoptsRecoveryConfigOnMatch: boolean;
+    /**
+     * Type-specific guidance for SignerManager.require() when no signer is active: the message
+     * explaining how to make this recovery signer usable (server secret / external-wallet onSign),
+     * or null when there is no type-specific guidance — require() then applies the generic
+     * auto-assemblability fallback.
+     */
+    signerUnavailableReason(): string | null;
 }

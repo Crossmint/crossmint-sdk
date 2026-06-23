@@ -11,6 +11,10 @@ import type {
 } from "../types";
 import type { SignerDescriptor } from "./types";
 
+export const EXTERNAL_WALLET_UNAVAILABLE_MESSAGE =
+    "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
+    'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })';
+
 export const externalWalletSignerDescriptor: SignerDescriptor = {
     type: "external-wallet",
 
@@ -45,4 +49,5 @@ export const externalWalletSignerDescriptor: SignerDescriptor = {
         return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
     },
     adoptsRecoveryConfigOnMatch: true,
+    signerUnavailableReason: () => EXTERNAL_WALLET_UNAVAILABLE_MESSAGE,
 };

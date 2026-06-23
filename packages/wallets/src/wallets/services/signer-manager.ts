@@ -1,6 +1,7 @@
 import type { ApiClient, GetSignerResponse, WalletLocator } from "../../api";
 import type { Chain } from "../../chains/chains";
 import { getSignerDescriptor, type SignerDescriptorContext } from "../../signers/descriptors";
+import { EXTERNAL_WALLET_UNAVAILABLE_MESSAGE } from "../../signers/descriptors/external-wallet";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
 import { assembleSigner } from "../../signers";
 import {
@@ -119,20 +120,13 @@ export class SignerManager<C extends Chain> {
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            if (this.#recovery.type === "server") {
-                throw new Error(
-                    "No signer is set. Server wallets require calling wallet.useSigner() with the server secret before signing operations.\n" +
-                        'Example: wallet.useSigner({ type: "server", secret: process.env.YOUR_SERVER_SECRET })'
-                );
+            const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+            const typeReason = descriptor.signerUnavailableReason();
+            if (typeReason != null) {
+                throw new Error(typeReason);
             }
-            if (
-                this.#recovery.type === "external-wallet" ||
-                !getSignerDescriptor<C>(this.#recovery.type).canAutoAssemble(this.#recovery, this.descriptorContext())
-            ) {
-                throw new Error(
-                    "No signer is set. External wallet signers require calling wallet.useSigner() with the onSign callback before signing operations.\n" +
-                        'Example: wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... })'
-                );
+            if (!descriptor.canAutoAssemble(this.#recovery, this.descriptorContext())) {
+                throw new Error(EXTERNAL_WALLET_UNAVAILABLE_MESSAGE);
             }
             throw new Error(
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
