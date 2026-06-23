@@ -369,11 +369,17 @@ export class Wallet<C extends Chain> {
      * @returns The NFTs
      */
     public async nfts(params: { perPage: number; page: number }) {
-        return await this.#apiClient.getNfts({
+        const resolvedChain = this.resolveChainForEnvironment();
+        const response = await this.#apiClient.getNfts({
             ...params,
-            chain: this.chain,
+            chain: resolvedChain,
             address: this.address,
         });
+        if (response != null && typeof response === "object" && "error" in response) {
+            walletsLogger.error("wallet.nfts.error", { error: response });
+            throw new Error(`Failed to get nfts: ${JSON.stringify((response as { message?: unknown }).message)}`);
+        }
+        return response;
     }
 
     /**
@@ -397,7 +403,9 @@ export class Wallet<C extends Chain> {
     public async transaction(transactionId: string): Promise<GetTransactionSuccessResponse> {
         const response = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
         if ("error" in response) {
-            throw new Error(`Failed to get transaction: ${JSON.stringify(response.error)}`);
+            throw new Error(
+                `Failed to get transaction: ${JSON.stringify((response as { message?: unknown }).message)}`
+            );
         }
         return response;
     }
@@ -610,12 +618,23 @@ export class Wallet<C extends Chain> {
             if (existingState.signer != null) {
                 // Signer already fully approved — return immediately (idempotent)
                 if (this.#signerManager.isApprovedSignerStatus(existingState.signer.status)) {
+                    if (options?.scopes != null) {
+                        walletsLogger.warn("wallet.addSigner.scopesIgnored", {
+                            reason: "signer already approved",
+                            signerLocator,
+                        });
+                    }
                     walletsLogger.info("wallet.addSigner.alreadyApproved");
                     return this.completeSignerRegistration(existingState.signer, null, options);
                 }
 
                 // Pending operation from a previous attempt — resume instead of re-registering
                 if (existingState.pendingOperation != null) {
+                    if (options?.scopes != null) {
+                        throw new Error(
+                            "Cannot apply scopes when resuming a pending signer registration. Remove the pending signer and register it again with the desired scopes."
+                        );
+                    }
                     walletsLogger.info("wallet.addSigner.resuming", {
                         operationType: existingState.pendingOperation.type,
                         operationId: existingState.pendingOperation.id,
