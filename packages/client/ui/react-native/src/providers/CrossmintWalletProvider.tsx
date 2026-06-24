@@ -51,10 +51,11 @@ export interface CrossmintWalletProviderProps {
 const MAX_HANDSHAKE_RETRIES = 2;
 
 // iOS only: the signer webview's storage isn't reliable across launches, so we don't rely on it.
-// This query tells the signer frame to keep the device key in memory, and we reload the frame
-// before each signature so it re-onboards with a fresh OTP every time. Android is left untouched.
-const EPHEMERAL_DEVICE_STORAGE_QUERY = "deviceStorage=memory";
+// We tell the signer frame to keep the device key in memory, use a non-persistent webview store,
+// and reload the frame before each signature so it re-onboards with a fresh OTP. Android is untouched.
 const USES_EPHEMERAL_DEVICE_STORAGE = Platform.OS === "ios";
+const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
+const DEVICE_STORAGE_MEMORY = "memory";
 
 const PASSKEY_RN_ERROR =
     "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
@@ -134,7 +135,9 @@ function CrossmintWalletProviderInternal({
     const frameUrl = useMemo(() => {
         const baseUrl = environmentUrlConfig[parsedAPIKey.environment];
         if (USES_EPHEMERAL_DEVICE_STORAGE) {
-            return `${baseUrl}?${EPHEMERAL_DEVICE_STORAGE_QUERY}`;
+            const url = new URL(baseUrl);
+            url.searchParams.set(DEVICE_STORAGE_QUERY_PARAM, DEVICE_STORAGE_MEMORY);
+            return url.toString();
         }
         return baseUrl;
     }, [parsedAPIKey.environment]);
@@ -543,7 +546,7 @@ function CrossmintWalletProviderInternal({
                         incognito={USES_EPHEMERAL_DEVICE_STORAGE}
                         setSupportMultipleWindows={false}
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
-                        cacheEnabled={true}
+                        cacheEnabled={!USES_EPHEMERAL_DEVICE_STORAGE}
                         cacheMode="LOAD_DEFAULT"
                     />
                 </View>
