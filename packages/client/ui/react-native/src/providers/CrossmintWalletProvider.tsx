@@ -50,7 +50,9 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
-const USES_EPHEMERAL_DEVICE_STORAGE = Platform.OS === "ios";
+// Applies to the non-custodial (TEE) signer webview, not the device signer. On iOS that webview's
+// storage isn't reliable across launches, so we keep its key in memory and reload before each signature.
+const USES_EPHEMERAL_SIGNER_STORAGE = Platform.OS === "ios";
 const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
 const DEVICE_STORAGE_MEMORY = "memory";
 
@@ -131,7 +133,7 @@ function CrossmintWalletProviderInternal({
 
     const frameUrl = useMemo(() => {
         const baseUrl = environmentUrlConfig[parsedAPIKey.environment];
-        if (USES_EPHEMERAL_DEVICE_STORAGE) {
+        if (USES_EPHEMERAL_SIGNER_STORAGE) {
             const url = new URL(baseUrl);
             url.searchParams.set(DEVICE_STORAGE_QUERY_PARAM, DEVICE_STORAGE_MEMORY);
             return url.toString();
@@ -460,7 +462,7 @@ function CrossmintWalletProviderInternal({
             callbacks={callbacks}
             renderUI={renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
-            resetSignerFrame={USES_EPHEMERAL_DEVICE_STORAGE ? resetSignerFrame : undefined}
+            resetSignerFrame={USES_EPHEMERAL_SIGNER_STORAGE ? resetSignerFrame : undefined}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             <PasskeyGuard>{children}</PasskeyGuard>
@@ -532,10 +534,10 @@ function CrossmintWalletProviderInternal({
                         javaScriptCanOpenWindowsAutomatically={false}
                         thirdPartyCookiesEnabled={false}
                         sharedCookiesEnabled={false}
-                        incognito={USES_EPHEMERAL_DEVICE_STORAGE}
+                        incognito={USES_EPHEMERAL_SIGNER_STORAGE}
                         setSupportMultipleWindows={false}
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
-                        cacheEnabled={!USES_EPHEMERAL_DEVICE_STORAGE}
+                        cacheEnabled={!USES_EPHEMERAL_SIGNER_STORAGE}
                         cacheMode="LOAD_DEFAULT"
                     />
                 </View>
