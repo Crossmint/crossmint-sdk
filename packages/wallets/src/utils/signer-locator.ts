@@ -1,6 +1,7 @@
 import type { Chain } from "../chains/chains";
 import type { SignerLocator, SignerConfigForChain, ExternalWalletRegistrationConfig } from "../signers/types";
 import type { RegisterSignerPasskeyParams } from "../api";
+import { normalizeEmail } from "./signer-validation";
 
 /**
  * Converts a signer config to its locator string representation.
@@ -13,7 +14,7 @@ export function getSignerLocator<C extends Chain>(
         return `external-wallet:${signer.address}`;
     }
     if (signer.type === "email" && signer.email) {
-        return `email:${signer.email}`;
+        return `email:${normalizeEmail(signer.email)}`;
     }
     if (signer.type === "phone" && signer.phone) {
         return `phone:${signer.phone}`;
