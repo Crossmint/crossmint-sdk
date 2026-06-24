@@ -35,6 +35,11 @@ describe("getSignerLocator", () => {
             expect(getSignerLocator(signer)).toBe("email:first.last@company.com");
         });
 
+        it("lowercases non-Gmail addresses", () => {
+            const signer = { type: "email", email: "First.Last@Company.Com" } as SignerConfigForChain<Chain>;
+            expect(getSignerLocator(signer)).toBe("email:first.last@company.com");
+        });
+
         it("preserves already-normalized Gmail addresses", () => {
             const signer = { type: "email", email: "noniepreggie@gmail.com" } as SignerConfigForChain<Chain>;
             expect(getSignerLocator(signer)).toBe("email:noniepreggie@gmail.com");

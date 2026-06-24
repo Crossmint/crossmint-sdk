@@ -1,29 +1,7 @@
 import type { Chain } from "../chains/chains";
 import type { SignerLocator, SignerConfigForChain, ExternalWalletRegistrationConfig } from "../signers/types";
 import type { RegisterSignerPasskeyParams } from "../api";
-
-/**
- * Gmail ignores dots in the local part, so "first.last@gmail.com" and
- * "firstlast@gmail.com" are the same inbox. The backend normalizes at
- * wallet-creation time; we must match here so signer-locator comparisons
- * (e.g. `isRecoverySigner`, `signerIsRegistered`) don't fail.
- */
-function normalizeEmailForLocator(email: string): string {
-    const lower = email.toLowerCase();
-    const atIndex = lower.indexOf("@");
-    if (atIndex === -1) {
-        return lower;
-    }
-
-    const localPart = lower.substring(0, atIndex);
-    const domain = lower.substring(atIndex + 1);
-
-    if (domain === "gmail.com" || domain === "googlemail.com") {
-        return `${localPart.replace(/\./g, "")}@gmail.com`;
-    }
-
-    return lower;
-}
+import { normalizeEmail } from "./signer-validation";
 
 /**
  * Converts a signer config to its locator string representation.
@@ -36,7 +14,7 @@ export function getSignerLocator<C extends Chain>(
         return `external-wallet:${signer.address}`;
     }
     if (signer.type === "email" && signer.email) {
-        return `email:${normalizeEmailForLocator(signer.email)}`;
+        return `email:${normalizeEmail(signer.email)}`;
     }
     if (signer.type === "phone" && signer.phone) {
         return `phone:${signer.phone}`;

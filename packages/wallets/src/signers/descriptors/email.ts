@@ -22,10 +22,11 @@ export const emailSignerDescriptor: SignerDescriptor = {
         ctx: SignerDescriptorContext<Chain>
     ): InternalSignerConfig<Chain> {
         const emailConfig = config as EmailSignerConfig;
+        const locator = getSignerLocator(config);
         return {
             type: "email",
             email: emailConfig.email,
-            locator: `email:${emailConfig.email}` as SignerLocator,
+            locator: locator as SignerLocator,
             address: ctx.walletAddress,
             crossmint: ctx.crossmint,
             clientTEEConnection: ctx.clientTEEConnection,
