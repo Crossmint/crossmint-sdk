@@ -50,9 +50,6 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
-// iOS only: the signer webview's storage isn't reliable across launches, so we don't rely on it.
-// We tell the signer frame to keep the device key in memory, use a non-persistent webview store,
-// and reload the frame before each signature so it re-onboards with a fresh OTP. Android is untouched.
 const USES_EPHEMERAL_DEVICE_STORAGE = Platform.OS === "ios";
 const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
 const DEVICE_STORAGE_MEMORY = "memory";
@@ -295,10 +292,6 @@ function CrossmintWalletProviderInternal({
         await performHandshake("onLoadEnd");
     }, [logger, performHandshake]);
 
-    // Reload the signer frame and wait for a fresh handshake. The wallets SDK calls this before
-    // each non-custodial signature (via the resetSignerFrame option) so the signer re-onboards
-    // with a new OTP every time, instead of relying on webview storage that iOS can drop across
-    // launches. Only wired up on iOS; Android keeps its persistent frame.
     const resetSignerFrame = useCallback(async () => {
         const parent = webViewParentRef.current;
         if (webviewRef.current == null || parent == null) {
@@ -308,7 +301,6 @@ function CrossmintWalletProviderInternal({
 
         logger.info("react-native.wallet.webview.reset.start", { generation: handshakeGenerationRef.current });
 
-        // Invalidate any in-flight handshake so stale attempts don't reconnect the old frame.
         handshakeGenerationRef.current++;
         handshakeTriggeredRef.current = false;
         handshakeInProgressRef.current = false;
@@ -316,11 +308,8 @@ function CrossmintWalletProviderInternal({
         parent.isConnected = false;
 
         webviewRef.current.reload();
-        // Start polling immediately; performHandshake waits for the reloaded child to come up.
         performHandshake("eager");
 
-        // Block until the reloaded frame finishes its handshake, so the subsequent status check
-        // and OTP flow run against the fresh frame.
         const startTime = Date.now();
         const timeoutMs = 30_000;
         while (!parent.isConnected && Date.now() - startTime < timeoutMs) {

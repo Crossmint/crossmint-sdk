@@ -50,7 +50,6 @@ export function BaseCodeInput({
             setOtpCode("");
         } catch (error) {
             if (error instanceof OnboardingSessionExpiredError) {
-                // The previous code expired because the signer frame reloaded; a new one was sent.
                 setOtpCode("");
                 setError("That code expired. We sent a new one. Enter it below.");
             } else {

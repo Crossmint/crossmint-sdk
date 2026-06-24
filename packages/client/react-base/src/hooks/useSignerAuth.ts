@@ -75,9 +75,6 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             setActiveAuthEmail(undefined);
         } catch (error) {
             if (error instanceof OnboardingSessionExpiredError) {
-                // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
-                // Re-throw (without rejecting) so the OTP input can tell the user; the dialog stays
-                // open for the new code.
                 throw error;
             }
             console.error("Failed to verify OTP", error);
@@ -113,9 +110,6 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             setActiveAuthPhone(undefined);
         } catch (error) {
             if (error instanceof OnboardingSessionExpiredError) {
-                // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
-                // Re-throw (without rejecting) so the OTP input can tell the user; the dialog stays
-                // open for the new code.
                 throw error;
             }
             console.error("Failed to verify phone OTP", error);

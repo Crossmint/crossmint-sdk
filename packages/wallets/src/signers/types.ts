@@ -143,10 +143,6 @@ type BaseInternalSignerConfig = {
     address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    /**
-     * @internal
-     * Re-onboards the signer frame before each signature. See {@link WalletOptions.resetSignerFrame}.
-     */
     resetSignerFrame?: () => Promise<void>;
 };
 

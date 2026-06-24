@@ -215,12 +215,6 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    /**
-     * @internal
-     * Invoked before each non-custodial signature to reset and reload the signer frame so it
-     * re-onboards from scratch. Provided by the React Native iOS provider, where the signer
-     * webview's storage isn't reliable across launches. Left undefined elsewhere, where it is a no-op.
-     */
     resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };

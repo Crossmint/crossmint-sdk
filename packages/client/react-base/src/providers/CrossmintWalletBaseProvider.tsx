@@ -94,7 +94,7 @@ export interface CrossmintWalletBaseProviderProps {
     children: ReactNode;
     /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    /** @internal Resets and reloads the signer frame before each signature. Provided by the React Native iOS provider. */
+    /** @internal */
     resetSignerFrame?: () => Promise<void>;
     /** @internal */
     initializeWebView?: () => Promise<void>;

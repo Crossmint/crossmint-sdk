@@ -28,10 +28,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
-    /**
-     * The TEE connection generation that issued the in-flight OTP. Used to detect that the signer
-     * frame was reloaded (losing the onboarding) between start-onboarding and complete-onboarding.
-     */
     private _onboardingConnectionGeneration: number | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -223,10 +219,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     public async ensureAuthenticated(): Promise<void> {
-        // Re-onboard the signer frame before each signature when the host provides a reset hook
-        // (React Native on iOS). The signer webview's storage isn't reliable across launches there,
-        // so we force a fresh device and OTP every time. No-op on other platforms, where the hook
-        // is left undefined.
         if (this.config.resetSignerFrame != null) {
             await this.config.resetSignerFrame();
         }
@@ -275,8 +267,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
-        // Record which frame connection issued this OTP. If the frame reloads before the user enters
-        // the code, the generation will have advanced and verifyOtp re-issues a fresh OTP.
         this._onboardingConnectionGeneration = handshakeParent.connectionGeneration;
         walletsLogger.info("start-onboarding: response received", {
             status: response?.status,
@@ -290,9 +280,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "error") {
             walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
-            // Throw rather than rejecting the auth promise directly: callers (the OTP UI and the
-            // mid-onboarding re-issue path) catch this and decide how to surface it, so the dialog
-            // state and the auth promise stay consistent.
             throw new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
         }
     }
@@ -363,13 +350,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
     }
 
-    /**
-     * Decide how to recover from a failed complete-onboarding. If the signer frame was reloaded since
-     * the OTP was issued (its connection generation advanced), the in-memory onboarding is gone, so we
-     * request a fresh OTP and surface {@link OnboardingSessionExpiredError} without rejecting the auth
-     * promise — the flow stays alive for the user to enter the new code. Otherwise the OTP was simply
-     * wrong, so we reject as before.
-     */
     private async handleOnboardingVerificationFailure(error: Error): Promise<never> {
         this._needsAuth = true;
 
@@ -384,9 +364,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 onboardingGeneration: this._onboardingConnectionGeneration,
                 currentGeneration: connection?.connectionGeneration,
             });
-            // Re-run onboarding so the backend issues a fresh OTP against the reloaded frame. Only keep
-            // the flow alive (via OnboardingSessionExpiredError) if a new code was actually sent; if the
-            // re-issue itself fails, reject so the dialog doesn't sit open over a dead flow.
             try {
                 await this.sendMessageWithOtp();
             } catch (reissueError) {
