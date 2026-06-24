@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, type MutableRefObject } from "react";
-import type { Callbacks } from "@crossmint/wallets-sdk";
+import { OnboardingSessionExpiredError, type Callbacks } from "@crossmint/wallets-sdk";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -74,6 +74,12 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             setEmailSignerDialogStep("initial");
             setActiveAuthEmail(undefined);
         } catch (error) {
+            if (error instanceof OnboardingSessionExpiredError) {
+                // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
+                // Keep the dialog open so the user can enter the new code.
+                console.warn("Signer session expired, a new code was sent");
+                return;
+            }
             console.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
         }
@@ -106,6 +112,12 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             setPhoneSignerDialogStep("initial");
             setActiveAuthPhone(undefined);
         } catch (error) {
+            if (error instanceof OnboardingSessionExpiredError) {
+                // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
+                // Keep the dialog open so the user can enter the new code.
+                console.warn("Signer session expired, a new code was sent");
+                return;
+            }
             console.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
         }
