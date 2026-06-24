@@ -7,7 +7,13 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError, KeyExportError, OtpValidationError, SignerStatusError } from "../types";
+import {
+    AuthRejectedError,
+    KeyExportError,
+    OnboardingSessionExpiredError,
+    OtpValidationError,
+    SignerStatusError,
+} from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
@@ -22,6 +28,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
+    /**
+     * The TEE connection generation that issued the in-flight OTP. Used to detect that the signer
+     * frame was reloaded (losing the onboarding) between start-onboarding and complete-onboarding.
+     */
+    private _onboardingConnectionGeneration: number | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
@@ -264,6 +275,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
+        // Record which frame connection issued this OTP. If the frame reloads before the user enters
+        // the code, the generation will have advanced and verifyOtp re-issues a fresh OTP.
+        this._onboardingConnectionGeneration = handshakeParent.connectionGeneration;
         walletsLogger.info("start-onboarding: response received", {
             status: response?.status,
             durationMs,
@@ -314,9 +328,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             });
         } catch (err) {
             walletsLogger.error("complete-onboarding: error", { error: err });
-            this._needsAuth = true;
-            this._authPromise?.reject(err as Error);
-            throw err;
+            return await this.handleOnboardingVerificationFailure(err as Error);
         }
 
         if (response?.status === "success") {
@@ -341,13 +353,41 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             error: response?.status === "error" ? response.error : undefined,
             code: response?.status === "error" ? response.code : undefined,
         });
-        this._needsAuth = true;
         const errorMessage =
             response?.status === "error"
                 ? response.error || "Failed to validate encrypted OTP"
                 : "Failed to validate encrypted OTP";
         const errorCode = response?.status === "error" ? response.code : undefined;
-        const error = new OtpValidationError(errorMessage, errorCode);
+        return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
+    }
+
+    /**
+     * Decide how to recover from a failed complete-onboarding. If the signer frame was reloaded since
+     * the OTP was issued (its connection generation advanced), the in-memory onboarding is gone, so we
+     * request a fresh OTP and surface {@link OnboardingSessionExpiredError} without rejecting the auth
+     * promise — the flow stays alive for the user to enter the new code. Otherwise the OTP was simply
+     * wrong, so we reject as before.
+     */
+    private async handleOnboardingVerificationFailure(error: Error): Promise<never> {
+        this._needsAuth = true;
+
+        const connection = this.config.clientTEEConnection;
+        const frameReloaded =
+            this._onboardingConnectionGeneration != null &&
+            connection != null &&
+            connection.connectionGeneration !== this._onboardingConnectionGeneration;
+
+        if (frameReloaded) {
+            walletsLogger.warn("complete-onboarding: signer frame reloaded mid-onboarding, re-issuing OTP", {
+                onboardingGeneration: this._onboardingConnectionGeneration,
+                currentGeneration: connection?.connectionGeneration,
+            });
+            // Re-run onboarding so the backend issues a fresh OTP against the reloaded frame. Do not
+            // reject the auth promise: the signing flow continues so the user can enter the new code.
+            await this.sendMessageWithOtp();
+            throw new OnboardingSessionExpiredError();
+        }
+
         this._authPromise?.reject(error);
         throw error;
     }
