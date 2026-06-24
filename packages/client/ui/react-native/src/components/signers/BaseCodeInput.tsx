@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { OnboardingSessionExpiredError } from "@crossmint/wallets-sdk";
 import { theme } from "../../styles/theme";
 
 interface BaseCodeInputProps {
@@ -48,8 +49,14 @@ export function BaseCodeInput({
             await onSubmitOTP(otpCode);
             setOtpCode("");
         } catch (error) {
-            console.error("Failed to verify OTP", error);
-            setError("Invalid code. Please try again.");
+            if (error instanceof OnboardingSessionExpiredError) {
+                // The previous code expired because the signer frame reloaded; a new one was sent.
+                setOtpCode("");
+                setError("That code expired. We sent a new one. Enter it below.");
+            } else {
+                console.error("Failed to verify OTP", error);
+                setError("Invalid code. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }

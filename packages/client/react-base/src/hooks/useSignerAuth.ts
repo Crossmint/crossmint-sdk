@@ -76,9 +76,9 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
         } catch (error) {
             if (error instanceof OnboardingSessionExpiredError) {
                 // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
-                // Keep the dialog open so the user can enter the new code.
-                console.warn("Signer session expired, a new code was sent");
-                return;
+                // Re-throw (without rejecting) so the OTP input can tell the user; the dialog stays
+                // open for the new code.
+                throw error;
             }
             console.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
@@ -114,9 +114,9 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
         } catch (error) {
             if (error instanceof OnboardingSessionExpiredError) {
                 // The signer frame was reloaded mid-onboarding and a fresh code was already sent.
-                // Keep the dialog open so the user can enter the new code.
-                console.warn("Signer session expired, a new code was sent");
-                return;
+                // Re-throw (without rejecting) so the OTP input can tell the user; the dialog stays
+                // open for the new code.
+                throw error;
             }
             console.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
