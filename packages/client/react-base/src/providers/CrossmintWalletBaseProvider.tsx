@@ -94,6 +94,8 @@ export interface CrossmintWalletBaseProviderProps {
     children: ReactNode;
     /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    /** @internal Resets and reloads the signer frame before each signature. Provided by the React Native iOS provider. */
+    resetSignerFrame?: () => Promise<void>;
     /** @internal */
     initializeWebView?: () => Promise<void>;
     /** @internal */
@@ -119,6 +121,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     clientTEEConnection,
+    resetSignerFrame,
     deviceSignerKeyStorage,
     initializeWebView,
     appearance,
@@ -211,6 +214,7 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
+                resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
                         argsOptions?.callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
@@ -221,7 +225,7 @@ export function CrossmintWalletBaseProvider({
                 deviceSignerKeyStorage,
             };
         },
-        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [clientTEEConnection, resetSignerFrame, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
     );
 
     const getOrCreateWallet = useCallback(
