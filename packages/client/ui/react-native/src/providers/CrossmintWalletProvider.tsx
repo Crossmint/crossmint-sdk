@@ -50,6 +50,12 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
+// iOS only: the signer webview's storage isn't reliable across launches, so we don't rely on it.
+// This query tells the signer frame to keep the device key in memory, and we reload the frame
+// before each signature so it re-onboards with a fresh OTP every time. Android is left untouched.
+const EPHEMERAL_DEVICE_STORAGE_QUERY = "deviceStorage=memory";
+const USES_EPHEMERAL_DEVICE_STORAGE = Platform.OS === "ios";
+
 const PASSKEY_RN_ERROR =
     "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
 
@@ -126,7 +132,11 @@ function CrossmintWalletProviderInternal({
     }, [apiKey]);
 
     const frameUrl = useMemo(() => {
-        return environmentUrlConfig[parsedAPIKey.environment];
+        const baseUrl = environmentUrlConfig[parsedAPIKey.environment];
+        if (USES_EPHEMERAL_DEVICE_STORAGE) {
+            return `${baseUrl}?${EPHEMERAL_DEVICE_STORAGE_QUERY}`;
+        }
+        return baseUrl;
     }, [parsedAPIKey.environment]);
 
     const webviewRef = useRef<WebView>(null);
@@ -282,6 +292,49 @@ function CrossmintWalletProviderInternal({
         await performHandshake("onLoadEnd");
     }, [logger, performHandshake]);
 
+    // Reload the signer frame and wait for a fresh handshake. The wallets SDK calls this before
+    // each non-custodial signature (via the resetSignerFrame option) so the signer re-onboards
+    // with a new OTP every time, instead of relying on webview storage that iOS can drop across
+    // launches. Only wired up on iOS; Android keeps its persistent frame.
+    const resetSignerFrame = useCallback(async () => {
+        const parent = webViewParentRef.current;
+        if (webviewRef.current == null || parent == null) {
+            logger.warn("react-native.wallet.webview.reset.skip", { reason: "webview not ready" });
+            return;
+        }
+
+        logger.info("react-native.wallet.webview.reset.start", { generation: handshakeGenerationRef.current });
+
+        // Invalidate any in-flight handshake so stale attempts don't reconnect the old frame.
+        handshakeGenerationRef.current++;
+        handshakeTriggeredRef.current = false;
+        handshakeInProgressRef.current = false;
+        handshakeRetryCountRef.current = 0;
+        parent.isConnected = false;
+
+        webviewRef.current.reload();
+        // Start polling immediately; performHandshake waits for the reloaded child to come up.
+        performHandshake("eager");
+
+        // Block until the reloaded frame finishes its handshake, so the subsequent status check
+        // and OTP flow run against the fresh frame.
+        const startTime = Date.now();
+        const timeoutMs = 30_000;
+        while (!parent.isConnected && Date.now() - startTime < timeoutMs) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+
+        if (!parent.isConnected) {
+            logger.error("react-native.wallet.webview.reset.timeout", { durationMs: Date.now() - startTime });
+            throw new Error("Timed out reloading the signer frame");
+        }
+
+        logger.info("react-native.wallet.webview.reset.complete", {
+            durationMs: Date.now() - startTime,
+            generation: handshakeGenerationRef.current,
+        });
+    }, [logger, performHandshake]);
+
     const handleMessage = useCallback(
         (event: WebViewMessageEvent) => {
             const parent = webViewParentRef.current;
@@ -415,6 +468,7 @@ function CrossmintWalletProviderInternal({
             callbacks={callbacks}
             renderUI={renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
+            resetSignerFrame={USES_EPHEMERAL_DEVICE_STORAGE ? resetSignerFrame : undefined}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             <PasskeyGuard>{children}</PasskeyGuard>
@@ -486,7 +540,7 @@ function CrossmintWalletProviderInternal({
                         javaScriptCanOpenWindowsAutomatically={false}
                         thirdPartyCookiesEnabled={false}
                         sharedCookiesEnabled={false}
-                        incognito={false}
+                        incognito={USES_EPHEMERAL_DEVICE_STORAGE}
                         setSupportMultipleWindows={false}
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
                         cacheEnabled={true}
