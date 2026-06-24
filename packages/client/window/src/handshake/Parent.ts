@@ -18,6 +18,12 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
 > {
     handshakeOptions: Required<HandshakeOptions>;
     isConnected = false;
+    /**
+     * Increments every time a handshake completes, i.e. once on first connect and again after each
+     * reload/reconnect. Consumers can capture it before an operation and compare afterwards to detect
+     * that the child frame was reloaded mid-flight (and therefore lost any in-memory state).
+     */
+    connectionGeneration = 0;
     private _ongoingHandshakeWithChild?: Promise<void>;
 
     constructor(
@@ -81,6 +87,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         });
 
         this.isConnected = true;
+        this.connectionGeneration++;
         console.info("[HandshakeParent] Handshake completed");
     }
 
