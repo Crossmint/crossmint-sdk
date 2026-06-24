@@ -1898,6 +1898,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
+                    resetSignerFrame: this.#options?.resetSignerFrame,
                     onAuthRequired: this.#options?.callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "phone":
@@ -1908,6 +1909,7 @@ export class Wallet<C extends Chain> {
                     address: this.address,
                     crossmint: this.#apiClient.crossmint,
                     clientTEEConnection: this.#options?.clientTEEConnection,
+                    resetSignerFrame: this.#options?.resetSignerFrame,
                     onAuthRequired: this.#options?.callbacks?.onAuthRequired,
                 } as InternalSignerConfig<C>;
             case "passkey": {

@@ -212,6 +212,13 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     public async ensureAuthenticated(): Promise<void> {
+        // Re-onboard the signer frame before each signature when the host provides a reset hook
+        // (React Native on iOS). The signer webview's storage isn't reliable across launches there,
+        // so we force a fresh device and OTP every time. No-op on other platforms, where the hook
+        // is left undefined.
+        if (this.config.resetSignerFrame != null) {
+            await this.config.resetSignerFrame();
+        }
         await this.handleAuthRequired();
     }
 
