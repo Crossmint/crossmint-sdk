@@ -14,6 +14,7 @@ import {
     SignatureNotAvailableError,
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
+import { walletsLogger } from "../logger";
 
 vi.mock("@/signers/server", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/signers/server")>();
@@ -313,6 +314,54 @@ describe("Wallet - balances()", () => {
     });
 });
 
+describe("Wallet - nfts()", () => {
+    let mockApiClient: MockedApiClient & { getNfts: ReturnType<typeof vi.fn> };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockApiClient = Object.assign(createMockApiClient(), { getNfts: vi.fn() });
+    });
+
+    it("resolves the chain for the environment before fetching (polygon -> polygon-amoy in staging)", async () => {
+        const wallet = await createMockWallet("polygon", mockApiClient);
+        mockApiClient.getNfts.mockResolvedValue([]);
+
+        await wallet.nfts({ perPage: 10, page: 1 });
+
+        expect(mockApiClient.getNfts).toHaveBeenCalledWith(
+            expect.objectContaining({ chain: "polygon-amoy", perPage: 10, page: 1 })
+        );
+    });
+
+    it("throws when the API returns an error response", async () => {
+        const wallet = await createMockWallet("base-sepolia", mockApiClient);
+        mockApiClient.getNfts.mockResolvedValue({ error: true, message: "Failed to fetch nfts" });
+
+        await expect(wallet.nfts({ perPage: 10, page: 1 })).rejects.toThrow("Failed to get nfts");
+    });
+});
+
+describe("Wallet - transaction()", () => {
+    let mockApiClient: MockedApiClient;
+    let wallet: Wallet<"base-sepolia">;
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        mockApiClient = createMockApiClient();
+        wallet = await createMockWallet("base-sepolia", mockApiClient);
+    });
+
+    it("serializes response.message (not response.error) in the thrown error", async () => {
+        mockApiClient.getTransaction.mockResolvedValue({
+            error: { internal: "opaque-error-object" },
+            message: "Transaction not found",
+        } as any);
+
+        await expect(wallet.transaction("txn-missing")).rejects.toThrow("Transaction not found");
+        await expect(wallet.transaction("txn-missing")).rejects.not.toThrow("opaque-error-object");
+    });
+});
+
 describe("Wallet - send()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
@@ -320,6 +369,7 @@ describe("Wallet - send()", () => {
     beforeEach(async () => {
         vi.clearAllMocks();
         vi.useFakeTimers();
+        walletsLogger.debug = vi.fn();
         mockApiClient = createMockApiClient();
         wallet = await createMockWallet("base-sepolia", mockApiClient, "api-key");
     });
@@ -475,6 +525,52 @@ describe("Wallet - send()", () => {
                 InvalidTransferAmountError
             );
             expect(mockApiClient.send).not.toHaveBeenCalled();
+        });
+
+        it("does not remap chain when amount is invalid (validates before resolving chain)", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            await expect(
+                polygonWallet.send("0x1111111111111111111111111111111111111111", "usdc", "-5")
+            ).rejects.toThrow(InvalidTransferAmountError);
+
+            expect(mockApiClient.send).not.toHaveBeenCalled();
+            expect(polygonWallet.chain).toBe("polygon");
+        });
+
+        it("does not remap chain when the recipient address is invalid (validates before resolving chain)", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            await expect(polygonWallet.send("not-a-valid-address", "usdc", "10.0")).rejects.toThrow(
+                InvalidAddressError
+            );
+
+            expect(mockApiClient.send).not.toHaveBeenCalled();
+            expect(polygonWallet.chain).toBe("polygon");
+        });
+    });
+
+    describe("chain resolution", () => {
+        it("remaps a staging mainnet chain to its testnet equivalent on a valid send", async () => {
+            const polygonWallet = await createMockWallet("polygon", mockApiClient, "api-key");
+            expect(polygonWallet.chain).toBe("polygon");
+
+            mockApiClient.send.mockResolvedValue({ id: "txn-123" } as unknown as SendResponse);
+
+            const sendPromise = polygonWallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0", {
+                prepareOnly: true,
+            });
+            await vi.runAllTimersAsync();
+            await sendPromise;
+
+            expect(polygonWallet.chain).toBe("polygon-amoy");
+            expect(mockApiClient.send).toHaveBeenCalledWith(
+                "me:evm:smart",
+                "polygon-amoy:usdc",
+                expect.objectContaining({ amount: "10.0" })
+            );
         });
     });
 });
@@ -988,6 +1084,49 @@ describe("Wallet - addSigner()", () => {
 
             expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
             expect(result.signatureId).toBe("sig-pending");
+        });
+
+        it("throws and does not re-register when scopes are passed while resuming a pending registration", async () => {
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-pending", status: "awaiting-approval" },
+                },
+            } as any);
+
+            await expect(
+                evmWallet.addSigner(
+                    { type: "external-wallet", address: "0x456" },
+                    { scopes: [{ type: "transfer", tokenLocator: "base-sepolia:usdc" }] }
+                )
+            ).rejects.toThrow("Cannot apply scopes when resuming a pending signer registration");
+
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+        });
+
+        it("warns but does not throw when scopes are passed for an already-approved signer", async () => {
+            mockApiClient.getSigner.mockResolvedValueOnce({
+                type: "external-wallet",
+                address: "0x456",
+                locator: "external-wallet:0x456",
+                chains: {
+                    "base-sepolia": { id: "sig-done", status: "success" },
+                },
+            } as any);
+
+            const result = await evmWallet.addSigner(
+                { type: "external-wallet", address: "0x456" },
+                { scopes: [{ type: "transfer", tokenLocator: "base-sepolia:usdc" }] }
+            );
+
+            expect(result.status).toBe("success");
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            expect(walletsLogger.warn).toHaveBeenCalledWith(
+                "wallet.addSigner.scopesIgnored",
+                expect.objectContaining({ reason: "signer already approved" })
+            );
         });
 
         it("falls through to fresh registration when signer is in failed state", async () => {

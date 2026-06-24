@@ -27,9 +27,7 @@ public class DeviceSignerModule: Module {
         // Generates a new P-256 key and persists it.
         AsyncFunction("generateKey") { (address: String?) async throws -> String in
             do {
-                let pubKey = try await self.defaultStorage().generateKey(address: address)
-                self.trackPublicKey(pubKey)
-                return pubKey
+                return try await self.defaultStorage().generateKey(address: address)
             } catch {
                 throw Exception(
                     name: "GenerateKeyFailed",
@@ -52,9 +50,9 @@ public class DeviceSignerModule: Module {
             await self.defaultStorage().getKey(address: address)
         }
 
-        // Returns true if a key with the given public key was generated on this device.
+        // Returns true if the private key for the given public key is present on this device.
         AsyncFunction("hasKey") { (publicKeyBase64: String) -> Bool in
-            self.trackedPublicKeys().contains(publicKeyBase64)
+            self.defaultStorage().hasKey(publicKeyBase64: publicKeyBase64)
         }
 
         // Signs a base64-encoded message; returns { r, s } hex strings.
@@ -69,78 +67,25 @@ public class DeviceSignerModule: Module {
 
         // Deletes the key for a wallet address.
         AsyncFunction("deleteKey") { (address: String) async throws in
-            let pubKey = await self.defaultStorage().getKey(address: address)
             try await self.defaultStorage().deleteKey(address: address)
-            if let pubKey = pubKey {
-                self.untrackPublicKey(pubKey)
-            }
         }
 
         // Deletes a pending key that was never promoted to a wallet-address key.
         AsyncFunction("deletePendingKey") { (publicKeyBase64: String) async throws in
             try await self.defaultStorage().deletePendingKey(publicKeyBase64: publicKeyBase64)
-            self.untrackPublicKey(publicKeyBase64)
         }
-    }
-
-    // MARK: - Public key index (Keychain-backed)
-
-    private static let indexService = "com.crossmint.device-signer"
-    private static let indexAccount = "public_key_index"
-
-    private func trackedPublicKeys() -> Set<String> {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.indexService,
-            kSecAttrAccount as String: Self.indexAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data,
-              let keys = try? JSONDecoder().decode([String].self, from: data)
-        else { return [] }
-        return Set(keys)
-    }
-
-    private func saveTrackedPublicKeys(_ keys: Set<String>) {
-        guard let data = try? JSONEncoder().encode(Array(keys)) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.indexService,
-            kSecAttrAccount as String: Self.indexAccount,
-        ]
-        let status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        if status == errSecItemNotFound {
-            var addQuery = query
-            addQuery[kSecValueData as String] = data
-            SecItemAdd(addQuery as CFDictionary, nil)
-        }
-    }
-
-    private func trackPublicKey(_ pubKey: String) {
-        var keys = trackedPublicKeys()
-        keys.insert(pubKey)
-        saveTrackedPublicKeys(keys)
-    }
-
-    private func untrackPublicKey(_ pubKey: String) {
-        var keys = trackedPublicKeys()
-        keys.remove(pubKey)
-        saveTrackedPublicKeys(keys)
     }
 
     // MARK: - Private helpers
 
     private func defaultStorage() -> any DeviceSignerKeyStorage {
         #if targetEnvironment(simulator)
-        return SoftwareDeviceSignerKeyStorage()
+        return KeychainKeyStorage()
         #else
         if SecureEnclave.isAvailable {
             return SecureEnclaveKeyStorage()
         } else {
-            return SoftwareDeviceSignerKeyStorage()
+            return KeychainKeyStorage()
         }
         #endif
     }
