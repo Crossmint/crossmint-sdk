@@ -290,8 +290,10 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "error") {
             walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
-            const error = new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
-            this._authPromise?.reject(error);
+            // Throw rather than rejecting the auth promise directly: callers (the OTP UI and the
+            // mid-onboarding re-issue path) catch this and decide how to surface it, so the dialog
+            // state and the auth promise stay consistent.
+            throw new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
         }
     }
 
@@ -382,9 +384,15 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 onboardingGeneration: this._onboardingConnectionGeneration,
                 currentGeneration: connection?.connectionGeneration,
             });
-            // Re-run onboarding so the backend issues a fresh OTP against the reloaded frame. Do not
-            // reject the auth promise: the signing flow continues so the user can enter the new code.
-            await this.sendMessageWithOtp();
+            // Re-run onboarding so the backend issues a fresh OTP against the reloaded frame. Only keep
+            // the flow alive (via OnboardingSessionExpiredError) if a new code was actually sent; if the
+            // re-issue itself fails, reject so the dialog doesn't sit open over a dead flow.
+            try {
+                await this.sendMessageWithOtp();
+            } catch (reissueError) {
+                this._authPromise?.reject(reissueError as Error);
+                throw reissueError;
+            }
             throw new OnboardingSessionExpiredError();
         }
 
