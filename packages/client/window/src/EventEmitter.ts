@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import type { SimpleMessageEvent, Transport } from "./transport/Transport";
+import { windowLogger } from "./logger";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
@@ -64,10 +65,10 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            console.info(`[EventEmitter] send: ${String(event)}`);
+            windowLogger.info(`[EventEmitter] send: ${String(event)}`);
             this.transport.send({ event, data });
         } else {
-            console.error(`[EventEmitter] send() - Validation failed for event: ${String(event)}`, result.error);
+            windowLogger.error(`[EventEmitter] send() - Validation failed for event: ${String(event)}`, result.error);
         }
     }
 
@@ -78,7 +79,10 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 if (data.success) {
                     callback(data.data);
                 } else {
-                    console.error(`[EventEmitter] on() - Validation failed for event: ${String(event)}`, data.error);
+                    windowLogger.error(
+                        `[EventEmitter] on() - Validation failed for event: ${String(event)}`,
+                        data.error
+                    );
                 }
             }
         };
@@ -95,7 +99,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         const timeoutMs = options?.timeoutMs ?? 7000;
         const maxRetries = options?.maxRetries;
 
-        console.info(
+        windowLogger.info(
             `[EventEmitter] sendAction: ${String(event)} → waiting ${String(responseEvent)} (timeout: ${timeoutMs}ms)`
         );
 
@@ -108,7 +112,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                     clearInterval(interval);
                 }
                 this.off(responseListenerId);
-                console.error(
+                windowLogger.error(
                     `[EventEmitter] sendAction: timeout after ${timeoutMs / 1000}s waiting for ${String(responseEvent)}`
                 );
                 reject(
@@ -128,7 +132,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 }
                 clearTimeout(timer);
                 this.off(responseListenerId);
-                console.info(`[EventEmitter] sendAction: received ${String(responseEvent)}`);
+                windowLogger.info(`[EventEmitter] sendAction: received ${String(responseEvent)}`);
                 resolve(responseData);
             });
 
@@ -140,7 +144,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                         clearInterval(interval!);
                         clearTimeout(timer);
                         this.off(responseListenerId);
-                        console.error(
+                        windowLogger.error(
                             `[EventEmitter] sendAction: max retries (${maxRetries}) reached for ${String(event)}`
                         );
                         reject(
@@ -168,7 +172,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
                 this.off(responseListenerId);
-                console.error(
+                windowLogger.error(
                     `[EventEmitter] onAction() - Timeout after ${timeoutMs / 1000}s waiting for ${String(event)}`
                 );
                 reject(
@@ -183,7 +187,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                     return;
                 }
 
-                console.info(`[EventEmitter] onAction: received ${String(event)}`);
+                windowLogger.info(`[EventEmitter] onAction: received ${String(event)}`);
 
                 if ("callback" in params && params.callback != null) {
                     const result = params.callback(data);

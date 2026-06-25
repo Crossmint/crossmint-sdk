@@ -19,6 +19,7 @@
         "dev": "tsup --watch"
     },
     "dependencies": {
+        "@crossmint/common-sdk-base": "workspace:*",
         "zod": "3.22.4"
     }
 }
