@@ -63,6 +63,29 @@ describe("NonCustodialSigner.ensureAuthenticated", () => {
     });
 });
 
+describe("NonCustodialSigner._exportPrivateKey", () => {
+    it("resets the signer frame before exporting so iOS export uses a fresh frame", async () => {
+        const calls: string[] = [];
+        const resetSignerFrame = vi.fn(async () => {
+            calls.push("reset");
+        });
+        const clientTEEConnection = makeReadyConnection(() => calls.push("get-status"));
+        const signer = new EVMNonCustodialSigner(makeConfig({ resetSignerFrame, clientTEEConnection }));
+
+        const exportTEEConnection = {
+            sendAction: vi.fn(async () => {
+                calls.push("export");
+                return { status: "success" };
+            }),
+        };
+        await signer._exportPrivateKey(exportTEEConnection as never);
+
+        expect(resetSignerFrame).toHaveBeenCalledTimes(1);
+        // The reset runs before authenticating and before the export request.
+        expect(calls).toEqual(["reset", "get-status", "export"]);
+    });
+});
+
 type CompleteOnboardingResult = { status: string; error?: string; code?: string; signerStatus?: string };
 
 function makeScriptedConnection(completeOnboarding: (callIndex: number) => CompleteOnboardingResult) {

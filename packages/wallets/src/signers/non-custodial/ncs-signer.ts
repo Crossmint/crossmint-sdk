@@ -392,7 +392,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         exportTEEConnection: ExportSignerTEEConnection,
         onExport?: () => void | Promise<void>
     ): Promise<void> {
-        await this.handleAuthRequired();
+        // Use ensureAuthenticated (not handleAuthRequired) so export resets the signer frame on iOS
+        // just like signing does, rather than authenticating against a possibly stale ephemeral frame.
+        await this.ensureAuthenticated();
         const jwt = this.getJwtOrThrow();
 
         const { scheme, encoding } = this.getChainKeyParams();
