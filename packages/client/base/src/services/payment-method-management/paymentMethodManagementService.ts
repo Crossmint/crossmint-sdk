@@ -20,12 +20,12 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         // skips falsy values, and `![]` is false), which the iframe would read as
         // "render nothing" instead of applying the documented default. Drop these
         // keys when empty so the iframe defaults apply (`allowedPaymentMethodTypes`
-        // → `["card"]`, `allow` → `["new"]`).
-        const { allowedPaymentMethodTypes, allow, ...rest } = props;
+        // → `["card"]`, `allowedModes` → `["new"]`).
+        const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
         const serializableProps = {
             ...rest,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
-            ...(allow?.length ? { allow } : {}),
+            ...(allowedModes?.length ? { allowedModes } : {}),
         };
 
         appendObjectToQueryParams(queryParams, serializableProps);

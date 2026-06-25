@@ -14,10 +14,9 @@ export interface CrossmintPaymentMethodManagementProps {
      * Which sections the management UI renders. `["new"]` (default) shows only
      * the "add new" section: no saved-methods fetch, no auto-open/auto-select of
      * an existing method. Include `"existing"` to also show the saved-methods
-     * section. (`["new"]` ≡ the old `new-only`; `["new","existing"]` ≡ the old
-     * `new-and-existing`.)
+     * section.
      */
-    allow?: Array<"new" | "existing">;
+    allowedModes?: Array<"new" | "existing">;
     /**
      * Filter array of which method types the "add new" section offers
      * (default `["card"]`). LM0 renders the first supported entry; passing more

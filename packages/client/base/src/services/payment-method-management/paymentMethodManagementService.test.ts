@@ -16,19 +16,19 @@ function makeService() {
 }
 
 describe("paymentMethodManagementService.getUrl", () => {
-    it("serializes allow and allowedPaymentMethodTypes into the iframe URL (array survives round-trip)", () => {
+    it("serializes allowedModes and allowedPaymentMethodTypes into the iframe URL (array survives round-trip)", () => {
         const service = makeService();
 
         const url = service.iframe.getUrl({
             jwt: "jwt-token",
-            allow: ["new"],
+            allowedModes: ["new"],
             allowedPaymentMethodTypes: ["bank-account-us"],
         });
 
         const params = new URL(url).searchParams;
         expect(params.get("jwt")).toBe("jwt-token");
         expect(params.get("apiKey")).toBe("ck_staging_test");
-        expect(JSON.parse(params.get("allow") ?? "null")).toEqual(["new"]);
+        expect(JSON.parse(params.get("allowedModes") ?? "null")).toEqual(["new"]);
         // appendObjectToQueryParams JSON.stringifies arrays into a single param.
         expect(JSON.parse(params.get("allowedPaymentMethodTypes") ?? "null")).toEqual(["bank-account-us"]);
     });
@@ -51,7 +51,7 @@ describe("paymentMethodManagementService.getUrl", () => {
         const url = service.iframe.getUrl({ jwt: "jwt-token" });
 
         const params = new URL(url).searchParams;
-        expect(params.has("allow")).toBe(false);
+        expect(params.has("allowedModes")).toBe(false);
         expect(params.has("allowedPaymentMethodTypes")).toBe(false);
     });
 
@@ -67,8 +67,8 @@ describe("paymentMethodManagementService.getUrl", () => {
 });
 
 describe("CrossmintPaymentMethodManagement types", () => {
-    it("keeps allow and allowedPaymentMethodTypes optional", () => {
-        expectTypeOf<CrossmintPaymentMethodManagementProps["allow"]>().toEqualTypeOf<
+    it("keeps allowedModes and allowedPaymentMethodTypes optional", () => {
+        expectTypeOf<CrossmintPaymentMethodManagementProps["allowedModes"]>().toEqualTypeOf<
             Array<"new" | "existing"> | undefined
         >();
         expectTypeOf<CrossmintPaymentMethodManagementProps["allowedPaymentMethodTypes"]>().toEqualTypeOf<
