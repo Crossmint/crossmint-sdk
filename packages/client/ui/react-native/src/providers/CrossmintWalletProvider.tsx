@@ -50,6 +50,13 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
+// These all configure the non-custodial (TEE) signer webview, not the device signer. "deviceStorage"
+// is the signer frame's own in-frame key storage; on iOS that webview storage isn't reliable across
+// launches, so we keep the key in memory and reload the frame before each signature.
+const USES_EPHEMERAL_SIGNER_STORAGE = Platform.OS === "ios";
+const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
+const DEVICE_STORAGE_MEMORY = "memory";
+
 const PASSKEY_RN_ERROR =
     "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
 
@@ -126,7 +133,13 @@ function CrossmintWalletProviderInternal({
     }, [apiKey]);
 
     const frameUrl = useMemo(() => {
-        return environmentUrlConfig[parsedAPIKey.environment];
+        const baseUrl = environmentUrlConfig[parsedAPIKey.environment];
+        if (USES_EPHEMERAL_SIGNER_STORAGE) {
+            const url = new URL(baseUrl);
+            url.searchParams.set(DEVICE_STORAGE_QUERY_PARAM, DEVICE_STORAGE_MEMORY);
+            return url.toString();
+        }
+        return baseUrl;
     }, [parsedAPIKey.environment]);
 
     const webviewRef = useRef<WebView>(null);
@@ -258,6 +271,11 @@ function CrossmintWalletProviderInternal({
                 },
                 recovery: {
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                    // complete-onboarding depends on the frame's in-memory onboarding session. If it
+                    // times out because the frame was killed, retrying against the reloaded frame is
+                    // guaranteed to fail; reload to advance the generation, then let the signer's own
+                    // recovery re-issue a fresh OTP instead of wasting a retry.
+                    reloadWithoutRetryEvents: ["request:complete-onboarding"],
                 },
             });
             logger.info("react-native.wallet.webview.initialized");
@@ -280,6 +298,41 @@ function CrossmintWalletProviderInternal({
             generation: handshakeGenerationRef.current,
         });
         await performHandshake("onLoadEnd");
+    }, [logger, performHandshake]);
+
+    const resetSignerFrame = useCallback(async () => {
+        const parent = webViewParentRef.current;
+        if (webviewRef.current == null || parent == null) {
+            logger.warn("react-native.wallet.webview.reset.skip", { reason: "webview not ready" });
+            return;
+        }
+
+        logger.info("react-native.wallet.webview.reset.start", { generation: handshakeGenerationRef.current });
+
+        handshakeGenerationRef.current++;
+        handshakeTriggeredRef.current = false;
+        handshakeInProgressRef.current = false;
+        handshakeRetryCountRef.current = 0;
+        parent.isConnected = false;
+
+        webviewRef.current.reload();
+        performHandshake("eager");
+
+        const startTime = Date.now();
+        const timeoutMs = 30_000;
+        while (!parent.isConnected && Date.now() - startTime < timeoutMs) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+
+        if (!parent.isConnected) {
+            logger.error("react-native.wallet.webview.reset.timeout", { durationMs: Date.now() - startTime });
+            throw new Error("Timed out reloading the signer frame");
+        }
+
+        logger.info("react-native.wallet.webview.reset.complete", {
+            durationMs: Date.now() - startTime,
+            generation: handshakeGenerationRef.current,
+        });
     }, [logger, performHandshake]);
 
     const handleMessage = useCallback(
@@ -415,6 +468,7 @@ function CrossmintWalletProviderInternal({
             callbacks={callbacks}
             renderUI={renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
+            resetSignerFrame={USES_EPHEMERAL_SIGNER_STORAGE ? resetSignerFrame : undefined}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
         >
             <PasskeyGuard>{children}</PasskeyGuard>
@@ -486,10 +540,10 @@ function CrossmintWalletProviderInternal({
                         javaScriptCanOpenWindowsAutomatically={false}
                         thirdPartyCookiesEnabled={false}
                         sharedCookiesEnabled={false}
-                        incognito={false}
+                        incognito={USES_EPHEMERAL_SIGNER_STORAGE}
                         setSupportMultipleWindows={false}
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
-                        cacheEnabled={true}
+                        cacheEnabled={!USES_EPHEMERAL_SIGNER_STORAGE}
                         cacheMode="LOAD_DEFAULT"
                     />
                 </View>

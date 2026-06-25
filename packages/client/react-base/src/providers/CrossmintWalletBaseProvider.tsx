@@ -95,6 +95,8 @@ export interface CrossmintWalletBaseProviderProps {
     /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     /** @internal */
+    resetSignerFrame?: () => Promise<void>;
+    /** @internal */
     initializeWebView?: () => Promise<void>;
     /** @internal */
     renderUI?: (props: UIRenderProps) => ReactNode;
@@ -119,6 +121,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     clientTEEConnection,
+    resetSignerFrame,
     deviceSignerKeyStorage,
     initializeWebView,
     appearance,
@@ -211,6 +214,7 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
+                resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
                         argsOptions?.callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
@@ -221,7 +225,7 @@ export function CrossmintWalletBaseProvider({
                 deviceSignerKeyStorage,
             };
         },
-        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [clientTEEConnection, resetSignerFrame, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
     );
 
     const getOrCreateWallet = useCallback(

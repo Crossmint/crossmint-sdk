@@ -70,6 +70,7 @@ export class SignerManager<C extends Chain> {
             walletAddress: this.#walletAddress,
             crossmint: this.#apiClient.crossmint,
             clientTEEConnection: this.#options?.clientTEEConnection,
+            resetSignerFrame: this.#options?.resetSignerFrame,
             onAuthRequired: this.#options?.callbacks?.onAuthRequired,
             deviceSignerKeyStorage: this.#options?.deviceSignerKeyStorage,
             serverSigners: this.#serverSignerResolver,

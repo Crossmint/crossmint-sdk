@@ -215,6 +215,7 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
 

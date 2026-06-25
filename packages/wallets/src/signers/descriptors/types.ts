@@ -18,6 +18,7 @@ export interface SignerDescriptorContext<C extends Chain> {
     walletAddress: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
     onAuthRequired?: Callbacks["onAuthRequired"];
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
     serverSigners: ServerSignerResolver;

@@ -29,6 +29,7 @@ export const phoneSignerDescriptor: SignerDescriptor = {
             address: ctx.walletAddress,
             crossmint: ctx.crossmint,
             clientTEEConnection: ctx.clientTEEConnection,
+            resetSignerFrame: ctx.resetSignerFrame,
             onAuthRequired: ctx.onAuthRequired,
         } as InternalSignerConfig<Chain>;
     },

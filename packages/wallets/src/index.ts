@@ -42,6 +42,7 @@ export {
     isExportableSignerAdapter,
     AuthRejectedError,
     KeyExportError,
+    OnboardingSessionExpiredError,
     OtpValidationError,
     SignerStatusError,
 } from "./signers/types";
