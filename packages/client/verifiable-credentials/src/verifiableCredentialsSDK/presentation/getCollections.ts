@@ -1,9 +1,13 @@
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import type { VCChain } from "../types/chain";
 import type { Collection, CredentialsCollection } from "../types/collection";
 import type { CredentialFilter } from "../types/credentialFilter";
 import type { Nft } from "../types/nft";
 import { isVcChain, isVcNft } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
+
+const collectionsLogger = new SdkLogger();
 
 /**
  * Groups NFTs by their contract address and returns an array of `Collection` objects.
@@ -60,10 +64,10 @@ export async function getCredentialNfts(
         throw new Error(`Verifiable credentials are not supported on ${chain} chain`);
     }
 
-    console.log(`Getting nfts for wallet ${wallet} on chain ${chain}`);
+    collectionsLogger.info(`Getting nfts for wallet ${wallet} on chain ${chain}`);
 
     const nfts = await getVcCompatibleNftsFromWallet(chain, wallet);
-    console.debug(`Got ${nfts.length} nfts`);
+    collectionsLogger.debug(`Got ${nfts.length} nfts`);
 
     nfts.forEach((nft) => {
         if (!isVcNft(nft)) {
@@ -75,12 +79,12 @@ export async function getCredentialNfts(
     });
 
     const collections = bundleNfts(nfts);
-    console.debug(`Got ${collections.length} collections`);
+    collectionsLogger.debug(`Got ${collections.length} collections`);
 
     let credentialsCollection = await new ContractMetadataService(chain).getContractsWithCredentialMetadata(
         collections
     );
-    console.debug(`Got ${credentialsCollection.length} valid credential collections`);
+    collectionsLogger.debug(`Got ${credentialsCollection.length} valid credential collections`);
 
     if (filters.issuers != null) {
         credentialsCollection = credentialsCollection.filter((collection) => {
@@ -94,7 +98,7 @@ export async function getCredentialNfts(
         });
     }
 
-    console.info(`Got ${credentialsCollection.length} filtered credential collections`);
+    collectionsLogger.info(`Got ${credentialsCollection.length} filtered credential collections`);
 
     return credentialsCollection;
 }

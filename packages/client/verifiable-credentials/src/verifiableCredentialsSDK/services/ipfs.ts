@@ -1,4 +1,8 @@
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import { configManager } from "../configs";
+
+const ipfsLogger = new SdkLogger();
 
 export class IPFSService {
     gateways: string[];
@@ -17,7 +21,7 @@ export class IPFSService {
     async getFile(uri: string) {
         const httpUri = uri.replace("ipfs://", "");
         for (const gateway of this.gateways) {
-            console.debug(`Trying to get file from gateway ${gateway} with uri ${httpUri}`);
+            ipfsLogger.debug(`Trying to get file from gateway ${gateway} with uri ${httpUri}`);
             let timeoutId: NodeJS.Timeout = {} as NodeJS.Timeout;
 
             try {
@@ -39,10 +43,10 @@ export class IPFSService {
                 }
 
                 const metadata = await response.json();
-                console.debug(`Got file from gateway ${gateway} for ${uri}`);
+                ipfsLogger.debug(`Got file from gateway ${gateway} for ${uri}`);
                 return metadata;
             } catch (error: any) {
-                console.error(`Failed to get file for ${uri} with gateway ${gateway}: ${error.message}`);
+                ipfsLogger.error(`Failed to get file for ${uri} with gateway ${gateway}: ${error.message}`);
             } finally {
                 clearTimeout(timeoutId);
             }

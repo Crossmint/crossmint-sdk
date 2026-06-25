@@ -1,8 +1,12 @@
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import { NFTService } from "../onchainServices/nft";
 import { IPFSService } from "../services/ipfs";
 import type { VCChain } from "../types/chain";
 import type { Collection, CredentialsCollection } from "../types/collection";
 import { isVerifiableCredentialContractMetadata } from "../types/utils";
+
+const contractMetadataLogger = new SdkLogger();
 
 /**
  * Service for retrieving and managing contract metadata.
@@ -57,7 +61,9 @@ export class ContractMetadataService {
                 collection.metadata = metadata;
                 credentialCollections.push(collection);
             } catch (e: any) {
-                console.error(`Failed to get contract metadata for ${collection.contractAddress}: ${e.message}`);
+                contractMetadataLogger.error(
+                    `Failed to get contract metadata for ${collection.contractAddress}: ${e.message}`
+                );
                 continue;
             }
         }

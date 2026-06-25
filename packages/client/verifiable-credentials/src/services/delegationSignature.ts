@@ -1,4 +1,5 @@
 import { crossmintAPI } from "@/crossmintAPI";
+import { credentialsLogger } from "@/logger";
 import type { AuthSig } from "@lit-protocol/types";
 
 export class DelegationSignature {
@@ -9,7 +10,7 @@ export class DelegationSignature {
         const url = `${baseUrl}/api/v1-alpha1/credentials/decryption/delegateLitCapacity`;
 
         const options = { method: "GET", headers: headers };
-        console.log(url, options);
+        credentialsLogger.info(url, options);
 
         const response = await fetch(url, options);
         const sig = (await response.json()) as AuthSig;
@@ -20,7 +21,7 @@ export class DelegationSignature {
         if (sig.sig == null) {
             throw new Error(`Failed to get signature from crossmint`);
         }
-        console.debug(`Successfully retrieved delegation signature from Crossmint`);
+        credentialsLogger.debug(`Successfully retrieved delegation signature from Crossmint`);
 
         return sig;
     }
