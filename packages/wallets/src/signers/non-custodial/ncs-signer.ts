@@ -350,7 +350,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
     }
 
-    private async handleOnboardingVerificationFailure(error: Error): Promise<never> {
+    private async handleOnboardingVerificationFailure(error: Error): Promise<void> {
         this._needsAuth = true;
 
         const connection = this.config.clientTEEConnection;
@@ -370,6 +370,12 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             } catch (reissueError) {
                 this._authPromise?.reject(reissueError as Error);
                 throw reissueError;
+            }
+            if (!this._needsAuth) {
+                // The re-issued onboarding came back ready, so no new code was sent and the signer is
+                // already authenticated. Resolve instead of telling the user a fresh code is coming.
+                this._authPromise?.resolve();
+                return;
             }
             throw new OnboardingSessionExpiredError();
         }

@@ -166,4 +166,61 @@ describe("NonCustodialSigner onboarding recovery", () => {
         expect(startCount(connection)).toBe(1); // no re-issue
         await expect(authSettled).resolves.toBe("rejected");
     });
+
+    it("resolves auth when the re-issued onboarding comes back ready after a reload (no second code)", async () => {
+        // Frame reloads mid-onboarding; complete-onboarding fails, but the re-issued start-onboarding
+        // comes back already "ready" (server considers the signer authenticated), so NO new code is sent.
+        let startCalls = 0;
+        const connection: { connectionGeneration: number; sendAction: ReturnType<typeof vi.fn> } = {
+            connectionGeneration: 1,
+            sendAction: vi.fn(async (args: { event: string }) => {
+                switch (args.event) {
+                    case "request:get-status":
+                        return { status: "success", signerStatus: "new-device" };
+                    case "request:start-onboarding":
+                        startCalls++;
+                        return startCalls === 1
+                            ? { status: "success", signerStatus: "new-device" }
+                            : { status: "success", signerStatus: "ready" };
+                    case "request:complete-onboarding":
+                        connection.connectionGeneration = 2; // frame reloaded before completion
+                        return { status: "error", error: "no onboarding in progress" };
+                    default:
+                        return { status: "success" };
+                }
+            }),
+        };
+
+        let sendOtp: (() => Promise<void>) | undefined;
+        let verifyOtp: ((otp: string) => Promise<void>) | undefined;
+        const onAuthRequired = vi.fn(
+            async (
+                _type: string,
+                _locator: string,
+                needsAuth: boolean,
+                send: () => Promise<void>,
+                verify: (otp: string) => Promise<void>
+            ) => {
+                if (needsAuth && sendOtp == null) {
+                    sendOtp = send;
+                    verifyOtp = verify;
+                }
+            }
+        );
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: connection as never, onAuthRequired: onAuthRequired as never })
+        );
+
+        const authSettled = signer.ensureAuthenticated().then(
+            () => "resolved",
+            () => "rejected"
+        );
+        await flush();
+
+        await sendOtp?.();
+        // The re-issue is already ready, so there is no new code to enter: the flow must resolve cleanly,
+        // not throw "session expired" and leave the auth promise pending forever.
+        await expect(verifyOtp?.("stale-otp")).resolves.toBeUndefined();
+        await expect(authSettled).resolves.toBe("resolved");
+    });
 });
