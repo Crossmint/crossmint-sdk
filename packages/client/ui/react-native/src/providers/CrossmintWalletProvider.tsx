@@ -50,8 +50,9 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
-// Applies to the non-custodial (TEE) signer webview, not the device signer. On iOS that webview's
-// storage isn't reliable across launches, so we keep its key in memory and reload before each signature.
+// These all configure the non-custodial (TEE) signer webview, not the device signer. "deviceStorage"
+// is the signer frame's own in-frame key storage; on iOS that webview storage isn't reliable across
+// launches, so we keep the key in memory and reload the frame before each signature.
 const USES_EPHEMERAL_SIGNER_STORAGE = Platform.OS === "ios";
 const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
 const DEVICE_STORAGE_MEMORY = "memory";
