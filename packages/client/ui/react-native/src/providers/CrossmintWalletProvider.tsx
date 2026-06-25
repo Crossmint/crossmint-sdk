@@ -271,6 +271,11 @@ function CrossmintWalletProviderInternal({
                 },
                 recovery: {
                     recoverableErrorCodes: [SignerErrorCode.IndexedDbFatal],
+                    // complete-onboarding depends on the frame's in-memory onboarding session. If it
+                    // times out because the frame was killed, retrying against the reloaded frame is
+                    // guaranteed to fail; reload to advance the generation, then let the signer's own
+                    // recovery re-issue a fresh OTP instead of wasting a retry.
+                    reloadWithoutRetryEvents: ["request:complete-onboarding"],
                 },
             });
             logger.info("react-native.wallet.webview.initialized");
