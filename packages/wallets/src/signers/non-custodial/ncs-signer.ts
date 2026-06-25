@@ -360,7 +360,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             connection.connectionGeneration !== this._onboardingConnectionGeneration;
 
         if (frameReloaded) {
-            walletsLogger.warn("signer.onboarding.reissued", {
+            walletsLogger.warn("tee.signer.onboarding.reissued", {
                 reason: "signer frame reloaded mid-onboarding, re-issuing OTP",
                 onboardingGeneration: this._onboardingConnectionGeneration,
                 currentGeneration: connection?.connectionGeneration,
