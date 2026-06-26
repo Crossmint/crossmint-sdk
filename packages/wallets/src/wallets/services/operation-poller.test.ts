@@ -147,9 +147,9 @@ describe("operation-poller", () => {
 
             await vi.advanceTimersByTimeAsync(28_343); // t=30_000
             const callsAt30s = calls();
-            expect(callsAt30s).toBeGreaterThan(20);
+            expect(callsAt30s).toBe(30);
             await vi.advanceTimersByTimeAsync(8_000); // t=38_000
-            expect(calls()).toBeGreaterThan(callsAt30s);
+            expect(calls()).toBe(callsAt30s + 4);
 
             response = txSuccess("txn-loop", {
                 txId: "0xfinalhash",
