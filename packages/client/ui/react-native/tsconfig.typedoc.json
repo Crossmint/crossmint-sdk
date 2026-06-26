@@ -4,7 +4,11 @@
         "rootDir": "src",
         "baseUrl": ".",
         "paths": {
+            "@/types": ["../../base/src/types/index.ts"],
+            "@/types/*": ["../../base/src/types/*"],
             "@/*": ["src/*"],
+            "@crossmint/client-sdk-base": ["../../base/src/index.ts"],
+            "@crossmint/client-sdk-base/*": ["../../base/src/*"],
             "@crossmint/client-sdk-react-base": ["../../react-base/src/index.ts"],
             "@crossmint/client-sdk-react-base/*": ["../../react-base/src/*"],
             "@crossmint/wallets-sdk": ["../../../wallets/src/index.ts"],
@@ -17,6 +21,12 @@
         "esModuleInterop": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "../../react-base/src/**/*", "../../../wallets/src/**/*", "../../../common/base/src/**/*"],
+    "include": [
+        "src/**/*",
+        "../../base/src/**/*",
+        "../../react-base/src/**/*",
+        "../../../wallets/src/**/*",
+        "../../../common/base/src/**/*"
+    ],
     "exclude": ["__tests__"]
 }
