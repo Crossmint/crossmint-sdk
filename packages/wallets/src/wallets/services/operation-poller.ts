@@ -43,9 +43,12 @@ export async function waitForTransactionCompletion(
         if (transactionResponse.error) {
             throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
         }
+        if (transactionResponse.status !== "pending") {
+            break;
+        }
         await sleep(initialBackoffMs);
         initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
-    } while (transactionResponse.status === "pending");
+    } while (true);
 
     if (transactionResponse.status === "failed") {
         const error = new TransactionSendingFailedError(
