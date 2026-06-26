@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-window
 
+## 1.1.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
 ## 1.0.10
 
 ### Patch Changes

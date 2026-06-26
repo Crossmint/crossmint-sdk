@@ -1,5 +1,12 @@
 # @crossmint/wallets-playground-expo
 
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-react-native-ui@1.3.0
+
 ## 0.0.19
 
 ### Patch Changes

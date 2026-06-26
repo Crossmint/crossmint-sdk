@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.3.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [02b275e]
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-base@2.5.0
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-react-base@2.1.0
+  - @crossmint/client-sdk-auth@1.3.15
+  - @crossmint/common-sdk-auth@1.1.13
+  - @crossmint/client-sdk-rn-window@0.3.17
+
 ## 1.2.13
 
 ### Patch Changes
