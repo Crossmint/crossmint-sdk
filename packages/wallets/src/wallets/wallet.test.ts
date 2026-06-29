@@ -750,7 +750,7 @@ describe("Wallet - approve()", () => {
                 DeviceSignerRotatedError
             );
             await expect(deviceWallet.approve({ transactionId: "txn-rotated" })).rejects.toThrow(
-                /device signer was rotated/
+                /device signer was rotated since this request was created/
             );
         });
 

@@ -93,9 +93,9 @@ export class DeviceSignerRotatedError extends CrossmintSDKError {
 
     constructor(expectedLocator: string, actualLocator: string) {
         super(
-            `The device signer was rotated since this transaction was created. ` +
-                `The transaction requires signer '${expectedLocator}', but the current device signer is '${actualLocator}'. ` +
-                `Please re-create the transaction so it uses the current device signer.`,
+            `The device signer was rotated since this request was created. ` +
+                `The pending approval requires signer '${expectedLocator}', but the current device signer is '${actualLocator}'. ` +
+                `Please re-create the transaction or signature request so it uses the current device signer.`,
             WalletErrorCode.SIGNER_ROTATED
         );
         this.expectedLocator = expectedLocator;
