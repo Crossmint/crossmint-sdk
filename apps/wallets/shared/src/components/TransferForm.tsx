@@ -44,7 +44,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 {TOKENS.map((t, i) => (
                     <TouchableOpacity
                         key={t}
-                        testID={`token-selector-${t}`}
+                        testID={`transfer-token-option-${t}`}
                         onPress={() => setTokenIdx(i)}
                         style={{
                             padding: 8,
@@ -63,7 +63,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 ))}
             </View>
             <TextInput
-                testID="recipient-input"
+                testID="transfer-recipient-input"
                 style={inputStyle}
                 placeholder="Recipient address"
                 value={recipient}
@@ -71,7 +71,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 autoCapitalize="none"
             />
             <TextInput
-                testID="amount-input"
+                testID="transfer-amount-input"
                 style={inputStyle}
                 placeholder="Amount"
                 value={amount}
@@ -79,7 +79,7 @@ export function TransferForm({ wallet }: { wallet: any }) {
                 keyboardType="numeric"
             />
             <TouchableOpacity
-                testID="transfer-button"
+                testID="transfer-submit-button"
                 style={{
                     backgroundColor: "#13b601",
                     padding: 14,
@@ -95,10 +95,10 @@ export function TransferForm({ wallet }: { wallet: any }) {
                     {loading ? "Sending..." : `Transfer ${token.toUpperCase()}`}
                 </Text>
             </TouchableOpacity>
-            {error ? <Text style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
+            {error ? <Text testID="transfer-error-label" style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
             {txLink ? (
                 <TouchableOpacity
-                    testID="successful-tx-link"
+                    testID="transfer-success-label"
                     onPress={() => Linking.openURL(txLink)}
                     style={{ marginTop: 8 }}
                 >
