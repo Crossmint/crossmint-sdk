@@ -82,6 +82,28 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
 }
 
 /**
+ * Thrown when the device signer key was rotated (via recovery) between
+ * transaction/signature creation and approval. The pending approval
+ * requires the old device signer, but only the newly recovered signer
+ * is available locally.
+ */
+export class DeviceSignerRotatedError extends CrossmintSDKError {
+    readonly expectedLocator: string;
+    readonly actualLocator: string;
+
+    constructor(expectedLocator: string, actualLocator: string) {
+        super(
+            `The device signer was rotated since this transaction was created. ` +
+                `The transaction requires signer '${expectedLocator}', but the current device signer is '${actualLocator}'. ` +
+                `Please re-create the transaction so it uses the current device signer.`,
+            WalletErrorCode.SIGNER_ROTATED
+        );
+        this.expectedLocator = expectedLocator;
+        this.actualLocator = actualLocator;
+    }
+}
+
+/**
  * Thrown when the browser does not support third-party storage partitioning,
  * making it unsafe to store device-signer keys in IndexedDB. Consumers should
  * either prompt the user to upgrade their browser or fall back to a non-device
@@ -221,6 +243,7 @@ export type WalletError =
     | InvalidSignerError
     | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | DeviceSignerRotatedError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError

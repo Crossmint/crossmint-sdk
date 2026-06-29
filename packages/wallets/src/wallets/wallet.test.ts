@@ -5,7 +5,9 @@ import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSucce
 import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain } from "../signers/types";
 import { AuthRejectedError, OtpValidationError } from "../signers/types";
 import {
+    DeviceSignerRotatedError,
     InvalidAddressError,
+    InvalidSignerError,
     InvalidTransferAmountError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
@@ -710,6 +712,98 @@ describe("Wallet - approve()", () => {
             expect(result.signature).toBe("0xsigned");
             expect(result.signatureId).toBe("sig-empty");
             expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("device signer rotation", () => {
+        it("throws DeviceSignerRotatedError when pending approval requires an old device signer (transaction)", async () => {
+            const mockDeviceSigner = {
+                type: "device" as const,
+                locator: () => "device:NEW_KEY",
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xsig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xsig" }),
+            };
+
+            const deviceWallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as SignerConfigForChain<"base-sepolia">,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            deviceWallet.signerManager.setActiveSigner(mockDeviceSigner as any);
+
+            const mockTransactionResponse = {
+                id: "txn-rotated",
+                chainType: "evm",
+                approvals: {
+                    pending: [{ signer: { locator: "device:OLD_KEY" }, message: "0xdeadbeef" }],
+                    submitted: [],
+                },
+            };
+
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            await expect(deviceWallet.approve({ transactionId: "txn-rotated" })).rejects.toThrow(
+                DeviceSignerRotatedError
+            );
+            await expect(deviceWallet.approve({ transactionId: "txn-rotated" })).rejects.toThrow(
+                /device signer was rotated/
+            );
+        });
+
+        it("throws DeviceSignerRotatedError when pending approval requires an old device signer (signature)", async () => {
+            const mockDeviceSigner = {
+                type: "device" as const,
+                locator: () => "device:NEW_KEY",
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xsig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xsig" }),
+            };
+
+            const deviceWallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as SignerConfigForChain<"base-sepolia">,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            deviceWallet.signerManager.setActiveSigner(mockDeviceSigner as any);
+
+            const mockSignatureResponse = {
+                id: "sig-rotated",
+                status: "pending",
+                approvals: {
+                    pending: [{ signer: { locator: "device:OLD_KEY" }, message: "0xdeadbeef" }],
+                    submitted: [],
+                },
+            };
+
+            mockApiClient.getSignature.mockResolvedValue(mockSignatureResponse as any);
+
+            await expect(deviceWallet.approve({ signatureId: "sig-rotated" })).rejects.toThrow(
+                DeviceSignerRotatedError
+            );
+        });
+
+        it("throws InvalidSignerError for non-device signer mismatch (not rotated)", async () => {
+            const externalWallet = await createMockWallet("base-sepolia", mockApiClient, "external-wallet");
+
+            const mockTransactionResponse = {
+                id: "txn-mismatch",
+                chainType: "evm",
+                approvals: {
+                    pending: [{ signer: { locator: "external-wallet:0xUNKNOWN" }, message: "0xdeadbeef" }],
+                    submitted: [],
+                },
+            };
+
+            mockApiClient.getTransaction.mockResolvedValue(mockTransactionResponse as any);
+
+            await expect(externalWallet.approve({ transactionId: "txn-mismatch" })).rejects.toThrow(InvalidSignerError);
         });
     });
 });

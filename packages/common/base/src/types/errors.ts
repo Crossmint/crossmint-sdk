@@ -65,6 +65,7 @@ export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof Sm
 export const WalletErrorCode = {
     API_KEY_INVALID: "wallet:api-key-invalid",
     SIGNER_INVALID: "wallet:signer-invalid",
+    SIGNER_ROTATED: "wallet:signer-rotated",
     WALLET_NOT_AVAILABLE: "wallet:wallet-not-available",
     WALLET_CREATION_FAILED: "wallet:wallet-creation-failed",
     WALLET_TYPE_INVALID: "wallet:wallet-type-invalid",
