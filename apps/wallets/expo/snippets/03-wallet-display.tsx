@@ -32,7 +32,7 @@ export function WalletDisplay() {
                     style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 >
                     <Text
-                        testID="wallet-address"
+                        testID="wallet-address-label"
                         style={{ fontWeight: "500" }}
                     >{`${wallet.address.slice(0, 6)}...${wallet.address.slice(-6)}`}</Text>
                     <Text style={{ fontSize: 11, color: copied ? "#13b601" : "#6B7280" }}>
