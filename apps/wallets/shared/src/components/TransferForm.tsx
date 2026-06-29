@@ -95,7 +95,11 @@ export function TransferForm({ wallet }: { wallet: any }) {
                     {loading ? "Sending..." : `Transfer ${token.toUpperCase()}`}
                 </Text>
             </TouchableOpacity>
-            {error ? <Text testID="transfer-error-label" style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>{error}</Text> : null}
+            {error ? (
+                <Text testID="transfer-error-label" style={{ color: "#EF4444", marginTop: 8, fontSize: 13 }}>
+                    {error}
+                </Text>
+            ) : null}
             {txLink ? (
                 <TouchableOpacity
                     testID="transfer-success-label"
