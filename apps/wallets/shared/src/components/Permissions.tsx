@@ -133,7 +133,7 @@ export function Permissions({
                     <Text style={{ color: "#13b601", fontWeight: "500" }}>Refresh</Text>
                 </TouchableOpacity>
             </View>
-            <ScrollView style={{ maxHeight: 160, marginTop: 8 }}>
+            <ScrollView testID="signers-list" style={{ maxHeight: 160, marginTop: 8 }}>
                 {/* Recovery signer */}
                 {wallet &&
                     (() => {
@@ -276,6 +276,7 @@ export function Permissions({
                     />
                 ))}
             <TouchableOpacity
+                testID="signers-add-button"
                 style={{
                     backgroundColor: "#fff",
                     padding: 12,
