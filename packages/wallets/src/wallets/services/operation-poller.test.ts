@@ -121,7 +121,7 @@ describe("operation-poller", () => {
             expect(error.message).toBe(message);
         });
 
-        it("polls getTransaction repeatedly with backoff growth capped at maxBackoffMs until status is no longer pending", async () => {
+        it("polls at a fixed cadence during the fast window, then backs off exponentially capped at maxBackoffMs", async () => {
             let response: any = { id: "txn-loop", status: "pending" };
             mockApiClient.getTransaction.mockImplementation(async () => response);
             const calls = () => mockApiClient.getTransaction.mock.calls.length;
@@ -130,26 +130,26 @@ describe("operation-poller", () => {
             await vi.advanceTimersByTimeAsync(0); // t=0
             expect(calls()).toBe(1);
 
-            await vi.advanceTimersByTimeAsync(199); // t=199
+            await vi.advanceTimersByTimeAsync(499); // t=499
             expect(calls()).toBe(1);
-            await vi.advanceTimersByTimeAsync(1); // t=200
+            await vi.advanceTimersByTimeAsync(1); // t=500
             expect(calls()).toBe(2);
 
-            await vi.advanceTimersByTimeAsync(219); // t=419
-            expect(calls()).toBe(2);
-            await vi.advanceTimersByTimeAsync(1); // t=420
-            expect(calls()).toBe(3);
+            // Fixed 500ms cadence through the 5s fast window: polls at t=0..5500
+            await vi.advanceTimersByTimeAsync(5_000); // t=5500
+            expect(calls()).toBe(12);
 
-            await vi.advanceTimersByTimeAsync(241); // t=661
-            expect(calls()).toBe(3);
-            await vi.advanceTimersByTimeAsync(1); // t=662
-            expect(calls()).toBe(4);
-
-            await vi.advanceTimersByTimeAsync(28_343); // t=30_000
-            const callsAt30s = calls();
-            expect(callsAt30s).toBe(30);
-            await vi.advanceTimersByTimeAsync(8_000); // t=38_000
-            expect(calls()).toBe(callsAt30s + 4);
+            // Past the window the backoff grows 1.5x per poll: 750, 1125, 1688, then capped at 2000
+            await vi.advanceTimersByTimeAsync(750); // t=6250
+            expect(calls()).toBe(13);
+            await vi.advanceTimersByTimeAsync(1_125); // t=7375
+            expect(calls()).toBe(14);
+            await vi.advanceTimersByTimeAsync(1_688); // t=9063
+            expect(calls()).toBe(15);
+            await vi.advanceTimersByTimeAsync(2_000); // t=11063
+            expect(calls()).toBe(16);
+            await vi.advanceTimersByTimeAsync(8_000); // t=19063 — capped cadence adds one poll per 2s
+            expect(calls()).toBe(20);
 
             response = txSuccess("txn-loop", {
                 txId: "0xfinalhash",
@@ -161,7 +161,7 @@ describe("operation-poller", () => {
                 explorerLink: "https://explorer.example.com/tx/0xfinalhash",
                 transactionId: "txn-loop",
             });
-            expect(calls()).toBe(callsAt30s + 5);
+            expect(calls()).toBe(21);
             expect(mockApiClient.getTransaction).toHaveBeenCalledWith("me:evm:smart", "txn-loop");
         });
 
