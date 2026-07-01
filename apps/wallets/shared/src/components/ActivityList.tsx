@@ -18,8 +18,8 @@ export function ActivityList({ wallet }: { wallet: any }) {
                     <Text style={{ color: "#13b601", fontWeight: "500" }}>Load</Text>
                 </TouchableOpacity>
             </View>
-            {transfers.length === 0 && <Text style={{ color: "#6B7280", marginTop: 8 }}>No transactions yet</Text>}
             <ScrollView testID="activity-list" style={{ maxHeight: 200, marginTop: 8 }}>
+                {transfers.length === 0 && <Text style={{ color: "#6B7280" }}>No transactions yet</Text>}
                 {transfers.map((tx, i) => (
                     <View
                         key={i}
