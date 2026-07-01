@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 
 const CHAINS = ["base-sepolia", "solana"] as const;
@@ -5,17 +6,23 @@ type SupportedChain = (typeof CHAINS)[number];
 
 interface ChainSwitcherProps {
     wallet: any;
-    getWallet: (props: { chain: string; alias?: string }) => Promise<any>;
+    onSwitchChain: (chain: SupportedChain) => Promise<void>;
 }
 
-export function ChainSwitcher({ wallet, getWallet }: ChainSwitcherProps) {
+export function ChainSwitcher({ wallet, onSwitchChain }: ChainSwitcherProps) {
+    const [isSwitching, setIsSwitching] = useState(false);
     const activeChain = wallet?.chain ?? "base-sepolia";
 
     const switchChain = async (chain: SupportedChain) => {
-        if (chain === activeChain) {
+        if (chain === activeChain || isSwitching) {
             return;
         }
-        await getWallet({ chain });
+        setIsSwitching(true);
+        try {
+            await onSwitchChain(chain);
+        } finally {
+            setIsSwitching(false);
+        }
     };
 
     return (
@@ -26,11 +33,13 @@ export function ChainSwitcher({ wallet, getWallet }: ChainSwitcherProps) {
             <View style={{ flexDirection: "row", gap: 8 }}>
                 {CHAINS.map((chain) => {
                     const isActive = chain === activeChain;
+                    const isLoading = isSwitching && !isActive;
                     return (
                         <TouchableOpacity
                             key={chain}
                             testID={`chain-option-${chain}`}
                             onPress={() => switchChain(chain)}
+                            disabled={isSwitching}
                             style={{
                                 flex: 1,
                                 padding: 10,
@@ -39,10 +48,11 @@ export function ChainSwitcher({ wallet, getWallet }: ChainSwitcherProps) {
                                 backgroundColor: isActive ? "#13b601" : "#fff",
                                 borderWidth: 1,
                                 borderColor: isActive ? "#13b601" : "#E5E7EB",
+                                opacity: isLoading ? 0.5 : 1,
                             }}
                         >
                             <Text style={{ color: isActive ? "#fff" : "#1A1A1A", fontWeight: "500", fontSize: 13 }}>
-                                {chain}
+                                {isLoading ? "..." : chain}
                             </Text>
                         </TouchableOpacity>
                     );
