@@ -27,9 +27,7 @@ export function ChainSwitcher({ wallet, onSwitchChain }: ChainSwitcherProps) {
 
     return (
         <View style={{ backgroundColor: "#F7F8FA", borderRadius: 12, padding: 16 }}>
-            <Text style={{ fontSize: 12, color: "#6B7280", textTransform: "uppercase", marginBottom: 8 }}>
-                Chain
-            </Text>
+            <Text style={{ fontSize: 12, color: "#6B7280", textTransform: "uppercase", marginBottom: 8 }}>Chain</Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
                 {CHAINS.map((chain) => {
                     const isActive = chain === activeChain;

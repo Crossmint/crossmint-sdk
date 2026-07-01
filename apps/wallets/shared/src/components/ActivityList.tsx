@@ -38,4 +38,3 @@ export function ActivityList({ wallet }: { wallet: any }) {
         </View>
     );
 }
-

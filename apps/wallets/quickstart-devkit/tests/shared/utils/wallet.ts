@@ -56,10 +56,15 @@ export async function fundWalletWithCrossmintFaucet(
 export async function fundWalletWithSolAirdrop(walletAddress: string, amountSol = 0.01): Promise<void> {
     const connection = new Connection("https://api.devnet.solana.com", "confirmed");
     console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
-    const signature = await connection.requestAirdrop(new PublicKey(walletAddress), amountSol * LAMPORTS_PER_SOL);
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-    await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
-    console.log(`✅ SOL airdrop confirmed for ${walletAddress}`);
+    try {
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        const signature = await connection.requestAirdrop(new PublicKey(walletAddress), amountSol * LAMPORTS_PER_SOL);
+        await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+        console.log(`✅ SOL airdrop confirmed for ${walletAddress}`);
+    } catch (error) {
+        console.error(`❌ Failed to airdrop SOL to ${walletAddress}:`, error);
+        throw error;
+    }
 }
 
 export async function getWalletAddress(page: Page): Promise<string> {
