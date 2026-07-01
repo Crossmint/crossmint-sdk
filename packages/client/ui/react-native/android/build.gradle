@@ -15,6 +15,6 @@ android {
 }
 
 dependencies {
-  implementation "com.crossmint:sdk-device-signer:0.0.15"
+  implementation "com.crossmint:sdk-device-signer:1.0.2"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 }
