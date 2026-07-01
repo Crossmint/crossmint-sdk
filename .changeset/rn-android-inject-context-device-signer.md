@@ -1,5 +1,5 @@
 ---
-"@crossmint/client-sdk-react-native-ui": patch
+"@crossmint/client-sdk-react-native-ui": minor
 ---
 
 Fix Android device signer key lookup failures on low-end devices by injecting the React context directly into `KeystoreKeyStorage` instead of relying on a `ContentProvider` to set it via a static singleton.
