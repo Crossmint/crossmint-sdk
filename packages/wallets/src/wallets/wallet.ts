@@ -655,10 +655,14 @@ export class Wallet<C extends Chain> {
                           this.#signerManager.descriptorContext()
                       );
 
+            const isEvm = this.chain !== "solana" && this.chain !== "stellar";
+            const deployImmediately = isEvm ? options?.deployImmediately ?? true : undefined;
+
             const response = await this.#apiClient.registerSigner(this.walletLocator, {
                 signer: signerInput as RegisterSignerParams["signer"],
                 chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(options?.scopes != null && { scopes: options.scopes }),
+                ...(deployImmediately != null && { deployImmediately }),
             });
 
             if ("error" in response) {
