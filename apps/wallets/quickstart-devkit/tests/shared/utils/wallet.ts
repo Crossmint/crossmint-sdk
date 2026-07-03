@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { handleSignerConfirmation } from "./auth";
 import { AUTH_CONFIG } from "../constants/globalConstants";
 
@@ -43,6 +44,25 @@ export async function fundWalletWithCrossmintFaucet(
         console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
     } catch (error) {
         console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Airdrops native SOL from Solana devnet so the wallet can pay transaction fees.
+ * The Crossmint faucet only funds USDXM; without SOL the transfer tx is submitted
+ * but never confirmed (silent on-chain failure due to insufficient fee balance).
+ */
+export async function fundWalletWithSolAirdrop(walletAddress: string, amountSol = 0.01): Promise<void> {
+    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+    console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
+    try {
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        const signature = await connection.requestAirdrop(new PublicKey(walletAddress), amountSol * LAMPORTS_PER_SOL);
+        await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+        console.log(`✅ SOL airdrop confirmed for ${walletAddress}`);
+    } catch (error) {
+        console.error(`❌ Failed to airdrop SOL to ${walletAddress}:`, error);
         throw error;
     }
 }

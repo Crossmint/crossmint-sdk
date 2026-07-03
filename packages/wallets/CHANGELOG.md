@@ -1,5 +1,115 @@
 # @crossmint/wallets-sdk
 
+## 1.7.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-window@1.1.0
+  - @crossmint/common-sdk-auth@1.1.13
+
+## 1.6.2
+
+### Patch Changes
+
+- 890d49a: Fix Gmail dot normalization in signer locator construction. The backend normalizes Gmail addresses by stripping dots from the local part (e.g., `first.last@gmail.com` -> `firstlast@gmail.com`), but the SDK was using the raw email. This caused signer locator mismatches that blocked all outbound wallet operations (send, swap, transfer) for Gmail users with dots in their email address.
+
+## 1.6.1
+
+### Patch Changes
+
+- fe8f948: refactor: introduce ChainAdapter to centralize per-chain behavior in wallet.ts
+
+  - `chains/chain-adapter.ts` + `chains/adapters/{evm,solana,stellar}.ts`: a `ChainAdapter` homing the per-chain switches (native token, wallet-locator prefix, signature support, add-signer chain + operation extraction, balance token fields)
+  - `wallet.ts` and `services/balance-formatter.ts` now dispatch through `getChainAdapter(chain)`; `getSignerRegistrationChain` and `isSolanaWallet` removed
+  - `PendingSignerOperation` type defined once in `wallets/types.ts`
+
+  Internal refactor — no behavior or public API changes.
+
+- 8ef5fd5: WAL-10668: clear a stale needs-recovery status when resolveAvailability adopts a local device key
+- 4be9685: refactor: extract balance formatting and recipient/token locators from wallet.ts
+
+  - `services/balance-formatter.ts`: `formatBalanceResponse` (moved from `Wallet.transformBalanceResponse`)
+  - `utils/locators.ts`: `toRecipientLocator` / `toTokenLocator`
+
+  Internal refactor — no behavior or public API changes.
+
+- 204c221: refactor: extract DeviceRecoveryService from wallet.ts
+
+  - `wallets/services/device-recovery-service.ts`: a `DeviceRecoveryService` owning device-signer initialization and recovery (`initDeviceSigner`, `recover`, `resolveAvailability`, pending-approval resumption, local-key matching, unsupported-provider fallback)
+  - the three device flags (`#needsRecovery` / `#deviceSignerApproved` / `#deviceSignerUnsupported`) are replaced by an explicit `DeviceSignerState` lifecycle (`"unknown" | "needs-recovery" | "resolved"`) plus an orthogonal provider-rejection latch
+  - `wallet.ts` delegates `recover()` / `needsRecovery()` and the device branch of `useSigner`; the signer-session → device-recovery coupling collapses to one `onSignerSelected()` notification
+
+  Internal refactor — no behavior or public API changes.
+
+- bdb9f85: refactor: extract transaction/signature polling from wallet.ts
+
+  - `services/operation-poller.ts`: `waitForTransactionCompletion` / `waitForSignatureCompletion` (moved from `Wallet.waitForTransaction` / `Wallet.waitForSignature`); `Wallet` keeps thin protected wrappers with identical signatures and defaults
+
+  Internal refactor — no behavior or public API changes.
+
+- 21bf2da: fix(wallets): support locator-based token matching in balances filter
+
+  `wallet.balances(tokens)` now correctly matches tokens requested via chain locators (e.g. `solana:<mint>`, `base-sepolia:<contractAddress>`, `stellar:<contractId>`) in addition to plain symbols.
+
+- 8149b8a: WAL-10669: validate the transfer amount in `send()` before resolving the chain so an invalid amount no longer remaps `wallet.chain`
+- 6af8cef: refactor: extract ServerSignerResolver from wallet.ts
+
+  Moves server-signer key derivation, the dual primary/legacy derivation caches, and the secure-wipe discipline out of `wallet.ts` into a dedicated `ServerSignerResolver` (`signers/server/resolver.ts`). `wallet.ts` now delegates derivation, locator resolution, recovery resolution, and key-material assembly to the resolver. Internal refactor — no behavior or public API changes.
+
+- fe8f948: fix: block signature approval on Stellar wallets (EVM-only)
+
+  Message signing/approval is only implemented for EVM smart wallets: there is no
+  signature-creation entry point for Stellar (only `EVMWallet` exposes
+  `signMessage`/`signTypedData`), and the Stellar external-wallet and non-custodial
+  signers reject `signMessage`. The approval guard previously blocked only Solana,
+  letting Stellar fall through to an unusable path. It now blocks Stellar too, so
+  `approve({ signatureId })` on a Stellar wallet throws the accurate
+  "Approving signatures is only supported for EVM smart wallets" error.
+
+- 4b6e985: refactor: introduce SignerDescriptor registry for per-signer-type config shaping
+
+  Moves the synchronous per-type `switch` logic out of `wallet.ts` into a `SignerDescriptor` per signer type (`signers/descriptors/`): config validation, internal-config building, and auto-assemblability. `wallet.ts` now dispatches via `getSignerDescriptor(type)`. Internal refactor — no behavior or public API changes.
+
+- 9b93386: refactor: move add-signer payload and recovery matching into SignerDescriptor
+
+  Adds `addSignerPayload` and `matchesRecovery` to each `SignerDescriptor`, removing the per-signer-type branches from `wallet.ts`'s `addSigner` payload construction and `isRecoverySigner`. The `#recovery` upgrade on a recovery match is now an explicit `adoptRecoveryConfig`. Internal refactor — no behavior or public API changes.
+
+- 400549a: refactor: extract SignerManager from wallet.ts
+
+  Moves the device-independent signer-session core — the active signer, the recovery config, and the operations on them (`require`, `withRecoverySigner`, signer assembly, recovery-config adoption/secret-stripping, signer-state queries) — out of `wallet.ts` into a dedicated `SignerManager` (`services/signer-manager.ts`). `wallet.ts` delegates to it through a one-way seam; device recovery and `useSigner` orchestration remain in `Wallet`. Internal refactor — no behavior or public API changes.
+
+- cfe1f33: refactor(wallets): move SignerManager.require() per-type guidance into SignerDescriptor
+
+  `require()` no longer switches on the recovery signer type for its "no signer is set" guidance.
+  Each `SignerDescriptor` now provides `signerUnavailableReason(): string | null` — server and
+  external-wallet return their type-specific message, the rest return null and `require()` applies the
+  generic auto-assemblability fallback. Internal refactor — no behavior or public API changes.
+
+- fe8f948: fix: `signers()` error names the unsupported chain type instead of the wallet type
+
+  When a smart wallet has an unsupported `chainType`, `signers()` now throws
+  `Wallet chain type <chainType> not supported` instead of the misleading
+  `Wallet type smart not supported`. The supported-chain check is also now driven
+  by the chain adapter registry rather than hard-coded chain literals.
+
+- 84fafa0: fix(wallets): wipe server-signer key bytes on locator-only resolution (WAL-10667)
+
+  `ServerSignerResolver.apiLocator()` resolves a server signer to its on-chain locator (used by `addSigner` and by `send` with a server `options.signer`), which needs only the derived address. The selected candidate's `derivedKeyBytes` were left live in memory until GC — only the losing candidate was wiped. They are now `secureWipe`d unless the resolution is a cached slot, consistent with the existing secure-wipe hardening.
+
+- 2a8f396: fix(wallets): transaction-failure message + signature polling timeout (WAL-10670, WAL-10675)
+
+  - `waitForTransactionCompletion`: the `failed` branch interpolated `transactionResponse.error`, which is always falsy there (any truthy error already threw earlier in the loop), so consumers always saw `Transaction sending failed: undefined`. It now serializes the full failed transaction response.
+  - `waitForSignatureCompletion`: previously polled a perpetually-pending signature forever. It now honors a `timeoutMs` (default 60s, matching `waitForTransactionCompletion`) and throws the new `SignatureConfirmationTimeoutError` on timeout.
+
+- b484ab4: Fix wallet read + scope handling: nfts() now resolves the chain for the environment and throws on API errors (WAL-10671), transaction() serializes response.message instead of response.error (WAL-10672), and addSigner() fails loudly instead of silently dropping scopes when resuming a pending registration (WAL-10674).
+
 ## 1.6.0
 
 ### Minor Changes

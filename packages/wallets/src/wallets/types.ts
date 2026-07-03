@@ -129,6 +129,8 @@ export type FormattedEVMTransaction =
 
 export type SignerStatus = "success" | "active" | "pending" | "awaiting-approval" | "failed";
 
+export type PendingSignerOperation = { type: "signature" | "transaction"; id: string };
+
 export type SignerInput = {
     signer: string | ServerSignerConfig;
 };
@@ -214,6 +216,7 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
 };
 

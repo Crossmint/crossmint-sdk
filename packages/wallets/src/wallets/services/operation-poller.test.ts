@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient, WalletLocator } from "../../api";
 import {
+    SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
@@ -89,10 +90,10 @@ describe("operation-poller", () => {
 
         it.each([
             {
-                title: "throws TransactionSendingFailedError with message 'Transaction sending failed: undefined' when status is failed (WAL-10670)",
+                title: "throws TransactionSendingFailedError including the failed response payload when status is failed",
                 response: { id: "txn-fail", status: "failed" } as any,
                 errorClass: TransactionSendingFailedError,
-                message: "Transaction sending failed: undefined",
+                message: 'Transaction sending failed: {"id":"txn-fail","status":"failed"}',
             },
             {
                 title: "throws TransactionAwaitingApprovalError when transaction is awaiting-approval",
@@ -262,23 +263,11 @@ describe("operation-poller", () => {
             expect(mockApiClient.getSignature).toHaveBeenCalledWith("me:evm:smart", "sig-loop");
         });
 
-        it("polls indefinitely with no timeout while the signature stays pending (WAL-10675)", async () => {
-            let response: any = { id: "sig-forever", status: "pending" };
-            mockApiClient.getSignature.mockImplementation(async () => response);
-            const calls = () => mockApiClient.getSignature.mock.calls.length;
-            let settled = false;
-            const promise = pollSig("sig-forever").finally(() => {
-                settled = true;
-            });
-
-            await vi.advanceTimersByTimeAsync(600_000);
-            expect(settled).toBe(false);
-            expect(calls()).toBe(1_200);
-
-            response = { id: "sig-forever", status: "success", outputSignature: "0xeventualsig" };
-            await vi.runAllTimersAsync();
-            expect(await promise).toEqual({ signature: "0xeventualsig", signatureId: "sig-forever" });
-            expect(settled).toBe(true);
+        it("times out after the default 60s when the signature stays pending", async () => {
+            mockApiClient.getSignature.mockResolvedValue({ id: "sig-forever", status: "pending" } as any);
+            const error = await settleError(pollSig("sig-forever"));
+            expect(error).toBeInstanceOf(SignatureConfirmationTimeoutError);
+            expect(error.message).toBe("Signature confirmation timeout");
         });
 
         it("throws SignatureNotAvailableError when getSignature returns an error during polling", async () => {

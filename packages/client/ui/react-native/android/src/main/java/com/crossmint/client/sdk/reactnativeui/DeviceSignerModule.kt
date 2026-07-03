@@ -18,8 +18,9 @@ import kotlinx.coroutines.runBlocking
 class DeviceSignerModule : Module() {
 
     private val storage by lazy {
-        DeviceSignerStorageFactory.create()
-            ?: throw IllegalStateException("Device signer storage is not available on this platform")
+        val context = appContext.reactContext
+            ?: throw IllegalStateException("React context not available for device signer storage")
+        DeviceSignerStorageFactory.create(context)
     }
 
     override fun definition() = ModuleDefinition {

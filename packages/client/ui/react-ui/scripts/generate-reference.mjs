@@ -57,10 +57,12 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             "useCrossmintCheckout",
             "CrossmintEmbeddedCheckout",
             "CrossmintHostedCheckout",
+            "CrossmintPaymentMethodManagement",
         ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
+            CrossmintPaymentMethodManagement: "Saved payment method management UI",
         },
         getStartedExamples: {
             setup: "checkoutProviderSetup",

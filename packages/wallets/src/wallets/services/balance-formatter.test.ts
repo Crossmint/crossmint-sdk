@@ -153,6 +153,163 @@ describe("formatBalanceResponse", () => {
 
             expect(balances.tokens.map((t) => t.symbol)).toEqual(["dai", "wbtc"]);
         });
+
+        it("returns zero extra tokens when requestedTokens is an empty array", () => {
+            const balances = formatBalanceResponse(responseWithExtras, "base-sepolia", "eth", []);
+
+            expect(balances.tokens).toEqual([]);
+        });
+    });
+
+    describe("locator-based token matching", () => {
+        it("matches EVM token by chain-prefixed contractAddress locator", () => {
+            const balances = formatBalanceResponse(responseWithExtras, "base-sepolia", "eth", [
+                `base-sepolia:${DAI_ADDRESS}`,
+            ]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["dai"]);
+        });
+
+        it("matches EVM token by bare contractAddress", () => {
+            const balances = formatBalanceResponse(responseWithExtras, "base-sepolia", "eth", [DAI_ADDRESS]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["dai"]);
+        });
+
+        it("matches Solana token by prefixed mintHash locator", () => {
+            const mintHash = "XsbEhpSupF7MgvGDjRBj9VXMbRzNmj7ECqcNQNHPPPP";
+            const response = [
+                token("solana", {
+                    symbol: "sol",
+                    name: "Solana",
+                    amount: "10.0",
+                    rawAmount: "10000000000",
+                    decimals: 9,
+                }),
+                token(
+                    "solana",
+                    { symbol: "usdc", name: "USD Coin", amount: "50.0", rawAmount: "50000000", decimals: 6 },
+                    { mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" }
+                ),
+                token(
+                    "solana",
+                    { symbol: "AAPLx", name: "Apple Token", amount: "5.0", rawAmount: "5000000", decimals: 6 },
+                    { mintHash }
+                ),
+            ];
+
+            const balances = formatBalanceResponse(response, "solana", "sol", [`solana:${mintHash}`]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["AAPLx"]);
+        });
+
+        it("matches Solana token by bare mintHash", () => {
+            const mintHash = "XsbEhpSupF7MgvGDjRBj9VXMbRzNmj7ECqcNQNHPPPP";
+            const response = [
+                token("solana", {
+                    symbol: "sol",
+                    name: "Solana",
+                    amount: "10.0",
+                    rawAmount: "10000000000",
+                    decimals: 9,
+                }),
+                token(
+                    "solana",
+                    { symbol: "usdc", name: "USD Coin", amount: "50.0", rawAmount: "50000000", decimals: 6 },
+                    { mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" }
+                ),
+                token(
+                    "solana",
+                    { symbol: "AAPLx", name: "Apple Token", amount: "5.0", rawAmount: "5000000", decimals: 6 },
+                    { mintHash }
+                ),
+            ];
+
+            const balances = formatBalanceResponse(response, "solana", "sol", [mintHash]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["AAPLx"]);
+        });
+
+        it("matches Stellar token by prefixed contractId locator", () => {
+            const contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+            const response = [
+                token("stellar", {
+                    symbol: "xlm",
+                    name: "Stellar Lumens",
+                    amount: "100.0",
+                    rawAmount: "1000000000",
+                    decimals: 7,
+                }),
+                token(
+                    "stellar",
+                    { symbol: "usdc", name: "USD Coin", amount: "25.0", rawAmount: "25000000", decimals: 6 },
+                    { contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA" }
+                ),
+                token(
+                    "stellar",
+                    { symbol: "yUSDC", name: "Yield USDC", amount: "10.0", rawAmount: "10000000", decimals: 6 },
+                    { contractId }
+                ),
+            ];
+
+            const balances = formatBalanceResponse(response, "stellar", "xlm", [`stellar:${contractId}`]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["yUSDC"]);
+        });
+
+        it("matches Stellar token by bare contractId", () => {
+            const contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+            const response = [
+                token("stellar", {
+                    symbol: "xlm",
+                    name: "Stellar Lumens",
+                    amount: "100.0",
+                    rawAmount: "1000000000",
+                    decimals: 7,
+                }),
+                token(
+                    "stellar",
+                    { symbol: "usdc", name: "USD Coin", amount: "25.0", rawAmount: "25000000", decimals: 6 },
+                    { contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA" }
+                ),
+                token(
+                    "stellar",
+                    { symbol: "yUSDC", name: "Yield USDC", amount: "10.0", rawAmount: "10000000", decimals: 6 },
+                    { contractId }
+                ),
+            ];
+
+            const balances = formatBalanceResponse(response, "stellar", "xlm", [contractId]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["yUSDC"]);
+        });
+
+        it("performs case-insensitive matching for locators", () => {
+            const mintHash = "XsbEhpSupF7MgvGDjRBj9VXMbRzNmj7ECqcNQNHPPPP";
+            const response = [
+                token("solana", {
+                    symbol: "sol",
+                    name: "Solana",
+                    amount: "10.0",
+                    rawAmount: "10000000000",
+                    decimals: 9,
+                }),
+                token(
+                    "solana",
+                    { symbol: "usdc", name: "USD Coin", amount: "50.0", rawAmount: "50000000", decimals: 6 },
+                    { mintHash: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" }
+                ),
+                token(
+                    "solana",
+                    { symbol: "AAPLx", name: "Apple Token", amount: "5.0", rawAmount: "5000000", decimals: 6 },
+                    { mintHash }
+                ),
+            ];
+
+            const balances = formatBalanceResponse(response, "solana", "sol", [`SOLANA:${mintHash.toUpperCase()}`]);
+
+            expect(balances.tokens.map((t) => t.symbol)).toEqual(["AAPLx"]);
+        });
     });
 
     describe("nullish-coalescing defaults on transformed tokens", () => {

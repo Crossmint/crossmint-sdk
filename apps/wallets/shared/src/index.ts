@@ -11,3 +11,4 @@ export { TransferForm } from "./components/TransferForm";
 export { ActivityList } from "./components/ActivityList";
 export { ApprovalTest } from "./components/ApprovalTest";
 export { Permissions } from "./components/Permissions";
+export { ChainSwitcher } from "./components/ChainSwitcher";

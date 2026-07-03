@@ -66,6 +66,18 @@ export class KeyExportError extends Error {
         this.code = code;
     }
 }
+
+/**
+ * Thrown when the signer frame was reloaded between starting and completing onboarding, so the
+ * in-memory onboarding state (and the OTP issued for it) is gone. A fresh OTP has already been
+ * requested when this is thrown; the caller should prompt the user to enter the new code.
+ */
+export class OnboardingSessionExpiredError extends Error {
+    constructor(message = "The signer session expired before the code could be verified. A new code has been sent.") {
+        super(message);
+        this.name = "OnboardingSessionExpiredError";
+    }
+}
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
@@ -131,6 +143,7 @@ type BaseInternalSignerConfig = {
     address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
 };
 
 export type EmailInternalSignerConfig = EmailSignerConfig &

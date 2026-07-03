@@ -270,7 +270,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private resolveStellarSigner(signerOverride: string | ServerSignerConfig | undefined): string {
         if (signerOverride == null) {
-            return this.requireSigner().locator();
+            return this.signerManager.require().locator();
         }
         if (typeof signerOverride === "string") {
             return signerOverride;

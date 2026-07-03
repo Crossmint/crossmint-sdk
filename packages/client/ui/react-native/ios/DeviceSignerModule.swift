@@ -27,9 +27,7 @@ public class DeviceSignerModule: Module {
         // Generates a new P-256 key and persists it.
         AsyncFunction("generateKey") { (address: String?) async throws -> String in
             do {
-                let pubKey = try await self.defaultStorage().generateKey(address: address)
-                self.trackPublicKey(pubKey)
-                return pubKey
+                return try await DeviceSignerModule.defaultStorage().generateKey(address: address)
             } catch {
                 throw Exception(
                     name: "GenerateKeyFailed",
@@ -41,7 +39,7 @@ public class DeviceSignerModule: Module {
         // Renames the pending Keychain entry to a wallet-address entry.
         AsyncFunction("mapAddressToKey") { (address: String, publicKeyBase64: String) async throws in
             do {
-                try await self.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
+                try await DeviceSignerModule.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
             } catch {
                 throw Exception(name: "MapAddressToKeyFailed", description: "mapAddressToKey failed: \(error)")
             }
@@ -49,18 +47,18 @@ public class DeviceSignerModule: Module {
 
         // Returns the stored public key for a wallet address, or nil.
         AsyncFunction("getKey") { (address: String) async -> String? in
-            await self.defaultStorage().getKey(address: address)
+            await DeviceSignerModule.defaultStorage().getKey(address: address)
         }
 
-        // Returns true if a key with the given public key was generated on this device.
+        // Returns true if the private key for the given public key is present on this device.
         AsyncFunction("hasKey") { (publicKeyBase64: String) -> Bool in
-            self.trackedPublicKeys().contains(publicKeyBase64)
+            DeviceSignerModule.defaultStorage().hasKey(publicKeyBase64: publicKeyBase64)
         }
 
         // Signs a base64-encoded message; returns { r, s } hex strings.
         AsyncFunction("signMessage") { (address: String, message: String) async throws -> [String: String] in
             do {
-                let sig = try await self.defaultStorage().signMessage(address: address, message: message)
+                let sig = try await DeviceSignerModule.defaultStorage().signMessage(address: address, message: message)
                 return ["r": sig.r, "s": sig.s]
             } catch {
                 throw Exception(name: "SignMessageFailed", description: "signMessage failed: \(error)")
@@ -69,78 +67,32 @@ public class DeviceSignerModule: Module {
 
         // Deletes the key for a wallet address.
         AsyncFunction("deleteKey") { (address: String) async throws in
-            let pubKey = await self.defaultStorage().getKey(address: address)
-            try await self.defaultStorage().deleteKey(address: address)
-            if let pubKey = pubKey {
-                self.untrackPublicKey(pubKey)
-            }
+            try await DeviceSignerModule.defaultStorage().deleteKey(address: address)
         }
 
         // Deletes a pending key that was never promoted to a wallet-address key.
         AsyncFunction("deletePendingKey") { (publicKeyBase64: String) async throws in
-            try await self.defaultStorage().deletePendingKey(publicKeyBase64: publicKeyBase64)
-            self.untrackPublicKey(publicKeyBase64)
+            try await DeviceSignerModule.defaultStorage().deletePendingKey(publicKeyBase64: publicKeyBase64)
         }
-    }
-
-    // MARK: - Public key index (Keychain-backed)
-
-    private static let indexService = "com.crossmint.device-signer"
-    private static let indexAccount = "public_key_index"
-
-    private func trackedPublicKeys() -> Set<String> {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.indexService,
-            kSecAttrAccount as String: Self.indexAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data,
-              let keys = try? JSONDecoder().decode([String].self, from: data)
-        else { return [] }
-        return Set(keys)
-    }
-
-    private func saveTrackedPublicKeys(_ keys: Set<String>) {
-        guard let data = try? JSONEncoder().encode(Array(keys)) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Self.indexService,
-            kSecAttrAccount as String: Self.indexAccount,
-        ]
-        let status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        if status == errSecItemNotFound {
-            var addQuery = query
-            addQuery[kSecValueData as String] = data
-            SecItemAdd(addQuery as CFDictionary, nil)
-        }
-    }
-
-    private func trackPublicKey(_ pubKey: String) {
-        var keys = trackedPublicKeys()
-        keys.insert(pubKey)
-        saveTrackedPublicKeys(keys)
-    }
-
-    private func untrackPublicKey(_ pubKey: String) {
-        var keys = trackedPublicKeys()
-        keys.remove(pubKey)
-        saveTrackedPublicKeys(keys)
     }
 
     // MARK: - Private helpers
 
-    private func defaultStorage() -> any DeviceSignerKeyStorage {
+    // Declared `static` so the `@Sendable` `AsyncFunction` closures above don't
+    // capture `self`. `DeviceSignerModule` is a `Module` subclass and is not
+    // `Sendable`, so capturing it in a `@Sendable` closure is an error under Swift 6
+    // strict concurrency (the closures became `@Sendable` in newer `ExpoModulesCore`).
+    // Backend selection reads only compile-time (`targetEnvironment`) and global
+    // (`SecureEnclave.isAvailable`) state, so no per-instance context is needed —
+    // behavior is identical to the previous instance method.
+    private static func defaultStorage() -> any DeviceSignerKeyStorage {
         #if targetEnvironment(simulator)
-        return SoftwareDeviceSignerKeyStorage()
+        return KeychainKeyStorage()
         #else
         if SecureEnclave.isAvailable {
             return SecureEnclaveKeyStorage()
         } else {
-            return SoftwareDeviceSignerKeyStorage()
+            return KeychainKeyStorage()
         }
         #endif
     }

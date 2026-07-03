@@ -1,5 +1,74 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.4.0
+
+### Minor Changes
+
+- b993632: Fix Android device signer key lookup failures on low-end devices by injecting the React context directly into `KeystoreKeyStorage` instead of relying on a `ContentProvider` to set it via a static singleton.
+
+  The `DeviceSignerModule` now passes `appContext.reactContext` to `DeviceSignerStorageFactory.create(context)`, bypassing the `DeviceSignerContextHolder` initialization race that caused `SharedPreferences` to be permanently unavailable on some devices.
+
+  Requires `com.crossmint:sdk-device-signer` >= 0.0.16 (with the `create(context)` factory overload).
+
+- faa97e3: Fix iOS build failure under Swift 6 strict concurrency (Expo SDK 56+).
+
+  The native `DeviceSignerModule` called an instance helper (`self.defaultStorage()`) inside Expo's `AsyncFunction` closures. Those closures are `@Sendable` in newer `ExpoModulesCore`, and `DeviceSignerModule` (an `ExpoModulesCore.Module` subclass) is not `Sendable`, so capturing `self` is an error under the Swift 6 language mode that newer Xcode toolchains enforce.
+
+  The storage-selection helper is now a `static` method, so the closures no longer capture `self`. Behavior is unchanged — it reads only compile-time (`targetEnvironment`) and global (`SecureEnclave.isAvailable`) state.
+
+## 1.3.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [02b275e]
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-base@2.5.0
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-react-base@2.1.0
+  - @crossmint/client-sdk-auth@1.3.15
+  - @crossmint/common-sdk-auth@1.1.13
+  - @crossmint/client-sdk-rn-window@0.3.17
+
+## 1.2.13
+
+### Patch Changes
+
+- Updated dependencies [890d49a]
+  - @crossmint/wallets-sdk@1.6.2
+  - @crossmint/client-sdk-react-base@2.0.31
+
+## 1.2.12
+
+### Patch Changes
+
+- 696adbe: Add checkout product to SDK reference docs generation pipeline
+- cfa3985: Fix device signers failing with `keyNotFound` after restoring a wallet onto a new phone. `hasKey` now checks the live keychain instead of a backup-eligible record, so a key that did not transfer to the new device is detected as missing and the device re-registers a fresh signer.
+- Updated dependencies [fe8f948]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+  - @crossmint/client-sdk-react-base@2.0.30
+
 ## 1.2.11
 
 ### Patch Changes

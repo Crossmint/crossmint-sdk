@@ -9,6 +9,7 @@ import { TransferForm } from "../snippets/05-transfer-form";
 import { Activity } from "../snippets/06-activity";
 import { Permissions } from "../snippets/07-permissions";
 import { ApprovalTest } from "../snippets/08-approval-test";
+import { ChainSwitcherSection } from "../snippets/09-chain-switcher";
 
 function AppContent() {
     const { user, logout, status: authStatus } = useCrossmintAuth();
@@ -46,8 +47,9 @@ function AppContent() {
                 <Text style={{ color: "#6B7280", marginBottom: 16 }}>Fetching wallet...</Text>
             )}
 
-            {walletStatus === "loaded" && wallet && (
+            {(walletStatus === "loaded" || walletStatus === "error") && wallet && (
                 <View style={{ gap: 16 }}>
+                    <ChainSwitcherSection />
                     <BalanceCard />
                     <TransferForm />
                     <Activity />

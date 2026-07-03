@@ -18,6 +18,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
 > {
     handshakeOptions: Required<HandshakeOptions>;
     isConnected = false;
+    connectionGeneration = 0;
     private _ongoingHandshakeWithChild?: Promise<void>;
 
     constructor(
@@ -81,6 +82,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         });
 
         this.isConnected = true;
+        this.connectionGeneration++;
         console.info("[HandshakeParent] Handshake completed");
     }
 
