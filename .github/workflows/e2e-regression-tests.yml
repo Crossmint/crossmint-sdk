@@ -55,6 +55,10 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+                  # Per-browser wallet identity: browser jobs run concurrently, and
+                  # simultaneous OTP requests for the same email get rate-limited/blocked.
+                  # Each browser gets its own persistent wallet, reused across runs.
+                  TESTS_WALLET_EMAIL_SUFFIX: e2e-${{ matrix.browser }}
               run: |
                   mkdir -p test-results
                   pnpm exec playwright test --project=${{ matrix.browser }} || true
