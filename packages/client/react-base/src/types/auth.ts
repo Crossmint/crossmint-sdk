@@ -26,8 +26,12 @@ export type CrossmintAuthBaseContextType = {
 
 export type CrossmintAuthBaseProviderProps = {
     children: ReactNode;
+    /** Callback invoked when the user successfully logs in. */
     onLoginSuccess?: () => void;
+    /** Custom route for refreshing the auth token, for server-side session management. */
     refreshRoute?: string;
+    /** Custom route for logging out, for server-side session management. */
     logoutRoute?: string;
+    /** Custom storage provider for auth material. Defaults to browser cookies. */
     storageProvider?: StorageProvider;
 };

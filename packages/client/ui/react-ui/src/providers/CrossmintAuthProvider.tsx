@@ -169,6 +169,11 @@ function AuthWrapper({
     return <>{children}</>;
 }
 
+/**
+ * Provides Crossmint authentication to your app: email OTP, social login (OAuth), and session management.
+ * Exposes auth state via the `useCrossmintAuth` hook and renders the login modal when `login()` is called.
+ * Must be nested inside `CrossmintProvider`.
+ */
 export function CrossmintAuthProvider({
     children,
     appearance,
