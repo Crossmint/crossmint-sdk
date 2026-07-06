@@ -52,27 +52,27 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
 
             test("transfers funds", async ({ authenticatedPage, testConfig }) => {
                 const walletAddress = await getWalletAddress(authenticatedPage);
+                // Transfer the minimum practical amount so the reused wallet's funds
+                // last across many runs without needing the faucet.
+                const transferAmount = "0.01";
 
-                // Fund wallet before transfer test
-                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                // Only hit the faucet when the reused wallet doesn't have enough USDXM
+                const initialBalance = await getWalletBalance(authenticatedPage);
+                const initialBalanceNum = parseFloat(initialBalance);
+                if (initialBalanceNum < parseFloat(transferAmount)) {
+                    await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                    // Wait a moment for the funding to complete
+                    await authenticatedPage.waitForTimeout(2000);
+                } else {
+                    console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
+                }
+
                 // Solana token transfers require native SOL for transaction fees.
                 // The Crossmint faucet only funds USDXM; without SOL the tx is
                 // submitted but never confirms (silent on-chain failure).
+                // Skips internally when the reused wallet already holds SOL.
                 if (testConfig.chain === "solana") {
                     await fundWalletWithSolAirdrop(walletAddress);
-                }
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
-
-                const initialBalance = await getWalletBalance(authenticatedPage);
-                const initialBalanceNum = parseFloat(initialBalance);
-
-                // Log warning if balance is low but continue with test
-                if (initialBalanceNum < 0.0001) {
-                    console.log(
-                        `⚠️ ${testConfig.chain}:${testConfig.signer}:${walletAddress} wallet balance is low (${initialBalanceNum}). Test may fail if insufficient funds.`
-                    );
-                    console.log(`💡 Please fund wallet: ${walletAddress} with some stablecoin for successful transfer`);
                 }
 
                 let recipientAddress: string;
@@ -86,7 +86,7 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                     throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
-                await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
+                await transferFunds(authenticatedPage, recipientAddress, transferAmount, testConfig.signer);
 
                 console.log(
                     `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -115,21 +115,20 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                     throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
-                const transferAmount = "10";
+                // Transfer the minimum practical amount so the reused wallet's funds
+                // last across many runs without needing the faucet.
+                const transferAmount = "0.01";
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
-                // Fund wallet before prepared transaction test with the same amount we'll transfer
-                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
-
-                // Check wallet balance and log warning if 0
+                // Only hit the faucet when the reused wallet doesn't have enough USDXM
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
-
-                if (initialBalanceNum === 0) {
-                    console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-                    console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM for successful transaction`);
+                if (initialBalanceNum < parseFloat(transferAmount)) {
+                    await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
+                    // Wait a moment for the funding to complete
+                    await authenticatedPage.waitForTimeout(2000);
+                } else {
+                    console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }
 
                 const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();
