@@ -90,7 +90,15 @@ export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<v
         }
     }
 
-    console.error(`❌ All airdrop attempts failed for ${walletAddress} (balance: ${balanceSol} SOL)`);
+    // Re-check the balance: an airdrop may have landed on-chain even if its
+    // confirmation timed out, in which case the wallet is funded and we can proceed.
+    const finalBalanceSol = (await connection.getBalance(publicKey)) / LAMPORTS_PER_SOL;
+    if (finalBalanceSol >= MIN_SOL_FOR_FEES) {
+        console.log(`✅ Wallet ${walletAddress} holds ${finalBalanceSol} SOL despite airdrop errors, continuing`);
+        return;
+    }
+
+    console.error(`❌ All airdrop attempts failed for ${walletAddress} (balance: ${finalBalanceSol} SOL)`);
     throw lastError;
 }
 
