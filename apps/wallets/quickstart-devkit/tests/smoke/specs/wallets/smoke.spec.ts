@@ -107,7 +107,7 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
         const walletAddress = await getWalletAddress(authenticatedPage);
         // Transfer the minimum practical amount so the reused wallet's funds
         // last across many runs without needing the faucet.
-        const transferAmount = "0.01";
+        const transferAmount = "0.001";
 
         // Only hit the faucet when the reused wallet doesn't have enough USDXM
         const balance = await getWalletBalance(authenticatedPage);
@@ -150,7 +150,7 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
         const recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
         // Transfer the minimum practical amount so the reused wallet's funds
         // last across many runs without needing the faucet.
-        const transferAmount = "0.01";
+        const transferAmount = "0.001";
         const walletAddress = await getWalletAddress(authenticatedPage);
 
         expectAuth(recipientAddress).toBeTruthy();

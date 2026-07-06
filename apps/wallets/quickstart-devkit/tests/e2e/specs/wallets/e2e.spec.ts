@@ -54,7 +54,7 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                 const walletAddress = await getWalletAddress(authenticatedPage);
                 // Transfer the minimum practical amount so the reused wallet's funds
                 // last across many runs without needing the faucet.
-                const transferAmount = "0.01";
+                const transferAmount = "0.001";
 
                 // Only hit the faucet when the reused wallet doesn't have enough USDXM
                 const initialBalance = await getWalletBalance(authenticatedPage);
@@ -117,7 +117,7 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
 
                 // Transfer the minimum practical amount so the reused wallet's funds
                 // last across many runs without needing the faucet.
-                const transferAmount = "0.01";
+                const transferAmount = "0.001";
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
                 // Only hit the faucet when the reused wallet doesn't have enough USDXM
