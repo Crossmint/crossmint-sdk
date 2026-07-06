@@ -48,23 +48,58 @@ export async function fundWalletWithCrossmintFaucet(
     }
 }
 
+const SOLANA_DEVNET_RPC_URL = process.env.SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com";
+// Minimum SOL needed to pay transfer fees + recipient ATA rent (~0.002 SOL).
+const MIN_SOL_FOR_FEES = 0.003;
+// Airdrop the maximum the devnet faucet allows, falling back to smaller amounts
+// (the per-request cap varies; large requests can fail with "Internal error").
+// Since test wallets are reused across runs, a single successful airdrop keeps
+// the wallet funded for thousands of transfers.
+const AIRDROP_AMOUNTS_SOL = [5, 2, 1, 0.1];
+
 /**
- * Airdrops native SOL from Solana devnet so the wallet can pay transaction fees.
+ * Ensures the wallet holds native SOL so it can pay transaction fees.
  * The Crossmint faucet only funds USDXM; without SOL the transfer tx is submitted
  * but never confirmed (silent on-chain failure due to insufficient fee balance).
+ *
+ * Skips the airdrop entirely when the (reused) wallet is already funded, so the
+ * heavily rate-limited devnet faucet is only hit when strictly necessary.
  */
-export async function fundWalletWithSolAirdrop(walletAddress: string, amountSol = 0.01): Promise<void> {
-    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-    console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
-    try {
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-        const signature = await connection.requestAirdrop(new PublicKey(walletAddress), amountSol * LAMPORTS_PER_SOL);
-        await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
-        console.log(`✅ SOL airdrop confirmed for ${walletAddress}`);
-    } catch (error) {
-        console.error(`❌ Failed to airdrop SOL to ${walletAddress}:`, error);
-        throw error;
+export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<void> {
+    const connection = new Connection(SOLANA_DEVNET_RPC_URL, "confirmed");
+    const publicKey = new PublicKey(walletAddress);
+
+    const balanceSol = (await connection.getBalance(publicKey)) / LAMPORTS_PER_SOL;
+    if (balanceSol >= MIN_SOL_FOR_FEES) {
+        console.log(`✅ Wallet ${walletAddress} already holds ${balanceSol} SOL, skipping airdrop`);
+        return;
     }
+
+    let lastError: unknown;
+    for (const amountSol of AIRDROP_AMOUNTS_SOL) {
+        console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
+        try {
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            const signature = await connection.requestAirdrop(publicKey, amountSol * LAMPORTS_PER_SOL);
+            await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+            console.log(`✅ SOL airdrop of ${amountSol} SOL confirmed for ${walletAddress}`);
+            return;
+        } catch (error) {
+            lastError = error;
+            console.warn(`⚠️ Airdrop of ${amountSol} SOL failed for ${walletAddress}:`, error);
+        }
+    }
+
+    // Re-check the balance: an airdrop may have landed on-chain even if its
+    // confirmation timed out, in which case the wallet is funded and we can proceed.
+    const finalBalanceSol = (await connection.getBalance(publicKey)) / LAMPORTS_PER_SOL;
+    if (finalBalanceSol >= MIN_SOL_FOR_FEES) {
+        console.log(`✅ Wallet ${walletAddress} holds ${finalBalanceSol} SOL despite airdrop errors, continuing`);
+        return;
+    }
+
+    console.error(`❌ All airdrop attempts failed for ${walletAddress} (balance: ${finalBalanceSol} SOL)`);
+    throw lastError;
 }
 
 export async function getWalletAddress(page: Page): Promise<string> {

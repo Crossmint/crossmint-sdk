@@ -56,6 +56,9 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+                  # Dedicated persistent wallet identity so smoke runs never share
+                  # emails (and OTP requests) with concurrently running e2e jobs.
+                  TESTS_WALLET_EMAIL_SUFFIX: smoke
               run: |
                   pnpm exec playwright test --project=smoke
 
