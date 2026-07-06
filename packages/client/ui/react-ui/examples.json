@@ -33,7 +33,7 @@
         "language": "tsx"
     },
     "EmbeddedAuthForm": {
-        "code": "import { CrossmintAuthProvider, EmbeddedAuthForm, useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginPage() {\n    const { status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return <p>You are logged in!</p>;\n    }\n\n    return (\n        <div style={{ maxWidth: 400, margin: \"0 auto\" }}>\n            <EmbeddedAuthForm />\n        </div>\n    );\n}",
+        "code": "import { EmbeddedAuthForm, useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginPage() {\n    const { status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return <p>You are logged in!</p>;\n    }\n\n    return (\n        <div style={{ maxWidth: 400, margin: \"0 auto\" }}>\n            <EmbeddedAuthForm />\n        </div>\n    );\n}",
         "language": "tsx",
         "note": "Must be rendered inside CrossmintAuthProvider. Renders the same auth form shown in the login modal, but inline in your page."
     },
