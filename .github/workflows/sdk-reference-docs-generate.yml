@@ -27,9 +27,9 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native). Defaults to all."
                 required: false
-                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react"
+                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native"
                 type: string
 
 permissions:
@@ -56,7 +56,7 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "wallets_react=false" >> $GITHUB_OUTPUT
@@ -65,6 +65,7 @@ jobs:
                   echo "checkout_react=false" >> $GITHUB_OUTPUT
                   echo "checkout_react_native=false" >> $GITHUB_OUTPUT
                   echo "auth_react=false" >> $GITHUB_OUTPUT
+                  echo "auth_react_native=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",wallets/react,"; then
                     echo "wallets_react=true" >> $GITHUB_OUTPUT
                   fi
@@ -82,6 +83,9 @@ jobs:
                   fi
                   if echo ",$PACKAGES," | grep -q ",auth/react,"; then
                     echo "auth_react=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",auth/react-native,"; then
+                    echo "auth_react_native=true" >> $GITHUB_OUTPUT
                   fi
 
             - name: Generate React UI docs (wallets)
@@ -103,6 +107,11 @@ jobs:
               if: steps.packages.outputs.wallets_react_native == 'true'
               working-directory: packages/client/ui/react-native
               run: pnpm generate:docs --product wallets
+
+            - name: Generate React Native docs (auth)
+              if: steps.packages.outputs.auth_react_native == 'true'
+              working-directory: packages/client/ui/react-native
+              run: pnpm generate:docs --product auth
 
             - name: Generate React Native docs (checkout)
               if: steps.packages.outputs.checkout_react_native == 'true'
@@ -129,6 +138,7 @@ jobs:
                   CHECKOUT_REACT_ENABLED: ${{ steps.packages.outputs.checkout_react }}
                   CHECKOUT_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.checkout_react_native }}
                   AUTH_REACT_ENABLED: ${{ steps.packages.outputs.auth_react }}
+                  AUTH_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.auth_react_native }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
@@ -136,6 +146,7 @@ jobs:
                   mkdir -p sdk-reference/checkout/react
                   mkdir -p sdk-reference/checkout/react-native
                   mkdir -p sdk-reference/auth/react
+                  mkdir -p sdk-reference/auth/react-native
 
                   if [ "$WALLETS_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
                     cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
@@ -159,6 +170,10 @@ jobs:
 
                   if [ "$AUTH_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/auth ]; then
                     cp -r packages/client/ui/react-ui/docs/auth/. sdk-reference/auth/react/
+                  fi
+
+                  if [ "$AUTH_REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/auth ]; then
+                    cp -r packages/client/ui/react-native/docs/auth/. sdk-reference/auth/react-native/
                   fi
 
             - name: Verify at least one package was generated
@@ -191,4 +206,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'

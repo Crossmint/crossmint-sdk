@@ -48,6 +48,26 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{
             quickExampleIntro: "Once providers are set up, use hooks to access wallet state:",
         },
     },
+    auth: {
+        outdir: "auth",
+        navPrefix: "sdk-reference/auth/react-native",
+        title: "React Native SDK",
+        description: "React Native SDK reference for Crossmint authentication",
+        packageName: "@crossmint/client-sdk-react-native-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui",
+        installSnippet: "client-sdk-react-native-ui-installation-cmd.mdx",
+        intro: "The Crossmint React Native SDK (`@crossmint/client-sdk-react-native-ui`) provides React Native providers and hooks for integrating Crossmint authentication into your mobile application, including email OTP, social login (OAuth), and session management.",
+        exports: ["CrossmintProvider", "CrossmintAuthProvider", "useCrossmintAuth"],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+            CrossmintAuthProvider: "Authentication state, login/logout, and the auth flow",
+        },
+        getStartedExamples: {
+            setup: "rnAuthProviderSetup",
+            quickExample: "rnAuthQuickExample",
+            quickExampleIntro: "Once providers are set up, use the `useCrossmintAuth` hook to access auth state:",
+        },
+    },
     checkout: {
         outdir: "checkout",
         navPrefix: "sdk-reference/checkout/react-native",

@@ -32,6 +32,6 @@ export type CrossmintAuthBaseProviderProps = {
     refreshRoute?: string;
     /** Custom route for logging out, for server-side session management. */
     logoutRoute?: string;
-    /** Custom storage provider for auth material. Defaults to browser cookies. */
+    /** Custom storage provider for auth material. Defaults to browser cookies on web and secure device storage on React Native. */
     storageProvider?: StorageProvider;
 };

@@ -1,6 +1,7 @@
 {
     "entryPoints": [
         "src/index.ts",
+        "src/types/auth.ts",
         "../../base/src/types/embed/v3/CrossmintEmbeddedCheckoutV3Props.ts",
         "../../base/src/types/index.ts",
         "../../../common/base/src/types/uiconfig.ts"
