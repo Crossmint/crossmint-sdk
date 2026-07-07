@@ -28,8 +28,22 @@
         "language": "tsx",
         "note": "CrossmintWalletProvider must be nested inside CrossmintProvider."
     },
-    "useAuth": {
-        "code": "import { useAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginButton() {\n    const { login, logout, user, status } = useAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
+    "useCrossmintAuth": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginButton() {\n    const { login, logout, user, status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
+        "language": "tsx"
+    },
+    "EmbeddedAuthForm": {
+        "code": "import { EmbeddedAuthForm, useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginPage() {\n    const { status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return <p>You are logged in!</p>;\n    }\n\n    return (\n        <div style={{ maxWidth: 400, margin: \"0 auto\" }}>\n            <EmbeddedAuthForm />\n        </div>\n    );\n}",
+        "language": "tsx",
+        "note": "Must be rendered inside CrossmintAuthProvider. Renders the same auth form shown in the login modal, but inline in your page."
+    },
+    "authProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintAuthProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintAuthProvider loginMethods={[\"email\", \"google\"]}>\n                {/* Your app content */}\n            </CrossmintAuthProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintAuthProvider must be nested inside CrossmintProvider."
+    },
+    "authQuickExample": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction AuthButton() {\n    const { login, logout, user, status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
         "language": "tsx"
     },
     "useWallet": {

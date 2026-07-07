@@ -37,6 +37,24 @@
         "language": "tsx",
         "note": "Only works with email and phone signers. Will not render for passkey or external wallet signers."
     },
+    "rnAuthProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintAuthProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintAuthProvider appSchema=\"myapp://\">\n                {/* Your app components */}\n            </CrossmintAuthProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "rnAuthQuickExample": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text, TouchableOpacity } from \"react-native\";\n\nfunction LoginScreen() {\n    const { loginWithOAuth, logout, user, status } = useCrossmintAuth();\n\n    if (status === \"initializing\") return <Text>Loading...</Text>;\n\n    if (user == null) {\n        return (\n            <TouchableOpacity onPress={() => loginWithOAuth(\"google\")}>\n                <Text>Sign in with Google</Text>\n            </TouchableOpacity>\n        );\n    }\n\n    return (\n        <View>\n            <Text>Welcome, {user.email}</Text>\n            <TouchableOpacity onPress={logout}>\n                <Text>Log out</Text>\n            </TouchableOpacity>\n        </View>\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintAuthProvider": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintAuthProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintAuthProvider appSchema=\"myapp://\">\n                {/* Your app content */}\n            </CrossmintAuthProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintAuthProvider must be nested inside CrossmintProvider. Set appSchema to your app's deep link scheme so OAuth redirects return to your app."
+    },
+    "useCrossmintAuth": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-native-ui\";\nimport { View, Text, TouchableOpacity } from \"react-native\";\n\nfunction AuthStatus() {\n    const { loginWithOAuth, logout, user, jwt, status } = useCrossmintAuth();\n\n    if (status === \"initializing\") return <Text>Loading...</Text>;\n\n    return (\n        <View>\n            {user == null ? (\n                <TouchableOpacity onPress={() => loginWithOAuth(\"google\")}>\n                    <Text>Log in</Text>\n                </TouchableOpacity>\n            ) : (\n                <TouchableOpacity onPress={logout}>\n                    <Text>Log out ({user.email})</Text>\n                </TouchableOpacity>\n            )}\n        </View>\n    );\n}",
+        "language": "tsx",
+        "note": "Must be used within a CrossmintAuthProvider."
+    },
     "rnCheckoutProviderSetup": {
         "code": "import {\n    CrossmintProvider,\n    CrossmintCheckoutProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintCheckoutProvider>\n                {/* Your checkout components */}\n            </CrossmintCheckoutProvider>\n        </CrossmintProvider>\n    );\n}",
         "language": "tsx"

@@ -8,6 +8,10 @@ interface RNCrossmintAuthContext extends CrossmintAuthBaseContextType {
     createAuthSession: (urlOrOneTimeSecret: string) => Promise<AuthMaterialWithUser | null>;
 }
 
+/**
+ * Access Crossmint authentication state and actions: `loginWithOAuth`, `logout`, the current `user`, `jwt`, and auth `status`.
+ * Must be used within a `CrossmintAuthProvider`.
+ */
 export function useCrossmintAuth(): RNCrossmintAuthContext {
     const context = useContext(AuthContext);
     if (context == null) {

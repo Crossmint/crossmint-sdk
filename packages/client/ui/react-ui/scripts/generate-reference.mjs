@@ -42,6 +42,27 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             quickExampleIntro: "Once providers are set up, use hooks to access wallet state:",
         },
     },
+    auth: {
+        outdir: "auth",
+        navPrefix: "sdk-reference/auth/react",
+        title: "React SDK",
+        description: "React SDK reference for Crossmint authentication",
+        packageName: "@crossmint/client-sdk-react-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
+        installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
+        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides React components and hooks for integrating Crossmint authentication into your application, including email OTP, social login (OAuth), and session management.",
+        exports: ["CrossmintProvider", "CrossmintAuthProvider", "useCrossmintAuth", "EmbeddedAuthForm"],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+            CrossmintAuthProvider: "Authentication state, login/logout, and the auth modal",
+            EmbeddedAuthForm: "Renders the Crossmint auth form inline instead of in a modal",
+        },
+        getStartedExamples: {
+            setup: "authProviderSetup",
+            quickExample: "authQuickExample",
+            quickExampleIntro: "Once providers are set up, use the `useCrossmintAuth` hook to access auth state:",
+        },
+    },
     checkout: {
         outdir: "checkout",
         navPrefix: "sdk-reference/checkout/react",

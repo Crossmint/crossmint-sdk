@@ -8,6 +8,11 @@ on:
             - "packages/wallets/typedoc.json"
             - "packages/wallets/tsconfig.typedoc.json"
             - "packages/wallets/typedoc-custom-plugin.mjs"
+            - "packages/server/src/**"
+            - "packages/server/README.md"
+            - "packages/server/typedoc.json"
+            - "packages/server/tsconfig.typedoc.json"
+            - "packages/server/typedoc-custom-plugin.mjs"
             - "packages/client/ui/react-ui/src/**"
             - "packages/client/ui/react-ui/scripts/**"
             - "packages/client/ui/react-ui/examples.json"
@@ -27,9 +32,9 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native, auth/typescript). Defaults to all."
                 required: false
-                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native"
+                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript"
                 type: string
 
 permissions:
@@ -56,7 +61,7 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "wallets_react=false" >> $GITHUB_OUTPUT
@@ -64,6 +69,9 @@ jobs:
                   echo "wallets_typescript=false" >> $GITHUB_OUTPUT
                   echo "checkout_react=false" >> $GITHUB_OUTPUT
                   echo "checkout_react_native=false" >> $GITHUB_OUTPUT
+                  echo "auth_react=false" >> $GITHUB_OUTPUT
+                  echo "auth_react_native=false" >> $GITHUB_OUTPUT
+                  echo "auth_typescript=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",wallets/react,"; then
                     echo "wallets_react=true" >> $GITHUB_OUTPUT
                   fi
@@ -79,6 +87,15 @@ jobs:
                   if echo ",$PACKAGES," | grep -q ",checkout/react-native,"; then
                     echo "checkout_react_native=true" >> $GITHUB_OUTPUT
                   fi
+                  if echo ",$PACKAGES," | grep -q ",auth/react,"; then
+                    echo "auth_react=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",auth/react-native,"; then
+                    echo "auth_react_native=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",auth/typescript,"; then
+                    echo "auth_typescript=true" >> $GITHUB_OUTPUT
+                  fi
 
             - name: Generate React UI docs (wallets)
               if: steps.packages.outputs.wallets_react == 'true'
@@ -90,10 +107,20 @@ jobs:
               working-directory: packages/client/ui/react-ui
               run: pnpm generate:docs --product checkout
 
+            - name: Generate React UI docs (auth)
+              if: steps.packages.outputs.auth_react == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs --product auth
+
             - name: Generate React Native docs (wallets)
               if: steps.packages.outputs.wallets_react_native == 'true'
               working-directory: packages/client/ui/react-native
               run: pnpm generate:docs --product wallets
+
+            - name: Generate React Native docs (auth)
+              if: steps.packages.outputs.auth_react_native == 'true'
+              working-directory: packages/client/ui/react-native
+              run: pnpm generate:docs --product auth
 
             - name: Generate React Native docs (checkout)
               if: steps.packages.outputs.checkout_react_native == 'true'
@@ -112,6 +139,18 @@ jobs:
                     mv docs/README.mdx docs/overview.mdx
                   fi
 
+            - name: Generate Node Server SDK docs (auth)
+              if: steps.packages.outputs.auth_typescript == 'true'
+              working-directory: packages/server
+              run: |
+                  pnpm generate:docs
+                  if [ -f docs/auth/globals.mdx ]; then
+                    mv docs/auth/globals.mdx docs/auth/reference.mdx
+                  fi
+                  if [ -f docs/auth/README.mdx ]; then
+                    mv docs/auth/README.mdx docs/auth/overview.mdx
+                  fi
+
             - name: Collect generated files
               env:
                   WALLETS_REACT_ENABLED: ${{ steps.packages.outputs.wallets_react }}
@@ -119,12 +158,18 @@ jobs:
                   WALLETS_TYPESCRIPT_ENABLED: ${{ steps.packages.outputs.wallets_typescript }}
                   CHECKOUT_REACT_ENABLED: ${{ steps.packages.outputs.checkout_react }}
                   CHECKOUT_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.checkout_react_native }}
+                  AUTH_REACT_ENABLED: ${{ steps.packages.outputs.auth_react }}
+                  AUTH_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.auth_react_native }}
+                  AUTH_TYPESCRIPT_ENABLED: ${{ steps.packages.outputs.auth_typescript }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
                   mkdir -p sdk-reference/wallets/typescript
                   mkdir -p sdk-reference/checkout/react
                   mkdir -p sdk-reference/checkout/react-native
+                  mkdir -p sdk-reference/auth/react
+                  mkdir -p sdk-reference/auth/react-native
+                  mkdir -p sdk-reference/auth/typescript
 
                   if [ "$WALLETS_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
                     cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
@@ -144,6 +189,18 @@ jobs:
 
                   if [ "$CHECKOUT_REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/checkout ]; then
                     cp -r packages/client/ui/react-native/docs/checkout/. sdk-reference/checkout/react-native/
+                  fi
+
+                  if [ "$AUTH_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/auth ]; then
+                    cp -r packages/client/ui/react-ui/docs/auth/. sdk-reference/auth/react/
+                  fi
+
+                  if [ "$AUTH_REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/auth ]; then
+                    cp -r packages/client/ui/react-native/docs/auth/. sdk-reference/auth/react-native/
+                  fi
+
+                  if [ "$AUTH_TYPESCRIPT_ENABLED" == "true" ] && [ -d packages/server/docs/auth ]; then
+                    cp -r packages/server/docs/auth/. sdk-reference/auth/typescript/
                   fi
 
             - name: Verify at least one package was generated
@@ -176,4 +233,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
