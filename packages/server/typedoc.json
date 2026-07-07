@@ -1,6 +1,6 @@
 {
     "entryPoints": ["src/index.ts"],
-    "out": "docs",
+    "out": "docs/auth",
     "plugin": ["typedoc-plugin-markdown", "typedoc-plugin-frontmatter", "./typedoc-custom-plugin.mjs"],
     "tsconfig": "tsconfig.typedoc.json",
     "fileExtension": ".mdx",

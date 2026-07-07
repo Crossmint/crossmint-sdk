@@ -144,11 +144,11 @@ jobs:
               working-directory: packages/server
               run: |
                   pnpm generate:docs
-                  if [ -f docs/globals.mdx ]; then
-                    mv docs/globals.mdx docs/reference.mdx
+                  if [ -f docs/auth/globals.mdx ]; then
+                    mv docs/auth/globals.mdx docs/auth/reference.mdx
                   fi
-                  if [ -f docs/README.mdx ]; then
-                    mv docs/README.mdx docs/overview.mdx
+                  if [ -f docs/auth/README.mdx ]; then
+                    mv docs/auth/README.mdx docs/auth/overview.mdx
                   fi
 
             - name: Collect generated files
@@ -199,8 +199,8 @@ jobs:
                     cp -r packages/client/ui/react-native/docs/auth/. sdk-reference/auth/react-native/
                   fi
 
-                  if [ "$AUTH_TYPESCRIPT_ENABLED" == "true" ] && [ -d packages/server/docs ]; then
-                    cp -r packages/server/docs/. sdk-reference/auth/typescript/
+                  if [ "$AUTH_TYPESCRIPT_ENABLED" == "true" ] && [ -d packages/server/docs/auth ]; then
+                    cp -r packages/server/docs/auth/. sdk-reference/auth/typescript/
                   fi
 
             - name: Verify at least one package was generated
