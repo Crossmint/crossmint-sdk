@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.4.1
+
+### Patch Changes
+
+- a92a335: Add JSDoc descriptions to React Native auth provider, hook, and prop types for SDK reference docs
+- Updated dependencies [2f788d0]
+- Updated dependencies [a92a335]
+- Updated dependencies [a92a335]
+  - @crossmint/wallets-sdk@1.8.0
+  - @crossmint/client-sdk-react-base@2.1.1
+
 ## 1.4.0
 
 ### Minor Changes
