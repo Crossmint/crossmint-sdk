@@ -165,6 +165,11 @@ function CrossmintAuthProviderContent({
     );
 }
 
+/**
+ * Provides Crossmint authentication to your React Native app: social login (OAuth) and session management.
+ * Exposes auth state via the `useCrossmintAuth` hook and stores auth material in secure device storage.
+ * Must be nested inside `CrossmintProvider`.
+ */
 export function CrossmintAuthProvider({ children, ...props }: RNCrossmintAuthProviderProps) {
     const appSchema = props.appSchema ?? Constants.expoConfig?.scheme;
     const customStorageProvider = useMemo(() => props.storageProvider ?? new SecureStorage(), [props.storageProvider]);
