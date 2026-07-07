@@ -1,5 +1,11 @@
 # @crossmint/server-sdk
 
+## 1.2.77
+
+### Patch Changes
+
+- a92a335: Add SDK reference docs generation (TypeDoc) and JSDoc comments for the auth API. Also export the `CrossmintAuthServerOptions`, `GenericRequest`, and `GenericResponse` types.
+
 ## 1.2.76
 
 ### Patch Changes
