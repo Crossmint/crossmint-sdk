@@ -104,7 +104,7 @@ res.end();
 You can also provide a custom refresh route:
 
 ```typescript
-const crossmintAuth = CrossmintAuthClient.from(crossmint, {
+const crossmintAuth = CrossmintAuth.from(crossmint, {
     refreshRoute: "/api/refresh",
 });
 ```
