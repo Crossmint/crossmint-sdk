@@ -1,4 +1,20 @@
-import { CrossmintErrors, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
+import {
+    CrossmintSDKError,
+    JWTDecryptionError,
+    JWTExpiredError,
+    JWTIdentifierError,
+    JWTInvalidError,
+    NotAuthorizedError,
+    WalletErrorCode,
+} from "@crossmint/common-sdk-base";
+
+export {
+    NotAuthorizedError,
+    JWTExpiredError,
+    JWTInvalidError,
+    JWTDecryptionError,
+    JWTIdentifierError,
+} from "@crossmint/common-sdk-base";
 
 export class InvalidApiKeyError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -204,53 +220,6 @@ export class PendingApprovalsError extends CrossmintSDKError {
 export class InvalidAddressError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.RECIPIENT_ADDRESS_INVALID, details);
-    }
-}
-
-export class NotAuthorizedError extends CrossmintSDKError {
-    constructor(message: string, details?: string) {
-        super(message, CrossmintErrors.NOT_AUTHORIZED, details);
-    }
-}
-
-export class JWTExpiredError extends CrossmintSDKError {
-    /** The expiry time of the JWT as an ISO 8601 timestamp, when reported by the API. */
-    public readonly expiredAt?: string;
-
-    constructor(expiredAt?: string, details?: string) {
-        super(
-            expiredAt != null ? `JWT provided expired at timestamp ${expiredAt}` : "JWT provided has expired",
-            CrossmintErrors.JWT_EXPIRED,
-            details
-        );
-        this.expiredAt = expiredAt;
-    }
-}
-
-export class JWTInvalidError extends CrossmintSDKError {
-    constructor(details?: string) {
-        super("Invalid JWT provided", CrossmintErrors.JWT_INVALID, details);
-    }
-}
-
-export class JWTDecryptionError extends CrossmintSDKError {
-    constructor(details?: string) {
-        super("Error decrypting JWT", CrossmintErrors.JWT_DECRYPTION, details);
-    }
-}
-
-export class JWTIdentifierError extends CrossmintSDKError {
-    public readonly identifierKey?: string;
-
-    constructor(identifierKey?: string, details?: string) {
-        super(
-            identifierKey != null
-                ? `Missing required identifier '${identifierKey}' in the JWT`
-                : "Missing required identifier in the JWT",
-            CrossmintErrors.JWT_IDENTIFIER,
-            details
-        );
-        this.identifierKey = identifierKey;
     }
 }
 
