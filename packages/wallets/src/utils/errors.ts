@@ -1,4 +1,4 @@
-import { CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
+import { CrossmintErrors, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
 
 export class InvalidApiKeyError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -207,6 +207,96 @@ export class InvalidAddressError extends CrossmintSDKError {
     }
 }
 
+export class NotAuthorizedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, CrossmintErrors.NOT_AUTHORIZED, details);
+    }
+}
+
+export class JWTExpiredError extends CrossmintSDKError {
+    /** The expiry time of the JWT as an ISO 8601 timestamp, when reported by the API. */
+    public readonly expiredAt?: string;
+
+    constructor(expiredAt?: string, details?: string) {
+        super(
+            expiredAt != null ? `JWT provided expired at timestamp ${expiredAt}` : "JWT provided has expired",
+            CrossmintErrors.JWT_EXPIRED,
+            details
+        );
+        this.expiredAt = expiredAt;
+    }
+}
+
+export class JWTInvalidError extends CrossmintSDKError {
+    constructor(details?: string) {
+        super("Invalid JWT provided", CrossmintErrors.JWT_INVALID, details);
+    }
+}
+
+export class JWTDecryptionError extends CrossmintSDKError {
+    constructor(details?: string) {
+        super("Error decrypting JWT", CrossmintErrors.JWT_DECRYPTION, details);
+    }
+}
+
+export class JWTIdentifierError extends CrossmintSDKError {
+    public readonly identifierKey?: string;
+
+    constructor(identifierKey?: string, details?: string) {
+        super(
+            identifierKey != null
+                ? `Missing required identifier '${identifierKey}' in the JWT`
+                : "Missing required identifier in the JWT",
+            CrossmintErrors.JWT_IDENTIFIER,
+            details
+        );
+        this.identifierKey = identifierKey;
+    }
+}
+
+/**
+ * Shape of the structured error body returned by the Crossmint wallets API. `code` carries a
+ * stable identifier for the failure and, for auth failures, extra fields (e.g. `expiredAt`) are
+ * spread onto the top level of the response by the backend exception filter.
+ */
+type CrossmintApiErrorBody = {
+    error?: boolean;
+    message?: string;
+    code?: string;
+    expiredAt?: string;
+    identifierKey?: string;
+};
+
+function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErrorBody {
+    return typeof response === "object" && response != null;
+}
+
+/**
+ * Inspects a Crossmint wallets API error response and, when it carries a recognized auth error
+ * code, throws the corresponding typed error so callers surface the real failure (e.g. an expired
+ * JWT) instead of masking it behind a generic wallet error. Returns without throwing when the
+ * response is not a recognized auth error, letting callers throw their own contextual error.
+ */
+export function throwIfCrossmintApiAuthError(response: unknown): void {
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return;
+    }
+
+    const details = JSON.stringify(response);
+    switch (response.code) {
+        case "ERROR_JWT_EXPIRED":
+            throw new JWTExpiredError(response.expiredAt, details);
+        case "ERROR_JWT_INVALID":
+            throw new JWTInvalidError(details);
+        case "ERROR_JWT_DECRYPTION":
+            throw new JWTDecryptionError(details);
+        case "ERROR_JWT_IDENTIFIER_ERROR":
+            throw new JWTIdentifierError(response.identifierKey, details);
+        case "ERROR_JWT_AUDIENCE_MISMATCH":
+            throw new NotAuthorizedError(response.message ?? "JWT audience mismatch", details);
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -238,4 +328,9 @@ export type WalletError =
     | TransactionFailedError
     | PendingApprovalsError
     | InvalidAddressError
-    | UnsupportedBrowserError;
+    | UnsupportedBrowserError
+    | NotAuthorizedError
+    | JWTExpiredError
+    | JWTInvalidError
+    | JWTDecryptionError
+    | JWTIdentifierError;

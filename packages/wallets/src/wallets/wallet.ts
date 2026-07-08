@@ -40,6 +40,7 @@ import {
     TransactionNotCreatedError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
+    throwIfCrossmintApiAuthError,
 } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
@@ -1141,6 +1142,7 @@ export class Wallet<C extends Chain> {
         const signature = await this.#apiClient.getSignature(this.walletLocator, signatureId);
 
         if ("error" in signature) {
+            throwIfCrossmintApiAuthError(signature);
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
 
@@ -1188,6 +1190,7 @@ export class Wallet<C extends Chain> {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
+            throwIfCrossmintApiAuthError(transaction);
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
@@ -1251,6 +1254,7 @@ export class Wallet<C extends Chain> {
         });
 
         if (approvedTransaction.error) {
+            throwIfCrossmintApiAuthError(approvedTransaction);
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 
@@ -1263,6 +1267,7 @@ export class Wallet<C extends Chain> {
         });
 
         if (approvedSignature.error) {
+            throwIfCrossmintApiAuthError(approvedSignature);
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
         }
 

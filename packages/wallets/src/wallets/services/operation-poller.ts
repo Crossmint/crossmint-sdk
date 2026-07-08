@@ -9,6 +9,7 @@ import {
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
     TransactionSendingFailedError,
+    throwIfCrossmintApiAuthError,
 } from "../../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
 import { walletsLogger } from "../../logger";
@@ -41,6 +42,7 @@ export async function waitForTransactionCompletion(
 
         transactionResponse = await apiClient.getTransaction(walletLocator, transactionId);
         if (transactionResponse.error) {
+            throwIfCrossmintApiAuthError(transactionResponse);
             throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
         }
         await sleep(initialBackoffMs);
@@ -95,6 +97,7 @@ export async function waitForSignatureCompletion(
         await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
         signatureResponse = await apiClient.getSignature(walletLocator, signatureId);
         if ("error" in signatureResponse) {
+            throwIfCrossmintApiAuthError(signatureResponse);
             throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
         }
     } while (signatureResponse === null || signatureResponse.status === "pending");
