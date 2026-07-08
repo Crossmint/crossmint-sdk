@@ -31,6 +31,7 @@ import { mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
+    DeviceSignerRotatedError,
     InvalidSignerError,
     InvalidTransferAmountError,
     SignatureFailedError,
@@ -1168,6 +1169,14 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
+                    const deviceSigner = signers.find((s) => s.type === "device");
+                    if (
+                        pendingApproval.signer.locator.startsWith("device:") &&
+                        deviceSigner != null &&
+                        deviceSigner.locator() !== pendingApproval.signer.locator
+                    ) {
+                        throw new DeviceSignerRotatedError(pendingApproval.signer.locator, deviceSigner.locator());
+                    }
                     throw new InvalidSignerError(
                         `Signer ${pendingApproval.signer.locator} not found in pending approvals`
                     );
@@ -1219,6 +1228,14 @@ export class Wallet<C extends Chain> {
             pendingApprovals.map(async (pendingApproval) => {
                 const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
+                    const deviceSigner = signers.find((s) => s.type === "device");
+                    if (
+                        pendingApproval.signer.locator.startsWith("device:") &&
+                        deviceSigner != null &&
+                        deviceSigner.locator() !== pendingApproval.signer.locator
+                    ) {
+                        throw new DeviceSignerRotatedError(pendingApproval.signer.locator, deviceSigner.locator());
+                    }
                     throw new InvalidSignerError(
                         `Signer ${pendingApproval.signer.locator} not found in pending approvals`
                     );
