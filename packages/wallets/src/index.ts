@@ -2,7 +2,16 @@
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
 // Errors
-export { WalletNotAvailableError, InvalidTransferAmountError, UnsupportedBrowserError } from "./utils/errors";
+export {
+    WalletNotAvailableError,
+    InvalidTransferAmountError,
+    UnsupportedBrowserError,
+    NotAuthorizedError,
+    JWTExpiredError,
+    JWTInvalidError,
+    JWTDecryptionError,
+    JWTIdentifierError,
+} from "./utils/errors";
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";

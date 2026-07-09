@@ -12,6 +12,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     SignatureNotAvailableError,
+    JWTExpiredError,
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
@@ -622,6 +623,25 @@ describe("Wallet - approve()", () => {
             mockApiClient.getTransaction.mockResolvedValue(errorResponse as any);
 
             await expect(wallet.approve({ transactionId: "txn-123" })).rejects.toThrow(TransactionNotAvailableError);
+        });
+
+        it("surfaces the JWT expiry instead of a generic transaction error", async () => {
+            const expiredAt = "2026-07-07T21:28:41.000Z";
+            const errorResponse = {
+                error: true,
+                message: `JWT provided expired at timestamp ${expiredAt}`,
+                code: "ERROR_JWT_EXPIRED",
+                expiredAt,
+            };
+
+            mockApiClient.getTransaction.mockResolvedValue(errorResponse as any);
+
+            const approvePromise = wallet.approve({ transactionId: "txn-123" });
+            await expect(approvePromise).rejects.toBeInstanceOf(JWTExpiredError);
+            await expect(approvePromise).rejects.toMatchObject({
+                code: "not-authorized.jwt-expired",
+                expiredAt,
+            });
         });
     });
 
