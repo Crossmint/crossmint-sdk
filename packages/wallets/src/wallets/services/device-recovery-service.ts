@@ -1,5 +1,5 @@
 import type { Chain } from "../../chains/chains";
-import { assembleSigner } from "../../signers";
+import { assembleSigner, tryAssembleLocalDeviceSigner } from "../../signers";
 import { getSignerDescriptor } from "../../signers/descriptors";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
 import {
@@ -321,19 +321,14 @@ export class DeviceRecoveryService<C extends Chain> {
         const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
 
         for (const walletSigner of deviceSigners) {
-            const publicKeyBase64 = walletSigner.locator.replace("device:", "");
             try {
-                const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
-                if (hasKey) {
-                    const signer = assembleSigner(
-                        this.#chain,
-                        {
-                            type: "device",
-                            locator: walletSigner.locator as SignerLocator,
-                            address: this.#walletAddress,
-                        } as InternalSignerConfig<C>,
-                        deviceSignerKeyStorage
-                    );
+                const signer = await tryAssembleLocalDeviceSigner(
+                    this.#chain,
+                    walletSigner.locator,
+                    this.#walletAddress,
+                    deviceSignerKeyStorage
+                );
+                if (signer != null) {
                     walletsLogger.info("wallet.recover.foundLocalDeviceSigner", {
                         signerLocator: walletSigner.locator,
                     });

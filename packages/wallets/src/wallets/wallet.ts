@@ -28,7 +28,7 @@ import type {
     SendTokenTransactionOptions,
 } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
-import { assembleSigner } from "../signers";
+import { tryAssembleLocalDeviceSigner } from "../signers";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
@@ -49,7 +49,6 @@ import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
 import type {
     ExternalWalletRegistrationConfig,
-    InternalSignerConfig,
     PasskeySignerConfig,
     RecoverySignerConfigForChain,
     ServerSignerConfig,
@@ -1138,8 +1137,7 @@ export class Wallet<C extends Chain> {
         return await this.waitForSignature(signatureId);
     }
 
-    async #resolveMissingDeviceSigner(pendingApproval: { signer: { locator: string } }): Promise<SignerAdapter | null> {
-        const locator = pendingApproval.signer.locator;
+    async #resolveMissingDeviceSigner(locator: string): Promise<SignerAdapter | null> {
         if (!locator.startsWith("device:")) {
             return null;
         }
@@ -1147,35 +1145,30 @@ export class Wallet<C extends Chain> {
         if (deviceSignerKeyStorage == null) {
             return null;
         }
-        const publicKeyBase64 = locator.replace("device:", "");
         try {
-            const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
-            if (!hasKey) {
-                return null;
+            const signer = await tryAssembleLocalDeviceSigner(
+                this.chain,
+                locator,
+                this.address,
+                deviceSignerKeyStorage
+            );
+            if (signer != null) {
+                walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
             }
+            return signer;
         } catch (error) {
             walletsLogger.warn("wallet.approve.deviceSignerFallback.hasKeyFailed", { signerLocator: locator, error });
             return null;
         }
-        const signer = assembleSigner(
-            this.chain,
-            { type: "device", locator: locator as SignerLocator, address: this.address } as InternalSignerConfig<C>,
-            deviceSignerKeyStorage
-        );
-        walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
-        return signer;
     }
 
-    async #resolveApprovalSigner(
-        signers: SignerAdapter[],
-        pendingApproval: { signer: { locator: string } }
-    ): Promise<SignerAdapter> {
-        let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+    async #resolveApprovalSigner(signers: SignerAdapter[], locator: string): Promise<SignerAdapter> {
+        let signer = signers.find((s) => s.locator() === locator);
         if (signer == null) {
-            signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
+            signer = (await this.#resolveMissingDeviceSigner(locator)) ?? undefined;
         }
         if (signer == null) {
-            throw new InvalidSignerError(`Signer ${pendingApproval.signer.locator} not found in pending approvals`);
+            throw new InvalidSignerError(`Signer ${locator} not found in pending approvals`);
         }
         return signer;
     }
@@ -1214,17 +1207,15 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = await this.#resolveApprovalSigner(signers, pendingApproval);
+        const approvals = await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
+            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
 
-                const signature = await signer.signMessage(pendingApproval.message);
-                return {
-                    ...signature,
-                    signer: signer.locator(),
-                };
-            })
-        );
+            const signature = await signer.signMessage(pendingApproval.message);
+            return {
+                ...signature,
+                signer: signer.locator(),
+            };
+        });
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -1261,26 +1252,24 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = await this.#resolveApprovalSigner(signers, pendingApproval);
+        const approvals = await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
+            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
 
-                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
-                // over the keccak256 hash, which is provided in pendingApproval.message.
-                // For other Solana signers (ed25519), the full serialized transaction is signed.
-                const isDeviceSigner = signer.type === "device";
-                const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
-                        ? (transaction.onChain.transaction as string)
-                        : pendingApproval.message;
+            // For Solana device signers (secp256r1), the SWIG precompile expects a signature
+            // over the keccak256 hash, which is provided in pendingApproval.message.
+            // For other Solana signers (ed25519), the full serialized transaction is signed.
+            const isDeviceSigner = signer.type === "device";
+            const transactionToSign =
+                transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
+                    ? (transaction.onChain.transaction as string)
+                    : pendingApproval.message;
 
-                const signature = await signer.signTransaction(transactionToSign);
-                return {
-                    ...signature,
-                    signer: signer.locator(),
-                };
-            })
-        );
+            const signature = await signer.signTransaction(transactionToSign);
+            return {
+                ...signature,
+                signer: signer.locator(),
+            };
+        });
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
