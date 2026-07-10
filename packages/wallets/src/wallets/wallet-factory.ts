@@ -213,12 +213,13 @@ export class WalletFactory {
         return await this.apiClient.createWallet(buildParams(signersWithoutDeviceSigner));
     }
 
-    /** Matches the auto-injected device signer (object form); locator-based device signers are strings. */
+    // Matches a device signer in object form. Callers only run this when didAutoInjectDeviceSigner is
+    // true (no caller-supplied device signer), so the sole match is the one we injected.
     private isBuiltDeviceSigner(
         builtSigner: { signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }
     ): boolean {
         const signer = builtSigner.signer;
-        return typeof signer === "object" && signer != null && "type" in signer && signer.type === "device";
+        return typeof signer === "object" && signer != null && signer.type === "device";
     }
 
     private async createWalletInstance<C extends Chain>(
