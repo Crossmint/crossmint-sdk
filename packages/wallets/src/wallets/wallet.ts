@@ -28,6 +28,7 @@ import type {
     SendTokenTransactionOptions,
 } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
+import { assembleSigner } from "../signers";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
@@ -48,6 +49,7 @@ import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
 import type {
     ExternalWalletRegistrationConfig,
+    InternalSignerConfig,
     PasskeySignerConfig,
     RecoverySignerConfigForChain,
     ServerSignerConfig,
@@ -1131,6 +1133,33 @@ export class Wallet<C extends Chain> {
         return await this.waitForSignature(signatureId);
     }
 
+    async #resolveMissingDeviceSigner(pendingApproval: { signer: { locator: string } }): Promise<SignerAdapter | null> {
+        const locator = pendingApproval.signer.locator;
+        if (!locator.startsWith("device:")) {
+            return null;
+        }
+        const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
+        if (deviceSignerKeyStorage == null) {
+            return null;
+        }
+        const publicKeyBase64 = locator.replace("device:", "");
+        try {
+            const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
+            if (!hasKey) {
+                return null;
+            }
+        } catch {
+            return null;
+        }
+        const signer = assembleSigner(
+            this.chain,
+            { type: "device", locator: locator as SignerLocator, address: this.address } as InternalSignerConfig<C>,
+            deviceSignerKeyStorage
+        );
+        walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
+        return signer;
+    }
+
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
@@ -1167,7 +1196,10 @@ export class Wallet<C extends Chain> {
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                if (signer == null) {
+                    signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
+                }
                 if (signer == null) {
                     throw new InvalidSignerError(
                         `Signer ${pendingApproval.signer.locator} not found in pending approvals`
@@ -1219,7 +1251,10 @@ export class Wallet<C extends Chain> {
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                if (signer == null) {
+                    signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
+                }
                 if (signer == null) {
                     throw new InvalidSignerError(
                         `Signer ${pendingApproval.signer.locator} not found in pending approvals`

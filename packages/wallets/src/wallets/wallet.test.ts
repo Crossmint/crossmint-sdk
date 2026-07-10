@@ -6,6 +6,7 @@ import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain 
 import { AuthRejectedError, OtpValidationError } from "../signers/types";
 import {
     InvalidAddressError,
+    InvalidSignerError,
     InvalidTransferAmountError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
@@ -14,7 +15,7 @@ import {
     SignatureNotAvailableError,
     JWTExpiredError,
 } from "../utils/errors";
-import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
+import { createMockWallet, createMockApiClient, createMockSigner, type MockedApiClient } from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
 
 vi.mock("@/signers/server", async (importOriginal) => {
@@ -729,6 +730,116 @@ describe("Wallet - approve()", () => {
 
             expect(result.signature).toBe("0xsigned");
             expect(result.signatureId).toBe("sig-empty");
+            expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("device signer fallback", () => {
+        let fallbackWallet: Wallet<"base-sepolia">;
+        let mockStorage: ReturnType<typeof createMockDeviceKeyStorage>;
+
+        function createMockDeviceKeyStorage() {
+            return {
+                generateKey: vi.fn().mockResolvedValue("mockPublicKeyBase64"),
+                getKey: vi.fn().mockResolvedValue(null),
+                hasKey: vi.fn().mockResolvedValue(false),
+                mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+                deleteKey: vi.fn().mockResolvedValue(undefined),
+                signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+                getDeviceName: vi.fn().mockReturnValue("Test Device"),
+                apiKey: "test-api-key",
+            };
+        }
+
+        beforeEach(async () => {
+            mockStorage = createMockDeviceKeyStorage();
+
+            fallbackWallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "api-key" } as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+            vi.spyOn(fallbackWallet, "signers").mockResolvedValue([
+                {
+                    type: "external-wallet",
+                    address: "0x123",
+                    locator: "external-wallet:0x123",
+                    status: "success",
+                } as any,
+            ]);
+
+            await fallbackWallet.useSigner(createMockSigner("external-wallet", "base-sepolia"));
+        });
+
+        it("resolves a locally-held device signer missing from the assembled signers array (signature)", async () => {
+            mockApiClient.getSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "pending",
+                approvals: {
+                    pending: [{ signer: { locator: "device:localkey456" }, message: "message-to-sign" }],
+                    submitted: [],
+                },
+            } as any);
+            mockApiClient.approveSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "success",
+                outputSignature: "0xsigned",
+            } as any);
+            mockStorage.hasKey.mockResolvedValue(true);
+
+            const approvePromise = fallbackWallet.approve({ signatureId: "sig-1" });
+            await vi.runAllTimersAsync();
+            const result = await approvePromise;
+
+            expect(result.signature).toBe("0xsigned");
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("localkey456");
+            expect(mockApiClient.approveSignature).toHaveBeenCalled();
+        });
+
+        it("resolves a locally-held device signer missing from the assembled signers array (transaction)", async () => {
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "txn-1",
+                status: "success",
+                chainType: "evm",
+                approvals: {
+                    pending: [{ signer: { locator: "device:localkey456" }, message: "message-to-sign" }],
+                    submitted: [],
+                },
+                onChain: {
+                    txId: "0xabcdef",
+                    explorerLink: "https://explorer.example.com/tx/0xabcdef",
+                },
+            } as any);
+            mockApiClient.approveTransaction.mockResolvedValue({ id: "txn-1", status: "success" } as any);
+            mockStorage.hasKey.mockResolvedValue(true);
+
+            const approvePromise = fallbackWallet.approve({ transactionId: "txn-1" });
+            await vi.runAllTimersAsync();
+            const result = await approvePromise;
+
+            expect(result.hash).toBe("0xabcdef");
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("localkey456");
+            expect(mockApiClient.approveTransaction).toHaveBeenCalled();
+        });
+
+        it("throws InvalidSignerError when the local device key store does not have the required key", async () => {
+            mockApiClient.getSignature.mockResolvedValue({
+                id: "sig-2",
+                status: "pending",
+                approvals: {
+                    pending: [{ signer: { locator: "device:missingkey" }, message: "message-to-sign" }],
+                    submitted: [],
+                },
+            } as any);
+            mockStorage.hasKey.mockResolvedValue(false);
+
+            await expect(fallbackWallet.approve({ signatureId: "sig-2" })).rejects.toThrow(InvalidSignerError);
+            expect(mockStorage.hasKey).toHaveBeenCalledWith("missingkey");
             expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
         });
     });
