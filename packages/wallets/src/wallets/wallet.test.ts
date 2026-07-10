@@ -861,7 +861,7 @@ describe("Wallet - approve()", () => {
 
             await expect(fallbackWallet.approve({ signatureId: "sig-3" })).rejects.toThrow(InvalidSignerError);
             expect(walletsLogger.warn).toHaveBeenCalledWith(
-                "wallet.approve.deviceSignerFallback.hasKeyFailed",
+                "wallet.deviceRecovery.tryResolveLocallyAvailableSigner.failed",
                 expect.objectContaining({ signerLocator: "device:brokenkey" })
             );
         });

@@ -28,7 +28,6 @@ import type {
     SendTokenTransactionOptions,
 } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
-import { tryAssembleLocalDeviceSigner } from "../signers";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
@@ -1138,28 +1137,11 @@ export class Wallet<C extends Chain> {
     }
 
     async #resolveMissingDeviceSigner(locator: string): Promise<SignerAdapter | null> {
-        if (!locator.startsWith("device:")) {
-            return null;
+        const signer = await this.#deviceRecovery.tryResolveLocallyAvailableSigner(locator);
+        if (signer != null) {
+            walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
         }
-        const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
-        if (deviceSignerKeyStorage == null) {
-            return null;
-        }
-        try {
-            const signer = await tryAssembleLocalDeviceSigner(
-                this.chain,
-                locator,
-                this.address,
-                deviceSignerKeyStorage
-            );
-            if (signer != null) {
-                walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
-            }
-            return signer;
-        } catch (error) {
-            walletsLogger.warn("wallet.approve.deviceSignerFallback.hasKeyFailed", { signerLocator: locator, error });
-            return null;
-        }
+        return signer;
     }
 
     async #resolveApprovalSigner(signers: SignerAdapter[], locator: string): Promise<SignerAdapter> {

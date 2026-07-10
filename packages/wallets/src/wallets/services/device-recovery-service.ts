@@ -321,27 +321,36 @@ export class DeviceRecoveryService<C extends Chain> {
         const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
 
         for (const walletSigner of deviceSigners) {
-            try {
-                const signer = await tryAssembleLocalDeviceSigner(
-                    this.#chain,
-                    walletSigner.locator,
-                    this.#walletAddress,
-                    deviceSignerKeyStorage
-                );
-                if (signer != null) {
-                    walletsLogger.info("wallet.recover.foundLocalDeviceSigner", {
-                        signerLocator: walletSigner.locator,
-                    });
-                    return signer;
-                }
-            } catch (error) {
-                walletsLogger.warn("wallet.recover.findLocalDeviceSigner.keyCheckError", {
-                    signerLocator: walletSigner.locator,
-                    error,
-                });
+            const signer = await this.tryResolveLocallyAvailableSigner(walletSigner.locator, deviceSignerKeyStorage);
+            if (signer != null) {
+                walletsLogger.info("wallet.recover.foundLocalDeviceSigner", { signerLocator: walletSigner.locator });
+                return signer;
             }
         }
         return null;
+    }
+
+    async tryResolveLocallyAvailableSigner(
+        locator: string,
+        deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage
+    ): Promise<SignerAdapter | null> {
+        if (deviceSignerKeyStorage == null) {
+            return null;
+        }
+        try {
+            return await tryAssembleLocalDeviceSigner(
+                this.#chain,
+                locator,
+                this.#walletAddress,
+                deviceSignerKeyStorage
+            );
+        } catch (error) {
+            walletsLogger.warn("wallet.deviceRecovery.tryResolveLocallyAvailableSigner.failed", {
+                signerLocator: locator,
+                error,
+            });
+            return null;
+        }
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {
