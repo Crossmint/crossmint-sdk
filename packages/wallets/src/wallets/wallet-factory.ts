@@ -126,16 +126,16 @@ export class WalletFactory {
             );
         }
 
-        // Inject a device signer as the default on every chain when key storage is available.
-        // Some providers reject it at creation; createSmartWallet retries without it in that case.
-        const eagerlyAddDeviceSigner = validatedArgs.options?.deviceSignerKeyStorage != null;
+        // Inject a device signer as the default when key storage is available and the caller supplied none.
+        // Some providers reject it at creation; createSmartWallet retries without it, gated on this same flag.
         const explicitSigners = validatedArgs.signers ?? [];
-        const didAutoInjectDeviceSigner = eagerlyAddDeviceSigner && !explicitSigners.some((s) => s.type === "device");
-        const signersWithDevice = eagerlyAddDeviceSigner
-            ? this.ensureDeviceSignerInSigners(validatedArgs)
+        const didAutoInjectDeviceSigner =
+            validatedArgs.options?.deviceSignerKeyStorage != null && !explicitSigners.some((s) => s.type === "device");
+        const signersToRegister = didAutoInjectDeviceSigner
+            ? [...explicitSigners, { type: "device" } as SignerConfigForChain<C>]
             : explicitSigners;
         const builtSigners = await this.registerSigners(
-            signersWithDevice,
+            signersToRegister,
             validatedArgs.chain,
             validatedArgs.options?.deviceSignerKeyStorage
         );
@@ -307,22 +307,6 @@ export class WalletFactory {
                 y: passkeyCredential.publicKey.y.toString(),
             },
         };
-    }
-
-    /**
-     * Ensures device signer is included in the signers array for wallet creation.
-     * If no device signer is present in args.signers, adds one.
-     * Device signer support depends on the wallet provider; validation is handled server-side.
-     */
-    private ensureDeviceSignerInSigners<C extends Chain>(
-        args: WalletCreateArgs<C>
-    ): Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig> {
-        const signers = args.signers ?? [];
-        const hasDeviceSigner = signers.some((s) => s.type === "device");
-        if (!hasDeviceSigner) {
-            return [...signers, { type: "device" } as SignerConfigForChain<C>];
-        }
-        return signers;
     }
 
     private validateExistingWalletConfig<C extends Chain>(
