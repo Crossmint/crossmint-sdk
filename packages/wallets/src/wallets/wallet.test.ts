@@ -847,6 +847,24 @@ describe("Wallet - approve()", () => {
             expect(mockStorage.hasKey).toHaveBeenCalledWith("missingkey");
             expect(mockApiClient.approveSignature).not.toHaveBeenCalled();
         });
+
+        it("logs a warning instead of silently swallowing when hasKey itself throws", async () => {
+            mockApiClient.getSignature.mockResolvedValue({
+                id: "sig-3",
+                status: "pending",
+                approvals: {
+                    pending: [{ signer: { locator: "device:brokenkey" }, message: "message-to-sign" }],
+                    submitted: [],
+                },
+            } as any);
+            mockStorage.hasKey.mockRejectedValue(new Error("keystore access failed"));
+
+            await expect(fallbackWallet.approve({ signatureId: "sig-3" })).rejects.toThrow(InvalidSignerError);
+            expect(walletsLogger.warn).toHaveBeenCalledWith(
+                "wallet.approve.deviceSignerFallback.hasKeyFailed",
+                expect.objectContaining({ signerLocator: "device:brokenkey" })
+            );
+        });
     });
 });
 

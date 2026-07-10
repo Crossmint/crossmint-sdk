@@ -1153,7 +1153,8 @@ export class Wallet<C extends Chain> {
             if (!hasKey) {
                 return null;
             }
-        } catch {
+        } catch (error) {
+            walletsLogger.warn("wallet.approve.deviceSignerFallback.hasKeyFailed", { signerLocator: locator, error });
             return null;
         }
         const signer = assembleSigner(
@@ -1162,6 +1163,20 @@ export class Wallet<C extends Chain> {
             deviceSignerKeyStorage
         );
         walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
+        return signer;
+    }
+
+    async #resolveApprovalSigner(
+        signers: SignerAdapter[],
+        pendingApproval: { signer: { locator: string } }
+    ): Promise<SignerAdapter> {
+        let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+        if (signer == null) {
+            signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
+        }
+        if (signer == null) {
+            throw new InvalidSignerError(`Signer ${pendingApproval.signer.locator} not found in pending approvals`);
+        }
         return signer;
     }
 
@@ -1201,15 +1216,7 @@ export class Wallet<C extends Chain> {
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
-                let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
-                if (signer == null) {
-                    signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
-                }
-                if (signer == null) {
-                    throw new InvalidSignerError(
-                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
-                    );
-                }
+                const signer = await this.#resolveApprovalSigner(signers, pendingApproval);
 
                 const signature = await signer.signMessage(pendingApproval.message);
                 return {
@@ -1256,15 +1263,7 @@ export class Wallet<C extends Chain> {
 
         const approvals = await Promise.all(
             pendingApprovals.map(async (pendingApproval) => {
-                let signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
-                if (signer == null) {
-                    signer = (await this.#resolveMissingDeviceSigner(pendingApproval)) ?? undefined;
-                }
-                if (signer == null) {
-                    throw new InvalidSignerError(
-                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
-                    );
-                }
+                const signer = await this.#resolveApprovalSigner(signers, pendingApproval);
 
                 // For Solana device signers (secp256r1), the SWIG precompile expects a signature
                 // over the keccak256 hash, which is provided in pendingApproval.message.
