@@ -140,8 +140,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await walletFactory.createWallet(args);
 
-            // Solana now reaches parity with EVM/Stellar: the device signer is sent in the
-            // creation payload rather than being deferred to a post-creation flow.
+            // Parity with EVM/Stellar: the device signer is in the creation payload.
             const call = mockApiClient.createWallet.mock.calls[0]?.[0];
             expect(call?.config?.delegatedSigners).toHaveLength(1);
             expect(call?.config?.delegatedSigners?.[0]).toEqual(
@@ -153,8 +152,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         });
 
         it("retries Solana creation without the device signer when the backend rejects it with DEVICE_SIGNER_NOT_SUPPORTED", async () => {
-            // First attempt (with device signer) is rejected by a provider that doesn't support
-            // device signers (e.g. Squads); the retry (without device signer) succeeds.
+            // First attempt (with device signer) is rejected; the retry (without it) succeeds.
             mockApiClient.createWallet
                 .mockResolvedValueOnce({
                     error: true,
@@ -179,13 +177,12 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             await expect(walletFactory.createWallet(args)).resolves.toBeDefined();
 
             expect(mockApiClient.createWallet).toHaveBeenCalledTimes(2);
-            // First call includes the device signer.
             const firstCall = mockApiClient.createWallet.mock.calls[0]?.[0];
             expect(firstCall?.config?.delegatedSigners).toHaveLength(1);
             expect(firstCall?.config?.delegatedSigners?.[0]).toEqual(
                 expect.objectContaining({ signer: expect.objectContaining({ type: "device" }) })
             );
-            // Retry strips the auto-injected device signer so creation succeeds on Squads.
+            // Retry strips the auto-injected device signer.
             const secondCall = mockApiClient.createWallet.mock.calls[1]?.[0];
             expect(secondCall?.config?.delegatedSigners ?? []).toHaveLength(0);
         });
@@ -215,8 +212,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         });
 
         it("does not strip an explicitly-provided device signer on rejection", async () => {
-            // When the caller explicitly supplies a device signer, a DEVICE_SIGNER_NOT_SUPPORTED
-            // rejection is a genuine error the caller should see — not something to silently drop.
+            // A rejection for a caller-supplied signer is a genuine error, not something to drop.
             mockApiClient.createWallet.mockResolvedValue({
                 error: true,
                 message: "Device signers are not currently supported for this Solana wallet.",
