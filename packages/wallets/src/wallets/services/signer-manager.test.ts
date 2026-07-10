@@ -6,6 +6,7 @@ import type { ServerSignerResolver } from "../../signers/server/resolver";
 import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
+import { walletsLogger } from "../../logger";
 
 vi.mock("../../signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../signers")>();
@@ -64,6 +65,7 @@ const apiKeyConfig = { type: "api-key" } as const;
 
 beforeEach(() => {
     vi.clearAllMocks();
+    walletsLogger.warn = vi.fn();
 });
 
 describe("SignerManager", () => {
@@ -180,9 +182,30 @@ describe("SignerManager", () => {
         ["an error response", vi.fn().mockResolvedValue({ error: true, message: "nope" })],
         ["a null response", vi.fn().mockResolvedValue(null)],
         ["a non-object response", vi.fn().mockResolvedValue("not-an-object")],
-    ])("getSignerState() swallows %s to a null state", async (_name, getSigner) => {
+    ])("getSignerState() falls back to a null state and logs a warning for %s", async (_name, getSigner) => {
         const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
         await expect(manager.getSignerState("api-key" as SignerLocator)).resolves.toEqual(NULL_SIGNER_STATE);
+        expect(walletsLogger.warn).toHaveBeenCalled();
+    });
+
+    it("getSignerState() logs the specific fetch failure when getSigner throws", async () => {
+        const getSigner = vi.fn().mockRejectedValue(new Error("network"));
+        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+        await manager.getSignerState("api-key" as SignerLocator);
+        expect(walletsLogger.warn).toHaveBeenCalledWith(
+            "wallet.signers.getSignerState.fetchFailed",
+            expect.objectContaining({ signerLocator: "api-key" })
+        );
+    });
+
+    it("getSignerState() logs the specific error response when getSigner resolves with an error shape", async () => {
+        const getSigner = vi.fn().mockResolvedValue({ error: true, message: "nope" });
+        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+        await manager.getSignerState("api-key" as SignerLocator);
+        expect(walletsLogger.warn).toHaveBeenCalledWith(
+            "wallet.signers.getSignerState.errorResponse",
+            expect.objectContaining({ signerLocator: "api-key" })
+        );
     });
 
     const internalConfig = { type: "api-key", locator: "api-key", address: WALLET_ADDRESS } as never;

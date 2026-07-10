@@ -15,7 +15,12 @@ import {
     SignatureNotAvailableError,
     JWTExpiredError,
 } from "../utils/errors";
-import { createMockWallet, createMockApiClient, createMockSigner, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockWallet,
+    createMockApiClient,
+    createMockSigner,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
 
 vi.mock("@/signers/server", async (importOriginal) => {

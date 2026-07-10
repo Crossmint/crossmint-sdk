@@ -12,6 +12,7 @@ import {
     type SignerLocator,
 } from "../../signers/types";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
+import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
 
 export type SignerManagerParams<C extends Chain> = {
@@ -175,11 +176,16 @@ export class SignerManager<C extends Chain> {
         let signerResponse: GetSignerResponse | null = null;
         try {
             signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
-        } catch {
+        } catch (error) {
+            walletsLogger.warn("wallet.signers.getSignerState.fetchFailed", { signerLocator, error });
             return { response: null, signer: null, pendingOperation: null };
         }
 
         if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
+            walletsLogger.warn("wallet.signers.getSignerState.errorResponse", {
+                signerLocator,
+                response: signerResponse,
+            });
             return { response: null, signer: null, pendingOperation: null };
         }
 

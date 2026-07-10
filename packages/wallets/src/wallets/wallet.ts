@@ -1033,14 +1033,19 @@ export class Wallet<C extends Chain> {
 
         const configSigners = walletResponse?.config?.delegatedSigners ?? [];
 
-        const signersWithStatus = await mapWithConcurrency(configSigners, RATE_LIMIT_BATCH_SIZE, async (configSigner) => {
-            try {
-                const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
-                return signerState.signer;
-            } catch {
-                return null;
+        const signersWithStatus = await mapWithConcurrency(
+            configSigners,
+            RATE_LIMIT_BATCH_SIZE,
+            async (configSigner) => {
+                try {
+                    const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
+                    return signerState.signer;
+                } catch (error) {
+                    walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
+                    return null;
+                }
             }
-        });
+        );
 
         // Filter out null results (signers that don't have approval for this chain)
         const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
