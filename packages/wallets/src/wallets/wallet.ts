@@ -1155,6 +1155,21 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
+    private async collectApprovals<P extends { signer: { locator: string }; message: string }>(
+        pendingApprovals: P[],
+        signers: SignerAdapter[],
+        sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
+    ): Promise<Approval[]> {
+        return await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
+            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
+            const signature = await sign(signer, pendingApproval);
+            return {
+                ...signature,
+                signer: signer.locator(),
+            };
+        });
+    }
+
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
@@ -1189,15 +1204,9 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
-            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
-
-            const signature = await signer.signMessage(pendingApproval.message);
-            return {
-                ...signature,
-                signer: signer.locator(),
-            };
-        });
+        const approvals = await this.collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
+            signer.signMessage(pendingApproval.message)
+        );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -1234,9 +1243,7 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
-            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
-
+        const approvals = await this.collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
             // For Solana device signers (secp256r1), the SWIG precompile expects a signature
             // over the keccak256 hash, which is provided in pendingApproval.message.
             // For other Solana signers (ed25519), the full serialized transaction is signed.
@@ -1246,11 +1253,7 @@ export class Wallet<C extends Chain> {
                     ? (transaction.onChain.transaction as string)
                     : pendingApproval.message;
 
-            const signature = await signer.signTransaction(transactionToSign);
-            return {
-                ...signature,
-                signer: signer.locator(),
-            };
+            return signer.signTransaction(transactionToSign);
         });
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
