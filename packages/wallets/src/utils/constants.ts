@@ -4,3 +4,4 @@ export const WALLETS_SERVICE = "WALLETS_SDK";
 export const SDK_VERSION = version;
 export const SDK_NAME = name;
 export const STATUS_POLLING_INTERVAL_MS = 500;
+export const RATE_LIMIT_BATCH_SIZE = 5;

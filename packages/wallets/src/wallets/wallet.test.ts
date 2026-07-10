@@ -1597,6 +1597,59 @@ describe("Wallet - signers()", () => {
             expect(signers[0].locator).toBe("device:solana-device");
             expect(signers[0].status).toBe("pending");
         });
+
+        it("bounds concurrency and returns all successes when some getSigner calls reject", async () => {
+            const configSigners = Array.from({ length: 12 }, (_, i) => ({
+                type: "external-wallet",
+                address: `0xsigner${i}`,
+                locator: `external-wallet:0xsigner${i}`,
+            }));
+
+            const mockWalletResponse: GetWalletSuccessResponse = {
+                chainType: "evm",
+                type: "smart",
+                address: wallet.address,
+                config: {
+                    adminSigner: {
+                        type: "api-key",
+                        address: "0xadmin",
+                        locator: "api-key:admin",
+                    },
+                    delegatedSigners: configSigners,
+                },
+                createdAt: Date.now(),
+            } as GetWalletSuccessResponse;
+
+            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+
+            let inFlight = 0;
+            let maxInFlight = 0;
+            configSigners.forEach((configSigner, i) => {
+                mockApiClient.getSigner.mockImplementationOnce(async () => {
+                    inFlight++;
+                    maxInFlight = Math.max(maxInFlight, inFlight);
+                    await Promise.resolve();
+                    inFlight--;
+                    if (i % 3 === 0) {
+                        throw new Error("rate limited");
+                    }
+                    return {
+                        type: "external-wallet",
+                        address: configSigner.address,
+                        locator: configSigner.locator,
+                        chains: {
+                            "base-sepolia": { status: "success" },
+                        },
+                    } as any;
+                });
+            });
+
+            const signers = await wallet.signers();
+
+            expect(signers).toHaveLength(8);
+            expect(maxInFlight).toBeLessThanOrEqual(5);
+            expect(mockApiClient.getSigner).toHaveBeenCalledTimes(12);
+        });
     });
 
     describe("error cases", () => {

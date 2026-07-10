@@ -42,7 +42,8 @@ import {
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
 } from "../utils/errors";
-import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { RATE_LIMIT_BATCH_SIZE, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { mapWithConcurrency } from "../utils/concurrency";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
 import type {
@@ -1030,16 +1031,14 @@ export class Wallet<C extends Chain> {
 
         const configSigners = walletResponse?.config?.delegatedSigners ?? [];
 
-        const signersWithStatus = await Promise.all(
-            configSigners.map(async (configSigner) => {
-                try {
-                    const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
-                    return signerState.signer;
-                } catch {
-                    return null;
-                }
-            })
-        );
+        const signersWithStatus = await mapWithConcurrency(configSigners, RATE_LIMIT_BATCH_SIZE, async (configSigner) => {
+            try {
+                const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
+                return signerState.signer;
+            } catch {
+                return null;
+            }
+        });
 
         // Filter out null results (signers that don't have approval for this chain)
         const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
