@@ -6,12 +6,13 @@ import type {
     RecoverySignerConfig,
     ApiClient,
     CreateWalletParams,
+    CreateWalletResponse,
     GetWalletSuccessResponse,
     RegisterSignerPasskeyParams,
     Signer as SignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import { DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
     ExternalWalletRegistrationConfig,
@@ -125,16 +126,21 @@ export class WalletFactory {
             );
         }
 
-        // Include device signer in the signers array when deviceSignerKeyStorage is available (client-side).
-        // Solana smart wallets are excluded: some underlying providers reject device signers and
-        // the SDK cannot tell which provider backs the wallet upfront. We defer device-signer
-        // registration to the wallet's post-creation flow, where a rejection with the stable
-        // DEVICE_SIGNER_NOT_SUPPORTED error code is caught and falls back to the recovery signer.
-        const shouldEagerlyAddDeviceSigner =
-            validatedArgs.options?.deviceSignerKeyStorage != null && validatedArgs.chain !== "solana";
-        const signersWithDevice = shouldEagerlyAddDeviceSigner
+        // Include a device signer in the wallet's initial signer set when a device-key storage is
+        // available (client-side). This is done uniformly across EVM, Stellar and Solana so the
+        // device signer is the default across chains. Solana providers without device-signer support
+        // (e.g. Squads, the current production default) reject a device signer at creation with the
+        // stable DEVICE_SIGNER_NOT_SUPPORTED error code, and the SDK cannot tell which provider backs
+        // the wallet before it is created. We therefore attempt eager registration and, if the backend
+        // rejects it, transparently retry creation without the device signer (see createSmartWallet).
+        // The wallet's post-creation flow then registers a device signer for supported providers or
+        // falls back to the recovery signer for those that don't.
+        const eagerlyAddDeviceSigner = validatedArgs.options?.deviceSignerKeyStorage != null;
+        const explicitSigners = validatedArgs.signers ?? [];
+        const didAutoInjectDeviceSigner = eagerlyAddDeviceSigner && !explicitSigners.some((s) => s.type === "device");
+        const signersWithDevice = eagerlyAddDeviceSigner
             ? this.ensureDeviceSignerInSigners(validatedArgs)
-            : validatedArgs.signers ?? [];
+            : explicitSigners;
         const builtSigners = await this.registerSigners(
             signersWithDevice,
             validatedArgs.chain,
@@ -156,17 +162,12 @@ export class WalletFactory {
             adminSigner = validatedArgs.recovery;
         }
 
-        const walletResponse = await this.apiClient.createWallet({
-            type: "smart",
-            chainType: this.getChainType(validatedArgs.chain),
-            config: {
-                adminSigner,
-                ...(validatedArgs.plugins ? { plugins: validatedArgs.plugins } : {}),
-                ...(builtSigners != null ? { delegatedSigners: builtSigners } : {}),
-            },
-            owner: validatedArgs.owner ?? undefined,
-            alias: validatedArgs.alias ?? undefined,
-        } as CreateWalletParams);
+        const walletResponse = await this.createSmartWallet(
+            validatedArgs,
+            adminSigner,
+            builtSigners,
+            didAutoInjectDeviceSigner
+        );
 
         if ("error" in walletResponse) {
             walletsLogger.error("walletFactory.createWallet.error", {
@@ -180,6 +181,62 @@ export class WalletFactory {
         });
 
         return await this.createWalletInstance(walletResponse, validatedArgs);
+    }
+
+    /**
+     * Sends the smart-wallet creation request, with a defensive fallback for Solana providers that
+     * reject device signers (e.g. Squads). When the SDK auto-injected a device signer and the backend
+     * rejects creation with the stable DEVICE_SIGNER_NOT_SUPPORTED error code, the device signer is
+     * stripped from the delegated-signer set and creation is retried once. This keeps wallet creation
+     * working regardless of the server-side provider (which the client cannot know upfront); a device
+     * signer is registered post-creation for supported providers via the wallet's recovery flow.
+     */
+    private async createSmartWallet<C extends Chain>(
+        args: WalletCreateArgs<C>,
+        adminSigner: unknown,
+        builtSigners: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>,
+        didAutoInjectDeviceSigner: boolean
+    ): Promise<CreateWalletResponse> {
+        const buildParams = (delegatedSigners: typeof builtSigners): CreateWalletParams =>
+            ({
+                type: "smart",
+                chainType: this.getChainType(args.chain),
+                config: {
+                    adminSigner,
+                    ...(args.plugins ? { plugins: args.plugins } : {}),
+                    ...(delegatedSigners != null ? { delegatedSigners } : {}),
+                },
+                owner: args.owner ?? undefined,
+                alias: args.alias ?? undefined,
+            }) as CreateWalletParams;
+
+        const walletResponse = await this.apiClient.createWallet(buildParams(builtSigners));
+
+        const rejectedDeviceSigner =
+            didAutoInjectDeviceSigner &&
+            "error" in walletResponse &&
+            (walletResponse as { code?: string }).code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE;
+        if (!rejectedDeviceSigner) {
+            return walletResponse;
+        }
+
+        walletsLogger.info("walletFactory.createWallet.deviceSignerUnsupported.retryWithoutDeviceSigner", {
+            chain: args.chain,
+        });
+        const signersWithoutDeviceSigner = builtSigners.filter((s) => !this.isBuiltDeviceSigner(s));
+        return await this.apiClient.createWallet(buildParams(signersWithoutDeviceSigner));
+    }
+
+    /**
+     * Identifies the eagerly-injected device signer within a built delegated-signer set. Only the
+     * auto-injected device signer takes this object shape ({ signer: { type: "device", ... } });
+     * user-provided device signers with a locator are serialized as string locators.
+     */
+    private isBuiltDeviceSigner(
+        builtSigner: { signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }
+    ): boolean {
+        const signer = builtSigner.signer;
+        return typeof signer === "object" && signer != null && "type" in signer && signer.type === "device";
     }
 
     private async createWalletInstance<C extends Chain>(
