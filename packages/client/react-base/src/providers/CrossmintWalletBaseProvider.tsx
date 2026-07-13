@@ -277,8 +277,6 @@ export function CrossmintWalletBaseProvider({
             if (wallet != null) {
                 return wallet;
             }
-            // Don't hammer a permanently-blocked endpoint: this callback is re-fired by the
-            // createOnLogin effect whenever status flips to "error", so stop retrying region blocks.
             if (walletError?.code === "region-blocked") {
                 return undefined;
             }
