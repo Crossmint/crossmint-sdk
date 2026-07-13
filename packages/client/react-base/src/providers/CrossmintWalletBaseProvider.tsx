@@ -133,13 +133,26 @@ export type PasskeyPromptState = {
 };
 
 /**
- * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
- * A 403 is treated as a permanent region block; fetch rejects/timeouts, 5xx, and 429 are
- * treated as transient network failures; everything else is unknown.
+ * Cloudflare serves an HTTP 403 with an HTML body when it bans the requester's country/region.
+ * Its error code 1009 ("Access denied: ... has banned the country or region your IP address is
+ * in") is the distinguishing signal — it lets us treat a genuine geo-block as permanent without
+ * also labelling every other non-JSON 403 (nginx access controls, a CDN/reverse-proxy rule) as
+ * `region-blocked` and permanently suppressing the auto-retry loop.
  */
-function mapWalletError(error: unknown): WalletContextError {
+const CLOUDFLARE_REGION_BLOCK_PATTERN = /error\s*1009|banned\s+(?:the\s+)?(?:country|region)/i;
+
+export function isCloudflareRegionBlock(responseBody: string | null): boolean {
+    return responseBody != null && CLOUDFLARE_REGION_BLOCK_PATTERN.test(responseBody);
+}
+
+/**
+ * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
+ * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
+ * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
+ */
+export function mapWalletError(error: unknown): WalletContextError {
     if (error instanceof ApiClientError) {
-        if (error.status === 403) {
+        if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {
             return { code: "region-blocked", status: error.status, message: error.message };
         }
         if (error.status >= 500 || error.status === 429) {

@@ -13,4 +13,4 @@ The wallet context now exposes an `error` field alongside `status`:
 error: { code: "region-blocked" | "network" | "unknown"; status?: number; message: string } | null
 ```
 
-403 maps to `region-blocked` (permanent, don't retry), while fetch rejects/timeouts, 5xx, and 429 map to `network` (transient, retryable). `getOrCreateWallet`'s auto-retry loop is gated so it no longer hammers a permanently region-blocked endpoint.
+A 403 whose body carries the Cloudflare country/region-ban signature (error 1009) maps to `region-blocked` (permanent, don't retry); fetch rejects/timeouts, 5xx, and 429 map to `network` (transient, retryable); everything else (including other 403s) is `unknown`. `getOrCreateWallet`'s auto-retry loop is gated on `region-blocked` so it no longer hammers a permanently region-blocked endpoint.
