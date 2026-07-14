@@ -1,5 +1,27 @@
 # @crossmint/common-sdk-base
 
+## 0.11.0
+
+### Minor Changes
+
+- 9604fec: Surface authentication failures (e.g. expired JWTs) from `wallet.approve` and transaction/signature polling instead of masking them behind generic `wallet:no-transaction` / `wallet:no-signature` errors. When the API responds with an auth error code, the SDK now throws a typed `JWTExpiredError` (carrying `expiredAt`), `JWTInvalidError`, `JWTDecryptionError`, `JWTIdentifierError`, or `NotAuthorizedError`.
+
+  The canonical auth error classes now live in `@crossmint/common-sdk-base` and are re-exported from `@crossmint/client-sdk-base` and `@crossmint/wallets-sdk`, so `instanceof` checks work across packages. `client-sdk-base`'s `APIErrorService` also now maps the correct backend identifier code (`ERROR_JWT_IDENTIFIER_ERROR`) and handles `ERROR_JWT_AUDIENCE_MISMATCH`.
+
+### Patch Changes
+
+- e3f04e6: Expose structured error details for failed wallet loads/creations so integrators can distinguish a permanent geo-block from a transient network failure.
+
+  `ApiClient.makeRequest` now throws a typed `ApiClientError` (carrying HTTP `status` and body) for any non-`ok` response whose body is not JSON — e.g. a Cloudflare 403 geo-block returning HTML — instead of letting callers hit an opaque `SyntaxError` from `.json()`. JSON 4xx responses are still passed through unchanged.
+
+  The wallet context now exposes an `error` field alongside `status`:
+
+  ```ts
+  error: { code: "region-blocked" | "network" | "unknown"; status?: number; message: string } | null
+  ```
+
+  A 403 whose body carries the Cloudflare country/region-ban signature (error 1009) maps to `region-blocked` (permanent, don't retry); fetch rejects/timeouts, 5xx, and 429 map to `network` (transient, retryable); everything else (including other 403s) is `unknown`. `getOrCreateWallet`'s auto-retry loop is gated on `region-blocked` so it no longer hammers a permanently region-blocked endpoint.
+
 ## 0.10.2
 
 ### Patch Changes
