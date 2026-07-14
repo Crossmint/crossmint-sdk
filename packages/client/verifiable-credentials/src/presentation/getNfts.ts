@@ -1,6 +1,7 @@
 import { type NftWithMetadata, isVcChain } from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
+import { credentialsLogger } from "../logger";
 import type { CrossmintWalletNft } from "../types/nfts";
 
 async function* fetchPaginatedData(url: string): AsyncGenerator<any> {
@@ -28,11 +29,11 @@ async function* fetchPaginatedData(url: string): AsyncGenerator<any> {
             if (data.length < perPage) {
                 hasMore = false;
             } else {
-                console.debug(`Got ${data.length} items from page ${page}`);
+                credentialsLogger.debug(`Got ${data.length} items from page ${page}`);
                 page++;
             }
         } catch (error: any) {
-            console.error(error);
+            credentialsLogger.error(error);
             throw new Error(`Failed to fetch data: ${error.message}`);
         }
     }
@@ -82,10 +83,10 @@ export async function getWalletVcCompatibleNfts(chain: string, wallet: string): 
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }
-    console.debug(`Got ${nfts.length} nfts`);
+    credentialsLogger.debug(`Got ${nfts.length} nfts`);
 
     const compatibleNfts = filterVCCompErc721(nfts);
-    console.debug(`Got ${compatibleNfts.length} compatible erc721 nfts`);
+    credentialsLogger.debug(`Got ${compatibleNfts.length} compatible erc721 nfts`);
 
     return compatibleNfts;
 }

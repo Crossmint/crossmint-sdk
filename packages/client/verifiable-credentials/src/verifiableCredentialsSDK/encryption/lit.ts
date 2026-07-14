@@ -2,8 +2,12 @@ import { LitAbility, LitAccessControlConditionResource } from "@lit-protocol/aut
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import type { AuthSig, LIT_NETWORKS_KEYS, SessionSigsMap } from "@lit-protocol/types";
 
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import type { EncryptedVerifiableCredential } from "../types";
 import { isVerifiableCredential } from "../types/utils";
+
+const litLogger = new SdkLogger();
 
 const authNeededCallback = async (params: any) => {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
@@ -13,7 +17,7 @@ const authNeededCallback = async (params: any) => {
         resources: params.resources,
         uri: params.uri,
     });
-    console.debug("AuthSig:", authSig);
+    litLogger.debug("AuthSig:", authSig);
     return authSig;
 };
 
@@ -53,14 +57,14 @@ export class Lit {
             litNetwork: this.network,
             debug: this.debug,
         });
-        console.log(`Connecting to Lit ${this.network}`);
+        litLogger.info(`Connecting to Lit ${this.network}`);
         await client.connect();
         return client;
     }
 
     private async auth(litNodeClient: LitJsSdk.LitNodeClient) {
         if (!this.capacityDelegationAuthSig) {
-            console.warn(
+            litLogger.warn(
                 "No capacity delegation auth sig provided, the user will pay for the operation, the users wallet is required to have Lit capacity tokens."
             );
         }
@@ -118,7 +122,7 @@ export class Lit {
             }
             return vc;
         } catch (error: any) {
-            console.error("Decryption error", error.message, error);
+            litLogger.error("Decryption error", error.message, error);
             if (error.errorCode === "NodeAccessControlConditionsReturnedNotAuthorized") {
                 throw new Error("Unauthorized to decrypt file");
             }

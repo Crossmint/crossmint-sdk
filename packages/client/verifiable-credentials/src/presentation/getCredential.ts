@@ -10,6 +10,7 @@ import type {
 } from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
+import { credentialsLogger } from "../logger";
 
 /**
  * Service for retrieving credentials from Crossmint.
@@ -41,16 +42,16 @@ export class CrossmintCredentialRetrieval {
         let url;
         if (query.credentialId != null) {
             const credentialId = query.credentialId;
-            console.debug(`Fetching credential ${credentialId}`);
+            credentialsLogger.debug(`Fetching credential ${credentialId}`);
             url = `${baseUrl}/api/v1-alpha1/credentials/${credentialId}`;
         } else {
             const locator = query.locator;
-            console.debug(`Fetching credential from locator ${locator}`);
+            credentialsLogger.debug(`Fetching credential from locator ${locator}`);
             url = `${baseUrl}/api/v1-alpha1/nfts/${locator}/credentials`;
         }
 
         const options = { method: "GET", headers: headers };
-        console.log(url, options);
+        credentialsLogger.info(url, options);
         try {
             const response = await fetch(url, options);
             const data = await response.json();
@@ -66,7 +67,7 @@ export class CrossmintCredentialRetrieval {
 
             throw new Error(`Invalid response`);
         } catch (error: any) {
-            console.error(JSON.stringify(error));
+            credentialsLogger.error(JSON.stringify(error));
             throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint: ${error.message}`);
         }
     }
