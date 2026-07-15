@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import { Wallet } from "./wallet";
 import { WalletFactory } from "./wallet-factory";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
@@ -13,6 +14,7 @@ import {
     WalletTypeNotSupportedError,
     SignatureNotAvailableError,
     JWTExpiredError,
+    TransactionApiError,
 } from "../utils/errors";
 import { createMockWallet, createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
@@ -623,6 +625,18 @@ describe("Wallet - approve()", () => {
             mockApiClient.getTransaction.mockResolvedValue(errorResponse as any);
 
             await expect(wallet.approve({ transactionId: "txn-123" })).rejects.toThrow(TransactionNotAvailableError);
+        });
+
+        it("attaches the transaction ID and status when approval lookup returns a 5xx", async () => {
+            mockApiClient.getTransaction.mockRejectedValue(
+                new ApiClientError("API request failed: 500 Internal Server Error", 500, "Internal Server Error", null)
+            );
+
+            const error = await wallet.approve({ transactionId: "txn-123" }).catch((caught) => caught);
+
+            expect(error).toBeInstanceOf(TransactionApiError);
+            expect(error).toMatchObject({ transactionId: "txn-123", status: 500 });
+            expect(error.message).toContain("(transactionId: txn-123)");
         });
 
         it("surfaces the JWT expiry instead of a generic transaction error", async () => {

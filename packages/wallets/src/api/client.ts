@@ -6,7 +6,7 @@ import {
 } from "@crossmint/common-sdk-base";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
-import { InvalidApiKeyError } from "../utils/errors";
+import { InvalidApiKeyError, wrapTransactionApiError } from "../utils/errors";
 import { walletsLogger } from "../logger/init";
 
 import type {
@@ -101,11 +101,15 @@ class ApiClient extends CrossmintApiClient {
         walletLocator: WalletLocator,
         params: CreateTransactionParams
     ): Promise<CreateTransactionResponse> {
-        const response = await this.post(`${this.apiPrefix}/${walletLocator}/transactions`, {
-            body: JSON.stringify(params),
-            headers: this.headers,
-        });
-        return response.json();
+        try {
+            const response = await this.post(`${this.apiPrefix}/${walletLocator}/transactions`, {
+                body: JSON.stringify(params),
+                headers: this.headers,
+            });
+            return response.json();
+        } catch (error) {
+            throw wrapTransactionApiError(error) ?? error;
+        }
     }
 
     async approveTransaction(
