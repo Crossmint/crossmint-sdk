@@ -1,5 +1,28 @@
 # @crossmint/wallets-sdk
 
+## 1.9.0
+
+### Minor Changes
+
+- 9604fec: Surface authentication failures (e.g. expired JWTs) from `wallet.approve` and transaction/signature polling instead of masking them behind generic `wallet:no-transaction` / `wallet:no-signature` errors. When the API responds with an auth error code, the SDK now throws a typed `JWTExpiredError` (carrying `expiredAt`), `JWTInvalidError`, `JWTDecryptionError`, `JWTIdentifierError`, or `NotAuthorizedError`.
+
+  The canonical auth error classes now live in `@crossmint/common-sdk-base` and are re-exported from `@crossmint/client-sdk-base` and `@crossmint/wallets-sdk`, so `instanceof` checks work across packages. `client-sdk-base`'s `APIErrorService` also now maps the correct backend identifier code (`ERROR_JWT_IDENTIFIER_ERROR`) and handles `ERROR_JWT_AUDIENCE_MISMATCH`.
+
+- 3468b87: Solana wallets now inject a device signer at creation time by default, reaching parity with EVM and Stellar. When `deviceSignerKeyStorage` is configured, `WalletFactory.createWallet` includes a `device` signer in the creation payload for every chain.
+
+  Because a Solana wallet's provider is only known server-side and some providers (e.g. Squads) reject device signers at creation with the stable `DEVICE_SIGNER_NOT_SUPPORTED` error code, creation is retried once without the device signer when that specific rejection occurs. Wallet creation therefore succeeds regardless of the backing provider; for providers without device-signer support, a device signer is registered post-creation via the wallet's existing recovery flow (or falls back to the recovery signer).
+
+  A device signer that the caller supplies explicitly is never stripped — a `DEVICE_SIGNER_NOT_SUPPORTED` rejection for an explicit signer surfaces as before. Behavior for EVM and Stellar is unchanged.
+
+### Patch Changes
+
+- 558be6e: Reduce transaction polling delay and avoid sleeping after a successful status check.
+- 558be6e: Two-phase transaction status polling: fixed 500ms cadence during the first 5 seconds (when most transactions confirm), then exponential backoff (1.5x, capped at 2s). The poll request's own duration now counts toward the cadence, and sleeps are clamped to the confirmation timeout.
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/common-sdk-auth@1.1.14
+
 ## 1.8.0
 
 ### Minor Changes
