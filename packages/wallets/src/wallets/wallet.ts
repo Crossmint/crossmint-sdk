@@ -1159,7 +1159,7 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
-    private async collectApprovals<P extends { signer: { locator: string }; message: string }>(
+    async #collectApprovals<P extends { signer: { locator: string }; message: string }>(
         pendingApprovals: P[],
         signers: SignerAdapter[],
         sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
@@ -1208,7 +1208,7 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
             signer.signMessage(pendingApproval.message)
         );
 
@@ -1247,7 +1247,7 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
             // For Solana device signers (secp256r1), the SWIG precompile expects a signature
             // over the keccak256 hash, which is provided in pendingApproval.message.
             // For other Solana signers (ed25519), the full serialized transaction is signed.
