@@ -42,7 +42,7 @@ import {
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
 } from "../utils/errors";
-import { RATE_LIMIT_BATCH_SIZE, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { RATE_LIMIT_BATCH_SIZE } from "../utils/constants";
 import { mapWithConcurrency } from "../utils/concurrency";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
@@ -66,7 +66,11 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
-import { waitForSignatureCompletion, waitForTransactionCompletion } from "./services/operation-poller";
+import {
+    type PollingOptions,
+    waitForSignatureCompletion,
+    waitForTransactionCompletion,
+} from "./services/operation-poller";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -1293,21 +1297,11 @@ export class Wallet<C extends Chain> {
     protected async waitForTransaction(
         transactionId: string,
         timeoutMs = 60_000,
-        {
-            backoffMultiplier = 1.1,
-            maxBackoffMs = 2_000,
-            initialBackoffMs = STATUS_POLLING_INTERVAL_MS,
-        }: {
-            initialBackoffMs?: number;
-            backoffMultiplier?: number;
-            maxBackoffMs?: number;
-        } = {}
+        options: Omit<PollingOptions, "timeoutMs"> = {}
     ): Promise<Transaction<false>> {
         return await waitForTransactionCompletion(this.#apiClient, this.walletLocator, transactionId, {
             timeoutMs,
-            backoffMultiplier,
-            maxBackoffMs,
-            initialBackoffMs,
+            ...options,
         });
     }
 

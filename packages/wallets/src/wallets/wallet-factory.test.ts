@@ -91,8 +91,22 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet with device signer", () => {
-        it("does not inject device signer for Solana wallets at creation time (deferred to try-and-fallback post-creation flow)", async () => {
-            const solanaWallet = {
+        // A valid uncompressed P-256 public key in base64: 0x04 + 32-byte x + 32-byte y = 65 bytes.
+        const validDevicePublicKeyBase64 = Buffer.concat([
+            Buffer.from([0x04]),
+            Buffer.alloc(32, 1),
+            Buffer.alloc(32, 2),
+        ]).toString("base64");
+
+        const createMockDeviceSignerKeyStorage = () => ({
+            getKey: vi.fn().mockResolvedValue(null),
+            saveKey: vi.fn().mockResolvedValue(undefined),
+            generateKey: vi.fn().mockResolvedValue(validDevicePublicKeyBase64),
+            getDeviceName: vi.fn().mockReturnValue("Chrome on Mac"),
+        });
+
+        const solanaWalletResponse = (delegatedSigners: unknown[] = []) =>
+            ({
                 chainType: "solana" as const,
                 type: "smart" as const,
                 address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
@@ -103,19 +117,15 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         address: "AdminSignerAddress123",
                         locator: "external-wallet:AdminSignerAddress123",
                     },
-                    delegatedSigners: [],
+                    delegatedSigners,
                 },
                 createdAt: Date.now(),
-            } as GetWalletSuccessResponse;
+            }) as GetWalletSuccessResponse;
 
-            mockApiClient.createWallet.mockResolvedValue(solanaWallet);
+        it("injects device signer for Solana wallets at creation time when deviceSignerKeyStorage is provided", async () => {
+            mockApiClient.createWallet.mockResolvedValue(solanaWalletResponse());
 
-            const mockDeviceSignerKeyStorage = {
-                getKey: vi.fn().mockResolvedValue(null),
-                saveKey: vi.fn().mockResolvedValue(undefined),
-                generateKey: vi.fn(),
-                getDeviceName: vi.fn().mockReturnValue("Unknown Device"),
-            };
+            const mockDeviceSignerKeyStorage = createMockDeviceSignerKeyStorage();
 
             const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
@@ -130,13 +140,101 @@ describe("WalletFactory - OnCreateConfig Support", () => {
 
             await walletFactory.createWallet(args);
 
-            // Device signers must not be sent in the Solana createWallet call: some underlying
-            // providers reject device signers and the SDK cannot tell which provider backs the
-            // wallet upfront. The post-creation flow registers device signers and falls back
-            // to the recovery signer when the backend returns DEVICE_SIGNER_NOT_SUPPORTED.
+            // Parity with EVM/Stellar: the device signer is in the creation payload.
             const call = mockApiClient.createWallet.mock.calls[0]?.[0];
-            expect(call?.config?.delegatedSigners ?? []).toHaveLength(0);
-            expect(mockDeviceSignerKeyStorage.generateKey).not.toHaveBeenCalled();
+            expect(call?.config?.delegatedSigners).toHaveLength(1);
+            expect(call?.config?.delegatedSigners?.[0]).toEqual(
+                expect.objectContaining({
+                    signer: expect.objectContaining({ type: "device" }),
+                })
+            );
+            expect(mockDeviceSignerKeyStorage.generateKey).toHaveBeenCalled();
+        });
+
+        it("retries Solana creation without the device signer when the backend rejects it with DEVICE_SIGNER_NOT_SUPPORTED", async () => {
+            // First attempt (with device signer) is rejected; the retry (without it) succeeds.
+            mockApiClient.createWallet
+                .mockResolvedValueOnce({
+                    error: true,
+                    message: "Device signers are not currently supported for this Solana wallet.",
+                    code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                } as any)
+                .mockResolvedValueOnce(solanaWalletResponse());
+
+            const mockDeviceSignerKeyStorage = createMockDeviceSignerKeyStorage();
+
+            const args: WalletCreateArgs<"solana"> = {
+                chain: "solana",
+                recovery: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+                options: {
+                    deviceSignerKeyStorage: mockDeviceSignerKeyStorage as unknown as any,
+                },
+            };
+
+            await expect(walletFactory.createWallet(args)).resolves.toBeDefined();
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledTimes(2);
+            const firstCall = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(firstCall?.config?.delegatedSigners).toHaveLength(1);
+            expect(firstCall?.config?.delegatedSigners?.[0]).toEqual(
+                expect.objectContaining({ signer: expect.objectContaining({ type: "device" }) })
+            );
+            // Retry strips the auto-injected device signer.
+            const secondCall = mockApiClient.createWallet.mock.calls[1]?.[0];
+            expect(secondCall?.config?.delegatedSigners ?? []).toHaveLength(0);
+        });
+
+        it("does not retry when a non-device-signer error is returned", async () => {
+            mockApiClient.createWallet.mockResolvedValue({
+                error: true,
+                message: "Some unrelated creation failure",
+            } as any);
+
+            const mockDeviceSignerKeyStorage = createMockDeviceSignerKeyStorage();
+
+            const args: WalletCreateArgs<"solana"> = {
+                chain: "solana",
+                recovery: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+                options: {
+                    deviceSignerKeyStorage: mockDeviceSignerKeyStorage as unknown as any,
+                },
+            };
+
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(WalletCreationError);
+            // A generic error must surface as-is, without a silent retry that could mask it.
+            expect(mockApiClient.createWallet).toHaveBeenCalledTimes(1);
+        });
+
+        it("does not strip an explicitly-provided device signer on rejection", async () => {
+            // A rejection for a caller-supplied signer is a genuine error, not something to drop.
+            mockApiClient.createWallet.mockResolvedValue({
+                error: true,
+                message: "Device signers are not currently supported for this Solana wallet.",
+                code: "DEVICE_SIGNER_NOT_SUPPORTED",
+            } as any);
+
+            const mockDeviceSignerKeyStorage = createMockDeviceSignerKeyStorage();
+
+            const args: WalletCreateArgs<"solana"> = {
+                chain: "solana",
+                recovery: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+                signers: [{ type: "device", locator: `device:${validDevicePublicKeyBase64}` }],
+                options: {
+                    deviceSignerKeyStorage: mockDeviceSignerKeyStorage as unknown as any,
+                },
+            };
+
+            await expect(walletFactory.createWallet(args)).rejects.toThrow(WalletCreationError);
+            expect(mockApiClient.createWallet).toHaveBeenCalledTimes(1);
         });
 
         it("injects device signer for EVM wallets when deviceSignerKeyStorage is provided", async () => {
