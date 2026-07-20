@@ -1038,7 +1038,8 @@ export class Wallet<C extends Chain> {
                 try {
                     const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
                     return signerState.signer;
-                } catch {
+                } catch (error) {
+                    walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
                     return null;
                 }
             })
@@ -1135,6 +1136,42 @@ export class Wallet<C extends Chain> {
         return await this.waitForSignature(signatureId);
     }
 
+    async #resolveMissingDeviceSigner(locator: string): Promise<SignerAdapter | null> {
+        const signer = await this.#deviceRecovery.tryResolveLocallyAvailableSigner(locator);
+        if (signer != null) {
+            walletsLogger.info("wallet.approve.deviceSignerRecoveredViaFallback", { signerLocator: locator });
+        }
+        return signer;
+    }
+
+    async #resolveApprovalSigner(signers: SignerAdapter[], locator: string): Promise<SignerAdapter> {
+        let signer = signers.find((s) => s.locator() === locator);
+        if (signer == null) {
+            signer = (await this.#resolveMissingDeviceSigner(locator)) ?? undefined;
+        }
+        if (signer == null) {
+            throw new InvalidSignerError(`Signer ${locator} not found in pending approvals`);
+        }
+        return signer;
+    }
+
+    async #collectApprovals<P extends { signer: { locator: string }; message: string }>(
+        pendingApprovals: P[],
+        signers: SignerAdapter[],
+        sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
+    ): Promise<Approval[]> {
+        return await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
+                const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
+                const signature = await sign(signer, pendingApproval);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
+            })
+        );
+    }
+
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
@@ -1169,21 +1206,8 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
-                if (signer == null) {
-                    throw new InvalidSignerError(
-                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
-                    );
-                }
-
-                const signature = await signer.signMessage(pendingApproval.message);
-                return {
-                    ...signature,
-                    signer: signer.locator(),
-                };
-            })
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
+            signer.signMessage(pendingApproval.message)
         );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
@@ -1221,31 +1245,18 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
-                if (signer == null) {
-                    throw new InvalidSignerError(
-                        `Signer ${pendingApproval.signer.locator} not found in pending approvals`
-                    );
-                }
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
+            // For Solana device signers (secp256r1), the SWIG precompile expects a signature
+            // over the keccak256 hash, which is provided in pendingApproval.message.
+            // For other Solana signers (ed25519), the full serialized transaction is signed.
+            const isDeviceSigner = signer.type === "device";
+            const transactionToSign =
+                transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
+                    ? (transaction.onChain.transaction as string)
+                    : pendingApproval.message;
 
-                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
-                // over the keccak256 hash, which is provided in pendingApproval.message.
-                // For other Solana signers (ed25519), the full serialized transaction is signed.
-                const isDeviceSigner = signer.type === "device";
-                const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
-                        ? (transaction.onChain.transaction as string)
-                        : pendingApproval.message;
-
-                const signature = await signer.signTransaction(transactionToSign);
-                return {
-                    ...signature,
-                    signer: signer.locator(),
-                };
-            })
-        );
+            return signer.signTransaction(transactionToSign);
+        });
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
