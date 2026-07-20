@@ -6,6 +6,8 @@ import type {
     PhoneInternalSignerConfig,
     PhoneSignerLocator,
     SignerAdapter,
+    WhatsappInternalSignerConfig,
+    WhatsappSignerLocator,
 } from "../types";
 import {
     AuthRejectedError,
@@ -20,7 +22,7 @@ import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
-    public readonly type: "email" | "phone";
+    public readonly type: "email" | "phone" | "whatsapp";
     private _needsAuth = true;
     private _authPromise: {
         promise: Promise<void>;
@@ -30,7 +32,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     private _initializationPromise: Promise<void> | null = null;
     private _onboardingConnectionGeneration: number | null = null;
 
-    constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    constructor(
+        protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig | WhatsappInternalSignerConfig
+    ) {
         // Only initialize the signer if running client-side
         if (typeof window !== "undefined") {
             this._initializationPromise = this.initialize();
@@ -38,7 +42,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         this.type = this.config.type;
     }
 
-    locator(): EmailSignerLocator | PhoneSignerLocator {
+    locator(): EmailSignerLocator | PhoneSignerLocator | WhatsappSignerLocator {
         return this.config.locator;
     }
 
@@ -288,7 +292,10 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         if (this.config.type === "email") {
             return `email:${this.config.email}`;
         }
-        return `phone:${this.config.phone}`;
+        if (this.config.type === "phone") {
+            return `phone:${this.config.phone}`;
+        }
+        return `whatsapp:${this.config.phone}`;
     }
 
     private async verifyOtp(encryptedOtp: string) {

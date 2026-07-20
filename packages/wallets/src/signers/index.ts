@@ -20,6 +20,7 @@ export function assembleSigner<C extends Chain>(
     switch (config.type) {
         case "email":
         case "phone":
+        case "whatsapp":
             if (chain === "solana") {
                 return new SolanaNonCustodialSigner(config);
             }
