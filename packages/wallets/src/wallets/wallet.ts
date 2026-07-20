@@ -42,8 +42,6 @@ import {
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
 } from "../utils/errors";
-import { RATE_LIMIT_BATCH_SIZE } from "../utils/constants";
-import { mapWithConcurrency } from "../utils/concurrency";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
 import type {
@@ -1035,10 +1033,8 @@ export class Wallet<C extends Chain> {
 
         const configSigners = walletResponse?.config?.delegatedSigners ?? [];
 
-        const signersWithStatus = await mapWithConcurrency(
-            configSigners,
-            RATE_LIMIT_BATCH_SIZE,
-            async (configSigner) => {
+        const signersWithStatus = await Promise.all(
+            configSigners.map(async (configSigner) => {
                 try {
                     const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
                     return signerState.signer;
@@ -1046,7 +1042,7 @@ export class Wallet<C extends Chain> {
                     walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
                     return null;
                 }
-            }
+            })
         );
 
         // Filter out null results (signers that don't have approval for this chain)
@@ -1164,14 +1160,16 @@ export class Wallet<C extends Chain> {
         signers: SignerAdapter[],
         sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
     ): Promise<Approval[]> {
-        return await mapWithConcurrency(pendingApprovals, RATE_LIMIT_BATCH_SIZE, async (pendingApproval) => {
-            const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
-            const signature = await sign(signer, pendingApproval);
-            return {
-                ...signature,
-                signer: signer.locator(),
-            };
-        });
+        return await Promise.all(
+            pendingApprovals.map(async (pendingApproval) => {
+                const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
+                const signature = await sign(signer, pendingApproval);
+                return {
+                    ...signature,
+                    signer: signer.locator(),
+                };
+            })
+        );
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {

@@ -1732,7 +1732,7 @@ describe("Wallet - signers()", () => {
             expect(signers[0].status).toBe("pending");
         });
 
-        it("bounds concurrency and returns all successes when some getSigner calls reject", async () => {
+        it("returns all successes and filters out failures when some getSigner calls reject", async () => {
             const configSigners = Array.from({ length: 12 }, (_, i) => ({
                 type: "external-wallet",
                 address: `0xsigner${i}`,
@@ -1756,14 +1756,8 @@ describe("Wallet - signers()", () => {
 
             mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
 
-            let inFlight = 0;
-            let maxInFlight = 0;
             configSigners.forEach((configSigner, i) => {
                 mockApiClient.getSigner.mockImplementationOnce(async () => {
-                    inFlight++;
-                    maxInFlight = Math.max(maxInFlight, inFlight);
-                    await Promise.resolve();
-                    inFlight--;
                     if (i % 3 === 0) {
                         throw new Error("rate limited");
                     }
@@ -1781,7 +1775,6 @@ describe("Wallet - signers()", () => {
             const signers = await wallet.signers();
 
             expect(signers).toHaveLength(8);
-            expect(maxInFlight).toBeLessThanOrEqual(5);
             expect(mockApiClient.getSigner).toHaveBeenCalledTimes(12);
         });
     });
