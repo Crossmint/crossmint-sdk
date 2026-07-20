@@ -5,7 +5,7 @@ const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
 };
 
-export type SignerType = "email" | "phone";
+export type SignerType = "email" | "phone" | "whatsapp";
 export type DialogStep = "initial" | "otp";
 
 export interface SignerAuthState {
@@ -128,7 +128,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
 
     const onAuthRequired: Callbacks["onAuthRequired"] = useCallback(
         (
-            signerType: "email" | "phone",
+            signerType: "email" | "phone" | "whatsapp",
             signerLocator: string,
             needsAuth: boolean,
             sendMessageWithOtp: () => Promise<void>,
@@ -136,7 +136,7 @@ export function useSignerAuth(): SignerAuthState & SignerAuthHandlers {
             reject: () => void
         ) => {
             const signerValue = signerLocator.split(":")[1];
-            if (signerType === "phone" && signerValue != null) {
+            if ((signerType === "phone" || signerType === "whatsapp") && signerValue != null) {
                 setPhoneSignerDialogOpen(needsAuth);
                 setActiveAuthPhone(needsAuth ? signerValue : undefined);
                 sendPhoneOtpRef.current = sendMessageWithOtp;
