@@ -34,7 +34,10 @@ export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
-export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
+export type EmbeddedCheckoutV3Recipient =
+    | EmbeddedCheckoutV3EmailRecipient
+    | EmbeddedCheckoutV3WalletAddressRecipient
+    | EmbeddedCheckoutV3PaymentMethodRecipient;
 
 export type EmbeddedCheckoutV3PhysicalAddress = {
     name: string;
@@ -49,12 +52,24 @@ export type EmbeddedCheckoutV3PhysicalAddress = {
 export type EmbeddedCheckoutV3EmailRecipient = {
     email: string;
     walletAddress?: never;
+    paymentMethodId?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 export type EmbeddedCheckoutV3WalletAddressRecipient = {
     walletAddress: string;
     email?: never;
+    paymentMethodId?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
+};
+/**
+ * Offramp (cash-out) recipient: the payout destination is a previously-saved bank / payment
+ * method referenced by id. Mutually exclusive with the email / wallet-address recipients.
+ */
+export type EmbeddedCheckoutV3PaymentMethodRecipient = {
+    paymentMethodId: string;
+    email?: never;
+    walletAddress?: never;
+    physicalAddress?: never;
 };
 
 export type EmbeddedCheckoutV3LineItem =
@@ -74,7 +89,22 @@ export type EmbeddedCheckoutV3LineItem =
       }
     | {
           productLocator: string;
+      }
+    | {
+          /**
+           * Offramp (cash-out): sell crypto for fiat. `currencyLocator` names the target fiat
+           * currency (e.g. `"fiat:usd"`); `executionParameters` pins the exact-in amount of
+           * stablecoin to send. Pair with a `paymentMethodId` recipient (the payout bank).
+           */
+          currencyLocator: string;
+          executionParameters: EmbeddedCheckoutV3ExactInExecutionParameters;
+          callData?: never;
       };
+
+export type EmbeddedCheckoutV3ExactInExecutionParameters = {
+    mode: "exact-in";
+    amount: string;
+};
 
 export type EmbeddedCheckoutV3Appearance = {
     fonts?: Array<{ cssSrc: string }>;
