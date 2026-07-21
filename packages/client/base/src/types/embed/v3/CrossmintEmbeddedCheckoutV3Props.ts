@@ -3,10 +3,15 @@ import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
 import type { BlockchainIncludingTestnet, PayerSupportedBlockchains, JSONObject } from "@crossmint/common-sdk-base";
 
+import type { EmbeddedOfframpStatusEvent } from "./EmbeddedOfframpStatus";
+
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
     payment: EmbeddedCheckoutV3Payment;
     jwt?: string;
+    // Fires on each offramp (cash-out) lifecycle phase change (O1-8). No-op for non-offramp orders.
+    // The status vocabulary is formalized further in O3-5.
+    onOfframpStatusChange?: (event: EmbeddedOfframpStatusEvent) => void;
 }
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {

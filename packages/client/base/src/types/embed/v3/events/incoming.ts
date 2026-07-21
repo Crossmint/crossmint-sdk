@@ -1,8 +1,15 @@
 import { z } from "zod";
 
+import { embeddedOfframpStatusSchema } from "../EmbeddedOfframpStatus";
+
 export const embeddedCheckoutV3IncomingEvents = {
     "ui:height.changed": z.object({
         height: z.number(),
+    }),
+    // Offramp cash-out lifecycle status (O1-8). Emitted by the iframe on each offramp phase change.
+    "offramp:status": z.object({
+        status: embeddedOfframpStatusSchema,
+        orderId: z.string().optional(),
     }),
     "crypto:load": z.object({}),
     "crypto:connect-wallet.show": z.object({

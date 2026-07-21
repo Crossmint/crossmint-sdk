@@ -66,6 +66,19 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         if (iframeClient == null) {
             return;
         }
+        const offrampStatusListener = iframeClient.on("offramp:status", (data) => {
+            memoizedProps.current.onOfframpStatusChange?.(data);
+        });
+
+        return () => {
+            iframeClient.off(offrampStatusListener);
+        };
+    }, [iframeClient]);
+
+    useEffect(() => {
+        if (iframeClient == null) {
+            return;
+        }
         const onCryptoLoadListener = iframeClient.on("crypto:load", () => {
             setEventEnableCrypto(true);
             iframeClient.send("crypto:load.success", {});
