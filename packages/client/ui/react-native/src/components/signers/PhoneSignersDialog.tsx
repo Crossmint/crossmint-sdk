@@ -1,5 +1,14 @@
 import type { MutableRefObject } from "react";
-import { View, StyleSheet, Dimensions, Modal, TouchableOpacity, Text } from "react-native";
+import {
+    View,
+    StyleSheet,
+    Dimensions,
+    Modal,
+    TouchableOpacity,
+    Text,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PhoneIcon, SmartphoneIcon, XIcon } from "../icons";
 import { BaseConfirmation } from "./BaseConfirmation";
@@ -89,7 +98,10 @@ export function PhoneSignersDialog({
             onRequestClose={handleOnCancel}
             statusBarTranslucent={true}
         >
-            <View style={dynamicStyles.modalOverlay}>
+            <KeyboardAvoidingView
+                style={dynamicStyles.modalOverlay}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
                 <View style={dynamicStyles.modalContainer}>
                     <TouchableOpacity
                         style={dynamicStyles.closeButton}
@@ -149,7 +161,7 @@ export function PhoneSignersDialog({
                         />
                     )}
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }
