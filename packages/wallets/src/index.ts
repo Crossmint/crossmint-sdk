@@ -45,6 +45,12 @@ export type {
     RemoveSignerOptions,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
+export type {
+    VersionedTransaction,
+    Transaction as SolanaTransaction,
+    Keypair as SolanaKeypair,
+    PublicKey as SolanaPublicKey,
+} from "@solana/web3.js";
 
 // Signer configuration types
 export {
