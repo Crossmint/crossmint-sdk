@@ -2,6 +2,35 @@ import { requireNativeModule } from "expo-modules-core";
 import * as Device from "expo-device";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 
+/**
+ * Error thrown when a native device signer operation fails.
+ *
+ * `code` is the stable machine code surfaced by the native module (for example
+ * `DEVICE_SIGNER_SIGNING_FAILED` or `DEVICE_SIGNER_KEY_NOT_FOUND`) so callers and
+ * error reporters can branch and group on it without parsing the message. The
+ * original native error is preserved on `cause` for the full underlying detail.
+ */
+export class DeviceSignerNativeError extends Error {
+    readonly code: string;
+    readonly cause?: unknown;
+
+    constructor(code: string, message: string, options?: { cause?: unknown }) {
+        super(message);
+        this.name = "DeviceSignerNativeError";
+        this.code = code;
+        this.cause = options?.cause;
+    }
+}
+
+function toDeviceSignerNativeError(error: unknown): DeviceSignerNativeError {
+    const nativeCode = (error as { code?: unknown } | null | undefined)?.code;
+    const code = typeof nativeCode === "string" && nativeCode.length > 0 ? nativeCode : "DEVICE_SIGNER_NATIVE_ERROR";
+    // The native message already names the operation (Expo prefixes "Calling the '<fn>'
+    // function has failed"), so pass it through as-is and keep code + cause structured.
+    const message = error instanceof Error ? error.message : String(error);
+    return new DeviceSignerNativeError(code, message, { cause: error });
+}
+
 interface CrossmintDeviceSignerModule {
     isAvailable(): Promise<boolean>;
     generateKey(address: string | null): Promise<string>;
@@ -36,12 +65,20 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         super("");
     }
 
-    generateKey(params: { address?: string }): Promise<string> {
-        return getNativeModule().generateKey(params.address ?? null);
+    async generateKey(params: { address?: string }): Promise<string> {
+        try {
+            return await getNativeModule().generateKey(params.address ?? null);
+        } catch (error) {
+            throw toDeviceSignerNativeError(error);
+        }
     }
 
-    mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
-        return getNativeModule().mapAddressToKey(address, publicKeyBase64);
+    async mapAddressToKey(address: string, publicKeyBase64: string): Promise<void> {
+        try {
+            return await getNativeModule().mapAddressToKey(address, publicKeyBase64);
+        } catch (error) {
+            throw toDeviceSignerNativeError(error);
+        }
     }
 
     getKey(address: string): Promise<string | null> {
@@ -52,16 +89,28 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         return getNativeModule().hasKey(publicKeyBase64);
     }
 
-    signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
-        return getNativeModule().signMessage(address, message);
+    async signMessage(address: string, message: string): Promise<{ r: string; s: string }> {
+        try {
+            return await getNativeModule().signMessage(address, message);
+        } catch (error) {
+            throw toDeviceSignerNativeError(error);
+        }
     }
 
-    deleteKey(address: string): Promise<void> {
-        return getNativeModule().deleteKey(address);
+    async deleteKey(address: string): Promise<void> {
+        try {
+            return await getNativeModule().deleteKey(address);
+        } catch (error) {
+            throw toDeviceSignerNativeError(error);
+        }
     }
 
-    deletePendingKey(publicKeyBase64: string): Promise<void> {
-        return getNativeModule().deletePendingKey(publicKeyBase64);
+    async deletePendingKey(publicKeyBase64: string): Promise<void> {
+        try {
+            return await getNativeModule().deletePendingKey(publicKeyBase64);
+        } catch (error) {
+            throw toDeviceSignerNativeError(error);
+        }
     }
 
     getDeviceName(): string {
