@@ -61,12 +61,7 @@ public class DeviceSignerModule: Module {
                 let sig = try await DeviceSignerModule.defaultStorage().signMessage(address: address, message: message)
                 return ["r": sig.r, "s": sig.s]
             } catch let error as DeviceSignerError {
-                // Surface the SDK error code as the exception name so JS can branch on it
-                // (e.g. re-register the device signer on DEVICE_SIGNER_SIGNING_FAILED or
-                // DEVICE_SIGNER_KEY_NOT_FOUND). The description carries the underlying reason;
-                // Expo already prefixes "Calling the 'signMessage' function has failed", so we
-                // do not add our own redundant prefix.
-                throw Exception(name: error.code, description: error.message)
+                throw Exception(name: error.code, description: error.message, code: error.code)
             } catch {
                 throw Exception(name: "SignMessageFailed", description: "signMessage failed: \(error)")
             }
