@@ -1,5 +1,5 @@
 ---
-"@crossmint/client-sdk-react-native-ui": patch
+"@crossmint/client-sdk-react-native-ui": minor
 ---
 
 Surface the device signer error code and underlying reason from the native module, so a failed sign is diagnosable from its logs instead of a generic `SignMessageFailed`.
