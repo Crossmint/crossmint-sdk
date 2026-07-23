@@ -46,6 +46,7 @@ export class WalletFactory {
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "walletFactory.getWallet",
+        expectedErrors: [WalletNotAvailableError],
         buildContext(_thisArg: WalletFactory, args: unknown[]) {
             if (typeof args[0] === "string") {
                 const walletArgs = args[1] as WalletArgsFor<Chain> | undefined;
