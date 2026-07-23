@@ -33,6 +33,7 @@ import {
     DeviceSignerNotSupportedError,
     InvalidSignerError,
     InvalidTransferAmountError,
+    QuorumSignerNotSupportedError,
     SignatureFailedError,
     SignatureNotAvailableError,
     TransactionFailedError,
@@ -1155,6 +1156,22 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
+    // Quorum entries carry per-member progress instead of a top-level message, so they
+    // cannot be signed through the flat approval flow. Supporting them is tracked by the
+    // quorum approval-loop work; until then, fail with an actionable error.
+    #requireNonQuorumApprovals<P extends { signer: { type: string; locator: string } }>(
+        pendingApprovals: P[]
+    ): Extract<P, { message: string }>[] {
+        return pendingApprovals.map((pendingApproval) => {
+            if (pendingApproval.signer.type === "quorum") {
+                throw new QuorumSignerNotSupportedError(
+                    `This wallet requires approval from a quorum signer (${pendingApproval.signer.locator}), which is not yet supported by this SDK version`
+                );
+            }
+            return pendingApproval as Extract<P, { message: string }>;
+        });
+    }
+
     async #collectApprovals<P extends { signer: { locator: string }; message: string }>(
         pendingApprovals: P[],
         signers: SignerAdapter[],
@@ -1206,8 +1223,10 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
-            signer.signMessage(pendingApproval.message)
+        const approvals = await this.#collectApprovals(
+            this.#requireNonQuorumApprovals(pendingApprovals),
+            signers,
+            (signer, pendingApproval) => signer.signMessage(pendingApproval.message)
         );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
@@ -1245,18 +1264,22 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
-            // For Solana device signers (secp256r1), the SWIG precompile expects a signature
-            // over the keccak256 hash, which is provided in pendingApproval.message.
-            // For other Solana signers (ed25519), the full serialized transaction is signed.
-            const isDeviceSigner = signer.type === "device";
-            const transactionToSign =
-                transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
-                    ? (transaction.onChain.transaction as string)
-                    : pendingApproval.message;
+        const approvals = await this.#collectApprovals(
+            this.#requireNonQuorumApprovals(pendingApprovals),
+            signers,
+            (signer, pendingApproval) => {
+                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
+                // over the keccak256 hash, which is provided in pendingApproval.message.
+                // For other Solana signers (ed25519), the full serialized transaction is signed.
+                const isDeviceSigner = signer.type === "device";
+                const transactionToSign =
+                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
+                        ? (transaction.onChain.transaction as string)
+                        : pendingApproval.message;
 
-            return signer.signTransaction(transactionToSign);
-        });
+                return signer.signTransaction(transactionToSign);
+            }
+        );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }

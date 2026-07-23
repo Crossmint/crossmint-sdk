@@ -5,6 +5,7 @@ export { createCrossmint, CrossmintWallets } from "./sdk";
 export {
     WalletNotAvailableError,
     InvalidTransferAmountError,
+    QuorumSignerNotSupportedError,
     UnsupportedBrowserError,
     NotAuthorizedError,
     JWTExpiredError,
