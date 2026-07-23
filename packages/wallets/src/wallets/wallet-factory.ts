@@ -15,14 +15,19 @@ import type {
 import { DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
+    DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
+    QuorumMemberConfigForChain,
+    QuorumRecoveryConfig,
+    RecoveryConfigForChain,
     RecoverySignerConfigForChain,
     SignerConfigForChain,
 } from "../signers/types";
+import { isQuorumRecovery } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
-import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
+import { compareSignerConfigs, normalizeEmail, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -34,6 +39,14 @@ const SIGNER_MISMATCH_ERROR =
 type SmartWalletConfig = {
     adminSigner: RecoverySignerConfig | PasskeySignerConfig;
     delegatedSigners?: SignerResponse[];
+};
+
+// The response DTO does not model a quorum admin signer yet; at runtime the API returns it
+// under `config.adminSigner` with `type: "quorum"`, so it is read through this shape.
+type ExistingQuorumAdminSigner = {
+    type: "quorum";
+    threshold?: number;
+    signers: Array<Record<string, unknown> & { type: string }>;
 };
 
 export class WalletFactory {
@@ -140,24 +153,27 @@ export class WalletFactory {
             validatedArgs.options?.deviceSignerKeyStorage
         );
 
-        let adminSigner;
-        if (validatedArgs.recovery.type === "passkey" && validatedArgs.recovery.id == null) {
-            adminSigner = await this.createPasskeySigner(validatedArgs.recovery);
-        } else if (validatedArgs.recovery.type === "server") {
-            const { derivedAddress } = deriveServerSignerDetails(
-                validatedArgs.recovery,
-                validatedArgs.chain,
-                this.apiClient.projectId,
-                this.apiClient.environment
+        const recoveryConfig = this.normalizeRecovery(validatedArgs.recovery);
+        let adminConfig: Record<string, unknown>;
+        if (isQuorumRecovery(recoveryConfig)) {
+            const quorumSigners = await Promise.all(
+                recoveryConfig.methods.map((member) => this.prepareAdminSigner(member, validatedArgs.chain))
             );
-            adminSigner = { type: "server", address: derivedAddress };
+            adminConfig = {
+                // Quorum admins are sent on the `recovery` wire property; its member array is named `signers`.
+                recovery: {
+                    type: "quorum",
+                    ...(recoveryConfig.threshold != null ? { threshold: recoveryConfig.threshold } : {}),
+                    signers: quorumSigners,
+                },
+            };
         } else {
-            adminSigner = validatedArgs.recovery;
+            adminConfig = { adminSigner: await this.prepareAdminSigner(recoveryConfig, validatedArgs.chain) };
         }
 
         const walletResponse = await this.createSmartWallet(
             validatedArgs,
-            adminSigner,
+            adminConfig,
             builtSigners,
             didAutoInjectDeviceSigner
         );
@@ -179,7 +195,7 @@ export class WalletFactory {
     /** Creates the smart wallet, retrying once without the auto-injected device signer if the provider rejects it. */
     private async createSmartWallet<C extends Chain>(
         args: WalletCreateArgs<C>,
-        adminSigner: unknown,
+        adminConfig: Record<string, unknown>,
         builtSigners: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>,
         didAutoInjectDeviceSigner: boolean
     ): Promise<CreateWalletResponse> {
@@ -188,7 +204,7 @@ export class WalletFactory {
                 type: "smart",
                 chainType: this.getChainType(args.chain),
                 config: {
-                    adminSigner,
+                    ...adminConfig,
                     ...(args.plugins ? { plugins: args.plugins } : {}),
                     ...(delegatedSigners != null ? { delegatedSigners } : {}),
                 },
@@ -289,6 +305,51 @@ export class WalletFactory {
         return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
     }
 
+    /** Runs the per-type prep an admin signer needs before it can be sent on the wire. */
+    private async prepareAdminSigner<C extends Chain>(
+        signer: Exclude<SignerConfigForChain<C>, DeviceSignerConfig> | QuorumMemberConfigForChain<C>,
+        chain: C
+    ): Promise<unknown> {
+        if (signer.type === "passkey" && signer.id == null) {
+            return await this.createPasskeySigner(signer);
+        }
+        if (signer.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                signer,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return { type: "server", address: derivedAddress };
+        }
+        return signer;
+    }
+
+    /**
+     * Validates a quorum recovery config and collapses a single-method quorum to a plain
+     * single admin signer. Non-quorum configs pass through unchanged.
+     */
+    private normalizeRecovery<C extends Chain>(recovery: RecoveryConfigForChain<C>): RecoveryConfigForChain<C> {
+        if (!isQuorumRecovery(recovery)) {
+            return recovery;
+        }
+        const { threshold, methods } = recovery;
+        if (methods.length === 0) {
+            throw new WalletCreationError("Quorum recovery requires at least one method");
+        }
+        if (threshold != null && (!Number.isInteger(threshold) || threshold < 1 || threshold > methods.length)) {
+            throw new WalletCreationError(
+                `Quorum threshold must be an integer between 1 and the number of methods (${methods.length})`
+            );
+        }
+        if (methods.length === 1) {
+            // Quorum members are a subset of valid single admin signers; TS cannot relate the
+            // two deferred conditional types for a generic chain, hence the cast.
+            return methods[0] as RecoveryConfigForChain<C>;
+        }
+        return recovery;
+    }
+
     private async createPasskeySigner<C extends Chain>(
         signer: SignerConfigForChain<C>
     ): Promise<RegisterSignerPasskeyParams> {
@@ -343,12 +404,27 @@ export class WalletFactory {
             const existingWalletSigner = config?.adminSigner;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
-                if (createArgs.recovery.type !== existingWalletSigner.type) {
+                const recoveryConfig = this.normalizeRecovery(createArgs.recovery);
+                const existingIsQuorum = (existingWalletSigner as { type?: string }).type === "quorum";
+                if (isQuorumRecovery(recoveryConfig) !== existingIsQuorum) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
+                if (isQuorumRecovery(recoveryConfig)) {
+                    this.validateQuorumRecovery(
+                        recoveryConfig,
+                        existingWalletSigner as unknown as ExistingQuorumAdminSigner,
+                        args.chain
+                    );
+                } else {
+                    if (recoveryConfig.type !== existingWalletSigner.type) {
+                        throw new WalletCreationError(
+                            "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+                        );
+                    }
+                    compareSignerConfigs(recoveryConfig, existingWalletSigner);
+                }
             }
 
             const inputSigners = createArgs.signers;
@@ -356,6 +432,87 @@ export class WalletFactory {
                 this.validateSigners(existingWallet, inputSigners, args.chain);
             }
         }
+    }
+
+    /**
+     * Compares a quorum recovery config against an existing wallet's quorum admin signer.
+     * The member set comparison is order-insensitive: each method must match a distinct
+     * existing member, regardless of ordering (the quorum locator is a sorted-content hash).
+     */
+    private validateQuorumRecovery<C extends Chain>(
+        recovery: QuorumRecoveryConfig<C>,
+        existing: ExistingQuorumAdminSigner,
+        chain: C
+    ): void {
+        const newThreshold = recovery.threshold ?? 1;
+        const existingThreshold = existing.threshold ?? 1;
+        if (newThreshold !== existingThreshold) {
+            throw new WalletCreationError(
+                `Quorum recovery threshold mismatch - expected "${existingThreshold}" from existing wallet but found "${newThreshold}"`
+            );
+        }
+
+        const existingMembers = existing.signers ?? [];
+        if (recovery.methods.length !== existingMembers.length) {
+            throw new WalletCreationError(
+                `Quorum recovery member count mismatch - expected "${existingMembers.length}" from existing wallet but found "${recovery.methods.length}"`
+            );
+        }
+
+        const unmatched = [...existingMembers];
+        for (const method of recovery.methods) {
+            const matchIndex = unmatched.findIndex((candidate) =>
+                this.isMatchingQuorumMember(method, candidate, chain)
+            );
+            if (matchIndex === -1) {
+                throw new WalletCreationError(
+                    `Quorum recovery member '${method.type}' does not match any member of the existing wallet's quorum recovery`
+                );
+            }
+            const [matchedMember] = unmatched.splice(matchIndex, 1);
+            compareSignerConfigs(method as Record<string, unknown>, matchedMember);
+        }
+    }
+
+    private isMatchingQuorumMember<C extends Chain>(
+        method: QuorumMemberConfigForChain<C>,
+        candidate: Record<string, unknown> & { type: string },
+        chain: C
+    ): boolean {
+        if (method.type !== candidate.type) {
+            return false;
+        }
+        if (method.type === "server") {
+            // User-supplied server members carry a secret; the API returns the derived address.
+            const { primary, legacy } = deriveServerSignerCandidates(
+                method,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return (
+                candidate.address === primary.derivedAddress ||
+                (legacy != null && candidate.address === legacy.derivedAddress)
+            );
+        }
+        if (method.type === "passkey") {
+            if (method.id != null) {
+                return candidate.id === method.id;
+            }
+            if (method.name != null) {
+                return candidate.name === method.name;
+            }
+            return true; // field-level checks follow via compareSignerConfigs
+        }
+        if (method.type === "email") {
+            return (
+                method.email == null || normalizeEmail(method.email) === normalizeEmail(String(candidate.email ?? ""))
+            );
+        }
+        if (method.type === "phone") {
+            return method.phone == null || method.phone === candidate.phone;
+        }
+        return method.address === candidate.address; // external-wallet
     }
 
     private validateSigners<C extends Chain>(

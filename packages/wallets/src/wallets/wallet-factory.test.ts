@@ -87,6 +87,8 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     }),
                 })
             );
+            // Single-signer payloads must not carry the quorum-only `recovery` wire property.
+            expect(mockApiClient.createWallet.mock.calls[0]?.[0]?.config).not.toHaveProperty("recovery");
         });
     });
 
@@ -982,6 +984,315 @@ describe("WalletFactory - Server Signer", () => {
             };
 
             await expect(walletFactory.getWallet(mockServerWalletResponse.address, args)).resolves.toBeDefined();
+        });
+    });
+});
+
+describe("WalletFactory - Quorum Recovery", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    const TEST_SECRET = "b".repeat(64);
+    const PROJECT_ID = "test-project";
+    const ENVIRONMENT = APIKeyEnvironmentPrefix.STAGING;
+
+    const { derivedAddress: serverMemberAddress } = deriveServerSignerDetails(
+        { type: "server", secret: TEST_SECRET },
+        "solana",
+        PROJECT_ID,
+        ENVIRONMENT
+    );
+
+    const quorumMembers: WalletCreateArgs<"solana">["recovery"] = {
+        type: "quorum",
+        threshold: 1,
+        methods: [
+            { type: "external-wallet", address: "MemberWallet111" },
+            { type: "server", secret: TEST_SECRET },
+            { type: "email", email: "alice@gmail.com" },
+        ],
+    };
+
+    // Cast needed: the response DTO does not model a quorum admin signer yet.
+    const quorumWalletResponse = (adminSigner: Record<string, unknown>) =>
+        ({
+            chainType: "solana" as const,
+            type: "smart" as const,
+            address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+            owner: "test-owner",
+            config: { adminSigner },
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    const matchingQuorumAdminSigner = {
+        type: "quorum",
+        threshold: 1,
+        locator: "quorum:9f2c0000",
+        signers: [
+            { type: "external-wallet", address: "MemberWallet111", locator: "external-wallet:MemberWallet111" },
+            { type: "server", address: serverMemberAddress, locator: `server:${serverMemberAddress}` },
+            { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
+        ],
+    };
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+
+        mockApiClient = {
+            isServerSide: false,
+            crossmint: { projectId: PROJECT_ID },
+            projectId: PROJECT_ID,
+            environment: ENVIRONMENT,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("createWallet with quorum recovery", () => {
+        it("sends the quorum on the recovery wire property with prepared members", async () => {
+            mockApiClient.createWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+
+            await walletFactory.createWallet({ chain: "solana", recovery: quorumMembers });
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect((call?.config as Record<string, unknown>)?.recovery).toEqual({
+                type: "quorum",
+                threshold: 1,
+                signers: [
+                    { type: "external-wallet", address: "MemberWallet111" },
+                    { type: "server", address: serverMemberAddress },
+                    { type: "email", email: "alice@gmail.com" },
+                ],
+            });
+            expect(call?.config).not.toHaveProperty("adminSigner");
+        });
+
+        it("omits threshold from the payload when not provided", async () => {
+            mockApiClient.createWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+
+            await walletFactory.createWallet({
+                chain: "solana",
+                recovery: {
+                    type: "quorum",
+                    methods: [
+                        { type: "external-wallet", address: "MemberWallet111" },
+                        { type: "server", secret: TEST_SECRET },
+                        { type: "email", email: "alice@gmail.com" },
+                    ],
+                },
+            });
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect((call?.config as Record<string, unknown>)?.recovery).not.toHaveProperty("threshold");
+        });
+
+        it("collapses a single-method quorum to a plain admin signer", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({
+                    type: "external-wallet",
+                    address: "MemberWallet111",
+                    locator: "external-wallet:MemberWallet111",
+                })
+            );
+
+            await walletFactory.createWallet({
+                chain: "solana",
+                recovery: { type: "quorum", methods: [{ type: "external-wallet", address: "MemberWallet111" }] },
+            });
+
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect(call?.config?.adminSigner).toEqual({ type: "external-wallet", address: "MemberWallet111" });
+            expect(call?.config).not.toHaveProperty("recovery");
+        });
+
+        it("rejects empty quorum methods", async () => {
+            await expect(
+                walletFactory.createWallet({ chain: "solana", recovery: { type: "quorum", methods: [] } })
+            ).rejects.toThrow("Quorum recovery requires at least one method");
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            ["zero", 0, 2],
+            ["negative", -1, 2],
+            ["non-integer", 1.5, 2],
+            ["greater than the number of methods", 2, 1],
+        ])("rejects a %s threshold", async (_label, threshold, memberCount) => {
+            const twoMethods = [
+                { type: "external-wallet" as const, address: "MemberWallet111" },
+                { type: "email" as const, email: "alice@gmail.com" },
+            ];
+            await expect(
+                walletFactory.createWallet({
+                    chain: "solana",
+                    recovery: { type: "quorum", threshold, methods: twoMethods.slice(0, memberCount) },
+                })
+            ).rejects.toThrow("Quorum threshold must be an integer between 1 and the number of methods");
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("creates passkey credentials for quorum passkey members", async () => {
+            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "cred-id", publicKey: { x: "1", y: "2" } });
+            mockApiClient.createWallet.mockResolvedValue({
+                ...quorumWalletResponse({
+                    type: "quorum",
+                    threshold: 1,
+                    locator: "quorum:9f2c0001",
+                    signers: [
+                        { type: "external-wallet", address: "0xMember1", locator: "external-wallet:0xMember1" },
+                        {
+                            type: "passkey",
+                            id: "cred-id",
+                            name: "My Passkey",
+                            locator: "passkey:cred-id",
+                            publicKey: { x: "1", y: "2" },
+                        },
+                    ],
+                }),
+                chainType: "evm" as const,
+                address: "0x1234567890123456789012345678901234567890",
+            } as unknown as GetWalletSuccessResponse);
+
+            await walletFactory.createWallet({
+                chain: "base-sepolia",
+                recovery: {
+                    type: "quorum",
+                    methods: [
+                        { type: "external-wallet", address: "0xMember1" },
+                        { type: "passkey", name: "My Passkey", onCreatePasskey },
+                    ],
+                },
+            });
+
+            expect(onCreatePasskey).toHaveBeenCalledWith("My Passkey");
+            const call = mockApiClient.createWallet.mock.calls[0]?.[0];
+            expect((call?.config as Record<string, unknown>)?.recovery).toEqual({
+                type: "quorum",
+                signers: [
+                    { type: "external-wallet", address: "0xMember1" },
+                    { type: "passkey", id: "cred-id", name: "My Passkey", publicKey: { x: "1", y: "2" } },
+                ],
+            });
+        });
+    });
+
+    describe("createWallet against an existing quorum wallet", () => {
+        it("resolves when the existing quorum matches with methods in a different order", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({
+                    ...matchingQuorumAdminSigner,
+                    signers: [...matchingQuorumAdminSigner.signers].reverse(),
+                })
+            );
+
+            await expect(
+                walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })
+            ).resolves.toBeDefined();
+        });
+
+        it("treats an omitted threshold and a threshold of 1 as equal", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({ ...matchingQuorumAdminSigner, threshold: undefined })
+            );
+
+            await expect(
+                walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })
+            ).resolves.toBeDefined();
+        });
+
+        it("matches an email member with a Gmail-dot-normalized address", async () => {
+            mockApiClient.createWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+
+            await expect(
+                walletFactory.createWallet({
+                    chain: "solana",
+                    recovery: {
+                        type: "quorum",
+                        threshold: 1,
+                        methods: [
+                            { type: "external-wallet", address: "MemberWallet111" },
+                            { type: "server", secret: TEST_SECRET },
+                            { type: "email", email: "A.Lice@gmail.com" },
+                        ],
+                    },
+                })
+            ).resolves.toBeDefined();
+        });
+
+        it("throws on a threshold mismatch", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({ ...matchingQuorumAdminSigner, threshold: 2 })
+            );
+
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })).rejects.toThrow(
+                'Quorum recovery threshold mismatch - expected "2" from existing wallet but found "1"'
+            );
+        });
+
+        it("throws on a member count mismatch", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({
+                    ...matchingQuorumAdminSigner,
+                    signers: matchingQuorumAdminSigner.signers.slice(0, 2),
+                })
+            );
+
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })).rejects.toThrow(
+                "Quorum recovery member count mismatch"
+            );
+        });
+
+        it("throws when a member does not match any existing quorum member", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({
+                    ...matchingQuorumAdminSigner,
+                    signers: [
+                        {
+                            type: "external-wallet",
+                            address: "DifferentWallet999",
+                            locator: "external-wallet:DifferentWallet999",
+                        },
+                        ...matchingQuorumAdminSigner.signers.slice(1),
+                    ],
+                })
+            );
+
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })).rejects.toThrow(
+                "does not match any member of the existing wallet's quorum recovery"
+            );
+        });
+
+        it("throws when quorum recovery is provided but the existing wallet has a single admin signer", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                quorumWalletResponse({
+                    type: "external-wallet",
+                    address: "MemberWallet111",
+                    locator: "external-wallet:MemberWallet111",
+                })
+            );
+
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })).rejects.toThrow(
+                "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+            );
+        });
+
+        it("throws when a single recovery signer is provided but the existing wallet has a quorum admin", async () => {
+            mockApiClient.createWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+
+            await expect(
+                walletFactory.createWallet({
+                    chain: "solana",
+                    recovery: { type: "external-wallet", address: "MemberWallet111" },
+                })
+            ).rejects.toThrow(
+                "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+            );
         });
     });
 });

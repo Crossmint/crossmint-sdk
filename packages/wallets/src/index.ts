@@ -50,6 +50,7 @@ export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains
 // Signer configuration types
 export {
     isExportableSignerAdapter,
+    isQuorumRecovery,
     AuthRejectedError,
     KeyExportError,
     OnboardingSessionExpiredError,
@@ -66,6 +67,9 @@ export type {
     ExternalWalletSignerConfigForChain,
     ServerSignerConfig,
     SignerConfigForChain,
+    QuorumMemberConfigForChain,
+    QuorumRecoveryConfig,
+    RecoveryConfigForChain,
     SignerLocator,
     EmailSignerLocator,
     PhoneSignerLocator,

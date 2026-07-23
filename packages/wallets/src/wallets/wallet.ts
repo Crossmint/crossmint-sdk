@@ -212,7 +212,8 @@ export class Wallet<C extends Chain> {
                   ? this.#initialSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        if (signerToAssemble == null) {
+        // Quorum recovery has no single assemblable signer; the user selects a member via useSigner().
+        if (signerToAssemble == null || (signerToAssemble as { type?: string }).type === "quorum") {
             return;
         }
 
