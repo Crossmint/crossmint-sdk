@@ -4950,68 +4950,6 @@
                                             },
                                             "method": {
                                                 "type": "string",
-                                                "enum": ["stripe-payment-element"]
-                                            },
-                                            "currency": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "usd",
-                                                    "eur",
-                                                    "aud",
-                                                    "gbp",
-                                                    "jpy",
-                                                    "sgd",
-                                                    "hkd",
-                                                    "krw",
-                                                    "inr",
-                                                    "vnd"
-                                                ]
-                                            }
-                                        },
-                                        "required": ["method"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["checkoutcom-flow"]
-                                            },
-                                            "currency": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "usd",
-                                                    "eur",
-                                                    "aud",
-                                                    "gbp",
-                                                    "jpy",
-                                                    "sgd",
-                                                    "hkd",
-                                                    "krw",
-                                                    "inr",
-                                                    "vnd"
-                                                ]
-                                            }
-                                        },
-                                        "required": ["method"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
                                                 "enum": ["card-token"]
                                             },
                                             "currency": {
@@ -7035,68 +6973,6 @@
                                             }
                                         },
                                         "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["stripe-payment-element"]
-                                            },
-                                            "currency": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "usd",
-                                                    "eur",
-                                                    "aud",
-                                                    "gbp",
-                                                    "jpy",
-                                                    "sgd",
-                                                    "hkd",
-                                                    "krw",
-                                                    "inr",
-                                                    "vnd"
-                                                ]
-                                            }
-                                        },
-                                        "required": ["method"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["checkoutcom-flow"]
-                                            },
-                                            "currency": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "usd",
-                                                    "eur",
-                                                    "aud",
-                                                    "gbp",
-                                                    "jpy",
-                                                    "sgd",
-                                                    "hkd",
-                                                    "krw",
-                                                    "inr",
-                                                    "vnd"
-                                                ]
-                                            }
-                                        },
-                                        "required": ["method"]
                                     },
                                     {
                                         "type": "object",
