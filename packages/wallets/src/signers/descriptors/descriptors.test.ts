@@ -44,6 +44,7 @@ function makeCtx(
 it.each<[name: string, type: string, config: Config, message: string]>([
     ["email missing email", "email", cfg({ type: "email" }), "Email signer requires an email address"],
     ["phone missing phone", "phone", cfg({ type: "phone" }), "Phone signer requires a phone number"],
+    ["whatsapp missing phone", "whatsapp", cfg({ type: "whatsapp" }), "Whatsapp signer requires a phone number"],
     [
         "ext missing address",
         "external-wallet",
@@ -63,6 +64,7 @@ it.each<[name: string, type: string, config: Config, message: string]>([
 it.each<[type: string, config: Config]>([
     ["email", cfg({ type: "email", email: "a@b.com" })],
     ["phone", cfg({ type: "phone", phone: "+15551234" })],
+    ["whatsapp", cfg({ type: "whatsapp", phone: "+15551234" })],
     ["external-wallet", cfg({ type: "external-wallet", address: "0xabc", onSign: vi.fn() })],
     ["api-key", cfg({ type: "api-key" })],
     ["passkey", cfg({ type: "passkey" })],
@@ -72,9 +74,10 @@ it.each<[type: string, config: Config]>([
     expect(() => getSignerDescriptor(type as never).validateConfig(config as never)).not.toThrow();
 });
 
-it.each<[type: "email" | "phone", field: "email" | "phone", value: string]>([
+it.each<[type: "email" | "phone" | "whatsapp", field: "email" | "phone", value: string]>([
     ["email", "email", "a@b.com"],
     ["phone", "phone", "+15551234"],
+    ["whatsapp", "phone", "+15551234"],
 ])("buildInternalConfig: %s threads crossmint/clientTEEConnection/onAuthRequired from ctx", (type, field, value) => {
     const result = getSignerDescriptor(type).buildInternalConfig({ type, [field]: value } as never, makeCtx());
     expect(result).toEqual({
@@ -139,7 +142,7 @@ it.each<[name: string, config: Config, expected: object]>([
     expect(getSignerDescriptor("passkey").buildInternalConfig(config as never, makeCtx())).toMatchObject(expected);
 });
 
-it.each<[type: string]>([["email"], ["phone"], ["passkey"], ["api-key"]])(
+it.each<[type: string]>([["email"], ["phone"], ["whatsapp"], ["passkey"], ["api-key"]])(
     "canAutoAssemble: %s is always true",
     (type) => {
         expect(getSignerDescriptor(type as never).canAutoAssemble({ type } as never, makeCtx())).toBe(true);
@@ -192,6 +195,7 @@ it("addSignerPayload: device without publicKey returns locator", () => {
 it.each<[type: string, config: Config, expected: string]>([
     ["email", cfg({ type: "email", email: "a@b.com" }), "email:a@b.com"],
     ["phone", cfg({ type: "phone", phone: "+15551234" }), "phone:+15551234"],
+    ["whatsapp", cfg({ type: "whatsapp", phone: "+15551234" }), "whatsapp:+15551234"],
     ["api-key", cfg({ type: "api-key" }), "api-key"],
     ["external-wallet", cfg({ type: "external-wallet", address: "0xabc", onSign: vi.fn() }), "external-wallet:0xabc"],
 ])("addSignerPayload: %s returns locator", (type, config, expected) => {
@@ -279,6 +283,7 @@ it.each<[name: string, type: string, config: Config, recovery: Config, expected:
 it.each([
     ["email", true],
     ["phone", true],
+    ["whatsapp", true],
     ["api-key", true],
     ["device", true],
     ["external-wallet", true],
@@ -295,7 +300,7 @@ it.each([
     expect(getSignerDescriptor(type).signerUnavailableReason()).toMatch(pattern);
 });
 
-it.each(["email", "phone", "api-key", "device", "passkey"] as const)(
+it.each(["email", "phone", "whatsapp", "api-key", "device", "passkey"] as const)(
     "signerUnavailableReason: %s returns null so require() applies the generic fallback",
     (type) => {
         expect(getSignerDescriptor(type).signerUnavailableReason()).toBeNull();

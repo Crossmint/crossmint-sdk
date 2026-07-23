@@ -177,6 +177,14 @@ export type Signer =
           scopes?: Scope[];
       }
     | {
+          type: "whatsapp";
+          phone: string;
+          address: string;
+          locator: string;
+          status: SignerStatus;
+          scopes?: Scope[];
+      }
+    | {
           type: "device";
           publicKey: { x: string; y: string };
           locator: string;
@@ -200,7 +208,7 @@ export type Callbacks = {
     onWalletCreationStart?: () => Promise<void>;
     onTransactionStart?: () => Promise<void>;
     onAuthRequired?: (
-        signerType: "email" | "phone",
+        signerType: "email" | "phone" | "whatsapp",
         signerLocator: string,
         needsAuth: boolean,
         sendOtp: () => Promise<void>,

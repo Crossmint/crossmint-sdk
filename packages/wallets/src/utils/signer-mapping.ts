@@ -42,6 +42,13 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
                 address: apiSigner.address,
                 locator: apiSigner.locator,
             };
+        case "whatsapp":
+            return {
+                type: "whatsapp",
+                phone: apiSigner.phone,
+                address: apiSigner.address,
+                locator: apiSigner.locator,
+            };
         case "device":
             return {
                 type: "device",

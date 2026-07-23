@@ -56,6 +56,11 @@ describe("getSignerLocator", () => {
         expect(getSignerLocator(signer)).toBe("phone:+1234567890");
     });
 
+    it("returns whatsapp locator", () => {
+        const signer = { type: "whatsapp", phone: "+1234567890" } as SignerConfigForChain<Chain>;
+        expect(getSignerLocator(signer)).toBe("whatsapp:+1234567890");
+    });
+
     it("returns passkey locator", () => {
         const signer = { type: "passkey", id: "cred-123" } as SignerConfigForChain<Chain>;
         expect(getSignerLocator(signer)).toBe("passkey:cred-123");

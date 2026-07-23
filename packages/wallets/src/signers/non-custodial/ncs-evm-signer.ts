@@ -1,11 +1,11 @@
-import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig, WhatsappInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 import { walletsLogger } from "../../logger";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
-    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig | WhatsappInternalSignerConfig) {
         super(config);
     }
 
