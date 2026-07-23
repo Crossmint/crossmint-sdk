@@ -230,6 +230,29 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
+export type QuorumMemberConfigForChain<C extends Chain> = Exclude<
+    SignerConfigForChain<C>,
+    DeviceSignerConfig | ApiKeySignerConfig
+>;
+
+export type QuorumRecoveryConfig<C extends Chain> = {
+    type: "quorum";
+    /** Minimum number of member signatures required to approve. Defaults to 1. */
+    threshold?: number;
+    /** The member signers that make up the quorum. `api-key` and `device` signers are not allowed. */
+    methods: QuorumMemberConfigForChain<C>[];
+};
+
+export type RecoveryConfigForChain<C extends Chain> =
+    | Exclude<SignerConfigForChain<C>, DeviceSignerConfig>
+    | QuorumRecoveryConfig<C>;
+
+export function isQuorumRecovery<C extends Chain>(
+    recovery: RecoveryConfigForChain<C>
+): recovery is QuorumRecoveryConfig<C> {
+    return recovery.type === "quorum";
+}
+
 ////////////////////////////////////////////////////////////
 // Signer locator types
 ////////////////////////////////////////////////////////////
