@@ -4,6 +4,8 @@ import type {
     ApiClient,
     WalletLocator,
     RegisterSignerParams,
+    ApproveTransactionResponse,
+    GetTransactionResponse,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
     GetWalletSuccessResponse,
@@ -41,6 +43,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
+    wrapTransactionApiError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
@@ -1214,7 +1217,12 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
-        const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        let transaction: GetTransactionResponse;
+        try {
+            transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        } catch (error) {
+            throw wrapTransactionApiError(error, transactionId) ?? error;
+        }
 
         if ("error" in transaction) {
             throwIfCrossmintApiAuthError(transaction);
@@ -1263,9 +1271,14 @@ export class Wallet<C extends Chain> {
 
     private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
         walletsLogger.info("wallet.approve: submitting approval to API", { transactionId });
-        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
-            approvals,
-        });
+        let approvedTransaction: ApproveTransactionResponse;
+        try {
+            approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
+                approvals,
+            });
+        } catch (error) {
+            throw wrapTransactionApiError(error, transactionId) ?? error;
+        }
 
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);

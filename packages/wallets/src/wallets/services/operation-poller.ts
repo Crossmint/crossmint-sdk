@@ -10,6 +10,7 @@ import {
     TransactionNotAvailableError,
     TransactionSendingFailedError,
     throwIfCrossmintApiAuthError,
+    wrapTransactionApiError,
 } from "../../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
 import { walletsLogger } from "../../logger";
@@ -48,7 +49,11 @@ export async function waitForTransactionCompletion(
         }
 
         const pollStartedAt = Date.now();
-        transactionResponse = await apiClient.getTransaction(walletLocator, transactionId);
+        try {
+            transactionResponse = await apiClient.getTransaction(walletLocator, transactionId);
+        } catch (error) {
+            throw wrapTransactionApiError(error, transactionId) ?? error;
+        }
         if (transactionResponse.error) {
             throwIfCrossmintApiAuthError(transactionResponse);
             throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
