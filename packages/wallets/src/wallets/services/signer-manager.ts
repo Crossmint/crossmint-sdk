@@ -10,6 +10,7 @@ import {
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
+    type WalletRecoveryConfigForChain,
 } from "../../signers/types";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
@@ -22,7 +23,7 @@ export type SignerManagerParams<C extends Chain> = {
     walletAddress: string;
     walletLocator: () => WalletLocator;
     serverSignerResolver: ServerSignerResolver;
-    recovery: RecoverySignerConfigForChain<C>;
+    recovery: WalletRecoveryConfigForChain<C>;
     initialSigners: SignerConfigForChain<C>[];
     signers: () => Promise<WalletSigner[]>;
     signer?: SignerAdapter;
@@ -30,7 +31,7 @@ export type SignerManagerParams<C extends Chain> = {
 
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
-    #recovery: RecoverySignerConfigForChain<C>;
+    #recovery: WalletRecoveryConfigForChain<C>;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
     #chain: C;
@@ -61,8 +62,8 @@ export class SignerManager<C extends Chain> {
         this.#activeSigner = signer;
     }
 
-    get recovery(): SignerConfigForChain<C> {
-        return this.#recovery as SignerConfigForChain<C>;
+    get recovery(): WalletRecoveryConfigForChain<C> {
+        return this.#recovery;
     }
 
     descriptorContext(): SignerDescriptorContext<C> {
@@ -121,6 +122,12 @@ export class SignerManager<C extends Chain> {
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
+            if (this.#recovery.type === "quorum") {
+                throw new Error(
+                    "No signer is set. This wallet uses quorum recovery. " +
+                        "Call wallet.useSigner() to select a quorum member before signing operations."
+                );
+            }
             const descriptor = getSignerDescriptor<C>(this.#recovery.type);
             const typeReason = descriptor.signerUnavailableReason();
             if (typeReason != null) {
@@ -140,6 +147,12 @@ export class SignerManager<C extends Chain> {
 
     async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.#activeSigner;
+        if (this.#recovery.type === "quorum") {
+            throw new Error(
+                "Cannot assemble a quorum as a single recovery signer. " +
+                    "Call wallet.useSigner() to select a quorum member first."
+            );
+        }
         if (isApiSourcedServerSignerConfig(this.#recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +

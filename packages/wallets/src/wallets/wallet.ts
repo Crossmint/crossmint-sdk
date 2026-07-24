@@ -48,11 +48,11 @@ import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainTyp
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
-    RecoverySignerConfigForChain,
     ServerSignerConfig,
     SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
+    WalletRecoveryConfigForChain,
 } from "../signers/types";
 import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -77,7 +77,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: RecoverySignerConfigForChain<C>;
+    recovery: WalletRecoveryConfigForChain<C>;
     apiRecoveryServerSignerAddress?: string;
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
@@ -213,7 +213,7 @@ export class Wallet<C extends Chain> {
                   : null; // >1 signers → user must call useSigner()
 
         // Quorum recovery has no single assemblable signer; the user selects a member via useSigner().
-        if (signerToAssemble == null || (signerToAssemble as { type?: string }).type === "quorum") {
+        if (signerToAssemble == null || signerToAssemble.type === "quorum") {
             return;
         }
 
@@ -248,8 +248,8 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): RecoverySignerConfigForChain<C> {
-        return wallet.#signerManager.recovery as RecoverySignerConfigForChain<C>;
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): WalletRecoveryConfigForChain<C> {
+        return wallet.#signerManager.recovery;
     }
 
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
@@ -288,7 +288,7 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): SignerConfigForChain<C> {
+    public get recovery(): WalletRecoveryConfigForChain<C> {
         return this.#signerManager.recovery;
     }
 
@@ -1091,7 +1091,7 @@ export class Wallet<C extends Chain> {
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
         const recovery = this.#signerManager.recovery;
-        if (recovery == null || recovery.type !== signerConfig.type) {
+        if (recovery == null || recovery.type === "quorum" || recovery.type !== signerConfig.type) {
             return false;
         }
         const signerDescriptor = getSignerDescriptor<C>(signerConfig.type);

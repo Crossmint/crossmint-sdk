@@ -273,6 +273,12 @@ export class DeviceRecoveryService<C extends Chain> {
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
+        if (recovery.type === "quorum") {
+            throw new Error(
+                "Cannot resume pending approval with a quorum recovery signer. " +
+                    "Call wallet.useSigner() to select a quorum member first."
+            );
+        }
         if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
@@ -355,6 +361,9 @@ export class DeviceRecoveryService<C extends Chain> {
 
     async #assembleRecoverySignerFallback(): Promise<void> {
         const recovery = this.#signerManager.recovery;
+        if (recovery.type === "quorum") {
+            return;
+        }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {

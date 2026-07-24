@@ -3,7 +3,6 @@ import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
-    RecoverySignerConfig,
     ApiClient,
     CreateWalletParams,
     CreateWalletResponse,
@@ -21,8 +20,8 @@ import type {
     QuorumMemberConfigForChain,
     QuorumRecoveryConfig,
     RecoveryConfigForChain,
-    RecoverySignerConfigForChain,
     SignerConfigForChain,
+    WalletRecoveryConfigForChain,
 } from "../signers/types";
 import { isQuorumRecovery } from "../signers/types";
 import { Wallet } from "./wallet";
@@ -36,18 +35,17 @@ import { createDeviceSigner } from "@/utils/device-signers";
 const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
 
+type AdminSignerResponse<T> = T extends { config?: infer Config }
+    ? NonNullable<Config> extends { adminSigner: unknown }
+        ? NonNullable<Config>["adminSigner"]
+        : never
+    : never;
+
 type SmartWalletConfig = {
-    adminSigner: RecoverySignerConfig | PasskeySignerConfig;
+    adminSigner: AdminSignerResponse<GetWalletSuccessResponse>;
     delegatedSigners?: SignerResponse[];
 };
-
-// The response DTO does not model a quorum admin signer yet; at runtime the API returns it
-// under `config.adminSigner` with `type: "quorum"`, so it is read through this shape.
-type ExistingQuorumAdminSigner = {
-    type: "quorum";
-    threshold?: number;
-    signers: Array<Record<string, unknown> & { type: string }>;
-};
+type ExistingQuorumAdminSigner = Extract<SmartWalletConfig["adminSigner"], { type: "quorum" }>;
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -250,7 +248,7 @@ export class WalletFactory {
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
-        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as RecoverySignerConfigForChain<C>;
+        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as WalletRecoveryConfigForChain<C>;
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
@@ -405,20 +403,15 @@ export class WalletFactory {
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
                 const recoveryConfig = this.normalizeRecovery(createArgs.recovery);
-                const existingIsQuorum = (existingWalletSigner as { type?: string }).type === "quorum";
-                if (isQuorumRecovery(recoveryConfig) !== existingIsQuorum) {
-                    throw new WalletCreationError(
-                        "The wallet recovery signer type does not match the existing wallet's recovery signer type"
-                    );
-                }
                 if (isQuorumRecovery(recoveryConfig)) {
-                    this.validateQuorumRecovery(
-                        recoveryConfig,
-                        existingWalletSigner as unknown as ExistingQuorumAdminSigner,
-                        args.chain
-                    );
+                    if (existingWalletSigner.type !== "quorum") {
+                        throw new WalletCreationError(
+                            "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+                        );
+                    }
+                    this.validateQuorumRecovery(recoveryConfig, existingWalletSigner, args.chain);
                 } else {
-                    if (recoveryConfig.type !== existingWalletSigner.type) {
+                    if (existingWalletSigner.type === "quorum" || recoveryConfig.type !== existingWalletSigner.type) {
                         throw new WalletCreationError(
                             "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                         );
@@ -456,6 +449,16 @@ export class WalletFactory {
         if (recovery.methods.length !== existingMembers.length) {
             throw new WalletCreationError(
                 `Quorum recovery member count mismatch - expected "${existingMembers.length}" from existing wallet but found "${recovery.methods.length}"`
+            );
+        }
+
+        const passkeyMethodCount = recovery.methods.filter((method) => method.type === "passkey").length;
+        if (
+            passkeyMethodCount > 1 &&
+            recovery.methods.some((method) => method.type === "passkey" && method.id == null && method.name == null)
+        ) {
+            throw new WalletCreationError(
+                "When using multiple passkeys for quorum recovery, each passkey must provide an ID or name."
             );
         }
 

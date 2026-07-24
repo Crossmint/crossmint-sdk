@@ -1225,6 +1225,72 @@ describe("WalletFactory - Quorum Recovery", () => {
             ).resolves.toBeDefined();
         });
 
+        it("rejects multiple passkey members without identifiers", async () => {
+            const firstPasskey = vi.fn().mockResolvedValue({ id: "cred-1", publicKey: { x: "1", y: "2" } });
+            const secondPasskey = vi.fn().mockResolvedValue({ id: "cred-2", publicKey: { x: "3", y: "4" } });
+            mockApiClient.createWallet.mockResolvedValue(
+                {
+                    ...quorumWalletResponse({
+                        type: "quorum",
+                        threshold: 1,
+                        locator: "quorum:9f2c0002",
+                        signers: [
+                            { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
+                            { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
+                        ],
+                    }),
+                    chainType: "evm" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                } as unknown as GetWalletSuccessResponse
+            );
+
+            await expect(
+                walletFactory.createWallet({
+                    chain: "base-sepolia",
+                    recovery: {
+                        type: "quorum",
+                        methods: [
+                            { type: "passkey", onCreatePasskey: firstPasskey },
+                            { type: "passkey", onCreatePasskey: secondPasskey },
+                        ],
+                    },
+                })
+            ).rejects.toThrow(
+                "When using multiple passkeys for quorum recovery, each passkey must provide an ID or name."
+            );
+        });
+
+        it("matches multiple passkey members by ID", async () => {
+            mockApiClient.createWallet.mockResolvedValue(
+                {
+                    ...quorumWalletResponse({
+                        type: "quorum",
+                        threshold: 1,
+                        locator: "quorum:9f2c0002",
+                        signers: [
+                            { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
+                            { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
+                        ],
+                    }),
+                    chainType: "evm" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                } as unknown as GetWalletSuccessResponse
+            );
+
+            await expect(
+                walletFactory.createWallet({
+                    chain: "base-sepolia",
+                    recovery: {
+                        type: "quorum",
+                        methods: [
+                            { type: "passkey", id: "cred-1" },
+                            { type: "passkey", id: "cred-2" },
+                        ],
+                    },
+                })
+            ).resolves.toBeDefined();
+        });
+
         it("throws on a threshold mismatch", async () => {
             mockApiClient.createWallet.mockResolvedValue(
                 quorumWalletResponse({ ...matchingQuorumAdminSigner, threshold: 2 })

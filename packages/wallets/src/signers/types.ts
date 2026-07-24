@@ -120,6 +120,15 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 }
 
 export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
+export type QuorumRecoverySignerConfig = {
+    type: "quorum";
+    threshold?: number;
+    locator?: string;
+    signers: Array<Record<string, unknown> & { type: string }>;
+};
+export type WalletRecoveryConfigForChain<C extends Chain> =
+    | RecoverySignerConfigForChain<C>
+    | QuorumRecoverySignerConfig;
 
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
