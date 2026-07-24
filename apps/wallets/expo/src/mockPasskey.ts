@@ -16,7 +16,9 @@ function randomHex(byteLength: number): string {
 }
 
 /**
- * MOCK passkey creator for the playground app only.
+ * MOCK passkey creator for the playground app only. Only injected when
+ * EXPO_PUBLIC_MOCK_PASSKEY=true (CI e2e test mode) — see snippets/07-permissions.tsx;
+ * default builds keep the real provider path for local/manual testing.
  *
  * The React Native provider guards real passkey creation (`createPasskeySigner`
  * throws — there is no WebAuthn on native), but `wallet.addSigner` accepts a
