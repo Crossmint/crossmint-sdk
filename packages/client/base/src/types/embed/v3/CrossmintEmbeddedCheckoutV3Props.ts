@@ -29,7 +29,10 @@ export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
-export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
+export type EmbeddedCheckoutV3Recipient =
+    | EmbeddedCheckoutV3EmailRecipient
+    | EmbeddedCheckoutV3WalletAddressRecipient
+    | EmbeddedCheckoutV3BankAccountIdRecipient;
 
 export type EmbeddedCheckoutV3PhysicalAddress = {
     name: string;
@@ -51,6 +54,12 @@ export type EmbeddedCheckoutV3WalletAddressRecipient = {
     email?: never;
     physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
+export type EmbeddedCheckoutV3BankAccountIdRecipient = {
+    bankAccountId: string;
+    email?: never;
+    walletAddress?: never;
+    physicalAddress?: never;
+};
 
 export type EmbeddedCheckoutV3LineItem =
     | {
@@ -69,6 +78,11 @@ export type EmbeddedCheckoutV3LineItem =
       }
     | {
           productLocator: string;
+      }
+    | {
+          currencyLocator: `fiat:${FiatCurrency}`;
+          callData?: never;
+          executionParameters?: Record<string, any>;
       };
 
 export type EmbeddedCheckoutV3Appearance = {
