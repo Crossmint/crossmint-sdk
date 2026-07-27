@@ -72,6 +72,22 @@ import {
     waitForTransactionCompletion,
 } from "./services/operation-poller";
 
+// A pending approval that one concrete signer satisfies with one signature: either a
+// flat (pre-quorum) entry or a single member inside a quorum entry's `quorumApprovals`.
+type PendingMemberApproval = {
+    signer: { type: string; locator: string };
+    message: string;
+};
+
+// An entry of `approvals.pending` as returned by the API: flat, or a quorum signer
+// carrying per-member progress instead of a top-level message.
+type PendingApprovalEntry =
+    | PendingMemberApproval
+    | {
+          signer: { type: "quorum"; locator: string };
+          quorumApprovals: { pending: PendingMemberApproval[] };
+      };
+
 type WalletContructorType<C extends Chain> = {
     chain: C;
     address: string;
@@ -1160,46 +1176,72 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
+    async #resolveApprovalSignerOrNull(signers: SignerAdapter[], locator: string): Promise<SignerAdapter | null> {
+        return signers.find((s) => s.locator() === locator) ?? (await this.#resolveMissingDeviceSigner(locator));
+    }
+
     async #resolveApprovalSigner(signers: SignerAdapter[], locator: string): Promise<SignerAdapter> {
-        let signer = signers.find((s) => s.locator() === locator);
-        if (signer == null) {
-            signer = (await this.#resolveMissingDeviceSigner(locator)) ?? undefined;
-        }
+        const signer = await this.#resolveApprovalSignerOrNull(signers, locator);
         if (signer == null) {
             throw new InvalidSignerError(`Signer ${locator} not found in pending approvals`);
         }
         return signer;
     }
 
-    // Quorum entries carry per-member progress instead of a top-level message, so they
-    // cannot be signed through the flat approval flow. Supporting them is tracked by the
-    // quorum approval-loop work; until then, fail with an actionable error.
-    #requireNonQuorumApprovals<P extends { signer: { type: string; locator: string } }>(
-        pendingApprovals: P[]
-    ): Extract<P, { message: string }>[] {
-        return pendingApprovals.map((pendingApproval) => {
-            if (pendingApproval.signer.type === "quorum") {
-                throw new QuorumSignerNotSupportedError(
-                    `This wallet requires approval from a quorum signer (${pendingApproval.signer.locator}), which is not yet supported by this SDK version`
-                );
-            }
-            return pendingApproval as Extract<P, { message: string }>;
-        });
-    }
-
-    async #collectApprovals<P extends { signer: { locator: string }; message: string }>(
-        pendingApprovals: P[],
+    async #collectApprovals(
+        pendingApprovals: PendingApprovalEntry[],
         signers: SignerAdapter[],
-        sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
+        sign: (
+            signer: SignerAdapter,
+            pendingApproval: PendingMemberApproval
+        ) => ReturnType<SignerAdapter["signMessage"]>
     ): Promise<Approval[]> {
+        const signable: Array<{ signer: SignerAdapter; pendingApproval: PendingMemberApproval }> = [];
+        for (const pendingApproval of pendingApprovals) {
+            if ("quorumApprovals" in pendingApproval) {
+                // A quorum is satisfied member-by-member: sign for the members this client
+                // holds and skip the rest — other holders approve independently and the API
+                // tracks progress against the threshold. Members that already submitted are
+                // not in `quorumApprovals.pending`, so re-approving is a no-op, not an error.
+                for (const member of pendingApproval.quorumApprovals.pending) {
+                    const memberSigner = await this.#resolveApprovalSignerOrNull(signers, member.signer.locator);
+                    if (memberSigner == null) {
+                        walletsLogger.info("wallet.approve.quorumMemberSkipped", {
+                            quorumLocator: pendingApproval.signer.locator,
+                            memberLocator: member.signer.locator,
+                        });
+                        continue;
+                    }
+                    signable.push({ signer: memberSigner, pendingApproval: member });
+                }
+            } else {
+                signable.push({
+                    signer: await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator),
+                    pendingApproval,
+                });
+            }
+        }
+
+        const approvalsPerLocator = new Map<string, number>();
+        for (const { signer } of signable) {
+            const locator = signer.locator();
+            approvalsPerLocator.set(locator, (approvalsPerLocator.get(locator) ?? 0) + 1);
+        }
+
         return await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
+            signable.map(async ({ signer, pendingApproval }) => {
                 const signature = await sign(signer, pendingApproval);
-                return {
+                const approval: Approval = {
                     ...signature,
                     signer: signer.locator(),
                 };
+                // `message` tells the API which sub-approval this signature covers; it is
+                // only needed (and only sent) when the same signer submits more than one
+                // signature in a single call, e.g. a member of two quorum signers.
+                if ((approvalsPerLocator.get(signer.locator()) ?? 0) > 1) {
+                    approval.message = pendingApproval.message;
+                }
+                return approval;
             })
         );
     }
@@ -1238,11 +1280,15 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.#collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            signers,
-            (signer, pendingApproval) => signer.signMessage(pendingApproval.message)
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) =>
+            signer.signMessage(pendingApproval.message)
         );
+
+        // Nothing this client can sign (e.g. it holds no pending quorum member, or its
+        // member already submitted) — leave the signature to the other quorum holders.
+        if (approvals.length === 0) {
+            return signature;
+        }
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -1279,22 +1325,24 @@ export class Wallet<C extends Chain> {
 
         const signers = [...(options?.additionalSigners ?? []), walletSigner];
 
-        const approvals = await this.#collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            signers,
-            (signer, pendingApproval) => {
-                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
-                // over the keccak256 hash, which is provided in pendingApproval.message.
-                // For other Solana signers (ed25519), the full serialized transaction is signed.
-                const isDeviceSigner = signer.type === "device";
-                const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
-                        ? (transaction.onChain.transaction as string)
-                        : pendingApproval.message;
+        const approvals = await this.#collectApprovals(pendingApprovals, signers, (signer, pendingApproval) => {
+            // For Solana device signers (secp256r1), the SWIG precompile expects a signature
+            // over the keccak256 hash, which is provided in pendingApproval.message.
+            // For other Solana signers (ed25519), the full serialized transaction is signed.
+            const isDeviceSigner = signer.type === "device";
+            const transactionToSign =
+                transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
+                    ? (transaction.onChain.transaction as string)
+                    : pendingApproval.message;
 
-                return signer.signTransaction(transactionToSign);
-            }
-        );
+            return signer.signTransaction(transactionToSign);
+        });
+
+        // Nothing this client can sign (e.g. it holds no pending quorum member, or its
+        // member already submitted) — leave the transaction to the other quorum holders.
+        if (approvals.length === 0) {
+            return transaction;
+        }
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
