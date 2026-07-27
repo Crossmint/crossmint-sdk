@@ -900,6 +900,15 @@ export class Wallet<C extends Chain> {
             return true;
         }
 
+        // A quorum member is part of the admin signer, not a delegated signer, so it can never
+        // pass the registration check above — "not registered" would be misleading for it.
+        if (this.#signerManager.recovery.type === "quorum") {
+            throw new QuorumSignerNotSupportedError(
+                `Signer "${locator}" is not a registered delegated signer, and this wallet uses a quorum recovery signer — ` +
+                    "signing with a quorum member is not yet supported by this SDK version."
+            );
+        }
+
         throw new Error(`Signer "${locator}" is not registered in this wallet.`);
     }
 
