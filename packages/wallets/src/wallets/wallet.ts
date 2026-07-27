@@ -52,7 +52,7 @@ import type {
     SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
-    WalletRecoveryConfigForChain,
+    ResolvedRecoveryConfigForChain,
 } from "../signers/types";
 import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -77,7 +77,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: WalletRecoveryConfigForChain<C>;
+    recovery: ResolvedRecoveryConfigForChain<C>;
     apiRecoveryServerSignerAddress?: string;
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
@@ -248,7 +248,7 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): WalletRecoveryConfigForChain<C> {
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): ResolvedRecoveryConfigForChain<C> {
         return wallet.#signerManager.recovery;
     }
 
@@ -288,7 +288,7 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): WalletRecoveryConfigForChain<C> {
+    public get recovery(): ResolvedRecoveryConfigForChain<C> {
         return this.#signerManager.recovery;
     }
 

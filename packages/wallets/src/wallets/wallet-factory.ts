@@ -21,7 +21,7 @@ import type {
     QuorumRecoveryConfig,
     RecoveryConfigForChain,
     SignerConfigForChain,
-    WalletRecoveryConfigForChain,
+    ResolvedRecoveryConfigForChain,
 } from "../signers/types";
 import { isQuorumRecovery } from "../signers/types";
 import { Wallet } from "./wallet";
@@ -43,6 +43,10 @@ type AdminSignerResponse<T> = T extends { config?: infer Config }
 
 type SmartWalletConfig = {
     adminSigner: AdminSignerResponse<GetWalletSuccessResponse>;
+    // Defensive: the documented contract returns the admin under `adminSigner` regardless of
+    // which create surface was used, but tolerate a response that mirrors the request's
+    // `recovery` property so a mismatch cannot crash after the wallet was created on-chain.
+    recovery?: AdminSignerResponse<GetWalletSuccessResponse>;
     delegatedSigners?: SignerResponse[];
 };
 type ExistingQuorumAdminSigner = Extract<SmartWalletConfig["adminSigner"], { type: "quorum" }>;
@@ -248,13 +252,21 @@ export class WalletFactory {
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
-        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as WalletRecoveryConfigForChain<C>;
+        const responseConfig = walletResponse.config as SmartWalletConfig | undefined;
+        const apiRecovery = (responseConfig?.adminSigner ?? responseConfig?.recovery) as
+            | ResolvedRecoveryConfigForChain<C>
+            | undefined;
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
-                : apiRecovery;
+                : apiRecovery ?? this.fallbackRecoveryFromArgs(createArgs.recovery);
+        if (recovery == null) {
+            throw new WalletCreationError(
+                "Unable to determine the wallet's recovery signer: the API response contains no admin signer configuration."
+            );
+        }
 
-        const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        const apiDelegatedSigners = responseConfig?.delegatedSigners;
         let signers = apiDelegatedSigners;
         if (
             signers != null &&
@@ -267,7 +279,7 @@ export class WalletFactory {
         // Preserve the API-sourced server signer recovery address so the wallet can identify
         // legacy derivations even when the user-provided config replaces the API one.
         const apiRecoveryServerSignerAddress =
-            apiRecovery.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
+            apiRecovery?.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
                 ? (apiRecovery as { address: string }).address
                 : undefined;
 
@@ -301,6 +313,28 @@ export class WalletFactory {
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
         return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
+    }
+
+    /**
+     * Last-resort recovery for the wallet instance when the API response carries no admin
+     * signer configuration: fall back to what the caller supplied, mapping an input quorum
+     * (`methods`) to the resolved shape (`signers`).
+     */
+    private fallbackRecoveryFromArgs<C extends Chain>(
+        recovery: RecoveryConfigForChain<C> | undefined
+    ): ResolvedRecoveryConfigForChain<C> | null {
+        if (recovery == null) {
+            return null;
+        }
+        const normalized = this.normalizeRecovery(recovery);
+        if (isQuorumRecovery(normalized)) {
+            return {
+                type: "quorum",
+                ...(normalized.threshold != null ? { threshold: normalized.threshold } : {}),
+                signers: normalized.methods,
+            };
+        }
+        return normalized;
     }
 
     /** Runs the per-type prep an admin signer needs before it can be sent on the wire. */
@@ -398,8 +432,8 @@ export class WalletFactory {
 
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
-            const config = existingWallet.config as SmartWalletConfig;
-            const existingWalletSigner = config?.adminSigner;
+            const config = existingWallet.config as SmartWalletConfig | undefined;
+            const existingWalletSigner = config?.adminSigner ?? config?.recovery;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
                 const recoveryConfig = this.normalizeRecovery(createArgs.recovery);

@@ -12,7 +12,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -274,9 +274,9 @@ export class DeviceRecoveryService<C extends Chain> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
         if (recovery.type === "quorum") {
-            throw new Error(
+            throw new QuorumSignerNotSupportedError(
                 "Cannot resume pending approval with a quorum recovery signer. " +
-                    "Call wallet.useSigner() to select a quorum member first."
+                    "Quorum signing is not yet supported by this SDK version."
             );
         }
         if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {

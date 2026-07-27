@@ -1228,21 +1228,19 @@ describe("WalletFactory - Quorum Recovery", () => {
         it("rejects multiple passkey members without identifiers", async () => {
             const firstPasskey = vi.fn().mockResolvedValue({ id: "cred-1", publicKey: { x: "1", y: "2" } });
             const secondPasskey = vi.fn().mockResolvedValue({ id: "cred-2", publicKey: { x: "3", y: "4" } });
-            mockApiClient.createWallet.mockResolvedValue(
-                {
-                    ...quorumWalletResponse({
-                        type: "quorum",
-                        threshold: 1,
-                        locator: "quorum:9f2c0002",
-                        signers: [
-                            { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
-                            { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
-                        ],
-                    }),
-                    chainType: "evm" as const,
-                    address: "0x1234567890123456789012345678901234567890",
-                } as unknown as GetWalletSuccessResponse
-            );
+            mockApiClient.createWallet.mockResolvedValue({
+                ...quorumWalletResponse({
+                    type: "quorum",
+                    threshold: 1,
+                    locator: "quorum:9f2c0002",
+                    signers: [
+                        { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
+                        { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
+                    ],
+                }),
+                chainType: "evm" as const,
+                address: "0x1234567890123456789012345678901234567890",
+            } as unknown as GetWalletSuccessResponse);
 
             await expect(
                 walletFactory.createWallet({
@@ -1261,21 +1259,19 @@ describe("WalletFactory - Quorum Recovery", () => {
         });
 
         it("matches multiple passkey members by ID", async () => {
-            mockApiClient.createWallet.mockResolvedValue(
-                {
-                    ...quorumWalletResponse({
-                        type: "quorum",
-                        threshold: 1,
-                        locator: "quorum:9f2c0002",
-                        signers: [
-                            { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
-                            { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
-                        ],
-                    }),
-                    chainType: "evm" as const,
-                    address: "0x1234567890123456789012345678901234567890",
-                } as unknown as GetWalletSuccessResponse
-            );
+            mockApiClient.createWallet.mockResolvedValue({
+                ...quorumWalletResponse({
+                    type: "quorum",
+                    threshold: 1,
+                    locator: "quorum:9f2c0002",
+                    signers: [
+                        { type: "passkey", id: "cred-2", name: "Second", locator: "passkey:cred-2" },
+                        { type: "passkey", id: "cred-1", name: "First", locator: "passkey:cred-1" },
+                    ],
+                }),
+                chainType: "evm" as const,
+                address: "0x1234567890123456789012345678901234567890",
+            } as unknown as GetWalletSuccessResponse);
 
             await expect(
                 walletFactory.createWallet({
@@ -1359,6 +1355,55 @@ describe("WalletFactory - Quorum Recovery", () => {
             ).rejects.toThrow(
                 "The wallet recovery signer type does not match the existing wallet's recovery signer type"
             );
+        });
+    });
+
+    describe("createWallet response-shape tolerance", () => {
+        // The documented contract returns the admin under `config.adminSigner`; these cover the
+        // defensive fallbacks so a response-shape mismatch cannot crash after on-chain creation.
+        it("reads a quorum admin echoed under config.recovery instead of config.adminSigner", async () => {
+            mockApiClient.createWallet.mockResolvedValue({
+                chainType: "solana" as const,
+                type: "smart" as const,
+                address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                owner: "test-owner",
+                config: { recovery: matchingQuorumAdminSigner },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+
+            await expect(
+                walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })
+            ).resolves.toBeDefined();
+        });
+
+        it("still validates a quorum admin echoed under config.recovery", async () => {
+            mockApiClient.createWallet.mockResolvedValue({
+                chainType: "solana" as const,
+                type: "smart" as const,
+                address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                owner: "test-owner",
+                config: { recovery: { ...matchingQuorumAdminSigner, threshold: 2 } },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })).rejects.toThrow(
+                'Quorum recovery threshold mismatch - expected "2" from existing wallet but found "1"'
+            );
+        });
+
+        it("resolves without crashing when the response carries no admin signer configuration", async () => {
+            mockApiClient.createWallet.mockResolvedValue({
+                chainType: "solana" as const,
+                type: "smart" as const,
+                address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                owner: "test-owner",
+                config: {},
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+
+            await expect(
+                walletFactory.createWallet({ chain: "solana", recovery: quorumMembers })
+            ).resolves.toBeDefined();
         });
     });
 });
