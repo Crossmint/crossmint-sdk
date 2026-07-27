@@ -48,6 +48,7 @@ import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainTyp
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
+    RecoverySignerConfigForChain,
     ServerSignerConfig,
     SignerAdapter,
     SignerConfigForChain,
@@ -248,8 +249,8 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): ResolvedRecoveryConfigForChain<C> {
-        return wallet.#signerManager.recovery;
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): RecoverySignerConfigForChain<C> {
+        return wallet.#signerManager.recovery as RecoverySignerConfigForChain<C>;
     }
 
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
@@ -288,8 +289,12 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): ResolvedRecoveryConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): SignerConfigForChain<C> {
+        // The declared type is deliberately kept at the pre-quorum surface so existing consumers
+        // keep compiling; at runtime the value may also be an api-sourced server config or a
+        // resolved quorum (`type: "quorum"`). Widening this to ResolvedRecoveryConfigForChain is
+        // a breaking change deferred to a future major/decision.
+        return this.#signerManager.recovery as SignerConfigForChain<C>;
     }
 
     /**
