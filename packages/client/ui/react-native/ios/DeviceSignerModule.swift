@@ -11,6 +11,20 @@ import Security
 ///
 /// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
 /// `NativeDeviceSignerKeyStorage` from `@crossmint/client-sdk-react-native-ui`.
+
+// Expo's JS bridge reads `reason`, not the `description` passed to `Exception.init`, so a plain
+// `Exception(description:)` reaches JS as "undefined reason". Overriding `reason` fixes that.
+private final class MessageException: Exception {
+    private let reasonMessage: String
+
+    init(name: String, message: String, code: String? = nil) {
+        self.reasonMessage = message
+        super.init(name: name, description: message, code: code)
+    }
+
+    override var reason: String { reasonMessage }
+}
+
 public class DeviceSignerModule: Module {
 
     // MARK: - Module definition
@@ -29,10 +43,7 @@ public class DeviceSignerModule: Module {
             do {
                 return try await DeviceSignerModule.defaultStorage().generateKey(address: address)
             } catch {
-                throw Exception(
-                    name: "GenerateKeyFailed",
-                    description: "generateKey failed: \(error)"
-                )
+                throw MessageException(name: "GenerateKeyFailed", message: "generateKey failed: \(error)")
             }
         }
 
@@ -41,7 +52,7 @@ public class DeviceSignerModule: Module {
             do {
                 try await DeviceSignerModule.defaultStorage().mapAddressToKey(address: address, publicKeyBase64: publicKeyBase64)
             } catch {
-                throw Exception(name: "MapAddressToKeyFailed", description: "mapAddressToKey failed: \(error)")
+                throw MessageException(name: "MapAddressToKeyFailed", message: "mapAddressToKey failed: \(error)")
             }
         }
 
@@ -61,9 +72,9 @@ public class DeviceSignerModule: Module {
                 let sig = try await DeviceSignerModule.defaultStorage().signMessage(address: address, message: message)
                 return ["r": sig.r, "s": sig.s]
             } catch let error as DeviceSignerError {
-                throw Exception(name: error.code, description: error.message, code: error.code)
+                throw MessageException(name: error.code, message: error.message, code: error.code)
             } catch {
-                throw Exception(name: "SignMessageFailed", description: "signMessage failed: \(error)")
+                throw MessageException(name: "SignMessageFailed", message: "signMessage failed: \(error)")
             }
         }
 
