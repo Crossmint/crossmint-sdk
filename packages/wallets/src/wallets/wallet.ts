@@ -79,14 +79,18 @@ type PendingMemberApproval = {
     message: string;
 };
 
-// An entry of `approvals.pending` as returned by the API: flat, or a quorum signer
-// carrying per-member progress instead of a top-level message.
-type PendingApprovalEntry =
-    | PendingMemberApproval
-    | {
-          signer: { type: "quorum"; locator: string };
-          quorumApprovals: { pending: PendingMemberApproval[] };
-      };
+// A quorum signer's entry in `approvals.pending`: per-member progress instead of a
+// top-level message.
+type QuorumPendingApproval = {
+    signer: { type: "quorum"; locator: string };
+    quorumApprovals: { pending: PendingMemberApproval[] };
+};
+
+// An entry of `approvals.pending` as returned by the API: flat, or quorum.
+type PendingApprovalEntry = PendingMemberApproval | QuorumPendingApproval;
+
+// A pending approval paired with the held signer that will satisfy it.
+type SignableApproval = { signer: SignerAdapter; pendingApproval: PendingMemberApproval };
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -1188,6 +1192,29 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
+    // A quorum is satisfied member-by-member: sign for the members this client holds
+    // and skip the rest — other holders approve independently and the API tracks
+    // progress against the threshold. Members that already submitted are not in
+    // `quorumApprovals.pending`, so re-approving is a no-op, not an error.
+    async #collectQuorumSignables(
+        quorumApproval: QuorumPendingApproval,
+        signers: SignerAdapter[]
+    ): Promise<SignableApproval[]> {
+        const signable: SignableApproval[] = [];
+        for (const member of quorumApproval.quorumApprovals.pending) {
+            const memberSigner = await this.#resolveApprovalSignerOrNull(signers, member.signer.locator);
+            if (memberSigner == null) {
+                walletsLogger.info("wallet.approve.quorumMemberSkipped", {
+                    quorumLocator: quorumApproval.signer.locator,
+                    memberLocator: member.signer.locator,
+                });
+                continue;
+            }
+            signable.push({ signer: memberSigner, pendingApproval: member });
+        }
+        return signable;
+    }
+
     async #collectApprovals(
         pendingApprovals: PendingApprovalEntry[],
         signers: SignerAdapter[],
@@ -1196,30 +1223,16 @@ export class Wallet<C extends Chain> {
             pendingApproval: PendingMemberApproval
         ) => ReturnType<SignerAdapter["signMessage"]>
     ): Promise<Approval[]> {
-        const signable: Array<{ signer: SignerAdapter; pendingApproval: PendingMemberApproval }> = [];
+        const signable: SignableApproval[] = [];
         for (const pendingApproval of pendingApprovals) {
             if ("quorumApprovals" in pendingApproval) {
-                // A quorum is satisfied member-by-member: sign for the members this client
-                // holds and skip the rest — other holders approve independently and the API
-                // tracks progress against the threshold. Members that already submitted are
-                // not in `quorumApprovals.pending`, so re-approving is a no-op, not an error.
-                for (const member of pendingApproval.quorumApprovals.pending) {
-                    const memberSigner = await this.#resolveApprovalSignerOrNull(signers, member.signer.locator);
-                    if (memberSigner == null) {
-                        walletsLogger.info("wallet.approve.quorumMemberSkipped", {
-                            quorumLocator: pendingApproval.signer.locator,
-                            memberLocator: member.signer.locator,
-                        });
-                        continue;
-                    }
-                    signable.push({ signer: memberSigner, pendingApproval: member });
-                }
-            } else {
-                signable.push({
-                    signer: await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator),
-                    pendingApproval,
-                });
+                signable.push(...(await this.#collectQuorumSignables(pendingApproval, signers)));
+                continue;
             }
+            signable.push({
+                signer: await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator),
+                pendingApproval,
+            });
         }
 
         const approvalsPerLocator = new Map<string, number>();
