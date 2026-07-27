@@ -234,7 +234,7 @@ export function CrossmintWalletBaseProvider({
 
     const wrappedOnAuthRequired = useCallback(
         async (
-            signerType: "email" | "phone",
+            signerType: "email" | "phone" | "whatsapp",
             signerLocator: string,
             needsAuth: boolean,
             sendOtp: () => Promise<void>,
@@ -255,7 +255,7 @@ export function CrossmintWalletBaseProvider({
 
     const initializeWebViewIfNeeded = useCallback(
         async (signer: SignerConfigForChain<Chain>) => {
-            if (signer.type === "email" || signer.type === "phone") {
+            if (signer.type === "email" || signer.type === "phone" || signer.type === "whatsapp") {
                 await initializeWebView?.();
             }
         },

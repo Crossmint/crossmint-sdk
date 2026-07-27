@@ -90,7 +90,16 @@ export type PhoneSignerConfig = {
     locator?: string;
 };
 
-export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
+export type WhatsappSignerConfig = {
+    type: "whatsapp";
+    phone?: string;
+    locator?: string;
+};
+
+export type NonCustodialSignerType =
+    | PhoneSignerConfig["type"]
+    | WhatsappSignerConfig["type"]
+    | EmailSignerConfig["type"];
 
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
@@ -158,6 +167,12 @@ export type PhoneInternalSignerConfig = PhoneSignerConfig &
         onAuthRequired?: Callbacks["onAuthRequired"];
     };
 
+export type WhatsappInternalSignerConfig = WhatsappSignerConfig &
+    Omit<BaseInternalSignerConfig, "locator"> & {
+        locator: WhatsappSignerLocator;
+        onAuthRequired?: Callbacks["onAuthRequired"];
+    };
+
 export type DeviceInternalSignerConfig = {
     type: "device";
     locator?: DeviceSignerLocator;
@@ -189,6 +204,7 @@ export type ServerInternalSignerConfig = {
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig
     | PhoneInternalSignerConfig
+    | WhatsappInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
     | ExternalWalletInternalSignerConfig<C>
@@ -225,16 +241,23 @@ export type DeviceSignerConfig = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+    ? EmailSignerConfig | PhoneSignerConfig | WhatsappSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
-      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
+      ? EmailSignerConfig | PhoneSignerConfig | WhatsappSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      :
+            | EmailSignerConfig
+            | PhoneSignerConfig
+            | WhatsappSignerConfig
+            | PasskeySignerConfig
+            | BaseSignerConfig<C>
+            | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signer locator types
 ////////////////////////////////////////////////////////////
 export type EmailSignerLocator = `email:${string}`;
 export type PhoneSignerLocator = `phone:${string}`;
+export type WhatsappSignerLocator = `whatsapp:${string}`;
 export type PasskeySignerLocator = `passkey:${string}`;
 export type DeviceSignerLocator = `device:${string}`;
 export type ExternalWalletSignerLocator = `external-wallet:${string}`;
@@ -244,6 +267,7 @@ export type ServerSignerLocator = `server:${string}`;
 export type SignerLocator =
     | EmailSignerLocator
     | PhoneSignerLocator
+    | WhatsappSignerLocator
     | PasskeySignerLocator
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
@@ -256,6 +280,7 @@ export type SignerLocator =
 type SignResultMap = {
     email: BaseSignResult;
     phone: BaseSignResult;
+    whatsapp: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
     server: BaseSignResult;

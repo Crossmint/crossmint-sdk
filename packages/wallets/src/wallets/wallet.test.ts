@@ -1902,6 +1902,26 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
+        it("accepts the recovery signer (whatsapp) without calling getSigner", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "whatsapp", phone: "+1234567890" } as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({ type: "whatsapp", phone: "+1234567890" } as any);
+
+            expect(wallet.signer).toBeDefined();
+            expect(wallet.signer?.type).toBe("whatsapp");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
         it("accepts recovery external-wallet signer without calling getSigner", async () => {
             mockApiClient = createMockApiClient();
             const wallet = new Wallet(

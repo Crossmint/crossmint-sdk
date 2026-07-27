@@ -19,6 +19,9 @@ export function getSignerLocator<C extends Chain>(
     if (signer.type === "phone" && signer.phone) {
         return `phone:${signer.phone}`;
     }
+    if (signer.type === "whatsapp" && signer.phone) {
+        return `whatsapp:${signer.phone}`;
+    }
     if (signer.type === "passkey" && "id" in signer) {
         return `passkey:${signer.id}`;
     }

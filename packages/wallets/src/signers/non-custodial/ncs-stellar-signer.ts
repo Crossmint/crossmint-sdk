@@ -1,9 +1,9 @@
-import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig, WhatsappInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 import { walletsLogger } from "../../logger";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
-    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig | WhatsappInternalSignerConfig) {
         super(config);
     }
 

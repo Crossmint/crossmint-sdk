@@ -7693,7 +7693,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -7960,7 +7960,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -8224,7 +8224,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -8953,7 +8953,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -9106,7 +9106,7 @@
                                                                         "type": {
                                                                             "type": "string",
                                                                             "description": "Identifier for phone signer type",
-                                                                            "enum": ["phone"]
+                                                                            "enum": ["phone", "whatsapp"]
                                                                         },
                                                                         "phone": {
                                                                             "type": "string",
@@ -9322,7 +9322,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -9475,7 +9475,7 @@
                                                                         "type": {
                                                                             "type": "string",
                                                                             "description": "Identifier for phone signer type",
-                                                                            "enum": ["phone"]
+                                                                            "enum": ["phone", "whatsapp"]
                                                                         },
                                                                         "phone": {
                                                                             "type": "string",
@@ -9773,7 +9773,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -9942,7 +9942,7 @@
                                                                         "type": {
                                                                             "type": "string",
                                                                             "description": "Identifier for phone signer type",
-                                                                            "enum": ["phone"]
+                                                                            "enum": ["phone", "whatsapp"]
                                                                         },
                                                                         "phone": {
                                                                             "type": "string",
@@ -10286,7 +10286,7 @@
                                             "type": {
                                                 "type": "string",
                                                 "description": "Identifier for phone signer type",
-                                                "enum": ["phone"]
+                                                "enum": ["phone", "whatsapp"]
                                             },
                                             "phone": {
                                                 "type": "string",
@@ -10590,7 +10590,7 @@
                                                                             "properties": {
                                                                                 "type": {
                                                                                     "type": "string",
-                                                                                    "enum": ["phone"]
+                                                                                    "enum": ["phone", "whatsapp"]
                                                                                 },
                                                                                 "phone": {
                                                                                     "type": "string"
@@ -10772,7 +10772,7 @@
                                                                             "properties": {
                                                                                 "type": {
                                                                                     "type": "string",
-                                                                                    "enum": ["phone"]
+                                                                                    "enum": ["phone", "whatsapp"]
                                                                                 },
                                                                                 "phone": {
                                                                                     "type": "string"
@@ -11237,7 +11237,7 @@
                                             "type": {
                                                 "type": "string",
                                                 "description": "Identifier for phone signer type",
-                                                "enum": ["phone"]
+                                                "enum": ["phone", "whatsapp"]
                                             },
                                             "phone": {
                                                 "type": "string",
@@ -11494,7 +11494,10 @@
                                                                                         "properties": {
                                                                                             "type": {
                                                                                                 "type": "string",
-                                                                                                "enum": ["phone"]
+                                                                                                "enum": [
+                                                                                                    "phone",
+                                                                                                    "whatsapp"
+                                                                                                ]
                                                                                             },
                                                                                             "phone": {
                                                                                                 "type": "string"
@@ -11702,7 +11705,10 @@
                                                                                         "properties": {
                                                                                             "type": {
                                                                                                 "type": "string",
-                                                                                                "enum": ["phone"]
+                                                                                                "enum": [
+                                                                                                    "phone",
+                                                                                                    "whatsapp"
+                                                                                                ]
                                                                                             },
                                                                                             "phone": {
                                                                                                 "type": "string"
@@ -12026,7 +12032,7 @@
                                             "type": {
                                                 "type": "string",
                                                 "description": "Identifier for phone signer type",
-                                                "enum": ["phone"]
+                                                "enum": ["phone", "whatsapp"]
                                             },
                                             "phone": {
                                                 "type": "string",
@@ -12351,7 +12357,7 @@
                                                                             "properties": {
                                                                                 "type": {
                                                                                     "type": "string",
-                                                                                    "enum": ["phone"]
+                                                                                    "enum": ["phone", "whatsapp"]
                                                                                 },
                                                                                 "phone": {
                                                                                     "type": "string"
@@ -12533,7 +12539,7 @@
                                                                             "properties": {
                                                                                 "type": {
                                                                                     "type": "string",
-                                                                                    "enum": ["phone"]
+                                                                                    "enum": ["phone", "whatsapp"]
                                                                                 },
                                                                                 "phone": {
                                                                                     "type": "string"
@@ -15350,7 +15356,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -15731,7 +15737,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -15895,7 +15901,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -16058,7 +16064,7 @@
                                                                 "properties": {
                                                                     "type": {
                                                                         "type": "string",
-                                                                        "enum": ["phone"]
+                                                                        "enum": ["phone", "whatsapp"]
                                                                     },
                                                                     "phone": {
                                                                         "type": "string"
@@ -16236,7 +16242,7 @@
                                                                 "properties": {
                                                                     "type": {
                                                                         "type": "string",
-                                                                        "enum": ["phone"]
+                                                                        "enum": ["phone", "whatsapp"]
                                                                     },
                                                                     "phone": {
                                                                         "type": "string"
@@ -16553,7 +16559,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -16836,7 +16842,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -17014,7 +17020,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -17603,7 +17609,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -17781,7 +17787,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -18201,7 +18207,7 @@
                                                                 "properties": {
                                                                     "type": {
                                                                         "type": "string",
-                                                                        "enum": ["phone"]
+                                                                        "enum": ["phone", "whatsapp"]
                                                                     },
                                                                     "phone": {
                                                                         "type": "string"
@@ -18351,7 +18357,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -18574,7 +18580,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -18752,7 +18758,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -19172,7 +19178,7 @@
                                                                 "properties": {
                                                                     "type": {
                                                                         "type": "string",
-                                                                        "enum": ["phone"]
+                                                                        "enum": ["phone", "whatsapp"]
                                                                     },
                                                                     "phone": {
                                                                         "type": "string"
@@ -19360,7 +19366,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -19538,7 +19544,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -20140,7 +20146,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -20318,7 +20324,7 @@
                                                                         "properties": {
                                                                             "type": {
                                                                                 "type": "string",
-                                                                                "enum": ["phone"]
+                                                                                "enum": ["phone", "whatsapp"]
                                                                             },
                                                                             "phone": {
                                                                                 "type": "string"
@@ -20760,7 +20766,7 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string"
@@ -21136,7 +21142,7 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string"
@@ -21300,7 +21306,7 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string"
@@ -21463,7 +21469,7 @@
                                                     "properties": {
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["phone"]
+                                                            "enum": ["phone", "whatsapp"]
                                                         },
                                                         "phone": {
                                                             "type": "string"
@@ -21641,7 +21647,7 @@
                                                     "properties": {
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["phone"]
+                                                            "enum": ["phone", "whatsapp"]
                                                         },
                                                         "phone": {
                                                             "type": "string"
@@ -21947,7 +21953,7 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string"
@@ -22230,7 +22236,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -22408,7 +22414,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -22989,7 +22995,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -23167,7 +23173,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -23579,7 +23585,7 @@
                                                     "properties": {
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["phone"]
+                                                            "enum": ["phone", "whatsapp"]
                                                         },
                                                         "phone": {
                                                             "type": "string"
@@ -23729,7 +23735,7 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string"
@@ -23952,7 +23958,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -24130,7 +24136,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -24542,7 +24548,7 @@
                                                     "properties": {
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["phone"]
+                                                            "enum": ["phone", "whatsapp"]
                                                         },
                                                         "phone": {
                                                             "type": "string"
@@ -24730,7 +24736,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -24908,7 +24914,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -25502,7 +25508,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -25680,7 +25686,7 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string"
@@ -29257,7 +29263,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -29467,7 +29473,7 @@
                                                         "type": {
                                                             "type": "string",
                                                             "description": "Identifier for phone signer type",
-                                                            "enum": ["phone"]
+                                                            "enum": ["phone", "whatsapp"]
                                                         },
                                                         "phone": {
                                                             "type": "string",
@@ -29701,7 +29707,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -29913,7 +29919,7 @@
                                                                 "type": {
                                                                     "type": "string",
                                                                     "description": "Identifier for phone signer type",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string",
@@ -30252,7 +30258,8 @@
                                                                                                     "type": {
                                                                                                         "type": "string",
                                                                                                         "enum": [
-                                                                                                            "phone"
+                                                                                                            "phone",
+                                                                                                            "whatsapp"
                                                                                                         ]
                                                                                                     },
                                                                                                     "phone": {
@@ -30475,7 +30482,8 @@
                                                                                                     "type": {
                                                                                                         "type": "string",
                                                                                                         "enum": [
-                                                                                                            "phone"
+                                                                                                            "phone",
+                                                                                                            "whatsapp"
                                                                                                         ]
                                                                                                     },
                                                                                                     "phone": {
@@ -31031,7 +31039,7 @@
                                                     "type": {
                                                         "type": "string",
                                                         "description": "Identifier for phone signer type",
-                                                        "enum": ["phone"]
+                                                        "enum": ["phone", "whatsapp"]
                                                     },
                                                     "phone": {
                                                         "type": "string",
@@ -31276,7 +31284,7 @@
                                                                 "type": {
                                                                     "type": "string",
                                                                     "description": "Identifier for phone signer type",
-                                                                    "enum": ["phone"]
+                                                                    "enum": ["phone", "whatsapp"]
                                                                 },
                                                                 "phone": {
                                                                     "type": "string",
@@ -31636,7 +31644,8 @@
                                                                                                     "type": {
                                                                                                         "type": "string",
                                                                                                         "enum": [
-                                                                                                            "phone"
+                                                                                                            "phone",
+                                                                                                            "whatsapp"
                                                                                                         ]
                                                                                                     },
                                                                                                     "phone": {
@@ -31859,7 +31868,8 @@
                                                                                                     "type": {
                                                                                                         "type": "string",
                                                                                                         "enum": [
-                                                                                                            "phone"
+                                                                                                            "phone",
+                                                                                                            "whatsapp"
                                                                                                         ]
                                                                                                     },
                                                                                                     "phone": {

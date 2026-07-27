@@ -25,7 +25,7 @@ export interface SignerDescriptorContext<C extends Chain> {
 }
 
 export interface SignerDescriptor<C extends Chain = Chain> {
-    readonly type: "email" | "phone" | "passkey" | "device" | "api-key" | "server" | "external-wallet";
+    readonly type: "email" | "phone" | "whatsapp" | "passkey" | "device" | "api-key" | "server" | "external-wallet";
     validateConfig(config: SignerConfigForChain<C>): void;
     buildInternalConfig(
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,

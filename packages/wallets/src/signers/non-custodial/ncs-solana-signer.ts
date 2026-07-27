@@ -1,11 +1,11 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig, WhatsappInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { walletsLogger } from "../../logger";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
-    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig | WhatsappInternalSignerConfig) {
         super(config);
     }
 

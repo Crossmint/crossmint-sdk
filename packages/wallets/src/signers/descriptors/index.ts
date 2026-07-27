@@ -7,6 +7,7 @@ import { externalWalletSignerDescriptor } from "./external-wallet";
 import { passkeySignerDescriptor } from "./passkey";
 import { phoneSignerDescriptor } from "./phone";
 import { serverSignerDescriptor } from "./server";
+import { whatsappSignerDescriptor } from "./whatsapp";
 import type { SignerDescriptor } from "./types";
 
 export type { SignerDescriptor, SignerDescriptorContext } from "./types";
@@ -17,6 +18,8 @@ export function getSignerDescriptor<C extends Chain>(type: SignerDescriptor["typ
             return emailSignerDescriptor as SignerDescriptor<C>;
         case "phone":
             return phoneSignerDescriptor as SignerDescriptor<C>;
+        case "whatsapp":
+            return whatsappSignerDescriptor as SignerDescriptor<C>;
         case "passkey":
             return passkeySignerDescriptor as SignerDescriptor<C>;
         case "device":
