@@ -98,8 +98,6 @@ public class DeviceSignerModule: Module {
     }
 }
 
-// Expo's JS bridge reads `reason`, not the `description` passed to `Exception.init`, so a plain
-// `Exception(description:)` reaches JS as "undefined reason". Overriding `reason` fixes that.
 private final class MessageException: Exception {
     private let reasonMessage: String
 
