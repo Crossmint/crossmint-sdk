@@ -97,6 +97,12 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
+export class QuorumSignerNotSupportedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
 /**
  * Thrown when the browser does not support third-party storage partitioning,
  * making it unsafe to store device-signer keys in IndexedDB. Consumers should
