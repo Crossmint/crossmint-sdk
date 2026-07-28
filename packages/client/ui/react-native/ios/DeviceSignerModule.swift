@@ -60,6 +60,8 @@ public class DeviceSignerModule: Module {
             do {
                 let sig = try await DeviceSignerModule.defaultStorage().signMessage(address: address, message: message)
                 return ["r": sig.r, "s": sig.s]
+            } catch let error as DeviceSignerError {
+                throw Exception(name: error.code, description: error.message, code: error.code)
             } catch {
                 throw Exception(name: "SignMessageFailed", description: "signMessage failed: \(error)")
             }

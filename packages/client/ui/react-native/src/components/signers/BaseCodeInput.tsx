@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { OnboardingSessionExpiredError } from "@crossmint/wallets-sdk";
 import { theme } from "../../styles/theme";
@@ -92,6 +92,9 @@ export function BaseCodeInput({
         container: {
             width: "100%",
         },
+        contentContainer: {
+            alignItems: "stretch",
+        },
         iconContainer: {
             alignItems: "center",
             marginBottom: 8,
@@ -169,7 +172,13 @@ export function BaseCodeInput({
     });
 
     return (
-        <View style={dynamicStyles.container}>
+        <ScrollView
+            style={dynamicStyles.container}
+            contentContainerStyle={dynamicStyles.contentContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+        >
             <View style={dynamicStyles.iconContainer}>{icon}</View>
 
             <Text style={dynamicStyles.title}>{title}</Text>
@@ -221,6 +230,6 @@ export function BaseCodeInput({
                     </Text>
                 </TouchableOpacity>
             )}
-        </View>
+        </ScrollView>
     );
 }
