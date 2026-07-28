@@ -1,5 +1,14 @@
 import type { MutableRefObject } from "react";
-import { View, Modal, StyleSheet, Dimensions, TouchableOpacity, Text } from "react-native";
+import {
+    View,
+    Modal,
+    StyleSheet,
+    Dimensions,
+    TouchableOpacity,
+    Text,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { MailCheckIcon, MailIcon, XIcon } from "../icons";
 import { BaseConfirmation } from "./BaseConfirmation";
@@ -89,7 +98,10 @@ export function EmailSignersDialog({
             onRequestClose={handleOnCancel}
             statusBarTranslucent={true}
         >
-            <View style={dynamicStyles.centeredView}>
+            <KeyboardAvoidingView
+                style={dynamicStyles.centeredView}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
                 <View style={dynamicStyles.modalView}>
                     <TouchableOpacity
                         style={dynamicStyles.closeButton}
@@ -149,7 +161,7 @@ export function EmailSignersDialog({
                         />
                     )}
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }

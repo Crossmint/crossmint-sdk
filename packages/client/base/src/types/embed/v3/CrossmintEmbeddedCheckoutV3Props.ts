@@ -100,6 +100,9 @@ export type EmbeddedCheckoutV3AppearanceRules = {
     ReceiptEmailInput?: {
         display?: "hidden";
     };
+    GlobalMessage?: {
+        display?: "hidden" | "visible";
+    };
     Label?: {
         font?: {
             family?: string;
