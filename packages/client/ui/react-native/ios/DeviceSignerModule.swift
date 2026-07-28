@@ -12,19 +12,6 @@ import Security
 /// The module is registered as `"CrossmintDeviceSigner"` and consumed on the JS side by
 /// `NativeDeviceSignerKeyStorage` from `@crossmint/client-sdk-react-native-ui`.
 
-// Expo's JS bridge reads `reason`, not the `description` passed to `Exception.init`, so a plain
-// `Exception(description:)` reaches JS as "undefined reason". Overriding `reason` fixes that.
-private final class MessageException: Exception {
-    private let reasonMessage: String
-
-    init(name: String, message: String, code: String? = nil) {
-        self.reasonMessage = message
-        super.init(name: name, description: message, code: code)
-    }
-
-    override var reason: String { reasonMessage }
-}
-
 public class DeviceSignerModule: Module {
 
     // MARK: - Module definition
@@ -109,4 +96,17 @@ public class DeviceSignerModule: Module {
         }
         #endif
     }
+}
+
+// Expo's JS bridge reads `reason`, not the `description` passed to `Exception.init`, so a plain
+// `Exception(description:)` reaches JS as "undefined reason". Overriding `reason` fixes that.
+private final class MessageException: Exception {
+    private let reasonMessage: String
+
+    init(name: String, message: String, code: String? = nil) {
+        self.reasonMessage = message
+        super.init(name: name, description: message, code: code)
+    }
+
+    override var reason: String { reasonMessage }
 }
