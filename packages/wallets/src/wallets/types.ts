@@ -323,4 +323,9 @@ export type ApproveParams = {
 
 export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
     signer: string;
+    /**
+     * The message the signature covers. Only needed to disambiguate when the same
+     * signer submits more than one signature in a single approval call.
+     */
+    message?: string;
 };
