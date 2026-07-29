@@ -35,12 +35,12 @@ const WALLET_CREATE_ARGS_CHILDREN = [
     },
     {
         name: "recovery",
-        type: { type: "reference", name: "SignerConfigForChain" },
+        type: { type: "reference", name: "RecoveryConfigForChain" },
         comment: {
             summary: [
                 {
                     kind: "text",
-                    text: 'The recovery signer configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                    text: 'The recovery signer configuration: a single signer (e.g. `{ type: "email" }`) or a quorum of member signers (e.g. `{ type: "quorum", methods: [{ type: "email" }, { type: "phone" }] }`; `threshold` defaults to 1; `api-key` and `device` members are not allowed). Used for wallet recovery and adding new signers.',
                 },
             ],
         },

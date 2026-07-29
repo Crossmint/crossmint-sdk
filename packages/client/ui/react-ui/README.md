@@ -127,6 +127,23 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 >
 ```
 
+`recovery` also accepts a quorum of member signers instead of a single signer:
+
+```tsx
+<CrossmintWalletProvider
+  createOnLogin={{
+    chain: "base-sepolia",
+    recovery: {
+      type: "quorum",
+      methods: [{ type: "email" }, { type: "phone", phone: "+15555550100" }],
+      // threshold defaults to 1; `api-key` and `device` members are not allowed
+    },
+  }}
+>
+```
+
+Like a single email recovery signer, a quorum email member without an explicit `email` is auto-filled from the logged-in user — but only when exactly one email member is missing its address.
+
 ## Hooks
 
 ### `useWallet()`

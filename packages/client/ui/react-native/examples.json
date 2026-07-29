@@ -8,7 +8,7 @@
         "language": "bash"
     },
     "rnWalletProviderSetup": {
-        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" },\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" }, // or a quorum: { type: \"quorum\", methods: [{ type: \"email\" }, { type: \"phone\" }] }\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
         "language": "tsx"
     },
     "rnWalletQuickExample": {
@@ -20,7 +20,7 @@
         "language": "tsx"
     },
     "CrossmintWalletProvider": {
-        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" },\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" }, // or a quorum: { type: \"quorum\", methods: [{ type: \"email\" }, { type: \"phone\" }] }\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
         "language": "tsx",
         "note": "CrossmintWalletProvider must be nested inside CrossmintProvider. showOtpSignerPrompt defaults to true in React Native, showing built-in OTP dialogs automatically. Set to false to handle signing flows manually via the useWalletOtpSigner hook."
     },

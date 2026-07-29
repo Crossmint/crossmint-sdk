@@ -8,7 +8,7 @@
         "language": "bash"
     },
     "walletProviderSetup": {
-        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" },\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" }, // or a quorum: { type: \"quorum\", methods: [{ type: \"email\" }, { type: \"phone\" }] }\n                }}\n            >\n                {/* Your app components */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
         "language": "tsx"
     },
     "walletQuickExample": {
@@ -24,7 +24,7 @@
         "language": "tsx"
     },
     "CrossmintWalletProvider": {
-        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" },\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
+        "code": "import {\n    CrossmintProvider,\n    CrossmintWalletProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintWalletProvider\n                createOnLogin={{\n                    chain: \"base-sepolia\",\n                    recovery: { type: \"email\" }, // or a quorum: { type: \"quorum\", methods: [{ type: \"email\" }, { type: \"phone\" }] }\n                }}\n            >\n                {/* Your app content */}\n            </CrossmintWalletProvider>\n        </CrossmintProvider>\n    );\n}",
         "language": "tsx",
         "note": "CrossmintWalletProvider must be nested inside CrossmintProvider."
     },
