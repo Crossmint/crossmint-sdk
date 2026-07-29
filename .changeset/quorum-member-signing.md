@@ -1,0 +1,5 @@
+---
+"@crossmint/wallets-sdk": minor
+---
+
+Quorum-aware recovery identity: `useSigner` now selects the quorum member the caller holds — matched against the member configs by type (email/phone normalized, passkey by id or name, server by derived address including legacy derivations, external-wallet by address) — and assembles it as an admin signer, so approvals are submitted under the member's locator. `useSigner` gains an optional second `options` argument with `quorumLocator` to force the member interpretation for a key that exists both inside the quorum and as a delegated signer. Admin operations (`addSigner`/`removeSigner`) run with the active member when it belongs to the quorum, and device-signer recovery reuses a member previously selected via `useSigner` in the same session. The wallet factory now preserves member runtime config (server `secret`, external-wallet `onSign`, passkey callbacks) across the API round-trip, and server member secrets are stripped after resolution. The former `QuorumSignerNotSupportedError` guards are replaced by these working flows or actionable errors listing the member locators.

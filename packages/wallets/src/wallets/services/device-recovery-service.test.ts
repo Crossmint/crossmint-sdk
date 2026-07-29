@@ -40,6 +40,8 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
             active = signer;
         }),
         recovery: overrides.recovery ?? { type: "api-key" },
+        adoptedAssemblableQuorumMember: overrides.adoptedAssemblableQuorumMember ?? vi.fn(() => null),
+        quorumMemberLocators: overrides.quorumMemberLocators ?? vi.fn(() => null),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -262,6 +264,51 @@ describe("DeviceRecoveryService", () => {
             });
             await expect(service.recover()).rejects.toThrow(expected);
             expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("recover() quorum resume", () => {
+        const quorumRecovery = {
+            type: "quorum",
+            locator: "quorum:abc",
+            signers: [{ type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" }],
+        };
+
+        function quorumSetup(overrides: { adoptedMember?: unknown; approveSignature?: ReturnType<typeof vi.fn> } = {}) {
+            return setup({
+                approveSignature: overrides.approveSignature,
+                signerManager: {
+                    activeSigner: makeSigner("device", "device:active"),
+                    recovery: quorumRecovery,
+                    adoptedAssemblableQuorumMember: vi.fn(() => overrides.adoptedMember ?? null),
+                    quorumMemberLocators: vi.fn(() => ["email:alice@gmail.com"]),
+                    getSignerState: vi.fn().mockResolvedValue(pendingState("signature", "sig-1")),
+                },
+            });
+        }
+
+        it("throws an actionable error when no quorum member was selected this session", async () => {
+            const { service, signerManager } = quorumSetup();
+            await expect(service.recover()).rejects.toThrow(
+                /quorum admin signer \[email:alice@gmail\.com\].*wallet\.useSigner\(\)/s
+            );
+            expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
+        });
+
+        it("approves the pending operation with the adopted member and restores the device signer", async () => {
+            const memberAdapter = makeSigner("email", "email:alice@gmail.com");
+            mockedAssembleSigner.mockReturnValue(memberAdapter);
+            const approveSignature = vi.fn().mockResolvedValue(undefined);
+            const { service, signerManager } = quorumSetup({
+                adoptedMember: { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
+                approveSignature,
+            });
+
+            await service.recover();
+
+            expect(approveSignature).toHaveBeenCalledWith("sig-1");
+            expect(signerManager.setActiveSigner).toHaveBeenNthCalledWith(1, memberAdapter);
+            expect(signerManager.setActiveSigner).toHaveBeenLastCalledWith(expect.objectContaining({ type: "device" }));
         });
     });
 
