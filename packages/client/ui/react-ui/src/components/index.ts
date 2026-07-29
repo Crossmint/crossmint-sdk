@@ -6,6 +6,7 @@ export * from "./hosted";
 export * from "./signers";
 export * from "./wallets";
 export * from "./card-management";
+export * from "./kyc";
 export * from "./order-intent";
 export * from "./payment-method-agentic-enrollment";
 
