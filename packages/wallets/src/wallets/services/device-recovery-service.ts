@@ -12,7 +12,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -273,6 +273,12 @@ export class DeviceRecoveryService<C extends Chain> {
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
+        if (recovery.type === "quorum") {
+            throw new QuorumSignerNotSupportedError(
+                "Cannot resume pending approval with a quorum recovery signer. " +
+                    "Quorum signing is not yet supported by this SDK version."
+            );
+        }
         if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
@@ -355,6 +361,9 @@ export class DeviceRecoveryService<C extends Chain> {
 
     async #assembleRecoverySignerFallback(): Promise<void> {
         const recovery = this.#signerManager.recovery;
+        if (recovery.type === "quorum") {
+            return;
+        }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {

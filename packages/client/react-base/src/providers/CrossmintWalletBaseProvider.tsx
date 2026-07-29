@@ -4,7 +4,6 @@ import {
     CrossmintWallets,
     type Callbacks,
     type ClientSideWalletCreateArgs,
-    type SignerConfigForChain,
     type Wallet,
     type ClientSideWalletArgsFor,
     type WalletCreateArgs,
@@ -254,7 +253,10 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signer: SignerConfigForChain<Chain>) => {
+        async (signer: WalletCreateArgs<Chain>["recovery"]) => {
+            // TODO(WAL-11294): a quorum recovery containing email/phone members skips WebView
+            // init here. Quorum member signing is not reachable until the quorum approval-loop
+            // work lands; the react provider audit covers initializing the WebView for members.
             if (signer.type === "email" || signer.type === "phone") {
                 await initializeWebView?.();
             }

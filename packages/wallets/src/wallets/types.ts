@@ -12,9 +12,9 @@ import type {
     BaseSignResult,
     PasskeySignResult,
     DeviceSignResult,
-    DeviceSignerConfig,
     DeviceSignerLocator,
     ServerSignerConfig,
+    RecoveryConfigForChain,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -233,8 +233,12 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
-    recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /**
+     * Recovery signer for wallet creation. Device signers cannot be recovery signers.
+     * Also accepts a quorum config (`{ type: "quorum", threshold?, methods }`) whose members
+     * exclude `api-key` and `device` signers.
+     */
+    recovery: RecoveryConfigForChain<C>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;

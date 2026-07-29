@@ -121,6 +121,26 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
 
+/**
+ * A quorum admin signer as **resolved by the API** (read side): members live under `signers`
+ * and the derived `quorum:<id>` locator is present. The create-side input counterpart is
+ * `QuorumRecoveryConfig`, whose members live under `methods`.
+ */
+export type ResolvedQuorumRecoveryConfig = {
+    type: "quorum";
+    threshold?: number;
+    locator?: string;
+    signers: Array<Record<string, unknown> & { type: string }>;
+};
+
+/**
+ * A wallet's recovery signer as **resolved at runtime** (read side): a single signer or a
+ * resolved quorum. The create-side input counterpart is `RecoveryConfigForChain`.
+ */
+export type ResolvedRecoveryConfigForChain<C extends Chain> =
+    | RecoverySignerConfigForChain<C>
+    | ResolvedQuorumRecoveryConfig;
+
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
     | ApiKeySignerConfig
@@ -229,6 +249,34 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     : C extends StellarChain
       ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
+
+export type QuorumMemberConfigForChain<C extends Chain> = Exclude<
+    SignerConfigForChain<C>,
+    DeviceSignerConfig | ApiKeySignerConfig
+>;
+
+/**
+ * A quorum admin signer as **configured at creation** (input side): members live under
+ * `methods`. The API-resolved read-side counterpart is `ResolvedQuorumRecoveryConfig`,
+ * whose members live under `signers` alongside the derived locator.
+ */
+export type QuorumRecoveryConfig<C extends Chain> = {
+    type: "quorum";
+    /** Minimum number of member signatures required to approve. Defaults to 1. */
+    threshold?: number;
+    /** The member signers that make up the quorum. `api-key` and `device` signers are not allowed. */
+    methods: QuorumMemberConfigForChain<C>[];
+};
+
+export type RecoveryConfigForChain<C extends Chain> =
+    | Exclude<SignerConfigForChain<C>, DeviceSignerConfig>
+    | QuorumRecoveryConfig<C>;
+
+export function isQuorumRecovery<C extends Chain>(
+    recovery: RecoveryConfigForChain<C>
+): recovery is QuorumRecoveryConfig<C> {
+    return recovery.type === "quorum";
+}
 
 ////////////////////////////////////////////////////////////
 // Signer locator types

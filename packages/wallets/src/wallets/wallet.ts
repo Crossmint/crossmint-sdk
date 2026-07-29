@@ -53,6 +53,7 @@ import type {
     SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
+    ResolvedRecoveryConfigForChain,
 } from "../signers/types";
 import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -77,7 +78,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: RecoverySignerConfigForChain<C>;
+    recovery: ResolvedRecoveryConfigForChain<C>;
     apiRecoveryServerSignerAddress?: string;
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
@@ -212,7 +213,8 @@ export class Wallet<C extends Chain> {
                   ? this.#initialSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        if (signerToAssemble == null) {
+        // Quorum recovery has no single assemblable signer; the user selects a member via useSigner().
+        if (signerToAssemble == null || signerToAssemble.type === "quorum") {
             return;
         }
 
@@ -288,7 +290,11 @@ export class Wallet<C extends Chain> {
      * @experimental This API is experimental and may change in the future
      */
     public get recovery(): SignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+        // The declared type is deliberately kept at the pre-quorum surface so existing consumers
+        // keep compiling; at runtime the value may also be an api-sourced server config or a
+        // resolved quorum (`type: "quorum"`). Widening this to ResolvedRecoveryConfigForChain is
+        // a breaking change deferred to a future major/decision.
+        return this.#signerManager.recovery as SignerConfigForChain<C>;
     }
 
     /**
@@ -894,6 +900,15 @@ export class Wallet<C extends Chain> {
             return true;
         }
 
+        // A quorum member is part of the admin signer, not a delegated signer, so it can never
+        // pass the registration check above — "not registered" would be misleading for it.
+        if (this.#signerManager.recovery.type === "quorum") {
+            throw new QuorumSignerNotSupportedError(
+                `Signer "${locator}" is not a registered delegated signer, and this wallet uses a quorum recovery signer — ` +
+                    "signing with a quorum member is not yet supported by this SDK version."
+            );
+        }
+
         throw new Error(`Signer "${locator}" is not registered in this wallet.`);
     }
 
@@ -1090,7 +1105,7 @@ export class Wallet<C extends Chain> {
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
         const recovery = this.#signerManager.recovery;
-        if (recovery == null || recovery.type !== signerConfig.type) {
+        if (recovery == null || recovery.type === "quorum" || recovery.type !== signerConfig.type) {
             return false;
         }
         const signerDescriptor = getSignerDescriptor<C>(signerConfig.type);

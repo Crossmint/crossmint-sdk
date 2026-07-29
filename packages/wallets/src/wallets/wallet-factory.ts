@@ -3,7 +3,6 @@ import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
-    RecoverySignerConfig,
     ApiClient,
     CreateWalletParams,
     CreateWalletResponse,
@@ -15,14 +14,19 @@ import type {
 import { DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
+    DeviceSignerConfig,
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
-    RecoverySignerConfigForChain,
+    QuorumMemberConfigForChain,
+    QuorumRecoveryConfig,
+    RecoveryConfigForChain,
     SignerConfigForChain,
+    ResolvedRecoveryConfigForChain,
 } from "../signers/types";
+import { isQuorumRecovery } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
-import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
+import { compareSignerConfigs, normalizeEmail, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -31,10 +35,21 @@ import { createDeviceSigner } from "@/utils/device-signers";
 const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
 
+type AdminSignerResponse<T> = T extends { config?: infer Config }
+    ? NonNullable<Config> extends { adminSigner: unknown }
+        ? NonNullable<Config>["adminSigner"]
+        : never
+    : never;
+
 type SmartWalletConfig = {
-    adminSigner: RecoverySignerConfig | PasskeySignerConfig;
+    adminSigner: AdminSignerResponse<GetWalletSuccessResponse>;
+    // Defensive: the documented contract returns the admin under `adminSigner` regardless of
+    // which create surface was used, but tolerate a response that mirrors the request's
+    // `recovery` property so a mismatch cannot crash after the wallet was created on-chain.
+    recovery?: AdminSignerResponse<GetWalletSuccessResponse>;
     delegatedSigners?: SignerResponse[];
 };
+type ExistingQuorumAdminSigner = Extract<SmartWalletConfig["adminSigner"], { type: "quorum" }>;
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -140,24 +155,27 @@ export class WalletFactory {
             validatedArgs.options?.deviceSignerKeyStorage
         );
 
-        let adminSigner;
-        if (validatedArgs.recovery.type === "passkey" && validatedArgs.recovery.id == null) {
-            adminSigner = await this.createPasskeySigner(validatedArgs.recovery);
-        } else if (validatedArgs.recovery.type === "server") {
-            const { derivedAddress } = deriveServerSignerDetails(
-                validatedArgs.recovery,
-                validatedArgs.chain,
-                this.apiClient.projectId,
-                this.apiClient.environment
+        const recoveryConfig = this.normalizeRecovery(validatedArgs.recovery);
+        let adminConfig: Record<string, unknown>;
+        if (isQuorumRecovery(recoveryConfig)) {
+            const quorumSigners = await Promise.all(
+                recoveryConfig.methods.map((member) => this.prepareAdminSigner(member, validatedArgs.chain))
             );
-            adminSigner = { type: "server", address: derivedAddress };
+            adminConfig = {
+                // Quorum admins are sent on the `recovery` wire property; its member array is named `signers`.
+                recovery: {
+                    type: "quorum",
+                    ...(recoveryConfig.threshold != null ? { threshold: recoveryConfig.threshold } : {}),
+                    signers: quorumSigners,
+                },
+            };
         } else {
-            adminSigner = validatedArgs.recovery;
+            adminConfig = { adminSigner: await this.prepareAdminSigner(recoveryConfig, validatedArgs.chain) };
         }
 
         const walletResponse = await this.createSmartWallet(
             validatedArgs,
-            adminSigner,
+            adminConfig,
             builtSigners,
             didAutoInjectDeviceSigner
         );
@@ -179,7 +197,7 @@ export class WalletFactory {
     /** Creates the smart wallet, retrying once without the auto-injected device signer if the provider rejects it. */
     private async createSmartWallet<C extends Chain>(
         args: WalletCreateArgs<C>,
-        adminSigner: unknown,
+        adminConfig: Record<string, unknown>,
         builtSigners: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>,
         didAutoInjectDeviceSigner: boolean
     ): Promise<CreateWalletResponse> {
@@ -188,7 +206,7 @@ export class WalletFactory {
                 type: "smart",
                 chainType: this.getChainType(args.chain),
                 config: {
-                    adminSigner,
+                    ...adminConfig,
                     ...(args.plugins ? { plugins: args.plugins } : {}),
                     ...(delegatedSigners != null ? { delegatedSigners } : {}),
                 },
@@ -234,13 +252,21 @@ export class WalletFactory {
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
-        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as RecoverySignerConfigForChain<C>;
+        const responseConfig = walletResponse.config as SmartWalletConfig | undefined;
+        const apiRecovery = (responseConfig?.adminSigner ?? responseConfig?.recovery) as
+            | ResolvedRecoveryConfigForChain<C>
+            | undefined;
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
-                : apiRecovery;
+                : apiRecovery ?? this.fallbackRecoveryFromArgs(createArgs.recovery);
+        if (recovery == null) {
+            throw new WalletCreationError(
+                "Unable to determine the wallet's recovery signer: the API response contains no admin signer configuration."
+            );
+        }
 
-        const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        const apiDelegatedSigners = responseConfig?.delegatedSigners;
         let signers = apiDelegatedSigners;
         if (
             signers != null &&
@@ -253,7 +279,7 @@ export class WalletFactory {
         // Preserve the API-sourced server signer recovery address so the wallet can identify
         // legacy derivations even when the user-provided config replaces the API one.
         const apiRecoveryServerSignerAddress =
-            apiRecovery.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
+            apiRecovery?.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
                 ? (apiRecovery as { address: string }).address
                 : undefined;
 
@@ -287,6 +313,73 @@ export class WalletFactory {
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
         return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
+    }
+
+    /**
+     * Last-resort recovery for the wallet instance when the API response carries no admin
+     * signer configuration: fall back to what the caller supplied, mapping an input quorum
+     * (`methods`) to the resolved shape (`signers`).
+     */
+    private fallbackRecoveryFromArgs<C extends Chain>(
+        recovery: RecoveryConfigForChain<C> | undefined
+    ): ResolvedRecoveryConfigForChain<C> | null {
+        if (recovery == null) {
+            return null;
+        }
+        const normalized = this.normalizeRecovery(recovery);
+        if (isQuorumRecovery(normalized)) {
+            return {
+                type: "quorum",
+                ...(normalized.threshold != null ? { threshold: normalized.threshold } : {}),
+                signers: normalized.methods,
+            };
+        }
+        return normalized;
+    }
+
+    /** Runs the per-type prep an admin signer needs before it can be sent on the wire. */
+    private async prepareAdminSigner<C extends Chain>(
+        signer: Exclude<SignerConfigForChain<C>, DeviceSignerConfig> | QuorumMemberConfigForChain<C>,
+        chain: C
+    ): Promise<unknown> {
+        if (signer.type === "passkey" && signer.id == null) {
+            return await this.createPasskeySigner(signer);
+        }
+        if (signer.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                signer,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return { type: "server", address: derivedAddress };
+        }
+        return signer;
+    }
+
+    /**
+     * Validates a quorum recovery config and collapses a single-method quorum to a plain
+     * single admin signer. Non-quorum configs pass through unchanged.
+     */
+    private normalizeRecovery<C extends Chain>(recovery: RecoveryConfigForChain<C>): RecoveryConfigForChain<C> {
+        if (!isQuorumRecovery(recovery)) {
+            return recovery;
+        }
+        const { threshold, methods } = recovery;
+        if (methods.length === 0) {
+            throw new WalletCreationError("Quorum recovery requires at least one method");
+        }
+        if (threshold != null && (!Number.isInteger(threshold) || threshold < 1 || threshold > methods.length)) {
+            throw new WalletCreationError(
+                `Quorum threshold must be an integer between 1 and the number of methods (${methods.length})`
+            );
+        }
+        if (methods.length === 1) {
+            // Quorum members are a subset of valid single admin signers; TS cannot relate the
+            // two deferred conditional types for a generic chain, hence the cast.
+            return methods[0] as RecoveryConfigForChain<C>;
+        }
+        return recovery;
     }
 
     private async createPasskeySigner<C extends Chain>(
@@ -339,16 +432,26 @@ export class WalletFactory {
 
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
-            const config = existingWallet.config as SmartWalletConfig;
-            const existingWalletSigner = config?.adminSigner;
+            const config = existingWallet.config as SmartWalletConfig | undefined;
+            const existingWalletSigner = config?.adminSigner ?? config?.recovery;
 
             if (createArgs.recovery != null && existingWalletSigner != null) {
-                if (createArgs.recovery.type !== existingWalletSigner.type) {
-                    throw new WalletCreationError(
-                        "The wallet recovery signer type does not match the existing wallet's recovery signer type"
-                    );
+                const recoveryConfig = this.normalizeRecovery(createArgs.recovery);
+                if (isQuorumRecovery(recoveryConfig)) {
+                    if (existingWalletSigner.type !== "quorum") {
+                        throw new WalletCreationError(
+                            "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+                        );
+                    }
+                    this.validateQuorumRecovery(recoveryConfig, existingWalletSigner, args.chain);
+                } else {
+                    if (existingWalletSigner.type === "quorum" || recoveryConfig.type !== existingWalletSigner.type) {
+                        throw new WalletCreationError(
+                            "The wallet recovery signer type does not match the existing wallet's recovery signer type"
+                        );
+                    }
+                    compareSignerConfigs(recoveryConfig, existingWalletSigner);
                 }
-                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
             }
 
             const inputSigners = createArgs.signers;
@@ -356,6 +459,97 @@ export class WalletFactory {
                 this.validateSigners(existingWallet, inputSigners, args.chain);
             }
         }
+    }
+
+    /**
+     * Compares a quorum recovery config against an existing wallet's quorum admin signer.
+     * The member set comparison is order-insensitive: each method must match a distinct
+     * existing member, regardless of ordering (the quorum locator is a sorted-content hash).
+     */
+    private validateQuorumRecovery<C extends Chain>(
+        recovery: QuorumRecoveryConfig<C>,
+        existing: ExistingQuorumAdminSigner,
+        chain: C
+    ): void {
+        const newThreshold = recovery.threshold ?? 1;
+        const existingThreshold = existing.threshold ?? 1;
+        if (newThreshold !== existingThreshold) {
+            throw new WalletCreationError(
+                `Quorum recovery threshold mismatch - expected "${existingThreshold}" from existing wallet but found "${newThreshold}"`
+            );
+        }
+
+        const existingMembers = existing.signers ?? [];
+        if (recovery.methods.length !== existingMembers.length) {
+            throw new WalletCreationError(
+                `Quorum recovery member count mismatch - expected "${existingMembers.length}" from existing wallet but found "${recovery.methods.length}"`
+            );
+        }
+
+        const passkeyMethodCount = recovery.methods.filter((method) => method.type === "passkey").length;
+        if (
+            passkeyMethodCount > 1 &&
+            recovery.methods.some((method) => method.type === "passkey" && method.id == null && method.name == null)
+        ) {
+            throw new WalletCreationError(
+                "When using multiple passkeys for quorum recovery, each passkey must provide an ID or name."
+            );
+        }
+
+        const unmatched = [...existingMembers];
+        for (const method of recovery.methods) {
+            const matchIndex = unmatched.findIndex((candidate) =>
+                this.isMatchingQuorumMember(method, candidate, chain)
+            );
+            if (matchIndex === -1) {
+                throw new WalletCreationError(
+                    `Quorum recovery member '${method.type}' does not match any member of the existing wallet's quorum recovery`
+                );
+            }
+            const [matchedMember] = unmatched.splice(matchIndex, 1);
+            compareSignerConfigs(method as Record<string, unknown>, matchedMember);
+        }
+    }
+
+    private isMatchingQuorumMember<C extends Chain>(
+        method: QuorumMemberConfigForChain<C>,
+        candidate: Record<string, unknown> & { type: string },
+        chain: C
+    ): boolean {
+        if (method.type !== candidate.type) {
+            return false;
+        }
+        if (method.type === "server") {
+            // User-supplied server members carry a secret; the API returns the derived address.
+            const { primary, legacy } = deriveServerSignerCandidates(
+                method,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return (
+                candidate.address === primary.derivedAddress ||
+                (legacy != null && candidate.address === legacy.derivedAddress)
+            );
+        }
+        if (method.type === "passkey") {
+            if (method.id != null) {
+                return candidate.id === method.id;
+            }
+            if (method.name != null) {
+                return candidate.name === method.name;
+            }
+            return true; // field-level checks follow via compareSignerConfigs
+        }
+        if (method.type === "email") {
+            return (
+                method.email == null || normalizeEmail(method.email) === normalizeEmail(String(candidate.email ?? ""))
+            );
+        }
+        if (method.type === "phone") {
+            return method.phone == null || method.phone === candidate.phone;
+        }
+        return method.address === candidate.address; // external-wallet
     }
 
     private validateSigners<C extends Chain>(
