@@ -43,6 +43,16 @@ export type AddSignerOptions = PrepareOnly & {
 
 export type RemoveSignerOptions = PrepareOnly;
 
+export type UseSignerOptions = {
+    /**
+     * Locator of the wallet's quorum admin signer (`quorum:<id>`). Forces the signer config to be
+     * interpreted as a member of that quorum, skipping delegated-signer resolution — only needed
+     * to disambiguate a key that exists both inside the quorum and elsewhere in the wallet's
+     * signer hierarchy.
+     */
+    quorumLocator?: string;
+};
+
 export type UpgradeOptions = Partial<PrepareOnly> & {
     signer?: string | ServerSignerConfig;
 };

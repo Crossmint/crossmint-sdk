@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Wallet } from "./wallet";
 import { WalletFactory } from "./wallet-factory";
-import { QuorumSignerNotSupportedError } from "../utils/errors";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
-import type { SignerAdapter } from "../signers/types";
+import type { SignerAdapter, SignerConfigForChain } from "../signers/types";
+import { deriveServerSignerDetails } from "../signers/server";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { createMockApiClient, type MockedApiClient } from "./__tests__/test-helpers";
 
@@ -42,47 +42,295 @@ const singleAdminWallet = {
     createdAt: Date.now(),
 } as GetWalletSuccessResponse;
 
-describe("Wallet - quorum recovery signing guards", () => {
-    let mockApiClient: {
-        isServerSide: boolean;
-        crossmint: { projectId: string };
-        projectId: string;
-        environment: string;
-        getWallet: ReturnType<typeof vi.fn>;
-        createWallet: ReturnType<typeof vi.fn>;
-    };
+const evmQuorumWallet = {
+    chainType: "evm" as const,
+    type: "smart" as const,
+    address: "0x1234567890123456789012345678901234567890",
+    owner: "test-owner",
+    config: {
+        adminSigner: {
+            type: "quorum",
+            threshold: 1,
+            locator: "quorum:9f2c0000",
+            signers: [
+                { type: "external-wallet", address: "0xMemberAAA", locator: "external-wallet:0xMemberAAA" },
+                { type: "email", email: "bob@gmail.com", locator: "email:bob@gmail.com" },
+            ],
+        },
+    },
+    createdAt: Date.now(),
+} as unknown as GetWalletSuccessResponse;
+
+const passkeyQuorumWallet = {
+    chainType: "evm" as const,
+    type: "smart" as const,
+    address: "0x1234567890123456789012345678901234567890",
+    owner: "test-owner",
+    config: {
+        adminSigner: {
+            type: "quorum",
+            threshold: 1,
+            locator: "quorum:9f2c0000",
+            signers: [
+                { type: "passkey", id: "pk-1", name: "primary", locator: "passkey:pk-1" },
+                { type: "passkey", id: "pk-2", name: "backup", locator: "passkey:pk-2" },
+            ],
+        },
+    },
+    createdAt: Date.now(),
+} as unknown as GetWalletSuccessResponse;
+
+describe("Wallet - quorum member selection", () => {
+    const TEST_SECRET = "b".repeat(64);
+    const PROJECT_ID = "test-project";
+
+    let mockApiClient: MockedApiClient & { crossmint: { projectId: string }; projectId: string };
     let walletFactory: WalletFactory;
+    let onSign: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
+        vi.clearAllMocks();
         mockApiClient = {
-            isServerSide: false,
-            crossmint: { projectId: "test-project" },
-            projectId: "test-project",
+            ...createMockApiClient(),
+            crossmint: { projectId: PROJECT_ID },
+            projectId: PROJECT_ID,
             environment: APIKeyEnvironmentPrefix.STAGING,
-            getWallet: vi.fn().mockResolvedValue(quorumWallet),
-            createWallet: vi.fn().mockResolvedValue(quorumWallet),
         };
+        mockApiClient.getWallet.mockResolvedValue(quorumWallet);
         walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+        onSign = vi.fn().mockResolvedValue("0xmembersig");
     });
 
-    describe("useSigner with a quorum member", () => {
-        it("explains that quorum signing is unsupported instead of claiming the member is unregistered", async () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    describe("when the caller holds an external-wallet member", () => {
+        test("useSigner selects it as an admin signer under the member locator", async () => {
             const wallet = await walletFactory.getWallet({ chain: "solana" });
 
-            const attempt = wallet.useSigner({ type: "email", email: "alice@gmail.com" });
-            await expect(attempt).rejects.toThrow(QuorumSignerNotSupportedError);
-            await expect(wallet.useSigner({ type: "email", email: "alice@gmail.com" })).rejects.toThrow(
-                "signing with a quorum member is not yet supported by this SDK version"
+            await wallet.useSigner({ type: "external-wallet", address: "MemberWallet111", onSign } as Parameters<
+                Wallet<Chain>["useSigner"]
+            >[0]);
+
+            expect(wallet.signer?.locator()).toBe("external-wallet:MemberWallet111");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        test("a subsequent approve submits the member's signature under its locator", async () => {
+            mockApiClient.getWallet.mockResolvedValue(evmQuorumWallet);
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+            await wallet.useSigner({ type: "external-wallet", address: "0xMemberAAA", onSign } as Parameters<
+                Wallet<Chain>["useSigner"]
+            >[0]);
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "txn-1",
+                status: "success",
+                chainType: "evm",
+                approvals: {
+                    pending: [
+                        {
+                            signer: { type: "quorum", locator: "quorum:9f2c0000" },
+                            quorumApprovals: {
+                                threshold: 1,
+                                remaining: 1,
+                                pending: [
+                                    {
+                                        signer: {
+                                            type: "external-wallet",
+                                            address: "0xMemberAAA",
+                                            locator: "external-wallet:0xMemberAAA",
+                                        },
+                                        message: "member-message",
+                                    },
+                                    {
+                                        signer: {
+                                            type: "email",
+                                            email: "bob@gmail.com",
+                                            locator: "email:bob@gmail.com",
+                                        },
+                                        message: "member-message-bob",
+                                    },
+                                ],
+                                submitted: [],
+                            },
+                        },
+                    ],
+                    submitted: [],
+                },
+                onChain: { txId: "0xabcdef", explorerLink: "https://explorer.example.com/tx/0xabcdef" },
+            } as Awaited<ReturnType<ApiClient["getTransaction"]>>);
+            mockApiClient.approveTransaction.mockResolvedValue({ id: "txn-1", status: "success" } as Awaited<
+                ReturnType<ApiClient["approveTransaction"]>
+            >);
+
+            vi.useFakeTimers();
+            const approvePromise = wallet.approve({ transactionId: "txn-1" });
+            await vi.runAllTimersAsync();
+            const result = await approvePromise;
+
+            expect(result.hash).toBe("0xabcdef");
+            expect(onSign).toHaveBeenCalledWith("member-message");
+            expect(mockApiClient.approveTransaction).toHaveBeenCalledWith(expect.anything(), "txn-1", {
+                approvals: [{ signer: "external-wallet:0xMemberAAA", signature: "0xmembersig" }],
+            });
+        });
+    });
+
+    describe("when the caller holds the email member", () => {
+        test("a denormalized email input still selects the member", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await wallet.useSigner({ type: "email", email: "Alice@GMAIL.com" });
+
+            expect(wallet.signer?.locator()).toBe("email:alice@gmail.com");
+            expect(wallet.signer?.status).toBe("active");
+        });
+    });
+
+    describe("when the caller holds the server member", () => {
+        test("useSigner with the secret resolves the member derivation and strips the secret", async () => {
+            const { derivedAddress } = deriveServerSignerDetails(
+                { type: "server", secret: TEST_SECRET },
+                "solana",
+                PROJECT_ID,
+                APIKeyEnvironmentPrefix.STAGING
+            );
+            mockApiClient.getWallet.mockResolvedValue({
+                ...(quorumWallet as unknown as Record<string, unknown>),
+                config: {
+                    adminSigner: {
+                        type: "quorum",
+                        threshold: 1,
+                        locator: "quorum:9f2c0000",
+                        signers: [
+                            { type: "server", address: derivedAddress, locator: `server:${derivedAddress}` },
+                            { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
+                        ],
+                    },
+                },
+            } as unknown as GetWalletSuccessResponse);
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await wallet.useSigner({ type: "server", secret: TEST_SECRET });
+
+            expect(wallet.signer?.locator()).toBe(`server:${derivedAddress}`);
+            expect(wallet.signer?.status).toBe("active");
+            const recovery = wallet.recovery as unknown as { signers: Array<Record<string, unknown>> };
+            const serverMember = recovery.signers.find((member) => member.type === "server");
+            expect(serverMember).toEqual({
+                type: "server",
+                address: derivedAddress,
+                locator: `server:${derivedAddress}`,
+            });
+        });
+    });
+
+    describe("when the config matches no member", () => {
+        test("the error lists the member locators and points at useSigner", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await expect(wallet.useSigner({ type: "email", email: "mallory@example.com" })).rejects.toThrow(
+                'Signer "email:mallory@example.com" is not a registered delegated signer and does not match any member ' +
+                    "of this wallet's quorum admin signer [external-wallet:MemberWallet111, email:alice@gmail.com]. " +
+                    "Call wallet.useSigner() with the config of the quorum member you hold."
             );
         });
 
-        it("keeps the unregistered-signer error for wallets with a single admin signer", async () => {
+        test("keeps the unregistered-signer error for wallets with a single admin signer", async () => {
             mockApiClient.getWallet.mockResolvedValue(singleAdminWallet);
             const wallet = await walletFactory.getWallet({ chain: "solana" });
 
             await expect(wallet.useSigner({ type: "email", email: "not-a-signer@example.com" })).rejects.toThrow(
                 'Signer "email:not-a-signer@example.com" is not registered in this wallet.'
             );
+        });
+    });
+
+    describe("when quorumLocator is provided", () => {
+        test("forces the member interpretation without a registration lookup", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+            const getWalletCallsAfterInit = mockApiClient.getWallet.mock.calls.length;
+
+            await wallet.useSigner(
+                { type: "external-wallet", address: "MemberWallet111", onSign } as Parameters<
+                    Wallet<Chain>["useSigner"]
+                >[0],
+                { quorumLocator: "quorum:9f2c0000" }
+            );
+
+            expect(wallet.signer?.locator()).toBe("external-wallet:MemberWallet111");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getWallet.mock.calls.length).toBe(getWalletCallsAfterInit);
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
+        test("rejects a locator that names a different quorum", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await expect(
+                wallet.useSigner({ type: "email", email: "alice@gmail.com" }, { quorumLocator: "quorum:deadbeef" })
+            ).rejects.toThrow(
+                'Quorum locator "quorum:deadbeef" does not match this wallet\'s quorum admin signer ("quorum:9f2c0000").'
+            );
+        });
+
+        test("rejects a config that matches no member", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await expect(
+                wallet.useSigner({ type: "email", email: "mallory@example.com" }, { quorumLocator: "quorum:9f2c0000" })
+            ).rejects.toThrow(/does not match any member of this wallet's quorum admin signer/);
+        });
+
+        test("rejects device configs", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await expect(wallet.useSigner({ type: "device" }, { quorumLocator: "quorum:9f2c0000" })).rejects.toThrow(
+                "Device signers cannot be quorum members — quorumLocator does not apply."
+            );
+        });
+
+        test("rejects wallets whose admin signer is not a quorum", async () => {
+            mockApiClient.getWallet.mockResolvedValue(singleAdminWallet);
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            await expect(
+                wallet.useSigner({ type: "email", email: "alice@gmail.com" }, { quorumLocator: "quorum:9f2c0000" })
+            ).rejects.toThrow("A quorumLocator was provided, but this wallet's admin signer is not a quorum.");
+        });
+    });
+
+    describe("when the quorum has multiple passkey members", () => {
+        beforeEach(() => {
+            mockApiClient.getWallet.mockResolvedValue(passkeyQuorumWallet);
+        });
+
+        test("an id-less, name-less config is rejected as ambiguous", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+
+            await expect(wallet.useSigner({ type: "passkey" } as SignerConfigForChain<"base-sepolia">)).rejects.toThrow(
+                /Multiple passkey members are in this wallet's quorum admin signer/
+            );
+        });
+
+        test("selecting by name adopts the stored credential id", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+
+            await wallet.useSigner({ type: "passkey", name: "backup" } as SignerConfigForChain<"base-sepolia">);
+
+            expect(wallet.signer?.locator()).toBe("passkey:pk-2");
+            expect(wallet.signer?.status).toBe("active");
+        });
+
+        test("selecting by credential id works even though the passkey is not a registered signer", async () => {
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+
+            await wallet.useSigner({ type: "passkey", id: "pk-1" } as SignerConfigForChain<"base-sepolia">);
+
+            expect(wallet.signer?.locator()).toBe("passkey:pk-1");
+            expect(wallet.signer?.status).toBe("active");
         });
     });
 });
