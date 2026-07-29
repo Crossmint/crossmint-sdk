@@ -20,6 +20,7 @@ import type {
     QuorumMemberConfigForChain,
     QuorumRecoveryConfig,
     RecoveryConfigForChain,
+    ResolvedQuorumRecoveryConfig,
     ServerSignerConfig,
     SignerConfigForChain,
     ResolvedRecoveryConfigForChain,
@@ -262,7 +263,9 @@ export class WalletFactory {
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
-                : apiRecovery ?? this.fallbackRecoveryFromArgs(createArgs.recovery);
+                : apiRecovery?.type === "quorum"
+                  ? this.mergeQuorumRuntimeConfig(apiRecovery, createArgs.recovery, args.chain)
+                  : apiRecovery ?? this.fallbackRecoveryFromArgs(createArgs.recovery);
         if (recovery == null) {
             throw new WalletCreationError(
                 "Unable to determine the wallet's recovery signer: the API response contains no admin signer configuration."
@@ -316,6 +319,38 @@ export class WalletFactory {
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
         return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
+    }
+
+    /**
+     * The quorum counterpart of the single server/external-wallet preservation above: the API
+     * cannot store runtime member data (server `secret`, external-wallet `onSign`, passkey
+     * callbacks), so graft each user-provided method onto the API member it identifies.
+     * API identity fields win (per-member `locator`, passkey `id`, derived `address`, exact
+     * `email`); matching is order-insensitive and consume-once, like the existing-wallet
+     * validation. API members with no matching method pass through verbatim.
+     */
+    private mergeQuorumRuntimeConfig<C extends Chain>(
+        apiQuorum: ResolvedQuorumRecoveryConfig,
+        userRecovery: RecoveryConfigForChain<C> | undefined,
+        chain: C
+    ): ResolvedQuorumRecoveryConfig {
+        if (userRecovery == null) {
+            return apiQuorum;
+        }
+        const normalized = this.normalizeRecovery(userRecovery);
+        if (!isQuorumRecovery(normalized)) {
+            return apiQuorum;
+        }
+        const unmatched = [...normalized.methods];
+        const signers = apiQuorum.signers.map((member) => {
+            const matchIndex = unmatched.findIndex((method) => this.isMatchingQuorumMember(method, member, chain));
+            if (matchIndex === -1) {
+                return member;
+            }
+            const [method] = unmatched.splice(matchIndex, 1);
+            return { ...method, ...member };
+        });
+        return { ...apiQuorum, signers };
     }
 
     /**
