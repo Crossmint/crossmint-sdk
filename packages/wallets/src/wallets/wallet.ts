@@ -152,6 +152,12 @@ export class Wallet<C extends Chain> {
             projectId: this.#apiClient.projectId,
             environment: this.#apiClient.environment,
             apiRecoveryAddress,
+            apiQuorumServerMemberAddresses:
+                recovery.type === "quorum"
+                    ? recovery.signers
+                          .filter((member) => member.type === "server" && typeof member.address === "string")
+                          .map((member) => member.address as string)
+                    : [],
             apiDelegatedAddresses: this.#apiDelegatedServerSignerAddresses,
             knownOnChainAddresses: () => [
                 ...this.#initialSigners

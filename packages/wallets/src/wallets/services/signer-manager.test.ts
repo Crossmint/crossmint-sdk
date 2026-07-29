@@ -63,6 +63,16 @@ async function expectThrowsMatching(run: () => unknown, branchKeyword: RegExp): 
 
 const apiKeyConfig = { type: "api-key" } as const;
 
+const quorumRecovery = asRecoveryConfig({
+    type: "quorum",
+    threshold: 1,
+    locator: "quorum:abc",
+    signers: [
+        { type: "external-wallet", address: "0xMember", locator: "external-wallet:0xMember" },
+        { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
+    ],
+});
+
 beforeEach(() => {
     vi.clearAllMocks();
     walletsLogger.warn = vi.fn();
@@ -92,8 +102,16 @@ describe("SignerManager", () => {
             /requires calling wallet\.useSigner\(\)/,
         ],
         ["a read-only wallet", { recovery: apiKeyConfig }, /read-only/],
+        ["a quorum recovery signer", { recovery: quorumRecovery }, /quorum member you hold/],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(() => makeManager(overrides as Overrides).require(), branchKeyword);
+    });
+
+    it("require() with a quorum recovery lists the member locators", async () => {
+        await expectThrowsMatching(
+            () => makeManager({ recovery: quorumRecovery }).require(),
+            /\[external-wallet:0xMember, email:alice@gmail\.com\]/
+        );
     });
 
     it.each([
@@ -151,6 +169,34 @@ describe("SignerManager", () => {
         );
     });
 
+    it("withRecoverySigner() runs the operation with the active quorum member without reassembling", async () => {
+        const member = { locator: () => "external-wallet:0xMember" as SignerLocator } as unknown as SignerAdapter;
+        const manager = makeManager({ signer: member, recovery: quorumRecovery });
+        let signerDuringOperation: SignerAdapter | undefined;
+
+        await expect(
+            manager.withRecoverySigner(() => {
+                signerDuringOperation = manager.activeSigner;
+                return Promise.resolve("ok");
+            })
+        ).resolves.toBe("ok");
+
+        expect(signerDuringOperation).toBe(member);
+        expect(mockedAssembleSigner).not.toHaveBeenCalled();
+        expect(manager.activeSigner).toBe(member);
+    });
+
+    it.each([
+        ["no active signer", undefined],
+        ["an active signer that is not a member", makeSigner("outsider")],
+    ])("withRecoverySigner() with a quorum recovery and %s instructs selecting a member", async (_name, signer) => {
+        await expectThrowsMatching(
+            () => makeManager({ signer, recovery: quorumRecovery }).withRecoverySigner(async () => "unused"),
+            /quorum member you hold/
+        );
+        expect(mockedAssembleSigner).not.toHaveBeenCalled();
+    });
+
     it("stripSecretFromRecovery() replaces a secret-bearing server recovery with an address-only config", () => {
         const manager = makeManager({
             recovery: asRecoveryConfig({ type: "server", secret: "topsecret" }),
@@ -175,6 +221,58 @@ describe("SignerManager", () => {
         const manager = makeManager({ recovery, serverSignerResolver: makeResolver(resolver) });
         manager.stripSecretFromRecovery();
         expect(manager.recovery).toBe(recovery);
+    });
+
+    it("stripSecretFromRecovery() strips resolved server member secrets inside a quorum", () => {
+        const manager = makeManager({
+            recovery: asRecoveryConfig({
+                type: "quorum",
+                signers: [
+                    { type: "server", secret: "topsecret", address: "0xM", locator: "server:0xM" },
+                    { type: "server", secret: "no-api-address" },
+                    { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
+                ],
+            }),
+        });
+
+        manager.stripSecretFromRecovery();
+
+        const { signers } = manager.recovery as unknown as { signers: Array<Record<string, unknown>> };
+        expect(signers[0]).toEqual({ type: "server", address: "0xM", locator: "server:0xM" });
+        expect(signers[1]).toEqual({ type: "server", secret: "no-api-address" });
+        expect(signers[2]).toEqual({ type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" });
+    });
+
+    it("adoptQuorumMemberConfig() replaces only the matched member and records the selection", () => {
+        const manager = makeManager({ recovery: quorumRecovery });
+        const onSign = vi.fn();
+
+        manager.adoptQuorumMemberConfig("external-wallet:0xMember", {
+            type: "external-wallet",
+            address: "0xMember",
+            locator: "external-wallet:0xMember",
+            onSign,
+        });
+
+        const { signers } = manager.recovery as unknown as { signers: Array<Record<string, unknown>> };
+        expect(signers[0]).toMatchObject({ type: "external-wallet", address: "0xMember", onSign });
+        expect(signers[1]).toEqual({ type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" });
+        expect(manager.adoptedAssemblableQuorumMember()).toMatchObject({ type: "external-wallet", onSign });
+    });
+
+    it("adoptedAssemblableQuorumMember() returns null when no member was selected this session", () => {
+        expect(makeManager({ recovery: quorumRecovery }).adoptedAssemblableQuorumMember()).toBeNull();
+    });
+
+    it("adoptedAssemblableQuorumMember() skips adopted members that cannot auto-assemble", () => {
+        const manager = makeManager({ recovery: quorumRecovery });
+        // An external-wallet member without an onSign callback cannot be reassembled silently.
+        manager.adoptQuorumMemberConfig("external-wallet:0xMember", {
+            type: "external-wallet",
+            address: "0xMember",
+            locator: "external-wallet:0xMember",
+        });
+        expect(manager.adoptedAssemblableQuorumMember()).toBeNull();
     });
 
     it.each([

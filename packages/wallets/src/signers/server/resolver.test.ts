@@ -39,6 +39,7 @@ const fullConfig = (secret: string): ServerSignerConfig => ({ type: "server", se
 const apiConfig = (address: string): ApiSourcedServerSignerConfig => ({ type: "server", address });
 const makeResolver = (overrides?: {
     apiRecoveryAddress?: string | null;
+    apiQuorumServerMemberAddresses?: string[];
     apiDelegatedAddresses?: string[];
     knownOnChainAddresses?: string[];
 }): ServerSignerResolver =>
@@ -47,6 +48,7 @@ const makeResolver = (overrides?: {
         projectId: "proj_test_123",
         environment: "staging",
         apiRecoveryAddress: overrides?.apiRecoveryAddress ?? null,
+        apiQuorumServerMemberAddresses: overrides?.apiQuorumServerMemberAddresses ?? [],
         apiDelegatedAddresses: overrides?.apiDelegatedAddresses ?? [],
         knownOnChainAddresses: () => overrides?.knownOnChainAddresses ?? [],
     });
@@ -99,10 +101,18 @@ describe("ServerSignerResolver", () => {
         });
         it.each([
             ["legacy matches apiRecoveryAddress", { apiRecoveryAddress: "0xLegacy" }],
+            ["legacy matches a quorum server member address", { apiQuorumServerMemberAddresses: ["0xLegacy"] }],
             ["legacy is a known on-chain address", { knownOnChainAddresses: ["0xLegacy"] }],
         ] as const)("picks legacy and wipes primary when %s", (_t, o) => {
             const recorded = installDual();
             expect(makeResolver(o).resolveDerivation(fullConfig("s")).derivedAddress).toBe("0xLegacy");
+            expectWipedAndKept(recorded[0], "primary", "legacy", 9);
+        });
+        it("caches the legacy derivation as the recovery resolution when it matches a quorum server member", () => {
+            const recorded = installDual();
+            const resolver = makeResolver({ apiQuorumServerMemberAddresses: ["0xLegacy"] });
+            expect(resolver.resolveForUseSigner(fullConfig("s"), [], () => true)).toEqual({ kind: "recovery" });
+            expect(resolver.resolvedRecoveryAddress).toBe("0xLegacy");
             expectWipedAndKept(recorded[0], "primary", "legacy", 9);
         });
         it("picks primary and wipes legacy otherwise", () => {
