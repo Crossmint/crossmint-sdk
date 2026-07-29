@@ -122,6 +122,22 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
 
 /**
+ * A member of a resolved quorum admin signer. API-sourced members carry the identity fields
+ * (per-member `locator`, passkey `id`, server/external-wallet `address`); the index signature
+ * additionally admits runtime fields grafted from the caller's config (server `secret`,
+ * external-wallet `onSign`, passkey `onSignWithPasskey`), which the API cannot store.
+ */
+export type ResolvedQuorumMember = Record<string, unknown> & {
+    type: string;
+    locator?: string;
+    address?: string;
+    email?: string;
+    phone?: string;
+    id?: string;
+    name?: string;
+};
+
+/**
  * A quorum admin signer as **resolved by the API** (read side): members live under `signers`
  * and the derived `quorum:<id>` locator is present. The create-side input counterpart is
  * `QuorumRecoveryConfig`, whose members live under `methods`.
@@ -130,7 +146,7 @@ export type ResolvedQuorumRecoveryConfig = {
     type: "quorum";
     threshold?: number;
     locator?: string;
-    signers: Array<Record<string, unknown> & { type: string }>;
+    signers: ResolvedQuorumMember[];
 };
 
 /**

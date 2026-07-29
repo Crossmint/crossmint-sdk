@@ -20,13 +20,16 @@ import type {
     QuorumMemberConfigForChain,
     QuorumRecoveryConfig,
     RecoveryConfigForChain,
+    ServerSignerConfig,
     SignerConfigForChain,
     ResolvedRecoveryConfigForChain,
 } from "../signers/types";
 import { isQuorumRecovery } from "../signers/types";
+import { matchesQuorumMember } from "../utils/quorum-members";
+import { secureWipe } from "../utils/secure-wipe";
 import { Wallet } from "./wallet";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
-import { compareSignerConfigs, normalizeEmail, normalizeValueForComparison } from "../utils/signer-validation";
+import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -516,40 +519,18 @@ export class WalletFactory {
         candidate: Record<string, unknown> & { type: string },
         chain: C
     ): boolean {
-        if (method.type !== candidate.type) {
-            return false;
-        }
-        if (method.type === "server") {
-            // User-supplied server members carry a secret; the API returns the derived address.
+        // User-supplied server members carry a secret; the API returns the derived address.
+        return matchesQuorumMember(method, candidate, (config: ServerSignerConfig) => {
             const { primary, legacy } = deriveServerSignerCandidates(
-                method,
+                config,
                 chain,
                 this.apiClient.projectId,
                 this.apiClient.environment
             );
-            return (
-                candidate.address === primary.derivedAddress ||
-                (legacy != null && candidate.address === legacy.derivedAddress)
-            );
-        }
-        if (method.type === "passkey") {
-            if (method.id != null) {
-                return candidate.id === method.id;
-            }
-            if (method.name != null) {
-                return candidate.name === method.name;
-            }
-            return true; // field-level checks follow via compareSignerConfigs
-        }
-        if (method.type === "email") {
-            return (
-                method.email == null || normalizeEmail(method.email) === normalizeEmail(String(candidate.email ?? ""))
-            );
-        }
-        if (method.type === "phone") {
-            return method.phone == null || method.phone === candidate.phone;
-        }
-        return method.address === candidate.address; // external-wallet
+            const addresses = [primary.derivedAddress, ...(legacy != null ? [legacy.derivedAddress] : [])];
+            secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
+            return addresses;
+        });
     }
 
     private validateSigners<C extends Chain>(
