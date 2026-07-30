@@ -18,6 +18,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import { ApiClientError, type UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint, useSignerAuth } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
+import { fillRecoveryEmail, recoveryNeedsEmailAutoFill, recoverySigners } from "@/utils";
 import cloneDeep from "lodash.clonedeep";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
@@ -219,17 +220,22 @@ export function CrossmintWalletBaseProvider({
         [showPasskeyHelpers]
     );
 
+    // Covers both a flat passkey recovery and a passkey member inside a quorum recovery.
+    const recoveryIncludesPasskey = recoverySigners(createOnLogin?.recovery).some(
+        (signer) => signer.type === "passkey"
+    );
+
     const updateCallbacks = useMemo(() => {
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.recovery?.type === "passkey" && showPasskeyHelpers) {
+        if (recoveryIncludesPasskey && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.recovery?.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, recoveryIncludesPasskey, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -253,11 +259,8 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signer: WalletCreateArgs<Chain>["recovery"]) => {
-            // TODO(WAL-11294): a quorum recovery containing email/phone members skips WebView
-            // init here. Quorum member signing is not reachable until the quorum approval-loop
-            // work lands; the react provider audit covers initializing the WebView for members.
-            if (signer.type === "email" || signer.type === "phone") {
+        async (recovery: WalletCreateArgs<Chain>["recovery"]) => {
+            if (recoverySigners(recovery).some((signer) => signer.type === "email" || signer.type === "phone")) {
                 await initializeWebView?.();
             }
         },
@@ -444,9 +447,11 @@ export function CrossmintWalletBaseProvider({
             return;
         }
 
-        // Check if any email signer (in recovery or signers array) is missing its email value
+        // Check if any email signer (in recovery — flat or quorum member — or signers array) is
+        // missing its email value. For a quorum, auto-fill applies only when exactly one email
+        // member is incomplete; filling several with the same address would create duplicates.
         const hasEmailSignerNeedingPopulation =
-            (createOnLogin.recovery?.type === "email" && createOnLogin.recovery.email == null) ||
+            recoveryNeedsEmailAutoFill(createOnLogin.recovery) ||
             (createOnLogin.signers?.some((s) => s.type === "email" && s.email == null) ?? false);
 
         if (hasEmailSignerNeedingPopulation) {
@@ -465,9 +470,9 @@ export function CrossmintWalletBaseProvider({
             const userEmail = authBaseContext.user.email;
             const processed = { ...createOnLogin };
 
-            // Populate email on recovery signer if needed
-            if (processed.recovery?.type === "email" && processed.recovery.email == null) {
-                processed.recovery = { ...processed.recovery, email: userEmail };
+            // Populate email on the recovery signer (flat, or the single incomplete quorum member)
+            if (processed.recovery != null) {
+                processed.recovery = fillRecoveryEmail(processed.recovery, userEmail) as typeof processed.recovery;
             }
 
             // Populate email on each signer in the signers array if needed
@@ -492,7 +497,7 @@ export function CrossmintWalletBaseProvider({
         if (processedCreateOnLogin != null) {
             // Guard: don't attempt wallet creation if required signer fields are still missing.
             const { recovery, signers } = processedCreateOnLogin;
-            if (recovery?.type === "external-wallet" && recovery.address == null) {
+            if (recoverySigners(recovery).some((s) => s.type === "external-wallet" && s.address == null)) {
                 return;
             }
             if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {

@@ -141,7 +141,7 @@ const wallet = await wallets.getWallet("0xWalletAddress", {
 
 Wallets SDK uses a two-tier signer model:
 
-- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
+- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key. Can also be a quorum of member signers: `recovery: { type: "quorum", methods: [{ type: "email" }, { type: "phone" }] }` (`threshold` defaults to 1; `api-key` and `device` members are not allowed).
 - **Operational signer** — Low-friction, used for day-to-day signing. Supports server key, external wallet, passkey, and device (browser/mobile only). For server-side (Node.js) usage, use a **server** or **external-wallet** signer.
 
 When no operational signer is available, the recovery signer automatically serves as a fallback for signing.

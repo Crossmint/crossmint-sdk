@@ -15,6 +15,7 @@ import {
     CrossmintWalletBaseContext,
     type UIRenderProps,
     type CreateOnLogin,
+    recoverySigners,
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
 import type { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
@@ -60,11 +61,12 @@ const DEVICE_STORAGE_MEMORY = "memory";
 const PASSKEY_RN_ERROR =
     "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
 
-function hasPasskeySigner(config?: CreateOnLogin): boolean {
+function hasPasskeySigner(config?: Pick<CreateOnLogin, "recovery" | "signers">): boolean {
     if (config == null) {
         return false;
     }
-    if (config.recovery?.type === "passkey") {
+    // recoverySigners covers both a flat passkey recovery and a passkey member inside a quorum.
+    if (recoverySigners(config.recovery).some((s) => s.type === "passkey")) {
         return true;
     }
     if (config.signers?.some((s) => s.type === "passkey")) {
@@ -83,10 +85,10 @@ function PasskeyGuard({ children }: { children: ReactNode }) {
 
     const guardedCreateWallet: typeof baseContext.createWallet = useCallback(
         async (args) => {
-            if (args.recovery?.type === "passkey" || args.signers?.some((s) => s.type === "passkey")) {
+            if (hasPasskeySigner(args as Pick<CreateOnLogin, "recovery" | "signers">)) {
                 throw new Error(PASSKEY_RN_ERROR);
             }
-            return baseContext.createWallet(args);
+            return await baseContext.createWallet(args);
         },
         [baseContext.createWallet]
     );

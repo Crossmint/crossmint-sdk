@@ -119,6 +119,32 @@ function WalletActions() {
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
 
+### `createOnLogin` Configuration
+
+`recovery` accepts a single signer or a quorum of member signers:
+
+```tsx
+<CrossmintWalletProvider
+  createOnLogin={{
+    chain: "base-sepolia",
+    recovery: { type: "email" }, // single recovery signer
+  }}
+>
+
+<CrossmintWalletProvider
+  createOnLogin={{
+    chain: "base-sepolia",
+    recovery: {
+      type: "quorum",
+      methods: [{ type: "email" }, { type: "phone", phone: "+15555550100" }],
+      // threshold defaults to 1; `api-key` and `device` members are not allowed
+    },
+  }}
+>
+```
+
+> **Note:** Passkey signers are not supported in React Native — this includes passkey **members inside a quorum**. Such configs are rejected with an error at mount/creation time.
+
 ## Hooks
 
 ### `useWallet()`
