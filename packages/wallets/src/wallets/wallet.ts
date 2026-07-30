@@ -162,6 +162,8 @@ export class Wallet<C extends Chain> {
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
             addSigner: (deviceSigner) => this.addSigner(deviceSigner),
+            removeSigner: (signerLocator) =>
+                this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
         });

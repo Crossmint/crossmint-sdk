@@ -29,6 +29,7 @@ export type DeviceRecoveryServiceParams<C extends Chain> = {
     serverSignerResolver: ServerSignerResolver;
     signers: () => Promise<WalletSigner[]>;
     addSigner: (signer: SignerConfigForChain<C>) => Promise<unknown>;
+    removeSigner: (signerLocator: string) => Promise<unknown>;
     approveSignature: (signatureId: string) => Promise<unknown>;
     approveTransaction: (transactionId: string) => Promise<unknown>;
 };
@@ -47,6 +48,7 @@ export class DeviceRecoveryService<C extends Chain> {
     #serverSignerResolver: ServerSignerResolver;
     #signers: () => Promise<WalletSigner[]>;
     #addSigner: (signer: SignerConfigForChain<C>) => Promise<unknown>;
+    #removeSigner: (signerLocator: string) => Promise<unknown>;
     #approveSignature: (signatureId: string) => Promise<unknown>;
     #approveTransaction: (transactionId: string) => Promise<unknown>;
 
@@ -58,6 +60,7 @@ export class DeviceRecoveryService<C extends Chain> {
         this.#serverSignerResolver = params.serverSignerResolver;
         this.#signers = params.signers;
         this.#addSigner = params.addSigner;
+        this.#removeSigner = params.removeSigner;
         this.#approveSignature = params.approveSignature;
         this.#approveTransaction = params.approveTransaction;
     }
@@ -161,6 +164,11 @@ export class DeviceRecoveryService<C extends Chain> {
             }
         }
 
+        const existingSigners = await this.#signers();
+        const staleDeviceSignerLocators = existingSigners
+            .map((s) => s.locator)
+            .filter((locator) => locator.startsWith("device:"));
+
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
 
         try {
@@ -214,6 +222,15 @@ export class DeviceRecoveryService<C extends Chain> {
         walletsLogger.info("wallet.recover.device.success", { signerLocator: newDeviceSigner.locator });
 
         this.#status = "resolved";
+
+        for (const staleLocator of staleDeviceSignerLocators) {
+            try {
+                await this.#removeSigner(staleLocator);
+                walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: staleLocator });
+            } catch (error) {
+                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", { signerLocator: staleLocator, error });
+            }
+        }
     }
 
     async resolveAvailability(config: DeviceSignerConfig): Promise<void> {
