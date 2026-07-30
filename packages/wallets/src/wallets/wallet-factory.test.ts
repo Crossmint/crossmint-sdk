@@ -1406,4 +1406,49 @@ describe("WalletFactory - Quorum Recovery", () => {
             ).resolves.toBeDefined();
         });
     });
+
+    describe("createWallet quorum runtime config preservation", () => {
+        it("grafts member runtime fields onto the API members, keeping API identity fields", async () => {
+            mockApiClient.createWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+            const onSign = vi.fn();
+
+            const wallet = await walletFactory.createWallet({
+                chain: "solana",
+                recovery: {
+                    type: "quorum",
+                    threshold: 1,
+                    methods: [
+                        { type: "external-wallet", address: "MemberWallet111", onSign } as never,
+                        { type: "server", secret: TEST_SECRET },
+                        { type: "email", email: "Alice@GMAIL.com" },
+                    ],
+                },
+            });
+
+            const recovery = wallet.recovery as unknown as { signers: Array<Record<string, unknown>> };
+            const externalMember = recovery.signers.find((member) => member.type === "external-wallet");
+            expect(externalMember).toMatchObject({
+                address: "MemberWallet111",
+                locator: "external-wallet:MemberWallet111",
+                onSign,
+            });
+            const serverMember = recovery.signers.find((member) => member.type === "server");
+            expect(serverMember).toMatchObject({
+                address: serverMemberAddress,
+                locator: `server:${serverMemberAddress}`,
+                secret: TEST_SECRET,
+            });
+            const emailMember = recovery.signers.find((member) => member.type === "email");
+            // API identity fields win over the caller's denormalized input.
+            expect(emailMember).toMatchObject({ email: "alice@gmail.com", locator: "email:alice@gmail.com" });
+        });
+
+        it("keeps the API members verbatim when no recovery config is provided", async () => {
+            mockApiClient.getWallet.mockResolvedValue(quorumWalletResponse(matchingQuorumAdminSigner));
+
+            const wallet = await walletFactory.getWallet({ chain: "solana" });
+
+            expect(wallet.recovery).toEqual(matchingQuorumAdminSigner);
+        });
+    });
 });
