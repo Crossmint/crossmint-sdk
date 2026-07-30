@@ -238,13 +238,6 @@ export class DeviceRecoveryService<C extends Chain> {
         }
     }
 
-    /**
-     * Picks which registered device signer should be removed after a successful recovery, if any.
-     * With exactly one registered, that one is stale by definition. With several (e.g. other
-     * devices already using this wallet), only remove one if exactly one of their names matches
-     * this device's current name — otherwise we can't tell which is stale vs. still active
-     * elsewhere, so none are removed.
-     */
     #resolveStaleDeviceSignerLocator(
         existingDeviceSigners: Extract<WalletSigner, { type: "device" }>[],
         deviceSignerKeyStorage: DeviceSignerKeyStorage
