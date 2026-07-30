@@ -1040,6 +1040,19 @@ export class Wallet<C extends Chain> {
             configSigners.map(async (configSigner) => {
                 try {
                     const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
+                    if (signerState.signer == null) {
+                        return null;
+                    }
+                    // The per-signer GET response doesn't include `name`, but the wallet-level
+                    // delegatedSigners entry does — carry it through.
+                    if (
+                        signerState.signer.type === "device" &&
+                        signerState.signer.name == null &&
+                        "name" in configSigner &&
+                        configSigner.name != null
+                    ) {
+                        return { ...signerState.signer, name: configSigner.name };
+                    }
                     return signerState.signer;
                 } catch (error) {
                     walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
