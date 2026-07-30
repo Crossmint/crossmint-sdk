@@ -1,6 +1,6 @@
 /**
- * Credentials for a KYC session. Obtained from an order's
- * `payment.preparation.kyc`, either directly or via `onKycRequired`.
+ * Credentials for a KYC session, read from an order's `payment.preparation.kyc`.
+ * A merchant taking over the KYC step gets them from `useCrossmintCheckout()`.
  */
 export type KycCredentials = { provider: "persona"; inquiryId: string; sessionToken?: string };
 
