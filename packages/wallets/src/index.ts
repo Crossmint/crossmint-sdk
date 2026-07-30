@@ -44,6 +44,7 @@ export type {
     ApproveOptions,
     AddSignerOptions,
     RemoveSignerOptions,
+    UseSignerOptions,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

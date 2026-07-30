@@ -8,11 +8,12 @@ import {
     type InternalSignerConfig,
     isApiSourcedServerSignerConfig,
     OtpValidationError,
+    type RecoverySignerConfigForChain,
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -272,31 +273,13 @@ export class DeviceRecoveryService<C extends Chain> {
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
-        const recovery = this.#signerManager.recovery;
-        if (recovery.type === "quorum") {
-            throw new QuorumSignerNotSupportedError(
-                "Cannot resume pending approval with a quorum recovery signer. " +
-                    "Quorum signing is not yet supported by this SDK version."
-            );
-        }
-        if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
-            throw new Error(
-                "Cannot resume pending approval: no secret available. " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
-            );
-        }
-        const signerDescriptor = getSignerDescriptor<C>(recovery.type);
+        const recoveryConfig = this.#resolveResumeRecoveryConfig();
+        const signerDescriptor = getSignerDescriptor<C>(recoveryConfig.type as SignerConfigForChain<C>["type"]);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
-        if (
-            recovery.type === "external-wallet" &&
-            !signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)
-        ) {
-            throw new Error(
-                "Cannot resume pending approval: no onSign callback available. " +
-                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
-            );
-        }
-        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
+        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(
+            recoveryConfig as SignerConfigForChain<C>,
+            signerDescriptorContext
+        );
         this.#signerManager.setActiveSigner(
             assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage)
         );
@@ -320,6 +303,43 @@ export class DeviceRecoveryService<C extends Chain> {
             signerLocator: deviceSigner.locator(),
             resumed: true,
         });
+    }
+
+    /**
+     * The recovery-side config to assemble for approving a pending device-signer operation.
+     * For a quorum, only a member the caller already selected via useSigner() this session may
+     * be reused — never one picked silently on their behalf.
+     */
+    #resolveResumeRecoveryConfig(): RecoverySignerConfigForChain<C> {
+        const recovery = this.#signerManager.recovery;
+        if (recovery.type === "quorum") {
+            const member = this.#signerManager.adoptedAssemblableQuorumMember();
+            if (member == null) {
+                throw new Error(
+                    "This device signer has a pending approval that must be signed by a member of this wallet's " +
+                        `quorum admin signer [${(this.#signerManager.quorumMemberLocators() ?? []).join(", ")}]. ` +
+                        "Call wallet.useSigner() with the config of the member you hold, then select the device " +
+                        'again with wallet.useSigner({ type: "device" }) and retry.'
+                );
+            }
+            return member as RecoverySignerConfigForChain<C>;
+        }
+        if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
+            throw new Error(
+                "Cannot resume pending approval: no secret available. " +
+                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+            );
+        }
+        if (
+            recovery.type === "external-wallet" &&
+            !getSignerDescriptor<C>(recovery.type).canAutoAssemble(recovery, this.#signerManager.descriptorContext())
+        ) {
+            throw new Error(
+                "Cannot resume pending approval: no onSign callback available. " +
+                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
+            );
+        }
+        return recovery;
     }
 
     async #findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
