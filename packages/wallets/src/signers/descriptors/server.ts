@@ -39,7 +39,9 @@ export const serverSignerDescriptor: SignerDescriptor = {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
         ctx: SignerDescriptorContext<C>
     ): boolean {
-        return !isApiSourcedServerSignerConfig(config) || ctx.serverSigners.hasRecoveryResolution;
+        // Per-address, not a global flag: the resolver caches one admin identity, and with
+        // quorum server members another member's cache must not report this one assemblable.
+        return !isApiSourcedServerSignerConfig(config) || ctx.serverSigners.resolvedRecoveryAddress === config.address;
     },
 
     addSignerPayload<C extends Chain>(

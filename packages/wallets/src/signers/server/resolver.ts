@@ -52,11 +52,16 @@ export class ServerSignerResolver {
 
     resolveDerivation(config: ServerSignerConfig | ApiSourcedServerSignerConfig): DerivedServerSigner {
         if (isApiSourcedServerSignerConfig(config)) {
-            if (this.#resolvedRecoveryServerSigner != null) {
-                return this.#resolvedRecoveryServerSigner;
+            // The cache holds one admin identity; with quorum server members there can be
+            // several, so serve it only for the address it was resolved for — never
+            // substitute another member's key material.
+            const cached = this.#resolvedRecoveryServerSigner;
+            if (cached != null && cached.derivedAddress === config.address) {
+                return cached;
             }
             throw new Error(
-                "Cannot resolve server signer derivation: no secret available and no cached recovery resolution. " +
+                `Cannot resolve server signer derivation for "server:${config.address}": ` +
+                    "no secret available and no cached recovery resolution for that address. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first.'
             );
         }

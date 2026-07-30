@@ -223,12 +223,14 @@ describe("SignerManager", () => {
         expect(manager.recovery).toBe(recovery);
     });
 
-    it("stripSecretFromRecovery() strips resolved server member secrets inside a quorum", () => {
+    it("stripSecretFromRecovery() strips only the resolved server member's secret inside a quorum", () => {
         const manager = makeManager({
+            serverSignerResolver: makeResolver({ resolvedRecoveryAddress: "0xM" }),
             recovery: asRecoveryConfig({
                 type: "quorum",
                 signers: [
                     { type: "server", secret: "topsecret", address: "0xM", locator: "server:0xM" },
+                    { type: "server", secret: "unresolved", address: "0xOther", locator: "server:0xOther" },
                     { type: "server", secret: "no-api-address" },
                     { type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" },
                 ],
@@ -239,8 +241,15 @@ describe("SignerManager", () => {
 
         const { signers } = manager.recovery as unknown as { signers: Array<Record<string, unknown>> };
         expect(signers[0]).toEqual({ type: "server", address: "0xM", locator: "server:0xM" });
-        expect(signers[1]).toEqual({ type: "server", secret: "no-api-address" });
-        expect(signers[2]).toEqual({ type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" });
+        // The resolver caches a single derivation — a member it never resolved keeps its secret.
+        expect(signers[1]).toEqual({
+            type: "server",
+            secret: "unresolved",
+            address: "0xOther",
+            locator: "server:0xOther",
+        });
+        expect(signers[2]).toEqual({ type: "server", secret: "no-api-address" });
+        expect(signers[3]).toEqual({ type: "email", email: "alice@gmail.com", locator: "email:alice@gmail.com" });
     });
 
     it("adoptQuorumMemberConfig() replaces only the matched member and records the selection", () => {
@@ -273,6 +282,46 @@ describe("SignerManager", () => {
             locator: "external-wallet:0xMember",
         });
         expect(manager.adoptedAssemblableQuorumMember()).toBeNull();
+    });
+
+    it.each([
+        ["another member's derivation is the cached one", "0xOtherMember", null],
+        ["its own derivation is the cached one", "0xM", { type: "server", address: "0xM" }],
+    ])(
+        "adoptedAssemblableQuorumMember() with an adopted secret-less server member when %s",
+        (_name, resolvedRecoveryAddress, expected) => {
+            const serverQuorum = asRecoveryConfig({
+                type: "quorum",
+                signers: [{ type: "server", address: "0xM", locator: "server:0xM" }],
+            });
+            const manager = makeManager({
+                serverSignerResolver: makeResolver({ resolvedRecoveryAddress }),
+                recovery: serverQuorum,
+            });
+            manager.adoptQuorumMemberConfig("server:0xM", { type: "server", address: "0xM", locator: "server:0xM" });
+            if (expected == null) {
+                expect(manager.adoptedAssemblableQuorumMember()).toBeNull();
+            } else {
+                expect(manager.adoptedAssemblableQuorumMember()).toMatchObject(expected);
+            }
+        }
+    );
+
+    it("adoptQuorumMemberConfig() with a locator matching no member records nothing", () => {
+        const manager = makeManager({ recovery: quorumRecovery });
+
+        manager.adoptQuorumMemberConfig("external-wallet:0xNobody", {
+            type: "external-wallet",
+            address: "0xNobody",
+            locator: "external-wallet:0xNobody",
+            onSign: vi.fn(),
+        });
+
+        expect(manager.recovery).toBe(quorumRecovery);
+        expect(manager.adoptedAssemblableQuorumMember()).toBeNull();
+        expect(walletsLogger.warn).toHaveBeenCalledWith("signerManager.adoptQuorumMemberConfig.noSuchMember", {
+            memberLocator: "external-wallet:0xNobody",
+        });
     });
 
     it.each([

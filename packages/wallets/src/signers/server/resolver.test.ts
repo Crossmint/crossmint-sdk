@@ -83,9 +83,19 @@ describe("ServerSignerResolver", () => {
         });
         it("throws the exact message when api-sourced config has no cached recovery resolution", () => {
             expect(() => makeResolver().resolveDerivation(apiConfig("0xSome"))).toThrow(
-                "Cannot resolve server signer derivation: no secret available and no cached recovery resolution. " +
+                'Cannot resolve server signer derivation for "server:0xSome": ' +
+                    "no secret available and no cached recovery resolution for that address. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first.'
             );
+        });
+        it("refuses to serve the cached recovery resolution for a different member's address", () => {
+            const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
+            const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
+            cacheRecovery(resolver, recorded, "rec");
+            expect(() => resolver.resolveDerivation(apiConfig("0xOtherMember"))).toThrow(
+                /no cached recovery resolution for that address/
+            );
+            expect(resolver.resolveDerivation(apiConfig("0xRec")).derivedAddress).toBe("0xRec");
         });
         it("returns the cache hit and wipes both fresh candidates", () => {
             const resolver = makeResolver({ apiRecoveryAddress: "0xRecPrimary" });

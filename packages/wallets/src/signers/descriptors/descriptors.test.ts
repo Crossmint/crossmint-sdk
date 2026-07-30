@@ -20,7 +20,7 @@ const cfg = (c: object) => c as unknown as Config;
 function makeCtx(
     overrides: {
         deviceSignerKeyStorage?: DeviceSignerKeyStorage;
-        hasRecoveryResolution?: boolean;
+        resolvedRecoveryAddress?: string | null;
         apiLocator?: ServerSignerResolver["apiLocator"];
         candidateAddresses?: ServerSignerResolver["candidateAddresses"];
     } = {}
@@ -34,7 +34,7 @@ function makeCtx(
         deviceSignerKeyStorage: overrides.deviceSignerKeyStorage,
         serverSigners: {
             keyMaterialForAssembly: vi.fn(() => SERVER_KEY_MATERIAL),
-            hasRecoveryResolution: overrides.hasRecoveryResolution ?? false,
+            resolvedRecoveryAddress: overrides.resolvedRecoveryAddress ?? null,
             apiLocator: overrides.apiLocator ?? vi.fn(() => "server:0xDerivedServer"),
             candidateAddresses: overrides.candidateAddresses ?? vi.fn(() => []),
         } as unknown as ServerSignerResolver,
@@ -161,12 +161,15 @@ it.each<[name: string, config: Config, expected: boolean]>([
     expect(getSignerDescriptor("external-wallet").canAutoAssemble(config as never, makeCtx())).toBe(expected);
 });
 
-it.each<[name: string, config: Config, hasRecoveryResolution: boolean, expected: boolean]>([
-    ["full config", cfg({ type: "server", secret: "s" }), false, true],
-    ["api-sourced without recovery resolution", cfg({ type: "server", address: "0xabc" }), false, false],
-    ["api-sourced with recovery resolution", cfg({ type: "server", address: "0xabc" }), true, true],
-])("canAutoAssemble: server %s", (_name, config, hasRecoveryResolution, expected) => {
-    const ctx = makeCtx({ hasRecoveryResolution });
+it.each<[name: string, config: Config, resolvedRecoveryAddress: string | null, expected: boolean]>([
+    ["full config", cfg({ type: "server", secret: "s" }), null, true],
+    ["api-sourced without recovery resolution", cfg({ type: "server", address: "0xabc" }), null, false],
+    ["api-sourced with its own recovery resolution", cfg({ type: "server", address: "0xabc" }), "0xabc", true],
+    // A resolution cached for another admin identity (e.g. a different quorum server member)
+    // must not report this one assemblable.
+    ["api-sourced with another address's resolution", cfg({ type: "server", address: "0xabc" }), "0xOther", false],
+])("canAutoAssemble: server %s", (_name, config, resolvedRecoveryAddress, expected) => {
+    const ctx = makeCtx({ resolvedRecoveryAddress });
     expect(getSignerDescriptor("server").canAutoAssemble(config as never, ctx)).toBe(expected);
 });
 

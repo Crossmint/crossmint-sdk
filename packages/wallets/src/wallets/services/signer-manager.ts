@@ -118,6 +118,10 @@ export class SignerManager<C extends Chain> {
         if (this.#recovery.type !== "quorum") {
             return;
         }
+        if (!this.#recovery.signers.some((member) => getQuorumMemberLocator(member) === memberLocator)) {
+            walletsLogger.warn("signerManager.adoptQuorumMemberConfig.noSuchMember", { memberLocator });
+            return;
+        }
         this.#recovery = {
             ...this.#recovery,
             signers: this.#recovery.signers.map((member) =>
@@ -153,11 +157,17 @@ export class SignerManager<C extends Chain> {
         if (this.#recovery.type === "quorum") {
             // Per-member counterpart of the single-signer strip below: once a server member's
             // derivation is resolved (and cached in the resolver), its secret is no longer needed.
+            // Only the member whose derivation is the cached one is stripped — the resolver holds
+            // a single resolution, so other members' secrets must survive until they are selected.
             // Members without an API address (no-API-config fallback path) are left untouched.
+            const resolvedRecoveryAddress = this.#serverSignerResolver.resolvedRecoveryAddress;
             this.#recovery = {
                 ...this.#recovery,
                 signers: this.#recovery.signers.map((member) =>
-                    member.type === "server" && "secret" in member && member.address != null
+                    member.type === "server" &&
+                    "secret" in member &&
+                    member.address != null &&
+                    member.address === resolvedRecoveryAddress
                         ? {
                               type: "server",
                               address: member.address,
