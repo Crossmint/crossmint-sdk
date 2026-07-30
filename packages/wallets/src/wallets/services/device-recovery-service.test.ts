@@ -277,6 +277,16 @@ describe("DeviceRecoveryService", () => {
             await service.recover();
             expect(removeSigner).not.toHaveBeenCalled();
         });
+
+        it("does not remove any device signer when multiple are already registered", async () => {
+            const signers = vi
+                .fn()
+                .mockResolvedValue([{ locator: "device:otherDeviceKey" }, { locator: "device:yetAnotherKey" }]);
+            const removeSigner = vi.fn();
+            const { service } = setup({ signers, removeSigner });
+            await service.recover();
+            expect(removeSigner).not.toHaveBeenCalled();
+        });
     });
 
     describe("recover() resume guards", () => {

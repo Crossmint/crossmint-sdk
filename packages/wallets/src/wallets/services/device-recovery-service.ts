@@ -165,9 +165,14 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingSigners = await this.#signers();
-        const staleDeviceSignerLocators = existingSigners
+        const existingDeviceSignerLocators = existingSigners
             .map((s) => s.locator)
             .filter((locator) => locator.startsWith("device:"));
+        // Only remove the previous device signer when it's the sole one registered. With more
+        // than one (e.g. another device already using this wallet), we can't tell which one is
+        // actually stale vs. still in active use elsewhere, so leave all of them in place.
+        const staleDeviceSignerLocator =
+            existingDeviceSignerLocators.length === 1 ? existingDeviceSignerLocators[0] : undefined;
 
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
 
@@ -223,12 +228,15 @@ export class DeviceRecoveryService<C extends Chain> {
 
         this.#status = "resolved";
 
-        for (const staleLocator of staleDeviceSignerLocators) {
+        if (staleDeviceSignerLocator != null) {
             try {
-                await this.#removeSigner(staleLocator);
-                walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: staleLocator });
+                await this.#removeSigner(staleDeviceSignerLocator);
+                walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: staleDeviceSignerLocator });
             } catch (error) {
-                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", { signerLocator: staleLocator, error });
+                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", {
+                    signerLocator: staleDeviceSignerLocator,
+                    error,
+                });
             }
         }
     }
