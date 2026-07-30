@@ -182,6 +182,7 @@ export type Signer =
           locator: string;
           status: SignerStatus;
           scopes?: Scope[];
+          name?: string;
       }
     | {
           type: "server";

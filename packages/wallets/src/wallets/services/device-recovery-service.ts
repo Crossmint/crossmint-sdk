@@ -165,14 +165,11 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingSigners = await this.#signers();
-        const existingDeviceSignerLocators = existingSigners
-            .map((s) => s.locator)
-            .filter((locator) => locator.startsWith("device:"));
-        // Only remove the previous device signer when it's the sole one registered. With more
-        // than one (e.g. another device already using this wallet), we can't tell which one is
-        // actually stale vs. still in active use elsewhere, so leave all of them in place.
-        const staleDeviceSignerLocator =
-            existingDeviceSignerLocators.length === 1 ? existingDeviceSignerLocators[0] : undefined;
+        const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
+        const staleDeviceSignerLocator = this.#resolveStaleDeviceSignerLocator(
+            existingDeviceSigners,
+            deviceSignerKeyStorage
+        );
 
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
 
@@ -239,6 +236,29 @@ export class DeviceRecoveryService<C extends Chain> {
                 });
             }
         }
+    }
+
+    /**
+     * Picks which registered device signer should be removed after a successful recovery, if any.
+     * With exactly one registered, that one is stale by definition. With several (e.g. other
+     * devices already using this wallet), only remove one if exactly one of their names matches
+     * this device's current name — otherwise we can't tell which is stale vs. still active
+     * elsewhere, so none are removed.
+     */
+    #resolveStaleDeviceSignerLocator(
+        existingDeviceSigners: Extract<WalletSigner, { type: "device" }>[],
+        deviceSignerKeyStorage: DeviceSignerKeyStorage
+    ): string | undefined {
+        if (existingDeviceSigners.length === 0) {
+            return undefined;
+        }
+        if (existingDeviceSigners.length === 1) {
+            return existingDeviceSigners[0].locator;
+        }
+
+        const currentDeviceName = deviceSignerKeyStorage.getDeviceName();
+        const matchingSigners = existingDeviceSigners.filter((s) => s.name === currentDeviceName);
+        return matchingSigners.length === 1 ? matchingSigners[0].locator : undefined;
     }
 
     async resolveAvailability(config: DeviceSignerConfig): Promise<void> {
