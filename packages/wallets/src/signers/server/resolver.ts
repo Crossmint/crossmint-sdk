@@ -14,6 +14,7 @@ export class ServerSignerResolver {
     readonly #projectId: string;
     readonly #environment: string;
     readonly #apiRecoveryAddress: string | null;
+    readonly #apiQuorumServerMemberAddresses: string[];
     readonly #apiDelegatedAddresses: string[];
     readonly #knownOnChainAddresses: () => string[];
 
@@ -25,6 +26,7 @@ export class ServerSignerResolver {
         projectId: string;
         environment: string;
         apiRecoveryAddress: string | null;
+        apiQuorumServerMemberAddresses?: string[];
         apiDelegatedAddresses: string[];
         knownOnChainAddresses: () => string[];
     }) {
@@ -32,8 +34,16 @@ export class ServerSignerResolver {
         this.#projectId = params.projectId;
         this.#environment = params.environment;
         this.#apiRecoveryAddress = params.apiRecoveryAddress;
+        this.#apiQuorumServerMemberAddresses = params.apiQuorumServerMemberAddresses ?? [];
         this.#apiDelegatedAddresses = params.apiDelegatedAddresses;
         this.#knownOnChainAddresses = params.knownOnChainAddresses;
+    }
+
+    // The admin identity is either the single recovery signer's address or any quorum
+    // member's — a legacy derivation matching either must win over the primary, so the
+    // assembled adapter's locator lines up with the API's member locator.
+    #isAdminAddress(address: string): boolean {
+        return address === this.#apiRecoveryAddress || this.#apiQuorumServerMemberAddresses.includes(address);
     }
 
     deriveCandidates(config: ServerSignerConfig): { primary: DerivedServerSigner; legacy: DerivedServerSigner | null } {
@@ -42,11 +52,16 @@ export class ServerSignerResolver {
 
     resolveDerivation(config: ServerSignerConfig | ApiSourcedServerSignerConfig): DerivedServerSigner {
         if (isApiSourcedServerSignerConfig(config)) {
-            if (this.#resolvedRecoveryServerSigner != null) {
-                return this.#resolvedRecoveryServerSigner;
+            // The cache holds one admin identity; with quorum server members there can be
+            // several, so serve it only for the address it was resolved for — never
+            // substitute another member's key material.
+            const cached = this.#resolvedRecoveryServerSigner;
+            if (cached != null && cached.derivedAddress === config.address) {
+                return cached;
             }
             throw new Error(
-                "Cannot resolve server signer derivation: no secret available and no cached recovery resolution. " +
+                `Cannot resolve server signer derivation for "server:${config.address}": ` +
+                    "no secret available and no cached recovery resolution for that address. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first.'
             );
         }
@@ -62,7 +77,7 @@ export class ServerSignerResolver {
         }
 
         if (legacy != null) {
-            if (legacy.derivedAddress === this.#apiRecoveryAddress) {
+            if (this.#isAdminAddress(legacy.derivedAddress)) {
                 secureWipe(primary.derivedKeyBytes);
                 return legacy;
             }
@@ -129,7 +144,7 @@ export class ServerSignerResolver {
     }
 
     #selectRecovery(primary: DerivedServerSigner, legacy: DerivedServerSigner | null): DerivedServerSigner {
-        if (this.#apiRecoveryAddress != null && legacy != null && legacy.derivedAddress === this.#apiRecoveryAddress) {
+        if (legacy != null && this.#isAdminAddress(legacy.derivedAddress)) {
             this.#resolvedRecoveryServerSigner = legacy;
             this.#wipeNonSelectedCandidate(legacy, primary);
             return legacy;
