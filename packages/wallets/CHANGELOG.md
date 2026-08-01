@@ -1,5 +1,16 @@
 # @crossmint/wallets-sdk
 
+## 1.11.0
+
+### Minor Changes
+
+- 305a238: Device signer recovery now removes the old, unusable device signer from the wallet after successfully registering its replacement, instead of leaving it registered indefinitely.
+
+### Patch Changes
+
+- 0fe195e: Regenerate OpenAPI types with quorum boundary shapes. Approving with a quorum signer now throws `QuorumSignerNotSupportedError` until quorum approval support ships.
+  - @crossmint/common-sdk-auth@1.1.15
+
 ## 1.10.0
 
 ### Minor Changes

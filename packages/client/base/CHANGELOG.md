@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.6.0
+
+### Minor Changes
+
+- 4028c8b: Added `GlobalMessage` display rule to `EmbeddedCheckoutV3AppearanceRules`.
+
 ## 2.5.1
 
 ### Patch Changes

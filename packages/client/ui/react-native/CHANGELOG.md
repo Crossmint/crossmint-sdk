@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.5.1
+
+### Patch Changes
+
+- 305a238: Bumped the pinned `CrossmintDeviceSigner` native module to 1.1.3, which fixes `getKey`/`hasKey` to correctly report a Secure Enclave key as unusable when it's present but broken, and fixes a stale signer locator being submitted on device signer approvals.
+- 91eb56f: Fixed device signer native errors reaching JS as "undefined reason" instead of the actual failure message, by overriding `reason` on the thrown Expo `Exception` instead of relying on `description`.
+- Updated dependencies [4028c8b]
+- Updated dependencies [0fe195e]
+- Updated dependencies [305a238]
+  - @crossmint/client-sdk-base@2.6.0
+  - @crossmint/wallets-sdk@1.11.0
+  - @crossmint/client-sdk-auth@1.3.17
+  - @crossmint/client-sdk-react-base@2.2.2
+  - @crossmint/common-sdk-auth@1.1.15
+
 ## 1.5.0
 
 ### Minor Changes
