@@ -53,6 +53,7 @@ function makeStorage(overrides: Record<string, unknown> = {}) {
         hasKey: vi.fn().mockResolvedValue(false),
         mapAddressToKey: vi.fn().mockResolvedValue(undefined),
         deleteKey: vi.fn().mockResolvedValue(undefined),
+        getDeviceName: vi.fn().mockReturnValue("This Device"),
         ...overrides,
     };
 }
@@ -63,6 +64,7 @@ type SetupOverrides = {
     hasRecoveryResolution?: boolean;
     signers?: ReturnType<typeof vi.fn>;
     addSigner?: ReturnType<typeof vi.fn>;
+    removeSigner?: ReturnType<typeof vi.fn>;
     approveSignature?: ReturnType<typeof vi.fn>;
     approveTransaction?: ReturnType<typeof vi.fn>;
 };
@@ -74,6 +76,7 @@ function setup(overrides: SetupOverrides = {}) {
     const serverSignerResolver = { hasRecoveryResolution: overrides.hasRecoveryResolution ?? false };
     const signers = overrides.signers ?? vi.fn().mockResolvedValue([]);
     const addSigner = overrides.addSigner ?? vi.fn().mockResolvedValue(undefined);
+    const removeSigner = overrides.removeSigner ?? vi.fn().mockResolvedValue(undefined);
     const approveSignature = overrides.approveSignature ?? vi.fn().mockResolvedValue(undefined);
     const approveTransaction = overrides.approveTransaction ?? vi.fn().mockResolvedValue(undefined);
     const service = new DeviceRecoveryService({
@@ -84,10 +87,21 @@ function setup(overrides: SetupOverrides = {}) {
         serverSignerResolver,
         signers,
         addSigner,
+        removeSigner,
         approveSignature,
         approveTransaction,
     } as unknown as DeviceRecoveryServiceParams<Chain>);
-    return { service, storage, options, signerManager, signers, addSigner, approveSignature, approveTransaction };
+    return {
+        service,
+        storage,
+        options,
+        signerManager,
+        signers,
+        addSigner,
+        removeSigner,
+        approveSignature,
+        approveTransaction,
+    };
 }
 
 beforeEach(() => {
@@ -240,6 +254,65 @@ describe("DeviceRecoveryService", () => {
             const { service, storage } = setup({ addSigner });
             await expect(service.recover()).rejects.toBe(error);
             expect(storage?.deleteKey).not.toHaveBeenCalled();
+        });
+
+        it("removes the stale device signer after successfully registering its replacement", async () => {
+            const signers = vi.fn().mockResolvedValue([{ type: "device", locator: "device:oldkey" }]);
+            const removeSigner = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({ signers, removeSigner });
+            await service.recover();
+            expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+        });
+
+        it("does not fail recovery when removing the stale device signer fails", async () => {
+            const signers = vi.fn().mockResolvedValue([{ type: "device", locator: "device:oldkey" }]);
+            const removeSigner = vi.fn().mockRejectedValue(new Error("backend unavailable"));
+            const { service } = setup({ signers, removeSigner });
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+        });
+
+        it("does not attempt removal when there was no previously-registered device signer", async () => {
+            const removeSigner = vi.fn();
+            const { service } = setup({ removeSigner });
+            await service.recover();
+            expect(removeSigner).not.toHaveBeenCalled();
+        });
+
+        it("does not remove any device signer when multiple are registered and none match this device's name", async () => {
+            const signers = vi.fn().mockResolvedValue([
+                { type: "device", locator: "device:otherDeviceKey", name: "Someone's iPad" },
+                { type: "device", locator: "device:yetAnotherKey", name: "Someone's Android" },
+            ]);
+            const storage = makeStorage({ getDeviceName: vi.fn().mockReturnValue("This Device") });
+            const removeSigner = vi.fn();
+            const { service } = setup({ storage, signers, removeSigner });
+            await service.recover();
+            expect(removeSigner).not.toHaveBeenCalled();
+        });
+
+        it("removes the one matching device signer by name when multiple are registered", async () => {
+            const signers = vi.fn().mockResolvedValue([
+                { type: "device", locator: "device:myOldKey", name: "This Device" },
+                { type: "device", locator: "device:someoneElsesKey", name: "Someone's iPad" },
+            ]);
+            const storage = makeStorage({ getDeviceName: vi.fn().mockReturnValue("This Device") });
+            const removeSigner = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({ storage, signers, removeSigner });
+            await service.recover();
+            expect(removeSigner).toHaveBeenCalledWith("device:myOldKey");
+        });
+
+        it("does not remove any device signer when more than one name matches this device", async () => {
+            const signers = vi.fn().mockResolvedValue([
+                { type: "device", locator: "device:key1", name: "This Device" },
+                { type: "device", locator: "device:key2", name: "This Device" },
+            ]);
+            const storage = makeStorage({ getDeviceName: vi.fn().mockReturnValue("This Device") });
+            const removeSigner = vi.fn();
+            const { service } = setup({ storage, signers, removeSigner });
+            await service.recover();
+            expect(removeSigner).not.toHaveBeenCalled();
         });
     });
 
