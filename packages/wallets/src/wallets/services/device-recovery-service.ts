@@ -149,7 +149,8 @@ export class DeviceRecoveryService<C extends Chain> {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
 
-        const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage);
+        const existingSigners = await this.#signers();
+        const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage, existingSigners);
         if (matchedSigner != null) {
             if (await this.#checkAndResumeDeviceSigner(matchedSigner)) {
                 this.#signerManager.setActiveSigner(matchedSigner);
@@ -164,7 +165,6 @@ export class DeviceRecoveryService<C extends Chain> {
             }
         }
 
-        const existingSigners = await this.#signers();
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
         const staleDeviceSignerLocator = this.#resolveStaleDeviceSignerLocator(
             existingDeviceSigners,
@@ -354,8 +354,10 @@ export class DeviceRecoveryService<C extends Chain> {
         });
     }
 
-    async #findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
-        const existingSigners = await this.#signers();
+    async #findLocalDeviceSigner(
+        deviceSignerKeyStorage: DeviceSignerKeyStorage,
+        existingSigners: WalletSigner[]
+    ): Promise<SignerAdapter | null> {
         const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
 
         for (const walletSigner of deviceSigners) {
