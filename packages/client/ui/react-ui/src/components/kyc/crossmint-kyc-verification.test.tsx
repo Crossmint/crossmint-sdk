@@ -80,29 +80,42 @@ describe("<CrossmintKycVerification />", () => {
             const onComplete = vi.fn();
             render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={onComplete} />);
 
-            emit("kyc:completed", { status: "completed" });
+            emit("kyc:completed", { status: "verified" });
 
-            expect(onComplete).toHaveBeenCalledWith({ status: "completed" });
+            expect(onComplete).toHaveBeenCalledWith({ status: "verified" });
         });
 
-        test("forwards a failed completion without turning it into an error", () => {
+        test("forwards a non-verified completion without turning it into an error", () => {
             const onComplete = vi.fn();
             const onError = vi.fn();
             render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={onComplete} onError={onError} />);
 
-            emit("kyc:completed", { status: "failed" });
+            emit("kyc:completed", { status: "pending-review" });
 
-            expect(onComplete).toHaveBeenCalledWith({ status: "failed" });
+            expect(onComplete).toHaveBeenCalledWith({ status: "pending-review" });
             expect(onError).not.toHaveBeenCalled();
         });
 
-        test("forwards kyc:error to onError", () => {
+        test("forwards kyc:cancelled to onCancel", () => {
+            const onCancel = vi.fn();
+            render(<CrossmintKycVerification credentials={CREDENTIALS} onCancel={onCancel} />);
+
+            emit("kyc:cancelled", {});
+
+            expect(onCancel).toHaveBeenCalled();
+        });
+
+        test("forwards kyc:error to onError with the retriable bit intact", () => {
             const onError = vi.fn();
             render(<CrossmintKycVerification credentials={CREDENTIALS} onError={onError} />);
 
-            emit("kyc:error", { message: "boom" });
+            emit("kyc:error", { retriable: false, reason: "widget-unavailable", message: "boom" });
 
-            expect(onError).toHaveBeenCalledWith({ message: "boom" });
+            expect(onError).toHaveBeenCalledWith({
+                retriable: false,
+                reason: "widget-unavailable",
+                message: "boom",
+            });
         });
 
         test("applies the relayed height to the iframe", () => {
@@ -120,10 +133,10 @@ describe("<CrossmintKycVerification />", () => {
 
             unmount();
 
-            for (const event of ["ui:height.changed", "kyc:ready", "kyc:completed", "kyc:error"]) {
+            for (const event of ["ui:height.changed", "kyc:ready", "kyc:completed", "kyc:cancelled", "kyc:error"]) {
                 expect(iframeClient.off).toHaveBeenCalledWith(`listener-id:${event}`);
             }
-            expect(iframeClient.off).toHaveBeenCalledTimes(4);
+            expect(iframeClient.off).toHaveBeenCalledTimes(5);
         });
     });
 });

@@ -33,12 +33,14 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
         const heightListener = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
         const readyListener = iframeClient.on("kyc:ready", () => props.onReady?.());
         const completedListener = iframeClient.on("kyc:completed", (data) => props.onComplete?.(data));
+        const cancelledListener = iframeClient.on("kyc:cancelled", () => props.onCancel?.());
         const errorListener = iframeClient.on("kyc:error", (data) => props.onError?.(data));
 
         return () => {
             iframeClient.off(heightListener);
             iframeClient.off(readyListener);
             iframeClient.off(completedListener);
+            iframeClient.off(cancelledListener);
             iframeClient.off(errorListener);
         };
     }, [iframeClient]);

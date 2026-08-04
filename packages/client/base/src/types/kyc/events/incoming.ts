@@ -6,9 +6,26 @@ export const kycVerificationIncomingEvents = {
     }),
     "kyc:ready": z.object({}),
     "kyc:completed": z.object({
-        status: z.enum(["completed", "failed"]),
+        status: z.enum([
+            "verified",
+            "pending-review",
+            "pending-manual-review",
+            "declined",
+            "expired",
+            "failed",
+            "unknown",
+        ]),
     }),
+    "kyc:cancelled": z.object({}),
     "kyc:error": z.object({
+        retriable: z.boolean(),
+        reason: z.enum([
+            "widget-unavailable",
+            "invalid-configuration",
+            "invalid-credentials",
+            "provider-error",
+            "unknown",
+        ]),
         message: z.string(),
     }),
 };
