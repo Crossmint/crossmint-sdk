@@ -50,22 +50,14 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
             ref={ref}
             src={kycVerificationService.iframe.getUrl(props)}
             id="crossmint-kyc-verification.iframe"
-            role="crossmint-kyc-verification.iframe"
+            title="Identity verification"
             allow="microphone; camera"
             style={{
-                boxShadow: "none",
                 border: "none",
-                padding: "0px",
                 width: "100%",
-                minWidth: "100%",
                 overflow: "hidden",
                 display: "block",
-                userSelect: "none",
-                transform: "translate(0px)",
-                opacity: "1",
-                transition: "ease 0s, opacity 0.4s ease 0.1s",
                 height: `${height}px`,
-                backgroundColor: "transparent",
             }}
         />
     );

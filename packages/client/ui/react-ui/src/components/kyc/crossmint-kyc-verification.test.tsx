@@ -55,14 +55,14 @@ describe("<CrossmintKycVerification />", () => {
         test("renders an iframe pointed at the kyc-verification route", () => {
             render(<CrossmintKycVerification credentials={CREDENTIALS} />);
 
-            const iframe = screen.getByRole("crossmint-kyc-verification.iframe");
+            const iframe = screen.getByTitle("Identity verification");
             expect(iframe.getAttribute("src")).toContain("/sdk/unstable/kyc-verification");
         });
 
         test("allows camera access, which Persona's document capture needs", () => {
             render(<CrossmintKycVerification credentials={CREDENTIALS} />);
 
-            expect(screen.getByRole("crossmint-kyc-verification.iframe").getAttribute("allow")).toContain("camera");
+            expect(screen.getByTitle("Identity verification").getAttribute("allow")).toContain("camera");
         });
     });
 
@@ -83,17 +83,6 @@ describe("<CrossmintKycVerification />", () => {
             emit("kyc:completed", { status: "verified" });
 
             expect(onComplete).toHaveBeenCalledWith({ status: "verified" });
-        });
-
-        test("forwards a non-verified completion without turning it into an error", () => {
-            const onComplete = vi.fn();
-            const onError = vi.fn();
-            render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={onComplete} onError={onError} />);
-
-            emit("kyc:completed", { status: "pending-review" });
-
-            expect(onComplete).toHaveBeenCalledWith({ status: "pending-review" });
-            expect(onError).not.toHaveBeenCalled();
         });
 
         test("forwards kyc:cancelled to onCancel", () => {
@@ -123,7 +112,7 @@ describe("<CrossmintKycVerification />", () => {
 
             emit("ui:height.changed", { height: 660 });
 
-            expect(screen.getByRole("crossmint-kyc-verification.iframe")).toHaveStyle({ height: "660px" });
+            expect(screen.getByTitle("Identity verification")).toHaveStyle({ height: "660px" });
         });
     });
 

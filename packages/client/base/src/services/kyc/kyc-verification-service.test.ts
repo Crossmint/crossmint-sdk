@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
+import type { CrossmintKycVerificationProps } from "@/types/kyc/CrossmintKycVerificationProps";
 import { createKycVerificationService } from "./kycVerificationService";
 
 const apiClient = {
@@ -9,11 +10,7 @@ const apiClient = {
 } as never;
 
 function iframeUrl(props: Record<string, unknown>) {
-    return new URL(
-        createKycVerificationService({ apiClient }).iframe.getUrl(
-            props as Parameters<ReturnType<typeof createKycVerificationService>["iframe"]["getUrl"]>[0]
-        )
-    );
+    return new URL(createKycVerificationService({ apiClient }).iframe.getUrl(props as CrossmintKycVerificationProps));
 }
 
 describe("createKycVerificationService", () => {
@@ -24,7 +21,7 @@ describe("createKycVerificationService", () => {
             expect(url.pathname).toBe("/sdk/unstable/kyc-verification");
         });
 
-        test("serializes credentials as JSON and appends the api key", () => {
+        test("serializes credentials as JSON, the way the route's parser reads them", () => {
             const url = iframeUrl({
                 credentials: { provider: "persona", inquiryId: "inq-1", sessionToken: "tok-1" },
                 locale: "es-ES",
@@ -37,6 +34,7 @@ describe("createKycVerificationService", () => {
             });
             expect(url.searchParams.get("locale")).toBe("es-ES");
             expect(url.searchParams.get("apiKey")).toBe("ck_staging_key");
+            expect(url.searchParams.get("sdkMetadata")).toBeTruthy();
         });
 
         test("omits the lifecycle callbacks from the query string", () => {
@@ -50,15 +48,6 @@ describe("createKycVerificationService", () => {
             expect(url.searchParams.get("onComplete")).toBeNull();
             expect(url.searchParams.get("onError")).toBeNull();
             expect(url.searchParams.get("onReady")).toBeNull();
-        });
-
-        test("produces a url the route's own parser accepts", () => {
-            const url = iframeUrl({ credentials: { provider: "persona", inquiryId: "inq-1" } });
-
-            // Mirrors parseKycVerificationParams in crossbit-main: the route reads
-            // this exact param and JSON.parses it.
-            expect(() => JSON.parse(url.searchParams.get("credentials") ?? "")).not.toThrow();
-            expect(url.searchParams.get("sdkMetadata")).toBeTruthy();
         });
     });
 });
