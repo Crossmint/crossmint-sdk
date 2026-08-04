@@ -88,6 +88,23 @@ it.each<[type: "email" | "phone", field: "email" | "phone", value: string]>([
     });
 });
 
+it("buildInternalConfig: phone threads channel from config", () => {
+    const result = getSignerDescriptor("phone").buildInternalConfig(
+        { type: "phone", phone: "+15551234", channel: "whatsapp" } as never,
+        makeCtx()
+    );
+    expect(result).toEqual({
+        type: "phone",
+        phone: "+15551234",
+        channel: "whatsapp",
+        locator: "phone:+15551234",
+        address: WALLET_ADDRESS,
+        crossmint,
+        clientTEEConnection,
+        onAuthRequired,
+    });
+});
+
 it("buildInternalConfig: api-key returns locator and wallet address", () => {
     const result = getSignerDescriptor("api-key").buildInternalConfig({ type: "api-key" } as never, makeCtx());
     expect(result).toEqual({ type: "api-key", locator: "api-key", address: WALLET_ADDRESS });
