@@ -3,7 +3,7 @@ export * from "./hosted";
 export * from "./embed";
 export * from "./system";
 export * from "./payment-method-management";
-export * from "./kyc";
+export * from "./identity-verification";
 export * from "./CryptoCurrency";
 
 export const BaseUrls = {

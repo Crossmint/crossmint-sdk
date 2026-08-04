@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
-import type { CrossmintKycVerificationProps } from "@/types/kyc/CrossmintKycVerificationProps";
-import { createKycVerificationService } from "./kycVerificationService";
+import type { CrossmintIdentityVerificationProps } from "@/types/identity-verification/CrossmintIdentityVerificationProps";
+import { createIdentityVerificationService } from "./identityVerificationService";
 
 const apiClient = {
     buildUrl: (path: string) => `https://staging.crossmint.com${path}`,
@@ -10,10 +10,12 @@ const apiClient = {
 } as never;
 
 function iframeUrl(props: Record<string, unknown>) {
-    return new URL(createKycVerificationService({ apiClient }).iframe.getUrl(props as CrossmintKycVerificationProps));
+    return new URL(
+        createIdentityVerificationService({ apiClient }).iframe.getUrl(props as CrossmintIdentityVerificationProps)
+    );
 }
 
-describe("createKycVerificationService", () => {
+describe("createIdentityVerificationService", () => {
     describe("iframe.getUrl", () => {
         test("points at the standalone kyc-verification route", () => {
             const url = iframeUrl({ credentials: { provider: "persona", inquiryId: "inq-1" } });

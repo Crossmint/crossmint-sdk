@@ -1,3 +1,3 @@
 export * from "./incoming";
 export * from "./outgoing";
-export * from "./KycVerificationIFrameEmitter";
+export * from "./IdentityVerificationIFrameEmitter";

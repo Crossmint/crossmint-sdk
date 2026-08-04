@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const kycVerificationIncomingEvents = {
+export const identityVerificationIncomingEvents = {
     "ui:height.changed": z.object({
         height: z.number(),
     }),
@@ -29,4 +29,4 @@ export const kycVerificationIncomingEvents = {
         message: z.string(),
     }),
 };
-export type KycVerificationIncomingEventMap = typeof kycVerificationIncomingEvents;
+export type IdentityVerificationIncomingEventMap = typeof identityVerificationIncomingEvents;

@@ -1,15 +1,18 @@
-import type { CrossmintKycVerificationProps } from "@/types/kyc/CrossmintKycVerificationProps";
-import { kycVerificationIncomingEvents, kycVerificationOutgoingEvents } from "@/types/kyc/events";
+import type { CrossmintIdentityVerificationProps } from "@/types/identity-verification/CrossmintIdentityVerificationProps";
+import {
+    identityVerificationIncomingEvents,
+    identityVerificationOutgoingEvents,
+} from "@/types/identity-verification/events";
 import { appendObjectToQueryParams } from "@/utils/appendObjectToQueryParams";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
-export type KycVerificationServiceProps = {
+export type IdentityVerificationServiceProps = {
     apiClient: CrossmintApiClient;
 };
 
-export function createKycVerificationService({ apiClient }: KycVerificationServiceProps) {
-    function getIFrameUrl(props: CrossmintKycVerificationProps) {
+export function createIdentityVerificationService({ apiClient }: IdentityVerificationServiceProps) {
+    function getIFrameUrl(props: CrossmintIdentityVerificationProps) {
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/kyc-verification");
         const queryParams = new URLSearchParams();
 
@@ -25,8 +28,8 @@ export function createKycVerificationService({ apiClient }: KycVerificationServi
 
     function createIframeClient(iframe: HTMLIFrameElement) {
         return IFrameWindow.initExistingIFrame(iframe, {
-            incomingEvents: kycVerificationIncomingEvents,
-            outgoingEvents: kycVerificationOutgoingEvents,
+            incomingEvents: identityVerificationIncomingEvents,
+            outgoingEvents: identityVerificationOutgoingEvents,
         });
     }
 

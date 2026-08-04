@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { CrossmintKycVerification } from "./CrossmintKycVerification";
+import { CrossmintIdentityVerification } from "./CrossmintIdentityVerification";
 
 const listeners = new Map<string, (data: unknown) => void>();
 // Returns an id distinct from the event name on purpose, so the unmount test
@@ -18,7 +18,7 @@ const iframeClient = {
 };
 
 vi.mock("@crossmint/client-sdk-base", () => ({
-    createKycVerificationService: () => ({
+    createIdentityVerificationService: () => ({
         iframe: {
             getUrl: () => "https://staging.crossmint.com/sdk/unstable/kyc-verification?credentials=%7B%7D",
             createClient: () => iframeClient,
@@ -44,7 +44,7 @@ function emit(event: string, data: unknown) {
     act(() => handler(data));
 }
 
-describe("<CrossmintKycVerification />", () => {
+describe("<CrossmintIdentityVerification />", () => {
     afterEach(() => {
         cleanup();
         listeners.clear();
@@ -53,14 +53,14 @@ describe("<CrossmintKycVerification />", () => {
 
     describe("when mounted", () => {
         test("renders an iframe pointed at the kyc-verification route", () => {
-            render(<CrossmintKycVerification credentials={CREDENTIALS} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
             const iframe = screen.getByTitle("Identity verification");
             expect(iframe.getAttribute("src")).toContain("/sdk/unstable/kyc-verification");
         });
 
         test("allows camera access, which Persona's document capture needs", () => {
-            render(<CrossmintKycVerification credentials={CREDENTIALS} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
             expect(screen.getByTitle("Identity verification").getAttribute("allow")).toContain("camera");
         });
@@ -69,7 +69,7 @@ describe("<CrossmintKycVerification />", () => {
     describe("when the iframe relays lifecycle events", () => {
         test("forwards kyc:ready to onReady", () => {
             const onReady = vi.fn();
-            render(<CrossmintKycVerification credentials={CREDENTIALS} onReady={onReady} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onReady={onReady} />);
 
             emit("kyc:ready", {});
 
@@ -78,7 +78,7 @@ describe("<CrossmintKycVerification />", () => {
 
         test("forwards kyc:completed to onComplete", () => {
             const onComplete = vi.fn();
-            render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={onComplete} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={onComplete} />);
 
             emit("kyc:completed", { status: "verified" });
 
@@ -87,7 +87,7 @@ describe("<CrossmintKycVerification />", () => {
 
         test("forwards kyc:cancelled to onCancel", () => {
             const onCancel = vi.fn();
-            render(<CrossmintKycVerification credentials={CREDENTIALS} onCancel={onCancel} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onCancel={onCancel} />);
 
             emit("kyc:cancelled", {});
 
@@ -96,7 +96,7 @@ describe("<CrossmintKycVerification />", () => {
 
         test("forwards kyc:error to onError with the retriable bit intact", () => {
             const onError = vi.fn();
-            render(<CrossmintKycVerification credentials={CREDENTIALS} onError={onError} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onError={onError} />);
 
             emit("kyc:error", { retriable: false, reason: "widget-unavailable", message: "boom" });
 
@@ -110,9 +110,9 @@ describe("<CrossmintKycVerification />", () => {
         test("calls the callback from the latest render, not the one captured at subscribe time", () => {
             const stale = vi.fn();
             const fresh = vi.fn();
-            const { rerender } = render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={stale} />);
+            const { rerender } = render(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={stale} />);
 
-            rerender(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={fresh} />);
+            rerender(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={fresh} />);
             emit("kyc:completed", { status: "verified" });
 
             expect(fresh).toHaveBeenCalledWith({ status: "verified" });
@@ -120,7 +120,7 @@ describe("<CrossmintKycVerification />", () => {
         });
 
         test("applies the relayed height to the iframe", () => {
-            render(<CrossmintKycVerification credentials={CREDENTIALS} />);
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
             emit("ui:height.changed", { height: 660 });
 
@@ -130,7 +130,7 @@ describe("<CrossmintKycVerification />", () => {
 
     describe("when unmounted", () => {
         test("removes every listener by its returned id, not by event name", () => {
-            const { unmount } = render(<CrossmintKycVerification credentials={CREDENTIALS} />);
+            const { unmount } = render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
             unmount();
 

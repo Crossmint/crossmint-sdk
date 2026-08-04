@@ -1,14 +1,14 @@
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
-    type CrossmintKycVerificationProps,
-    type KycVerificationIFrameEmitter,
-    createKycVerificationService,
+    type CrossmintIdentityVerificationProps,
+    type IdentityVerificationIFrameEmitter,
+    createIdentityVerificationService,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 
-export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationProps) {
-    const [iframeClient, setIframeClient] = useState<KycVerificationIFrameEmitter | null>(null);
+export function CrossmintIdentityVerificationIFrame(props: CrossmintIdentityVerificationProps) {
+    const [iframeClient, setIframeClient] = useState<IdentityVerificationIFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
     const ref = useRef<HTMLIFrameElement>(null);
@@ -22,14 +22,14 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
-    const kycVerificationService = createKycVerificationService({ apiClient });
+    const identityVerificationService = createIdentityVerificationService({ apiClient });
 
     useEffect(() => {
         const iframe = ref.current;
         if (!iframe || iframeClient) {
             return;
         }
-        setIframeClient(kycVerificationService.iframe.createClient(iframe));
+        setIframeClient(identityVerificationService.iframe.createClient(iframe));
     }, [iframeClient]);
 
     useEffect(() => {
@@ -55,8 +55,8 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
     return (
         <iframe
             ref={ref}
-            src={kycVerificationService.iframe.getUrl(props)}
-            id="crossmint-kyc-verification.iframe"
+            src={identityVerificationService.iframe.getUrl(props)}
+            id="crossmint-identity-verification.iframe"
             title="Identity verification"
             allow="microphone; camera"
             style={{
