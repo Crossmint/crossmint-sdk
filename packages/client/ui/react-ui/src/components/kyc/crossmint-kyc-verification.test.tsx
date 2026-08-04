@@ -107,6 +107,18 @@ describe("<CrossmintKycVerification />", () => {
             });
         });
 
+        test("calls the callback from the latest render, not the one captured at subscribe time", () => {
+            const stale = vi.fn();
+            const fresh = vi.fn();
+            const { rerender } = render(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={stale} />);
+
+            rerender(<CrossmintKycVerification credentials={CREDENTIALS} onComplete={fresh} />);
+            emit("kyc:completed", { status: "verified" });
+
+            expect(fresh).toHaveBeenCalledWith({ status: "verified" });
+            expect(stale).not.toHaveBeenCalled();
+        });
+
         test("applies the relayed height to the iframe", () => {
             render(<CrossmintKycVerification credentials={CREDENTIALS} />);
 

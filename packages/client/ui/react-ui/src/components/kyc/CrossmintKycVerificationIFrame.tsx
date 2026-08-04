@@ -13,6 +13,13 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
 
     const ref = useRef<HTMLIFrameElement>(null);
 
+    // The listeners are subscribed once, so reading callbacks off this ref is what keeps a
+    // late event calling the render's props rather than the ones captured at subscribe time.
+    const latestProps = useRef(props);
+    useEffect(() => {
+        latestProps.current = props;
+    });
+
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
     const kycVerificationService = createKycVerificationService({ apiClient });
@@ -23,7 +30,7 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
             return;
         }
         setIframeClient(kycVerificationService.iframe.createClient(iframe));
-    }, [ref.current, iframeClient]);
+    }, [iframeClient]);
 
     useEffect(() => {
         if (iframeClient == null) {
@@ -31,10 +38,10 @@ export function CrossmintKycVerificationIFrame(props: CrossmintKycVerificationPr
         }
 
         const heightListener = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
-        const readyListener = iframeClient.on("kyc:ready", () => props.onReady?.());
-        const completedListener = iframeClient.on("kyc:completed", (data) => props.onComplete?.(data));
-        const cancelledListener = iframeClient.on("kyc:cancelled", () => props.onCancel?.());
-        const errorListener = iframeClient.on("kyc:error", (data) => props.onError?.(data));
+        const readyListener = iframeClient.on("kyc:ready", () => latestProps.current.onReady?.());
+        const completedListener = iframeClient.on("kyc:completed", (data) => latestProps.current.onComplete?.(data));
+        const cancelledListener = iframeClient.on("kyc:cancelled", () => latestProps.current.onCancel?.());
+        const errorListener = iframeClient.on("kyc:error", (data) => latestProps.current.onError?.(data));
 
         return () => {
             iframeClient.off(heightListener);
