@@ -436,7 +436,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         // Use ensureAuthenticated (not handleAuthRequired) so export resets the signer frame on iOS
         // just like signing does, rather than authenticating against a possibly stale ephemeral frame.
         await this.ensureAuthenticated();
-        const jwt = this.getJwtOrThrow();
 
         const { scheme, encoding } = this.getChainKeyParams();
 
@@ -452,29 +451,29 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             });
         }
 
-        const response = await exportTEEConnection.sendAction({
-            event: "request:export-signer",
-            responseEvent: "response:export-signer",
-            data: {
-                authData: {
-                    jwt,
-                    apiKey: this.config.crossmint.apiKey,
-                },
+        const response = await this.sendActionWithFreshJwt((authData) =>
+            exportTEEConnection.sendAction({
+                event: "request:export-signer",
+                responseEvent: "response:export-signer",
                 data: {
-                    scheme,
-                    encoding,
-                    walletAddress: this.config.address,
-                    authId: this.getAuthId(),
+                    authData,
+                    data: {
+                        scheme,
+                        encoding,
+                        walletAddress: this.config.address,
+                        authId: this.getAuthId(),
+                    },
                 },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
+                options: DEFAULT_EVENT_OPTIONS,
+            })
+        );
 
         if (response?.status === "error") {
             walletsLogger.error("export-signer: failed", {
                 error: response.error,
                 code: response.code,
             });
+            throwIfCrossmintApiAuthError(response);
             throw new KeyExportError(response.error || "Failed to export private key", response.code);
         }
     }

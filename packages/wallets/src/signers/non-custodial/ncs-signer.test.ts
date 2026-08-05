@@ -85,6 +85,39 @@ describe("NonCustodialSigner._exportPrivateKey", () => {
         // The reset runs before authenticating and before the export request.
         expect(calls).toEqual(["reset", "get-status", "export"]);
     });
+
+    it("uses a live JWT getter so export-signer args reflect the latest setJwt value", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "first" };
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        const exportTEEConnection = {
+            sendAction: vi.fn(async () => ({ status: "success" })),
+        };
+        await signer._exportPrivateKey(exportTEEConnection as never);
+
+        const args = exportTEEConnection.sendAction.mock.calls[0][0];
+        expect(args.data.authData.jwt).toBe("first");
+        crossmint.jwt = "second";
+        expect(args.data.authData.jwt).toBe("second");
+    });
+
+    it("throws JWTExpiredError when export-signer returns ERROR_JWT_EXPIRED", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "expired" };
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        const exportTEEConnection = {
+            sendAction: vi.fn(async () => ({
+                status: "error",
+                error: "HTTP 401",
+                code: "ERROR_JWT_EXPIRED",
+                data: { expiredAt: "2026-08-05T02:14:04.000Z" },
+            })),
+        };
+
+        await expect(signer._exportPrivateKey(exportTEEConnection as never)).rejects.toBeInstanceOf(JWTExpiredError);
+    });
 });
 
 type CompleteOnboardingResult = { status: string; error?: string; code?: string; signerStatus?: string };
