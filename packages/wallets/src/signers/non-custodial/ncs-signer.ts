@@ -265,6 +265,12 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             (result as { status: unknown }).status !== "success" &&
             this.config.crossmint.jwt !== initialJwt
         ) {
+            walletsLogger.info("TEE action: JWT changed while request was in flight, retrying once", {
+                status: (result as { status: unknown }).status,
+                code: (result as { code?: string }).code,
+                hadInitialJwt: initialJwt.length > 0,
+                hasNewJwt: (this.config.crossmint.jwt?.length ?? 0) > 0,
+            });
             return await send(this.createAuthData());
         }
         return result;
