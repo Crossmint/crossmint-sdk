@@ -129,12 +129,8 @@ export class WalletFactory {
         // Inject a device signer as the default when key storage is available and the caller supplied none.
         // Some providers reject it at creation; createSmartWallet retries without it, gated on this same flag.
         const explicitSigners = validatedArgs.signers ?? [];
-        // ⚠️ LOCAL-ONLY HARDCODE — DO NOT MERGE
-        // Disable the auto-injected device delegated signer so we can test a
-        // whatsapp-only wallet with no delegated signers. Restore the line below.
-        // const didAutoInjectDeviceSigner =
-        //     validatedArgs.options?.deviceSignerKeyStorage != null && !explicitSigners.some((s) => s.type === "device");
-        const didAutoInjectDeviceSigner = false;
+        const didAutoInjectDeviceSigner =
+            validatedArgs.options?.deviceSignerKeyStorage != null && !explicitSigners.some((s) => s.type === "device");
         const signersToRegister = didAutoInjectDeviceSigner
             ? [...explicitSigners, { type: "device" } as SignerConfigForChain<C>]
             : explicitSigners;
