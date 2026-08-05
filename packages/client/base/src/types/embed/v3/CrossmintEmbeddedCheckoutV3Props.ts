@@ -7,12 +7,6 @@ interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
     payment: EmbeddedCheckoutV3Payment;
     jwt?: string;
-    /**
-     * Who renders the identity verification step. `"external"` stops checkout from rendering it, so
-     * you have to mount `CrossmintIdentityVerification` yourself with the credentials from
-     * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish the order.
-     */
-    kycHandling?: "checkout" | "external";
 }
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
@@ -34,6 +28,14 @@ export interface CrossmintEmbeddedCheckoutV3NewOrderProps extends CrossmintEmbed
 export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
+
+// Web only: taking over the verification step needs CrossmintIdentityVerification, which renders an
+// iframe. React Native has no equivalent yet, so the flag stays off the shared props.
+export type CrossmintEmbeddedCheckoutV3WebProps = CrossmintEmbeddedCheckoutV3Props & {
+    /** `"external"`: you mount `CrossmintIdentityVerification` from
+     * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish. */
+    kycHandling?: "checkout" | "external";
+};
 
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
 

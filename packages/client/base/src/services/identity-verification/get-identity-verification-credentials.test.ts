@@ -27,4 +27,9 @@ describe("getIdentityVerificationCredentials", () => {
     test("returns undefined for an order carrying no payment at all", () => {
         expect(getIdentityVerificationCredentials({ orderId: "order-1" } as Order)).toBeUndefined();
     });
+
+    // useCrossmintCheckout() hands back `order?: Order`, so the documented call site passes this.
+    test("returns undefined before the checkout hook has an order", () => {
+        expect(getIdentityVerificationCredentials(undefined)).toBeUndefined();
+    });
 });
