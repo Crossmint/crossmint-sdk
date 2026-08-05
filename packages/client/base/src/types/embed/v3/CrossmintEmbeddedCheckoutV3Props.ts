@@ -34,7 +34,7 @@ export type CrossmintEmbeddedCheckoutV3Props =
 export type CrossmintEmbeddedCheckoutV3WebProps = CrossmintEmbeddedCheckoutV3Props & {
     /** `"external"`: you mount `CrossmintIdentityVerification` from
      * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish. */
-    kycHandling?: "checkout" | "external";
+    identityVerificationHandling?: "external";
 };
 
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;

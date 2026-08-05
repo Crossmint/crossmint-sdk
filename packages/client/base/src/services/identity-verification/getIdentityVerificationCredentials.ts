@@ -3,7 +3,7 @@ import type { IdentityVerificationCredentials } from "@/types/identity-verificat
 
 /**
  * Reads an order's verification credentials, for a merchant taking the step over with
- * `kycHandling="external"`. Undefined until the order needs verification.
+ * `identityVerificationHandling="external"`. Undefined until the order needs verification.
  */
 export function getIdentityVerificationCredentials(
     order: Order | undefined
