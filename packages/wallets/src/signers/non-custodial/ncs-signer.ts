@@ -237,7 +237,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
      * `this.config.crossmint` every time it is serialized. This is important because
      * `WebViewParent` and `EventEmitter` retry in-flight requests using the same `args`
      * object; a getter ensures retries pick up JWTs refreshed by `setJwt` while the
-     * request was pending (e.g. the app was backgrounded and Firebase refreshed).
+     * request was pending.
      */
     private createAuthData(): { apiKey: string; jwt: string } {
         const crossmint = this.config.crossmint;
