@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import type { EmailInternalSignerConfig } from "../types";
 import { OnboardingSessionExpiredError, OtpValidationError } from "../types";
+import { walletsLogger } from "../../logger";
 import { JWTExpiredError } from "../../utils/errors";
 import { EVMNonCustodialSigner } from "./ncs-evm-signer";
 
@@ -315,6 +316,33 @@ describe("NonCustodialSigner JWT refresh", () => {
 
         expect(clientTEEConnection.sendAction).toHaveBeenCalledTimes(2);
         expect(capturedJwts).toEqual(["stale", "fresh"]);
+    });
+
+    it("logs a retry when the JWT is refreshed while the request is pending", async () => {
+        const infoSpy = vi.spyOn(walletsLogger, "info").mockImplementation(() => undefined);
+        const crossmint = { apiKey: "ck_staging_test", jwt: "stale" };
+        const clientTEEConnection = {
+            sendAction: vi.fn(() => {
+                if (crossmint.jwt === "stale") {
+                    crossmint.jwt = "fresh";
+                    return Promise.resolve({ status: "error", error: "HTTP 401" });
+                }
+                return Promise.resolve({ status: "success", signerStatus: "ready" });
+            }),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        await signer.ensureAuthenticated();
+
+        expect(infoSpy).toHaveBeenCalledWith(
+            "TEE action: JWT changed while request was in flight, retrying once",
+            expect.objectContaining({
+                status: "error",
+                hadInitialJwt: true,
+                hasNewJwt: true,
+            })
+        );
+        infoSpy.mockRestore();
     });
 
     it("throws JWTExpiredError when the frame reports ERROR_JWT_EXPIRED", async () => {
