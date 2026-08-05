@@ -129,8 +129,12 @@ export class WalletFactory {
         // Inject a device signer as the default when key storage is available and the caller supplied none.
         // Some providers reject it at creation; createSmartWallet retries without it, gated on this same flag.
         const explicitSigners = validatedArgs.signers ?? [];
-        const didAutoInjectDeviceSigner =
-            validatedArgs.options?.deviceSignerKeyStorage != null && !explicitSigners.some((s) => s.type === "device");
+        // ⚠️ LOCAL-ONLY HARDCODE — DO NOT MERGE
+        // Disable the auto-injected device delegated signer so we can test a
+        // whatsapp-only wallet with no delegated signers. Restore the line below.
+        // const didAutoInjectDeviceSigner =
+        //     validatedArgs.options?.deviceSignerKeyStorage != null && !explicitSigners.some((s) => s.type === "device");
+        const didAutoInjectDeviceSigner = false;
         const signersToRegister = didAutoInjectDeviceSigner
             ? [...explicitSigners, { type: "device" } as SignerConfigForChain<C>]
             : explicitSigners;
@@ -222,6 +226,18 @@ export class WalletFactory {
         return typeof signer === "object" && signer != null && signer.type === "device";
     }
 
+    // `channel` (OTP delivery preference for phone signers) is a client-only field that the
+    // wallet-creation API never persists or returns, so it's always sourced from the caller's config.
+    private mergePhoneChannel<T extends { type: string }>(
+        apiConfig: T,
+        inputConfig?: { type: string; channel?: "sms" | "whatsapp" }
+    ): T {
+        if (apiConfig.type !== "phone" || inputConfig?.type !== "phone" || inputConfig.channel == null) {
+            return apiConfig;
+        }
+        return { ...apiConfig, channel: inputConfig.channel };
+    }
+
     private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
@@ -238,7 +254,7 @@ export class WalletFactory {
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
-                : apiRecovery;
+                : this.mergePhoneChannel(apiRecovery, createArgs.recovery);
 
         const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
         let signers = apiDelegatedSigners;
@@ -248,6 +264,19 @@ export class WalletFactory {
             (signers[0].type === "server" || signers[0].type === "external-wallet")
         ) {
             signers = createArgs.signers as SignerResponse[];
+        } else if (signers != null) {
+            // `channel` (OTP delivery preference for phone signers) is a client-only field that never
+            // round-trips through the wallet-creation API response, so merge it back in from the caller's
+            // config for any delegated phone signers.
+            const inputSigners = createArgs.signers;
+            signers = signers.map((s) =>
+                this.mergePhoneChannel(
+                    s,
+                    inputSigners?.find(
+                        (input) => input.type === "phone" && s.type === "phone" && getSignerLocator(input) === s.locator
+                    )
+                )
+            ) as SignerResponse[];
         }
 
         // Preserve the API-sourced server signer recovery address so the wallet can identify
