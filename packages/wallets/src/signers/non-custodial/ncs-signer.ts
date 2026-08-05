@@ -135,7 +135,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         // Determine if we need to authenticate the user via OTP or not
         walletsLogger.info("get-status: sending request");
         const startTime = Date.now();
-        const signerResponse = await this.sendAction((authData) =>
+        const signerResponse = await this.sendActionWithRetry((authData) =>
             clientTEEConnection.sendAction({
                 event: "request:get-status",
                 responseEvent: "response:get-status",
@@ -252,9 +252,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     /**
      * Sends a TEE action and, if it returns a non-success response while the JWT has
      * changed since the request started, retries once with the latest JWT. This handles
-     * the case where `setJwt` is called while `sendAction` is awaiting a response.
+     * the case where `setJwt` is called while `sendActionWithRetry` is awaiting a response.
      */
-    private async sendAction<T>(send: (authData: { apiKey: string; jwt: string }) => Promise<T>): Promise<T> {
+    private async sendActionWithRetry<T>(send: (authData: { apiKey: string; jwt: string }) => Promise<T>): Promise<T> {
         const authData = this.createAuthData();
         const initialJwt = authData.jwt;
         const result = await send(authData);
@@ -297,7 +297,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const authId = this.getAuthId();
         walletsLogger.info("start-onboarding: sending request");
         const startTime = Date.now();
-        const response = await this.sendAction((authData) =>
+        const response = await this.sendActionWithRetry((authData) =>
             handshakeParent.sendAction({
                 event: "request:start-onboarding",
                 responseEvent: "response:start-onboarding",
@@ -340,7 +340,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             const handshakeParent = await this.getTEEConnection();
             walletsLogger.info("complete-onboarding: sending request");
             const startTime = Date.now();
-            response = await this.sendAction((authData) =>
+            response = await this.sendActionWithRetry((authData) =>
                 handshakeParent.sendAction({
                     event: "request:complete-onboarding",
                     responseEvent: "response:complete-onboarding",
@@ -455,7 +455,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             });
         }
 
-        const response = await this.sendAction((authData) =>
+        const response = await this.sendActionWithRetry((authData) =>
             exportTEEConnection.sendAction({
                 event: "request:export-signer",
                 responseEvent: "response:export-signer",
