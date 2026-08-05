@@ -52,6 +52,23 @@ describe("throwIfCrossmintApiAuthError", () => {
         );
     });
 
+    test("throws JWTExpiredError reading expiredAt from nested data when not at the top level", () => {
+        const expiredAt = "2026-08-05T02:14:04.000Z";
+        const body = {
+            error: true,
+            code: "ERROR_JWT_EXPIRED",
+            data: { expiredAt },
+        };
+
+        try {
+            throwIfCrossmintApiAuthError(body);
+            expect.fail("Expected throwIfCrossmintApiAuthError to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(JWTExpiredError);
+            expect((error as JWTExpiredError).expiredAt).toBe(expiredAt);
+        }
+    });
+
     test("does not throw for non-auth error bodies", () => {
         expect(() => throwIfCrossmintApiAuthError({ error: true, message: "Transaction not found" })).not.toThrow();
         expect(() => throwIfCrossmintApiAuthError({ error: true, code: "SOME_OTHER_ERROR" })).not.toThrow();

@@ -18,6 +18,7 @@ import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
+import { throwIfCrossmintApiAuthError } from "../../utils/errors";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
@@ -134,20 +135,18 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         // Determine if we need to authenticate the user via OTP or not
         walletsLogger.info("get-status: sending request");
         const startTime = Date.now();
-        const signerResponse = await clientTEEConnection.sendAction({
-            event: "request:get-status",
-            responseEvent: "response:get-status",
-            data: {
-                authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
+        const signerResponse = await this.sendActionWithFreshJwt((authData) =>
+            clientTEEConnection.sendAction({
+                event: "request:get-status",
+                responseEvent: "response:get-status",
+                data: { authData },
+                options: DEFAULT_EVENT_OPTIONS,
+            })
+        );
         const durationMs = Date.now() - startTime;
 
         if (signerResponse?.status !== "success") {
+            throwIfCrossmintApiAuthError(signerResponse);
             const errorMessage =
                 signerResponse?.status === "error"
                     ? signerResponse.error || "Failed to retrieve signer status"
@@ -233,6 +232,46 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         return jwt;
     }
 
+    /**
+     * Returns a live authData object whose `jwt` getter reads the latest value from
+     * `this.config.crossmint` every time it is serialized. This is important because
+     * `WebViewParent` and `EventEmitter` retry in-flight requests using the same `args`
+     * object; a getter ensures retries pick up JWTs refreshed by `setJwt` while the
+     * request was pending (e.g. the app was backgrounded and Firebase refreshed).
+     */
+    private createAuthData(): { apiKey: string; jwt: string } {
+        const crossmint = this.config.crossmint;
+        return {
+            apiKey: crossmint.apiKey,
+            get jwt(): string {
+                return crossmint.jwt ?? "";
+            },
+        };
+    }
+
+    /**
+     * Sends a TEE action and, if it returns a non-success response while the JWT has
+     * changed since the request started, retries once with the latest JWT. This handles
+     * the case where `setJwt` is called while `sendAction` is awaiting a response.
+     */
+    private async sendActionWithFreshJwt<T>(
+        send: (authData: { apiKey: string; jwt: string }) => Promise<T>
+    ): Promise<T> {
+        const authData = this.createAuthData();
+        const initialJwt = authData.jwt;
+        const result = await send(authData);
+        if (
+            result != null &&
+            typeof result === "object" &&
+            "status" in result &&
+            (result as { status: unknown }).status !== "success" &&
+            this.config.crossmint.jwt !== initialJwt
+        ) {
+            return await send(this.createAuthData());
+        }
+        return result;
+    }
+
     private createAuthPromise(): {
         promise: Promise<void>;
         resolve: () => void;
@@ -254,18 +293,17 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const authId = this.getAuthId();
         walletsLogger.info("start-onboarding: sending request");
         const startTime = Date.now();
-        const response = await handshakeParent.sendAction({
-            event: "request:start-onboarding",
-            responseEvent: "response:start-onboarding",
-            data: {
-                authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
+        const response = await this.sendActionWithFreshJwt((authData) =>
+            handshakeParent.sendAction({
+                event: "request:start-onboarding",
+                responseEvent: "response:start-onboarding",
+                data: {
+                    authData,
+                    data: { authId },
                 },
-                data: { authId },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
+                options: DEFAULT_EVENT_OPTIONS,
+            })
+        );
         const durationMs = Date.now() - startTime;
         this._onboardingConnectionGeneration = handshakeParent.connectionGeneration;
         walletsLogger.info("start-onboarding: response received", {
@@ -280,6 +318,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "error") {
             walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
+            throwIfCrossmintApiAuthError(response);
             throw new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
         }
     }
@@ -297,20 +336,19 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             const handshakeParent = await this.getTEEConnection();
             walletsLogger.info("complete-onboarding: sending request");
             const startTime = Date.now();
-            response = await handshakeParent.sendAction({
-                event: "request:complete-onboarding",
-                responseEvent: "response:complete-onboarding",
-                data: {
-                    authData: {
-                        jwt: this.config.crossmint.jwt ?? "",
-                        apiKey: this.config.crossmint.apiKey,
-                    },
+            response = await this.sendActionWithFreshJwt((authData) =>
+                handshakeParent.sendAction({
+                    event: "request:complete-onboarding",
+                    responseEvent: "response:complete-onboarding",
                     data: {
-                        onboardingAuthentication: { encryptedOtp },
+                        authData,
+                        data: {
+                            onboardingAuthentication: { encryptedOtp },
+                        },
                     },
-                },
-                options: DEFAULT_EVENT_OPTIONS,
-            });
+                    options: DEFAULT_EVENT_OPTIONS,
+                })
+            );
             walletsLogger.info("complete-onboarding: response received", {
                 status: response?.status,
                 durationMs: Date.now() - startTime,
@@ -347,6 +385,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 ? response.error || "Failed to validate encrypted OTP"
                 : "Failed to validate encrypted OTP";
         const errorCode = response?.status === "error" ? response.code : undefined;
+        if (response?.status === "error") {
+            throwIfCrossmintApiAuthError(response);
+        }
         return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
     }
 
