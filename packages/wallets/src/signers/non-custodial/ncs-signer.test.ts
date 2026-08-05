@@ -361,4 +361,29 @@ describe("NonCustodialSigner JWT refresh", () => {
 
         await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(JWTExpiredError);
     });
+
+    it("rejects the auth promise when verifyOtp returns ERROR_JWT_EXPIRED and onAuthRequired does not await verify", async () => {
+        const connection = makeScriptedConnection(() => ({
+            status: "error",
+            code: "ERROR_JWT_EXPIRED",
+            error: "HTTP 401",
+        }));
+        const onAuthRequired = vi.fn(
+            async (
+                _type: string,
+                _locator: string,
+                _needsAuth: boolean,
+                send: () => Promise<void>,
+                verify: (otp: string) => Promise<void>
+            ) => {
+                await send();
+                void verify("123456").catch(() => undefined);
+            }
+        );
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: connection as never, onAuthRequired: onAuthRequired as never })
+        );
+
+        await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(JWTExpiredError);
+    });
 });

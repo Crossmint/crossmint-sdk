@@ -18,7 +18,7 @@ import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
-import { throwIfCrossmintApiAuthError } from "../../utils/errors";
+import { NotAuthorizedError, throwIfCrossmintApiAuthError } from "../../utils/errors";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
@@ -322,8 +322,14 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "error") {
             walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
-            throwIfCrossmintApiAuthError(response);
-            throw new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
+            try {
+                throwIfCrossmintApiAuthError(response);
+            } catch (error) {
+                return await this.handleOnboardingVerificationFailure(error as Error);
+            }
+            return await this.handleOnboardingVerificationFailure(
+                new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code)
+            );
         }
     }
 
@@ -389,10 +395,15 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 ? response.error || "Failed to validate encrypted OTP"
                 : "Failed to validate encrypted OTP";
         const errorCode = response?.status === "error" ? response.code : undefined;
+        let error: Error = new OtpValidationError(errorMessage, errorCode);
         if (response?.status === "error") {
-            throwIfCrossmintApiAuthError(response);
+            try {
+                throwIfCrossmintApiAuthError(response);
+            } catch (authError) {
+                error = authError as Error;
+            }
         }
-        return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
+        return await this.handleOnboardingVerificationFailure(error);
     }
 
     private async handleOnboardingVerificationFailure(error: Error): Promise<void> {
@@ -403,8 +414,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             this._onboardingConnectionGeneration != null &&
             connection != null &&
             connection.connectionGeneration !== this._onboardingConnectionGeneration;
+        const isAuthError = error instanceof NotAuthorizedError;
 
-        if (frameReloaded) {
+        if (frameReloaded && !isAuthError) {
             walletsLogger.warn("tee.signer.onboarding.reissued", {
                 reason: "signer frame reloaded mid-onboarding, re-issuing OTP",
                 onboardingGeneration: this._onboardingConnectionGeneration,
