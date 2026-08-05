@@ -8,6 +8,8 @@ function order(preparation: unknown): Order {
 }
 
 describe("getIdentityVerificationCredentials", () => {
+    // environmentId is on the wire but off the type on purpose: the backend hardcodes it to null and
+    // PAY-11803 deletes it. The fixture keeps it to pin that the reader passes the object through as-is.
     test("returns the credentials an order carries for its verification step", () => {
         const credentials = { provider: "persona", inquiryId: "inq-1", sessionToken: "tok-1", environmentId: null };
 
