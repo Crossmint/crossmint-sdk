@@ -16,9 +16,13 @@
     "files": ["dist", "LICENSE"],
     "scripts": {
         "build": "tsup",
-        "dev": "tsup --watch"
+        "dev": "tsup --watch",
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "vitest": "3.2.6"
     }
 }

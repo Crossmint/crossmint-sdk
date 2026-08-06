@@ -62,7 +62,15 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
-        const result = this.outgoingEvents[event].safeParse(data);
+        const schema = this.outgoingEvents[event];
+        if (schema == null) {
+            // Transmit anyway: an event missing from the map is our own map-sync gap, not bad
+            // caller data, and dropping it silently breaks consumers that already listen for it.
+            console.warn(`[EventEmitter] send() - No schema for event: ${String(event)}, sending unvalidated`);
+            this.transport.send({ event, data });
+            return;
+        }
+        const result = schema.safeParse(data);
         if (result.success) {
             console.info(`[EventEmitter] send: ${String(event)}`);
             this.transport.send({ event, data });
@@ -74,7 +82,12 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): string {
         const listener = (message: SimpleMessageEvent) => {
             if (message.data.event === event) {
-                const data = this.incomingEvents[event].safeParse(message.data.data);
+                const schema = this.incomingEvents[event];
+                if (schema == null) {
+                    console.warn(`[EventEmitter] on() - No schema for event: ${String(event)}, skipping callback`);
+                    return;
+                }
+                const data = schema.safeParse(message.data.data);
                 if (data.success) {
                     callback(data.data);
                 } else {
