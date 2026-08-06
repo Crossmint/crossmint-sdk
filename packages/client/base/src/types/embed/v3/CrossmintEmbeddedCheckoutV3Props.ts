@@ -29,8 +29,8 @@ export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
-// Web only: taking over the verification step needs CrossmintIdentityVerification, which renders an
-// iframe. React Native has no equivalent yet, so the flag stays off the shared props.
+// Web only: the takeover needs CrossmintIdentityVerification, a DOM iframe with no react-native
+// counterpart. RN checkout keeps running the verification step itself.
 export type CrossmintEmbeddedCheckoutV3WebProps = CrossmintEmbeddedCheckoutV3Props & {
     /** `"external"`: you mount `CrossmintIdentityVerification` from
      * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish. */
