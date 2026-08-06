@@ -1,0 +1,60 @@
+name: Build Expo Debug APK
+
+on:
+    workflow_dispatch:
+        inputs:
+            sdk_ref:
+                description: "Branch/tag/SHA to build"
+                required: true
+                default: "devin/ncs-signer-stale-jwt-retry"
+
+jobs:
+    build:
+        name: Build Android APK
+        runs-on: ubuntu-latest
+        timeout-minutes: 120
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.sdk_ref }}
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build workspace dependencies
+              env:
+                  NODE_OPTIONS: "--max-old-space-size=4096"
+              run: pnpm run build --filter=@crossmint/wallets-playground-expo^...
+
+            - name: Expo prebuild (Android)
+              working-directory: apps/wallets/expo
+              run: npx expo prebuild --platform android --no-install
+
+            - name: Build Android APK
+              working-directory: apps/wallets/expo/android
+              run: ./gradlew assembleDebug --no-daemon
+
+            - name: Upload debug APK
+              uses: actions/upload-artifact@v4
+              with:
+                  name: expo-debug-apk
+                  path: apps/wallets/expo/android/app/build/outputs/apk/debug/app-debug.apk
+                  retention-days: 1
