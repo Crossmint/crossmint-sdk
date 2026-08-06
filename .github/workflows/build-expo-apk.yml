@@ -1,12 +1,17 @@
 name: Build Expo Debug APK
 
 on:
+    pull_request:
     workflow_dispatch:
         inputs:
             sdk_ref:
                 description: "Branch/tag/SHA to build"
                 required: true
                 default: "devin/ncs-signer-stale-jwt-retry"
+
+permissions:
+    contents: read
+    actions: write
 
 jobs:
     build:
@@ -17,7 +22,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
               with:
-                  ref: ${{ inputs.sdk_ref }}
+                  ref: ${{ inputs.sdk_ref || github.event.pull_request.head.sha || github.sha }}
 
             - name: Install pnpm
               uses: pnpm/action-setup@v2
