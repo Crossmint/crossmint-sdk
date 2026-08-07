@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import type { EmailInternalSignerConfig } from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { OnboardingSessionExpiredError, OtpValidationError } from "../types";
 import { EVMNonCustodialSigner } from "./ncs-evm-signer";
 
@@ -27,6 +27,19 @@ function makeConfig(overrides: Partial<EmailInternalSignerConfig> = {}): EmailIn
     } as unknown as EmailInternalSignerConfig;
 }
 
+function makePhoneConfig(overrides: Partial<PhoneInternalSignerConfig> = {}): PhoneInternalSignerConfig {
+    return {
+        type: "phone",
+        phone: "+15551234",
+        locator: "phone:+15551234",
+        address: "0x0000000000000000000000000000000000000000",
+        crossmint: { apiKey: "ck_staging_test", jwt: "test-jwt" },
+        clientTEEConnection: makeReadyConnection(),
+        onAuthRequired: vi.fn(async () => {}),
+        ...overrides,
+    } as unknown as PhoneInternalSignerConfig;
+}
+
 describe("NonCustodialSigner.ensureAuthenticated", () => {
     it("resets the signer frame before checking signer status", async () => {
         const calls: string[] = [];
@@ -42,6 +55,49 @@ describe("NonCustodialSigner.ensureAuthenticated", () => {
         expect(clientTEEConnection.sendAction).toHaveBeenCalledTimes(1);
         // The reset must run before the status check so the OTP flow targets the fresh frame.
         expect(calls).toEqual(["reset", "get-status"]);
+    });
+
+    it("includes the channel in start-onboarding payload for phone signers", async () => {
+        const clientTEEConnection = {
+            connectionGeneration: 1,
+            sendAction: vi.fn(async (args: { event: string }) => {
+                if (args.event === "request:get-status") {
+                    return { status: "success", signerStatus: "new-device" };
+                }
+                return { status: "success" };
+            }),
+        };
+        let hasStarted = false;
+        const onAuthRequired = vi.fn(
+            async (
+                _type: string,
+                _locator: string,
+                _needsAuth: boolean,
+                send: () => Promise<void>,
+                verify: (otp: string) => Promise<void>
+            ) => {
+                if (hasStarted) {
+                    return;
+                }
+                hasStarted = true;
+                await send();
+                await verify("123456");
+            }
+        );
+        const signer = new EVMNonCustodialSigner(
+            makePhoneConfig({ clientTEEConnection, channel: "whatsapp", onAuthRequired })
+        );
+
+        await signer.ensureAuthenticated();
+
+        expect(clientTEEConnection.sendAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                event: "request:start-onboarding",
+                data: expect.objectContaining({
+                    data: { authId: "phone:+15551234", channel: "whatsapp" },
+                }),
+            })
+        );
     });
 
     it("resets the signer frame on every signature", async () => {

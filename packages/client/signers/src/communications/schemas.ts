@@ -55,6 +55,7 @@ export const StartOnboardingPayloadSchema = {
         data: z
             .object({
                 authId: z.string().describe("Authentication identifier for the signer"),
+                channel: z.enum(["sms", "whatsapp"]).optional().describe("OTP delivery channel for phone signers"),
             })
             .describe("Data needed to create a new signer"),
     }),

@@ -222,6 +222,18 @@ export class WalletFactory {
         return typeof signer === "object" && signer != null && signer.type === "device";
     }
 
+    // `channel` (OTP delivery preference for phone signers) is a client-only field that the
+    // wallet-creation API never persists or returns, so it's always sourced from the caller's config.
+    private mergePhoneChannel<T extends { type: string }>(
+        apiConfig: T,
+        inputConfig?: { type: string; channel?: "sms" | "whatsapp" }
+    ): T {
+        if (apiConfig.type !== "phone" || inputConfig?.type !== "phone" || inputConfig.channel == null) {
+            return apiConfig;
+        }
+        return { ...apiConfig, channel: inputConfig.channel };
+    }
+
     private async createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
@@ -238,7 +250,7 @@ export class WalletFactory {
         const recovery =
             createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
                 ? createArgs.recovery
-                : apiRecovery;
+                : this.mergePhoneChannel(apiRecovery, createArgs.recovery);
 
         const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
         let signers = apiDelegatedSigners;
@@ -248,6 +260,19 @@ export class WalletFactory {
             (signers[0].type === "server" || signers[0].type === "external-wallet")
         ) {
             signers = createArgs.signers as SignerResponse[];
+        } else if (signers != null) {
+            // `channel` (OTP delivery preference for phone signers) is a client-only field that never
+            // round-trips through the wallet-creation API response, so merge it back in from the caller's
+            // config for any delegated phone signers.
+            const inputSigners = createArgs.signers;
+            signers = signers.map((s) =>
+                this.mergePhoneChannel(
+                    s,
+                    inputSigners?.find(
+                        (input) => input.type === "phone" && s.type === "phone" && getSignerLocator(input) === s.locator
+                    )
+                )
+            ) as SignerResponse[];
         }
 
         // Preserve the API-sourced server signer recovery address so the wallet can identify
