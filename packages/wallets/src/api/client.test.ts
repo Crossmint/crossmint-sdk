@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import type { ApiClient } from "./client";
 import type { ApproveSignatureParams, CreateWalletParams, SendParams } from "./types";
 import { WALLET_LOCATORS, TOKEN_LOCATORS } from "./__tests__/constants";
@@ -1069,6 +1070,47 @@ describe("ApiClient - send()", () => {
                 const body = JSON.parse(call.options.body as string);
                 expect(body.amount).toBe("1e-18");
             }
+        });
+    });
+});
+
+describe("ApiClient - getSigner()", () => {
+    let apiClient: ApiClient;
+    let mockGet: MockedFunction<ApiClient["get"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("success cases", () => {
+        it("returns the signer body for an ok response", async () => {
+            const signerBody = {
+                type: "email",
+                locator: "email:user@example.com",
+                chains: { "base-sepolia": { status: "success" } },
+            };
+            mockGet.mockResolvedValue(createMockSuccessResponse(signerBody));
+
+            await expect(
+                apiClient.getSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "email:user@example.com")
+            ).resolves.toEqual(signerBody);
+        });
+    });
+
+    describe("error cases", () => {
+        it("throws an ApiClientError carrying the status for a non-ok response", async () => {
+            mockGet.mockResolvedValue(
+                createMockErrorResponse({ error: true, message: "Signer not found" }, 404, "Not Found")
+            );
+
+            const request = apiClient.getSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "email:missing@example.com");
+            await expect(request).rejects.toBeInstanceOf(ApiClientError);
+            await expect(request).rejects.toMatchObject({ status: 404 });
         });
     });
 });
