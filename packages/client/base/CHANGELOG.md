@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.7.0
+
+### Minor Changes
+
+- 74f6176: Added `CrossmintIdentityVerification`, a standalone component that renders a Crossmint-hosted identity verification step from an order's `payment.preparation.kyc` credentials.
+
 ## 2.6.0
 
 ### Minor Changes

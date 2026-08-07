@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 1.12.0
+
+### Minor Changes
+
+- 08b4f7b: Added a `channel` option to the phone signer `start-onboarding` flow so OTPs can be delivered via WhatsApp as well as SMS.
+
+### Patch Changes
+
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/common-sdk-auth@1.1.16
+
 ## 1.11.0
 
 ### Minor Changes
