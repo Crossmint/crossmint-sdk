@@ -59,10 +59,10 @@ describe("<CrossmintIdentityVerification />", () => {
             expect(iframe.getAttribute("src")).toContain("/sdk/unstable/kyc-verification");
         });
 
-        test("allows camera access, which Persona's document capture needs", () => {
+        test("allows camera access only, which is all Persona's document capture needs", () => {
             render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
-            expect(screen.getByTitle("Identity verification").getAttribute("allow")).toContain("camera");
+            expect(screen.getByTitle("Identity verification").getAttribute("allow")).toBe("camera");
         });
     });
 
