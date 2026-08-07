@@ -240,6 +240,7 @@ type CrossmintApiErrorBody = {
     code?: string;
     expiredAt?: string;
     identifierKey?: string;
+    data?: unknown;
 };
 
 function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErrorBody {
@@ -258,15 +259,21 @@ export function throwIfCrossmintApiAuthError(response: unknown): void {
     }
 
     const details = JSON.stringify(response);
+    const errorData =
+        typeof response.data === "object" && response.data != null ? (response.data as Record<string, unknown>) : {};
+    const expiredAt = response.expiredAt ?? (typeof errorData.expiredAt === "string" ? errorData.expiredAt : undefined);
+    const identifierKey =
+        response.identifierKey ?? (typeof errorData.identifierKey === "string" ? errorData.identifierKey : undefined);
+
     switch (response.code) {
         case "ERROR_JWT_EXPIRED":
-            throw new JWTExpiredError(response.expiredAt, details);
+            throw new JWTExpiredError(expiredAt, details);
         case "ERROR_JWT_INVALID":
             throw new JWTInvalidError(details);
         case "ERROR_JWT_DECRYPTION":
             throw new JWTDecryptionError(details);
         case "ERROR_JWT_IDENTIFIER_ERROR":
-            throw new JWTIdentifierError(response.identifierKey, details);
+            throw new JWTIdentifierError(identifierKey, details);
         case "ERROR_JWT_AUDIENCE_MISMATCH":
             throw new NotAuthorizedError(response.message ?? "JWT audience mismatch", details);
     }

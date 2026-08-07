@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 
 import type { EmailInternalSignerConfig } from "../types";
 import { OnboardingSessionExpiredError, OtpValidationError } from "../types";
+import { walletsLogger } from "../../logger";
+import { JWTExpiredError } from "../../utils/errors";
 import { EVMNonCustodialSigner } from "./ncs-evm-signer";
 
 function makeReadyConnection(onSendAction?: () => void) {
@@ -83,6 +85,39 @@ describe("NonCustodialSigner._exportPrivateKey", () => {
         expect(resetSignerFrame).toHaveBeenCalledTimes(1);
         // The reset runs before authenticating and before the export request.
         expect(calls).toEqual(["reset", "get-status", "export"]);
+    });
+
+    it("uses a live JWT getter so export-signer args reflect the latest setJwt value", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "first" };
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        const exportTEEConnection = {
+            sendAction: vi.fn(async () => ({ status: "success" })),
+        };
+        await signer._exportPrivateKey(exportTEEConnection as never);
+
+        const args = exportTEEConnection.sendAction.mock.calls[0][0];
+        expect(args.data.authData.jwt).toBe("first");
+        crossmint.jwt = "second";
+        expect(args.data.authData.jwt).toBe("second");
+    });
+
+    it("throws JWTExpiredError when export-signer returns ERROR_JWT_EXPIRED", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "expired" };
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        const exportTEEConnection = {
+            sendAction: vi.fn(async () => ({
+                status: "error",
+                error: "HTTP 401",
+                code: "ERROR_JWT_EXPIRED",
+                data: { expiredAt: "2026-08-05T02:14:04.000Z" },
+            })),
+        };
+
+        await expect(signer._exportPrivateKey(exportTEEConnection as never)).rejects.toBeInstanceOf(JWTExpiredError);
     });
 });
 
@@ -245,5 +280,110 @@ describe("NonCustodialSigner onboarding recovery", () => {
         // not throw "session expired" and leave the auth promise pending forever.
         await expect(verifyOtp?.("stale-otp")).resolves.toBeUndefined();
         await expect(authSettled).resolves.toBe("resolved");
+    });
+});
+
+describe("NonCustodialSigner JWT refresh", () => {
+    it("uses a live JWT getter so sendAction args reflect the latest setJwt value", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "first" };
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        await signer.ensureAuthenticated();
+
+        const args = clientTEEConnection.sendAction.mock.calls[0][0];
+        expect(args.data.authData.jwt).toBe("first");
+        crossmint.jwt = "second";
+        expect(args.data.authData.jwt).toBe("second");
+    });
+
+    it("retries get-status once when the JWT is refreshed while the request is pending", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "stale" };
+        const capturedJwts: string[] = [];
+        const clientTEEConnection = {
+            sendAction: vi.fn((args: { data: { authData: { jwt: string } } }) => {
+                capturedJwts.push(args.data.authData.jwt);
+                if (capturedJwts.length === 1) {
+                    crossmint.jwt = "fresh";
+                    return Promise.resolve({ status: "error", error: "HTTP 401" });
+                }
+                return Promise.resolve({ status: "success", signerStatus: "ready" });
+            }),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        await signer.ensureAuthenticated();
+
+        expect(clientTEEConnection.sendAction).toHaveBeenCalledTimes(2);
+        expect(capturedJwts).toEqual(["stale", "fresh"]);
+    });
+
+    it("logs a retry when the JWT is refreshed while the request is pending", async () => {
+        const infoSpy = vi.spyOn(walletsLogger, "info").mockImplementation(() => undefined);
+        const crossmint = { apiKey: "ck_staging_test", jwt: "stale" };
+        const clientTEEConnection = {
+            sendAction: vi.fn(() => {
+                if (crossmint.jwt === "stale") {
+                    crossmint.jwt = "fresh";
+                    return Promise.resolve({ status: "error", error: "HTTP 401" });
+                }
+                return Promise.resolve({ status: "success", signerStatus: "ready" });
+            }),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        await signer.ensureAuthenticated();
+
+        expect(infoSpy).toHaveBeenCalledWith(
+            "TEE action: JWT changed while request was in flight, retrying once",
+            expect.objectContaining({
+                status: "error",
+                hadInitialJwt: true,
+                hasNewJwt: true,
+            })
+        );
+        infoSpy.mockRestore();
+    });
+
+    it("throws JWTExpiredError when the frame reports ERROR_JWT_EXPIRED", async () => {
+        const crossmint = { apiKey: "ck_staging_test", jwt: "expired" };
+        const clientTEEConnection = {
+            sendAction: vi.fn(() =>
+                Promise.resolve({
+                    status: "error",
+                    error: "HTTP 401",
+                    code: "ERROR_JWT_EXPIRED",
+                    data: { expiredAt: "2026-08-05T02:14:04.000Z" },
+                })
+            ),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ crossmint, clientTEEConnection }));
+
+        await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(JWTExpiredError);
+    });
+
+    it("rejects the auth promise when verifyOtp returns ERROR_JWT_EXPIRED and onAuthRequired does not await verify", async () => {
+        const connection = makeScriptedConnection(() => ({
+            status: "error",
+            code: "ERROR_JWT_EXPIRED",
+            error: "HTTP 401",
+        }));
+        const onAuthRequired = vi.fn(
+            async (
+                _type: string,
+                _locator: string,
+                _needsAuth: boolean,
+                send: () => Promise<void>,
+                verify: (otp: string) => Promise<void>
+            ) => {
+                await send();
+                void verify("123456").catch(() => undefined);
+            }
+        );
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: connection as never, onAuthRequired: onAuthRequired as never })
+        );
+
+        await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(JWTExpiredError);
     });
 });
