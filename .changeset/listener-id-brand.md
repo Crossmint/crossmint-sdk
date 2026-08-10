@@ -8,4 +8,6 @@
 
 `Transport.addMessageListener()` / `removeMessageListener()` are branded the same way, so the ids are branded where they are minted and the publicly exported transports (`SignersWindowTransport`, `RNWebViewTransport`) no longer accept an event name either.
 
-This is breaking for every package that re-exposes an emitter's `off()`: `@crossmint/client-sdk-base` (`PaymentMethodManagementIFrameEmitter`, `EmbeddedCheckoutV3IFrameEmitter`, `IdentityVerificationIFrameEmitter`) and `@crossmint/client-sdk-rn-window` (`WebViewParent`).
+`Transport` is a public interface, so anyone implementing it now needs a way to produce a branded id without an unsafe cast. `mintListenerId()` is exported for that, and it is the only place in the codebase that casts.
+
+This is breaking for every package that re-exposes an emitter's `off()`: `@crossmint/client-sdk-base` (`PaymentMethodManagementIFrameEmitter`, `EmbeddedCheckoutV3IFrameEmitter`, `IdentityVerificationIFrameEmitter`) and `@crossmint/client-sdk-rn-window` (`WebViewParent`). Both now re-export the `ListenerId` type, so consumers migrating a `string`-typed variable can name it without adding a direct dependency on `@crossmint/client-sdk-window`.

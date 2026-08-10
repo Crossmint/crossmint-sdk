@@ -2,7 +2,7 @@ import "../polyfills";
 import type { z } from "zod";
 import type { WebViewMessageEvent, WebView } from "react-native-webview";
 import type { EventMap, ListenerId, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
-import { generateRandomString } from "@crossmint/client-sdk-window";
+import { mintListenerId } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
 
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
@@ -64,7 +64,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     }
 
     addMessageListener(listener: (event: SimpleMessageEvent) => void): ListenerId {
-        const id = generateRandomString() as ListenerId;
+        const id = mintListenerId();
         this.listeners.set(id, listener);
 
         if (this.isWebView && !this.globalListenerAttached) {

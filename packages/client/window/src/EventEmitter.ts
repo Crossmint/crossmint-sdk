@@ -1,9 +1,15 @@
 import type { z } from "zod";
 import type { SimpleMessageEvent, Transport } from "./transport/Transport";
+import { generateRandomString } from "./utils/generateRandomString";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
 export type ListenerId = string & { readonly __listenerId: true };
+
+/** The only sanctioned way to make a `ListenerId`, so the unsafe cast lives in one place. */
+export function mintListenerId(): ListenerId {
+    return generateRandomString() as ListenerId;
+}
 
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,

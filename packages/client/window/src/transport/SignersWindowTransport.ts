@@ -1,6 +1,5 @@
-import type { ListenerId } from "../EventEmitter";
+import { type ListenerId, mintListenerId } from "../EventEmitter";
 import type { SimpleMessageEvent } from "./Transport";
-import { generateRandomString } from "../utils/generateRandomString";
 import { WindowTransport } from "./WindowTransport";
 
 export class SignersWindowTransport extends WindowTransport {
@@ -16,7 +15,7 @@ export class SignersWindowTransport extends WindowTransport {
             }
         };
 
-        const id = generateRandomString() as ListenerId;
+        const id = mintListenerId();
         window.addEventListener("message", wrapped);
         this.listeners.set(id, wrapped);
         return id;

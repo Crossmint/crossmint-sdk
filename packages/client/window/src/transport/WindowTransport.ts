@@ -1,7 +1,6 @@
 import type { z } from "zod";
-import type { EventMap, ListenerId } from "../EventEmitter";
+import { type EventMap, type ListenerId, mintListenerId } from "../EventEmitter";
 import type { Transport, SimpleMessageEvent } from "./Transport";
-import { generateRandomString } from "../utils/generateRandomString";
 
 export class WindowTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
     protected listeners = new Map<ListenerId, (event: MessageEvent) => void>();
@@ -32,7 +31,7 @@ export class WindowTransport<OutgoingEvents extends EventMap = EventMap> impleme
             }
         };
 
-        const id = generateRandomString() as ListenerId;
+        const id = mintListenerId();
         window.addEventListener("message", wrapped);
         this.listeners.set(id, wrapped);
         return id;
