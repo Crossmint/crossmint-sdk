@@ -1,30 +1,22 @@
 import "@testing-library/jest-dom/vitest";
 
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
+import { emit, iframeClient, resetIFrameEmitter } from "../../../tests/shared/iframeEmitter";
 import { CrossmintIdentityVerification } from "./CrossmintIdentityVerification";
 
-const listeners = new Map<string, (data: unknown) => void>();
-// Returns an id distinct from the event name on purpose, so the unmount test
-// fails if cleanup passes event names to off() instead of the returned ids.
-// CrossmintPaymentMethodManagementIFrame has exactly that bug today.
-const iframeClient = {
-    on: vi.fn((event: string, handler: (data: unknown) => void) => {
-        listeners.set(event, handler);
-        return `listener-id:${event}`;
-    }),
-    off: vi.fn(),
-};
-
-vi.mock("@crossmint/client-sdk-base", () => ({
-    createIdentityVerificationService: () => ({
-        iframe: {
-            getUrl: () => "https://staging.crossmint.com/sdk/unstable/kyc-verification?credentials=%7B%7D",
-            createClient: () => iframeClient,
-        },
-    }),
-}));
+vi.mock("@crossmint/client-sdk-base", async () => {
+    const { iframeClient } = await import("../../../tests/shared/iframeEmitter");
+    return {
+        createIdentityVerificationService: () => ({
+            iframe: {
+                getUrl: () => "https://staging.crossmint.com/sdk/unstable/kyc-verification?credentials=%7B%7D",
+                createClient: () => iframeClient,
+            },
+        }),
+    };
+});
 
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: () => ({ crossmint: { apiKey: "ck_staging_key" } }),
@@ -36,19 +28,10 @@ vi.mock("@/utils/createCrossmintApiClient", () => ({
 
 const CREDENTIALS = { provider: "persona", inquiryId: "inq-1" } as const;
 
-function emit(event: string, data: unknown) {
-    const handler = listeners.get(event);
-    if (handler == null) {
-        throw new Error(`no listener registered for ${event}`);
-    }
-    act(() => handler(data));
-}
-
 describe("<CrossmintIdentityVerification />", () => {
     afterEach(() => {
         cleanup();
-        listeners.clear();
-        vi.clearAllMocks();
+        resetIFrameEmitter();
     });
 
     describe("when mounted", () => {

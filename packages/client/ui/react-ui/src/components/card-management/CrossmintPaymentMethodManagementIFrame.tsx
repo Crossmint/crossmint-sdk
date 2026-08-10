@@ -6,12 +6,15 @@ import {
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 import type { CrossmintPaymentMethodManagementProps } from "@crossmint/client-sdk-base";
+import { useLatest } from "@/hooks/useLatest";
 
 export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMethodManagementProps) {
     const [iframeClient, setIframeClient] = useState<PaymentMethodManagementIFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
     const ref = useRef<HTMLIFrameElement>(null);
+
+    const latestProps = useLatest(props);
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, {
@@ -31,13 +34,14 @@ export function CrossmintPaymentMethodManagementIFrame(props: CrossmintPaymentMe
         if (iframeClient == null) {
             return;
         }
-        iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
-        iframeClient.on("payment-method:selected", (data) => props.onPaymentMethodSelected?.(data));
+        const heightListener = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
+        const selectedListener = iframeClient.on("payment-method:selected", (data) =>
+            latestProps.current.onPaymentMethodSelected?.(data)
+        );
 
         return () => {
-            iframeClient.off("ui:height.changed");
-            iframeClient.off("payment-method:selected");
-            iframeClient.off("agentic-enrollment:created");
+            iframeClient.off(heightListener);
+            iframeClient.off(selectedListener);
         };
     }, [iframeClient]);
 

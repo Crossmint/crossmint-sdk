@@ -62,17 +62,17 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
         }
 
         const handleHeightChanged = (data: { height: number }) => setHeight(data.height);
-        webViewClient.on("ui:height.changed", handleHeightChanged);
+        const heightListener = webViewClient.on("ui:height.changed", handleHeightChanged);
 
         // Listen for order:updated events and re-emit as local event
         const handleOrderUpdated = (data: LocalEventEmitterEvents["order:updated"]) => {
             localEventEmitter.emit("order:updated", data);
         };
-        webViewClient.on("order:updated", handleOrderUpdated);
+        const orderListener = webViewClient.on("order:updated", handleOrderUpdated);
 
         return () => {
-            webViewClient.off("ui:height.changed");
-            webViewClient.off("order:updated");
+            webViewClient.off(heightListener);
+            webViewClient.off(orderListener);
         };
     }, [webViewClient]);
 

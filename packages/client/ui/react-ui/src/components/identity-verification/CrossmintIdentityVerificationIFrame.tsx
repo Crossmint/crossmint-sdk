@@ -6,6 +6,7 @@ import {
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
+import { useLatest } from "@/hooks/useLatest";
 
 export function CrossmintIdentityVerificationIFrame(props: CrossmintIdentityVerificationProps) {
     const [iframeClient, setIframeClient] = useState<IdentityVerificationIFrameEmitter | null>(null);
@@ -13,12 +14,7 @@ export function CrossmintIdentityVerificationIFrame(props: CrossmintIdentityVeri
 
     const ref = useRef<HTMLIFrameElement>(null);
 
-    // The listeners are subscribed once, so reading callbacks off this ref is what keeps a
-    // late event calling the render's props rather than the ones captured at subscribe time.
-    const latestProps = useRef(props);
-    useEffect(() => {
-        latestProps.current = props;
-    });
+    const latestProps = useLatest(props);
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
