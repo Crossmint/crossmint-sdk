@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
 import type { RecoverySignerConfigForChain, SignerAdapter, SignerLocator } from "../../signers/types";
@@ -66,6 +67,7 @@ const apiKeyConfig = { type: "api-key" } as const;
 beforeEach(() => {
     vi.clearAllMocks();
     walletsLogger.warn = vi.fn();
+    walletsLogger.error = vi.fn();
 });
 
 describe("SignerManager", () => {
@@ -205,6 +207,46 @@ describe("SignerManager", () => {
         expect(walletsLogger.warn).toHaveBeenCalledWith(
             "wallet.signers.getSignerState.errorResponse",
             expect.objectContaining({ signerLocator: "api-key" })
+        );
+    });
+
+    it.each([
+        ["success", true],
+        ["awaiting-approval", false],
+    ] as const)("isSignerApproved() maps a fetched signer with status %s to %s", async (status, expected) => {
+        const getSigner = vi.fn().mockResolvedValue({
+            type: "api-key",
+            locator: "api-key:delegated",
+            chains: { "base-sepolia": { status } },
+        });
+        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+        await expect(manager.isSignerApproved("api-key:delegated")).resolves.toBe(expected);
+    });
+
+    it("isSignerApproved() resolves false when the signer is not registered", async () => {
+        const notFound = new ApiClientError("API request failed: 404 Not Found", 404, "Not Found", null);
+        const getSigner = vi.fn().mockRejectedValue(notFound);
+        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+        await expect(manager.isSignerApproved("api-key:unregistered")).resolves.toBe(false);
+    });
+
+    it.each([
+        [
+            "getSigner throws a non-404 API error",
+            vi
+                .fn()
+                .mockRejectedValue(
+                    new ApiClientError("API request failed: 401 Unauthorized", 401, "Unauthorized", null)
+                ),
+        ],
+        ["getSigner throws a network error", vi.fn().mockRejectedValue(new Error("network"))],
+        ["getSigner resolves with an error shape", vi.fn().mockResolvedValue({ error: true, message: "nope" })],
+    ])("isSignerApproved() rejects and logs when %s", async (_name, getSigner) => {
+        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+        await expect(manager.isSignerApproved("api-key:delegated")).rejects.toThrow();
+        expect(walletsLogger.error).toHaveBeenCalledWith(
+            "wallet.signers.isSignerApproved.failed",
+            expect.objectContaining({ signerLocator: "api-key:delegated" })
         );
     });
 
