@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { EventMap } from "../EventEmitter";
+import type { EventMap, ListenerId } from "../EventEmitter";
 
 export type SimpleMessageEvent = {
     type: string;
@@ -11,6 +11,6 @@ export type SimpleMessageEvent = {
 
 export interface Transport<OutgoingEvents extends EventMap = EventMap> {
     send<K extends keyof OutgoingEvents>(message: { event: K; data: z.infer<OutgoingEvents[K]> }): void;
-    addMessageListener(listener: (event: SimpleMessageEvent | MessageEvent) => void): string;
-    removeMessageListener(id: string): void;
+    addMessageListener(listener: (event: SimpleMessageEvent | MessageEvent) => void): ListenerId;
+    removeMessageListener(id: ListenerId): void;
 }

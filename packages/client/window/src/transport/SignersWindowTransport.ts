@@ -1,9 +1,10 @@
+import type { ListenerId } from "../EventEmitter";
 import type { SimpleMessageEvent } from "./Transport";
 import { generateRandomString } from "../utils/generateRandomString";
 import { WindowTransport } from "./WindowTransport";
 
 export class SignersWindowTransport extends WindowTransport {
-    addMessageListener(listener: (event: SimpleMessageEvent) => void): string {
+    addMessageListener(listener: (event: SimpleMessageEvent) => void): ListenerId {
         const wrapped = (event: MessageEvent) => {
             const sameSource = event.source === this.otherWindow;
             const originMatches = this.isTargetOrigin(event.origin);
@@ -15,7 +16,7 @@ export class SignersWindowTransport extends WindowTransport {
             }
         };
 
-        const id = generateRandomString();
+        const id = generateRandomString() as ListenerId;
         window.addEventListener("message", wrapped);
         this.listeners.set(id, wrapped);
         return id;

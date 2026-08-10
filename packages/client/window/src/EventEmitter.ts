@@ -3,6 +3,8 @@ import type { SimpleMessageEvent, Transport } from "./transport/Transport";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
+export type ListenerId = string & { readonly __listenerId: true };
+
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
     OutgoingEvents extends EventMap = EventMap,
@@ -71,7 +73,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         }
     }
 
-    on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): string {
+    on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): ListenerId {
         const listener = (message: SimpleMessageEvent) => {
             if (message.data.event === event) {
                 const data = this.incomingEvents[event].safeParse(message.data.data);
@@ -197,7 +199,14 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         });
     }
 
-    off(id: string) {
+    off(id: ListenerId) {
         this.transport.removeMessageListener(id);
     }
 }
+
+type AssertTrue<T extends true> = T;
+// The whole point of the major bump is that a plain string is no longer a listener id. Widening
+// `off()` back, or dropping the brand from `on()`, resolves these to `false` and fails the build.
+type _OffRejectsPlainStrings = AssertTrue<string extends Parameters<AnyEventEmitter["off"]>[0] ? false : true>;
+type _OnReturnsBrandedIds = AssertTrue<string extends ReturnType<AnyEventEmitter["on"]> ? false : true>;
+type AnyEventEmitter = EventEmitter<EventMap, EventMap>;

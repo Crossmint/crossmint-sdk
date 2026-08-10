@@ -1,10 +1,10 @@
 import type { z } from "zod";
-import type { EventMap } from "../EventEmitter";
+import type { EventMap, ListenerId } from "../EventEmitter";
 import type { Transport, SimpleMessageEvent } from "./Transport";
 import { generateRandomString } from "../utils/generateRandomString";
 
 export class WindowTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
-    protected listeners = new Map<string, (event: MessageEvent) => void>();
+    protected listeners = new Map<ListenerId, (event: MessageEvent) => void>();
 
     constructor(
         protected otherWindow: Window,
@@ -21,7 +21,7 @@ export class WindowTransport<OutgoingEvents extends EventMap = EventMap> impleme
         }
     }
 
-    addMessageListener(listener: (event: SimpleMessageEvent) => void): string {
+    addMessageListener(listener: (event: SimpleMessageEvent) => void): ListenerId {
         const wrapped = (event: MessageEvent) => {
             const originMatches = this.isTargetOrigin(event.origin);
             if (originMatches) {
@@ -32,13 +32,13 @@ export class WindowTransport<OutgoingEvents extends EventMap = EventMap> impleme
             }
         };
 
-        const id = generateRandomString();
+        const id = generateRandomString() as ListenerId;
         window.addEventListener("message", wrapped);
         this.listeners.set(id, wrapped);
         return id;
     }
 
-    removeMessageListener(id: string): void {
+    removeMessageListener(id: ListenerId): void {
         const listener = this.listeners.get(id);
         if (listener != null) {
             window.removeEventListener("message", listener);
