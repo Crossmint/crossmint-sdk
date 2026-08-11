@@ -710,15 +710,30 @@ importers:
       '@expo/config-plugins':
         specifier: ^9.0.17
         version: 9.1.7
+      '@testing-library/react':
+        specifier: ^16.0.1
+        version: 16.3.0(@testing-library/dom@9.3.4)(@types/react-dom@19.1.0(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@types/react':
         specifier: 19.1.10
         version: 19.1.10
       expo-modules-core:
         specifier: ~3.0.29
         version: 3.0.29(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)
+      jsdom:
+        specifier: ^23.0.0
+        version: 23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      react:
+        specifier: 19.1.1
+        version: 19.1.1
+      react-dom:
+        specifier: 19.1.1
+        version: 19.1.1(react@19.1.1)
       typedoc:
         specifier: 0.28.16
         version: 0.28.16(typescript@5.5.3)
+      vitest:
+        specifier: 3.2.6
+        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)
 
   packages/client/ui/react-ui:
     dependencies:

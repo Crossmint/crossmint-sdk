@@ -12,6 +12,7 @@
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "test:vitest": "vitest run",
         "generate:docs": "typedoc && node scripts/generate-reference.mjs"
     },
     "dependencies": {
@@ -40,9 +41,14 @@
     },
     "devDependencies": {
         "@expo/config-plugins": "^9.0.17",
+        "@testing-library/react": "^16.0.1",
         "@types/react": "19.1.10",
         "expo-modules-core": "~3.0.29",
-        "typedoc": "0.28.16"
+        "jsdom": "^23.0.0",
+        "react": "19.1.1",
+        "react-dom": "19.1.1",
+        "typedoc": "0.28.16",
+        "vitest": "3.2.6"
     },
     "peerDependencies": {
         "@expo/config-plugins": ">=9.0.0",
