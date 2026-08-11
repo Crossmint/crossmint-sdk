@@ -4,6 +4,14 @@ export * from "./components";
 
 export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";
 
+export { getIdentityVerificationCredentials } from "@crossmint/client-sdk-base";
+export type {
+    CrossmintIdentityVerificationProps,
+    IdentityVerificationCredentials,
+    IdentityVerificationStatus,
+    IdentityVerificationError,
+} from "@crossmint/client-sdk-base";
+
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
 export type { CrossmintWalletBaseContext, OtpSignerFunctions } from "@crossmint/client-sdk-react-base";
