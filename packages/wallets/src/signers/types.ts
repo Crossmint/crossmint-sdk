@@ -88,6 +88,7 @@ export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
     locator?: string;
+    channel?: "sms" | "whatsapp";
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];

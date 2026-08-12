@@ -2,6 +2,7 @@ import {
     type Crossmint,
     APIKeyEnvironmentPrefix,
     APIKeyUsageOrigin,
+    ApiClientError,
     CrossmintApiClient,
 } from "@crossmint/common-sdk-base";
 
@@ -261,6 +262,18 @@ class ApiClient extends CrossmintApiClient {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}`, {
             headers: this.headers,
         });
+        if (!response.ok) {
+            let responseBody: string | null = null;
+            try {
+                responseBody = await response.text();
+            } catch {}
+            throw new ApiClientError(
+                `API request failed: ${response.status} ${response.statusText}`,
+                response.status,
+                response.statusText,
+                responseBody
+            );
+        }
         return response.json();
     }
 

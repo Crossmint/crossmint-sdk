@@ -254,6 +254,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const authId = this.getAuthId();
         walletsLogger.info("start-onboarding: sending request");
         const startTime = Date.now();
+        const channel = this.config.type === "phone" ? this.config.channel : undefined;
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
@@ -262,7 +263,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                     jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
-                data: { authId },
+                data: { authId, ...(channel != null ? { channel } : {}) },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });

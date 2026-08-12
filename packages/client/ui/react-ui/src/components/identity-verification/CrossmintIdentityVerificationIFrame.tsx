@@ -58,7 +58,7 @@ export function CrossmintIdentityVerificationIFrame(props: CrossmintIdentityVeri
             src={identityVerificationService.iframe.getUrl(props)}
             id="crossmint-identity-verification.iframe"
             title="Identity verification"
-            allow="microphone; camera"
+            allow="camera"
             style={{
                 border: "none",
                 width: "100%",

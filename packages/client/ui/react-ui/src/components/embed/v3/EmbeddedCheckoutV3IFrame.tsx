@@ -3,6 +3,7 @@ import { lazy, useEffect, useRef, useState } from "react";
 
 import {
     type CrossmintEmbeddedCheckoutV3Props,
+    type CrossmintEmbeddedCheckoutV3WebProps,
     type EmbeddedCheckoutV3IFrameEmitter,
     crossmintEmbeddedCheckoutV3Service,
 } from "@crossmint/client-sdk-base";
@@ -18,7 +19,7 @@ const CryptoWalletConnectionHandler = lazy(() =>
     }))
 );
 
-export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
+export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3WebProps) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
     const [eventEnableCrypto, setEventEnableCrypto] = useState(false);

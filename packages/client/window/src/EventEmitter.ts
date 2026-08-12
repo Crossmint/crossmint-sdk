@@ -122,7 +122,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                     clearInterval(interval);
                 }
                 this.off(responseListenerId);
-                console.error(
+                console.warn(
                     `[EventEmitter] sendAction: timeout after ${timeoutMs / 1000}s waiting for ${String(responseEvent)}`
                 );
                 reject(
@@ -154,7 +154,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                         clearInterval(interval!);
                         clearTimeout(timer);
                         this.off(responseListenerId);
-                        console.error(
+                        console.warn(
                             `[EventEmitter] sendAction: max retries (${maxRetries}) reached for ${String(event)}`
                         );
                         reject(
@@ -182,7 +182,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
                 this.off(responseListenerId);
-                console.error(
+                console.warn(
                     `[EventEmitter] onAction() - Timeout after ${timeoutMs / 1000}s waiting for ${String(event)}`
                 );
                 reject(

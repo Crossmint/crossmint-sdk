@@ -20,7 +20,7 @@ const iframeClient = {
 vi.mock("@crossmint/client-sdk-base", () => ({
     createIdentityVerificationService: () => ({
         iframe: {
-            getUrl: () => "https://staging.crossmint.com/sdk/unstable/kyc-verification?credentials=%7B%7D",
+            getUrl: () => "https://staging.crossmint.com/sdk/unstable/identity-verification?credentials=%7B%7D",
             createClient: () => iframeClient,
         },
     }),
@@ -52,17 +52,17 @@ describe("<CrossmintIdentityVerification />", () => {
     });
 
     describe("when mounted", () => {
-        test("renders an iframe pointed at the kyc-verification route", () => {
+        test("renders an iframe pointed at the identity-verification route", () => {
             render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
             const iframe = screen.getByTitle("Identity verification");
-            expect(iframe.getAttribute("src")).toContain("/sdk/unstable/kyc-verification");
+            expect(iframe.getAttribute("src")).toContain("/sdk/unstable/identity-verification");
         });
 
-        test("allows camera access, which Persona's document capture needs", () => {
+        test("allows camera access only, which is all Persona's document capture needs", () => {
             render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
-            expect(screen.getByTitle("Identity verification").getAttribute("allow")).toContain("camera");
+            expect(screen.getByTitle("Identity verification").getAttribute("allow")).toBe("camera");
         });
     });
 

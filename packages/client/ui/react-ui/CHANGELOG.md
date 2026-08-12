@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.4.0
+
+### Minor Changes
+
+- 74f6176: Added `CrossmintIdentityVerification`, a standalone component that renders a Crossmint-hosted identity verification step from an order's `payment.preparation.kyc` credentials.
+
+### Patch Changes
+
+- a0e8c70: `CrossmintIdentityVerification` now grants its iframe `allow="camera"` rather than `allow="microphone; camera"`. Persona's document and selfie capture needs the camera, and no verification template records audio.
+- Updated dependencies [74f6176]
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-sdk-base@2.7.0
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/wallets-sdk@1.12.0
+  - @crossmint/client-sdk-auth@1.3.18
+  - @crossmint/client-sdk-react-base@2.2.3
+  - @crossmint/common-sdk-auth@1.1.16
+
 ## 4.3.4
 
 ### Patch Changes

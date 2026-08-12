@@ -198,6 +198,8 @@ export function BaseCodeInput({
                 textContentType={textContentType}
                 editable={!isLoading}
                 maxLength={otpLength}
+                returnKeyType="done"
+                onSubmitEditing={handleSubmitOTP}
             />
 
             {error && <Text style={dynamicStyles.errorText}>{error}</Text>}

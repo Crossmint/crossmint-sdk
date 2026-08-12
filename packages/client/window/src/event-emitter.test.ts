@@ -137,6 +137,46 @@ describe("EventEmitter", () => {
         });
     });
 
+    describe("when a timeout reaches the caller as a rejection", () => {
+        test("sendAction does not also report it as an error", async () => {
+            const { emitter } = setup();
+
+            await expect(
+                emitter.sendAction({
+                    event: "known:outgoing",
+                    data: { id: "abc" },
+                    responseEvent: "known:incoming",
+                    options: { timeoutMs: 1 },
+                })
+            ).rejects.toBeTruthy();
+
+            expect(console.error).not.toHaveBeenCalled();
+        });
+
+        test("onAction does not also report it as an error", async () => {
+            const { emitter } = setup();
+
+            await expect(emitter.onAction({ event: "known:incoming", options: { timeoutMs: 1 } })).rejects.toBeTruthy();
+
+            expect(console.error).not.toHaveBeenCalled();
+        });
+
+        test("sendAction exhausting its retries does not report it as an error", async () => {
+            const { emitter } = setup();
+
+            await expect(
+                emitter.sendAction({
+                    event: "known:outgoing",
+                    data: { id: "abc" },
+                    responseEvent: "known:incoming",
+                    options: { timeoutMs: 10_000, intervalMs: 1, maxRetries: 1 },
+                })
+            ).rejects.toBeTruthy();
+
+            expect(console.error).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when off() removes one of several listeners", () => {
         test("leaves the others receiving messages", () => {
             const { emitter, deliverEvent } = setup();

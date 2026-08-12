@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.3.0
+
+### Minor Changes
+
+- 08b4f7b: Added a `channel` option to the phone signer `start-onboarding` flow so OTPs can be delivered via WhatsApp as well as SMS.
+
 ## 0.2.1
 
 ### Patch Changes
