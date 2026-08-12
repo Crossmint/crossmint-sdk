@@ -23,13 +23,14 @@ export class WindowTransport<OutgoingEvents extends EventMap = EventMap> impleme
 
     addMessageListener(listener: (event: SimpleMessageEvent) => void): string {
         const wrapped = (event: MessageEvent) => {
-            const originMatches = this.isTargetOrigin(event.origin);
-            if (originMatches) {
-                listener({
-                    type: event.type,
-                    data: event.data,
-                } as SimpleMessageEvent);
+            // Origin does not identify a sender: two same-origin frames each receive the other's events.
+            if (!this.isTargetOrigin(event.origin) || event.source !== this.otherWindow) {
+                return;
             }
+            listener({
+                type: event.type,
+                data: event.data,
+            } as SimpleMessageEvent);
         };
 
         const id = generateRandomString();

@@ -971,7 +971,8 @@ export class Wallet<C extends Chain> {
     /**
      * Check if a signer is approved and usable for the current wallet chain.
      * @param signerLocator - The locator of the signer to check
-     * @returns true if the signer is approved for this chain
+     * @returns true if the signer is approved for this chain, false if it is not approved or not registered
+     * @throws if the approval state could not be fetched
      */
     public async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
         return this.#signerManager.isSignerApproved(signerLocator);

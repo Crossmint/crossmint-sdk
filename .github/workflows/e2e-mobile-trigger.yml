@@ -13,6 +13,8 @@ on:
             - "packages/client/react-base/**"
             - "packages/client/ui/react-native/**"
             - "packages/client/rn-window/**"
+            # rn-window builds its Parent/Child and transport on top of this.
+            - "packages/client/window/**"
 
 concurrency:
     group: mobile-e2e-${{ github.event.pull_request.number }}
