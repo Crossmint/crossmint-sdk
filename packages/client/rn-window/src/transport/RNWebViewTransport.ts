@@ -1,12 +1,12 @@
 import "../polyfills";
 import type { z } from "zod";
 import type { WebViewMessageEvent, WebView } from "react-native-webview";
-import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
-import { generateRandomString } from "@crossmint/client-sdk-window";
+import type { EventMap, ListenerId, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
+import { mintListenerId } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
 
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
-    private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
+    private listeners = new Map<ListenerId, (event: SimpleMessageEvent) => void>();
     private isWebView: boolean;
     private globalListenerAttached = false;
 
@@ -63,8 +63,8 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
         }
     }
 
-    addMessageListener(listener: (event: SimpleMessageEvent) => void): string {
-        const id = generateRandomString();
+    addMessageListener(listener: (event: SimpleMessageEvent) => void): ListenerId {
+        const id = mintListenerId();
         this.listeners.set(id, listener);
 
         if (this.isWebView && !this.globalListenerAttached) {
@@ -75,7 +75,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
         return id;
     }
 
-    removeMessageListener(id: string): void {
+    removeMessageListener(id: ListenerId): void {
         const listener = this.listeners.get(id);
         if (listener != null) {
             this.listeners.delete(id);
