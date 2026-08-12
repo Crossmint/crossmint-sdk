@@ -8,6 +8,17 @@ Error 1009 Ray ID: abc123
 Access denied: The owner of this website (crossmint.com) has banned the country or region your IP address is in (MM) from accessing this website.
 </body></html>`;
 
+const CROSSMINT_CUSTOM_GEOBLOCK_BODY = `<!DOCTYPE html>
+<html>
+<head>
+    <style>body { font-family: Arial, sans-serif; text-align: center; }</style>
+</head>
+<body>
+    <h1>Crossmint does not work in the following countries and regions:</h1>
+    <div class="countries"><p>Cuba, Iran, North Korea, Syria, Russia, ...</p></div>
+</body>
+</html>`;
+
 function apiClientError(status: number, body: string | null): ApiClientError {
     return new ApiClientError(`API request failed: ${status}`, status, "Forbidden", body);
 }
@@ -16,6 +27,16 @@ describe("mapWalletError", () => {
     describe("when a 403 body carries the Cloudflare region-ban signature", () => {
         test("maps to region-blocked", () => {
             expect(mapWalletError(apiClientError(403, CLOUDFLARE_1009_BODY))).toEqual({
+                code: "region-blocked",
+                status: 403,
+                message: "API request failed: 403",
+            });
+        });
+    });
+
+    describe("when a 403 body is a Crossmint custom region-ban page", () => {
+        test("maps to region-blocked", () => {
+            expect(mapWalletError(apiClientError(403, CROSSMINT_CUSTOM_GEOBLOCK_BODY))).toEqual({
                 code: "region-blocked",
                 status: 403,
                 message: "API request failed: 403",
