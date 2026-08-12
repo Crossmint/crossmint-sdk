@@ -29,6 +29,14 @@ export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
+// Web only: CrossmintIdentityVerification renders a DOM iframe and react-native has no WebView
+// version yet. RN checkout runs the verification step itself.
+export type CrossmintEmbeddedCheckoutV3WebProps = CrossmintEmbeddedCheckoutV3Props & {
+    /** `"external"`: you mount `CrossmintIdentityVerification` from
+     * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish. */
+    identityVerificationHandling?: "external";
+};
+
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
 
 export type EmbeddedCheckoutV3PhysicalAddress = {
