@@ -17,10 +17,10 @@ function iframeUrl(props: Record<string, unknown>) {
 
 describe("createIdentityVerificationService", () => {
     describe("iframe.getUrl", () => {
-        test("points at the standalone kyc-verification route", () => {
+        test("points at the standalone identity-verification route", () => {
             const url = iframeUrl({ credentials: { provider: "persona", inquiryId: "inq-1" } });
 
-            expect(url.pathname).toBe("/sdk/unstable/kyc-verification");
+            expect(url.pathname).toBe("/sdk/unstable/identity-verification");
         });
 
         test("serializes credentials as JSON, the way the route's parser reads them", () => {

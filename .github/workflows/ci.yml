@@ -24,6 +24,8 @@ jobs:
 
             # Serial build to avoid OOM on 7GB runner (Next.js apps are memory-heavy)
             - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
               run: pnpm turbo build --concurrency=1
 
             - name: Test all

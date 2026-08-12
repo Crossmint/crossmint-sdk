@@ -13,7 +13,7 @@ export type IdentityVerificationServiceProps = {
 
 export function createIdentityVerificationService({ apiClient }: IdentityVerificationServiceProps) {
     function getIFrameUrl(props: CrossmintIdentityVerificationProps) {
-        const urlWithPath = apiClient.buildUrl("/sdk/unstable/kyc-verification");
+        const urlWithPath = apiClient.buildUrl("/sdk/unstable/identity-verification");
         const queryParams = new URLSearchParams();
 
         // appendObjectToQueryParams drops function values, so the lifecycle

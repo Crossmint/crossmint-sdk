@@ -1,3 +1,5 @@
+import { ApiClientError } from "@crossmint/common-sdk-base";
+
 import type { ApiClient, GetSignerResponse, WalletLocator } from "../../api";
 import type { Chain } from "../../chains/chains";
 import { getSignerDescriptor, type SignerDescriptorContext } from "../../signers/descriptors";
@@ -203,11 +205,27 @@ export class SignerManager<C extends Chain> {
     }
 
     async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
-        const signerState = await this.getSignerState(signerLocator as SignerLocator);
-        return this.isApprovedSignerStatus(signerState.signer?.status);
+        try {
+            const signer = await this.#fetchSigner(signerLocator as SignerLocator);
+            return this.isApprovedSignerStatus(signer?.status);
+        } catch (error) {
+            if (error instanceof ApiClientError && error.status === 404) {
+                return false;
+            }
+            walletsLogger.error("wallet.signers.isSignerApproved.failed", { signerLocator, error });
+            throw error;
+        }
     }
 
     isApprovedSignerStatus(status: SignerStatus | undefined): boolean {
         return status === "success" || status === "active";
+    }
+
+    async #fetchSigner(signerLocator: SignerLocator): Promise<WalletSigner | null> {
+        const signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
+        if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
+            throw new Error(`Failed to fetch the approval state of signer ${signerLocator}`);
+        }
+        return mapApiSignerToSigner(signerResponse, this.#chain);
     }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
-import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
+import { PopupWindow } from "@crossmint/client-sdk-window";
 import { useCrossmintAuth } from "@/hooks";
 import { z } from "zod";
 
@@ -10,7 +10,6 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
     const { crossmintAuth } = useCrossmintAuth();
     // Track which OAuth provider's window is currently being interacted with
     const [activeOAuthProvider, setActiveOAuthProvider] = useState<OAuthProvider | null>(null);
-    const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
     const cleanupRef = useRef<(() => void) | null>(null);
     const popupRef = useRef<PopupWindow<IncomingEvents, OutgoingEvents> | null>(null);
     // Every click claims the next id. Because all flows share one named popup, each resumption
@@ -20,11 +19,6 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
 
     useEffect(() => {
         mountedRef.current = true;
-        if (childRef.current == null) {
-            childRef.current = new ChildWindow<IncomingEvents, OutgoingEvents>(window.opener || window.parent, "*", {
-                incomingEvents,
-            });
-        }
 
         return () => {
             mountedRef.current = false;
@@ -39,9 +33,6 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
 
     const createPopupAndSetupListeners = useCallback(
         async (provider: OAuthProvider, providerLoginHint?: string) => {
-            if (childRef.current == null) {
-                throw new Error("Child window not initialized");
-            }
             // Claim the flow before the first await.
             const flowId = ++flowIdRef.current;
             const ownsPopup = () => flowIdRef.current === flowId && mountedRef.current;
@@ -109,6 +100,9 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 popup.window.location.href = baseUrl.toString();
             }
 
+            // Listen on the popup itself: it is the window that sends these events, and its
+            // transport drops anything from another sender. Every flow wraps the same reused
+            // window in its own client, so the takeover above is what keeps one pair alive.
             const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
                 await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
                 if (!ownsPopup()) {
@@ -129,8 +123,8 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 setActiveOAuthProvider(null);
             };
 
-            const authMaterialListener = childRef.current.on("authMaterialFromPopupCallback", handleAuthMaterial);
-            const errorListener = childRef.current.on("errorFromPopupCallback", handleError);
+            const authMaterialListenerId = popup.on("authMaterialFromPopupCallback", handleAuthMaterial);
+            const errorListenerId = popup.on("errorFromPopupCallback", handleError);
             // Add a check for manual window closure
             // Ideally we should find a more explicit way of doing this, but I think this is fine for now.
             // The listeners deliberately stay registered: a callback page posts its secret and then closes
@@ -147,8 +141,8 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
 
             const cleanup = () => {
                 clearInterval(checkWindowClosure);
-                childRef.current?.off(authMaterialListener);
-                childRef.current?.off(errorListener);
+                popup.off(authMaterialListenerId);
+                popup.off(errorListenerId);
             };
             cleanupRef.current = cleanup;
         },

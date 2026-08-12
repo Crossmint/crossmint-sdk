@@ -10,6 +10,7 @@ export {
     type CrossmintEvent,
     type CrossmintEventMap,
     CrossmintEvents,
+    getIdentityVerificationCredentials,
 } from "@crossmint/client-sdk-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";
