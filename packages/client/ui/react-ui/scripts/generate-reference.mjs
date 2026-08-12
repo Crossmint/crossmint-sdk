@@ -76,6 +76,7 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             "CrossmintProvider",
             "CrossmintCheckoutProvider",
             "useCrossmintCheckout",
+            "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
             "CrossmintHostedCheckout",
             "CrossmintPaymentMethodManagement",

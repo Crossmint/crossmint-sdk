@@ -81,6 +81,7 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{
             "CrossmintProvider",
             "CrossmintCheckoutProvider",
             "useCrossmintCheckout",
+            "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
             "CrossmintIdentityVerification",
         ],
