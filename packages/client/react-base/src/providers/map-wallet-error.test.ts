@@ -15,7 +15,7 @@ const CROSSMINT_CUSTOM_GEOBLOCK_BODY = `<!DOCTYPE html>
 </head>
 <body>
     <h1>Crossmint does not work in the following countries and regions:</h1>
-    <div class="countries"><p>Cuba, Iran, North Korea, Syria, Russia, ...</p></div>
+    <div class="countries"><p>This service does not work in your country.</p></div>
 </body>
 </html>`;
 
