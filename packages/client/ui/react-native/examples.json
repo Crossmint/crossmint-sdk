@@ -79,6 +79,7 @@
     },
     "CrossmintIdentityVerification": {
         "code": "import {\n    CrossmintIdentityVerification,\n    getIdentityVerificationCredentials,\n    useCrossmintCheckout,\n} from \"@crossmint/client-sdk-react-native-ui\";\n\nfunction VerificationStep() {\n    const { order } = useCrossmintCheckout();\n    const credentials = getIdentityVerificationCredentials(order);\n\n    if (credentials == null) {\n        return null;\n    }\n\n    return (\n        <CrossmintIdentityVerification\n            credentials={credentials}\n            onComplete={({ status }) => console.log(status)}\n        />\n    );\n}",
-        "language": "tsx"
+        "language": "tsx",
+        "note": "Document capture needs camera access granted by the host app. On Android the WebView requests `android.permission.CAMERA` at runtime, which only succeeds if your app declares it in AndroidManifest.xml; on iOS you must set `NSCameraUsageDescription` in Info.plist. Neither is added for you."
     }
 }

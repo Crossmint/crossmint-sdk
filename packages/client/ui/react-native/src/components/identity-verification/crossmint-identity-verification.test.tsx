@@ -40,6 +40,15 @@ const LIFECYCLE = [
     { prop: "onError", event: "kyc:error", data: ERROR, args: [ERROR] },
 ];
 
+const LOAD_FAILURES = [
+    {
+        handler: "onError",
+        nativeEvent: { description: "net::ERR_NAME_NOT_RESOLVED" },
+        message: "net::ERR_NAME_NOT_RESOLVED",
+    },
+    { handler: "onHttpError", nativeEvent: { statusCode: 500 }, message: "HTTP 500" },
+];
+
 function lastWebViewProps() {
     const props = vi.mocked(WebView).mock.calls.at(-1)?.[0];
     if (props == null) {
@@ -81,6 +90,18 @@ describe("<CrossmintIdentityVerification />", () => {
             expect(callback).toHaveBeenCalledWith(...args);
         });
 
+        test("calls the callback from the latest render, not the one captured at subscribe time", () => {
+            const stale = vi.fn();
+            const fresh = vi.fn();
+            const { rerender } = render(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={stale} />);
+
+            rerender(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={fresh} />);
+            emit("kyc:completed", COMPLETED);
+
+            expect(fresh).toHaveBeenCalledWith(COMPLETED);
+            expect(stale).not.toHaveBeenCalled();
+        });
+
         test("applies the reported height to the WebView", () => {
             render(<CrossmintIdentityVerification credentials={CREDENTIALS} />);
 
@@ -88,6 +109,20 @@ describe("<CrossmintIdentityVerification />", () => {
 
             expect(lastWebViewProps().style.height).toBe(420);
         });
+    });
+
+    describe("when the page fails to load", () => {
+        test.each(LOAD_FAILURES)(
+            "reports $handler as a non-retriable widget-unavailable error",
+            ({ handler, nativeEvent, message }) => {
+                const onError = vi.fn();
+                render(<CrossmintIdentityVerification credentials={CREDENTIALS} onError={onError} />);
+
+                act(() => lastWebViewProps()[handler]({ nativeEvent }));
+
+                expect(onError).toHaveBeenCalledWith({ retriable: false, reason: "widget-unavailable", message });
+            }
+        );
     });
 
     describe("when the host unmounts", () => {

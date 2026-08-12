@@ -33,18 +33,14 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
     const identityVerificationService = createIdentityVerificationService({ apiClient });
 
     useEffect(() => {
-        const webView = webViewRef.current;
-        if (!webView || client) {
+        if (!webViewRef.current || client) {
             return;
         }
         setClient(
-            new WebViewParent(
-                { current: webView },
-                {
-                    incomingEvents: identityVerificationIncomingEvents,
-                    outgoingEvents: identityVerificationOutgoingEvents,
-                }
-            )
+            new WebViewParent(webViewRef, {
+                incomingEvents: identityVerificationIncomingEvents,
+                outgoingEvents: identityVerificationOutgoingEvents,
+            })
         );
     }, [client]);
 
@@ -68,6 +64,11 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
         };
     }, [client]);
 
+    // A failed load produces no kyc:ready and no kyc:error, and the view stays 0px tall,
+    // so without this the merchant cannot tell a dead page from a loading one.
+    const reportLoadFailure = (message: string) =>
+        latestProps.current.onError?.({ retriable: false, reason: "widget-unavailable", message });
+
     return (
         <RNWebView
             ref={webViewRef}
@@ -76,6 +77,8 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
             // messagingEnabled from `typeof onMessage === "function"`, and without it the
             // page has no window.ReactNativeWebView to detect.
             onMessage={(event) => client?.handleMessage(event)}
+            onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description)}
+            onHttpError={({ nativeEvent }) => reportLoadFailure(`HTTP ${nativeEvent.statusCode}`)}
             style={{ width: "100%", height, backgroundColor: "transparent" }}
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}
