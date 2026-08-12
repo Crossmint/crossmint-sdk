@@ -144,7 +144,7 @@ export type PasskeyPromptState = {
  * `region-blocked` error instead of a generic wallet failure.
  */
 const CLOUDFLARE_REGION_BLOCK_PATTERN =
-    /error\s*1009|banned\s+(?:the\s+)?(?:country|region)|does\s+not\s+work\s+in\s+the\s+following\s+countries/i;
+    /error\s*1009|banned\s+(?:the\s+)?(?:country|region)|Crossmint\s+does\s+not\s+work\s+in\s+the\s+following\s+countries/i;
 
 export function isCloudflareRegionBlock(responseBody: string | null): boolean {
     return responseBody != null && CLOUDFLARE_REGION_BLOCK_PATTERN.test(responseBody);
