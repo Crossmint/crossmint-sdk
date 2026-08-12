@@ -30,6 +30,15 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 
 const CREDENTIALS = { provider: "persona", inquiryId: "inq-1" } as const;
+const COMPLETED = { status: "verified" };
+const ERROR = { retriable: false, reason: "provider-error", message: "boom" };
+
+const LIFECYCLE = [
+    { prop: "onReady", event: "kyc:ready", data: {}, args: [] },
+    { prop: "onComplete", event: "kyc:completed", data: COMPLETED, args: [COMPLETED] },
+    { prop: "onCancel", event: "kyc:cancelled", data: {}, args: [] },
+    { prop: "onError", event: "kyc:error", data: ERROR, args: [ERROR] },
+];
 
 function lastWebViewProps() {
     const props = vi.mocked(WebView).mock.calls.at(-1)?.[0];
@@ -61,40 +70,15 @@ describe("<CrossmintIdentityVerification />", () => {
     });
 
     describe("when the hosted page reports lifecycle events", () => {
-        test("calls onReady", () => {
-            const onReady = vi.fn();
-            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onReady={onReady} />);
+        // `args` is what the component forwards: the parsed payload, or nothing for the
+        // two events whose schema is empty.
+        test.each(LIFECYCLE)("forwards $event to $prop", ({ prop, event, data, args }) => {
+            const callback = vi.fn();
+            render(<CrossmintIdentityVerification credentials={CREDENTIALS} {...{ [prop]: callback }} />);
 
-            emit("kyc:ready");
+            emit(event, data);
 
-            expect(onReady).toHaveBeenCalledTimes(1);
-        });
-
-        test("calls onComplete with the reported status", () => {
-            const onComplete = vi.fn();
-            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onComplete={onComplete} />);
-
-            emit("kyc:completed", { status: "verified" });
-
-            expect(onComplete).toHaveBeenCalledWith({ status: "verified" });
-        });
-
-        test("calls onCancel", () => {
-            const onCancel = vi.fn();
-            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onCancel={onCancel} />);
-
-            emit("kyc:cancelled");
-
-            expect(onCancel).toHaveBeenCalledTimes(1);
-        });
-
-        test("calls onError with the retriable flag, reason and message", () => {
-            const onError = vi.fn();
-            render(<CrossmintIdentityVerification credentials={CREDENTIALS} onError={onError} />);
-
-            emit("kyc:error", { retriable: false, reason: "provider-error", message: "boom" });
-
-            expect(onError).toHaveBeenCalledWith({ retriable: false, reason: "provider-error", message: "boom" });
+            expect(callback).toHaveBeenCalledWith(...args);
         });
 
         test("applies the reported height to the WebView", () => {
@@ -109,12 +93,10 @@ describe("<CrossmintIdentityVerification />", () => {
     describe("when the host unmounts", () => {
         test("stops delivering events to the callbacks", () => {
             const onReady = vi.fn();
-            const { onMessage } = (() => {
-                const view = render(<CrossmintIdentityVerification credentials={CREDENTIALS} onReady={onReady} />);
-                const captured = lastWebViewProps();
-                view.unmount();
-                return captured;
-            })();
+            const view = render(<CrossmintIdentityVerification credentials={CREDENTIALS} onReady={onReady} />);
+            // Captured before unmounting: reading it after would pass for the wrong reason.
+            const { onMessage } = lastWebViewProps();
+            view.unmount();
 
             onMessage({ nativeEvent: { data: JSON.stringify({ event: "kyc:ready", data: {} }) } });
 

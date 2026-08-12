@@ -6,8 +6,8 @@ import {
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import { useEffect, useRef, useState } from "react";
+import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
@@ -29,20 +29,8 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
     });
 
     const { crossmint } = useCrossmint();
-
-    // Keyed on primitives, not on `props`: a caller passing an inline credentials
-    // object would otherwise rebuild the URL every render and reload the WebView.
-    const { apiKey } = crossmint;
-    const { inquiryId, sessionToken } = props.credentials;
-    const uri = useMemo(() => {
-        const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
-        return createIdentityVerificationService({ apiClient }).iframe.getUrl(props);
-    }, [apiKey, inquiryId, sessionToken, props.locale]);
-
-    // New credentials mean a new page, so the old height must not persist.
-    useEffect(() => {
-        setHeight(0);
-    }, [uri]);
+    const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
+    const identityVerificationService = createIdentityVerificationService({ apiClient });
 
     useEffect(() => {
         const webView = webViewRef.current;
@@ -58,7 +46,7 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
                 }
             )
         );
-    }, [webViewRef.current, client]);
+    }, [client]);
 
     useEffect(() => {
         if (client == null) {
@@ -83,8 +71,11 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
     return (
         <RNWebView
             ref={webViewRef}
-            source={{ uri }}
-            onMessage={(event: WebViewMessageEvent) => client?.handleMessage(event)}
+            source={{ uri: identityVerificationService.iframe.getUrl(props) }}
+            // Stays a function before the client exists: react-native-webview derives
+            // messagingEnabled from `typeof onMessage === "function"`, and without it the
+            // page has no window.ReactNativeWebView to detect.
+            onMessage={(event) => client?.handleMessage(event)}
             style={{ width: "100%", height, backgroundColor: "transparent" }}
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}
