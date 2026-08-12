@@ -79,6 +79,7 @@ export function CrossmintIdentityVerification(props: CrossmintIdentityVerificati
             style={{ width: "100%", height, backgroundColor: "transparent" }}
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}
+            domStorageEnabled={true}
         />
     );
 }
