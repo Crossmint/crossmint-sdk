@@ -136,28 +136,39 @@ nothing outside the SDK can read the checkout WebView's URI. That invariant is a
 
 ## Measured results
 
-Run on an Android emulator, API 36 arm64-v8a, WebView 133.0.6943.137, against a live staging order at
-`payment.status: requires-kyc`. All three modes reached a real Persona sandbox form.
+Run on both platforms against live staging orders at `payment.status: requires-kyc`: an Android
+emulator, API 36 arm64-v8a, WebView 133.0.6943.137, and an iOS 26.5 simulator on an iPhone 17 Pro with
+fmt bumped per the section above. Every mode reached a real Persona sandbox form.
 
 ```
-                 checkout webview   identity webview   identity mounted
-Checkout KYC                660px             absent                n/a
-Merchant KYC                  0px              660px                yes
-Standalone                 absent              660px                yes
+                 checkout webview   identity webview   identity mounted   android   ios
+Checkout KYC                660px             absent                n/a      pass  pass
+Merchant KYC                  0px              660px                yes      pass  pass
+Standalone                 absent              660px                yes      pass  pass
 ```
 
-Those numbers match the web harness in onramp-embedded-quickstart#27 exactly, including the 660px.
-Merchant KYC is the case worth watching, and it works: a real Persona form in this app's dashed slot
-with checkout collapsed to 0px, event log reading `order phase: payment status: requires-kyc` then
+The numbers are identical on both platforms and match the web harness in
+onramp-embedded-quickstart#27 exactly, including the 660px. So the bridge works on WKWebView and on
+Android WebView alike, and the event logs agree: `order phase: payment status: requires-kyc` then
 `identity ready`.
+
+Merchant KYC is the case worth watching, and it works on both: a real Persona form in this app's
+dashed slot with checkout collapsed to 0px.
+
+Driving iOS needs `idb`, since `simctl` has no tap and a headless-booted device has no Simulator
+window for AppleScript to reach. `brew tap facebook/fb && brew install idb-companion`, then `fb-idb`
+in a venv. Tap targets come from `idb ui describe-all`, whose frames are in points (402x874 here), not
+pixels. Expect the occasional tap to go missing: check that `Start over` replaced `Mount` before
+trusting a mount, and retry rather than assuming the app is broken. Persona's own content lives inside
+the WebView and never appears in the host accessibility tree, so confirm the form by screenshot.
 
 The checkout page polls, so `order:updated` arrives every few seconds and rebuilds the credentials
 object each time. The identity WebView does not reload on those: one run logged 22 `order:updated`
 against a single `kyc:ready`, so the fresh-but-equal object does not churn the WebView source.
 
-**Camera capture is not covered here.** An emulator cannot answer it: see
+**Camera capture is not covered by either run.** Neither an emulator nor a simulator can answer it: see
 `~/dev/identity-verification-device-test-protocol.md`, which requires a physical device on the grounds
-that simulated camera behavior is not evidence for a permission question. What this run does establish
+that simulated camera behavior is not evidence for a permission question. What these runs do establish
 is that the manifest declaration alone is not enough. After install, `dumpsys package` reports
 `android.permission.CAMERA: granted=false`, because it is a runtime permission and neither the SDK nor
 its Expo config plugin requests it. A merchant app mounting `CrossmintIdentityVerification` has to
