@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-base
 
+## 2.8.0
+
+### Minor Changes
+
+- cfa9710: Added `identityVerificationHandling` to embedded checkout on web. Setting it to `"external"` stops checkout from rendering the identity verification step, so a merchant can render `CrossmintIdentityVerification` in their own layout using `getIdentityVerificationCredentials(order)`.
+
+  Requires a Crossmint deployment that understands the flag. Against an older one it is ignored, and checkout renders the verification step alongside the merchant's, both against the same inquiry.
+
+- a8b6b60: `identityVerificationHandling` is now accepted by React Native embedded checkout, not web only. Setting it to `"external"` stops checkout from rendering the identity verification step, so you can render `CrossmintIdentityVerification` in your own screen using `getIdentityVerificationCredentials(order)`.
+
+### Patch Changes
+
+- Updated dependencies [7d99607]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-window@1.1.1
+
 ## 2.7.0
 
 ### Minor Changes
