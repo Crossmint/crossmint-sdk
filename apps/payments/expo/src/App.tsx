@@ -124,9 +124,11 @@ function CheckoutDemo({
 
 function Harness() {
     const [mode, setMode] = useState<DemoMode>("checkout");
-    const [orderIdInput, setOrderIdInput] = useState("");
-    const [clientSecretInput, setClientSecretInput] = useState("");
-    const [inquiryIdInput, setInquiryIdInput] = useState("");
+    // Seeded from .env because the clientSecret is a 276-character JWT. Typing that on a phone
+    // keyboard is not realistic, and `adb shell input text` mangles it.
+    const [orderIdInput, setOrderIdInput] = useState(process.env.EXPO_PUBLIC_DEMO_ORDER_ID ?? "");
+    const [clientSecretInput, setClientSecretInput] = useState(process.env.EXPO_PUBLIC_DEMO_CLIENT_SECRET ?? "");
+    const [inquiryIdInput, setInquiryIdInput] = useState(process.env.EXPO_PUBLIC_DEMO_INQUIRY_ID ?? "");
     const [mountedOrder, setMountedOrder] = useState<{ orderId: string; clientSecret: string } | null>(null);
     const [mountedInquiryId, setMountedInquiryId] = useState<string | null>(null);
     const [events, setEvents] = useState<HarnessEvent[]>([]);
@@ -270,7 +272,10 @@ function Harness() {
                 events={events}
                 checkoutHeight={checkoutHeight}
                 identityHeight={identityHeight}
-                expectIdentity={mountedInquiryId != null || merchantCredentials != null}
+                // Gated on something being mounted, not on credentials alone. CrossmintCheckoutProvider
+                // never clears its order, so after one mount the hook keeps returning that order's
+                // credentials and this row would cry EXPECTED with nothing on screen.
+                expectIdentity={mountedInquiryId != null || (mountedOrder != null && merchantCredentials != null)}
             />
         </ScrollView>
     );

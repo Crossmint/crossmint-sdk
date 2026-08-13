@@ -23,3 +23,7 @@ docs
 /android/
 /ios/
 /.expo/
+
+# Gradle output under any package's android module. Not unanchored to `android/`, which would
+# swallow packages/client/ui/react-native/android's committed source.
+**/android/build/

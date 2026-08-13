@@ -18,10 +18,19 @@ on one order is the main comparison.
 ## Setup
 
 ```
-echo 'EXPO_PUBLIC_CROSSMINT_API_KEY=ck_staging_…' > .env
+cat > .env <<'EOF'
+EXPO_PUBLIC_CROSSMINT_API_KEY=ck_staging_…
+EXPO_PUBLIC_DEMO_ORDER_ID=
+EXPO_PUBLIC_DEMO_CLIENT_SECRET=
+EXPO_PUBLIC_DEMO_INQUIRY_ID=
+EOF
 pnpm install
-pnpm ios      # or: pnpm android
+pnpm android  # ios is blocked, see below
 ```
+
+The three `DEMO_` vars seed the input fields. They are optional but close to required in practice: the
+`clientSecret` is a 276-character JWT, and nobody is typing that on a phone keyboard. Metro inlines
+`EXPO_PUBLIC_*` at bundle time, so restart it after editing `.env`.
 
 Use the client key from the staging project on the `CROSSMINT` trust policy
 (`146de1f3-a5db-49a7-b9bd-152ab7a808b1`, keys in `~/dev/kyc-e2e-harness/testing-project.env`). It is
@@ -57,8 +66,13 @@ own and never touches an order, which is how you check a deployed verification p
 client key: the route takes `credentials`, and Persona resolves template and environment from the
 inquiry, so a staging inquiry renders its sandbox form against any host.
 
-`mint-inquiry.sh` prints `status` and `inquiryId` today. Checkout KYC and Merchant KYC need two more
-lines in its node tail for `order.id` and the root `clientSecret`.
+`mint-inquiry.sh` prints `orderId` and `clientSecret` alongside `status` and `inquiryId`.
+
+**Mint immediately before you run.** The order does not hold `requires-kyc` for long. One minted here
+had already fallen back to `payment.status: requires-quote` with `payment.preparation.kyc` gone when
+re-read 38 minutes later, which takes the credentials with it and leaves Merchant KYC with an empty
+slot. If the panel shows `EXPECTED, NOT MOUNTED` and the event log reports a phase other than
+`payment`, the order went stale rather than the SDK misbehaving. Mint a fresh one.
 
 ## Camera
 
@@ -93,14 +107,41 @@ so no shared message bus exists to collide on. There is also no "checkout src fl
 nothing outside the SDK can read the checkout WebView's URI. That invariant is asserted in
 `packages/client/base/src/services/embed/v3/crossmint-embedded-checkout-v3-service.test.ts` instead.
 
-## Expected results
+## Measured results
+
+Run on an Android emulator, API 36 arm64-v8a, WebView 133.0.6943.137, against a live staging order at
+`payment.status: requires-kyc`. All three modes reached a real Persona sandbox form.
 
 ```
                  checkout webview   identity webview   identity mounted
-Checkout KYC          grows to fit             absent                n/a
-Merchant KYC                   0px       grows to fit                yes
-Standalone                  absent       grows to fit                yes
+Checkout KYC                660px             absent                n/a
+Merchant KYC                  0px              660px                yes
+Standalone                 absent              660px                yes
 ```
 
-Merchant KYC is the case worth watching: a real Persona form in this app's dashed slot with checkout
-collapsed to 0px.
+Those numbers match the web harness in onramp-embedded-quickstart#27 exactly, including the 660px.
+Merchant KYC is the case worth watching, and it works: a real Persona form in this app's dashed slot
+with checkout collapsed to 0px, event log reading `order phase: payment status: requires-kyc` then
+`identity ready`.
+
+The checkout page polls, so `order:updated` arrives every few seconds and rebuilds the credentials
+object each time. The identity WebView does not reload on those: one run logged 22 `order:updated`
+against a single `kyc:ready`, so the fresh-but-equal object does not churn the WebView source.
+
+**Camera capture is not covered here.** An emulator cannot answer it: see
+`~/dev/identity-verification-device-test-protocol.md`, which requires a physical device on the grounds
+that simulated camera behavior is not evidence for a permission question. What this run does establish
+is that the manifest declaration alone is not enough. After install, `dumpsys package` reports
+`android.permission.CAMERA: granted=false`, because it is a runtime permission and neither the SDK nor
+its Expo config plugin requests it. A merchant app mounting `CrossmintIdentityVerification` has to
+request it itself, and nothing in the SDK says so.
+
+## A caveat the hook inherits
+
+`CrossmintCheckoutProvider` never clears its order. Once checkout broadcasts one, `useCrossmintCheckout`
+and therefore `useIdentityVerificationCredentials` keep returning it after the checkout component
+unmounts, with no way for a merchant to reset the context. This harness hit it: switching modes runs
+`startOver()`, which clears local state but leaves the SDK context populated, so a credentials-only
+check claimed a verification view was missing when nothing was mounted at all. The panel now gates on
+something actually being mounted. A merchant swapping one order for another should expect the previous
+order's credentials until the next `order:updated` lands.
