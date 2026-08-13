@@ -1,0 +1,22 @@
+{
+    "expo": {
+        "name": "payments-playground-expo",
+        "slug": "payments-playground-expo",
+        "version": "1.0.0",
+        "scheme": "crossmint-payments",
+        "newArchEnabled": true,
+        "platforms": ["ios", "android"],
+        "plugins": ["@crossmint/client-sdk-react-native-ui"],
+        "entryPoint": "./index.ts",
+        "android": {
+            "package": "com.crossmint.paymentsplayground",
+            "permissions": ["android.permission.CAMERA"]
+        },
+        "ios": {
+            "bundleIdentifier": "com.crossmint.paymentsplayground",
+            "infoPlist": {
+                "NSCameraUsageDescription": "Identity verification photographs your ID document and face."
+            }
+        }
+    }
+}
