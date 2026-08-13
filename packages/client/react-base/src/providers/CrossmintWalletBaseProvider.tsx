@@ -138,8 +138,13 @@ export type PasskeyPromptState = {
  * in") is the distinguishing signal — it lets us treat a genuine geo-block as permanent without
  * also labelling every other non-JSON 403 (nginx access controls, a CDN/reverse-proxy rule) as
  * `region-blocked` and permanently suppressing the auto-retry loop.
+ *
+ * Crossmint also serves a custom 403 page ("Crossmint does not work in the following countries
+ * and regions") in some edge configurations, which we match so integrators can surface a clear
+ * `region-blocked` error instead of a generic wallet failure.
  */
-const CLOUDFLARE_REGION_BLOCK_PATTERN = /error\s*1009|banned\s+(?:the\s+)?(?:country|region)/i;
+const CLOUDFLARE_REGION_BLOCK_PATTERN =
+    /error\s*1009|banned\s+(?:the\s+)?(?:country|region)|Crossmint\s+does\s+not\s+work\s+in\s+the\s+following\s+countries/i;
 
 export function isCloudflareRegionBlock(responseBody: string | null): boolean {
     return responseBody != null && CLOUDFLARE_REGION_BLOCK_PATTERN.test(responseBody);
