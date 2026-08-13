@@ -81,11 +81,15 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{
             "CrossmintProvider",
             "CrossmintCheckoutProvider",
             "useCrossmintCheckout",
+            "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
+            "CrossmintIdentityVerification",
         ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
+            CrossmintIdentityVerification:
+                'Hosted identity verification step, for merchants taking it over with `identityVerificationHandling="external"`',
         },
         getStartedExamples: {
             setup: "rnCheckoutProviderSetup",
