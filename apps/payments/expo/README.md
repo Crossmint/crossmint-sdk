@@ -25,7 +25,7 @@ EXPO_PUBLIC_DEMO_CLIENT_SECRET=
 EXPO_PUBLIC_DEMO_INQUIRY_ID=
 EOF
 pnpm install
-pnpm android  # ios is blocked, see below
+pnpm android  # or pnpm ios, after the fmt bump below
 ```
 
 The three `DEMO_` vars seed the input fields. They are optional but close to required in practice: the
@@ -39,18 +39,45 @@ the only policy that mints a Persona inquiry.
 `pnpm ios` and `pnpm android` run a native build rather than Expo Go, which is required: the camera
 permissions below live in `app.json` and only reach the app through a prebuild.
 
-## Known blocker: the iOS build fails on Xcode 26.6
+## The iOS build needs an fmt bump on Xcode 26.6
 
-`pod install` succeeds, and then the `fmt` target fails to compile with five errors of the form
+Out of the box, `pod install` succeeds and then the `fmt` target fails with five errors of the form
 `call to consteval function 'fmt::basic_format_string<...>' is not a constant expression` in
-`Pods/fmt/include/fmt/format-inl.h`. `fmt 11.0.2` is pinned exactly by `RCT-Folly 2024.11.18.00`,
-which React Native 0.82.1 brings in, and that version predates fmt's fix for clang's stricter
-`consteval` handling. `FMT_USE_CONSTEVAL=0` reaches the compiler but does not suppress it.
+`Pods/fmt/include/fmt/format-inl.h`. React Native 0.82.1 hardcodes `fmt 11.0.2` in
+`third-party-podspecs/fmt.podspec` and pins it exactly from
+`third-party-podspecs/RCT-Folly.podspec:28`, and that fmt predates clang's stricter `consteval`
+handling. `set_fmt_config()` cannot help: it carries only the git URL, not the version.
+`FMT_USE_CONSTEVAL=0` does not help either, confirmed reaching the compiler on all 158 fmt
+invocations with the errors unchanged.
 
 Nothing in this app references fmt, and `apps/wallets/expo` is on the same React Native version, so
 this hits any iOS build in the repo on this toolchain. CI runs `ubuntu-latest` with no native build
-step and the repo pins no Xcode version, so nothing catches it. Getting past it means an older
-Xcode, a React Native bump, or a patched fmt, and that decision belongs outside this app.
+step and the repo pins no Xcode, so nothing catches it.
+
+**fmt 12.1.0 fixes it.** Verified: BUILD SUCCEEDED with zero errors, app installed and launched on an
+iOS 26.5 simulator. Upstream made the same move, and non-monotonically, so the version table matters:
+
+| React Native | fmt |
+|---|---|
+| 0.82.1 (current), 0.83.0, 0.84.0, 0.84.1 | 11.0.2 |
+| 0.83.10, 0.85.3, 0.86.2, 0.87.0 | 12.1.0 |
+
+Both 0.82.1 and 0.83.10 use Folly `2024.11.18.00`, so bumping fmt alone reproduces exactly the
+third-party pairing upstream ships in 0.83.10 rather than inventing a combination.
+
+That argues for patching fmt over bumping React Native. `react-native` is a repo-wide
+`pnpm.overrides` entry in the root `package.json`, so a bump moves both Expo apps and the SDK's
+effective React Native at once, and the repo is already ahead of Expo SDK 54, whose
+`bundledNativeModules.json` expects `0.81.5`. That existing gap is why the SDK's config plugin
+injects a `post_install` hook re-adding `ReactCommon/CallInvoker.h` for expo-modules-core. Going to
+0.83+ widens a mismatch the SDK already hand-patches, and 0.83.10 is a backport-only patch release
+that 0.84 regressed away from.
+
+The durable form is a `pnpm.patch` on react-native changing three version strings (`spec.version` and
+`:tag` in `fmt.podspec`, the `spec.dependency` in `RCT-Folly.podspec`) from `11.0.2` to `12.1.0`, then
+`pod update fmt RCT-Folly`. Note that `pod install` alone is not enough after the change: the existing
+`Podfile.lock` pins `fmt (= 11.0.2)` and CocoaPods reports a version conflict until you update those
+two pods explicitly. That patch is not committed here, since it is a repo-wide dependency decision.
 
 ## Feeding it an order
 
