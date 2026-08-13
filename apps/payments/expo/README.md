@@ -30,6 +30,19 @@ the only policy that mints a Persona inquiry.
 `pnpm ios` and `pnpm android` run a native build rather than Expo Go, which is required: the camera
 permissions below live in `app.json` and only reach the app through a prebuild.
 
+## Known blocker: the iOS build fails on Xcode 26.6
+
+`pod install` succeeds, and then the `fmt` target fails to compile with five errors of the form
+`call to consteval function 'fmt::basic_format_string<...>' is not a constant expression` in
+`Pods/fmt/include/fmt/format-inl.h`. `fmt 11.0.2` is pinned exactly by `RCT-Folly 2024.11.18.00`,
+which React Native 0.82.1 brings in, and that version predates fmt's fix for clang's stricter
+`consteval` handling. `FMT_USE_CONSTEVAL=0` reaches the compiler but does not suppress it.
+
+Nothing in this app references fmt, and `apps/wallets/expo` is on the same React Native version, so
+this hits any iOS build in the repo on this toolchain. CI runs `ubuntu-latest` with no native build
+step and the repo pins no Xcode version, so nothing catches it. Getting past it means an older
+Xcode, a React Native bump, or a patched fmt, and that decision belongs outside this app.
+
 ## Feeding it an order
 
 There is no server half, so nothing here holds a `sk_` key or creates orders. Mint on your laptop and
