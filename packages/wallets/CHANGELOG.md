@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.12.1
+
+### Patch Changes
+
+- 3528a4e: `wallet.isSignerApproved` now throws when the signer state cannot be fetched instead of resolving to `false`, so callers can tell a failed request apart from a signer that is not approved. A signer that is not registered still resolves to `false`. This matches the behavior of the Swift and Kotlin SDKs.
+- Updated dependencies [7d99607]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/common-sdk-auth@1.1.17
+
 ## 1.12.0
 
 ### Minor Changes

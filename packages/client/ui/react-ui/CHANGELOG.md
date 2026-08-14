@@ -1,5 +1,40 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.5.0
+
+### Minor Changes
+
+- cfa9710: Added `identityVerificationHandling` to embedded checkout on web. Setting it to `"external"` stops checkout from rendering the identity verification step, so a merchant can render `CrossmintIdentityVerification` in their own layout using `getIdentityVerificationCredentials(order)`.
+
+  Requires a Crossmint deployment that understands the flag. Against an older one it is ignored, and checkout renders the verification step alongside the merchant's, both against the same inquiry.
+
+- a8b6b60: Added a `useIdentityVerificationCredentials` hook, so a merchant taking the identity verification step over with `identityVerificationHandling="external"` reads the credentials in one line instead of plumbing the order through `getIdentityVerificationCredentials`. The plain function stays exported for orders that do not come from checkout context.
+
+### Patch Changes
+
+- cfa9710: `WindowTransport` now matches `event.source` against the peer window instead of trusting the origin alone.
+
+  Each client subscribes to the global `message` event and accepted anything arriving from a matching origin. With one Crossmint iframe per page, no other frame could send from that origin, so the gap stayed invisible. Put two on a page and each client receives the other's events.
+
+  Embedded checkout with `identityVerificationHandling="external"` puts two on the page. The verification iframe sends `ui:height.changed` at 660, the checkout iframe takes that height after collapsing to 0, and the merchant gets 660px of empty space above their widget. Reverse the order and checkout's 0 reaches the verification iframe and hides the Persona form.
+
+  A message whose sending window has closed carries a null source. The transport drops it.
+
+  OAuth login moves its listeners onto the popup it opens. They used to sit on a `ChildWindow` built over `window.opener || window.parent`, which on a merchant's top-level page resolves to that page's own window, so the peer never matched the popup the callback arrives from. That client only ever listened, never sent, so the mismatch was invisible until the peer became part of the receive path. Attaching to the popup also unsubscribes correctly between attempts, where the previous `off(eventName)` calls passed an event name to an API that takes a listener id and silently did nothing.
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [7d99607]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [de7771e]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-react-base@2.2.4
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+
 ## 4.4.0
 
 ### Minor Changes

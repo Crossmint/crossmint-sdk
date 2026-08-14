@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-base
 
+## 2.2.4
+
+### Patch Changes
+
+- de7771e: Map Crossmint's custom Cloudflare geoblock page (`Crossmint does not work in the following countries and regions`) to the `region-blocked` error code in `useWallet`, instead of treating it as `unknown`.
+- Updated dependencies [cfa9710]
+- Updated dependencies [7d99607]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+
 ## 2.2.3
 
 ### Patch Changes

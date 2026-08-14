@@ -1,5 +1,32 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.6.0
+
+### Minor Changes
+
+- a8b6b60: `identityVerificationHandling` is now accepted by React Native embedded checkout, not web only. Setting it to `"external"` stops checkout from rendering the identity verification step, so you can render `CrossmintIdentityVerification` in your own screen using `getIdentityVerificationCredentials(order)`.
+- a8b6b60: Added `CrossmintIdentityVerification` to the React Native SDK. It renders Crossmint's hosted identity verification step in a WebView from an order's `payment.preparation.kyc` credentials, and reports `onReady`, `onComplete`, `onCancel` and `onError`.
+- a8b6b60: Added a `useIdentityVerificationCredentials` hook, so a merchant taking the identity verification step over with `identityVerificationHandling="external"` reads the credentials in one line instead of plumbing the order through `getIdentityVerificationCredentials`. The plain function stays exported for orders that do not come from checkout context.
+
+### Patch Changes
+
+- 13584ba: The signer OTP field now submits from the keyboard's done key.
+
+  `BaseCodeInput` only accepted the code via the Submit button, which sits below the field and therefore behind the keyboard the field just opened. Entering a code meant dismissing the keyboard first — and dismissing it reflows the dialog, moving the button that was the only way to continue.
+
+  `returnKeyType="done"` with `onSubmitEditing` submits in place, from where the user already is. The Submit button is unchanged.
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [de7771e]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-react-base@2.2.4
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+  - @crossmint/client-sdk-rn-window@0.3.18
+
 ## 1.5.2
 
 ### Patch Changes
