@@ -1157,9 +1157,9 @@ export class Wallet<C extends Chain> {
             const availableSigners = signers.map((availableSigner) => availableSigner.locator());
             const availableSignersMessage = availableSigners.length > 0 ? availableSigners.join(", ") : "none";
             throw new InvalidSignerError(
-                `The transaction requires approval from signer ${locator}, but this signer is not available ` +
-                    `to this wallet instance. Available signers: ${availableSignersMessage}. Initialize the ` +
-                    `wallet with ${locator}, or pass it through the additionalSigners approve option.`
+                `The transaction or signature requires approval from signer ${locator}, but this signer is not ` +
+                    `available to this wallet instance. Available signers: ${availableSignersMessage}. Initialize ` +
+                    `the wallet with ${locator}, or pass it through the additionalSigners approve option.`
             );
         }
         return signer;

@@ -845,9 +845,10 @@ describe("Wallet - approve()", () => {
 
             await expect(fallbackWallet.approve({ signatureId: "sig-2" })).rejects.toThrow(
                 new InvalidSignerError(
-                    "The transaction requires approval from signer device:missingkey, but this signer is not " +
-                        "available to this wallet instance. Available signers: external-wallet:0x123. Initialize " +
-                        "the wallet with device:missingkey, or pass it through the additionalSigners approve option."
+                    "The transaction or signature requires approval from signer device:missingkey, but this signer " +
+                        "is not available to this wallet instance. Available signers: external-wallet:0x123. " +
+                        "Initialize the wallet with device:missingkey, or pass it through the additionalSigners " +
+                        "approve option."
                 )
             );
             expect(mockStorage.hasKey).toHaveBeenCalledWith("missingkey");
