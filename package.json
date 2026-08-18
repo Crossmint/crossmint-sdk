@@ -41,7 +41,7 @@
     },
     "packageManager": "pnpm@9.3.0",
     "engines": {
-        "node": ">=20.19.4",
+        "node": ">=22.13.0",
         "npm": "please-use-pnpm",
         "pnpm": ">=9",
         "yarn": "please-use-pnpm"
