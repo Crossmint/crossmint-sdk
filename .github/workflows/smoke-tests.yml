@@ -59,9 +59,6 @@ jobs:
                   # Dedicated persistent wallet identity so smoke runs never share
                   # emails (and OTP requests) with concurrently running e2e jobs.
                   TESTS_WALLET_EMAIL_SUFFIX: smoke
-                  # The public devnet faucet's requestAirdrop no longer works from the
-                  # runners, so Solana test wallets are seeded from our own keypair.
-                  SOLANA_DEVNET_FUNDER_SECRET_KEY: ${{ secrets.SOLANA_DEVNET_FUNDER_SECRET_KEY }}
               run: |
                   pnpm exec playwright test --project=smoke
 
