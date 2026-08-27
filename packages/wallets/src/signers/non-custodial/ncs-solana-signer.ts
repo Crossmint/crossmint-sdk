@@ -9,17 +9,23 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+    /**
+     * Produce a raw Ed25519 signature over an arbitrary payload.
+     * @param message - The payload to sign, base58 encoded
+     */
+    async signMessage(message: string): Promise<{ signature: string }> {
+        return await this.sign(base58.decode(message));
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        await this.handleAuthRequired();
-        const jwt = this.getJwtOrThrow();
-
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        const messageData = deserializedTransaction.message.serialize();
+        return await this.sign(deserializedTransaction.message.serialize());
+    }
+
+    private async sign(messageData: Uint8Array): Promise<{ signature: string }> {
+        await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
 
         walletsLogger.info("sign: sending request", { keyType: "ed25519" });
         const startTime = Date.now();
@@ -49,7 +55,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         }
 
         if (res?.signature == null) {
-            throw new Error("Failed to sign transaction");
+            throw new Error("Failed to sign payload");
         }
         SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
