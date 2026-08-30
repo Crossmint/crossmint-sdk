@@ -1,5 +1,13 @@
 import type { Page } from "@playwright/test";
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import {
+    Connection,
+    Keypair,
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    SystemProgram,
+    Transaction,
+    sendAndConfirmTransaction,
+} from "@solana/web3.js";
 import { handleSignerConfirmation } from "./auth";
 import { AUTH_CONFIG } from "../constants/globalConstants";
 
@@ -56,14 +64,52 @@ const MIN_SOL_FOR_FEES = 0.003;
 // Since test wallets are reused across runs, a single successful airdrop keeps
 // the wallet funded for thousands of transfers.
 const AIRDROP_AMOUNTS_SOL = [5, 2, 1, 0.1];
+// Tops the wallet up well past MIN_SOL_FOR_FEES so a funded wallet needs no
+// further top-up for thousands of runs (a transfer costs ~0.0002 SOL).
+const FUNDER_TRANSFER_SOL = 0.05;
+
+/**
+ * Devnet keypair used to seed test wallets when the public faucet is exhausted.
+ * `SOLANA_DEVNET_FUNDER_SECRET_KEY` holds the 64-byte secret key as the JSON
+ * array `solana-keygen` writes, e.g. the contents of ~/.config/solana/id.json.
+ */
+function getFunderKeypair(): Keypair | null {
+    const rawSecretKey = process.env.SOLANA_DEVNET_FUNDER_SECRET_KEY;
+    if (!rawSecretKey) {
+        return null;
+    }
+    try {
+        return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(rawSecretKey)));
+    } catch (error) {
+        console.warn("⚠️ SOLANA_DEVNET_FUNDER_SECRET_KEY is set but unusable, falling back to the faucet:", error);
+        return null;
+    }
+}
+
+async function transferSolFromFunder(connection: Connection, recipient: PublicKey, funder: Keypair): Promise<void> {
+    const lamports = Math.round(FUNDER_TRANSFER_SOL * LAMPORTS_PER_SOL);
+    const funderLamports = await connection.getBalance(funder.publicKey);
+    if (funderLamports < lamports) {
+        throw new Error(
+            `Devnet funder ${funder.publicKey.toBase58()} holds ${funderLamports / LAMPORTS_PER_SOL} SOL, ` +
+                `less than the ${FUNDER_TRANSFER_SOL} SOL transfer. Top it up at https://faucet.solana.com.`
+        );
+    }
+
+    const transaction = new Transaction().add(
+        SystemProgram.transfer({ fromPubkey: funder.publicKey, toPubkey: recipient, lamports })
+    );
+    await sendAndConfirmTransaction(connection, transaction, [funder], { commitment: "confirmed" });
+}
 
 /**
  * Ensures the wallet holds native SOL so it can pay transaction fees.
  * The Crossmint faucet only funds USDXM; without SOL the transfer tx is submitted
  * but never confirmed (silent on-chain failure due to insufficient fee balance).
  *
- * Skips the airdrop entirely when the (reused) wallet is already funded, so the
- * heavily rate-limited devnet faucet is only hit when strictly necessary.
+ * Skips funding entirely when the (reused) wallet is already funded. Prefers the
+ * funder keypair and keeps the public faucet as a fallback: `requestAirdrop` has
+ * been failing for every IP we tried, CI runners included.
  */
 export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<void> {
     const connection = new Connection(SOLANA_DEVNET_RPC_URL, "confirmed");
@@ -76,6 +122,19 @@ export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<v
     }
 
     let lastError: unknown;
+    const funder = getFunderKeypair();
+    if (funder) {
+        console.log(`💰 Transferring ${FUNDER_TRANSFER_SOL} SOL to ${walletAddress} from the devnet funder...`);
+        try {
+            await transferSolFromFunder(connection, publicKey, funder);
+            console.log(`✅ Funded ${walletAddress} with ${FUNDER_TRANSFER_SOL} SOL from the devnet funder`);
+            return;
+        } catch (error) {
+            lastError = error;
+            console.warn(`⚠️ Devnet funder transfer failed for ${walletAddress}, falling back to the faucet:`, error);
+        }
+    }
+
     for (const amountSol of AIRDROP_AMOUNTS_SOL) {
         console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
         try {
@@ -98,7 +157,10 @@ export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<v
         return;
     }
 
-    console.error(`❌ All airdrop attempts failed for ${walletAddress} (balance: ${finalBalanceSol} SOL)`);
+    console.error(
+        `❌ Could not fund ${walletAddress} (balance: ${finalBalanceSol} SOL). ` +
+            "Set SOLANA_DEVNET_FUNDER_SECRET_KEY to a funded devnet keypair — the public faucet is exhausted from CI."
+    );
     throw lastError;
 }
 
