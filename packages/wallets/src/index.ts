@@ -12,6 +12,7 @@ export {
     JWTInvalidError,
     JWTDecryptionError,
     JWTIdentifierError,
+    TransactionApiError,
 } from "./utils/errors";
 
 // API

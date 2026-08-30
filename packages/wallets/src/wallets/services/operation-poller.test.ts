@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import type { ApiClient, WalletLocator } from "../../api";
 import {
     SignatureConfirmationTimeoutError,
@@ -9,6 +10,7 @@ import {
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
     TransactionSendingFailedError,
+    TransactionApiError,
 } from "../../utils/errors";
 import { walletsLogger } from "../../logger";
 import { waitForSignatureCompletion, waitForTransactionCompletion } from "./operation-poller";
@@ -174,6 +176,18 @@ describe("operation-poller", () => {
             expect(error).toBeInstanceOf(TransactionNotAvailableError);
             expect(error.message).toBe(JSON.stringify(errorResponse));
             expect(mockApiClient.getTransaction).toHaveBeenCalledTimes(2);
+        });
+
+        it("attaches the transaction ID and status when polling returns a 5xx", async () => {
+            mockApiClient.getTransaction.mockRejectedValue(
+                new ApiClientError("API request failed: 502 Bad Gateway", 502, "Bad Gateway", "Bad Gateway")
+            );
+
+            const error = await settleError(pollTx("txn-poll-500"));
+
+            expect(error).toBeInstanceOf(TransactionApiError);
+            expect(error).toMatchObject({ transactionId: "txn-poll-500", status: 502 });
+            expect(error.message).toContain("(transactionId: txn-poll-500)");
         });
 
         it.each([

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import { SolanaWallet } from "./solana";
 import type { CreateTransactionSuccessResponse } from "../api";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { TransactionApiError, TransactionNotCreatedError } from "../utils/errors";
 import {
     createMockWallet,
     createMockApiClient,
@@ -222,6 +223,41 @@ describe("SolanaWallet - sendTransaction()", () => {
     });
 
     describe("error cases", () => {
+        it("surfaces the transaction ID from a 5xx create response", async () => {
+            const serializedTx = createMockSolanaSerializedTransaction();
+            mockApiClient.createTransaction.mockRejectedValue(
+                new ApiClientError(
+                    "API request failed: 500 Internal Server Error",
+                    500,
+                    "Internal Server Error",
+                    '{"id":"txn-500"}'
+                )
+            );
+
+            const error = await solanaWallet
+                .sendTransaction({ serializedTransaction: serializedTx })
+                .catch((caught) => caught);
+
+            expect(error).toBeInstanceOf(TransactionApiError);
+            expect(error).toMatchObject({ transactionId: "txn-500", status: 500 });
+            expect(error.message).toContain("(transactionId: txn-500)");
+        });
+
+        it("surfaces an indeterminate transaction error for an opaque 5xx create response", async () => {
+            const serializedTx = createMockSolanaSerializedTransaction();
+            mockApiClient.createTransaction.mockRejectedValue(
+                new ApiClientError("API request failed: 500", 500, "", "<html>Internal Server Error</html>")
+            );
+
+            const error = await solanaWallet
+                .sendTransaction({ serializedTransaction: serializedTx })
+                .catch((caught) => caught);
+
+            expect(error).toBeInstanceOf(TransactionApiError);
+            expect(error).toMatchObject({ transactionId: undefined, status: 500 });
+            expect(error.message).toContain("outcome is indeterminate");
+        });
+
         it("throws TransactionNotCreatedError when API returns error", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
             const errorResponse = {

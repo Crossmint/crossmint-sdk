@@ -1,4 +1,5 @@
 import {
+    ApiClientError,
     CrossmintSDKError,
     JWTDecryptionError,
     JWTExpiredError,
@@ -217,6 +218,21 @@ export class TransactionFailedError extends CrossmintSDKError {
     }
 }
 
+export class TransactionApiError extends CrossmintSDKError {
+    public readonly transactionId?: string;
+    public readonly status?: number;
+
+    constructor(message: string, options: { transactionId?: string; status?: number; details?: string } = {}) {
+        const transactionMessage =
+            options.transactionId == null
+                ? `${message} The transaction outcome is indeterminate; check its status before retrying if possible.`
+                : `${message} (transactionId: ${options.transactionId}). The transaction may have succeeded; check its status before retrying.`;
+        super(transactionMessage, WalletErrorCode.TRANSACTION_FAILED, options.details);
+        this.transactionId = options.transactionId;
+        this.status = options.status;
+    }
+}
+
 export class PendingApprovalsError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
@@ -272,6 +288,37 @@ export function throwIfCrossmintApiAuthError(response: unknown): void {
     }
 }
 
+function extractTransactionId(responseBody: string | null): string | undefined {
+    if (responseBody == null) {
+        return undefined;
+    }
+
+    try {
+        const parsed = JSON.parse(responseBody);
+        return typeof parsed?.id === "string" ? parsed.id : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+export function wrapTransactionApiError(error: unknown, transactionId?: string): TransactionApiError | undefined {
+    if (!(error instanceof ApiClientError)) {
+        return undefined;
+    }
+
+    const resolvedTransactionId = transactionId ?? extractTransactionId(error.responseBody);
+    const details = JSON.stringify({
+        status: error.status,
+        transactionId: resolvedTransactionId,
+        responseBody: error.responseBody,
+    });
+    return new TransactionApiError(error.message, {
+        transactionId: resolvedTransactionId,
+        status: error.status,
+        details,
+    });
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -301,6 +348,7 @@ export type WalletError =
     | TransactionAwaitingApprovalError
     | TransactionHashNotFoundError
     | TransactionFailedError
+    | TransactionApiError
     | PendingApprovalsError
     | InvalidAddressError
     | UnsupportedBrowserError

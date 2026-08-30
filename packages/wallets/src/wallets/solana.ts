@@ -9,7 +9,7 @@ import type {
     TransactionInputOptions,
 } from "./types";
 import { Wallet } from "./wallet";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { TransactionNotCreatedError, wrapTransactionApiError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
@@ -115,12 +115,17 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             serializedTransaction = bs58.encode(params.transaction.serialize());
         }
 
-        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: {
-                transaction: serializedTransaction,
-                signer,
-            },
-        });
+        let transactionCreationResponse: Awaited<ReturnType<typeof this.apiClient.createTransaction>>;
+        try {
+            transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+                params: {
+                    transaction: serializedTransaction,
+                    signer,
+                },
+            });
+        } catch (error) {
+            throw wrapTransactionApiError(error) ?? error;
+        }
 
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
