@@ -1,5 +1,7 @@
 import { vi, type MockedFunction } from "vitest";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import bs58 from "bs58";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
@@ -110,5 +112,10 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
 });
 
 export const createMockSolanaSerializedTransaction = (): string => {
-    return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
+    const message = MessageV0.compile({
+        payerKey: PublicKey.default,
+        instructions: [],
+        recentBlockhash: PublicKey.default.toBase58(),
+    });
+    return bs58.encode(new VersionedTransaction(message).serialize());
 };
