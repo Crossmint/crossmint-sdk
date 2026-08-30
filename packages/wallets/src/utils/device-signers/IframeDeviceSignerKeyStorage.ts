@@ -51,8 +51,10 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         if (typeof window !== "undefined" && !hasPartitionedStorage()) {
             throw new UnsupportedBrowserError(
                 "Device signer requires a browser with third-party storage partitioning (Chrome ≥ 115, Firefox ≥ 103, or Safari). " +
-                    "Without storage partitioning, different embedders of the same iframe can share IndexedDB, " +
-                    "allowing cross-site key access. See https://developer.chrome.com/blog/storage-partitioning"
+                    "Embedded runtimes are excluded because they do not partition third-party storage: Android WebView — " +
+                    "which is what in-app browsers such as Facebook, Instagram and TikTok use on Android — and Electron. " +
+                    "Without storage partitioning, different embedders of the same iframe can share IndexedDB. " +
+                    "See https://developer.chrome.com/blog/storage-partitioning"
             );
         }
 
