@@ -4,18 +4,6 @@ import { fileURLToPath } from "node:url";
 import { MarkdownPageEvent } from "typedoc-plugin-markdown";
 
 const pkg = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "package.json"), "utf8"));
-const CURRENT_MAJOR_VERSION = Number.parseInt(pkg.version.split(".")[0], 10);
-const PREVIOUS_MAJOR_VERSION = CURRENT_MAJOR_VERSION - 1;
-
-const PAGE_RENAMES = { "globals.mdx": "reference", "README.mdx": "overview" };
-
-function versionBanner(pageUrl) {
-    const pagePath = PAGE_RENAMES[pageUrl] ?? pageUrl.replace(/\.mdx$/, "");
-    return `<Note>
-**This page has been updated for Wallets SDK V${CURRENT_MAJOR_VERSION}.** If you are using the previous version,
-see the [previous version of this page](/sdk-reference/wallets/v${PREVIOUS_MAJOR_VERSION}/typescript/${pagePath}) or the [V${CURRENT_MAJOR_VERSION} migration guide](/wallets/guides/migrate-to-v${CURRENT_MAJOR_VERSION}).
-</Note>`;
-}
 
 // README.mdx is renamed to overview.mdx in the workflow; its typedoc-derived
 // title is the package name, which collides with reference.mdx in nav. Give
@@ -95,16 +83,6 @@ export function load(app) {
                     "[typedoc-custom-plugin] npm badge insertion failed — README description may have changed"
                 );
             }
-        }
-
-        const banner = versionBanner(page.url);
-        const frontmatterMatch = page.contents.match(/^---\n[\s\S]*?\n---\n/);
-        if (frontmatterMatch) {
-            const idx = frontmatterMatch[0].length;
-            const body = page.contents.slice(idx).replace(/^\n+/, "");
-            page.contents = `${frontmatterMatch[0]}\n${banner}\n\n${body}`;
-        } else {
-            page.contents = `${banner}\n\n${page.contents.replace(/^\n+/, "")}`;
         }
     });
 }

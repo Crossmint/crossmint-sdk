@@ -18,10 +18,6 @@ const PRODUCTS = {
         npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
         installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
         intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides React components and hooks for integrating Crossmint wallets into your application.",
-        versionBanner: `<Note>
-**This page has been updated for Wallets SDK V1.** If you are using the previous version,
-see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) or the [V1 migration guide](/wallets/guides/migrate-to-v1).
-</Note>`,
         exports: ["CrossmintProvider", "CrossmintWalletProvider", "useWallet", "ExportPrivateKeyButton"],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
