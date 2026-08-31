@@ -42,17 +42,6 @@ export type RecoverySignerConfig = NonNullable<
     Extract<CreateWalletV2025DtoClass, { config: { adminSigner: Record<string, unknown> } }>["config"]
 >["adminSigner"];
 
-/**
- * Recovery signers accepted by the wallet-creation API under `config.recovery`. Only the chains
- * whose backend DTO takes a list (Solana, Stellar) are extracted here; EVM still takes a single
- * signer, so it keeps using {@link RecoverySignerConfig}.
- */
-export type RecoverySignerListConfig = NonNullable<
-    NonNullable<
-        Extract<CreateWalletV2025DtoClass, { chainType: "solana" | "stellar"; config: object }>["config"]
-    >["recovery"]
->;
-
 export type CreateTransactionParams = CreateTransactionV2025DtoClass;
 export type CreateTransactionSuccessResponse = WalletsTransactionV2025ResponseDtoClass;
 export type CreateTransactionResponse = CreateTransactionSuccessResponse | WalletV1Alpha2TransactionErrorDto;
