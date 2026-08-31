@@ -352,7 +352,7 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
             );
         case "RECOVERY_SIGNER_CONFLICT":
             throw new RecoverySignerConflictError(
-                message ?? "A recovery signer cannot also be registered as a delegated signer",
+                message ?? "A recovery signer cannot also be registered as an operational signer",
                 details
             );
         case "SIGNER_REQUIRED":
