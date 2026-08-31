@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.13.0
+
+### Minor Changes
+
+- 85bc2d9: Solana email/phone signers can now sign arbitrary payloads: `SolanaNonCustodialSigner.signMessage(base58Payload)` returns a raw Ed25519 signature instead of rejecting.
+
+### Patch Changes
+
+- 4db65cd: Reject passkey assertions returned by a custom `onSignWithPasskey` handler when the WebAuthn user verification flag is unset, since the on-chain verifier requires it and the bundler would reject the transaction with an opaque AA24 signature error.
+
 ## 1.12.1
 
 ### Patch Changes

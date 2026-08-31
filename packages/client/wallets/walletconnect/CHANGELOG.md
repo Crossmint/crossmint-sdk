@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.48
+
+### Patch Changes
+
+- bbc5c6e: Bumped postcss to 8.5.18 and updated shared pnpm overrides to resolve high-severity Dependabot alerts.
+
 ## 1.2.47
 
 ### Patch Changes

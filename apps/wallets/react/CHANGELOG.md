@@ -1,5 +1,14 @@
 # @crossmint/wallets-playground-react
 
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [4db65cd]
+- Updated dependencies [85bc2d9]
+  - @crossmint/wallets-sdk@1.13.0
+  - @crossmint/client-sdk-react-ui@4.5.1
+
 ## 0.0.26
 
 ### Patch Changes
