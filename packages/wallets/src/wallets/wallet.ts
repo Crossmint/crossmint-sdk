@@ -259,7 +259,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected static getRecoverySigners<C extends Chain>(wallet: Wallet<C>): Array<RecoverySignerConfigForChain<C>> {
-        return wallet.#recoverySigners;
+        return wallet.recoverySigners;
     }
 
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
@@ -309,7 +309,9 @@ export class Wallet<C extends Chain> {
      * @experimental This API is experimental and may change in the future
      */
     public get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
-        return this.#recoverySigners;
+        // The first entry is read from the signer manager, which owns the wallet's recovery signer
+        // and may replace it (e.g. stripping a server secret), so it never diverges from `recovery`.
+        return [this.#signerManager.recovery as RecoverySignerConfigForChain<C>, ...this.#recoverySigners.slice(1)];
     }
 
     /**
