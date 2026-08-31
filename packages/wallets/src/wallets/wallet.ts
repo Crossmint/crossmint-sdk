@@ -78,6 +78,8 @@ type WalletContructorType<C extends Chain> = {
     alias?: string;
     options?: WalletOptions;
     recovery: RecoverySignerConfigForChain<C>;
+    /** Every recovery signer of the wallet, `recovery` being the first. Defaults to `[recovery]`. */
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>;
     apiRecoveryServerSignerAddress?: string;
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
@@ -96,6 +98,7 @@ export class Wallet<C extends Chain> {
     #signerManager: SignerManager<C>;
     #deviceRecovery: DeviceRecoveryService<C>;
     #apiDelegatedServerSignerAddresses: string[] = [];
+    #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -107,6 +110,7 @@ export class Wallet<C extends Chain> {
             options,
             alias,
             recovery,
+            recoverySigners,
             apiRecoveryServerSignerAddress,
             apiDelegatedServerSignerAddresses,
             signers,
@@ -124,6 +128,7 @@ export class Wallet<C extends Chain> {
         } else if (recovery.type === "server" && isApiSourcedServerSignerConfig(recovery)) {
             apiRecoveryAddress = recovery.address;
         }
+        this.#recoverySigners = recoverySigners ?? [recovery];
         this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
         this.#serverSignerResolver = new ServerSignerResolver({
@@ -291,6 +296,16 @@ export class Wallet<C extends Chain> {
      */
     public get recovery(): SignerConfigForChain<C> {
         return this.#signerManager.recovery;
+    }
+
+    /**
+     * Get every recovery signer config of the wallet. Wallets on chains that support a single recovery
+     * signer always return one entry.
+     * @returns The recovery signer configs, the first one being {@link Wallet.recovery}
+     * @experimental This API is experimental and may change in the future
+     */
+    public get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
+        return this.#recoverySigners;
     }
 
     /**

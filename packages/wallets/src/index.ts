@@ -1,8 +1,20 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
+// Recovery signers
+export { toRecoverySignerList } from "./utils/recovery";
+
 // Errors
 export {
+    MAX_RECOVERY_SIGNERS,
+    DuplicateRecoverySignerError,
+    InvalidRecoveryConfigError,
+    NotSupportedOnApiVersionError,
+    RecoveryAdminSignerConflictError,
+    RecoveryNotSupportedOnChainError,
+    RecoverySignerConflictError,
+    RecoverySignerLimitExceededError,
+    SignerRequiredError,
     WalletNotAvailableError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
@@ -66,6 +78,7 @@ export type {
     ExternalWalletSignerConfigForChain,
     ServerSignerConfig,
     SignerConfigForChain,
+    RecoverySignerConfigForChain,
     SignerLocator,
     EmailSignerLocator,
     PhoneSignerLocator,

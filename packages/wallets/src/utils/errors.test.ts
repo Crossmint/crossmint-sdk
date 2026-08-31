@@ -2,12 +2,20 @@ import { CrossmintErrors } from "@crossmint/common-sdk-base";
 import { describe, expect, test } from "vitest";
 
 import {
+    DuplicateRecoverySignerError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
     NotAuthorizedError,
+    NotSupportedOnApiVersionError,
+    RecoveryAdminSignerConflictError,
+    RecoveryNotSupportedOnChainError,
+    RecoverySignerConflictError,
+    RecoverySignerLimitExceededError,
+    SignerRequiredError,
     throwIfCrossmintApiAuthError,
+    throwIfRecoverySignerApiError,
 } from "./errors";
 
 describe("throwIfCrossmintApiAuthError", () => {
@@ -57,5 +65,45 @@ describe("throwIfCrossmintApiAuthError", () => {
         expect(() => throwIfCrossmintApiAuthError({ error: true, code: "SOME_OTHER_ERROR" })).not.toThrow();
         expect(() => throwIfCrossmintApiAuthError(null)).not.toThrow();
         expect(() => throwIfCrossmintApiAuthError("string")).not.toThrow();
+    });
+});
+
+describe("throwIfRecoverySignerApiError", () => {
+    const recoveryErrorCases = [
+        { code: "SIGNER_LIMIT_EXCEEDED", errorClass: RecoverySignerLimitExceededError },
+        { code: "RECOVERY_DUPLICATE_SIGNER", errorClass: DuplicateRecoverySignerError },
+        { code: "RECOVERY_SIGNER_CONFLICT", errorClass: RecoverySignerConflictError },
+        { code: "SIGNER_REQUIRED", errorClass: SignerRequiredError },
+        { code: "RECOVERY_NOT_SUPPORTED_ON_CHAIN", errorClass: RecoveryNotSupportedOnChainError },
+        { code: "NOT_SUPPORTED_ON_API_VERSION", errorClass: NotSupportedOnApiVersionError },
+        { code: "RECOVERY_ADMIN_SIGNER_CONFLICT", errorClass: RecoveryAdminSignerConflictError },
+    ];
+
+    test.each(recoveryErrorCases)("throws $errorClass.name when the code is $code", ({ code, errorClass }) => {
+        expect(() => throwIfRecoverySignerApiError({ error: true, code })).toThrow(errorClass);
+    });
+
+    test("surfaces the API message and the full response body as details", () => {
+        const body = { error: true, code: "RECOVERY_DUPLICATE_SIGNER", message: "signer already an admin" };
+
+        try {
+            throwIfRecoverySignerApiError(body);
+            expect.fail("Expected throwIfRecoverySignerApiError to throw");
+        } catch (error) {
+            expect((error as DuplicateRecoverySignerError).message).toBe("signer already an admin");
+            expect((error as DuplicateRecoverySignerError).details).toBe(JSON.stringify(body));
+        }
+    });
+
+    test("falls back to a descriptive message when the API sends none", () => {
+        expect(() => throwIfRecoverySignerApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).toThrow(
+            "A wallet can have at most 10 recovery signers"
+        );
+    });
+
+    test("does not throw for unrelated error bodies", () => {
+        expect(() => throwIfRecoverySignerApiError({ error: true, message: "Wallet not found" })).not.toThrow();
+        expect(() => throwIfRecoverySignerApiError({ error: true, code: "SOME_OTHER_ERROR" })).not.toThrow();
+        expect(() => throwIfRecoverySignerApiError(null)).not.toThrow();
     });
 });
