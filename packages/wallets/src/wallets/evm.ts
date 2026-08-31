@@ -28,6 +28,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
                 recovery: Wallet.getRecovery(wallet),
+                recoverySigners: Wallet.getRecoverySigners(wallet),
                 apiRecoveryServerSignerAddress: Wallet.getApiRecoveryServerSignerAddress(wallet),
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,

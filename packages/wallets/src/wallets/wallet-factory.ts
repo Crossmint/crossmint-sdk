@@ -12,7 +12,16 @@ import type {
     Signer as SignerResponse,
     RegisterSignerParams,
 } from "../api";
-import { DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE, WalletCreationError, WalletNotAvailableError } from "../utils/errors";
+import {
+    DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
+    InvalidRecoveryConfigError,
+    MAX_RECOVERY_SIGNERS,
+    RecoveryNotSupportedOnChainError,
+    RecoverySignerLimitExceededError,
+    WalletCreationError,
+    WalletNotAvailableError,
+    throwIfRecoverySignerApiError,
+} from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
     ExternalWalletRegistrationConfig,
@@ -21,7 +30,8 @@ import type {
     SignerConfigForChain,
 } from "../signers/types";
 import { Wallet } from "./wallet";
-import type { WalletArgsFor, WalletCreateArgs } from "./types";
+import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
+import { toRecoverySignerList } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
@@ -32,9 +42,21 @@ const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
 
 type SmartWalletConfig = {
+    /** @deprecated The API still returns the first admin signer here; `recovery` holds all of them. */
     adminSigner: RecoverySignerConfig | PasskeySignerConfig;
+    recovery?: Array<RecoverySignerConfig | PasskeySignerConfig>;
     delegatedSigners?: SignerResponse[];
 };
+
+/** A recovery signer once passkey creation and server signer derivation have been resolved. */
+type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams | { type: "server"; address: string };
+
+/**
+ * The recovery half of a wallet-creation request. The API rejects requests carrying both fields
+ * (`RECOVERY_ADMIN_SIGNER_CONFLICT`), so a list goes under `recovery` while a single signer keeps
+ * using the deprecated `adminSigner` field.
+ */
+type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recovery: ResolvedRecoverySigner[] };
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -140,24 +162,19 @@ export class WalletFactory {
             validatedArgs.options?.deviceSignerKeyStorage
         );
 
-        let adminSigner;
-        if (validatedArgs.recovery.type === "passkey" && validatedArgs.recovery.id == null) {
-            adminSigner = await this.createPasskeySigner(validatedArgs.recovery);
-        } else if (validatedArgs.recovery.type === "server") {
-            const { derivedAddress } = deriveServerSignerDetails(
-                validatedArgs.recovery,
-                validatedArgs.chain,
-                this.apiClient.projectId,
-                this.apiClient.environment
-            );
-            adminSigner = { type: "server", address: derivedAddress };
-        } else {
-            adminSigner = validatedArgs.recovery;
+        const recoverySigners = this.validatedRecoverySignerList(validatedArgs.recovery, validatedArgs.chain);
+        const resolvedRecoverySigners: ResolvedRecoverySigner[] = [];
+        // Sequential: resolving a passkey signer prompts the user, and browsers reject concurrent WebAuthn calls.
+        for (const recoverySigner of recoverySigners) {
+            resolvedRecoverySigners.push(await this.resolveRecoverySigner(recoverySigner, validatedArgs.chain));
         }
+        const recoveryRequestConfig: RecoveryRequestConfig = Array.isArray(validatedArgs.recovery)
+            ? { recovery: resolvedRecoverySigners }
+            : { adminSigner: resolvedRecoverySigners[0] };
 
         const walletResponse = await this.createSmartWallet(
             validatedArgs,
-            adminSigner,
+            recoveryRequestConfig,
             builtSigners,
             didAutoInjectDeviceSigner
         );
@@ -166,6 +183,7 @@ export class WalletFactory {
             walletsLogger.error("walletFactory.createWallet.error", {
                 error: walletResponse.error,
             });
+            throwIfRecoverySignerApiError(walletResponse);
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
@@ -179,7 +197,7 @@ export class WalletFactory {
     /** Creates the smart wallet, retrying once without the auto-injected device signer if the provider rejects it. */
     private async createSmartWallet<C extends Chain>(
         args: WalletCreateArgs<C>,
-        adminSigner: unknown,
+        recoveryRequestConfig: RecoveryRequestConfig,
         builtSigners: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>,
         didAutoInjectDeviceSigner: boolean
     ): Promise<CreateWalletResponse> {
@@ -188,7 +206,7 @@ export class WalletFactory {
                 type: "smart",
                 chainType: this.getChainType(args.chain),
                 config: {
-                    adminSigner,
+                    ...recoveryRequestConfig,
                     ...(args.plugins ? { plugins: args.plugins } : {}),
                     ...(delegatedSigners != null ? { delegatedSigners } : {}),
                 },
@@ -211,6 +229,54 @@ export class WalletFactory {
         });
         const signersWithoutDeviceSigner = builtSigners.filter((s) => !this.isBuiltDeviceSigner(s));
         return await this.apiClient.createWallet(buildParams(signersWithoutDeviceSigner));
+    }
+
+    /**
+     * Normalizes the caller's recovery config into a list, rejecting locally what the API would reject
+     * anyway so callers fail fast and without a round trip.
+     */
+    private validatedRecoverySignerList<C extends Chain>(
+        recovery: WalletCreateArgs<C>["recovery"],
+        chain: C
+    ): Array<RecoverySignerConfigFor<C>> {
+        const recoverySigners = toRecoverySignerList(recovery) as Array<RecoverySignerConfigFor<C>>;
+        if (!Array.isArray(recovery)) {
+            return recoverySigners;
+        }
+        if (chain !== "solana" && chain !== "stellar") {
+            throw new RecoveryNotSupportedOnChainError(
+                `Multiple recovery signers are not supported on ${chain} yet. Pass a single recovery signer.`
+            );
+        }
+        if (recoverySigners.length === 0) {
+            throw new InvalidRecoveryConfigError("At least one recovery signer is required");
+        }
+        if (recoverySigners.length > MAX_RECOVERY_SIGNERS) {
+            throw new RecoverySignerLimitExceededError(
+                `A wallet can have at most ${MAX_RECOVERY_SIGNERS} recovery signers, but ${recoverySigners.length} were provided`
+            );
+        }
+        return recoverySigners;
+    }
+
+    /** Creates the passkey / derives the server signer address a recovery signer needs to be sent to the API. */
+    private async resolveRecoverySigner<C extends Chain>(
+        recovery: RecoverySignerConfigFor<C>,
+        chain: C
+    ): Promise<ResolvedRecoverySigner> {
+        if (recovery.type === "passkey" && recovery.id == null) {
+            return await this.createPasskeySigner(recovery as SignerConfigForChain<C>);
+        }
+        if (recovery.type === "server") {
+            const { derivedAddress } = deriveServerSignerDetails(
+                recovery,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return { type: "server", address: derivedAddress };
+        }
+        return recovery as ResolvedRecoverySigner;
     }
 
     // Matches a device signer in object form. Callers only run this when didAutoInjectDeviceSigner is
@@ -246,13 +312,20 @@ export class WalletFactory {
         // For all other types (passkey, device, etc.), use the API response which contains the full
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
-        const apiRecovery = (walletResponse.config as SmartWalletConfig).adminSigner as RecoverySignerConfigForChain<C>;
-        const recovery =
-            createArgs.recovery?.type === "server" || createArgs.recovery?.type === "external-wallet"
-                ? createArgs.recovery
-                : this.mergePhoneChannel(apiRecovery, createArgs.recovery);
+        const walletConfig = walletResponse.config as SmartWalletConfig;
+        // `recovery` holds every admin signer; older responses (and wallets created with a single
+        // signer) only carry the deprecated singular `adminSigner`.
+        const apiRecoverySigners = (walletConfig.recovery ?? [walletConfig.adminSigner]) as Array<
+            RecoverySignerConfigForChain<C>
+        >;
+        const recoverySigners = this.mergeRecoverySigners(
+            apiRecoverySigners,
+            toRecoverySignerList<C>(createArgs.recovery),
+            args.chain
+        );
+        const recovery = recoverySigners[0];
 
-        const apiDelegatedSigners = (walletResponse.config as SmartWalletConfig).delegatedSigners;
+        const apiDelegatedSigners = walletConfig.delegatedSigners;
         let signers = apiDelegatedSigners;
         if (
             signers != null &&
@@ -277,10 +350,9 @@ export class WalletFactory {
 
         // Preserve the API-sourced server signer recovery address so the wallet can identify
         // legacy derivations even when the user-provided config replaces the API one.
-        const apiRecoveryServerSignerAddress =
-            apiRecovery.type === "server" && "address" in apiRecovery && !("secret" in apiRecovery)
-                ? (apiRecovery as { address: string }).address
-                : undefined;
+        const apiRecoveryServerSignerAddress = apiRecoverySigners
+            .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
+            .map((s) => (s as { address: string }).address)[0];
 
         // Preserve the API-sourced server signer delegated addresses so the wallet can identify
         // legacy derivations even when the user-provided config replaces the API one.
@@ -296,6 +368,7 @@ export class WalletFactory {
                 options: args.options,
                 alias: args.alias,
                 recovery,
+                recoverySigners,
                 apiRecoveryServerSignerAddress,
                 apiDelegatedServerSignerAddresses,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
@@ -308,6 +381,93 @@ export class WalletFactory {
         await wallet.waitForInit();
 
         return wallet;
+    }
+
+    /**
+     * Pairs each recovery signer returned by the API with the caller's config for the same signer, keeping the
+     * caller's config for server and external-wallet signers (it carries the secret / onSign callback the
+     * API cannot store) and the API's config otherwise (it carries e.g. the passkey credential ID).
+     */
+    private mergeRecoverySigners<C extends Chain>(
+        apiRecoverySigners: Array<RecoverySignerConfigForChain<C>>,
+        inputRecoverySigners: Array<RecoverySignerConfigForChain<C>>,
+        chain: C
+    ): Array<RecoverySignerConfigForChain<C>> {
+        const unmatchedInputSigners = [...inputRecoverySigners];
+        const pairedInputSigners = new Map<number, RecoverySignerConfigForChain<C>>();
+        // Pair on signer identity first and only then on type alone, so that a server signer whose API-reported
+        // address comes from a legacy derivation still keeps the caller's config (and its secret).
+        const matchers = [
+            (input: RecoverySignerConfigForChain<C>, api: RecoverySignerConfigForChain<C>) =>
+                this.matchesRecoverySigner(input, api, chain),
+            (input: RecoverySignerConfigForChain<C>, api: RecoverySignerConfigForChain<C>) => input.type === api.type,
+        ];
+        for (const matches of matchers) {
+            apiRecoverySigners.forEach((apiRecoverySigner, index) => {
+                if (pairedInputSigners.has(index)) {
+                    return;
+                }
+                const inputIndex = unmatchedInputSigners.findIndex((input) => matches(input, apiRecoverySigner));
+                if (inputIndex === -1) {
+                    return;
+                }
+                pairedInputSigners.set(index, unmatchedInputSigners.splice(inputIndex, 1)[0]);
+            });
+        }
+
+        return apiRecoverySigners.map((apiRecoverySigner, index) => {
+            const inputRecoverySigner = pairedInputSigners.get(index);
+            if (inputRecoverySigner == null) {
+                return apiRecoverySigner;
+            }
+            if (inputRecoverySigner.type === "server" || inputRecoverySigner.type === "external-wallet") {
+                return inputRecoverySigner;
+            }
+            return this.mergePhoneChannel(apiRecoverySigner, inputRecoverySigner);
+        });
+    }
+
+    /**
+     * Whether a caller-provided recovery signer config denotes the same signer as one the API returned.
+     * Wallets can have several recovery signers of the same type, so the identifying field is compared too:
+     * for server signers that means deriving the address the caller's secret maps to.
+     */
+    private matchesRecoverySigner<C extends Chain>(
+        inputRecoverySigner: RecoverySignerConfigForChain<C>,
+        apiRecoverySigner: RecoverySignerConfig | PasskeySignerConfig | RecoverySignerConfigForChain<C>,
+        chain: C
+    ): boolean {
+        if (inputRecoverySigner.type !== apiRecoverySigner.type) {
+            return false;
+        }
+        if (inputRecoverySigner.type === "email" && "email" in apiRecoverySigner) {
+            return (
+                normalizeValueForComparison(inputRecoverySigner.email) ===
+                normalizeValueForComparison(apiRecoverySigner.email)
+            );
+        }
+        if (inputRecoverySigner.type === "phone" && "phone" in apiRecoverySigner) {
+            return inputRecoverySigner.phone === apiRecoverySigner.phone;
+        }
+        if (inputRecoverySigner.type === "external-wallet" && "address" in apiRecoverySigner) {
+            return inputRecoverySigner.address === apiRecoverySigner.address;
+        }
+        if (inputRecoverySigner.type === "server" && "address" in apiRecoverySigner) {
+            if (!("secret" in inputRecoverySigner)) {
+                return inputRecoverySigner.address === apiRecoverySigner.address;
+            }
+            const { primary, legacy } = deriveServerSignerCandidates(
+                inputRecoverySigner,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return (
+                primary.derivedAddress === apiRecoverySigner.address ||
+                legacy?.derivedAddress === apiRecoverySigner.address
+            );
+        }
+        return true;
     }
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
@@ -365,15 +525,29 @@ export class WalletFactory {
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
             const config = existingWallet.config as SmartWalletConfig;
-            const existingWalletSigner = config?.adminSigner;
+            const existingWalletSigners = config?.recovery ?? (config?.adminSigner != null ? [config.adminSigner] : []);
 
-            if (createArgs.recovery != null && existingWalletSigner != null) {
-                if (createArgs.recovery.type !== existingWalletSigner.type) {
+            const unmatchedExistingSigners = [...existingWalletSigners] as Array<RecoverySignerConfigForChain<C>>;
+            for (const inputRecoverySigner of toRecoverySignerList<C>(createArgs.recovery)) {
+                if (existingWalletSigners.length === 0) {
+                    break;
+                }
+                const matchIndex = unmatchedExistingSigners.findIndex((existingWalletSigner) =>
+                    this.matchesRecoverySigner(inputRecoverySigner, existingWalletSigner, args.chain)
+                );
+                const existingWalletSigner =
+                    matchIndex === -1
+                        ? unmatchedExistingSigners.find((s) => s.type === inputRecoverySigner.type)
+                        : unmatchedExistingSigners[matchIndex];
+                if (existingWalletSigner == null) {
                     throw new WalletCreationError(
                         "The wallet recovery signer type does not match the existing wallet's recovery signer type"
                     );
                 }
-                compareSignerConfigs(createArgs.recovery, existingWalletSigner);
+                compareSignerConfigs(inputRecoverySigner, existingWalletSigner);
+                if (matchIndex !== -1) {
+                    unmatchedExistingSigners.splice(matchIndex, 1);
+                }
             }
 
             const inputSigners = createArgs.signers;
