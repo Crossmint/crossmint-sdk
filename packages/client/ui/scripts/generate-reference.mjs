@@ -678,12 +678,6 @@ export function generate(config) {
     // Page generators
     // =========================================================================
 
-    function emitBanner(emit, product, pageName) {
-        if (!product.versionBanner) return;
-        emit(product.versionBanner.replaceAll("{page}", pageName));
-        emit("");
-    }
-
     function buildGetStarted(product) {
         const L = [];
         const emit = (...a) => L.push(a.join(""));
@@ -693,7 +687,6 @@ export function generate(config) {
         emit(`description: Installation and setup for the ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "get-started");
 
         // Version shield badge
         if (product.npmUrl && product.packageName) {
@@ -756,7 +749,6 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} context providers for ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "providers");
 
         const { providers } = classifyExports(product.exports);
 
@@ -814,7 +806,6 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} hooks for ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "hooks");
 
         const { hooks } = classifyExports(product.exports);
 
