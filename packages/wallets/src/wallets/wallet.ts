@@ -258,6 +258,10 @@ export class Wallet<C extends Chain> {
         return wallet.#signerManager.recovery as RecoverySignerConfigForChain<C>;
     }
 
+    protected static getRecoverySigners<C extends Chain>(wallet: Wallet<C>): Array<RecoverySignerConfigForChain<C>> {
+        return wallet.#recoverySigners;
+    }
+
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
         return wallet.#initialSigners;
     }
