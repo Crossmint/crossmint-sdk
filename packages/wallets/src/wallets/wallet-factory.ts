@@ -323,7 +323,6 @@ export class WalletFactory {
             toRecoverySignerList<C>(createArgs.recovery),
             args.chain
         );
-        const recovery = recoverySigners[0];
 
         const apiDelegatedSigners = walletConfig.delegatedSigners;
         let signers = apiDelegatedSigners;
@@ -367,8 +366,7 @@ export class WalletFactory {
                 owner: walletResponse.owner,
                 options: args.options,
                 alias: args.alias,
-                recovery,
-                recoverySigners,
+                recovery: recoverySigners,
                 apiRecoveryServerSignerAddress,
                 apiDelegatedServerSignerAddresses,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
