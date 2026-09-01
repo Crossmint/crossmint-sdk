@@ -127,7 +127,7 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 >
 ```
 
-On Solana and Stellar, `recovery` also accepts a list of up to 10 signers, each able to recover the wallet on its own. EVM chains take a single recovery signer:
+On Solana and Stellar, `recovery` also accepts a list of signers, each able to recover the wallet on its own. EVM chains take a single recovery signer:
 
 ```tsx
 <CrossmintWalletProvider
