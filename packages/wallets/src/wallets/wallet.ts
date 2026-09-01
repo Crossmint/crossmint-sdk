@@ -77,7 +77,8 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    recovery: RecoverySignerConfigForChain<C>;
+    /** The wallet's recovery signer(s). Wallets on chains that support a single recovery signer take one entry. */
+    recovery: RecoverySignerConfigForChain<C> | Array<RecoverySignerConfigForChain<C>>;
     apiRecoveryServerSignerAddress?: string;
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
@@ -96,6 +97,7 @@ export class Wallet<C extends Chain> {
     #signerManager: SignerManager<C>;
     #deviceRecovery: DeviceRecoveryService<C>;
     #apiDelegatedServerSignerAddresses: string[] = [];
+    #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -118,12 +120,15 @@ export class Wallet<C extends Chain> {
         this.owner = owner;
         this.#options = options;
         this.alias = alias;
+        const recoverySigners = Array.isArray(recovery) ? recovery : [recovery];
+        const primaryRecovery = recoverySigners[0];
         let apiRecoveryAddress: string | null = null;
         if (apiRecoveryServerSignerAddress != null) {
             apiRecoveryAddress = apiRecoveryServerSignerAddress;
-        } else if (recovery.type === "server" && isApiSourcedServerSignerConfig(recovery)) {
-            apiRecoveryAddress = recovery.address;
+        } else if (primaryRecovery.type === "server" && isApiSourcedServerSignerConfig(primaryRecovery)) {
+            apiRecoveryAddress = primaryRecovery.address;
         }
+        this.#recoverySigners = recoverySigners;
         this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
         this.#serverSignerResolver = new ServerSignerResolver({
@@ -149,7 +154,7 @@ export class Wallet<C extends Chain> {
             walletAddress: this.address,
             walletLocator: () => this.walletLocator,
             serverSignerResolver: this.#serverSignerResolver,
-            recovery,
+            recovery: primaryRecovery,
             initialSigners: this.#initialSigners,
             signers: () => this.signers(),
             signer,
@@ -249,8 +254,8 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): RecoverySignerConfigForChain<C> {
-        return wallet.#signerManager.recovery as RecoverySignerConfigForChain<C>;
+    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): Array<RecoverySignerConfigForChain<C>> {
+        return wallet.recovery;
     }
 
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
@@ -285,12 +290,15 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the recovery signer config
-     * @returns The recovery signer config
+     * Get every recovery signer config of the wallet. Wallets on chains that support a single recovery
+     * signer always return one entry.
+     * @returns The recovery signer configs
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): SignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): Array<RecoverySignerConfigForChain<C>> {
+        // The first entry is read from the signer manager, which owns the wallet's primary recovery
+        // signer and may replace it (e.g. stripping a server secret).
+        return [this.#signerManager.recovery as RecoverySignerConfigForChain<C>, ...this.#recoverySigners.slice(1)];
     }
 
     /**

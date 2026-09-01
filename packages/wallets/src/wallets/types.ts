@@ -4,7 +4,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse, Scope } from "../api";
-import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
@@ -233,9 +233,20 @@ export type WalletArgsFor<C extends Chain> = {
     alias?: string;
 };
 
+/** A signer that can be used as a recovery signer. Device signers cannot be recovery signers. */
+export type RecoverySignerConfigFor<C extends Chain> = Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+
+/**
+ * Solana and Stellar accept a list of recovery signers, each able to authorize on its own.
+ * Other chains accept a single recovery signer until their backend DTO supports a list.
+ */
+export type RecoveryCreateArg<C extends Chain> = C extends SolanaChain | StellarChain
+    ? RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>
+    : RecoverySignerConfigFor<C>;
+
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
-    recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /** Recovery signer, or list of recovery signers on Solana and Stellar. */
+    recovery: RecoveryCreateArg<C>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;

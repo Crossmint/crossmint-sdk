@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SolanaWallet } from "./solana";
+import type { SolanaChain } from "../chains/chains";
+import type { RecoverySignerConfigForChain } from "../signers/types";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
 import {
@@ -289,6 +291,18 @@ describe("SolanaWallet - from()", () => {
 
         expect(solanaWallet).toBeInstanceOf(SolanaWallet);
         expect(solanaWallet.chain).toBe("solana");
+    });
+
+    it("keeps every recovery signer of the source wallet", async () => {
+        const recoverySigners: Array<RecoverySignerConfigForChain<SolanaChain>> = [
+            { type: "email", email: "one@test.com" },
+            { type: "api-key" },
+        ];
+        const wallet = await createMockWallet("solana", mockApiClient, "api-key", recoverySigners);
+
+        const solanaWallet = SolanaWallet.from(wallet);
+
+        expect(solanaWallet.recovery).toEqual(recoverySigners);
     });
 
     it("throws error when wallet is not Solana", async () => {
