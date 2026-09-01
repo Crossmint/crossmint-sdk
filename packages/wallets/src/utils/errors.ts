@@ -104,6 +104,61 @@ export class QuorumSignerNotSupportedError extends CrossmintSDKError {
 }
 
 /**
+ * Maximum number of recovery signers a wallet can be created with, mirroring the backend's
+ * `SOLANA_MAX_ADMIN_SIGNERS` cap. Requests above it are rejected with `SIGNER_LIMIT_EXCEEDED`.
+ */
+export const MAX_RECOVERY_SIGNERS = 10;
+
+/** Thrown for recovery configurations the SDK can reject before calling the API. */
+export class InvalidRecoveryConfigError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoverySignerLimitExceededError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class DuplicateRecoverySignerError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoverySignerConflictError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class SignerRequiredError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoveryNotSupportedOnChainError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class NotSupportedOnApiVersionError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoveryAdminSignerConflictError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+/**
  * Thrown when the browser does not support third-party storage partitioning,
  * making it unsafe to store device-signer keys in IndexedDB. Consumers should
  * either prompt the user to upgrade their browser or fall back to a non-device
@@ -272,6 +327,58 @@ export function throwIfCrossmintApiAuthError(response: unknown): void {
     }
 }
 
+/**
+ * Inspects a Crossmint wallets API error response and, when it carries a recognized recovery-signer
+ * error code, throws the corresponding typed error. Returns without throwing for every other
+ * response so callers can fall back to their own contextual error.
+ */
+export function throwIfRecoverySignerApiError(response: unknown): void {
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return;
+    }
+
+    const details = JSON.stringify(response);
+    const message = response.message;
+    switch (response.code) {
+        case "SIGNER_LIMIT_EXCEEDED":
+            throw new RecoverySignerLimitExceededError(
+                message ?? `A wallet can have at most ${MAX_RECOVERY_SIGNERS} recovery signers`,
+                details
+            );
+        case "RECOVERY_DUPLICATE_SIGNER":
+            throw new DuplicateRecoverySignerError(
+                message ?? "The recovery list contains the same signer more than once",
+                details
+            );
+        case "RECOVERY_SIGNER_CONFLICT":
+            throw new RecoverySignerConflictError(
+                message ?? "A recovery signer cannot also be registered as an operational signer",
+                details
+            );
+        case "SIGNER_REQUIRED":
+            throw new SignerRequiredError(
+                message ??
+                    "This wallet has multiple recovery signers, so the signer to authorize with must be specified explicitly",
+                details
+            );
+        case "RECOVERY_NOT_SUPPORTED_ON_CHAIN":
+            throw new RecoveryNotSupportedOnChainError(
+                message ?? "Multiple recovery signers are not supported on this chain yet",
+                details
+            );
+        case "NOT_SUPPORTED_ON_API_VERSION":
+            throw new NotSupportedOnApiVersionError(
+                message ?? "Multiple recovery signers are not supported on this API version",
+                details
+            );
+        case "RECOVERY_ADMIN_SIGNER_CONFLICT":
+            throw new RecoveryAdminSignerConflictError(
+                message ?? "Only one of `adminSigner` and `recovery` can be provided",
+                details
+            );
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -286,6 +393,14 @@ export type WalletError =
     | InvalidSignerError
     | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | InvalidRecoveryConfigError
+    | RecoverySignerLimitExceededError
+    | DuplicateRecoverySignerError
+    | RecoverySignerConflictError
+    | SignerRequiredError
+    | RecoveryNotSupportedOnChainError
+    | NotSupportedOnApiVersionError
+    | RecoveryAdminSignerConflictError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError

@@ -3,6 +3,15 @@ export { createCrossmint, CrossmintWallets } from "./sdk";
 
 // Errors
 export {
+    MAX_RECOVERY_SIGNERS,
+    DuplicateRecoverySignerError,
+    InvalidRecoveryConfigError,
+    NotSupportedOnApiVersionError,
+    RecoveryAdminSignerConflictError,
+    RecoveryNotSupportedOnChainError,
+    RecoverySignerConflictError,
+    RecoverySignerLimitExceededError,
+    SignerRequiredError,
     WalletNotAvailableError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
