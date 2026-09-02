@@ -1205,7 +1205,7 @@ describe("WalletFactory - recovery signer lists", () => {
     });
 
     describe("createWallet response", () => {
-        it("exposes every recovery signer from the response as wallet.recovery", async () => {
+        it("exposes every recovery signer from the response as wallet.recoverySigners", async () => {
             const recovery = [
                 { type: "email" as const, email: "recovery@example.com" },
                 { type: "external-wallet" as const, address: EXTERNAL_WALLET_ADDRESS },
@@ -1219,8 +1219,8 @@ describe("WalletFactory - recovery signer lists", () => {
 
             const wallet = await walletFactory.createWallet({ chain: "solana", recovery });
 
-            expect(wallet.recovery).toHaveLength(2);
-            expect(wallet.recovery.map((signer) => signer.type)).toEqual(["email", "external-wallet"]);
+            expect(wallet.recoverySigners).toHaveLength(2);
+            expect(wallet.recoverySigners.map((signer) => signer.type)).toEqual(["email", "external-wallet"]);
         });
 
         it("keeps the caller's server signer config for the matching entry of the recovery list", async () => {
@@ -1237,7 +1237,7 @@ describe("WalletFactory - recovery signer lists", () => {
                 recovery: [{ type: "api-key" }, { type: "server", secret: FIRST_SERVER_SECRET }],
             });
 
-            expect(wallet.recovery[1]).toEqual({ type: "server", secret: FIRST_SERVER_SECRET });
+            expect(wallet.recoverySigners[1]).toEqual({ type: "server", secret: FIRST_SERVER_SECRET });
         });
 
         it("falls back to the deprecated adminSigner for responses without a recovery list", async () => {
@@ -1257,7 +1257,7 @@ describe("WalletFactory - recovery signer lists", () => {
 
             const wallet = await walletFactory.getWallet(SOLANA_ADDRESS, { chain: "solana" });
 
-            expect(wallet.recovery).toEqual([adminSigner]);
+            expect(wallet.recoverySigners).toEqual([adminSigner]);
         });
     });
 });
