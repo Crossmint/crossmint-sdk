@@ -1107,21 +1107,28 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Check if a signer config matches the wallet's recovery signer.
+     * Check if a signer config matches any of the wallet's recovery signers.
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
-        const recovery = this.#signerManager.recovery;
-        if (recovery == null || recovery.type !== signerConfig.type) {
-            return false;
-        }
         const signerDescriptor = getSignerDescriptor<C>(signerConfig.type);
-        if (!signerDescriptor.matchesRecovery(signerConfig, recovery, this.#signerManager.descriptorContext())) {
-            return false;
+        const descriptorContext = this.#signerManager.descriptorContext();
+        for (const [index, recovery] of this.recoverySigners.entries()) {
+            if (recovery == null || recovery.type !== signerConfig.type) {
+                continue;
+            }
+            if (!signerDescriptor.matchesRecovery(signerConfig, recovery, descriptorContext)) {
+                continue;
+            }
+            if (signerDescriptor.adoptsRecoveryConfigOnMatch) {
+                if (index === 0) {
+                    this.#signerManager.adoptRecoveryConfig(signerConfig);
+                } else {
+                    this.#recoverySigners[index] = signerConfig as RecoverySignerConfigForChain<C>;
+                }
+            }
+            return true;
         }
-        if (signerDescriptor.adoptsRecoveryConfigOnMatch) {
-            this.#signerManager.adoptRecoveryConfig(signerConfig);
-        }
-        return true;
+        return false;
     }
 
     protected resolveChainForEnvironment(): C {
