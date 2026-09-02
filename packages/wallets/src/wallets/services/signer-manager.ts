@@ -13,6 +13,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
+import { InvalidRecoveryConfigError } from "../../utils/errors";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
@@ -24,7 +25,8 @@ export type SignerManagerParams<C extends Chain> = {
     walletAddress: string;
     walletLocator: () => WalletLocator;
     serverSignerResolver: ServerSignerResolver;
-    recovery: RecoverySignerConfigForChain<C>;
+    /** The wallet's recovery signers; the first entry is the primary one. Must not be empty. */
+    recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     initialSigners: SignerConfigForChain<C>[];
     signers: () => Promise<WalletSigner[]>;
     signer?: SignerAdapter;
@@ -32,7 +34,7 @@ export type SignerManagerParams<C extends Chain> = {
 
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
-    #recovery: RecoverySignerConfigForChain<C>;
+    #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
     #chain: C;
@@ -49,7 +51,10 @@ export class SignerManager<C extends Chain> {
         this.#walletAddress = params.walletAddress;
         this.#walletLocator = params.walletLocator;
         this.#serverSignerResolver = params.serverSignerResolver;
-        this.#recovery = params.recovery;
+        if (params.recoverySigners.length === 0) {
+            throw new InvalidRecoveryConfigError("At least one recovery signer is required");
+        }
+        this.#recoverySigners = [...params.recoverySigners];
         this.#initialSigners = params.initialSigners;
         this.#signers = params.signers;
         this.#activeSigner = params.signer;
@@ -63,8 +68,13 @@ export class SignerManager<C extends Chain> {
         this.#activeSigner = signer;
     }
 
+    /** The primary recovery signer, i.e. `recoverySigners[0]`. */
     get recovery(): SignerConfigForChain<C> {
-        return this.#recovery as SignerConfigForChain<C>;
+        return this.#recoverySigners[0] as SignerConfigForChain<C>;
+    }
+
+    get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
+        return [...this.#recoverySigners];
     }
 
     descriptorContext(): SignerDescriptorContext<C> {
@@ -80,22 +90,30 @@ export class SignerManager<C extends Chain> {
         };
     }
 
-    adoptRecoveryConfig(config: SignerConfigForChain<C>): void {
-        this.#recovery = config as RecoverySignerConfigForChain<C>;
+    /** Replace the recovery signer at `index` with the caller's (typically fuller) config for the same signer. */
+    adoptRecoveryConfig(index: number, config: SignerConfigForChain<C>): void {
+        this.#assertRecoveryIndex(index);
+        this.#recoverySigners[index] = config as RecoverySignerConfigForChain<C>;
     }
 
-    stripSecretFromRecovery(): void {
-        const resolvedRecoveryAddress = this.#serverSignerResolver.resolvedRecoveryAddress;
-        if (
-            this.#recovery != null &&
-            this.#recovery.type === "server" &&
-            !isApiSourcedServerSignerConfig(this.#recovery) &&
-            resolvedRecoveryAddress != null
-        ) {
-            this.#recovery = {
+    /**
+     * Replace a secret-carrying server recovery config with its address-only form, so the secret is
+     * never retained (or exposed through `recoverySigners`) once the derivation has been resolved.
+     */
+    stripSecretFromRecovery(index: number, resolvedAddress: string): void {
+        this.#assertRecoveryIndex(index);
+        const recovery = this.#recoverySigners[index];
+        if (recovery.type === "server" && !isApiSourcedServerSignerConfig(recovery)) {
+            this.#recoverySigners[index] = {
                 type: "server",
-                address: resolvedRecoveryAddress,
+                address: resolvedAddress,
             } as RecoverySignerConfigForChain<C>;
+        }
+    }
+
+    #assertRecoveryIndex(index: number): void {
+        if (index < 0 || index >= this.#recoverySigners.length) {
+            throw new Error(`Recovery signer index ${index} is out of range`);
         }
     }
 
@@ -123,12 +141,13 @@ export class SignerManager<C extends Chain> {
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            const descriptor = getSignerDescriptor<C>(this.#recovery.type);
+            const recovery = this.recovery;
+            const descriptor = getSignerDescriptor<C>(recovery.type);
             const typeReason = descriptor.signerUnavailableReason();
             if (typeReason != null) {
                 throw new Error(typeReason);
             }
-            if (!descriptor.canAutoAssemble(this.#recovery, this.descriptorContext())) {
+            if (!descriptor.canAutoAssemble(recovery, this.descriptorContext())) {
                 throw new Error(
                     "No signer is set. This wallet requires calling wallet.useSigner() before signing operations."
                 );
@@ -142,25 +161,28 @@ export class SignerManager<C extends Chain> {
 
     async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
         const originalSigner = this.#activeSigner;
-        if (isApiSourcedServerSignerConfig(this.#recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
+        const recovery = this.recovery;
+        if (
+            isApiSourcedServerSignerConfig(recovery) &&
+            !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
+        ) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
-        const signerDescriptor = getSignerDescriptor<C>(this.#recovery.type);
+        const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.descriptorContext();
         if (
-            this.#recovery != null &&
-            this.#recovery.type === "external-wallet" &&
-            !signerDescriptor.canAutoAssemble(this.#recovery, signerDescriptorContext)
+            recovery.type === "external-wallet" &&
+            !signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)
         ) {
             throw new Error(
                 "Cannot assemble external wallet signer: no onSign callback available. " +
                     'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
-        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(this.#recovery, signerDescriptorContext);
+        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
         this.#activeSigner = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
