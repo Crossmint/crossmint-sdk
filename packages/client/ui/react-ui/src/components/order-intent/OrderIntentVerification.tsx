@@ -1,77 +1,84 @@
-import { useBtAi as useBasisTheoryAI, BtAiProvider as BasisTheoryAIProvider } from "@basis-theory/react-agentic";
+import { AgenticVerification, type AgenticVerificationInstance } from "@basis-theory/web-agentic";
 import type { OrderIntentWithVerification, VerificationAppearance } from "@crossmint/client-sdk-base";
-import { useMemo, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
-import { mapVerificationAppearanceToBtTheme } from "../../utils/mapVerificationAppearanceToBtTheme";
+import { mapVerificationAppearanceToAgenticAppearance } from "../../utils/mapVerificationAppearanceToAgenticAppearance";
+
+const AGENTIC_API_URLS = {
+    production: "https://api.basistheory.com/agentic",
+    test: "https://api.test.basistheory.com/agentic",
+} as const;
 
 export interface OrderIntentVerificationProps {
     orderIntent: OrderIntentWithVerification;
+    displayName?: string;
     appearance?: VerificationAppearance;
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
 }
 
-export function OrderIntentVerification(props: OrderIntentVerificationProps) {
-    const verificationConfig = props.orderIntent.verificationConfig;
-    const btTheme = useMemo(() => mapVerificationAppearanceToBtTheme(props.appearance), [props.appearance]);
-    return (
-        <BasisTheoryAIProvider
-            apiKey={verificationConfig.publicApiKey}
-            environment={verificationConfig.environment}
-            theme={btTheme}
-        >
-            <OrderIntentVerificationContent {...props} />
-        </BasisTheoryAIProvider>
-    );
-}
-
-function OrderIntentVerificationContent({
+export function OrderIntentVerification({
     orderIntent,
+    displayName,
+    appearance,
     onVerificationComplete,
     onVerificationError,
 }: OrderIntentVerificationProps) {
-    const { verifyInstruction, ready } = useBasisTheoryAI();
-    const verifyRef = useRef(verifyInstruction);
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
+    const agenticAppearance = useMemo(() => mapVerificationAppearanceToAgenticAppearance(appearance), [appearance]);
+    const pendingRail = orderIntent.rails.find(
+        (rail) => rail.rail === "agentic-token" && rail.status === "pending_verification"
+    );
 
-    useEffect(() => {
-        verifyRef.current = verifyInstruction;
-    }, [verifyInstruction]);
     useEffect(() => {
         completeRef.current = onVerificationComplete;
     }, [onVerificationComplete]);
+
     useEffect(() => {
         errorRef.current = onVerificationError;
     }, [onVerificationError]);
 
-    const agentId = orderIntent.verificationConfig.agentId;
-    const instructionId = orderIntent.verificationConfig.instructionId;
+    const verificationConfig = orderIntent.verificationConfig;
 
     useEffect(() => {
-        if (!ready) {
+        if (pendingRail == null) {
+            errorRef.current?.(new Error("Order intent does not have a rail pending verification"));
             return;
         }
 
+        const provider = pendingRail.provider;
         let cancelled = false;
+        let verification: AgenticVerificationInstance | undefined;
 
-        verifyRef
-            .current(agentId, instructionId)
-            .then(() => {
+        async function verifyAllowance() {
+            try {
+                verification = AgenticVerification({
+                    apiKey: verificationConfig.publicApiKey,
+                    apiBaseUrl: AGENTIC_API_URLS[verificationConfig.environment],
+                    displayName,
+                    appearance: agenticAppearance,
+                });
+                await verification.verifyAllowance(verificationConfig.allowanceId, {
+                    provider,
+                });
                 if (!cancelled) {
                     completeRef.current?.();
                 }
-            })
-            .catch((error) => {
+            } catch (error) {
                 if (!cancelled) {
                     errorRef.current?.(error);
                 }
-            });
+            }
+        }
+
+        void verifyAllowance();
 
         return () => {
             cancelled = true;
+            verification?.dispose();
         };
-    }, [ready, agentId, instructionId]);
+    }, [agenticAppearance, displayName, pendingRail, verificationConfig]);
 
     return null;
 }

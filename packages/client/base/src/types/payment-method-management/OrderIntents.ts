@@ -1,30 +1,45 @@
-import type { ObjectValues } from "@crossmint/common-sdk-base";
 import type { PaymentMethodAgenticEnrollmentVerificationConfig } from "./PaymentMethodAgenticEnrollment";
 
-export const OrderIntentPhase = {
-    REQUIRES_PAYMENT: "requires-payment-method",
-    REQUIRES_VERIFICATION: "requires-verification",
-    ACTIVE: "active",
-    EXPIRED: "expired",
-};
-export type OrderIntentPhase = ObjectValues<typeof OrderIntentPhase>;
+export type OrderIntentStatus = "active" | "cancelled" | "expired";
+export type OrderIntentProvider = "vic" | "agentpay";
+export type OrderIntentCredentialFormat = "card" | "network-token";
+
+interface OrderIntentRailBase {
+    rail: "agentic-token";
+    provider: OrderIntentProvider;
+    credentialFormats: OrderIntentCredentialFormat[];
+}
+
+export type OrderIntentRail =
+    | (OrderIntentRailBase & { status: "active" | "pending_verification"; error?: never })
+    | (OrderIntentRailBase & { status: "error"; error: { code: string } });
+
+export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
+    allowanceId: string;
+}
 
 interface OrderIntentBase {
     orderIntentId: string;
-    mandates: any[];
-    payment: {
-        paymentMethodId: string;
+    paymentMethodId: string;
+    status: OrderIntentStatus;
+    amount: {
+        total: string;
+        spent: string;
+        reserved: string;
+        available: string;
+        currency: string;
     };
+    description: string;
+    rails: OrderIntentRail[];
+    expiresAt: string;
 }
+
 export interface OrderIntentWithVerification extends OrderIntentBase {
-    phase: "requires-verification";
     verificationConfig: OrderIntentVerificationConfig;
 }
-export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
-    agentId: string;
-    instructionId: string;
-}
+
 export interface OrderIntentWithoutVerification extends OrderIntentBase {
-    phase: Exclude<OrderIntentPhase, "requires-verification">;
+    verificationConfig?: never;
 }
+
 export type OrderIntent = OrderIntentWithVerification | OrderIntentWithoutVerification;
