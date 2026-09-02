@@ -1122,7 +1122,9 @@ export class Wallet<C extends Chain> {
             if (signerDescriptor.adoptsRecoveryConfigOnMatch) {
                 if (index === 0) {
                     this.#signerManager.adoptRecoveryConfig(signerConfig);
-                } else {
+                } else if (signerConfig.type !== "server") {
+                    // Server configs carry the secret; the api-sourced entry already
+                    // identifies the signer, so the list never stores server secrets.
                     this.#recoverySigners[index] = signerConfig as RecoverySignerConfigForChain<C>;
                 }
             }
