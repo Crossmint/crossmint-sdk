@@ -302,7 +302,7 @@ describe("SolanaWallet - from()", () => {
 
         const solanaWallet = SolanaWallet.from(wallet);
 
-        expect(solanaWallet.recoverySigners).toEqual(recoverySigners);
+        expect(solanaWallet.recoveryMethods).toEqual(recoverySigners);
         expect(solanaWallet.recovery).toEqual(recoverySigners[0]);
     });
 
