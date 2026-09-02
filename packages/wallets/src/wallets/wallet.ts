@@ -295,8 +295,8 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): RecoverySignerConfigForChain<C> {
-        return this.#signerManager.recovery as RecoverySignerConfigForChain<C>;
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#signerManager.recovery;
     }
 
     /**
