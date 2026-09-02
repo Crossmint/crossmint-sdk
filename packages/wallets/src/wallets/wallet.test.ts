@@ -2442,7 +2442,10 @@ describe("Wallet - useSigner()", () => {
 
             vi.spyOn(wallet, "signers").mockResolvedValue([]);
 
-            await wallet.useSigner({ type: "server", secret: "test-secret" } as unknown as SignerConfigForChain<"solana">);
+            await wallet.useSigner({
+                type: "server",
+                secret: "test-secret",
+            } as unknown as SignerConfigForChain<"solana">);
 
             expect(wallet.signer?.locator()).toBe("server:0xDerivedServerAddress");
             expect(wallet.recoverySigners[1]).toEqual({ type: "server", address: "0xDerivedServerAddress" });
