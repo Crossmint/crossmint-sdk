@@ -254,8 +254,8 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
-    protected static getRecovery<C extends Chain>(wallet: Wallet<C>): Array<RecoverySignerConfigForChain<C>> {
-        return wallet.recovery;
+    protected static getRecoverySigners<C extends Chain>(wallet: Wallet<C>): Array<RecoverySignerConfigForChain<C>> {
+        return wallet.recoverySigners;
     }
 
     protected static getInitialSigners<C extends Chain>(wallet: Wallet<C>): SignerConfigForChain<C>[] {
@@ -290,15 +290,25 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Get the primary recovery signer config. Use {@link recoverySigners} for the full list on wallets
+     * created with several recovery signers.
+     * @returns The recovery signer config
+     * @experimental This API is experimental and may change in the future
+     */
+    public get recovery(): RecoverySignerConfigForChain<C> {
+        return this.#signerManager.recovery as RecoverySignerConfigForChain<C>;
+    }
+
+    /**
      * Get every recovery signer config of the wallet. Wallets on chains that support a single recovery
      * signer always return one entry.
      * @returns The recovery signer configs
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): Array<RecoverySignerConfigForChain<C>> {
+    public get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
         // The first entry is read from the signer manager, which owns the wallet's primary recovery
         // signer and may replace it (e.g. stripping a server secret).
-        return [this.#signerManager.recovery as RecoverySignerConfigForChain<C>, ...this.#recoverySigners.slice(1)];
+        return [this.recovery, ...this.#recoverySigners.slice(1)];
     }
 
     /**
