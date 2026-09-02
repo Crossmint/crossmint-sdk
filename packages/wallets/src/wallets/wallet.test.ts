@@ -2340,7 +2340,7 @@ describe("Wallet - useSigner()", () => {
             expect(result.locator).toBe("email:new@example.com");
         });
 
-        it("recovery and recoverySigners[0] follow the live recovery signer when useSigner adopts a fuller recovery config", async () => {
+        it("recovery and recoveryMethods[0] follow the live recovery signer when useSigner adopts a fuller recovery config", async () => {
             mockApiClient = createMockApiClient();
 
             mockApiClient.getWallet.mockResolvedValue({
@@ -2370,7 +2370,7 @@ describe("Wallet - useSigner()", () => {
                 expect.objectContaining({ type: "external-wallet", address: "RecoveryWallet111" })
             );
             expect("onSign" in wallet.recovery).toBe(true);
-            expect(wallet.recoverySigners[1]).toEqual({ type: "api-key" });
+            expect(wallet.recoveryMethods[1]).toEqual({ type: "api-key" });
         });
 
         it("useSigner resolves a secondary recovery signer from the list as an admin signer", async () => {
@@ -2402,7 +2402,7 @@ describe("Wallet - useSigner()", () => {
             // Admin signers skip the getSigner registration check and are active immediately
             expect(wallet.signer?.status).toBe("active");
             expect(wallet.recovery).toEqual({ type: "api-key" });
-            expect("onSign" in wallet.recoverySigners[1]).toBe(true);
+            expect("onSign" in wallet.recoveryMethods[1]).toBe(true);
         });
 
         it("useSigner with a secondary server recovery signer never stores the secret in the list", async () => {
@@ -2448,7 +2448,7 @@ describe("Wallet - useSigner()", () => {
             } as unknown as SignerConfigForChain<"solana">);
 
             expect(wallet.signer?.locator()).toBe("server:0xDerivedServerAddress");
-            expect(wallet.recoverySigners[1]).toEqual({ type: "server", address: "0xDerivedServerAddress" });
+            expect(wallet.recoveryMethods[1]).toEqual({ type: "server", address: "0xDerivedServerAddress" });
         });
 
         it("useSigner rejects a signer that matches no recovery signer in the list", async () => {
