@@ -34,7 +34,7 @@ function makeCtx(
         deviceSignerKeyStorage: overrides.deviceSignerKeyStorage,
         serverSigners: {
             keyMaterialForAssembly: vi.fn(() => SERVER_KEY_MATERIAL),
-            hasRecoveryResolution: overrides.hasRecoveryResolution ?? false,
+            hasRecoveryResolutionFor: vi.fn(() => overrides.hasRecoveryResolution ?? false),
             apiLocator: overrides.apiLocator ?? vi.fn(() => "server:0xDerivedServer"),
             candidateAddresses: overrides.candidateAddresses ?? vi.fn(() => []),
         } as unknown as ServerSignerResolver,
@@ -233,14 +233,33 @@ it("matchesRecovery: device is always false", () => {
     ).toBe(false);
 });
 
-it("matchesRecovery: passkey is true even with differing ids", () => {
-    expect(
-        getSignerDescriptor("passkey").matchesRecovery(
-            cfg({ type: "passkey", id: "cred-1" }) as never,
-            cfg({ type: "passkey" }) as never,
-            makeCtx()
-        )
-    ).toBe(true);
+it.each<[name: string, config: Config, recovery: Config, expected: boolean]>([
+    ["recovery has no credential id", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey" }), true],
+    ["config has no credential id", cfg({ type: "passkey" }), cfg({ type: "passkey", id: "cred-1" }), true],
+    ["both ids match", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey", id: "cred-1" }), true],
+    ["ids differ", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey", id: "cred-2" }), false],
+    [
+        "id matches the recovery locator",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:cred-1" }),
+        true,
+    ],
+    [
+        "id differs from the recovery locator",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:cred-2" }),
+        false,
+    ],
+    [
+        "recovery locator has no id",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:" }),
+        true,
+    ],
+])("matchesRecovery: passkey when %s", (_name, config, recovery, expected) => {
+    expect(getSignerDescriptor("passkey").matchesRecovery(config as never, recovery as never, makeCtx())).toBe(
+        expected
+    );
 });
 
 it.each<[name: string, signerAddrs: string[], recoveryAddrs: string[], expected: boolean]>([

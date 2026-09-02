@@ -13,25 +13,26 @@ export class ServerSignerResolver {
     readonly #chain: Chain;
     readonly #projectId: string;
     readonly #environment: string;
-    readonly #apiRecoveryAddress: string | null;
+    readonly #apiRecoveryAddresses: string[];
     readonly #apiDelegatedAddresses: string[];
     readonly #knownOnChainAddresses: () => string[];
 
     #resolvedServerSigner: DerivedServerSigner | null = null;
-    #resolvedRecoveryServerSigner: DerivedServerSigner | null = null;
+    /** One entry per recovery server signer whose secret has been provided, keyed by derived address. */
+    #resolvedRecoveryServerSigners: DerivedServerSigner[] = [];
 
     constructor(params: {
         chain: Chain;
         projectId: string;
         environment: string;
-        apiRecoveryAddress: string | null;
+        apiRecoveryAddresses: string[];
         apiDelegatedAddresses: string[];
         knownOnChainAddresses: () => string[];
     }) {
         this.#chain = params.chain;
         this.#projectId = params.projectId;
         this.#environment = params.environment;
-        this.#apiRecoveryAddress = params.apiRecoveryAddress;
+        this.#apiRecoveryAddresses = params.apiRecoveryAddresses;
         this.#apiDelegatedAddresses = params.apiDelegatedAddresses;
         this.#knownOnChainAddresses = params.knownOnChainAddresses;
     }
@@ -42,8 +43,9 @@ export class ServerSignerResolver {
 
     resolveDerivation(config: ServerSignerConfig | ApiSourcedServerSignerConfig): DerivedServerSigner {
         if (isApiSourcedServerSignerConfig(config)) {
-            if (this.#resolvedRecoveryServerSigner != null) {
-                return this.#resolvedRecoveryServerSigner;
+            const resolved = this.#resolvedRecoveryFor(config.address);
+            if (resolved != null) {
+                return resolved;
             }
             throw new Error(
                 "Cannot resolve server signer derivation: no secret available and no cached recovery resolution. " +
@@ -52,17 +54,18 @@ export class ServerSignerResolver {
         }
 
         const { primary, legacy } = this.deriveCandidates(config);
-        const cached = this.#resolvedServerSigner ?? this.#resolvedRecoveryServerSigner;
+        const candidateAddresses = [primary.derivedAddress, legacy?.derivedAddress];
+        const cached =
+            [this.#resolvedServerSigner, ...this.#resolvedRecoveryServerSigners].find(
+                (c) => c != null && candidateAddresses.includes(c.derivedAddress)
+            ) ?? null;
         if (cached != null) {
-            const cachedAddr = cached.derivedAddress;
-            if (cachedAddr === primary.derivedAddress || (legacy != null && cachedAddr === legacy.derivedAddress)) {
-                secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
-                return cached;
-            }
+            secureWipe(primary.derivedKeyBytes, legacy?.derivedKeyBytes);
+            return cached;
         }
 
         if (legacy != null) {
-            if (legacy.derivedAddress === this.#apiRecoveryAddress) {
+            if (this.#apiRecoveryAddresses.includes(legacy.derivedAddress)) {
                 secureWipe(primary.derivedKeyBytes);
                 return legacy;
             }
@@ -78,7 +81,7 @@ export class ServerSignerResolver {
     apiLocator(config: ServerSignerConfig | ApiSourcedServerSignerConfig): ServerSignerLocator {
         const resolved = this.resolveDerivation(config);
         // Only the address is needed here — wipe the selected candidate's key bytes (never the cached slots).
-        if (resolved !== this.#resolvedServerSigner && resolved !== this.#resolvedRecoveryServerSigner) {
+        if (!this.#isCached(resolved)) {
             secureWipe(resolved.derivedKeyBytes);
         }
         return `server:${resolved.derivedAddress}`;
@@ -88,19 +91,20 @@ export class ServerSignerResolver {
      * Resolves a server signer with a SINGLE candidate derivation: the same derivation drives the
      * registered check, the recovery selection, and the unregistered wipe, so key material is
      * derived (and wiped) exactly once. `isRecovery` is consulted only after the registered check fails.
+     * A recovery resolution reports the derived address that was selected so callers can replace the
+     * secret-carrying config with an address-only one.
      */
     resolveForUseSigner(
         config: ServerSignerConfig,
         registeredLocators: string[],
         isRecovery: () => boolean
-    ): { kind: "delegated" } | { kind: "recovery" } | { kind: "unregistered"; message: string } {
+    ): { kind: "delegated" } | { kind: "recovery"; address: string } | { kind: "unregistered"; message: string } {
         const { primary, legacy } = this.deriveCandidates(config);
         if (this.#selectRegistered(primary, legacy, registeredLocators) != null) {
             return { kind: "delegated" };
         }
         if (isRecovery()) {
-            this.#selectRecovery(primary, legacy);
-            return { kind: "recovery" };
+            return { kind: "recovery", address: this.#selectRecovery(primary, legacy).derivedAddress };
         }
         const tried =
             legacy != null
@@ -129,14 +133,24 @@ export class ServerSignerResolver {
     }
 
     #selectRecovery(primary: DerivedServerSigner, legacy: DerivedServerSigner | null): DerivedServerSigner {
-        if (this.#apiRecoveryAddress != null && legacy != null && legacy.derivedAddress === this.#apiRecoveryAddress) {
-            this.#resolvedRecoveryServerSigner = legacy;
-            this.#wipeNonSelectedCandidate(legacy, primary);
-            return legacy;
+        const selected =
+            legacy != null && this.#apiRecoveryAddresses.includes(legacy.derivedAddress) ? legacy : primary;
+        this.#wipeNonSelectedCandidate(selected, selected === legacy ? primary : legacy);
+        const previous = this.#resolvedRecoveryFor(selected.derivedAddress);
+        if (previous != null) {
+            secureWipe(previous.derivedKeyBytes);
+            this.#resolvedRecoveryServerSigners = this.#resolvedRecoveryServerSigners.filter((c) => c !== previous);
         }
-        this.#resolvedRecoveryServerSigner = primary;
-        this.#wipeNonSelectedCandidate(primary, legacy);
-        return primary;
+        this.#resolvedRecoveryServerSigners.push(selected);
+        return selected;
+    }
+
+    #resolvedRecoveryFor(address: string): DerivedServerSigner | null {
+        return this.#resolvedRecoveryServerSigners.find((c) => c.derivedAddress === address) ?? null;
+    }
+
+    #isCached(candidate: DerivedServerSigner): boolean {
+        return candidate === this.#resolvedServerSigner || this.#resolvedRecoveryServerSigners.includes(candidate);
     }
 
     keyMaterialForAssembly(config: ServerSignerConfig | ApiSourcedServerSignerConfig): {
@@ -145,7 +159,7 @@ export class ServerSignerResolver {
     } {
         const resolved = this.resolveDerivation(config);
         const keyBytesCopy = new Uint8Array(resolved.derivedKeyBytes);
-        if (resolved !== this.#resolvedServerSigner && resolved !== this.#resolvedRecoveryServerSigner) {
+        if (!this.#isCached(resolved)) {
             secureWipe(resolved.derivedKeyBytes);
         }
         return { derivedKeyBytes: keyBytesCopy, derivedAddress: resolved.derivedAddress };
@@ -169,16 +183,13 @@ export class ServerSignerResolver {
         this.#resolvedServerSigner = null;
     }
 
-    get hasRecoveryResolution(): boolean {
-        return this.#resolvedRecoveryServerSigner != null;
+    /** Whether the secret behind the recovery server signer at `address` has been provided via useSigner. */
+    hasRecoveryResolutionFor(address: string): boolean {
+        return this.#resolvedRecoveryFor(address) != null;
     }
 
-    get resolvedRecoveryAddress(): string | null {
-        return this.#resolvedRecoveryServerSigner?.derivedAddress ?? null;
-    }
-
-    get apiRecoveryAddress(): string | null {
-        return this.#apiRecoveryAddress;
+    get apiRecoveryAddresses(): string[] {
+        return this.#apiRecoveryAddresses;
     }
 
     get apiDelegatedAddresses(): string[] {

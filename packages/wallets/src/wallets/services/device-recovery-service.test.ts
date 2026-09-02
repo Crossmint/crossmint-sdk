@@ -73,7 +73,9 @@ function setup(overrides: SetupOverrides = {}) {
     const storage = overrides.storage === null ? undefined : overrides.storage ?? makeStorage();
     const options = storage == null ? undefined : ({ deviceSignerKeyStorage: storage } as Record<string, unknown>);
     const signerManager = makeSignerManager(overrides.signerManager);
-    const serverSignerResolver = { hasRecoveryResolution: overrides.hasRecoveryResolution ?? false };
+    const serverSignerResolver = {
+        hasRecoveryResolutionFor: (_address: string) => overrides.hasRecoveryResolution ?? false,
+    };
     const signers = overrides.signers ?? vi.fn().mockResolvedValue([]);
     const addSigner = overrides.addSigner ?? vi.fn().mockResolvedValue(undefined);
     const removeSigner = overrides.removeSigner ?? vi.fn().mockResolvedValue(undefined);

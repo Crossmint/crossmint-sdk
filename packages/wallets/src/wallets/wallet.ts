@@ -79,7 +79,8 @@ type WalletContructorType<C extends Chain> = {
     options?: WalletOptions;
     /** The wallet's recovery signer(s). Wallets on chains that support a single recovery signer take one entry. */
     recovery: RecoverySignerConfigForChain<C> | Array<RecoverySignerConfigForChain<C>>;
-    apiRecoveryServerSignerAddress?: string;
+    /** Addresses of the API-sourced server recovery signers, so legacy derivations can be recognised. */
+    apiRecoveryServerSignerAddresses?: string[];
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
@@ -97,7 +98,6 @@ export class Wallet<C extends Chain> {
     #signerManager: SignerManager<C>;
     #deviceRecovery: DeviceRecoveryService<C>;
     #apiDelegatedServerSignerAddresses: string[] = [];
-    #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
 
@@ -109,7 +109,7 @@ export class Wallet<C extends Chain> {
             options,
             alias,
             recovery,
-            apiRecoveryServerSignerAddress,
+            apiRecoveryServerSignerAddresses,
             apiDelegatedServerSignerAddresses,
             signers,
             signer,
@@ -121,21 +121,21 @@ export class Wallet<C extends Chain> {
         this.#options = options;
         this.alias = alias;
         const recoverySigners = Array.isArray(recovery) ? recovery : [recovery];
-        const primaryRecovery = recoverySigners[0];
-        let apiRecoveryAddress: string | null = null;
-        if (apiRecoveryServerSignerAddress != null) {
-            apiRecoveryAddress = apiRecoveryServerSignerAddress;
-        } else if (primaryRecovery.type === "server" && isApiSourcedServerSignerConfig(primaryRecovery)) {
-            apiRecoveryAddress = primaryRecovery.address;
-        }
-        this.#recoverySigners = recoverySigners;
+        const apiRecoveryAddresses =
+            apiRecoveryServerSignerAddresses ??
+            recoverySigners
+                .filter(
+                    (s): s is RecoverySignerConfigForChain<C> & ApiSourcedServerSignerConfig =>
+                        s.type === "server" && isApiSourcedServerSignerConfig(s)
+                )
+                .map((s) => s.address);
         this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
         this.#serverSignerResolver = new ServerSignerResolver({
             chain,
             projectId: this.#apiClient.projectId,
             environment: this.#apiClient.environment,
-            apiRecoveryAddress,
+            apiRecoveryAddresses,
             apiDelegatedAddresses: this.#apiDelegatedServerSignerAddresses,
             knownOnChainAddresses: () => [
                 ...this.#initialSigners
@@ -154,7 +154,7 @@ export class Wallet<C extends Chain> {
             walletAddress: this.address,
             walletLocator: () => this.walletLocator,
             serverSignerResolver: this.#serverSignerResolver,
-            recovery: primaryRecovery,
+            recoverySigners,
             initialSigners: this.#initialSigners,
             signers: () => this.signers(),
             signer,
@@ -262,8 +262,8 @@ export class Wallet<C extends Chain> {
         return wallet.#initialSigners;
     }
 
-    protected static getApiRecoveryServerSignerAddress<C extends Chain>(wallet: Wallet<C>): string | undefined {
-        return wallet.#serverSignerResolver.apiRecoveryAddress ?? undefined;
+    protected static getApiRecoveryServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
+        return wallet.#serverSignerResolver.apiRecoveryAddresses;
     }
 
     protected static getApiDelegatedServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
@@ -306,9 +306,7 @@ export class Wallet<C extends Chain> {
      * @experimental This API is experimental and may change in the future
      */
     public get recoveryMethods(): Array<RecoverySignerConfigForChain<C>> {
-        // The first entry is read from the signer manager, which owns the wallet's primary recovery
-        // signer and may replace it (e.g. stripping a server secret).
-        return [this.recovery, ...this.#recoverySigners.slice(1)];
+        return this.#signerManager.recoverySigners;
     }
 
     /**
@@ -924,15 +922,19 @@ export class Wallet<C extends Chain> {
     private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
         const existingSigners = await this.signers();
         const registeredLocators = existingSigners.map((s) => s.locator);
-        const resolution = this.#serverSignerResolver.resolveForUseSigner(signer, registeredLocators, () =>
-            this.isRecoverySigner(signer as SignerConfigForChain<C>)
-        );
+        const match: { recoveryIndex: number | null } = { recoveryIndex: null };
+        const resolution = this.#serverSignerResolver.resolveForUseSigner(signer, registeredLocators, () => {
+            match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
+            return match.recoveryIndex != null;
+        });
         switch (resolution.kind) {
             case "delegated":
                 this.#deviceRecovery.onSignerSelected();
                 return false;
             case "recovery":
-                this.#signerManager.stripSecretFromRecovery();
+                if (match.recoveryIndex != null) {
+                    this.#signerManager.stripSecretFromRecovery(match.recoveryIndex, resolution.address);
+                }
                 this.#deviceRecovery.onSignerSelected();
                 return true;
             case "unregistered":
@@ -1110,27 +1112,29 @@ export class Wallet<C extends Chain> {
      * Check if a signer config matches any of the wallet's recovery signers.
      */
     private isRecoverySigner(signerConfig: SignerConfigForChain<C>): boolean {
+        return this.matchRecoverySigner(signerConfig) != null;
+    }
+
+    /**
+     * Find the recovery signer that `signerConfig` refers to and, for signer types that need the
+     * caller's fuller config to operate (e.g. an onSign callback or a server secret), adopt it in
+     * place of the stored one. Returns the index of the matched recovery signer, or null.
+     */
+    private matchRecoverySigner(signerConfig: SignerConfigForChain<C>): number | null {
         const signerDescriptor = getSignerDescriptor<C>(signerConfig.type);
         const descriptorContext = this.#signerManager.descriptorContext();
-        for (const [index, recovery] of this.recoveryMethods.entries()) {
-            if (recovery == null || recovery.type !== signerConfig.type) {
-                continue;
-            }
-            if (!signerDescriptor.matchesRecovery(signerConfig, recovery, descriptorContext)) {
-                continue;
-            }
-            if (signerDescriptor.adoptsRecoveryConfigOnMatch) {
-                if (index === 0) {
-                    this.#signerManager.adoptRecoveryConfig(signerConfig);
-                } else if (signerConfig.type !== "server") {
-                    // Server configs carry the secret; the api-sourced entry already
-                    // identifies the signer, so the list never stores server secrets.
-                    this.#recoverySigners[index] = signerConfig as RecoverySignerConfigForChain<C>;
-                }
-            }
-            return true;
+        const index = this.recoveryMethods.findIndex(
+            (recovery) =>
+                recovery.type === signerConfig.type &&
+                signerDescriptor.matchesRecovery(signerConfig, recovery, descriptorContext)
+        );
+        if (index === -1) {
+            return null;
         }
-        return false;
+        if (signerDescriptor.adoptsRecoveryConfigOnMatch) {
+            this.#signerManager.adoptRecoveryConfig(index, signerConfig);
+        }
+        return index;
     }
 
     protected resolveChainForEnvironment(): C {
