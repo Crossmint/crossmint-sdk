@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-base
 
+## 2.2.6
+
+### Patch Changes
+
+- 0003592: Handle `createOnLogin.recovery` given as a list of recovery signers: email population, external-wallet readiness, and passkey/webview detection now inspect every entry.
+- Updated dependencies [0fb459c]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-base@2.9.0
+  - @crossmint/client-sdk-auth@1.3.20
+  - @crossmint/common-sdk-auth@1.1.18
+
 ## 2.2.5
 
 ### Patch Changes
