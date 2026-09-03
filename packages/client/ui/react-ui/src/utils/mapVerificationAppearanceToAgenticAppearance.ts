@@ -15,7 +15,7 @@ export function mapVerificationAppearanceToAgenticAppearance(
         primaryColor: appearance.rules?.PrimaryButton?.colors?.background ?? colors?.accent,
         secondaryColor: appearance.rules?.Input?.colors?.background ?? colors?.backgroundSecondary,
         backgroundColor: colors?.backgroundPrimary,
-        fontColor: appearance.rules?.PrimaryButton?.colors?.text ?? colors?.textPrimary,
+        fontColor: colors?.textPrimary,
         successColor: colors?.success,
         errorColor: colors?.danger,
     };

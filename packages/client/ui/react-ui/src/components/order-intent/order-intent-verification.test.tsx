@@ -96,6 +96,13 @@ describe("<OrderIntentVerification />", () => {
                                 textPrimary: "#333333",
                             },
                         },
+                        rules: {
+                            PrimaryButton: {
+                                colors: {
+                                    text: "#ffffff",
+                                },
+                            },
+                        },
                     }}
                 />
             );
@@ -114,6 +121,31 @@ describe("<OrderIntentVerification />", () => {
                     })
                 );
             });
+        });
+
+        test("does not restart verification when equivalent props are recreated", async () => {
+            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+            const { rerender } = render(
+                <OrderIntentVerification
+                    orderIntent={orderIntent()}
+                    appearance={{ variables: { colors: { accent: "#111111" } } }}
+                />
+            );
+
+            await waitFor(() => {
+                expect(basisTheory.create).toHaveBeenCalledOnce();
+            });
+
+            rerender(
+                <OrderIntentVerification
+                    orderIntent={orderIntent()}
+                    appearance={{ variables: { colors: { accent: "#111111" } } }}
+                />
+            );
+
+            expect(basisTheory.create).toHaveBeenCalledOnce();
+            expect(basisTheory.verifyAllowance).toHaveBeenCalledOnce();
+            expect(basisTheory.dispose).not.toHaveBeenCalled();
         });
     });
 

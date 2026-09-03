@@ -1,6 +1,6 @@
 import { AgenticVerification, type AgenticVerificationInstance } from "@basis-theory/web-agentic";
 import type { OrderIntentWithVerification, VerificationAppearance } from "@crossmint/client-sdk-base";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { mapVerificationAppearanceToAgenticAppearance } from "../../utils/mapVerificationAppearanceToAgenticAppearance";
 
@@ -26,10 +26,18 @@ export function OrderIntentVerification({
 }: OrderIntentVerificationProps) {
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
-    const agenticAppearance = useMemo(() => mapVerificationAppearanceToAgenticAppearance(appearance), [appearance]);
-    const pendingRail = orderIntent.rails.find(
+    const agenticAppearance = mapVerificationAppearanceToAgenticAppearance(appearance);
+    const pendingProvider = orderIntent.rails.find(
         (rail) => rail.rail === "agentic-token" && rail.status === "pending_verification"
-    );
+    )?.provider;
+    const { allowanceId, environment, publicApiKey } = orderIntent.verificationConfig;
+    const hasAgenticAppearance = agenticAppearance != null;
+    const primaryColor = agenticAppearance?.primaryColor;
+    const secondaryColor = agenticAppearance?.secondaryColor;
+    const backgroundColor = agenticAppearance?.backgroundColor;
+    const fontColor = agenticAppearance?.fontColor;
+    const successColor = agenticAppearance?.successColor;
+    const errorColor = agenticAppearance?.errorColor;
 
     useEffect(() => {
         completeRef.current = onVerificationComplete;
@@ -39,28 +47,34 @@ export function OrderIntentVerification({
         errorRef.current = onVerificationError;
     }, [onVerificationError]);
 
-    const verificationConfig = orderIntent.verificationConfig;
-
     useEffect(() => {
-        if (pendingRail == null) {
+        if (pendingProvider == null) {
             errorRef.current?.(new Error("Order intent does not have a rail pending verification"));
             return;
         }
 
-        const provider = pendingRail.provider;
         let cancelled = false;
         let verification: AgenticVerificationInstance | undefined;
 
         async function verifyAllowance() {
             try {
                 verification = AgenticVerification({
-                    apiKey: verificationConfig.publicApiKey,
-                    apiBaseUrl: AGENTIC_API_URLS[verificationConfig.environment],
+                    apiKey: publicApiKey,
+                    apiBaseUrl: AGENTIC_API_URLS[environment],
                     displayName,
-                    appearance: agenticAppearance,
+                    appearance: hasAgenticAppearance
+                        ? {
+                              primaryColor,
+                              secondaryColor,
+                              backgroundColor,
+                              fontColor,
+                              successColor,
+                              errorColor,
+                          }
+                        : undefined,
                 });
-                await verification.verifyAllowance(verificationConfig.allowanceId, {
-                    provider,
+                await verification.verifyAllowance(allowanceId, {
+                    provider: pendingProvider,
                 });
                 if (!cancelled) {
                     completeRef.current?.();
@@ -78,7 +92,20 @@ export function OrderIntentVerification({
             cancelled = true;
             verification?.dispose();
         };
-    }, [agenticAppearance, displayName, pendingRail, verificationConfig]);
+    }, [
+        allowanceId,
+        backgroundColor,
+        displayName,
+        environment,
+        errorColor,
+        fontColor,
+        hasAgenticAppearance,
+        pendingProvider,
+        primaryColor,
+        publicApiKey,
+        secondaryColor,
+        successColor,
+    ]);
 
     return null;
 }
