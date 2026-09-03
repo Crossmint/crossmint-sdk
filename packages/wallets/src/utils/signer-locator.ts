@@ -1,7 +1,26 @@
 import type { Chain } from "../chains/chains";
-import type { SignerLocator, SignerConfigForChain, ExternalWalletRegistrationConfig } from "../signers/types";
+import type {
+    SignerLocator,
+    SignerConfigForChain,
+    ExternalWalletRegistrationConfig,
+    PasskeySignerConfig,
+} from "../signers/types";
 import type { RegisterSignerPasskeyParams } from "../api";
 import { normalizeEmail } from "./signer-validation";
+
+const PASSKEY_LOCATOR_PREFIX = "passkey:";
+
+/** The credential id from `id` or a `passkey:{id}` locator, or null when the config carries neither. */
+export function passkeyCredentialId(config: Pick<PasskeySignerConfig, "id" | "locator">): string | null {
+    if (config.id != null && config.id !== "") {
+        return config.id;
+    }
+    if (config.locator != null && config.locator.startsWith(PASSKEY_LOCATOR_PREFIX)) {
+        const id = config.locator.slice(PASSKEY_LOCATOR_PREFIX.length);
+        return id === "" ? null : id;
+    }
+    return null;
+}
 
 /**
  * Converts a signer config to its locator string representation.
@@ -19,8 +38,14 @@ export function getSignerLocator<C extends Chain>(
     if (signer.type === "phone" && signer.phone) {
         return `phone:${signer.phone}`;
     }
-    if (signer.type === "passkey" && "id" in signer) {
-        return `passkey:${signer.id}`;
+    if (signer.type === "passkey") {
+        const credentialId = passkeyCredentialId(signer);
+        if (credentialId != null) {
+            return `passkey:${credentialId}`;
+        }
+        if ("id" in signer) {
+            return `passkey:${signer.id}`;
+        }
     }
     if (signer.type === "api-key") {
         return "api-key";

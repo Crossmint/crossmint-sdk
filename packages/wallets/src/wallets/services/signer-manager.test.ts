@@ -2,8 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiClientError } from "@crossmint/common-sdk-base";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { RecoverySignerConfigForChain, SignerAdapter, SignerLocator } from "../../signers/types";
+import type {
+    RecoverySignerConfigForChain,
+    SignerAdapter,
+    SignerConfigForChain,
+    SignerLocator,
+} from "../../signers/types";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
+import { InvalidRecoveryConfigError } from "../../utils/errors";
 import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
@@ -29,11 +35,10 @@ function makeApiClient(overrides: Partial<ApiClient> = {}): ApiClient {
     return { crossmint: {}, getSigner: vi.fn(), ...overrides } as unknown as ApiClient;
 }
 
-function makeResolver(overrides: Partial<ServerSignerResolver> = {}): ServerSignerResolver {
+function makeResolver(overrides: { resolvedRecoveryAddresses?: string[] } = {}): ServerSignerResolver {
+    const resolved = overrides.resolvedRecoveryAddresses ?? [];
     return {
-        hasRecoveryResolution: false,
-        resolvedRecoveryAddress: null,
-        ...overrides,
+        hasRecoveryResolutionFor: (address: string) => resolved.includes(address),
     } as unknown as ServerSignerResolver;
 }
 
@@ -48,7 +53,7 @@ function makeManager<C extends Chain>(
         walletAddress: WALLET_ADDRESS,
         walletLocator: () => WALLET_ADDRESS,
         serverSignerResolver: makeResolver(),
-        recovery: { type: "api-key" } as RecoverySignerConfigForChain<C>,
+        recoverySigners: [{ type: "api-key" } as RecoverySignerConfigForChain<C>],
         initialSigners: [],
         signers: async () => [],
         ...overrides,
@@ -82,20 +87,20 @@ describe("SignerManager", () => {
             { initialSigners: [apiKeyConfig, apiKeyConfig] },
             /multiple signers configured/,
         ],
-        ["a server recovery signer", { recovery: { type: "server", address: "0xServer" } }, /server secret/],
+        ["a server recovery signer", { recoverySigners: [{ type: "server", address: "0xServer" }] }, /server secret/],
         [
             "an external-wallet recovery signer",
-            { recovery: asRecoveryConfig({ type: "external-wallet", address: "0xExt" }) },
+            { recoverySigners: [asRecoveryConfig({ type: "external-wallet", address: "0xExt" })] },
             /External wallet signers require/,
         ],
         [
             "a non-auto-assemblable recovery signer",
-            { recovery: asRecoveryConfig({ type: "device" }) },
+            { recoverySigners: [asRecoveryConfig({ type: "device" })] },
             /requires calling wallet\.useSigner\(\)/,
         ],
-        ["a read-only wallet", { recovery: apiKeyConfig }, /read-only/],
+        ["a read-only wallet", { recoverySigners: [apiKeyConfig] }, /read-only/],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
-        await expectThrowsMatching(() => makeManager(overrides as Overrides).require(), branchKeyword);
+        await expectThrowsMatching(() => makeManager(overrides as unknown as Overrides).require(), branchKeyword);
     });
 
     it.each([
@@ -113,7 +118,7 @@ describe("SignerManager", () => {
             const original = makeSigner("original");
             const recoverySigner = makeSigner("recovery");
             mockedAssembleSigner.mockReturnValue(recoverySigner);
-            const manager = makeManager({ signer: original, recovery: { type: "api-key" } });
+            const manager = makeManager({ signer: original, recoverySigners: [{ type: "api-key" }] });
             const failure = new Error("operation failed");
             let signerDuringOperation: SignerAdapter | undefined;
 
@@ -136,46 +141,78 @@ describe("SignerManager", () => {
         [
             "the recovery server secret is unavailable",
             {
-                recovery: { type: "server", address: "0xServer" },
-                serverSignerResolver: makeResolver({ hasRecoveryResolution: false }),
+                recoverySigners: [{ type: "server", address: "0xServer" }],
+                serverSignerResolver: makeResolver({ resolvedRecoveryAddresses: ["0xOtherServer"] }),
             },
             /Cannot assemble server signer/,
         ],
         [
             "the recovery external wallet has no onSign callback",
-            { recovery: asRecoveryConfig({ type: "external-wallet", address: "0xExt" }) },
+            { recoverySigners: [asRecoveryConfig({ type: "external-wallet", address: "0xExt" })] },
             /Cannot assemble external wallet signer/,
         ],
     ] as const)("withRecoverySigner() throws when %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(
-            () => makeManager(overrides as Overrides).withRecoverySigner(async () => "unused"),
+            () => makeManager(overrides as unknown as Overrides).withRecoverySigner(async () => "unused"),
             branchKeyword
         );
     });
 
-    it("stripSecretFromRecovery() replaces a secret-bearing server recovery with an address-only config", () => {
-        const manager = makeManager({
-            recovery: asRecoveryConfig({ type: "server", secret: "topsecret" }),
-            serverSignerResolver: makeResolver({ resolvedRecoveryAddress: "0xResolved" }),
-        });
-        manager.stripSecretFromRecovery();
-        expect(manager.recovery).toEqual({ type: "server", address: "0xResolved" });
+    it("constructor rejects an empty recovery signer list", () => {
+        expect(() => makeManager({ recoverySigners: [] })).toThrow(InvalidRecoveryConfigError);
     });
 
-    it.each([
-        [
-            "there is no resolved recovery address",
-            asRecoveryConfig({ type: "server", secret: "topsecret" }),
-            { resolvedRecoveryAddress: null },
-        ],
-        [
-            "the recovery is already api-sourced",
-            asRecoveryConfig({ type: "server", address: "0xExisting" }),
-            { resolvedRecoveryAddress: "0xResolved" },
-        ],
-    ])("stripSecretFromRecovery() leaves recovery untouched when %s", (_name, recovery, resolver) => {
-        const manager = makeManager({ recovery, serverSignerResolver: makeResolver(resolver) });
-        manager.stripSecretFromRecovery();
+    it("recovery is the first entry of recoverySigners", () => {
+        const primary = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+        const secondary = asRecoveryConfig({ type: "server", address: "0xSecondary" });
+        const manager = makeManager({ recoverySigners: [primary, secondary] });
+        expect(manager.recovery).toBe(primary);
+        expect(manager.recoverySigners).toEqual([primary, secondary]);
+    });
+
+    it("recoverySigners returns a copy that does not expose internal state", () => {
+        const manager = makeManager({ recoverySigners: [apiKeyConfig] });
+        manager.recoverySigners.push(asRecoveryConfig({ type: "device" }));
+        expect(manager.recoverySigners).toEqual([apiKeyConfig]);
+    });
+
+    it("adoptRecoveryConfig() replaces only the entry at the given index", () => {
+        const primary = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+        const secondary = asRecoveryConfig({ type: "external-wallet", address: "0xSecondary" });
+        const adopted = {
+            type: "external-wallet",
+            address: "0xSecondary",
+            onSign: vi.fn(),
+        } as SignerConfigForChain<Chain>;
+        const manager = makeManager({ recoverySigners: [primary, secondary] });
+        manager.adoptRecoveryConfig(1, adopted);
+        expect(manager.recoverySigners).toEqual([primary, adopted]);
+    });
+
+    it.each([-1, 2])("adoptRecoveryConfig() rejects the out-of-range index %s", (index) => {
+        const manager = makeManager({ recoverySigners: [apiKeyConfig, asRecoveryConfig({ type: "device" })] });
+        expect(() => manager.adoptRecoveryConfig(index, apiKeyConfig)).toThrow(/out of range/);
+    });
+
+    it.each([0, 1])(
+        "stripSecretFromRecovery() replaces the secret-bearing server recovery at index %s with an address-only config",
+        (index) => {
+            const recoverySigners = [
+                asRecoveryConfig({ type: "external-wallet", address: "0xExt" }),
+                asRecoveryConfig({ type: "external-wallet", address: "0xExt2" }),
+            ];
+            recoverySigners[index] = asRecoveryConfig({ type: "server", secret: "topsecret" });
+            const manager = makeManager({ recoverySigners });
+            manager.stripSecretFromRecovery(index, "0xResolved");
+            expect(manager.recoverySigners[index]).toEqual({ type: "server", address: "0xResolved" });
+            expect(JSON.stringify(manager.recoverySigners)).not.toContain("topsecret");
+        }
+    );
+
+    it("stripSecretFromRecovery() leaves an api-sourced server recovery untouched", () => {
+        const recovery = asRecoveryConfig({ type: "server", address: "0xExisting" });
+        const manager = makeManager({ recoverySigners: [recovery] });
+        manager.stripSecretFromRecovery(0, "0xResolved");
         expect(manager.recovery).toBe(recovery);
     });
 

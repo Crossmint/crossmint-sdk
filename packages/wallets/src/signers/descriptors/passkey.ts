@@ -8,6 +8,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../types";
+import { passkeyCredentialId } from "../../utils/signer-locator";
 import type { SignerDescriptor } from "./types";
 
 export const passkeySignerDescriptor: SignerDescriptor = {
@@ -17,7 +18,7 @@ export const passkeySignerDescriptor: SignerDescriptor = {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig
     ): InternalSignerConfig<C> {
         const passkeyConfig = config as PasskeySignerConfig;
-        const id = "id" in passkeyConfig && passkeyConfig.id ? passkeyConfig.id : "";
+        const id = passkeyCredentialId(passkeyConfig) ?? "";
         return {
             type: "passkey",
             id,
@@ -34,11 +35,17 @@ export const passkeySignerDescriptor: SignerDescriptor = {
     addSignerPayload(config: SignerConfigForChain<Chain>): RegisterSignerParams["signer"] {
         return config as RegisterSignerParams["signer"];
     },
-    matchesRecovery(_config: SignerConfigForChain<Chain>, _recovery: RecoverySignerConfigForChain<Chain>): boolean {
-        // Compare by type only: the api-sourced recovery config has {type:"passkey"} without a
-        // credential id, so locator comparison ("passkey" vs "passkey:{id}") would fail. Type
-        // already matches by the time this is called.
-        return true;
+    matchesRecovery(config: SignerConfigForChain<Chain>, recovery: RecoverySignerConfigForChain<Chain>): boolean {
+        // The api-sourced recovery config is often {type:"passkey"} without a credential id, in
+        // which case type (already matched by the caller) is all there is to compare. When both
+        // sides carry a credential id they must agree, so a supplied passkey does not match an
+        // unrelated passkey recovery signer.
+        const configId = passkeyCredentialId(config as PasskeySignerConfig);
+        const recoveryId = passkeyCredentialId(recovery as PasskeySignerConfig);
+        if (configId == null || recoveryId == null) {
+            return true;
+        }
+        return configId === recoveryId;
     },
     adoptsRecoveryConfigOnMatch: false,
     signerUnavailableReason: () => null,
