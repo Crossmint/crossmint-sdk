@@ -152,6 +152,11 @@ it.each<[name: string, config: Config, expected: object]>([
         cfg({ type: "passkey", id: "cred-1" }),
         { type: "passkey", id: "cred-1", locator: "passkey:cred-1" },
     ],
+    [
+        "missing id is taken from a passkey:{id} locator",
+        cfg({ type: "passkey", locator: "passkey:cred-2" }),
+        { type: "passkey", id: "cred-2", locator: "passkey:cred-2" },
+    ],
 ])("buildInternalConfig: passkey %s", (_name, config, expected) => {
     expect(getSignerDescriptor("passkey").buildInternalConfig(config as never, makeCtx())).toMatchObject(expected);
 });

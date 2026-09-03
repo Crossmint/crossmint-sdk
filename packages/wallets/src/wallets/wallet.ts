@@ -60,7 +60,7 @@ import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator } from "../utils/signer-locator";
+import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
@@ -976,7 +976,7 @@ export class Wallet<C extends Chain> {
     }
 
     private isPasskeyMissingId(signer: PasskeySignerConfig): boolean {
-        return signer.id == null || signer.id === "";
+        return passkeyCredentialId(signer) == null;
     }
 
     /**
