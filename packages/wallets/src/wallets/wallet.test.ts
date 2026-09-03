@@ -2561,6 +2561,25 @@ describe("Wallet - useSigner()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
+        it("useSigner keeps the credential id of a locator-only passkey that matches a recovery signer", async () => {
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: [{ type: "api-key" }, { type: "passkey", id: "recovery-credential" }] as any,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await wallet.useSigner({ type: "passkey", locator: "passkey:recovery-credential" });
+
+            expect(wallet.signer?.locator()).toBe("passkey:recovery-credential");
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+
         it("constructor rejects an empty recovery signer list", () => {
             mockApiClient = createMockApiClient();
             expect(

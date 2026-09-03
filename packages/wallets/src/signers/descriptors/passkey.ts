@@ -8,21 +8,8 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../types";
+import { passkeyCredentialId } from "../../utils/signer-locator";
 import type { SignerDescriptor } from "./types";
-
-const PASSKEY_LOCATOR_PREFIX = "passkey:";
-
-/** The credential id from `id` or a `passkey:{id}` locator, or null when the config carries neither. */
-function passkeyCredentialId(config: PasskeySignerConfig): string | null {
-    if (config.id != null && config.id !== "") {
-        return config.id;
-    }
-    if (config.locator != null && config.locator.startsWith(PASSKEY_LOCATOR_PREFIX)) {
-        const id = config.locator.slice(PASSKEY_LOCATOR_PREFIX.length);
-        return id === "" ? null : id;
-    }
-    return null;
-}
 
 export const passkeySignerDescriptor: SignerDescriptor = {
     type: "passkey",
@@ -31,7 +18,7 @@ export const passkeySignerDescriptor: SignerDescriptor = {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig
     ): InternalSignerConfig<C> {
         const passkeyConfig = config as PasskeySignerConfig;
-        const id = "id" in passkeyConfig && passkeyConfig.id ? passkeyConfig.id : "";
+        const id = passkeyCredentialId(passkeyConfig) ?? "";
         return {
             type: "passkey",
             id,
