@@ -6,7 +6,6 @@ export { toRecoverySignerList } from "./utils/recovery";
 
 // Errors
 export {
-    MAX_RECOVERY_SIGNERS,
     DuplicateRecoverySignerError,
     InvalidRecoveryConfigError,
     NotSupportedOnApiVersionError,

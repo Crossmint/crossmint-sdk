@@ -97,7 +97,7 @@ describe("throwIfRecoverySignerApiError", () => {
 
     test("falls back to a descriptive message when the API sends none", () => {
         expect(() => throwIfRecoverySignerApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).toThrow(
-            "A wallet can have at most 10 recovery signers"
+            "The wallet exceeds the maximum number of recovery signers"
         );
     });
 
