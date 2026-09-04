@@ -3,6 +3,7 @@ import type { AuthSig } from "@lit-protocol/types";
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
+import { credentialsLogger } from "../logger";
 import { DelegationSignature } from "../services/delegationSignature";
 import {
     type EncryptedVerifiableCredential,
@@ -27,11 +28,11 @@ export class Lit extends LitRaw {
     constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
         const usageOrigin = crossmintAPI.getOrigin();
         if (usageOrigin == null) {
-            console.warn(
+            credentialsLogger.warn(
                 "Unknown environment, make sure the SDK is running client side. The Crossmint Lit wrapper is meant to be used in the browser. Refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
             );
         } else if (usageOrigin === APIKeyUsageOrigin.SERVER) {
-            console.warn(
+            credentialsLogger.warn(
                 "The Crossmint Lit wrapper is a client-side tool meant to be used in the browser, not in a server environment. Refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
             );
         }
@@ -48,7 +49,7 @@ export class Lit extends LitRaw {
      */
     async decrypt(credential: EncryptedVerifiableCredential): Promise<VerifiableCredential> {
         if (this.capacityDelegationAuthSig == null) {
-            console.debug("No capacity delegation auth sig provided, retrieving from Crossmint.");
+            credentialsLogger.debug("No capacity delegation auth sig provided, retrieving from Crossmint.");
             this.capacityDelegationAuthSig = await new DelegationSignature().getSignature();
         }
         return super.decrypt(credential);

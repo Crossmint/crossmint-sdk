@@ -1,4 +1,5 @@
 import { crossmintAPI } from "@/crossmintAPI";
+import { credentialsLogger } from "@/logger";
 import type { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
 
 /**
@@ -24,7 +25,7 @@ export class WalletAuthService {
         const url = `${baseUrl}/api/v1-alpha1/credentials/auth/wallet`;
 
         const options = { method: "POST", headers: headers, body: JSON.stringify({ address: userAddress }) };
-        console.log(url, options);
+        credentialsLogger.info(url, options);
 
         const response = await fetch(url, options);
         const challenge = (await response.json()).nonce as string;
@@ -36,7 +37,7 @@ export class WalletAuthService {
         if (challenge == null) {
             throw new Error("Failed to get challenge from Crossmint");
         }
-        console.debug(`Successfully retrieved challenge for user ${userAddress} from Crossmint`);
+        credentialsLogger.debug(`Successfully retrieved challenge for user ${userAddress} from Crossmint`);
 
         return challenge;
     }
@@ -75,7 +76,7 @@ export class WalletAuthService {
                 signature: signature,
             }),
         };
-        console.log(url, options);
+        credentialsLogger.info(url, options);
 
         const response = await fetch(url, options);
         const decryptedData = (await response.json()) as any;
@@ -84,7 +85,7 @@ export class WalletAuthService {
                 `Failed to decrypt. status: ${response.status}, responses: ${JSON.stringify(decryptedData)}`
             );
         }
-        console.debug(`Successfully decrypted data from Crossmint`);
+        credentialsLogger.debug(`Successfully decrypted data from Crossmint`);
 
         return decryptedData;
     }

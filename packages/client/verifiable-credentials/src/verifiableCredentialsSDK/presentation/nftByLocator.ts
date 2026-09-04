@@ -1,9 +1,13 @@
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import { NFTService } from "../onchainServices/nft";
 import { IPFSService } from "../services/ipfs";
 import type { CredentialsCollection } from "../types/collection";
 import type { NftWithMetadata } from "../types/nft";
 import { isVcChain, isVerifiableCredentialContractMetadata, parseLocator } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
+
+const nftByLocatorLogger = new SdkLogger();
 
 /**
  * Retrieves a Verifiable Credential NFT from a locator.
@@ -33,7 +37,7 @@ export async function getCredentialNFTFromLocator(locator: string) {
     const nftUri = await new NFTService(nft.chain).getNftUri(nft);
     const nftMetadata = await new IPFSService().getFile(nftUri);
 
-    console.debug(`Nft ${locator} metadata:`, nftMetadata);
+    nftByLocatorLogger.debug(`Nft ${locator} metadata:`, nftMetadata);
 
     // Construct the NFT with metadata
     const vcNft: NftWithMetadata = {

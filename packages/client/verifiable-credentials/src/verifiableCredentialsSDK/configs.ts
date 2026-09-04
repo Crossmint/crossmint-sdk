@@ -1,4 +1,8 @@
+import { SdkLogger } from "@crossmint/common-sdk-base";
+
 import { type ChainRPCConfig, VCChain } from "./types/chain";
+
+const vcSdkLogger = new SdkLogger();
 
 const POLYGON_RPC_URL = "https://polygon.llamarpc.com/";
 const POLYGON_RPC_URL_TEST = "https://rpc-amoy.polygon.technology/";
@@ -40,10 +44,10 @@ class ConfigManager {
 
         if (!ipfsGateways) {
             ipfsGateways = DEFAULT_IPFS_GATEWAYS;
-            console.debug(`No IPFS gateways provided using defaults: ${ipfsGateways}`);
+            vcSdkLogger.debug(`No IPFS gateways provided using defaults: ${ipfsGateways}`);
         }
 
-        console.debug(`Current rpc provided: ${blockchainRpcs}`);
+        vcSdkLogger.debug(`Current rpc provided: ${blockchainRpcs}`);
 
         this.config = {
             ipfsGateways,
