@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.15.0
+
+### Minor Changes
+
+- 72d0001: Remove the exported `MAX_RECOVERY_SIGNERS` constant and the client-side recovery-list length check. The backend is the single source of truth for the signer limit; requests over it still surface as `RecoverySignerLimitExceededError`.
+
 ## 1.14.0
 
 ### Minor Changes
