@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 2.9.0
+
+### Minor Changes
+
+- 65841c5: Update order intent types and verify Basis Theory allowances through `OrderIntentVerification`.
+
 ## 2.8.0
 
 ### Minor Changes

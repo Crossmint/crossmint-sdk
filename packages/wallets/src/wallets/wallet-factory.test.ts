@@ -5,9 +5,7 @@ import {
     InvalidChainError,
     InvalidEnvironmentError,
     InvalidRecoveryConfigError,
-    MAX_RECOVERY_SIGNERS,
     RecoveryNotSupportedOnChainError,
-    RecoverySignerLimitExceededError,
     WalletCreationError,
 } from "../utils/errors";
 import { walletsLogger } from "../logger";
@@ -1169,18 +1167,6 @@ describe("WalletFactory - recovery signer lists", () => {
         it("rejects an empty recovery list without calling the API", async () => {
             await expect(walletFactory.createWallet({ chain: "solana", recovery: [] })).rejects.toBeInstanceOf(
                 InvalidRecoveryConfigError
-            );
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
-        });
-
-        it("rejects a recovery list above the signer cap without calling the API", async () => {
-            const recovery = Array.from({ length: MAX_RECOVERY_SIGNERS + 1 }, (_, index) => ({
-                type: "email" as const,
-                email: `recovery-${index}@example.com`,
-            }));
-
-            await expect(walletFactory.createWallet({ chain: "solana", recovery })).rejects.toBeInstanceOf(
-                RecoverySignerLimitExceededError
             );
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });

@@ -103,12 +103,6 @@ export class QuorumSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
-/**
- * Maximum number of recovery signers a wallet can be created with, mirroring the backend's
- * `SOLANA_MAX_ADMIN_SIGNERS` cap. Requests above it are rejected with `SIGNER_LIMIT_EXCEEDED`.
- */
-export const MAX_RECOVERY_SIGNERS = 10;
-
 /** Thrown for recovery configurations the SDK can reject before calling the API. */
 export class InvalidRecoveryConfigError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -342,7 +336,7 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     switch (response.code) {
         case "SIGNER_LIMIT_EXCEEDED":
             throw new RecoverySignerLimitExceededError(
-                message ?? `A wallet can have at most ${MAX_RECOVERY_SIGNERS} recovery signers`,
+                message ?? "The wallet exceeds the maximum number of recovery signers",
                 details
             );
         case "RECOVERY_DUPLICATE_SIGNER":

@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.6.0
+
+### Minor Changes
+
+- 65841c5: Update order intent types and verify Basis Theory allowances through `OrderIntentVerification`.
+
+### Patch Changes
+
+- 970fe2b: Document that `createOnLogin.recovery` accepts a list of up to 10 recovery signers on Solana and Stellar.
+- 90507b0: Remove the Wallets SDK V1 version banner from generated SDK reference docs
+- Updated dependencies [0fb459c]
+- Updated dependencies [0003592]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-react-base@2.2.6
+  - @crossmint/client-sdk-base@2.9.0
+  - @crossmint/client-sdk-auth@1.3.20
+  - @crossmint/common-sdk-auth@1.1.18
+
 ## 4.5.1
 
 ### Patch Changes
