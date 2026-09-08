@@ -38,7 +38,7 @@ const expectWipedAndKept = (rec: RecordedCandidates, wiped: Slot, survivor: Slot
 const fullConfig = (secret: string): ServerSignerConfig => ({ type: "server", secret });
 const apiConfig = (address: string): ApiSourcedServerSignerConfig => ({ type: "server", address });
 const makeResolver = (overrides?: {
-    apiRecoveryAddress?: string | null;
+    apiRecoveryAddresses?: string[];
     apiDelegatedAddresses?: string[];
     knownOnChainAddresses?: string[];
 }): ServerSignerResolver =>
@@ -46,12 +46,12 @@ const makeResolver = (overrides?: {
         chain: "base-sepolia",
         projectId: "proj_test_123",
         environment: "staging",
-        apiRecoveryAddress: overrides?.apiRecoveryAddress ?? null,
+        apiRecoveryAddresses: overrides?.apiRecoveryAddresses ?? [],
         apiDelegatedAddresses: overrides?.apiDelegatedAddresses ?? [],
         knownOnChainAddresses: () => overrides?.knownOnChainAddresses ?? [],
     });
-const cacheRecovery = (r: ServerSignerResolver, rec: RecordedCandidates[], secret: string) => {
-    expect(r.resolveForUseSigner(fullConfig(secret), [], () => true)).toEqual({ kind: "recovery" });
+const cacheRecovery = (r: ServerSignerResolver, rec: RecordedCandidates[], secret: string, address: string) => {
+    expect(r.resolveForUseSigner(fullConfig(secret), [], () => true)).toEqual({ kind: "recovery", address });
     return rec[rec.length - 1];
 };
 const cacheDelegated = (r: ServerSignerResolver, rec: RecordedCandidates[], secret: string, loc: string) => {
@@ -73,11 +73,32 @@ describe("ServerSignerResolver", () => {
     describe("resolveDerivation", () => {
         it("returns the cached recovery resolution for api-sourced config", () => {
             const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
-            const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
-            cacheRecovery(resolver, recorded, "rec");
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRec"] });
+            cacheRecovery(resolver, recorded, "rec", "0xRec");
             const resolved = resolver.resolveDerivation(apiConfig("0xRec"));
             expect(resolved.derivedAddress).toBe("0xRec");
             expect(everyByteIs(resolved.derivedKeyBytes, 5)).toBe(true);
+        });
+        it("returns the recovery resolution matching each api-sourced address when several recovery secrets are cached", () => {
+            const recorded = installCandidates({
+                a: { primary: { address: "0xRecA", fill: 5 }, legacy: null },
+                b: { primary: { address: "0xRecB", fill: 6 }, legacy: null },
+            });
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRecA", "0xRecB"] });
+            const cachedA = cacheRecovery(resolver, recorded, "a", "0xRecA").primary;
+            const cachedB = cacheRecovery(resolver, recorded, "b", "0xRecB").primary;
+            expect(resolver.resolveDerivation(apiConfig("0xRecA"))).toBe(cachedA);
+            expect(resolver.resolveDerivation(apiConfig("0xRecB"))).toBe(cachedB);
+            expect(everyByteIs(cachedA.derivedKeyBytes, 5)).toBe(true);
+            expect(everyByteIs(cachedB.derivedKeyBytes, 6)).toBe(true);
+        });
+        it("throws for an api-sourced address whose secret has not been provided even when another recovery is cached", () => {
+            const recorded = installCandidates({ a: { primary: { address: "0xRecA", fill: 5 }, legacy: null } });
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRecA", "0xRecB"] });
+            cacheRecovery(resolver, recorded, "a", "0xRecA");
+            expect(() => resolver.resolveDerivation(apiConfig("0xRecB"))).toThrow(
+                "Cannot resolve server signer derivation: no secret available and no cached recovery resolution."
+            );
         });
         it("throws the exact message when api-sourced config has no cached recovery resolution", () => {
             expect(() => makeResolver().resolveDerivation(apiConfig("0xSome"))).toThrow(
@@ -86,21 +107,21 @@ describe("ServerSignerResolver", () => {
             );
         });
         it("returns the cache hit and wipes both fresh candidates", () => {
-            const resolver = makeResolver({ apiRecoveryAddress: "0xRecPrimary" });
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRecPrimary"] });
             const recorded = installCandidates({
                 rec: { primary: { address: "0xRecPrimary", fill: 7 }, legacy: { address: "0xRecLegacy", fill: 9 } },
             });
-            cacheRecovery(resolver, recorded, "rec");
+            cacheRecovery(resolver, recorded, "rec", "0xRecPrimary");
             const cached = recorded[0].primary;
             expect(resolver.resolveDerivation(fullConfig("rec"))).toBe(cached);
             expect(isZeroed(recorded[1].primary.derivedKeyBytes)).toBe(true);
             expect(isZeroed(recorded[1].legacy!.derivedKeyBytes)).toBe(true);
             expect(everyByteIs(cached.derivedKeyBytes, 7)).toBe(true);
         });
-        it.each([
-            ["legacy matches apiRecoveryAddress", { apiRecoveryAddress: "0xLegacy" }],
+        it.each<[string, Parameters<typeof makeResolver>[0]]>([
+            ["legacy matches an api recovery address", { apiRecoveryAddresses: ["0xLegacy"] }],
             ["legacy is a known on-chain address", { knownOnChainAddresses: ["0xLegacy"] }],
-        ] as const)("picks legacy and wipes primary when %s", (_t, o) => {
+        ])("picks legacy and wipes primary when %s", (_t, o) => {
             const recorded = installDual();
             expect(makeResolver(o).resolveDerivation(fullConfig("s")).derivedAddress).toBe("0xLegacy");
             expectWipedAndKept(recorded[0], "primary", "legacy", 9);
@@ -143,11 +164,14 @@ describe("ServerSignerResolver", () => {
             installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
             expect(resolver.resolveDerivation(fullConfig("s"))).toBe(cached);
         });
-        it("returns recovery and caches the recovery slot when not registered but isRecovery is true", () => {
+        it("returns recovery with the selected address and caches it when not registered but isRecovery is true", () => {
             installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
             const resolver = makeResolver();
-            expect(resolver.resolveForUseSigner(fullConfig("s"), [], () => true)).toEqual({ kind: "recovery" });
-            expect(resolver.hasRecoveryResolution).toBe(true);
+            expect(resolver.resolveForUseSigner(fullConfig("s"), [], () => true)).toEqual({
+                kind: "recovery",
+                address: "0xPrimary",
+            });
+            expect(resolver.hasRecoveryResolutionFor("0xPrimary")).toBe(true);
         });
         it("returns the dual-locator unregistered message and wipes both candidates", () => {
             const recorded = installCandidates({
@@ -173,20 +197,46 @@ describe("ServerSignerResolver", () => {
             expect(isRecovery).not.toHaveBeenCalled();
         });
         it.each([
-            ["legacy matches apiRecoveryAddress", "0xLegacy", "primary", "legacy", 9],
+            ["legacy matches an api recovery address", "0xLegacy", "primary", "legacy", 9],
             ["primary otherwise", "0xPrimary", "legacy", "primary", 7],
         ] as const)("caches the recovery slot and wipes the non-selected candidate (%s)", (_t, rec, w, s, f) => {
             const recorded = installDual();
-            const resolver = makeResolver({ apiRecoveryAddress: rec });
-            expect(resolver.resolveForUseSigner(fullConfig("s"), [], () => true)).toEqual({ kind: "recovery" });
-            expect(resolver.resolvedRecoveryAddress).toBe(rec);
+            const resolver = makeResolver({ apiRecoveryAddresses: [rec] });
+            expect(resolver.resolveForUseSigner(fullConfig("s"), [], () => true)).toEqual({
+                kind: "recovery",
+                address: rec,
+            });
+            expect(resolver.hasRecoveryResolutionFor(rec)).toBe(true);
             expectWipedAndKept(recorded[0], w, s, f);
+        });
+        it("selects the legacy derivation for a secondary recovery signer whose api address is the legacy one", () => {
+            const recorded = installCandidates({
+                a: { primary: { address: "0xRecA", fill: 5 }, legacy: null },
+                b: { primary: { address: "0xRecBPrimary", fill: 7 }, legacy: { address: "0xRecBLegacy", fill: 9 } },
+            });
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRecA", "0xRecBLegacy"] });
+            cacheRecovery(resolver, recorded, "a", "0xRecA");
+            expect(resolver.resolveForUseSigner(fullConfig("b"), [], () => true)).toEqual({
+                kind: "recovery",
+                address: "0xRecBLegacy",
+            });
+            expectWipedAndKept(recorded[1], "primary", "legacy", 9);
+            expect(resolver.hasRecoveryResolutionFor("0xRecA")).toBe(true);
+            expect(resolver.hasRecoveryResolutionFor("0xRecBLegacy")).toBe(true);
+        });
+        it("re-resolving the same recovery secret replaces and wipes the previously cached derivation", () => {
+            const recorded = installCandidates({ s: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xRec"] });
+            const first = cacheRecovery(resolver, recorded, "s", "0xRec").primary;
+            const second = cacheRecovery(resolver, recorded, "s", "0xRec").primary;
+            expect(isZeroed(first.derivedKeyBytes)).toBe(true);
+            expect(resolver.resolveDerivation(apiConfig("0xRec"))).toBe(second);
         });
     });
     it("keyMaterialForAssembly returns a copy of cached bytes the caller can wipe without corrupting the cache", () => {
         const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
-        const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
-        const cached = cacheRecovery(resolver, recorded, "rec").primary;
+        const resolver = makeResolver({ apiRecoveryAddresses: ["0xRec"] });
+        const cached = cacheRecovery(resolver, recorded, "rec", "0xRec").primary;
         installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
         const first = resolver.keyMaterialForAssembly(fullConfig("rec"));
         expect(first.derivedKeyBytes).not.toBe(cached.derivedKeyBytes);
@@ -222,35 +272,32 @@ describe("ServerSignerResolver", () => {
     });
     it("resetDelegatedCache wipes and clears the delegated cache while preserving the recovery cache", () => {
         const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
-        const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
-        const recoveryCached = cacheRecovery(resolver, recorded, "rec").primary;
+        const resolver = makeResolver({ apiRecoveryAddresses: ["0xRec"] });
+        const recoveryCached = cacheRecovery(resolver, recorded, "rec", "0xRec").primary;
         const dRec = installCandidates({ del: { primary: { address: "0xDel", fill: 3 }, legacy: null } });
         expect(everyByteIs(cacheDelegated(resolver, dRec, "del", "server:0xDel").primary.derivedKeyBytes, 3)).toBe(
             true
         );
         resolver.resetDelegatedCache();
         expect(isZeroed(dRec[0].primary.derivedKeyBytes)).toBe(true);
-        expect(resolver.hasRecoveryResolution).toBe(true);
+        expect(resolver.hasRecoveryResolutionFor("0xRec")).toBe(true);
         expect(everyByteIs(recoveryCached.derivedKeyBytes, 5)).toBe(true);
         expect(resolver.resolveDerivation(apiConfig("0xRec"))).toBe(recoveryCached);
     });
-    it("hasRecoveryResolution reflects whether the recovery cache is populated", () => {
+    it("hasRecoveryResolutionFor reflects whether the recovery cache holds that address", () => {
         const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
-        const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
-        expect(resolver.hasRecoveryResolution).toBe(false);
-        cacheRecovery(resolver, recorded, "rec");
-        expect(resolver.hasRecoveryResolution).toBe(true);
-    });
-    it("resolvedRecoveryAddress is null until cached, then exposes the resolved derived address", () => {
-        const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });
-        const resolver = makeResolver({ apiRecoveryAddress: "0xRec" });
-        expect(resolver.resolvedRecoveryAddress).toBeNull();
-        cacheRecovery(resolver, recorded, "rec");
-        expect(resolver.resolvedRecoveryAddress).toBe("0xRec");
+        const resolver = makeResolver({ apiRecoveryAddresses: ["0xRec", "0xOther"] });
+        expect(resolver.hasRecoveryResolutionFor("0xRec")).toBe(false);
+        cacheRecovery(resolver, recorded, "rec", "0xRec");
+        expect(resolver.hasRecoveryResolutionFor("0xRec")).toBe(true);
+        expect(resolver.hasRecoveryResolutionFor("0xOther")).toBe(false);
     });
     it("exposes the constructor-provided api recovery and delegated addresses", () => {
-        const resolver = makeResolver({ apiRecoveryAddress: "0xRec", apiDelegatedAddresses: ["0xDelA", "0xDelB"] });
-        expect(resolver.apiRecoveryAddress).toBe("0xRec");
+        const resolver = makeResolver({
+            apiRecoveryAddresses: ["0xRecA", "0xRecB"],
+            apiDelegatedAddresses: ["0xDelA", "0xDelB"],
+        });
+        expect(resolver.apiRecoveryAddresses).toEqual(["0xRecA", "0xRecB"]);
         expect(resolver.apiDelegatedAddresses).toEqual(["0xDelA", "0xDelB"]);
     });
 });

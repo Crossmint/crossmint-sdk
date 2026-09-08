@@ -311,7 +311,10 @@ export class DeviceRecoveryService<C extends Chain> {
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
-        if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
+        if (
+            isApiSourcedServerSignerConfig(recovery) &&
+            !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
+        ) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
