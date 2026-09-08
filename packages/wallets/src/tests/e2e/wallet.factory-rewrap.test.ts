@@ -3,7 +3,7 @@
  *
  * These tests pin CURRENT behavior of EVMWallet / SolanaWallet / StellarWallet and the
  * protected-state rewrap performed by their constructors (via Wallet.getOptions /
- * getRecovery / getInitialSigners / getApiRecoveryServerSignerAddress /
+ * getRecoverySigners / getInitialSigners / getApiRecoveryServerSignerAddress /
  * getApiDelegatedServerSignerAddresses / getApiClient) before wallet.ts is decomposed
  * into services. Exact error classes, exact message strings, exact API call arguments,
  * and locator formats are all part of the contract — do not "fix" them here.

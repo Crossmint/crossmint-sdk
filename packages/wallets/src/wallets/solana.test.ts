@@ -302,7 +302,8 @@ describe("SolanaWallet - from()", () => {
 
         const solanaWallet = SolanaWallet.from(wallet);
 
-        expect(solanaWallet.recovery).toEqual(recoverySigners);
+        expect(solanaWallet.recoverySigners).toEqual(recoverySigners);
+        expect(solanaWallet.recovery).toEqual(recoverySigners[0]);
     });
 
     it("throws error when wallet is not Solana", async () => {

@@ -2340,7 +2340,7 @@ describe("Wallet - useSigner()", () => {
             expect(result.locator).toBe("email:new@example.com");
         });
 
-        it("recovery[0] follows the live recovery signer when useSigner adopts a fuller recovery config", async () => {
+        it("recovery and recoverySigners[0] follow the live recovery signer when useSigner adopts a fuller recovery config", async () => {
             mockApiClient = createMockApiClient();
 
             mockApiClient.getWallet.mockResolvedValue({
@@ -2366,11 +2366,11 @@ describe("Wallet - useSigner()", () => {
                 onSign,
             } as unknown as SignerConfigForChain<"solana">);
 
-            expect(wallet.recovery[0]).toEqual(
+            expect(wallet.recovery).toEqual(
                 expect.objectContaining({ type: "external-wallet", address: "RecoveryWallet111" })
             );
-            expect("onSign" in wallet.recovery[0]).toBe(true);
-            expect(wallet.recovery[1]).toEqual({ type: "api-key" });
+            expect("onSign" in wallet.recovery).toBe(true);
+            expect(wallet.recoverySigners[1]).toEqual({ type: "api-key" });
         });
 
         it("addSigner should throw when recovery is external-wallet but useSigner was never called (no onSign)", async () => {
