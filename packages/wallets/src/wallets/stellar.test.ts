@@ -623,7 +623,7 @@ describe("StellarWallet - from()", () => {
 
         const stellarWallet = StellarWallet.from(wallet);
 
-        expect(stellarWallet.recoverySigners).toEqual(recoverySigners);
+        expect(stellarWallet.recoveryMethods).toEqual(recoverySigners);
         expect(stellarWallet.recovery).toEqual(recoverySigners[0]);
     });
 
