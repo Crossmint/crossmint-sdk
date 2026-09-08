@@ -15,9 +15,7 @@ import type {
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     InvalidRecoveryConfigError,
-    MAX_RECOVERY_SIGNERS,
     RecoveryNotSupportedOnChainError,
-    RecoverySignerLimitExceededError,
     WalletCreationError,
     WalletNotAvailableError,
     throwIfRecoverySignerApiError,
@@ -250,11 +248,6 @@ export class WalletFactory {
         }
         if (recoverySigners.length === 0) {
             throw new InvalidRecoveryConfigError("At least one recovery signer is required");
-        }
-        if (recoverySigners.length > MAX_RECOVERY_SIGNERS) {
-            throw new RecoverySignerLimitExceededError(
-                `A wallet can have at most ${MAX_RECOVERY_SIGNERS} recovery signers, but ${recoverySigners.length} were provided`
-            );
         }
         return recoverySigners;
     }

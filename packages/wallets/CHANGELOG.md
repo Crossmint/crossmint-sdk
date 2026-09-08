@@ -1,5 +1,18 @@
 # @crossmint/wallets-sdk
 
+## 1.14.0
+
+### Minor Changes
+
+- 0003592: Solana and Stellar wallets can now be created with up to 10 recovery signers: `recovery` accepts a list, each entry resolved (passkey creation, server signer derivation) on its own, and `wallet.recoverySigners` exposes all of them. EVM still takes a single recovery signer.
+
+### Patch Changes
+
+- 0fb459c: Add recovery signer error classes (`RecoverySignerLimitExceededError`, `DuplicateRecoverySignerError`, `RecoverySignerConflictError`, `SignerRequiredError`, `RecoveryNotSupportedOnChainError`, `NotSupportedOnApiVersionError`, `RecoveryAdminSignerConflictError`, `InvalidRecoveryConfigError`), the `MAX_RECOVERY_SIGNERS` constant, and mapping of the backend recovery error codes to those errors.
+- d459c4a: Update the wallets OpenAPI spec so Solana and Stellar wallet creation configs describe a `recovery` list (1-10 signers) alongside the deprecated `adminSigner`, and expose a `RecoverySignerListConfig` API type.
+- 90507b0: Remove the Wallets SDK V1 version banner from generated SDK reference docs
+  - @crossmint/common-sdk-auth@1.1.18
+
 ## 1.13.0
 
 ### Minor Changes
