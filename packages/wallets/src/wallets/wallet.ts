@@ -86,9 +86,11 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
+type SerializedTransactionOnChain = Extract<GetTransactionSuccessResponse["onChain"], { transaction: string }>;
+
 function hasSerializedSolanaTransaction(
     transaction: GetTransactionSuccessResponse
-): transaction is GetTransactionSuccessResponse & { onChain: { transaction: string } } {
+): transaction is GetTransactionSuccessResponse & { onChain: SerializedTransactionOnChain } {
     return (
         transaction.chainType === "solana" &&
         "transaction" in transaction.onChain &&
