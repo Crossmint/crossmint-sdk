@@ -45,9 +45,14 @@ describe("Wallet integration — transaction approval orchestration", () => {
     });
 
     describe("approval payload selection (keyed off the API response shape)", () => {
-        it("solana: signs the serialized onChain.transaction for ed25519 signers but pendingApproval.message for device signers", async () => {
+        it("solana: only an external wallet receives onChain.transaction, everyone else receives pendingApproval.message", async () => {
             const solanaWallet = await createMockWallet("solana", mockApiClient, "external-wallet");
-            const ed25519Signer = makeFakeSigner("external-wallet", "external-wallet:EdSignerLocator", "ed-sig");
+            const externalSigner = makeFakeSigner(
+                "external-wallet",
+                "external-wallet:ExternalSignerLocator",
+                "external-sig"
+            );
+            const emailSigner = makeFakeSigner("email", "email:ed@example.com", "ed-sig");
             const deviceSigner = makeFakeSigner("device", "device:DeviceSignerLocator", "device-sig");
 
             mockApiClient.getTransaction
@@ -59,7 +64,11 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     onChain: { transaction: "SERIALIZED_SOLANA_TX" },
                     approvals: {
                         pending: [
-                            { message: "msg-for-ed25519", signer: { locator: "external-wallet:EdSignerLocator" } },
+                            {
+                                message: "msg-for-external",
+                                signer: { locator: "external-wallet:ExternalSignerLocator" },
+                            },
+                            { message: "msg-for-ed25519", signer: { locator: "email:ed@example.com" } },
                             { message: "msg-for-device", signer: { locator: "device:DeviceSignerLocator" } },
                         ],
                         submitted: [],
@@ -74,18 +83,20 @@ describe("Wallet integration — transaction approval orchestration", () => {
 
             const approvePromise = solanaWallet.approve({
                 transactionId: "sol-txn",
-                options: { additionalSigners: [asAdapter(ed25519Signer), asAdapter(deviceSigner)] },
+                options: {
+                    additionalSigners: [asAdapter(externalSigner), asAdapter(emailSigner), asAdapter(deviceSigner)],
+                },
             });
             await vi.runAllTimersAsync();
             await approvePromise;
 
-            // ed25519 (non-device) signer receives the full serialized transaction
-            expect(ed25519Signer.signTransaction).toHaveBeenCalledWith("SERIALIZED_SOLANA_TX");
-            // device signer receives the pendingApproval.message (keccak256 hash for the SWIG precompile)
+            expect(externalSigner.signTransaction).toHaveBeenCalledWith("SERIALIZED_SOLANA_TX");
+            expect(emailSigner.signTransaction).toHaveBeenCalledWith("msg-for-ed25519");
             expect(deviceSigner.signTransaction).toHaveBeenCalledWith("msg-for-device");
             expect(mockApiClient.approveTransaction).toHaveBeenCalledWith("me:solana:smart", "sol-txn", {
                 approvals: [
-                    { signature: "ed-sig", signer: "external-wallet:EdSignerLocator" },
+                    { signature: "external-sig", signer: "external-wallet:ExternalSignerLocator" },
+                    { signature: "ed-sig", signer: "email:ed@example.com" },
                     { signature: "device-sig", signer: "device:DeviceSignerLocator" },
                 ],
             });
