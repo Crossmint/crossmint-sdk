@@ -2,14 +2,14 @@ import { defineChain } from "viem";
 
 export const story = defineChain({
     id: 1514,
-    name: "Story",
+    name: "DATA Network",
     nativeCurrency: {
         decimals: 18,
-        name: "IP Token",
-        symbol: "IP",
+        name: "DATA",
+        symbol: "DATA",
     },
     rpcUrls: {
-        default: { http: ["https://mainnet.storyrpc.io"] },
+        default: { http: ["https://mainnet.datarpc.io"] },
     },
     testnet: false,
 });
