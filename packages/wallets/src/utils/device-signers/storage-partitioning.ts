@@ -7,11 +7,15 @@
 const MIN_CHROMIUM_VERSION = 115;
 const MIN_FIREFOX_VERSION = 103;
 
+/** Android WebView (`; wv`, covering Android in-app browsers) and Electron: no partitioning. */
+const UNPARTITIONED_EMBEDDED_RUNTIME = /;\s*wv[;)]|\bElectron\//;
+
 /**
  * Detects whether the current browser provides third-party storage partitioning.
  * Returns `true` when the environment is safe to operate in, `false` otherwise.
  *
  * Detection strategy:
+ * - Embedded Chromium runtimes (Android WebView, Electron): blocked.
  * - Chromium-based browsers (Chrome, Edge, Opera, etc.): require version >= 115.
  * - Firefox: ships State Partitioning (dFPI) by default since v103.
  * - Safari: ships ITP-based storage partitioning.
@@ -24,6 +28,10 @@ export function hasPartitionedStorage(): boolean {
 
     const ua = navigator.userAgent;
     if (!ua) {
+        return false;
+    }
+
+    if (UNPARTITIONED_EMBEDDED_RUNTIME.test(ua)) {
         return false;
     }
 
