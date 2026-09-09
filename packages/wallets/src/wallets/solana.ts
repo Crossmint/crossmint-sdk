@@ -13,6 +13,7 @@ import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
+import { normalizeSolanaSerializedTransaction } from "../utils/solana-transaction";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -43,7 +44,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
 
     /**
      * Send a raw Solana transaction.
-     * @param params - The transaction parameters (serialized transaction or Transaction object)
+     * @param params - The transaction parameters. Serialized transactions may be base58- or base64-encoded.
      * @returns The transaction result
      */
     @WithLoggerContext({
@@ -110,7 +111,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         let serializedTransaction: string;
 
         if ("serializedTransaction" in params) {
-            serializedTransaction = params.serializedTransaction;
+            serializedTransaction = normalizeSolanaSerializedTransaction(params.serializedTransaction);
         } else {
             serializedTransaction = bs58.encode(params.transaction.serialize());
         }

@@ -112,6 +112,7 @@ export type SolanaTransactionInput = (
           transaction: VersionedTransaction;
       }
     | {
+          /** A base58- or base64-encoded serialized Solana transaction. */
           serializedTransaction: string;
       }
 ) & {

@@ -203,7 +203,7 @@ const client = evmWallet.getViemClient();
 // Solana
 const solWallet = SolanaWallet.from(wallet);
 const solTx = await solWallet.sendTransaction({
-  serializedTransaction: "<base64-encoded-transaction>",
+  serializedTransaction: "<base58-or-base64-encoded-transaction>",
 });
 
 // Stellar
