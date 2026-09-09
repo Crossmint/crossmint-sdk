@@ -59,13 +59,20 @@ jobs:
                   # simultaneous OTP requests for the same email get rate-limited/blocked.
                   # Each browser gets its own persistent wallet, reused across runs.
                   TESTS_WALLET_EMAIL_SUFFIX: e2e-${{ matrix.browser }}
+                  # The public devnet faucet's requestAirdrop no longer works from the
+                  # runners, so Solana test wallets are seeded from our own keypair.
+                  SOLANA_DEVNET_FUNDER_SECRET_KEY: ${{ secrets.SOLANA_DEVNET_FUNDER_SECRET_KEY }}
               run: |
                   mkdir -p test-results
-                  pnpm exec playwright test --project=${{ matrix.browser }} || true
+                  set +e
+                  pnpm exec playwright test --project=${{ matrix.browser }}
+                  tests_exit_code=$?
+                  set -e
                   if [ ! -f test-results/playwright-results.json ]; then
                       echo "::error::No test results file generated — no tests were discovered. Check testMatch patterns in playwright.config.ts."
                       exit 1
                   fi
+                  exit $tests_exit_code
 
             - name: Generate test report
               if: always()

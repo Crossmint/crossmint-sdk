@@ -23,6 +23,22 @@ Tests are configured to:
 | `MAILOSAUR_PHONE_NUMBER` | ✅ | Your Mailosaur phone number |
 | `TESTS_CROSSMINT_API_KEY` | ✅ | Your Crossmint API key for e2e testing |
 | `PLAYWRIGHT_BASE_URL` | ❌ | App URL (defaults to http://localhost:3000) |
+| `SOLANA_DEVNET_RPC_URL` | ❌ | Devnet RPC (defaults to https://api.devnet.solana.com) |
+| `SOLANA_DEVNET_FUNDER_SECRET_KEY` | ❌ | Devnet keypair that seeds Solana test wallets with SOL |
+
+## ⛽ Funding Solana test wallets
+
+Solana transfers need native SOL for fees, and the Crossmint faucet only dispenses
+USDXM. `requestAirdrop` against the public devnet faucet now fails from every IP we
+have tried, CI runners included, so `SOLANA_DEVNET_FUNDER_SECRET_KEY` holds a devnet
+keypair that seeds the test wallets directly. Its value is the 64-byte secret key as
+the JSON array `solana-keygen` writes — the contents of `~/.config/solana/id.json`.
+
+Wallets are reused across runs and a transfer costs roughly 0.0002 SOL, so 1 SOL in
+the funder covers thousands of runs. Top it up through the
+[web faucet](https://faucet.solana.com), which is captcha-gated and still works when
+the RPC airdrop does not. Without the variable the tests fall back to `requestAirdrop`
+and fail on any wallet that holds no SOL.
 
 ---
 
