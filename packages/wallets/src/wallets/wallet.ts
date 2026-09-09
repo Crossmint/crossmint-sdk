@@ -86,6 +86,16 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
+function hasSerializedSolanaTransaction(
+    transaction: GetTransactionSuccessResponse
+): transaction is GetTransactionSuccessResponse & { onChain: { transaction: string } } {
+    return (
+        transaction.chainType === "solana" &&
+        "transaction" in transaction.onChain &&
+        typeof transaction.onChain.transaction === "string"
+    );
+}
+
 function getSignablePayload(
     signer: SignerAdapter,
     transaction: GetTransactionSuccessResponse,
@@ -93,10 +103,7 @@ function getSignablePayload(
 ): string {
     switch (signer.type) {
         case "external-wallet":
-            if (transaction.chainType === "solana" && "transaction" in transaction.onChain) {
-                return transaction.onChain.transaction as string;
-            }
-            return approvalMessage;
+            return hasSerializedSolanaTransaction(transaction) ? transaction.onChain.transaction : approvalMessage;
         default:
             return approvalMessage;
     }
