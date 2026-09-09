@@ -86,6 +86,22 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
+function getSignablePayload(
+    signer: SignerAdapter,
+    transaction: GetTransactionSuccessResponse,
+    approvalMessage: string
+): string {
+    switch (signer.type) {
+        case "external-wallet":
+            if (transaction.chainType === "solana" && "transaction" in transaction.onChain) {
+                return transaction.onChain.transaction as string;
+            }
+            return approvalMessage;
+        default:
+            return approvalMessage;
+    }
+}
+
 export class Wallet<C extends Chain> {
     chain: C;
     address: string;
@@ -1301,15 +1317,8 @@ export class Wallet<C extends Chain> {
         const approvals = await this.#collectApprovals(
             this.#requireNonQuorumApprovals(pendingApprovals),
             signers,
-            (signer, pendingApproval) => {
-                const wantsWholeTransaction = transaction.chainType === "solana" && signer.type === "external-wallet";
-
-                return signer.signTransaction(
-                    wantsWholeTransaction && "transaction" in transaction.onChain
-                        ? (transaction.onChain.transaction as string)
-                        : pendingApproval.message
-                );
-            }
+            (signer, pendingApproval) =>
+                signer.signTransaction(getSignablePayload(signer, transaction, pendingApproval.message))
         );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
