@@ -12,11 +12,6 @@ export type SolanaExternalWalletSignerConfig = {
     type: "external-wallet";
     address: string;
     onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
-    /**
-     * Signs the raw approval payload, base58 in and base58 signature out. Only used for version-1
-     * transactions, which `@solana/web3.js` cannot serialize for `onSign`. Supply it when the key is
-     * held directly; a browser wallet adapter cannot serve it.
-     */
     onSignBytes?: (payload: string) => Promise<string>;
 };
 
