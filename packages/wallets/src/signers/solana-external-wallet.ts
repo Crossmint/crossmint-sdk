@@ -15,11 +15,6 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
         this.onSignBytes = config.onSignBytes;
     }
 
-    /**
-     * Sign a payload directly with the external wallet key.
-     * Used for version-1 transactions, which no wallet adapter can sign.
-     * @param message - The payload to sign, base58 encoded
-     */
     async signMessage(message: string) {
         if (this.onSignBytes == null) {
             throw new Error(

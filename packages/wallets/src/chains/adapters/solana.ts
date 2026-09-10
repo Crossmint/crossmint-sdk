@@ -6,10 +6,6 @@ import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { Chain } from "../chains";
 
-/**
- * A versioned message sets the high bit of its first byte; the low seven bits hold the version.
- * A payload we cannot read is not a version-1 message, so signing reports the real problem.
- */
 function isVersion1Message(approvalMessage: string): boolean {
     let prefix: number | undefined;
     try {
@@ -66,11 +62,9 @@ export const solanaChainAdapter: ChainAdapter = {
     },
 
     signApproval(signer: SignerAdapter, transaction: GetTransactionSuccessResponse, approvalMessage: string) {
-        // An external wallet signs through its adapter, which needs the whole transaction.
         if (signer.type !== "external-wallet") {
             return signer.signTransaction(approvalMessage);
         }
-        // web3.js cannot serialize a version-1 message, so no adapter can sign one. Sign the bytes instead.
         if (isVersion1Message(approvalMessage)) {
             return signer.signMessage(approvalMessage);
         }

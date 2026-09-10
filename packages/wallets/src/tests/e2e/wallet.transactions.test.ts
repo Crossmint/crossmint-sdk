@@ -113,7 +113,6 @@ describe("Wallet integration — transaction approval orchestration", () => {
             const keypair = Keypair.generate();
             const locator = "external-wallet:V1RealKey";
             const solanaWallet = await createMockWallet("solana", mockApiClient, "external-wallet");
-            // A real signer holding a real key, so the submitted signature can be verified.
             const signer = new SolanaExternalWalletSigner({
                 type: "external-wallet",
                 address: keypair.publicKey.toBase58(),
@@ -150,7 +149,6 @@ describe("Wallet integration — transaction approval orchestration", () => {
 
             const submitted = mockApiClient.approveTransaction.mock.calls[0][2].approvals[0];
             expect(submitted.signer).toBe(locator);
-            // The signature must verify against the exact bytes the API asked us to sign.
             expect(
                 nacl.sign.detached.verify(
                     base58.decode(VERSION_1_MESSAGE),
