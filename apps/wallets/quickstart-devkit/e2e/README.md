@@ -12,7 +12,8 @@ Tests are configured to:
 - **Mailosaur errors**: Verify your API key and server ID are correct
 - **Timeout issues**: Check if the local dev server is running on port 3000
 - **OTP failures**: Tests run sequentially to avoid multiple OTP codes
-- **Sudden auth failures**: If you encounter repeated authentication failures, it may be due to rate limiting on auth requests. To work around this, try modifying the signer type by adding a number (e.g., change `email` to `email1`), then create a new wallet, fund it, and rerun the tests.
+- **Sudden auth failures**: If you encounter repeated authentication failures, it may be due to rate limiting on auth requests. To work around this, set `TESTS_WALLET_EMAIL_SUFFIX` to an unused value. You get a new user and a new wallet, which you must then fund.
+- **`Transaction did not start` on a wallet that worked before**: each run in a new browser adds a device signer to the wallet, and the backend rejects transactions once the wallet is at its signer limit. Set `TESTS_WALLET_EMAIL_SUFFIX` to an unused value to move to a new wallet.
 
 ## 📋 Environment Variables
 
@@ -23,6 +24,7 @@ Tests are configured to:
 | `MAILOSAUR_PHONE_NUMBER` | ✅ | Your Mailosaur phone number |
 | `TESTS_CROSSMINT_API_KEY` | ✅ | Your Crossmint API key for e2e testing |
 | `PLAYWRIGHT_BASE_URL` | ❌ | App URL (defaults to http://localhost:3000) |
+| `TESTS_WALLET_EMAIL_SUFFIX` | ❌ | Selects the wallet identity (defaults to `e2e`). A fixed value reuses one funded wallet; a unique value per run gives a new wallet. |
 
 ---
 

@@ -81,14 +81,13 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     // "external-wallet": "external",
 };
 
-// Deterministic suffix so the same email (and therefore the same wallet) is reused
-// across test runs, retries, and browsers. Reusing wallets lets funding (USDXM and
-// devnet SOL) persist between runs instead of hammering faucets on every run.
-// Override via TESTS_WALLET_EMAIL_SUFFIX to rotate to a fresh identity if needed.
+// The suffix selects the wallet identity. A fixed value reuses one wallet between
+// runs, which keeps its funding (USDXM and devnet SOL) and avoids the faucets, but
+// each run also adds a device signer to that wallet. A suite that runs often must
+// therefore pass a unique TESTS_WALLET_EMAIL_SUFFIX to stay under the signer cap.
 const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 
-// Deterministic email address for a specific signer type.
-// Same email every run = same Crossmint user = same (already funded) wallets.
+// Email address for a specific signer type. Same suffix = same Crossmint user.
 export function getEmailForSigner(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;

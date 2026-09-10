@@ -56,9 +56,12 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
-                  # Dedicated persistent wallet identity so smoke runs never share
-                  # emails (and OTP requests) with concurrently running e2e jobs.
-                  TESTS_WALLET_EMAIL_SUFFIX: smoke
+                  # A new wallet identity per run, kept distinct from the e2e jobs so the
+                  # two never share an email (and its OTP requests). A reused wallet
+                  # collected one device signer per run, because each CI browser starts
+                  # with no device key, until the wallet reached the backend signer cap
+                  # and every transfer failed. run_id is stable across re-run attempts.
+                  TESTS_WALLET_EMAIL_SUFFIX: smoke-${{ github.run_id }}
               run: |
                   pnpm exec playwright test --project=smoke
 
