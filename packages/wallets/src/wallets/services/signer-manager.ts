@@ -13,7 +13,8 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { InvalidRecoveryConfigError } from "../../utils/errors";
+import { InvalidRecoveryConfigError, SignerRequiredError } from "../../utils/errors";
+import { getSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
@@ -159,9 +160,49 @@ export class SignerManager<C extends Chain> {
         return this.#activeSigner;
     }
 
-    async withRecoverySigner<T>(operation: () => Promise<T>): Promise<T> {
+    /**
+     * The recovery signer that authorizes a signer-management operation (add/remove signer), and the
+     * `approver` locator to send to the API when the wallet has several recovery signers.
+     *
+     * A wallet with a single recovery signer always authorizes with it, whatever the active signer is.
+     * A wallet with several recovery signers needs `useSigner()` to have selected one of them: the API
+     * has to know which key will approve, and an operational signer cannot authorize these changes.
+     */
+    resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
+        if (this.#recoverySigners.length === 1) {
+            return { recovery: this.#recoverySigners[0], approver: undefined };
+        }
+        const recoveryLocators = this.#recoverySigners.map((recovery) => this.#recoveryLocator(recovery));
+        const activeLocator = this.#activeSigner?.locator();
+        const activeIndex = activeLocator == null ? -1 : recoveryLocators.indexOf(activeLocator);
+        if (activeIndex === -1) {
+            const known = recoveryLocators.filter((locator): locator is SignerLocator => locator != null);
+            const selection = `Call wallet.useSigner() with one of them (${known.join(", ")}) first.`;
+            throw new SignerRequiredError(
+                activeLocator == null
+                    ? `This wallet has multiple recovery signers, so the one authorizing this operation must be selected. ${selection}`
+                    : `Signer "${activeLocator}" is not one of this wallet's recovery signers, and only a recovery signer can add or remove signers. ${selection}`
+            );
+        }
+        return { recovery: this.#recoverySigners[activeIndex], approver: activeLocator };
+    }
+
+    /** Locator of a recovery signer, or null when it cannot be known without deriving a server secret. */
+    #recoveryLocator(recovery: RecoverySignerConfigForChain<C>): SignerLocator | null {
+        if (recovery.type === "server") {
+            return isApiSourcedServerSignerConfig(recovery) ? `server:${recovery.address}` : null;
+        }
+        return getSignerLocator(recovery);
+    }
+
+    /**
+     * Run `operation` with the authorizing recovery signer temporarily set as the active signer.
+     * The operation receives the `approver` locator to forward to the API (see {@link resolveAuthorizingRecovery}).
+     */
+    async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {
         const originalSigner = this.#activeSigner;
-        const recovery = this.recovery;
+        const { recovery: authorizingRecovery, approver } = this.resolveAuthorizingRecovery();
+        const recovery = authorizingRecovery as SignerConfigForChain<C>;
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
@@ -186,7 +227,7 @@ export class SignerManager<C extends Chain> {
         this.#activeSigner = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
 
         try {
-            return await operation();
+            return await operation(approver);
         } finally {
             this.#activeSigner = originalSigner;
         }

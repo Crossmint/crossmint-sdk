@@ -1248,7 +1248,61 @@
                         "required": false,
                         "in": "query",
                         "description": "The chain to remove the signer from. Required for EVM wallets.",
-                        "schema": {}
+                        "schema": {
+                            "enum": [
+                                "abstract",
+                                "apechain",
+                                "arbitrum",
+                                "arbitrumnova",
+                                "avalanche",
+                                "base",
+                                "bsc",
+                                "flow",
+                                "mantle",
+                                "mode",
+                                "optimism",
+                                "plume",
+                                "polygon",
+                                "scroll",
+                                "sei-pacific-1",
+                                "shape",
+                                "story",
+                                "tempo",
+                                "world-chain",
+                                "zora",
+                                "ethereum",
+                                "abstract-testnet",
+                                "arbitrum-sepolia",
+                                "avalanche-fuji",
+                                "base-sepolia",
+                                "curtis",
+                                "ethereum-sepolia",
+                                "flow-testnet",
+                                "mantle-sepolia",
+                                "mode-sepolia",
+                                "optimism-sepolia",
+                                "plume-testnet",
+                                "polygon-amoy",
+                                "scroll-sepolia",
+                                "sei-atlantic-2-testnet",
+                                "story-testnet",
+                                "world-chain-sepolia",
+                                "zora-sepolia",
+                                "arc-testnet",
+                                "tempo-testnet"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "approver",
+                        "required": false,
+                        "in": "query",
+                        "description": "The recovery signer that authorizes this operation. Required when the wallet has multiple recovery signers.",
+                        "schema": {
+                            "title": "Signer Locator",
+                            "type": "string"
+                        },
+                        "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                     }
                 ],
                 "responses": {
@@ -2394,7 +2448,61 @@
                         "required": false,
                         "in": "query",
                         "description": "The chain to remove the signer from. Required for EVM wallets.",
-                        "schema": {}
+                        "schema": {
+                            "enum": [
+                                "abstract",
+                                "apechain",
+                                "arbitrum",
+                                "arbitrumnova",
+                                "avalanche",
+                                "base",
+                                "bsc",
+                                "flow",
+                                "mantle",
+                                "mode",
+                                "optimism",
+                                "plume",
+                                "polygon",
+                                "scroll",
+                                "sei-pacific-1",
+                                "shape",
+                                "story",
+                                "tempo",
+                                "world-chain",
+                                "zora",
+                                "ethereum",
+                                "abstract-testnet",
+                                "arbitrum-sepolia",
+                                "avalanche-fuji",
+                                "base-sepolia",
+                                "curtis",
+                                "ethereum-sepolia",
+                                "flow-testnet",
+                                "mantle-sepolia",
+                                "mode-sepolia",
+                                "optimism-sepolia",
+                                "plume-testnet",
+                                "polygon-amoy",
+                                "scroll-sepolia",
+                                "sei-atlantic-2-testnet",
+                                "story-testnet",
+                                "world-chain-sepolia",
+                                "zora-sepolia",
+                                "arc-testnet",
+                                "tempo-testnet"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "approver",
+                        "required": false,
+                        "in": "query",
+                        "description": "The recovery signer that authorizes this operation. Required when the wallet has multiple recovery signers.",
+                        "schema": {
+                            "title": "Signer Locator",
+                            "type": "string"
+                        },
+                        "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                     }
                 ],
                 "responses": {
@@ -28418,7 +28526,9 @@
                                                     },
                                                     "id": {
                                                         "type": "string",
-                                                        "description": "Credential ID from the WebAuthn registration response"
+                                                        "minLength": 1,
+                                                        "pattern": "^[A-Za-z0-9_-]+$",
+                                                        "description": "Credential ID from the WebAuthn registration response, as unpadded base64url"
                                                     },
                                                     "name": {
                                                         "type": "string",
@@ -28429,11 +28539,11 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "X coordinate of the public key as a decimal string"
                                                             },
                                                             "y": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "Y coordinate of the public key as a decimal string"
                                                             }
                                                         },
                                                         "required": ["x", "y"],
@@ -28562,7 +28672,7 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "The y coordinate of the p256 public key"
+                                                                "description": "The x coordinate of the p256 public key"
                                                             },
                                                             "y": {
                                                                 "type": "string",
@@ -28594,13 +28704,61 @@
                                     {
                                         "type": "string",
                                         "title": "Signer Locator",
-                                        "description": "The locator for the signer",
-                                        "example": "external-wallet:0x1234567890123456789012345678901234567890"
+                                        "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                        "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                                     }
                                 ]
                             },
                             "chain": {
+                                "enum": [
+                                    "abstract",
+                                    "apechain",
+                                    "arbitrum",
+                                    "arbitrumnova",
+                                    "avalanche",
+                                    "base",
+                                    "bsc",
+                                    "flow",
+                                    "mantle",
+                                    "mode",
+                                    "optimism",
+                                    "plume",
+                                    "polygon",
+                                    "scroll",
+                                    "sei-pacific-1",
+                                    "shape",
+                                    "story",
+                                    "tempo",
+                                    "world-chain",
+                                    "zora",
+                                    "ethereum",
+                                    "abstract-testnet",
+                                    "arbitrum-sepolia",
+                                    "avalanche-fuji",
+                                    "base-sepolia",
+                                    "curtis",
+                                    "ethereum-sepolia",
+                                    "flow-testnet",
+                                    "mantle-sepolia",
+                                    "mode-sepolia",
+                                    "optimism-sepolia",
+                                    "plume-testnet",
+                                    "polygon-amoy",
+                                    "scroll-sepolia",
+                                    "sei-atlantic-2-testnet",
+                                    "story-testnet",
+                                    "world-chain-sepolia",
+                                    "zora-sepolia",
+                                    "arc-testnet",
+                                    "tempo-testnet"
+                                ],
                                 "description": "The chain where the signer will be registered"
+                            },
+                            "approver": {
+                                "description": "The recovery signer that authorizes this operation. Required when the wallet has multiple recovery signers.",
+                                "type": "string",
+                                "title": "Signer Locator",
+                                "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                             },
                             "scopes": {
                                 "description": "Optional array of scopes to restrict the signer's capabilities",
@@ -28690,7 +28848,9 @@
                                                     },
                                                     "id": {
                                                         "type": "string",
-                                                        "description": "Credential ID from the WebAuthn registration response"
+                                                        "minLength": 1,
+                                                        "pattern": "^[A-Za-z0-9_-]+$",
+                                                        "description": "Credential ID from the WebAuthn registration response, as unpadded base64url"
                                                     },
                                                     "name": {
                                                         "type": "string",
@@ -28701,11 +28861,11 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "X coordinate of the public key as a decimal string"
                                                             },
                                                             "y": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "Y coordinate of the public key as a decimal string"
                                                             }
                                                         },
                                                         "required": ["x", "y"],
@@ -28834,7 +28994,7 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "The y coordinate of the p256 public key"
+                                                                "description": "The x coordinate of the p256 public key"
                                                             },
                                                             "y": {
                                                                 "type": "string",
@@ -28866,10 +29026,16 @@
                                     {
                                         "type": "string",
                                         "title": "Signer Locator",
-                                        "description": "The locator for the signer",
-                                        "example": "external-wallet:0x1234567890123456789012345678901234567890"
+                                        "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                        "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                                     }
                                 ]
+                            },
+                            "approver": {
+                                "description": "The recovery signer that authorizes this operation. Required when the wallet has multiple recovery signers.",
+                                "type": "string",
+                                "title": "Signer Locator",
+                                "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                             },
                             "scopes": {
                                 "description": "Optional array of scopes to restrict the signer's capabilities",
@@ -28954,7 +29120,9 @@
                                                     },
                                                     "id": {
                                                         "type": "string",
-                                                        "description": "Credential ID from the WebAuthn registration response"
+                                                        "minLength": 1,
+                                                        "pattern": "^[A-Za-z0-9_-]+$",
+                                                        "description": "Credential ID from the WebAuthn registration response, as unpadded base64url"
                                                     },
                                                     "name": {
                                                         "type": "string",
@@ -28965,11 +29133,11 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "X coordinate of the public key as a decimal string"
                                                             },
                                                             "y": {
                                                                 "type": "string",
-                                                                "description": "S component of the signature as a stringified bigint"
+                                                                "description": "Y coordinate of the public key as a decimal string"
                                                             }
                                                         },
                                                         "required": ["x", "y"],
@@ -29098,7 +29266,7 @@
                                                         "properties": {
                                                             "x": {
                                                                 "type": "string",
-                                                                "description": "The y coordinate of the p256 public key"
+                                                                "description": "The x coordinate of the p256 public key"
                                                             },
                                                             "y": {
                                                                 "type": "string",
@@ -29130,10 +29298,16 @@
                                     {
                                         "type": "string",
                                         "title": "Signer Locator",
-                                        "description": "The locator for the signer",
-                                        "example": "external-wallet:0x1234567890123456789012345678901234567890"
+                                        "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                        "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                                     }
                                 ]
+                            },
+                            "approver": {
+                                "description": "The recovery signer that authorizes this operation. Required when the wallet has multiple recovery signers.",
+                                "type": "string",
+                                "title": "Signer Locator",
+                                "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
                             },
                             "scopes": {
                                 "description": "Optional array of scopes to restrict the signer's capabilities",

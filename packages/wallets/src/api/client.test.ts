@@ -1115,6 +1115,37 @@ describe("ApiClient - getSigner()", () => {
     });
 });
 
+describe("ApiClient - removeSigner()", () => {
+    let apiClient: ApiClient;
+    let mockDelete: MockedFunction<ApiClient["delete"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockDelete = vi.spyOn(apiClient, "delete") as MockedFunction<ApiClient["delete"]>;
+        mockDelete.mockResolvedValue(createMockSuccessResponse({ id: "txn-1" }));
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([
+        ["no params", {}, ""],
+        ["a chain", { chain: "base-sepolia" as const }, "?chain=base-sepolia"],
+        ["an approver", { approver: "email:recovery@example.com" }, "?approver=email%3Arecovery%40example.com"],
+        [
+            "a chain and an approver",
+            { chain: "base-sepolia" as const, approver: "passkey:abc" },
+            "?chain=base-sepolia&approver=passkey%3Aabc",
+        ],
+    ])("encodes %s in the query string", async (_name, params, expectedQuery) => {
+        await apiClient.removeSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "external-wallet:0x456", params);
+
+        const [url] = mockDelete.mock.calls[0];
+        expect(url.endsWith(`/signers/external-wallet%3A0x456${expectedQuery}`)).toBe(true);
+    });
+});
+
 describe("ApiClient - edge cases and integration scenarios", () => {
     let apiClient: ApiClient;
 

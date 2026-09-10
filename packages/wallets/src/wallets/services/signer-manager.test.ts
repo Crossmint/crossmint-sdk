@@ -9,7 +9,7 @@ import type {
     SignerLocator,
 } from "../../signers/types";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
-import { InvalidRecoveryConfigError } from "../../utils/errors";
+import { InvalidRecoveryConfigError, SignerRequiredError } from "../../utils/errors";
 import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
@@ -28,7 +28,11 @@ const asRecoveryConfig = (config: unknown) => config as RecoverySignerConfigForC
 type Overrides = Partial<SignerManagerParams<Chain>>;
 
 function makeSigner(tag: string): SignerAdapter {
-    return { locator: () => `api-key:${tag}` as SignerLocator, status: undefined } as unknown as SignerAdapter;
+    return makeSignerWithLocator(`api-key:${tag}` as SignerLocator);
+}
+
+function makeSignerWithLocator(locator: SignerLocator): SignerAdapter {
+    return { locator: () => locator, status: undefined } as unknown as SignerAdapter;
 }
 
 function makeApiClient(overrides: Partial<ApiClient> = {}): ApiClient {
@@ -156,6 +160,108 @@ describe("SignerManager", () => {
             () => makeManager(overrides as unknown as Overrides).withRecoverySigner(async () => "unused"),
             branchKeyword
         );
+    });
+
+    const primaryRecovery = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+    const secondaryRecovery = asRecoveryConfig({ type: "email", email: "Second@Example.com" });
+    const serverRecovery = asRecoveryConfig({ type: "server", address: "0xServerRecovery" });
+    const multiRecovery = [primaryRecovery, secondaryRecovery, serverRecovery];
+
+    it.each([
+        ["a single recovery signer and no active signer", [apiKeyConfig], undefined, apiKeyConfig, undefined],
+        [
+            "a single recovery signer and an operational active signer",
+            [apiKeyConfig],
+            makeSignerWithLocator("email:operational@example.com"),
+            apiKeyConfig,
+            undefined,
+        ],
+        [
+            "several recovery signers and the primary one active",
+            multiRecovery,
+            makeSignerWithLocator("external-wallet:0xPrimary"),
+            primaryRecovery,
+            "external-wallet:0xPrimary",
+        ],
+        [
+            "several recovery signers and a secondary one active (matched on the normalized locator)",
+            multiRecovery,
+            makeSignerWithLocator("email:second@example.com"),
+            secondaryRecovery,
+            "email:second@example.com",
+        ],
+        [
+            "several recovery signers and the api-sourced server one active",
+            multiRecovery,
+            makeSignerWithLocator("server:0xServerRecovery"),
+            serverRecovery,
+            "server:0xServerRecovery",
+        ],
+    ] as const)(
+        "resolveAuthorizingRecovery() with %s picks the authorizing recovery signer",
+        (_name, recoverySigners, signer, expectedRecovery, expectedApprover) => {
+            const manager = makeManager({ recoverySigners: [...recoverySigners], signer });
+            expect(manager.resolveAuthorizingRecovery()).toEqual({
+                recovery: expectedRecovery,
+                approver: expectedApprover,
+            });
+        }
+    );
+
+    it.each([
+        ["no active signer", undefined, /must be selected/],
+        [
+            "an operational active signer",
+            makeSignerWithLocator("email:operational@example.com"),
+            /not one of this wallet's recovery signers/,
+        ],
+        [
+            "an active server signer whose recovery entry still carries a secret",
+            makeSignerWithLocator("server:0xUnresolved"),
+            /not one of this wallet's recovery signers/,
+        ],
+    ] as const)(
+        "resolveAuthorizingRecovery() with several recovery signers and %s throws a SignerRequiredError listing them",
+        (_name, signer, branchKeyword) => {
+            const manager = makeManager({
+                recoverySigners: [...multiRecovery, asRecoveryConfig({ type: "server", secret: "topsecret" })],
+                signer,
+            });
+            expect(() => manager.resolveAuthorizingRecovery()).toThrow(SignerRequiredError);
+            expect(() => manager.resolveAuthorizingRecovery()).toThrow(branchKeyword);
+            expect(() => manager.resolveAuthorizingRecovery()).toThrow(
+                "external-wallet:0xPrimary, email:second@example.com, server:0xServerRecovery"
+            );
+            expect(() => manager.resolveAuthorizingRecovery()).not.toThrow(/topsecret/);
+        }
+    );
+
+    it("withRecoverySigner() assembles the active recovery signer and hands its locator to the operation", async () => {
+        const active = makeSignerWithLocator("external-wallet:0xPrimary");
+        const onSign = vi.fn();
+        const recoverySigners = [
+            asRecoveryConfig({ type: "api-key" }),
+            asRecoveryConfig({ type: "external-wallet", address: "0xPrimary", onSign }),
+        ];
+        const assembled = makeSignerWithLocator("external-wallet:0xPrimary");
+        mockedAssembleSigner.mockReturnValue(assembled);
+        const manager = makeManager({ signer: active, recoverySigners });
+
+        const approver = await manager.withRecoverySigner(async (approver) => approver);
+
+        expect(approver).toBe("external-wallet:0xPrimary");
+        expect(mockedAssembleSigner).toHaveBeenCalledWith(
+            "base-sepolia",
+            expect.objectContaining({ type: "external-wallet", address: "0xPrimary" }),
+            undefined
+        );
+        expect(manager.activeSigner).toBe(active);
+    });
+
+    it("withRecoverySigner() passes no approver for a wallet with a single recovery signer", async () => {
+        mockedAssembleSigner.mockReturnValue(makeSigner("recovery"));
+        const manager = makeManager({ signer: makeSigner("operational"), recoverySigners: [apiKeyConfig] });
+        await expect(manager.withRecoverySigner(async (approver) => approver)).resolves.toBeUndefined();
     });
 
     it("constructor rejects an empty recovery signer list", () => {
