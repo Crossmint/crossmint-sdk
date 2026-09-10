@@ -88,6 +88,118 @@ const responseWithExtras = [
 ];
 
 describe("formatBalanceResponse", () => {
+    describe("account balance breakdown", () => {
+        const usdc = {
+            symbol: "usdc",
+            name: "USDC",
+            decimals: 7,
+            amount: "1250.5",
+            rawAmount: "12505000000",
+            chains: {
+                stellar: {
+                    locator: "stellar:usdc",
+                    contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+                    amount: "1250.5",
+                    rawAmount: "12505000000",
+                    available: { amount: "1210.5", rawAmount: "12105000000" },
+                    locked: { amount: "40", rawAmount: "400000000" },
+                    accounts: [
+                        {
+                            type: "wallet",
+                            amount: "250.5",
+                            rawAmount: "2505000000",
+                            available: { amount: "250.5", rawAmount: "2505000000" },
+                            locked: { amount: "0", rawAmount: "0" },
+                        },
+                        {
+                            type: "card",
+                            provider: "rain",
+                            amount: "1000",
+                            rawAmount: "10000000000",
+                            available: { amount: "960", rawAmount: "9600000000" },
+                            locked: { amount: "40", rawAmount: "400000000" },
+                        },
+                    ],
+                },
+            },
+        } satisfies ResponseToken;
+
+        it("preserves available, locked, and account balances alongside the total", () => {
+            const balances = formatBalanceResponse([usdc], "stellar", "xlm");
+
+            expect(balances.usdc).toStrictEqual({
+                symbol: "usdc",
+                name: "USDC",
+                amount: "1250.5",
+                rawAmount: "12505000000",
+                decimals: 7,
+                contractId: usdc.chains.stellar.contractId,
+                available: usdc.chains.stellar.available,
+                locked: usdc.chains.stellar.locked,
+                accounts: usdc.chains.stellar.accounts,
+            });
+            const card = balances.usdc.accounts?.find((account) => account.type === "card");
+            expect(card?.available.amount).toBe("960");
+            expect(card?.locked.rawAmount).toBe("400000000");
+        });
+
+        it("keeps MGUSD without a card as a plain balance alongside enriched USDC", () => {
+            const mgusd = token(
+                "stellar",
+                { symbol: "mgusd", name: "MGUSD", amount: "25", rawAmount: "250000000", decimals: 7 },
+                { contractId: "CDK2LDSYUKPEFN3HNE7K7ETUT3VIOBHSOXAK5CTO4A4RKKZQUCAIWCJA" }
+            );
+
+            const balances = formatBalanceResponse([usdc, mgusd], "stellar", "xlm", ["usdc", "mgusd"]);
+
+            expect(balances.usdc.available?.amount).toBe("1210.5");
+            expect(balances.tokens).toStrictEqual([
+                {
+                    symbol: "mgusd",
+                    name: "MGUSD",
+                    amount: "25",
+                    rawAmount: "250000000",
+                    decimals: 7,
+                    contractId: "CDK2LDSYUKPEFN3HNE7K7ETUT3VIOBHSOXAK5CTO4A4RKKZQUCAIWCJA",
+                },
+            ]);
+        });
+
+        it("preserves breakdowns on additional requested tokens", () => {
+            const otherToken = { ...usdc, symbol: "other-token" };
+
+            const balances = formatBalanceResponse([otherToken], "stellar", "xlm", ["other-token"]);
+
+            expect(balances.tokens[0].available).toEqual(usdc.chains.stellar.available);
+            expect(balances.tokens[0].locked).toEqual(usdc.chains.stellar.locked);
+            expect(balances.tokens[0].accounts).toEqual(usdc.chains.stellar.accounts);
+        });
+
+        it("only includes the requested chain's account breakdown", () => {
+            const response = {
+                ...usdc,
+                amount: "1255.5",
+                rawAmount: "12555000000",
+                chains: {
+                    ...usdc.chains,
+                    "base-sepolia": {
+                        locator: `base-sepolia:${USDC_EVM_ADDRESS}`,
+                        contractAddress: USDC_EVM_ADDRESS,
+                        amount: "5",
+                        rawAmount: "50000000",
+                    },
+                },
+            } satisfies ResponseToken;
+
+            const balances = formatBalanceResponse([response], "base-sepolia", "eth");
+
+            expect(balances.usdc.amount).toBe("1255.5");
+            expect(balances.usdc).not.toHaveProperty("available");
+            expect(balances.usdc).not.toHaveProperty("locked");
+            expect(balances.usdc).not.toHaveProperty("accounts");
+        });
+    });
+
     describe("chain-specific token fields", () => {
         it.each(chainFieldCases)(
             "includes $field on token balances for $label chain",
