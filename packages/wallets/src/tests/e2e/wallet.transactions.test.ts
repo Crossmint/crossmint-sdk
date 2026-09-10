@@ -11,6 +11,8 @@ import type { ApiClient } from "../../api";
 import type { SignerAdapter, SignerConfigForChain } from "../../signers/types";
 import { createMockApiClient, createMockWallet, type MockedApiClient } from "../../wallets/__tests__/test-helpers";
 
+const approvalMessage = (label: string) => base58.encode(Buffer.from(label));
+
 const EVM_EXTERNAL_SIGNER_LOCATOR = "external-wallet:0x123";
 const STELLAR_EXTERNAL_SIGNER_LOCATOR = "external-wallet:GABC123";
 
@@ -72,11 +74,11 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     approvals: {
                         pending: [
                             {
-                                message: "msg-for-external",
+                                message: approvalMessage("msg-for-external"),
                                 signer: { locator: "external-wallet:ExternalSignerLocator" },
                             },
-                            { message: "msg-for-ed25519", signer: { locator: "email:ed@example.com" } },
-                            { message: "msg-for-device", signer: { locator: "device:DeviceSignerLocator" } },
+                            { message: approvalMessage("msg-for-ed25519"), signer: { locator: "email:ed@example.com" } },
+                            { message: approvalMessage("msg-for-device"), signer: { locator: "device:DeviceSignerLocator" } },
                         ],
                         submitted: [],
                     },
@@ -98,8 +100,8 @@ describe("Wallet integration — transaction approval orchestration", () => {
             await approvePromise;
 
             expect(externalSigner.signTransaction).toHaveBeenCalledWith("SERIALIZED_SOLANA_TX");
-            expect(emailSigner.signTransaction).toHaveBeenCalledWith("msg-for-ed25519");
-            expect(deviceSigner.signTransaction).toHaveBeenCalledWith("msg-for-device");
+            expect(emailSigner.signTransaction).toHaveBeenCalledWith(approvalMessage("msg-for-ed25519"));
+            expect(deviceSigner.signTransaction).toHaveBeenCalledWith(approvalMessage("msg-for-device"));
             expect(mockApiClient.approveTransaction).toHaveBeenCalledWith("me:solana:smart", "sol-txn", {
                 approvals: [
                     { signature: "external-sig", signer: "external-wallet:ExternalSignerLocator" },
@@ -173,7 +175,7 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     approvals: {
                         pending: [
                             {
-                                message: "pending-message-not-to-be-signed",
+                                message: approvalMessage("pending-message-not-to-be-signed"),
                                 signer: { locator: STELLAR_EXTERNAL_SIGNER_LOCATOR },
                             },
                         ],
@@ -197,7 +199,7 @@ describe("Wallet integration — transaction approval orchestration", () => {
             const result = await approvePromise;
 
             expect(signSpy).toHaveBeenCalledWith("SERIALIZED_STELLAR_AS_SOLANA_TX");
-            expect(signSpy).not.toHaveBeenCalledWith("pending-message-not-to-be-signed");
+            expect(signSpy).not.toHaveBeenCalledWith(approvalMessage("pending-message-not-to-be-signed"));
             // stellar terminal success resolves the hash from onChain.txHash (txId is absent)
             expect(result.hash).toBe("stellar-hash");
         });
@@ -216,7 +218,7 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     onChain: { transaction: "SOLANA_SHAPED_TX_ON_EVM_WALLET" },
                     approvals: {
                         pending: [
-                            { message: "0xevm-pending-message", signer: { locator: EVM_EXTERNAL_SIGNER_LOCATOR } },
+                            { message: approvalMessage("0xevm-pending-message"), signer: { locator: EVM_EXTERNAL_SIGNER_LOCATOR } },
                         ],
                         submitted: [],
                     },
@@ -233,7 +235,7 @@ describe("Wallet integration — transaction approval orchestration", () => {
             await approvePromise;
 
             expect(signSpy).toHaveBeenCalledWith("SOLANA_SHAPED_TX_ON_EVM_WALLET");
-            expect(signSpy).not.toHaveBeenCalledWith("0xevm-pending-message");
+            expect(signSpy).not.toHaveBeenCalledWith(approvalMessage("0xevm-pending-message"));
         });
     });
 

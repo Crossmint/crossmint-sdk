@@ -7,12 +7,7 @@ import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-ad
 import type { Chain } from "../chains";
 
 function isVersion1Message(approvalMessage: string): boolean {
-    let prefix: number | undefined;
-    try {
-        prefix = base58.decode(approvalMessage)[0];
-    } catch {
-        return false;
-    }
+    const prefix = base58.decode(approvalMessage)[0];
     return prefix != null && (prefix & 0x80) !== 0 && (prefix & 0x7f) === 1;
 }
 

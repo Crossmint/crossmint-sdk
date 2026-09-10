@@ -198,6 +198,18 @@ describe("signApproval", () => {
         });
     });
 
+    describe("when the approval message is not base58", () => {
+        test("fails rather than treating the payload as version 0", () => {
+            const signer = makeSigner("external-wallet");
+
+            expect(() =>
+                getChainAdapter("solana").signApproval(asAdapter(signer), transaction, "not base58!")
+            ).toThrow(/base58/i);
+            expect(signer.signTransaction).not.toHaveBeenCalled();
+            expect(signer.signMessage).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when the chain is solana and the signer holds the key", () => {
         test("signs the approval message even for a version-1 transaction", async () => {
             const signer = makeSigner("email");
