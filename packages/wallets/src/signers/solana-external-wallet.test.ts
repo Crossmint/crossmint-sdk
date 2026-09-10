@@ -5,10 +5,10 @@ import nacl from "tweetnacl";
 
 import type { ExternalWalletInternalSignerConfig } from "./types";
 import type { SolanaChain } from "@/chains/chains";
-import { VERSION_1_MESSAGE } from "./solana-version-1.fixture";
 import { SolanaExternalWalletSigner } from "./solana-external-wallet";
 
 const WALLET_KEYPAIR = Keypair.generate();
+const PAYLOAD = base58.encode(new Uint8Array([1, 2, 3, 4]));
 
 function makeSigner(callbacks: {
     onSign?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
@@ -39,19 +39,19 @@ function makeVersion0Transaction() {
 
 describe("SolanaExternalWalletSigner", () => {
     describe("signMessage", () => {
-        test("passes the payload to onSignBytes untouched", async () => {
-            const onSignBytes = vi.fn(async () => "version-1-signature");
+        test("passes any payload to onSignBytes untouched", async () => {
+            const onSignBytes = vi.fn(async () => "a-signature");
 
-            const result = await makeSigner({ onSignBytes }).signMessage(VERSION_1_MESSAGE);
+            const result = await makeSigner({ onSignBytes }).signMessage(PAYLOAD);
 
-            expect(result).toEqual({ signature: "version-1-signature" });
-            expect(onSignBytes).toHaveBeenCalledWith(VERSION_1_MESSAGE);
+            expect(result).toEqual({ signature: "a-signature" });
+            expect(onSignBytes).toHaveBeenCalledWith(PAYLOAD);
         });
 
         test("names onSignBytes in the error when it is not configured", async () => {
             const signer = makeSigner({ onSign: vi.fn() });
 
-            await expect(signer.signMessage(VERSION_1_MESSAGE)).rejects.toThrow(/onSignBytes/);
+            await expect(signer.signMessage(PAYLOAD)).rejects.toThrow(/onSignBytes/);
         });
     });
 
