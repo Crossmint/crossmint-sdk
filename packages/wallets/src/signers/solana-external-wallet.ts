@@ -18,7 +18,7 @@ export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain
     async signMessage(message: string) {
         if (this.onSignBytes == null) {
             throw new Error(
-                "[SolanaExternalWalletSigner] This is a version-1 transaction, which @solana/web3.js cannot serialize for the onSign callback. Pass an onSignBytes callback that signs the supplied payload with the external wallet key."
+                "[SolanaExternalWalletSigner] No onSignBytes callback provided. Pass an onSignBytes callback when configuring the external wallet signer."
             );
         }
         const signature = await this.onSignBytes(message);
