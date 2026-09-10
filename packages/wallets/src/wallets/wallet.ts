@@ -44,7 +44,13 @@ import {
     throwIfCrossmintApiAuthError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
+import {
+    type ChainAdapter,
+    type ChainType,
+    getApprovalAdapter,
+    getChainAdapter,
+    isSupportedChainType,
+} from "../chains/chain-adapter";
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
@@ -85,27 +91,6 @@ type WalletContructorType<C extends Chain> = {
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
-
-function getSignablePayload(
-    signer: SignerAdapter,
-    transaction: GetTransactionSuccessResponse,
-    approvalMessage: string
-): string {
-    switch (signer.type) {
-        case "external-wallet":
-            // Solana external wallets sign the serialized transaction itself, not the API's approval message.
-            if (
-                transaction.chainType === "solana" &&
-                "transaction" in transaction.onChain &&
-                typeof transaction.onChain.transaction === "string"
-            ) {
-                return transaction.onChain.transaction;
-            }
-            return approvalMessage;
-        default:
-            return approvalMessage;
-    }
-}
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -1323,7 +1308,11 @@ export class Wallet<C extends Chain> {
             this.#requireNonQuorumApprovals(pendingApprovals),
             signers,
             (signer, pendingApproval) =>
-                signer.signTransaction(getSignablePayload(signer, transaction, pendingApproval.message))
+                getApprovalAdapter(transaction.chainType, this.chainAdapter).signApproval(
+                    signer,
+                    transaction,
+                    pendingApproval.message
+                )
         );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);

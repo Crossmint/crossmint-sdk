@@ -1,8 +1,30 @@
-import type { RegisterSignerResponse } from "../../api";
+import base58 from "bs58";
+import type { GetTransactionSuccessResponse, RegisterSignerResponse } from "../../api";
+import type { SignerAdapter } from "../../signers/types";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { Chain } from "../chains";
+
+/**
+ * A versioned message sets the high bit of its first byte; the low seven bits hold the version.
+ * A payload we cannot read is not a version-1 message, so signing reports the real problem.
+ */
+function isVersion1Message(approvalMessage: string): boolean {
+    let prefix: number | undefined;
+    try {
+        prefix = base58.decode(approvalMessage)[0];
+    } catch {
+        return false;
+    }
+    return prefix != null && (prefix & 0x80) !== 0 && (prefix & 0x7f) === 1;
+}
+
+function serializedTransaction(transaction: GetTransactionSuccessResponse): string | undefined {
+    return "transaction" in transaction.onChain && typeof transaction.onChain.transaction === "string"
+        ? transaction.onChain.transaction
+        : undefined;
+}
 
 export const solanaChainAdapter: ChainAdapter = {
     nativeToken: "sol",
@@ -41,5 +63,17 @@ export const solanaChainAdapter: ChainAdapter = {
 
     emptyBalanceTokenFields(): Partial<TokenBalance> {
         return { mintHash: undefined };
+    },
+
+    signApproval(signer: SignerAdapter, transaction: GetTransactionSuccessResponse, approvalMessage: string) {
+        // An external wallet signs through its adapter, which needs the whole transaction.
+        if (signer.type !== "external-wallet") {
+            return signer.signTransaction(approvalMessage);
+        }
+        // web3.js cannot serialize a version-1 message, so no adapter can sign one. Sign the bytes instead.
+        if (isVersion1Message(approvalMessage)) {
+            return signer.signMessage(approvalMessage);
+        }
+        return signer.signTransaction(serializedTransaction(transaction) ?? approvalMessage);
     },
 };

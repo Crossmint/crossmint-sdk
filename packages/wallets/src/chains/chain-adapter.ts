@@ -1,5 +1,6 @@
 import type { Chain } from "./chains";
-import type { RegisterSignerChain, RegisterSignerResponse } from "../api";
+import type { GetTransactionSuccessResponse, RegisterSignerChain, RegisterSignerResponse } from "../api";
+import type { SignerAdapter } from "../signers/types";
 import type { TokenBalance, PendingSignerOperation } from "../wallets/types";
 import { getChainType } from "../signers/server/helpers/get-chain-type";
 import { evmChainAdapter } from "./adapters/evm";
@@ -22,6 +23,15 @@ export interface ChainAdapter {
     ): PendingSignerOperation | null;
     balanceTokenFields(chainData: unknown): Partial<TokenBalance>;
     emptyBalanceTokenFields(): Partial<TokenBalance>;
+    /**
+     * Sign one pending approval, choosing the payload and the signer method the chain needs.
+     * Most signers sign the approval message the API supplies.
+     */
+    signApproval(
+        signer: SignerAdapter,
+        transaction: GetTransactionSuccessResponse,
+        approvalMessage: string
+    ): ReturnType<SignerAdapter["signMessage"]>;
 }
 
 const CHAIN_ADAPTERS = {
@@ -38,4 +48,12 @@ export function getChainAdapter(chain: Chain): ChainAdapter {
 
 export function isSupportedChainType(chainType: string): chainType is ChainType {
     return Object.prototype.hasOwnProperty.call(CHAIN_ADAPTERS, chainType);
+}
+
+/**
+ * The adapter that decides how to sign an approval. Keyed off the chain the API reports for the
+ * transaction, not the wallet's own chain, so a response overrides the wallet where the two differ.
+ */
+export function getApprovalAdapter(chainType: string, fallback: ChainAdapter): ChainAdapter {
+    return isSupportedChainType(chainType) ? CHAIN_ADAPTERS[chainType] : fallback;
 }
