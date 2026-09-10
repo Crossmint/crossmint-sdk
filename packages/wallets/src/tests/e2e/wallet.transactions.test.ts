@@ -77,8 +77,14 @@ describe("Wallet integration — transaction approval orchestration", () => {
                                 message: approvalMessage("msg-for-external"),
                                 signer: { locator: "external-wallet:ExternalSignerLocator" },
                             },
-                            { message: approvalMessage("msg-for-ed25519"), signer: { locator: "email:ed@example.com" } },
-                            { message: approvalMessage("msg-for-device"), signer: { locator: "device:DeviceSignerLocator" } },
+                            {
+                                message: approvalMessage("msg-for-ed25519"),
+                                signer: { locator: "email:ed@example.com" },
+                            },
+                            {
+                                message: approvalMessage("msg-for-device"),
+                                signer: { locator: "device:DeviceSignerLocator" },
+                            },
                         ],
                         submitted: [],
                     },
@@ -218,7 +224,10 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     onChain: { transaction: "SOLANA_SHAPED_TX_ON_EVM_WALLET" },
                     approvals: {
                         pending: [
-                            { message: approvalMessage("0xevm-pending-message"), signer: { locator: EVM_EXTERNAL_SIGNER_LOCATOR } },
+                            {
+                                message: approvalMessage("0xevm-pending-message"),
+                                signer: { locator: EVM_EXTERNAL_SIGNER_LOCATOR },
+                            },
                         ],
                         submitted: [],
                     },
