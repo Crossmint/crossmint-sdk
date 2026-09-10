@@ -38,7 +38,7 @@ export function OAuthFlowProvider({
     const { setError } = useAuthForm();
 
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
-    const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
+    const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(false);
 
     const {
         createPopupAndSetupListeners,
@@ -47,6 +47,9 @@ export function OAuthFlowProvider({
     } = useOAuthWindowListener(oauthUrlMap, setError);
 
     const preFetchAndSetOauthUrl = useCallback(async () => {
+        if (crossmintAuth == null) {
+            return;
+        }
         setIsLoadingOauthUrlMap(true);
         try {
             const oauthProviders = (loginMethods || []).filter(

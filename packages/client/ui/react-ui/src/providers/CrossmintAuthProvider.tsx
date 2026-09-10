@@ -128,7 +128,7 @@ function CrossmintAuthProviderContent({
                     defaultEmail,
                 }}
             >
-                <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
+                <OAuthFlowProvider prefetchOAuthUrls={baseAuth.jwt == null && prefetchOAuthUrls}>
                     <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
                         {children}
                         <AuthFormDialog open={dialogOpen} />
