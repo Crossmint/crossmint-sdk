@@ -81,13 +81,11 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     // "external-wallet": "external",
 };
 
-// The suffix selects the wallet identity. A fixed value reuses one wallet between
-// runs, which keeps its funding (USDXM and devnet SOL) and avoids the faucets, but
-// each run also adds a device signer to that wallet. A suite that runs often must
-// therefore pass a unique TESTS_WALLET_EMAIL_SUFFIX to stay under the signer cap.
+// A fixed suffix reuses one funded wallet between runs, which the chains without a
+// working faucet need. Each run also adds a device signer to that wallet, so a suite
+// that runs often must pass a unique value to stay under the backend signer cap.
 const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 
-// Email address for a specific signer type. Same suffix = same Crossmint user.
 export function getEmailForSigner(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
