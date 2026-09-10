@@ -275,17 +275,14 @@ type ChainExtras = {
 
 type ChainToExtrasKey<C extends Chain> = C extends "solana" ? "solana" : C extends "stellar" ? "stellar" : "evm";
 
-type ApiTokenBalance = GetBalanceSuccessResponse[number];
-type ApiChainBalance = ApiTokenBalance["chains"][string];
-
-// Flatten the API response while preserving the SDK's defaults and optional fields.
-export type TokenBalance<C extends Chain = Chain> = Omit<ApiTokenBalance, "chains" | "decimals" | "rawAmount"> &
-    Omit<ApiChainBalance, "locator" | "amount" | "rawAmount"> & {
-        symbol: NonNullable<ApiTokenBalance["symbol"]>;
-        name: NonNullable<ApiTokenBalance["name"]>;
-        decimals?: ApiTokenBalance["decimals"];
-        rawAmount?: ApiTokenBalance["rawAmount"];
-    } & ChainExtras[ChainToExtrasKey<C>];
+export type TokenBalance<C extends Chain = Chain> = {
+    symbol: "sol" | "eth" | "usdc" | string;
+    name: string;
+    amount: string;
+    decimals?: number;
+    rawAmount?: string;
+} & Omit<GetBalanceSuccessResponse[number]["chains"][string], "locator" | "amount" | "rawAmount"> &
+    ChainExtras[ChainToExtrasKey<C>];
 
 export type Balances<C extends Chain = Chain> = {
     nativeToken: TokenBalance<C>;
