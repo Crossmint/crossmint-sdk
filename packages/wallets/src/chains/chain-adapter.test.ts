@@ -164,19 +164,17 @@ describe("signApproval", () => {
             type,
             signMessage: vi.fn(async () => ({ signature: "from-signMessage" })),
             signTransaction: vi.fn(async () => ({ signature: "from-signTransaction" })),
-        } as unknown as SignerAdapter & {
-            signMessage: ReturnType<typeof vi.fn>;
-            signTransaction: ReturnType<typeof vi.fn>;
         };
     }
 
     const transaction = { onChain: { transaction: SERIALIZED_TRANSACTION } } as never;
+    const asAdapter = (signer: ReturnType<typeof makeSigner>) => signer as unknown as SignerAdapter;
 
     describe("when the chain is solana and the signer is an external wallet", () => {
         test("signs the approval message directly for a version-1 transaction", async () => {
             const signer = makeSigner("external-wallet");
 
-            await getChainAdapter("solana").signApproval(signer, transaction, VERSION_1_MESSAGE);
+            await getChainAdapter("solana").signApproval(asAdapter(signer), transaction, VERSION_1_MESSAGE);
 
             expect(signer.signMessage).toHaveBeenCalledWith(VERSION_1_MESSAGE);
             expect(signer.signTransaction).not.toHaveBeenCalled();
@@ -185,7 +183,7 @@ describe("signApproval", () => {
         test("sends the serialized transaction to the adapter for a version-0 transaction", async () => {
             const signer = makeSigner("external-wallet");
 
-            await getChainAdapter("solana").signApproval(signer, transaction, V0_MESSAGE);
+            await getChainAdapter("solana").signApproval(asAdapter(signer), transaction, V0_MESSAGE);
 
             expect(signer.signTransaction).toHaveBeenCalledWith(SERIALIZED_TRANSACTION);
             expect(signer.signMessage).not.toHaveBeenCalled();
@@ -194,7 +192,7 @@ describe("signApproval", () => {
         test("falls back to the approval message when the API supplies no transaction", async () => {
             const signer = makeSigner("external-wallet");
 
-            await getChainAdapter("solana").signApproval(signer, { onChain: {} } as never, V0_MESSAGE);
+            await getChainAdapter("solana").signApproval(asAdapter(signer), { onChain: {} } as never, V0_MESSAGE);
 
             expect(signer.signTransaction).toHaveBeenCalledWith(V0_MESSAGE);
         });
@@ -204,7 +202,7 @@ describe("signApproval", () => {
         test("signs the approval message even for a version-1 transaction", async () => {
             const signer = makeSigner("email");
 
-            await getChainAdapter("solana").signApproval(signer, transaction, VERSION_1_MESSAGE);
+            await getChainAdapter("solana").signApproval(asAdapter(signer), transaction, VERSION_1_MESSAGE);
 
             expect(signer.signTransaction).toHaveBeenCalledWith(VERSION_1_MESSAGE);
             expect(signer.signMessage).not.toHaveBeenCalled();
@@ -215,7 +213,7 @@ describe("signApproval", () => {
         test.each(["base-sepolia", "stellar"] as const)("%s signs the approval message", async (chain) => {
             const signer = makeSigner("external-wallet");
 
-            await getChainAdapter(chain).signApproval(signer, transaction, VERSION_1_MESSAGE);
+            await getChainAdapter(chain).signApproval(asAdapter(signer), transaction, VERSION_1_MESSAGE);
 
             expect(signer.signTransaction).toHaveBeenCalledWith(VERSION_1_MESSAGE);
             expect(signer.signMessage).not.toHaveBeenCalled();
