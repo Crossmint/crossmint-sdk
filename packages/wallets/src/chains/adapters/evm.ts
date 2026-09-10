@@ -1,4 +1,5 @@
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
+import type { SignerAdapter } from "../../signers/types";
 import type { RegisterSignerChain, RegisterSignerResponse, Signer as APISigner } from "../../api";
 import type { Chain } from "../chains";
 import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
@@ -46,5 +47,9 @@ export const evmChainAdapter: ChainAdapter = {
     },
     emptyBalanceTokenFields(): Partial<TokenBalance> {
         return { contractAddress: undefined } as Partial<TokenBalance>;
+    },
+
+    signApproval(signer: SignerAdapter, _transaction: unknown, approvalMessage: string) {
+        return signer.signTransaction(approvalMessage);
     },
 };

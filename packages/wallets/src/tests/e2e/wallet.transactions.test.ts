@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import base58 from "bs58";
+import nacl from "tweetnacl";
+import { Keypair } from "@solana/web3.js";
 import { Wallet } from "../../wallets/wallet";
+import { VERSION_1_MESSAGE } from "../../signers/solana-version-1.fixture";
+import { SolanaExternalWalletSigner } from "../../signers/solana-external-wallet";
+import type { ExternalWalletInternalSignerConfig } from "../../signers/types";
+import type { SolanaChain } from "../../chains/chains";
 import type { ApiClient } from "../../api";
 import type { SignerAdapter, SignerConfigForChain } from "../../signers/types";
 import { createMockApiClient, createMockWallet, type MockedApiClient } from "../../wallets/__tests__/test-helpers";
@@ -100,6 +107,57 @@ describe("Wallet integration — transaction approval orchestration", () => {
                     { signature: "device-sig", signer: "device:DeviceSignerLocator" },
                 ],
             });
+        });
+
+        it("solana: an external wallet keypair approves a version-1 transaction with a verifiable signature", async () => {
+            const keypair = Keypair.generate();
+            const locator = "external-wallet:V1RealKey";
+            const solanaWallet = await createMockWallet("solana", mockApiClient, "external-wallet");
+            // A real signer holding a real key, so the submitted signature can be verified.
+            const signer = new SolanaExternalWalletSigner({
+                type: "external-wallet",
+                address: keypair.publicKey.toBase58(),
+                locator,
+                onSignBytes: async (payload: string) =>
+                    base58.encode(nacl.sign.detached(base58.decode(payload), keypair.secretKey)),
+            } as unknown as ExternalWalletInternalSignerConfig<SolanaChain>);
+
+            mockApiClient.getTransaction
+                .mockResolvedValueOnce({
+                    id: "v1-txn",
+                    status: "awaiting-approval",
+                    chainType: "solana",
+                    walletType: "smart",
+                    onChain: { transaction: "SERIALIZED_V1_TX" },
+                    approvals: {
+                        pending: [{ message: VERSION_1_MESSAGE, signer: { locator } }],
+                        submitted: [],
+                    },
+                } as never)
+                .mockResolvedValue({
+                    id: "v1-txn",
+                    status: "success",
+                    onChain: { txId: "v1-sig", explorerLink: "https://explorer.test/v1" },
+                } as never);
+            mockApiClient.approveTransaction.mockResolvedValue({ id: "v1-txn", status: "pending" } as never);
+
+            const approvePromise = solanaWallet.approve({
+                transactionId: "v1-txn",
+                options: { additionalSigners: [signer] },
+            });
+            await vi.runAllTimersAsync();
+            await approvePromise;
+
+            const submitted = mockApiClient.approveTransaction.mock.calls[0][2].approvals[0];
+            expect(submitted.signer).toBe(locator);
+            // The signature must verify against the exact bytes the API asked us to sign.
+            expect(
+                nacl.sign.detached.verify(
+                    base58.decode(VERSION_1_MESSAGE),
+                    base58.decode(submitted.signature),
+                    keypair.publicKey.toBytes()
+                )
+            ).toBe(true);
         });
 
         it("stellar wallet signs onChain.transaction when the response claims chainType 'solana' with onChain.transaction", async () => {
