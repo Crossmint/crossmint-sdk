@@ -86,18 +86,6 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
-type SerializedTransactionOnChain = Extract<GetTransactionSuccessResponse["onChain"], { transaction: string }>;
-
-function hasSerializedSolanaTransaction(
-    transaction: GetTransactionSuccessResponse
-): transaction is GetTransactionSuccessResponse & { onChain: SerializedTransactionOnChain } {
-    return (
-        transaction.chainType === "solana" &&
-        "transaction" in transaction.onChain &&
-        typeof transaction.onChain.transaction === "string"
-    );
-}
-
 function getSignablePayload(
     signer: SignerAdapter,
     transaction: GetTransactionSuccessResponse,
@@ -105,7 +93,15 @@ function getSignablePayload(
 ): string {
     switch (signer.type) {
         case "external-wallet":
-            return hasSerializedSolanaTransaction(transaction) ? transaction.onChain.transaction : approvalMessage;
+            // Solana external wallets sign the serialized transaction itself, not the API's approval message.
+            if (
+                transaction.chainType === "solana" &&
+                "transaction" in transaction.onChain &&
+                typeof transaction.onChain.transaction === "string"
+            ) {
+                return transaction.onChain.transaction;
+            }
+            return approvalMessage;
         default:
             return approvalMessage;
     }
