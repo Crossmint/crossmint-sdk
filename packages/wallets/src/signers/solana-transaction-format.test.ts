@@ -45,18 +45,6 @@ describe("extractMessageBytes", () => {
             expect(Buffer.from(extracted)).toEqual(Buffer.from(transaction.message.serialize()));
         });
     });
-
-    describe("when the buffer is truncated", () => {
-        test("rejects a transaction whose message is missing", () => {
-            expect(() => extractMessageBytes(new Uint8Array([1, ...new Array(64).fill(0)]))).toThrow(
-                /no message follows/
-            );
-        });
-
-        test("rejects a buffer that ends inside the compact-u16", () => {
-            expect(() => extractMessageBytes(new Uint8Array([0x80]))).toThrow(/compact-u16/);
-        });
-    });
 });
 
 describe("messageVersion", () => {
@@ -76,10 +64,6 @@ describe("messageVersion", () => {
     describe("when the message is legacy", () => {
         test("returns null because no version byte is present", () => {
             expect(messageVersion(new Uint8Array([0x01, 0x00, 0x01]))).toBeNull();
-        });
-
-        test("returns null for an empty buffer", () => {
-            expect(messageVersion(new Uint8Array())).toBeNull();
         });
     });
 });

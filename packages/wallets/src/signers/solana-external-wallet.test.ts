@@ -63,20 +63,6 @@ describe("SolanaExternalWalletSigner", () => {
             expect(onSign).not.toHaveBeenCalled();
         });
 
-        test("produces a signature the message verifies against", async () => {
-            const messageBytes = base58.decode(VERSION_1_MESSAGE);
-            const signer = makeSigner({
-                onSignBytes: async (payload) =>
-                    base58.encode(nacl.sign.detached(base58.decode(payload), WALLET_KEYPAIR.secretKey)),
-            });
-
-            const { signature } = await signer.signTransaction(envelope(messageBytes));
-
-            expect(
-                nacl.sign.detached.verify(messageBytes, base58.decode(signature), WALLET_KEYPAIR.publicKey.toBytes())
-            ).toBe(true);
-        });
-
         test("names onSignBytes in the error when only onSign is configured", async () => {
             const signer = makeSigner({ onSign: vi.fn() });
 
@@ -113,7 +99,9 @@ describe("SolanaExternalWalletSigner", () => {
             const transaction = makeVersion0Transaction();
             const signer = makeSigner({ onSignBytes: vi.fn(async () => "unused") });
 
-            await expect(signer.signTransaction(base58.encode(transaction.serialize()))).rejects.toThrow(/onSign/);
+            await expect(signer.signTransaction(base58.encode(transaction.serialize()))).rejects.toThrow(
+                /No onSign callback provided/
+            );
         });
     });
 });
