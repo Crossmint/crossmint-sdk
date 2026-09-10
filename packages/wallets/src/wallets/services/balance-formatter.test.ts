@@ -175,6 +175,28 @@ describe("formatBalanceResponse", () => {
             expect(balances.tokens[0].accounts).toEqual(usdc.chains.stellar.accounts);
         });
 
+        it("passes through additional API metadata without exposing chains or the chain locator", () => {
+            const response = {
+                ...usdc,
+                tokenMetadata: { label: "token metadata" },
+                chains: {
+                    stellar: {
+                        ...usdc.chains.stellar,
+                        chainMetadata: { label: "chain metadata" },
+                    },
+                },
+            };
+
+            const balances = formatBalanceResponse([response], "stellar", "xlm");
+
+            expect(balances.usdc).toMatchObject({
+                tokenMetadata: response.tokenMetadata,
+                chainMetadata: response.chains.stellar.chainMetadata,
+            });
+            expect(balances.usdc).not.toHaveProperty("chains");
+            expect(balances.usdc).not.toHaveProperty("locator");
+        });
+
         it("only includes the requested chain's account breakdown", () => {
             const response = {
                 ...usdc,

@@ -212,6 +212,72 @@ describe("Wallet - balances()", () => {
             });
         });
 
+        it("preserves Rain balances alongside MGUSD through wallet.balances", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient);
+            const response = [
+                {
+                    symbol: "usdc",
+                    name: "USDC",
+                    amount: "1250.5",
+                    rawAmount: "12505000000",
+                    decimals: 7,
+                    chains: {
+                        stellar: {
+                            locator: "stellar:usdc",
+                            amount: "1250.5",
+                            rawAmount: "12505000000",
+                            available: { amount: "1210.5", rawAmount: "12105000000" },
+                            locked: { amount: "40", rawAmount: "400000000" },
+                            accounts: [
+                                {
+                                    type: "wallet",
+                                    amount: "250.5",
+                                    rawAmount: "2505000000",
+                                    available: { amount: "250.5", rawAmount: "2505000000" },
+                                    locked: { amount: "0", rawAmount: "0" },
+                                },
+                                {
+                                    type: "card",
+                                    provider: "rain",
+                                    amount: "1000",
+                                    rawAmount: "10000000000",
+                                    available: { amount: "960", rawAmount: "9600000000" },
+                                    locked: { amount: "40", rawAmount: "400000000" },
+                                },
+                            ],
+                        },
+                    },
+                },
+                {
+                    symbol: "mgusd",
+                    name: "MGUSD",
+                    amount: "25",
+                    rawAmount: "250000000",
+                    decimals: 7,
+                    chains: {
+                        stellar: { locator: "stellar:mgusd", amount: "25", rawAmount: "250000000" },
+                    },
+                },
+            ] satisfies GetBalanceSuccessResponse;
+            mockApiClient.getBalance.mockResolvedValue(response);
+
+            const balances = await stellarWallet.balances(["mgusd"]);
+
+            expect(mockApiClient.getBalance).toHaveBeenCalledWith(stellarWallet.address, {
+                chains: ["stellar"],
+                tokens: ["xlm", "usdc", "mgusd"],
+            });
+            expect(balances.usdc.amount).toBe("1250.5");
+            expect(balances.usdc.available?.amount).toBe("1210.5");
+            expect(balances.usdc.locked?.amount).toBe("40");
+            expect(balances.usdc.accounts).toEqual(response[0].chains.stellar.accounts);
+            expect(balances.usdc).not.toHaveProperty("chains");
+            expect(balances.usdc).not.toHaveProperty("locator");
+            expect(balances.tokens).toStrictEqual([
+                { symbol: "mgusd", name: "MGUSD", amount: "25", rawAmount: "250000000", decimals: 7 },
+            ]);
+        });
+
         it("includes custom tokens when provided", async () => {
             const mockBalanceResponse: GetBalanceSuccessResponse = [
                 {

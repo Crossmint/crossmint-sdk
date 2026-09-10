@@ -5,19 +5,20 @@ import { getChainAdapter } from "../../chains/chain-adapter";
 import { getChainType } from "../../signers/server/helpers/get-chain-type";
 
 function toTokenBalance<C extends Chain>(tokenData: GetBalanceSuccessResponse[number], chain: C): TokenBalance<C> {
-    const chainData = tokenData.chains?.[chain];
+    const { chains, ...tokenFields } = tokenData;
+    const chainData = chains?.[chain];
+    const { locator: _locator, amount: _chainAmount, rawAmount: _chainRawAmount, ...chainFields } = chainData ?? {};
 
     const chainSpecificField = getChainAdapter(chain).balanceTokenFields(chainData);
 
     return {
+        ...tokenFields,
+        ...chainFields,
         symbol: tokenData.symbol ?? "",
         name: tokenData.name ?? "",
         amount: tokenData.amount ?? "0",
         decimals: tokenData.decimals,
         rawAmount: tokenData.rawAmount ?? "0",
-        ...(chainData?.available != null ? { available: chainData.available } : {}),
-        ...(chainData?.locked != null ? { locked: chainData.locked } : {}),
-        ...(chainData?.accounts != null ? { accounts: chainData.accounts } : {}),
         ...chainSpecificField,
     } as TokenBalance<C>;
 }
