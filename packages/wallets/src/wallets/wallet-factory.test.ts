@@ -1209,7 +1209,7 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(wallet.recoveryMethods.map((signer) => signer.type)).toEqual(["email", "external-wallet"]);
         });
 
-        it("keeps the caller's server signer config for the matching entry of the recovery list", async () => {
+        it("exposes the caller's server recovery signer address-only, never its secret", async () => {
             const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
             mockApiClient.createWallet.mockResolvedValue(
                 walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
@@ -1223,7 +1223,8 @@ describe("WalletFactory - recovery signer lists", () => {
                 recovery: [{ type: "api-key" }, { type: "server", secret: FIRST_SERVER_SECRET }],
             });
 
-            expect(wallet.recoveryMethods[1]).toEqual({ type: "server", secret: FIRST_SERVER_SECRET });
+            expect(wallet.recoveryMethods[1]).toEqual({ type: "server", address: firstAddress });
+            expect(JSON.stringify(wallet.recoveryMethods)).not.toContain(FIRST_SERVER_SECRET);
         });
 
         it("falls back to the deprecated adminSigner for responses without a recovery list", async () => {
