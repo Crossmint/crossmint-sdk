@@ -161,11 +161,11 @@ export class SignerManager<C extends Chain> {
     }
 
     /**
-     * The recovery signer that authorizes a signer-management operation (add/remove signer), and the
-     * `approver` locator to send to the API when the wallet has several recovery signers.
+     * The recovery method that authorizes a signer-management operation (add/remove signer), and the
+     * `approver` locator to send to the API when the wallet has several recovery methods.
      *
-     * A wallet with a single recovery signer always authorizes with it, whatever the active signer is.
-     * A wallet with several recovery signers needs `useSigner()` to have selected one of them: the API
+     * A wallet with a single recovery method always authorizes with it, whatever the active signer is.
+     * A wallet with several recovery methods needs `useSigner()` to have selected one of them: the API
      * has to know which key will approve, and an operational signer cannot authorize these changes.
      */
     resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
@@ -180,14 +180,14 @@ export class SignerManager<C extends Chain> {
             const selection = `Call wallet.useSigner() with one of them (${known.join(", ")}) first.`;
             throw new SignerRequiredError(
                 activeLocator == null
-                    ? `This wallet has multiple recovery signers, so the one authorizing this operation must be selected. ${selection}`
-                    : `Signer "${activeLocator}" is not one of this wallet's recovery signers, and only a recovery signer can add or remove signers. ${selection}`
+                    ? `This wallet has multiple recovery methods, so the one authorizing this operation must be selected. ${selection}`
+                    : `Signer "${activeLocator}" is not one of this wallet's recovery methods, and only a recovery method can add or remove signers. ${selection}`
             );
         }
         return { recovery: this.#recoverySigners[activeIndex], approver: activeLocator };
     }
 
-    /** Locator of a recovery signer, or null when it cannot be known without deriving a server secret. */
+    /** Locator of a recovery method, or null when it cannot be known without deriving a server secret. */
     #recoveryLocator(recovery: RecoverySignerConfigForChain<C>): SignerLocator | null {
         if (recovery.type === "server") {
             return isApiSourcedServerSignerConfig(recovery) ? `server:${recovery.address}` : null;
@@ -196,7 +196,7 @@ export class SignerManager<C extends Chain> {
     }
 
     /**
-     * Run `operation` with the authorizing recovery signer temporarily set as the active signer.
+     * Run `operation` with the authorizing recovery method temporarily set as the active signer.
      * The operation receives the `approver` locator to forward to the API (see {@link resolveAuthorizingRecovery}).
      */
     async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {

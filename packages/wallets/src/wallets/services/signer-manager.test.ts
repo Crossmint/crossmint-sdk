@@ -213,12 +213,12 @@ describe("SignerManager", () => {
         [
             "an operational active signer",
             makeSignerWithLocator("email:operational@example.com"),
-            /not one of this wallet's recovery signers/,
+            /not one of this wallet's recovery methods/,
         ],
         [
             "an active server signer whose recovery entry still carries a secret",
             makeSignerWithLocator("server:0xUnresolved"),
-            /not one of this wallet's recovery signers/,
+            /not one of this wallet's recovery methods/,
         ],
     ] as const)(
         "resolveAuthorizingRecovery() with several recovery signers and %s throws a SignerRequiredError listing them",

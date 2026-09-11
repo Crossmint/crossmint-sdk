@@ -2524,7 +2524,7 @@ describe("Wallet - useSigner()", () => {
                 const wallet = await makeWallet();
                 await wallet.useSigner(operationalSigner);
 
-                const rejection = /"external-wallet:Delegated333" is not one of this wallet's recovery signers/;
+                const rejection = /"external-wallet:Delegated333" is not one of this wallet's recovery methods/;
                 await expect(
                     wallet.addSigner({ type: "external-wallet", address: "NewSigner444" }, { prepareOnly: true })
                 ).rejects.toThrow(rejection);

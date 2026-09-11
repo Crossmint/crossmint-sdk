@@ -606,8 +606,8 @@ export class Wallet<C extends Chain> {
 
     /**
      * Add a signer to the wallet.
-     * Always uses a recovery signer internally to approve the registration: the active signer when it is one of
-     * the recovery signers, or the wallet's single recovery signer. Wallets with several recovery signers must
+     * Always uses a recovery method internally to approve the registration: the active signer when it is one of
+     * the recovery methods, or the wallet's single recovery method. Wallets with several recovery methods must
      * select one via {@link useSigner} first; an operational signer cannot authorize this.
      * If the signer being added is the current operational signer, it will be reassembled with the new locator.
      * Otherwise, the original signer is restored after the operation.
@@ -771,7 +771,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Remove a signer from the wallet.
-     * Always uses a recovery signer internally to approve the removal, selected as in {@link addSigner}.
+     * Always uses a recovery method internally to approve the removal, selected as in {@link addSigner}.
      * @param signer - The signer to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the operation ID without auto-approving
