@@ -27,12 +27,12 @@ const NULL_SIGNER_STATE = { response: null, signer: null, pendingOperation: null
 const asRecoveryConfig = (config: unknown) => config as RecoverySignerConfigForChain<Chain>;
 type Overrides = Partial<SignerManagerParams<Chain>>;
 
-function makeSigner(tag: string): SignerAdapter {
-    return makeSignerWithLocator(`api-key:${tag}` as SignerLocator);
+function makeSigner(type: SignerAdapter["type"], locator: SignerLocator): SignerAdapter {
+    return { type, locator: () => locator, signMessage: vi.fn(), signTransaction: vi.fn() };
 }
 
-function makeSignerWithLocator(locator: SignerLocator): SignerAdapter {
-    return { locator: () => locator, status: undefined } as unknown as SignerAdapter;
+function makeApiKeySigner(tag: string): SignerAdapter {
+    return makeSigner("api-key", `api-key:${tag}`);
 }
 
 function makeApiClient(overrides: Partial<ApiClient> = {}): ApiClient {
@@ -81,7 +81,7 @@ beforeEach(() => {
 
 describe("SignerManager", () => {
     it("require() returns the active signer when one is set", () => {
-        const signer = makeSigner("active");
+        const signer = makeApiKeySigner("active");
         expect(makeManager({ signer }).require()).toBe(signer);
     });
 
@@ -119,8 +119,8 @@ describe("SignerManager", () => {
     it.each([true, false])(
         "withRecoverySigner() swaps to the recovery signer then restores the original (operation succeeds=%s)",
         async (succeeds) => {
-            const original = makeSigner("original");
-            const recoverySigner = makeSigner("recovery");
+            const original = makeApiKeySigner("original");
+            const recoverySigner = makeApiKeySigner("recovery");
             mockedAssembleSigner.mockReturnValue(recoverySigner);
             const manager = makeManager({ signer: original, recoverySigners: [{ type: "api-key" }] });
             const failure = new Error("operation failed");
@@ -172,28 +172,28 @@ describe("SignerManager", () => {
         [
             "a single recovery signer and an operational active signer",
             [apiKeyConfig],
-            makeSignerWithLocator("email:operational@example.com"),
+            makeSigner("email", "email:operational@example.com"),
             apiKeyConfig,
             undefined,
         ],
         [
             "several recovery signers and the primary one active",
             multiRecovery,
-            makeSignerWithLocator("external-wallet:0xPrimary"),
+            makeSigner("external-wallet", "external-wallet:0xPrimary"),
             primaryRecovery,
             "external-wallet:0xPrimary",
         ],
         [
             "several recovery signers and a secondary one active (matched on the normalized locator)",
             multiRecovery,
-            makeSignerWithLocator("email:second@example.com"),
+            makeSigner("email", "email:second@example.com"),
             secondaryRecovery,
             "email:second@example.com",
         ],
         [
             "several recovery signers and the api-sourced server one active",
             multiRecovery,
-            makeSignerWithLocator("server:0xServerRecovery"),
+            makeSigner("server", "server:0xServerRecovery"),
             serverRecovery,
             "server:0xServerRecovery",
         ],
@@ -212,12 +212,12 @@ describe("SignerManager", () => {
         ["no active signer", undefined, /must be selected/],
         [
             "an operational active signer",
-            makeSignerWithLocator("email:operational@example.com"),
+            makeSigner("email", "email:operational@example.com"),
             /not one of this wallet's recovery methods/,
         ],
         [
             "an active server signer whose recovery entry still carries a secret",
-            makeSignerWithLocator("server:0xUnresolved"),
+            makeSigner("server", "server:0xUnresolved"),
             /not one of this wallet's recovery methods/,
         ],
     ] as const)(
@@ -237,13 +237,13 @@ describe("SignerManager", () => {
     );
 
     it("withRecoverySigner() assembles the active recovery signer and hands its locator to the operation", async () => {
-        const active = makeSignerWithLocator("external-wallet:0xPrimary");
+        const active = makeSigner("external-wallet", "external-wallet:0xPrimary");
         const onSign = vi.fn();
         const recoverySigners = [
             asRecoveryConfig({ type: "api-key" }),
             asRecoveryConfig({ type: "external-wallet", address: "0xPrimary", onSign }),
         ];
-        const assembled = makeSignerWithLocator("external-wallet:0xPrimary");
+        const assembled = makeSigner("external-wallet", "external-wallet:0xPrimary");
         mockedAssembleSigner.mockReturnValue(assembled);
         const manager = makeManager({ signer: active, recoverySigners });
 
@@ -259,8 +259,8 @@ describe("SignerManager", () => {
     });
 
     it("withRecoverySigner() passes no approver for a wallet with a single recovery signer", async () => {
-        mockedAssembleSigner.mockReturnValue(makeSigner("recovery"));
-        const manager = makeManager({ signer: makeSigner("operational"), recoverySigners: [apiKeyConfig] });
+        mockedAssembleSigner.mockReturnValue(makeApiKeySigner("recovery"));
+        const manager = makeManager({ signer: makeApiKeySigner("operational"), recoverySigners: [apiKeyConfig] });
         await expect(manager.withRecoverySigner(async (approver) => approver)).resolves.toBeUndefined();
     });
 
@@ -396,7 +396,7 @@ describe("SignerManager", () => {
     const internalConfig = { type: "api-key", locator: "api-key", address: WALLET_ADDRESS } as never;
 
     it("assemble() marks admin signers active without calling getSigner", async () => {
-        mockedAssembleSigner.mockReturnValue(makeSigner("admin"));
+        mockedAssembleSigner.mockReturnValue(makeApiKeySigner("admin"));
         const getSigner = vi.fn();
         const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
         const result = await manager.assemble(internalConfig, { isAdminSigner: true });
@@ -405,7 +405,7 @@ describe("SignerManager", () => {
     });
 
     it("assemble() reads status from getSigner for delegated signers", async () => {
-        mockedAssembleSigner.mockReturnValue(makeSigner("delegated"));
+        mockedAssembleSigner.mockReturnValue(makeApiKeySigner("delegated"));
         const getSigner = vi.fn().mockResolvedValue({
             type: "api-key",
             locator: "api-key:delegated",
