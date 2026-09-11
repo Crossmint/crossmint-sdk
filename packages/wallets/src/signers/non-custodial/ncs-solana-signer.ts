@@ -1,4 +1,3 @@
-import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
@@ -17,10 +16,8 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         return await this.sign(base58.decode(message));
     }
 
-    async signTransaction(transaction: string): Promise<{ signature: string }> {
-        const transactionBytes = base58.decode(transaction);
-        const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        return await this.sign(deserializedTransaction.message.serialize());
+    async signTransaction(message: string): Promise<{ signature: string }> {
+        return await this.signMessage(message);
     }
 
     private async sign(messageData: Uint8Array): Promise<{ signature: string }> {

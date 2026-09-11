@@ -12,6 +12,7 @@ export type SolanaExternalWalletSignerConfig = {
     type: "external-wallet";
     address: string;
     onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    onSignBytes?: (payload: string) => Promise<string>;
 };
 
 export type EvmExternalWalletSignerConfig = {

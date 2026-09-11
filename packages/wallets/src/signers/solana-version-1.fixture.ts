@@ -1,0 +1,4 @@
+export const VERSION_1_MESSAGE =
+    "SfLpKWvLbWyWadgKR9DqWd5MUujMg9jw59zoubdiwjFcnbXn2n23vQophPSKwcwbArNgocjyc1uVu9f35qPtR4jqBwUJu2o4vbhDMHp7FCyEUaQ7mMsH3FuSUGSZ5nkBMoaXh3Tu6zFuNzy42w5hEytYwpT6h6oXCUzdD8DP2rie8gSz7gHM9zKHTZCev7opza73P5mbsRrDXC8HuMNtPiUSi2qRounF";
+
+export const VERSION_1_PREFIX = 0x81;

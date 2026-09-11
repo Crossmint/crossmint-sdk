@@ -44,7 +44,13 @@ import {
     throwIfCrossmintApiAuthError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
-import { type ChainAdapter, type ChainType, getChainAdapter, isSupportedChainType } from "../chains/chain-adapter";
+import {
+    type ChainAdapter,
+    type ChainType,
+    getApprovalAdapter,
+    getChainAdapter,
+    isSupportedChainType,
+} from "../chains/chain-adapter";
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
@@ -1305,18 +1311,12 @@ export class Wallet<C extends Chain> {
         const approvals = await this.#collectApprovals(
             this.#requireNonQuorumApprovals(pendingApprovals),
             signers,
-            (signer, pendingApproval) => {
-                // For Solana device signers (secp256r1), the SWIG precompile expects a signature
-                // over the keccak256 hash, which is provided in pendingApproval.message.
-                // For other Solana signers (ed25519), the full serialized transaction is signed.
-                const isDeviceSigner = signer.type === "device";
-                const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain && !isDeviceSigner
-                        ? (transaction.onChain.transaction as string)
-                        : pendingApproval.message;
-
-                return signer.signTransaction(transactionToSign);
-            }
+            (signer, pendingApproval) =>
+                getApprovalAdapter(transaction.chainType, this.chainAdapter).signApproval(
+                    signer,
+                    transaction,
+                    pendingApproval.message
+                )
         );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);

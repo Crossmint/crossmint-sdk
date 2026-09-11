@@ -3,6 +3,7 @@ import base58 from "bs58";
 import { Keypair, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 import type { EmailInternalSignerConfig } from "../types";
+import { VERSION_1_MESSAGE, VERSION_1_PREFIX } from "../solana-version-1.fixture";
 import { SolanaNonCustodialSigner } from "./ncs-solana-signer";
 
 const SIGNER_KEYPAIR = Keypair.generate();
@@ -72,13 +73,23 @@ describe("SolanaNonCustodialSigner.signMessage", () => {
 });
 
 describe("SolanaNonCustodialSigner.signTransaction", () => {
-    test("signs the serialized transaction message rather than the full transaction", async () => {
-        const transaction = makeTransaction();
+    test("signs the supplied message bytes verbatim", async () => {
+        const message = base58.encode(makeTransaction().message.serialize());
         const { signer, sendAction } = makeSigner();
 
-        const result = await signer.signTransaction(base58.encode(transaction.serialize()));
+        const result = await signer.signTransaction(message);
 
         expect(result).toEqual({ signature: "signature-bytes" });
-        expect(signedBytes(sendAction)).toBe(base58.encode(transaction.message.serialize()));
+        expect(signedBytes(sendAction)).toBe(message);
+    });
+
+    test("signs a version-1 message, which web3.js cannot serialize", async () => {
+        expect(base58.decode(VERSION_1_MESSAGE)[0]).toBe(VERSION_1_PREFIX);
+        const { signer, sendAction } = makeSigner();
+
+        const result = await signer.signTransaction(VERSION_1_MESSAGE);
+
+        expect(result).toEqual({ signature: "signature-bytes" });
+        expect(signedBytes(sendAction)).toBe(VERSION_1_MESSAGE);
     });
 });

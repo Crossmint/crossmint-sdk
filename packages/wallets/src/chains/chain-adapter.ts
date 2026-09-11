@@ -1,5 +1,6 @@
 import type { Chain } from "./chains";
-import type { RegisterSignerChain, RegisterSignerResponse } from "../api";
+import type { GetTransactionSuccessResponse, RegisterSignerChain, RegisterSignerResponse } from "../api";
+import type { SignerAdapter } from "../signers/types";
 import type { TokenBalance, PendingSignerOperation } from "../wallets/types";
 import { getChainType } from "../signers/server/helpers/get-chain-type";
 import { evmChainAdapter } from "./adapters/evm";
@@ -22,6 +23,11 @@ export interface ChainAdapter {
     ): PendingSignerOperation | null;
     balanceTokenFields(chainData: unknown): Partial<TokenBalance>;
     emptyBalanceTokenFields(): Partial<TokenBalance>;
+    signApproval(
+        signer: SignerAdapter,
+        transaction: GetTransactionSuccessResponse,
+        approvalMessage: string
+    ): ReturnType<SignerAdapter["signMessage"]>;
 }
 
 const CHAIN_ADAPTERS = {
@@ -38,4 +44,8 @@ export function getChainAdapter(chain: Chain): ChainAdapter {
 
 export function isSupportedChainType(chainType: string): chainType is ChainType {
     return Object.prototype.hasOwnProperty.call(CHAIN_ADAPTERS, chainType);
+}
+
+export function getApprovalAdapter(chainType: string, fallback: ChainAdapter): ChainAdapter {
+    return isSupportedChainType(chainType) ? CHAIN_ADAPTERS[chainType] : fallback;
 }
