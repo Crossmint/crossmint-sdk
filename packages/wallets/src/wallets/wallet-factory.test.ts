@@ -1018,7 +1018,7 @@ describe("WalletFactory - recovery signer lists", () => {
             type: "smart" as const,
             address,
             owner: "test-owner",
-            config: { adminSigner: recovery[0], recovery },
+            config: { adminSigner: recovery[0], recoveryMethods: recovery },
             createdAt: Date.now(),
         }) as unknown as GetWalletSuccessResponse;
 
@@ -1042,7 +1042,7 @@ describe("WalletFactory - recovery signer lists", () => {
     });
 
     describe("createWallet request", () => {
-        it("sends a Solana recovery list under config.recovery and never alongside adminSigner", async () => {
+        it("sends a Solana recovery list under config.recoveryMethods and never alongside adminSigner", async () => {
             const recovery = [
                 { type: "email" as const, email: "recovery@example.com" },
                 { type: "external-wallet" as const, address: EXTERNAL_WALLET_ADDRESS },
@@ -1054,11 +1054,11 @@ describe("WalletFactory - recovery signer lists", () => {
             await walletFactory.createWallet({ chain: "solana", recovery });
 
             const createWalletParams = mockApiClient.createWallet.mock.calls[0][0];
-            expect(createWalletParams.config).toEqual(expect.objectContaining({ recovery }));
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods: recovery }));
             expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
-        it("sends a Stellar recovery list under config.recovery", async () => {
+        it("sends a Stellar recovery list under config.recoveryMethods", async () => {
             const recovery = [
                 { type: "api-key" as const },
                 { type: "phone" as const, phone: "+15550000001", channel: "sms" as const },
@@ -1070,7 +1070,7 @@ describe("WalletFactory - recovery signer lists", () => {
             await walletFactory.createWallet({ chain: "stellar", recovery });
 
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
-                expect.objectContaining({ config: expect.objectContaining({ recovery }) })
+                expect.objectContaining({ config: expect.objectContaining({ recoveryMethods: recovery }) })
             );
         });
 
@@ -1084,7 +1084,7 @@ describe("WalletFactory - recovery signer lists", () => {
 
             const createWalletParams = mockApiClient.createWallet.mock.calls[0][0];
             expect(createWalletParams.config).toEqual(expect.objectContaining({ adminSigner: recovery }));
-            expect(createWalletParams.config).not.toHaveProperty("recovery");
+            expect(createWalletParams.config).not.toHaveProperty("recoveryMethods");
         });
 
         it("derives an address for every server signer in the list", async () => {
@@ -1108,7 +1108,7 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
                 expect.objectContaining({
                     config: expect.objectContaining({
-                        recovery: [
+                        recoveryMethods: [
                             { type: "server", address: firstAddress },
                             { type: "server", address: secondAddress },
                         ],
@@ -1141,7 +1141,7 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
                 expect.objectContaining({
                     config: expect.objectContaining({
-                        recovery: [
+                        recoveryMethods: [
                             expect.objectContaining({ type: "passkey", id: "credential-for-first", name: "first" }),
                             expect.objectContaining({ type: "passkey", id: "credential-for-second", name: "second" }),
                         ],
