@@ -97,10 +97,12 @@ export type RegisterSignerParams = {
     chain?: RegisterSignerChain;
     scopes?: Scope[];
     deployImmediately?: boolean;
+    approver?: CreateSignerV2025InputDtoClass["approver"];
 };
 export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type RemoveSignerParams = {
     chain?: RegisterSignerChain;
+    approver?: CreateSignerV2025InputDtoClass["approver"];
 };
 export type RemoveSignerResponse =
     | WalletsTransactionV2025ResponseDtoClass
