@@ -1,17 +1,7 @@
 name: Mobile E2E command
 
-# Lets an engineer ask for mobile E2E feedback on a pull request by commenting
-# `/e2e`. This replaces the automatic per-push dispatch, which spent more device
-# runner time than any other trigger while gating nothing, because no repo made
-# its commit status a required check. A human now decides when a run is worth it.
-#
-# Security notes, because `issue_comment` is the easy workflow to get wrong:
-#   - This runs from the default branch, with secrets, regardless of what the
-#     pull request contains. It never checks out the pull request's code.
-#   - The comment body is untrusted input. It is read only through `env`, never
-#     interpolated into a `run:` block, so it cannot inject shell.
-#   - Only users with write access can trigger it. Anyone else is ignored
-#     silently, so this is not a probe for who has access.
+# Starts the mobile E2E suite when someone comments `/e2e` on a pull request.
+# Runs from the default branch with secrets, so it never checks out PR code.
 
 on:
     issue_comment:
@@ -28,12 +18,33 @@ jobs:
         # `github.event.issue.pull_request` is null on plain issue comments.
         if: >-
             github.event.issue.pull_request != null &&
-            startsWith(github.event.comment.body, '/e2e') &&
-            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+            startsWith(github.event.comment.body, '/e2e')
         runs-on: ubuntu-latest
         timeout-minutes: 5
         steps:
+            - name: Check the commenter can write
+              id: auth
+              env:
+                  # The bot token, not GITHUB_TOKEN: this endpoint needs push
+                  # access to answer.
+                  GH_TOKEN: ${{ secrets.CROSSMINT_E2E_BOT_TOKEN }}
+                  REPO: ${{ github.repository }}
+                  ACTOR: ${{ github.event.comment.user.login }}
+              run: |
+                  set -euo pipefail
+                  # Not author_association: its COLLABORATOR value also covers
+                  # read-only outside collaborators. Unreadable means denied.
+                  perm=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" \
+                      --jq '.permission' 2>/dev/null || echo unknown)
+                  case "$perm" in
+                      write | maintain | admin) allowed=true ;;
+                      *) allowed=false ;;
+                  esac
+                  echo "::notice::$ACTOR has '$perm' access, allowed=$allowed"
+                  echo "allowed=$allowed" >>"$GITHUB_OUTPUT"
+
             - name: Acknowledge the comment
+              if: steps.auth.outputs.allowed == 'true'
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   REPO: ${{ github.repository }}
@@ -45,26 +56,25 @@ jobs:
 
             - name: Parse the command
               id: cmd
+              if: steps.auth.outputs.allowed == 'true'
               env:
                   COMMENT: ${{ github.event.comment.body }}
               run: |
                   set -euo pipefail
-                  # Comments from the web UI carry CRLF; a trailing \r would make
-                  # the bare `/e2e` fail to match.
+                  # Web UI comments carry CRLF; a trailing \r stops `/e2e` matching.
                   line=$(printf '%s' "$COMMENT" | tr -d '\r' | head -n 1)
                   verb=${line%% *}
                   args=${line#"$verb"}
 
                   if [ "$verb" != "/e2e" ]; then
-                      echo "::notice::not an /e2e command, ignoring"
                       echo "skip=true" >>"$GITHUB_OUTPUT"
                       exit 0
                   fi
 
                   platform=all
                   ref=""
-                  # `args` is deliberately unquoted, to split on whitespace. Every
-                  # token is matched against a fixed set and never executed.
+                  # `args` is unquoted to split on whitespace. Every token is
+                  # matched against a fixed set and never executed.
                   for arg in $args; do
                       case "$arg" in
                           ios | android | all) platform="$arg" ;;
@@ -95,14 +105,13 @@ jobs:
               id: dispatch
               if: steps.cmd.outputs.skip == 'false'
               env:
-                  # Reused from the deleted automatic trigger. The workflow being
-                  # started lives in another repo, which needs actions:write
-                  # there — something no GITHUB_TOKEN can give.
                   GH_TOKEN: ${{ secrets.CROSSMINT_E2E_BOT_TOKEN }}
                   SDK: react-native
                   PLATFORM: ${{ steps.cmd.outputs.platform }}
                   SDK_REF: ${{ steps.cmd.outputs.ref || steps.pr.outputs.sha }}
-                  ORIGIN: ${{ github.repository }}#${{ github.event.issue.number }}
+                  # The comment id makes this unique per invocation, so two
+                  # `/e2e` comments on one PR cannot resolve to each other's run.
+                  ORIGIN: ${{ github.repository }}#${{ github.event.issue.number }} c${{ github.event.comment.id }}
               run: |
                   set -euo pipefail
                   gh workflow run on-dispatch.yml \
@@ -112,9 +121,9 @@ jobs:
                     -f sdk_ref="$SDK_REF" \
                     -f origin="$ORIGIN"
 
-                  # workflow_dispatch returns no run id, so the run is found by
-                  # the `origin` string it carries in its run name. The fallback
-                  # keeps the reply useful if the run is slow to appear.
+                  # workflow_dispatch returns no run id, so find the run by the
+                  # `origin` it carries in its name. The fallback keeps the reply
+                  # useful if the run is slow to appear.
                   url="https://github.com/Crossmint/crossmint-mobile-e2e-tests/actions/workflows/on-dispatch.yml"
                   for _ in $(seq 1 10); do
                       sleep 3
@@ -143,9 +152,8 @@ jobs:
                   LOG: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               run: |
                   set -euo pipefail
-                  # Built with printf rather than an inline string, so the block
-                  # indentation above cannot leak in and turn the comment into a
-                  # markdown code block.
+                  # printf, not an inline string, so the block indentation above
+                  # cannot leak in and make the comment a markdown code block.
                   if [ "$OUTCOME" = "success" ]; then
                       printf 'Mobile E2E started — `%s` / `%s` on `%s`.\n\n%s\n\nResults are not mirrored back here; open the run to see them.\n' \
                         "$SDK" "$PLATFORM" "$SDK_REF" "$URL" >"$RUNNER_TEMP/body.md"
