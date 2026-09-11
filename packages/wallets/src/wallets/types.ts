@@ -3,7 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse, Scope } from "../api";
+import type { CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
 import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
@@ -281,7 +281,8 @@ export type TokenBalance<C extends Chain = Chain> = {
     amount: string;
     decimals?: number;
     rawAmount?: string;
-} & ChainExtras[ChainToExtrasKey<C>];
+} & Omit<GetBalanceSuccessResponse[number]["chains"][string], "locator" | "amount" | "rawAmount"> &
+    ChainExtras[ChainToExtrasKey<C>];
 
 export type Balances<C extends Chain = Chain> = {
     nativeToken: TokenBalance<C>;
