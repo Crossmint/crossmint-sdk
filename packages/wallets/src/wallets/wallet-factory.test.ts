@@ -1108,7 +1108,7 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
                 expect.objectContaining({
                     config: expect.objectContaining({
-                        recovery: [
+                        recoveryMethods: [
                             { type: "server", address: firstAddress },
                             { type: "server", address: secondAddress },
                         ],
@@ -1141,7 +1141,7 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(mockApiClient.createWallet).toHaveBeenCalledWith(
                 expect.objectContaining({
                     config: expect.objectContaining({
-                        recovery: [
+                        recoveryMethods: [
                             expect.objectContaining({ type: "passkey", id: "credential-for-first", name: "first" }),
                             expect.objectContaining({ type: "passkey", id: "credential-for-second", name: "second" }),
                         ],
