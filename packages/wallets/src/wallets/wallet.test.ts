@@ -2349,7 +2349,7 @@ describe("Wallet - useSigner()", () => {
                 type: "smart",
                 address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                 config: {
-                    recovery: [{ type: "external-wallet", address: "RecoveryWallet111" }, { type: "api-key" }],
+                    recoveryMethods: [{ type: "external-wallet", address: "RecoveryWallet111" }, { type: "api-key" }],
                     delegatedSigners: [],
                 },
                 createdAt: Date.now(),
@@ -2382,7 +2382,7 @@ describe("Wallet - useSigner()", () => {
                 type: "smart",
                 address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                 config: {
-                    recovery: [{ type: "api-key" }, { type: "external-wallet", address: "SecondRecovery222" }],
+                    recoveryMethods: [{ type: "api-key" }, { type: "external-wallet", address: "SecondRecovery222" }],
                     delegatedSigners: [],
                 },
                 createdAt: Date.now(),
@@ -2480,7 +2480,7 @@ describe("Wallet - useSigner()", () => {
                 type: "smart",
                 address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                 config: {
-                    recovery: [{ type: "api-key" }, { type: "server", address: "0xDerivedServerAddress" }],
+                    recoveryMethods: [{ type: "api-key" }, { type: "server", address: "0xDerivedServerAddress" }],
                     delegatedSigners: [],
                 },
                 createdAt: Date.now(),
@@ -2518,7 +2518,10 @@ describe("Wallet - useSigner()", () => {
                     type: "smart",
                     address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                     config: {
-                        recovery: [{ type: "api-key" }, { type: "external-wallet", address: "SecondRecovery222" }],
+                        recoveryMethods: [
+                            { type: "api-key" },
+                            { type: "external-wallet", address: "SecondRecovery222" },
+                        ],
                         delegatedSigners: [],
                     },
                     createdAt: Date.now(),
@@ -2604,7 +2607,7 @@ describe("Wallet - useSigner()", () => {
                 type: "smart",
                 address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                 config: {
-                    recovery: [{ type: "api-key" }, { type: "external-wallet", address: "SecondRecovery222" }],
+                    recoveryMethods: [{ type: "api-key" }, { type: "external-wallet", address: "SecondRecovery222" }],
                     delegatedSigners: [],
                 },
                 createdAt: Date.now(),
@@ -2645,7 +2648,7 @@ describe("Wallet - useSigner()", () => {
                 type: "smart",
                 address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
                 config: {
-                    recovery: [
+                    recoveryMethods: [
                         { type: "external-wallet", address: "PrimaryRecovery111" },
                         { type: "server", address: "SecondaryLegacyDerivation" },
                     ],

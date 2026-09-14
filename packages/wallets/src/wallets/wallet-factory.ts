@@ -40,9 +40,9 @@ const SIGNER_MISMATCH_ERROR =
     "When 'signers' is provided to a method that may fetch an existing wallet, each specified signer must exist in that wallet's configuration.";
 
 type SmartWalletConfig = {
-    /** @deprecated The API still returns the first admin signer here; `recovery` holds all of them. */
+    /** @deprecated The API still returns the first admin signer here; `recoveryMethods` holds all of them. */
     adminSigner: RecoverySignerConfig | PasskeySignerConfig;
-    recovery?: Array<RecoverySignerConfig | PasskeySignerConfig>;
+    recoveryMethods?: Array<RecoverySignerConfig | PasskeySignerConfig>;
     delegatedSigners?: SignerResponse[];
 };
 
@@ -51,10 +51,10 @@ type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams
 
 /**
  * The recovery half of a wallet-creation request. The API rejects requests carrying both fields
- * (`RECOVERY_ADMIN_SIGNER_CONFLICT`), so a list goes under `recovery` while a single signer keeps
+ * (`RECOVERY_ADMIN_SIGNER_CONFLICT`), so a list goes under `recoveryMethods` while a single signer keeps
  * using the deprecated `adminSigner` field.
  */
-type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recovery: ResolvedRecoverySigner[] };
+type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recoveryMethods: ResolvedRecoverySigner[] };
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -167,7 +167,7 @@ export class WalletFactory {
             resolvedRecoverySigners.push(await this.resolveRecoverySigner(recoverySigner, validatedArgs.chain));
         }
         const recoveryRequestConfig: RecoveryRequestConfig = Array.isArray(validatedArgs.recovery)
-            ? { recovery: resolvedRecoverySigners }
+            ? { recoveryMethods: resolvedRecoverySigners }
             : { adminSigner: resolvedRecoverySigners[0] };
 
         const walletResponse = await this.createSmartWallet(
@@ -306,9 +306,9 @@ export class WalletFactory {
         // signer details (e.g. passkey credential ID).
         const createArgs = args as WalletCreateArgs<C>;
         const walletConfig = walletResponse.config as SmartWalletConfig;
-        // `recovery` holds every admin signer; older responses (and wallets created with a single
+        // `recoveryMethods` holds every admin signer; older responses (and wallets created with a single
         // signer) only carry the deprecated singular `adminSigner`.
-        const apiRecoverySigners = (walletConfig.recovery ?? [walletConfig.adminSigner]) as Array<
+        const apiRecoverySigners = (walletConfig.recoveryMethods ?? [walletConfig.adminSigner]) as Array<
             RecoverySignerConfigForChain<C>
         >;
         const recoverySigners = this.mergeRecoverySigners(
@@ -516,7 +516,8 @@ export class WalletFactory {
         const createArgs = args as WalletCreateArgs<C>;
         if (createArgs.recovery != null || createArgs.signers != null) {
             const config = existingWallet.config as SmartWalletConfig;
-            const existingWalletSigners = config?.recovery ?? (config?.adminSigner != null ? [config.adminSigner] : []);
+            const existingWalletSigners =
+                config?.recoveryMethods ?? (config?.adminSigner != null ? [config.adminSigner] : []);
 
             const unmatchedExistingSigners = [...existingWalletSigners] as Array<RecoverySignerConfigForChain<C>>;
             for (const inputRecoverySigner of toRecoverySignerList<C>(createArgs.recovery)) {

@@ -29933,7 +29933,7 @@
                                 "type": "object",
                                 "properties": {
                                     "adminSigner": {
-                                        "description": "@deprecated Use `recovery` instead. The admin signer for the wallet. Mutually exclusive with `recovery`.",
+                                        "description": "@deprecated Use `recoveryMethods` instead. The admin signer for the wallet. Mutually exclusive with `recoveryMethods`.",
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -30231,7 +30231,7 @@
                                             }
                                         ]
                                     },
-                                    "recovery": {
+                                    "recoveryMethods": {
                                         "description": "The recovery configuration (admin signer) for the wallet. Mutually exclusive with `adminSigner`.",
                                         "oneOf": [
                                             {
@@ -30861,7 +30861,7 @@
                                 "type": "object",
                                 "properties": {
                                     "adminSigner": {
-                                        "description": "@deprecated Use `recovery` instead. The admin signer for the wallet. Mutually exclusive with `recovery`.",
+                                        "description": "@deprecated Use `recoveryMethods` instead. The admin signer for the wallet. Mutually exclusive with `recoveryMethods`.",
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -31114,7 +31114,7 @@
                                             }
                                         ]
                                     },
-                                    "recovery": {
+                                    "recoveryMethods": {
                                         "type": "array",
                                         "items": {
                                             "oneOf": [
@@ -31740,7 +31740,7 @@
                                 "type": "object",
                                 "properties": {
                                     "adminSigner": {
-                                        "description": "@deprecated Use `recovery` instead. The admin signer for the wallet. Mutually exclusive with `recovery`.",
+                                        "description": "@deprecated Use `recoveryMethods` instead. The admin signer for the wallet. Mutually exclusive with `recoveryMethods`.",
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -31993,7 +31993,7 @@
                                             }
                                         ]
                                     },
-                                    "recovery": {
+                                    "recoveryMethods": {
                                         "type": "array",
                                         "items": {
                                             "oneOf": [
@@ -79604,9 +79604,9 @@
                                                 "description": "Quorum (m-of-n multisig) admin signer"
                                             }
                                         ],
-                                        "description": "@deprecated Use `recovery` instead. The wallet's first admin signer."
+                                        "description": "@deprecated Use `recoveryMethods` instead. The wallet's first admin signer."
                                     },
-                                    "recovery": {
+                                    "recoveryMethods": {
                                         "type": "array",
                                         "items": {
                                             "oneOf": [
@@ -81962,7 +81962,7 @@
                                         }
                                     }
                                 },
-                                "required": ["adminSigner", "recovery"]
+                                "required": ["adminSigner", "recoveryMethods"]
                             },
                             "address": {
                                 "type": "string",
@@ -82389,9 +82389,9 @@
                                                 "description": "Quorum (m-of-n multisig) admin signer"
                                             }
                                         ],
-                                        "description": "@deprecated Use `recovery` instead. The wallet's first admin signer."
+                                        "description": "@deprecated Use `recoveryMethods` instead. The wallet's first admin signer."
                                     },
-                                    "recovery": {
+                                    "recoveryMethods": {
                                         "type": "array",
                                         "items": {
                                             "oneOf": [
@@ -84773,7 +84773,7 @@
                                         "example": "CA3SGE76PWYAM4OVKETY47GASUGYDF3Y3QFFSPIWFCNKQLUOO4SOIT2W"
                                     }
                                 },
-                                "required": ["adminSigner", "recovery"]
+                                "required": ["adminSigner", "recoveryMethods"]
                             },
                             "address": {
                                 "type": "string",
