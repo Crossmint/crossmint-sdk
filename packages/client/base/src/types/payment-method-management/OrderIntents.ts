@@ -4,7 +4,6 @@ export type OrderIntentStatus = "active" | "cancelled" | "expired";
 export type OrderIntentProvider = "vic" | "agentpay";
 export type OrderIntentCredentialFormat = "card" | "network-token";
 export type OrderIntentSptCredentialFormat = "identifier";
-export type OrderIntentRailStatus = "active" | "pending_verification" | "error";
 
 type OrderIntentRailState =
     | { status: "active" | "pending_verification"; error?: never }
@@ -18,7 +17,6 @@ export type OrderIntentAgenticTokenRail = OrderIntentRailState & {
 
 export type OrderIntentEncryptedCardRail = {
     rail: "encrypted-card";
-    provider?: never;
     status: "active";
     error?: never;
     credentialFormats: "card"[];
