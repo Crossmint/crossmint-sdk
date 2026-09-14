@@ -82,6 +82,42 @@ describe("<OrderIntentVerification />", () => {
             });
         });
 
+        test("verifies the pending agentic-token rail and ignores spt and encrypted-card", async () => {
+            basisTheory.verifyAllowance.mockResolvedValue({ status: "active", provider: "vic", rail: "agentic-token" });
+
+            render(
+                <OrderIntentVerification
+                    orderIntent={{
+                        ...orderIntent("vic"),
+                        rails: [
+                            {
+                                rail: "spt",
+                                provider: "stripe",
+                                status: "active",
+                                credentialFormats: ["identifier"],
+                            },
+                            {
+                                rail: "encrypted-card",
+                                status: "active",
+                                credentialFormats: ["card"],
+                            },
+                            {
+                                rail: "agentic-token",
+                                provider: "vic",
+                                status: "pending_verification",
+                                credentialFormats: ["card"],
+                            },
+                        ],
+                    }}
+                />
+            );
+
+            await waitFor(() => {
+                expect(basisTheory.verifyAllowance).toHaveBeenCalledWith("alw_123", { provider: "vic" });
+            });
+            expect(basisTheory.verifyAllowance).toHaveBeenCalledTimes(1);
+        });
+
         test("maps the existing appearance interface", async () => {
             basisTheory.verifyAllowance.mockResolvedValue({ status: "active" });
 
