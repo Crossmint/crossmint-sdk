@@ -1,5 +1,22 @@
 # @crossmint/wallets-sdk
 
+## 1.15.0
+
+### Minor Changes
+
+- 72d0001: Remove the exported `MAX_RECOVERY_SIGNERS` constant and the client-side recovery-list length check. The backend is the single source of truth for the signer limit; requests over it still surface as `RecoverySignerLimitExceededError`.
+- 3b4d5eb: `wallet.recovery` returns the primary recovery signer config again (the shape it had before 1.14.0), and the new `wallet.recoveryMethods` exposes the full list of recovery signers on wallets created with several of them.
+
+### Patch Changes
+
+- 010d904: `wallet.recovery` and `wallet.recoveryMethods` no longer return the caller's raw server secret after `createWallet` (or after constructing a `Wallet` with a `{ type: "server", secret }` recovery config). The secret is retained internally for signing; the public getters now expose the same address-only `{ type: "server", address }` form that `getWallet` already returned.
+- 93d34b1: `wallet.addSigner` and `wallet.removeSigner` now work on wallets with several recovery methods: they are authorized by the recovery method selected with `wallet.useSigner`, whose locator is sent to the API as `approver`. Selecting an operational (delegated) signer and then adding or removing a signer throws a `SignerRequiredError` before any request is made. `RegisterSignerParams` and `RemoveSignerParams` expose the new optional `approver` field.
+- 30f14cd: Harden `wallet.useSigner` for recovery signer lists: server secrets are stripped from every entry of `wallet.recoveryMethods` (not only the primary), each server recovery signer resolves its own primary/legacy derivation and cached secret, and a passkey only matches a recovery signer with the same credential id when both are known. Constructing a wallet with an empty recovery list now throws `InvalidRecoveryConfigError`.
+- 4424fd8: `wallet.useSigner` now matches against every recovery signer in the list, so any recovery signer of a Solana or Stellar wallet can be selected and approve transactions, not just the primary one.
+- ded1d68: Use `recoveryMethods` for wallet recovery-method request and response payloads.
+- 27a65f2: Preserve the optional `available`, `locked`, and `accounts` fields in `wallet.balances()` results, including their API types. Card-backed token balances now expose spending power and pending charges alongside the total balance.
+  - @crossmint/common-sdk-auth@1.1.19
+
 ## 1.14.0
 
 ### Minor Changes
