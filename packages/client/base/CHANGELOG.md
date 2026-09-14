@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 3.0.0
+
+### Major Changes
+
+- ac0d6ad: `OrderIntentRail` is now a union of `agentic-token`, `encrypted-card`, and `spt` rails, matching the order-intent API. Narrow on `rail` before reading `provider`; `OrderIntentVerification` keeps verifying the pending `agentic-token` rail.
+
 ## 2.9.0
 
 ### Minor Changes
