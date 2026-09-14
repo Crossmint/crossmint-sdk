@@ -82,6 +82,35 @@ describe("<OrderIntentVerification />", () => {
             });
         });
 
+        test("verifies the pending agentic-token rail when encrypted-card is active", async () => {
+            basisTheory.verifyAllowance.mockResolvedValue({ status: "active", provider: "vic", rail: "agentic-token" });
+
+            render(
+                <OrderIntentVerification
+                    orderIntent={{
+                        ...orderIntent("vic"),
+                        rails: [
+                            {
+                                rail: "encrypted-card",
+                                status: "active",
+                                credentialFormats: ["card"],
+                            },
+                            {
+                                rail: "agentic-token",
+                                provider: "vic",
+                                status: "pending_verification",
+                                credentialFormats: ["card"],
+                            },
+                        ],
+                    }}
+                />
+            );
+
+            await waitFor(() => {
+                expect(basisTheory.verifyAllowance).toHaveBeenCalledWith("alw_123", { provider: "vic" });
+            });
+        });
+
         test("maps the existing appearance interface", async () => {
             basisTheory.verifyAllowance.mockResolvedValue({ status: "active" });
 

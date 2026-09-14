@@ -3,16 +3,32 @@ import type { PaymentMethodAgenticEnrollmentVerificationConfig } from "./Payment
 export type OrderIntentStatus = "active" | "cancelled" | "expired";
 export type OrderIntentProvider = "vic" | "agentpay";
 export type OrderIntentCredentialFormat = "card" | "network-token";
+export type OrderIntentSptCredentialFormat = "identifier";
+export type OrderIntentRailStatus = "active" | "pending_verification" | "error";
 
-interface OrderIntentRailBase {
+type OrderIntentRailState =
+    | { status: "active" | "pending_verification"; error?: never }
+    | { status: "error"; error: { code: string } };
+
+export type OrderIntentAgenticTokenRail = OrderIntentRailState & {
     rail: "agentic-token";
     provider: OrderIntentProvider;
     credentialFormats: OrderIntentCredentialFormat[];
-}
+};
 
-export type OrderIntentRail =
-    | (OrderIntentRailBase & { status: "active" | "pending_verification"; error?: never })
-    | (OrderIntentRailBase & { status: "error"; error: { code: string } });
+export type OrderIntentEncryptedCardRail = OrderIntentRailState & {
+    rail: "encrypted-card";
+    provider?: never;
+    credentialFormats: "card"[];
+};
+
+export type OrderIntentSptRail = OrderIntentRailState & {
+    rail: "spt";
+    provider: "stripe";
+    credentialFormats: OrderIntentSptCredentialFormat[];
+};
+
+export type OrderIntentRail = OrderIntentAgenticTokenRail | OrderIntentEncryptedCardRail | OrderIntentSptRail;
 
 export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
     allowanceId: string;

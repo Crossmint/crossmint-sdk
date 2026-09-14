@@ -1,5 +1,9 @@
 import { AgenticVerification, type AgenticVerificationInstance } from "@basis-theory/web-agentic";
-import type { OrderIntentWithVerification, VerificationAppearance } from "@crossmint/client-sdk-base";
+import type {
+    OrderIntentAgenticTokenRail,
+    OrderIntentWithVerification,
+    VerificationAppearance,
+} from "@crossmint/client-sdk-base";
 import { useEffect, useRef } from "react";
 
 import { mapVerificationAppearanceToAgenticAppearance } from "../../utils/mapVerificationAppearanceToAgenticAppearance";
@@ -28,7 +32,8 @@ export function OrderIntentVerification({
     const errorRef = useRef(onVerificationError);
     const agenticAppearance = mapVerificationAppearanceToAgenticAppearance(appearance);
     const pendingProvider = orderIntent.rails.find(
-        (rail) => rail.rail === "agentic-token" && rail.status === "pending_verification"
+        (rail): rail is OrderIntentAgenticTokenRail =>
+            rail.rail === "agentic-token" && rail.status === "pending_verification"
     )?.provider;
     const { allowanceId, environment, publicApiKey } = orderIntent.verificationConfig;
     const hasAgenticAppearance = agenticAppearance != null;
