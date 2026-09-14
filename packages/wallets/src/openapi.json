@@ -292,6 +292,7 @@
                                 "flow-testnet",
                                 "tempo-testnet",
                                 "robinhood-chain-testnet",
+                                "celo-sepolia",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -326,6 +327,7 @@
                                 "flow",
                                 "tempo",
                                 "robinhood-chain",
+                                "celo",
                                 "solana",
                                 "stellar"
                             ],
@@ -504,6 +506,7 @@
                                 "flow-testnet",
                                 "tempo-testnet",
                                 "robinhood-chain-testnet",
+                                "celo-sepolia",
                                 "ethereum",
                                 "polygon",
                                 "bsc",
@@ -538,6 +541,7 @@
                                 "flow",
                                 "tempo",
                                 "robinhood-chain",
+                                "celo",
                                 "solana",
                                 "stellar"
                             ],
@@ -5720,6 +5724,7 @@
                                                                                         "flow-testnet",
                                                                                         "tempo-testnet",
                                                                                         "robinhood-chain-testnet",
+                                                                                        "celo-sepolia",
                                                                                         "ethereum",
                                                                                         "polygon",
                                                                                         "bsc",
@@ -5753,7 +5758,8 @@
                                                                                         "plume",
                                                                                         "flow",
                                                                                         "tempo",
-                                                                                        "robinhood-chain"
+                                                                                        "robinhood-chain",
+                                                                                        "celo"
                                                                                     ],
                                                                                     "description": "The chain on which the signature will be submitted"
                                                                                 }
@@ -15871,6 +15877,7 @@
                                                                             "flow-testnet",
                                                                             "tempo-testnet",
                                                                             "robinhood-chain-testnet",
+                                                                            "celo-sepolia",
                                                                             "ethereum",
                                                                             "polygon",
                                                                             "bsc",
@@ -15904,7 +15911,8 @@
                                                                             "plume",
                                                                             "flow",
                                                                             "tempo",
-                                                                            "robinhood-chain"
+                                                                            "robinhood-chain",
+                                                                            "celo"
                                                                         ],
                                                                         "description": "The chain on which the signature will be submitted"
                                                                     }
@@ -24872,6 +24880,29 @@
                                             },
                                             "method": {
                                                 "type": "string",
+                                                "enum": ["celo-sepolia"]
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            },
+                                            "payerAddress": {
+                                                "description": "An EVM wallet address.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["method", "currency"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "receiptEmail": {
+                                                "description": "Email that the receipt will be sent to.",
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            },
+                                            "method": {
+                                                "type": "string",
                                                 "enum": ["ethereum"]
                                             },
                                             "currency": {
@@ -25632,6 +25663,29 @@
                                             "method": {
                                                 "type": "string",
                                                 "enum": ["robinhood-chain"]
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            },
+                                            "payerAddress": {
+                                                "description": "An EVM wallet address.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["method", "currency"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "receiptEmail": {
+                                                "description": "Email that the receipt will be sent to.",
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            },
+                                            "method": {
+                                                "type": "string",
+                                                "enum": ["celo"]
                                             },
                                             "currency": {
                                                 "type": "string"
@@ -27108,6 +27162,29 @@
                                             },
                                             "method": {
                                                 "type": "string",
+                                                "enum": ["celo-sepolia"]
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            },
+                                            "payerAddress": {
+                                                "description": "An EVM wallet address.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["method", "currency"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "receiptEmail": {
+                                                "description": "Email that the receipt will be sent to.",
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            },
+                                            "method": {
+                                                "type": "string",
                                                 "enum": ["ethereum"]
                                             },
                                             "currency": {
@@ -27890,6 +27967,29 @@
                                             },
                                             "method": {
                                                 "type": "string",
+                                                "enum": ["celo"]
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            },
+                                            "payerAddress": {
+                                                "description": "An EVM wallet address.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["method", "currency"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "receiptEmail": {
+                                                "description": "Email that the receipt will be sent to.",
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            },
+                                            "method": {
+                                                "type": "string",
                                                 "enum": ["sui"]
                                             },
                                             "currency": {
@@ -28254,6 +28354,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -28287,7 +28388,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ]
                                     }
                                 },
@@ -28411,6 +28513,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -28444,7 +28547,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -29684,6 +29788,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -29717,7 +29822,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -42108,6 +42214,7 @@
                                                     "flow-testnet",
                                                     "tempo-testnet",
                                                     "robinhood-chain-testnet",
+                                                    "celo-sepolia",
                                                     "ethereum",
                                                     "polygon",
                                                     "bsc",
@@ -42141,7 +42248,8 @@
                                                     "plume",
                                                     "flow",
                                                     "tempo",
-                                                    "robinhood-chain"
+                                                    "robinhood-chain",
+                                                    "celo"
                                                 ],
                                                 "description": "The chain on which the signature will be submitted"
                                             }
@@ -51378,6 +51486,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -51411,7 +51520,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -51498,6 +51608,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -51531,7 +51642,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -51645,6 +51757,7 @@
                                                                 "flow-testnet",
                                                                 "tempo-testnet",
                                                                 "robinhood-chain-testnet",
+                                                                "celo-sepolia",
                                                                 "ethereum",
                                                                 "polygon",
                                                                 "bsc",
@@ -51678,7 +51791,8 @@
                                                                 "plume",
                                                                 "flow",
                                                                 "tempo",
-                                                                "robinhood-chain"
+                                                                "robinhood-chain",
+                                                                "celo"
                                                             ],
                                                             "description": "EVM chain identifier",
                                                             "example": "ethereum"
@@ -51964,6 +52078,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -51997,7 +52112,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -52084,6 +52200,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -52117,7 +52234,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -52231,6 +52349,7 @@
                                                                 "flow-testnet",
                                                                 "tempo-testnet",
                                                                 "robinhood-chain-testnet",
+                                                                "celo-sepolia",
                                                                 "ethereum",
                                                                 "polygon",
                                                                 "bsc",
@@ -52264,7 +52383,8 @@
                                                                 "plume",
                                                                 "flow",
                                                                 "tempo",
-                                                                "robinhood-chain"
+                                                                "robinhood-chain",
+                                                                "celo"
                                                             ],
                                                             "description": "EVM chain identifier",
                                                             "example": "ethereum"
@@ -52797,6 +52917,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -52830,7 +52951,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ]
                                                 }
                                             },
@@ -52948,6 +53070,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -52981,7 +53104,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 },
@@ -56669,6 +56793,7 @@
                                                         "flow-testnet",
                                                         "tempo-testnet",
                                                         "robinhood-chain-testnet",
+                                                        "celo-sepolia",
                                                         "ethereum",
                                                         "polygon",
                                                         "bsc",
@@ -56702,7 +56827,8 @@
                                                         "plume",
                                                         "flow",
                                                         "tempo",
-                                                        "robinhood-chain"
+                                                        "robinhood-chain",
+                                                        "celo"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 }
@@ -64129,6 +64255,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -64162,7 +64289,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ]
                                     }
                                 },
@@ -64275,6 +64403,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -64308,7 +64437,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -67802,6 +67932,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -67835,7 +67966,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -75686,6 +75818,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -75719,7 +75852,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -77665,6 +77799,7 @@
                                             "flow-testnet",
                                             "tempo-testnet",
                                             "robinhood-chain-testnet",
+                                            "celo-sepolia",
                                             "ethereum",
                                             "polygon",
                                             "bsc",
@@ -77698,7 +77833,8 @@
                                             "plume",
                                             "flow",
                                             "tempo",
-                                            "robinhood-chain"
+                                            "robinhood-chain",
+                                            "celo"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }

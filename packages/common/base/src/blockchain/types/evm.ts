@@ -25,6 +25,9 @@ export const EVMBlockchain = {
     FLOW: "flow",
     PLUME: "plume",
     TEMPO: "tempo",
+    AVALANCHE: "avalanche",
+    CELO: "celo",
+    ROBINHOOD_CHAIN: "robinhood-chain",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
@@ -55,6 +58,9 @@ export const EVMBlockchainTestnet = {
     PLUME_TESTNET: "plume-testnet",
     ARC_TESTNET: "arc-testnet",
     TEMPO_TESTNET: "tempo-testnet",
+    AVALANCHE_FUJI: "avalanche-fuji",
+    CELO_SEPOLIA: "celo-sepolia",
+    ROBINHOOD_CHAIN_TESTNET: "robinhood-chain-testnet",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
