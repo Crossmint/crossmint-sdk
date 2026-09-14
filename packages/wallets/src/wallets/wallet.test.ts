@@ -2406,6 +2406,53 @@ describe("Wallet - useSigner()", () => {
             expect("onSign" in wallet.recoveryMethods[1]).toBe(true);
         });
 
+        it("a caller-provided server recovery secret is exposed address-only yet still drives addSigner", async () => {
+            const { deriveServerSignerDetails, deriveServerSignerCandidates, assembleServerSigner } = await import(
+                "@/signers/server"
+            );
+            vi.mocked(deriveServerSignerDetails).mockReturnValue({
+                derivedKeyBytes: new Uint8Array(32),
+                derivedAddress: "0xDerivedServerAddress",
+            });
+            vi.mocked(deriveServerSignerCandidates).mockReturnValue({
+                primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xDerivedServerAddress" },
+                legacy: null,
+            });
+            vi.mocked(assembleServerSigner).mockReturnValue({
+                type: "server",
+                locator: () => "server:0xDerivedServerAddress",
+                address: () => "0xDerivedServerAddress",
+                status: undefined,
+                signMessage: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+                signTransaction: vi.fn().mockResolvedValue({ signature: "0xmocksig" }),
+            } as any);
+            mockApiClient = createMockApiClient();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia" as const,
+                    address: "0x1234567890123456789012345678901234567890",
+                    recovery: { type: "server", secret: "recovery-secret" },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            await wallet.waitForInit();
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            expect(wallet.recovery).toEqual({ type: "server", address: "0xDerivedServerAddress" });
+            expect(wallet.recoveryMethods).toEqual([{ type: "server", address: "0xDerivedServerAddress" }]);
+            expect(JSON.stringify(wallet.recoveryMethods)).not.toContain("recovery-secret");
+            expect(wallet.signer?.locator()).toBe("server:0xDerivedServerAddress");
+
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "email",
+                address: "0xNewEmail",
+                locator: "email:new@example.com",
+                chains: { "base-sepolia": { id: "sig-new", status: "success" } },
+            } as any);
+            const result = await wallet.addSigner({ type: "email", email: "new@example.com" } as any);
+            expect(result.locator).toBe("email:new@example.com");
+        });
+
         it("useSigner with a secondary server recovery signer never stores the secret in the list", async () => {
             const { deriveServerSignerDetails, deriveServerSignerCandidates, assembleServerSigner } = await import(
                 "@/signers/server"

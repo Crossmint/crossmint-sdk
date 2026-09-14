@@ -70,6 +70,23 @@ describe("ServerSignerResolver", () => {
         const ctx = ["base-sepolia", "proj_test_123", "staging"];
         expect(mockedCandidates).toHaveBeenNthCalledWith(1, fullConfig("s"), ...ctx);
     });
+    describe("resolveRecovery", () => {
+        it("caches the legacy derivation when the API reports it as a recovery address and wipes the primary", () => {
+            const recorded = installDual();
+            const resolver = makeResolver({ apiRecoveryAddresses: ["0xLegacy"] });
+            expect(resolver.resolveRecovery(fullConfig("s"))).toBe("0xLegacy");
+            expectWipedAndKept(recorded[0], "primary", "legacy", 9);
+            expect(resolver.hasRecoveryResolutionFor("0xLegacy")).toBe(true);
+            expect(resolver.resolveDerivation(apiConfig("0xLegacy")).derivedAddress).toBe("0xLegacy");
+        });
+        it("caches the primary derivation otherwise, without consulting registered signers", () => {
+            const recorded = installDual();
+            const resolver = makeResolver();
+            expect(resolver.resolveRecovery(fullConfig("s"))).toBe("0xPrimary");
+            expectWipedAndKept(recorded[0], "legacy", "primary", 7);
+            expect(resolver.hasRecoveryResolutionFor("0xPrimary")).toBe(true);
+        });
+    });
     describe("resolveDerivation", () => {
         it("returns the cached recovery resolution for api-sourced config", () => {
             const recorded = installCandidates({ rec: { primary: { address: "0xRec", fill: 5 }, legacy: null } });

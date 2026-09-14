@@ -159,6 +159,16 @@ export class Wallet<C extends Chain> {
             signers: () => this.signers(),
             signer,
         });
+        // Recovery server secrets only ever live inside the resolver: the public recovery getters expose
+        // the address-only form regardless of whether the wallet was created or fetched.
+        recoverySigners.forEach((recoverySigner, index) => {
+            if (recoverySigner.type === "server" && !isApiSourcedServerSignerConfig(recoverySigner)) {
+                this.#signerManager.stripSecretFromRecovery(
+                    index,
+                    this.#serverSignerResolver.resolveRecovery(recoverySigner as ServerSignerConfig)
+                );
+            }
+        });
         this.#deviceRecovery = new DeviceRecoveryService({
             chain,
             walletAddress: this.address,

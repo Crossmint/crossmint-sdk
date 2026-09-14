@@ -114,6 +114,15 @@ export class ServerSignerResolver {
         return { kind: "unregistered", message: `Signer ${tried} is not registered in this wallet.` };
     }
 
+    /**
+     * Caches the derivation behind a recovery server secret without consulting registered signers, and
+     * reports the selected address so the caller can drop the secret-carrying config.
+     */
+    resolveRecovery(config: ServerSignerConfig): string {
+        const { primary, legacy } = this.deriveCandidates(config);
+        return this.#selectRecovery(primary, legacy).derivedAddress;
+    }
+
     #selectRegistered(
         primary: DerivedServerSigner,
         legacy: DerivedServerSigner | null,
