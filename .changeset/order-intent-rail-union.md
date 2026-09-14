@@ -1,5 +1,5 @@
 ---
-"@crossmint/client-sdk-base": minor
+"@crossmint/client-sdk-base": major
 "@crossmint/client-sdk-react-ui": patch
 ---
 
