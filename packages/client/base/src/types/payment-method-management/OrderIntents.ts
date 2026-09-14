@@ -16,9 +16,11 @@ export type OrderIntentAgenticTokenRail = OrderIntentRailState & {
     credentialFormats: OrderIntentCredentialFormat[];
 };
 
-export type OrderIntentEncryptedCardRail = OrderIntentRailState & {
+export type OrderIntentEncryptedCardRail = {
     rail: "encrypted-card";
     provider?: never;
+    status: "active";
+    error?: never;
     credentialFormats: "card"[];
 };
 
