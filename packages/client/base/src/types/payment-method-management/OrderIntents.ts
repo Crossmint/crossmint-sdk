@@ -15,10 +15,14 @@ export type OrderIntentAgenticTokenRail = OrderIntentRailState & {
     credentialFormats: OrderIntentCredentialFormat[];
 };
 
-export type OrderIntentEncryptedCardRail = {
+// Rail-local on purpose: `encrypted-card` never goes through `pending_verification`.
+// Its only user step is refreshing the vaulted CVC, which `CrossmintCvcRecollection` drives.
+type EncryptedCardRailState =
+    | { status: "active" | "pending_cvc_recollection"; error?: never }
+    | { status: "error"; error: { code: string } };
+
+export type OrderIntentEncryptedCardRail = EncryptedCardRailState & {
     rail: "encrypted-card";
-    status: "active";
-    error?: never;
     credentialFormats: "card"[];
 };
 
