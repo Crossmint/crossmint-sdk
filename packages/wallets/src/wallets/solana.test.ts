@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import bs58 from "bs58";
 import { SolanaWallet } from "./solana";
 import type { SolanaChain } from "../chains/chains";
 import type { RecoverySignerConfigForChain } from "../signers/types";
@@ -33,7 +34,7 @@ describe("SolanaWallet - sendTransaction()", () => {
     });
 
     describe("success cases", () => {
-        it("sends transaction with serialized transaction string", async () => {
+        it("sends transaction with a base58 serialized transaction string", async () => {
             const serializedTx = createMockSolanaSerializedTransaction();
 
             const mockTransactionResponse = {
@@ -77,9 +78,9 @@ describe("SolanaWallet - sendTransaction()", () => {
             );
         });
 
-        it("sends transaction with serialized transaction string", async () => {
-            const serializedTx =
-                "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
+        it("converts a base64 serialized transaction to base58", async () => {
+            const base58SerializedTx = createMockSolanaSerializedTransaction();
+            const serializedTx = Buffer.from(bs58.decode(base58SerializedTx)).toString("base64");
 
             const mockTransactionResponse = {
                 id: "txn-sol-456",
@@ -92,7 +93,7 @@ describe("SolanaWallet - sendTransaction()", () => {
                         "https://explorer.solana.com/tx/5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
                 },
                 params: {
-                    transaction: serializedTx,
+                    transaction: base58SerializedTx,
                     signer: "api-key:test",
                 },
                 createdAt: Date.now(),
@@ -115,7 +116,7 @@ describe("SolanaWallet - sendTransaction()", () => {
                 "me:solana:smart",
                 expect.objectContaining({
                     params: expect.objectContaining({
-                        transaction: serializedTx,
+                        transaction: base58SerializedTx,
                         signer: "api-key",
                     }),
                 })
