@@ -11,6 +11,7 @@ import {
 } from "./chains";
 
 const NEW_SMART_WALLET_CHAINS: EVMSmartWalletChain[] = [
+    "arc",
     "avalanche",
     "avalanche-fuji",
     "celo",
@@ -29,6 +30,7 @@ describe("chains", () => {
 
     describe("when converting mainnet chains to their testnet", () => {
         test.each([
+            ["arc", "arc-testnet"],
             ["avalanche", "avalanche-fuji"],
             ["celo", "celo-sepolia"],
             ["robinhood-chain", "robinhood-chain-testnet"],

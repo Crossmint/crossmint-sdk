@@ -29,6 +29,7 @@ import {
     plumeTestnet,
 } from "viem/chains";
 
+import { arc } from "./definitions/arc";
 import { arcTestnet } from "./definitions/arcTestnet";
 import { celoSepolia } from "./definitions/celoSepolia";
 import { robinhoodChain } from "./definitions/robinhoodChain";
@@ -67,6 +68,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.APECHAIN,
     Blockchain.ARBITRUM,
     Blockchain.ARBITRUMNOVA,
+    Blockchain.ARC,
     Blockchain.AVALANCHE,
     Blockchain.BASE,
     Blockchain.BSC,
@@ -152,6 +154,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return plumeTestnet;
         case Blockchain.PLUME:
             return plume;
+        case Blockchain.ARC:
+            return arc;
         case Blockchain.ARC_TESTNET:
             return arcTestnet;
         case Blockchain.TEMPO:
@@ -213,6 +217,7 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.WORLDCHAIN]: Blockchain.WORLD_CHAIN_SEPOLIA,
     [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
     [Blockchain.TEMPO]: Blockchain.TEMPO_TESTNET,
+    [Blockchain.ARC]: Blockchain.ARC_TESTNET,
 };
 
 export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {

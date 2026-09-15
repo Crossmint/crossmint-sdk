@@ -328,6 +328,7 @@
                                 "tempo",
                                 "robinhood-chain",
                                 "celo",
+                                "arc",
                                 "solana",
                                 "stellar"
                             ],
@@ -542,6 +543,7 @@
                                 "tempo",
                                 "robinhood-chain",
                                 "celo",
+                                "arc",
                                 "solana",
                                 "stellar"
                             ],
@@ -5759,7 +5761,8 @@
                                                                                         "flow",
                                                                                         "tempo",
                                                                                         "robinhood-chain",
-                                                                                        "celo"
+                                                                                        "celo",
+                                                                                        "arc"
                                                                                     ],
                                                                                     "description": "The chain on which the signature will be submitted"
                                                                                 }
@@ -15912,7 +15915,8 @@
                                                                             "flow",
                                                                             "tempo",
                                                                             "robinhood-chain",
-                                                                            "celo"
+                                                                            "celo",
+                                                                            "arc"
                                                                         ],
                                                                         "description": "The chain on which the signature will be submitted"
                                                                     }
@@ -28389,7 +28393,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ]
                                     }
                                 },
@@ -28548,7 +28553,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -29823,7 +29829,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -42249,7 +42256,8 @@
                                                     "flow",
                                                     "tempo",
                                                     "robinhood-chain",
-                                                    "celo"
+                                                    "celo",
+                                                    "arc"
                                                 ],
                                                 "description": "The chain on which the signature will be submitted"
                                             }
@@ -51521,7 +51529,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -51643,7 +51652,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -51792,7 +51802,8 @@
                                                                 "flow",
                                                                 "tempo",
                                                                 "robinhood-chain",
-                                                                "celo"
+                                                                "celo",
+                                                                "arc"
                                                             ],
                                                             "description": "EVM chain identifier",
                                                             "example": "ethereum"
@@ -52113,7 +52124,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -52235,7 +52247,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "example": "ethereum"
                                                 },
@@ -52384,7 +52397,8 @@
                                                                 "flow",
                                                                 "tempo",
                                                                 "robinhood-chain",
-                                                                "celo"
+                                                                "celo",
+                                                                "arc"
                                                             ],
                                                             "description": "EVM chain identifier",
                                                             "example": "ethereum"
@@ -52952,7 +52966,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ]
                                                 }
                                             },
@@ -53105,7 +53120,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 },
@@ -56828,7 +56844,8 @@
                                                         "flow",
                                                         "tempo",
                                                         "robinhood-chain",
-                                                        "celo"
+                                                        "celo",
+                                                        "arc"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 }
@@ -64290,7 +64307,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ]
                                     }
                                 },
@@ -64438,7 +64456,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -67967,7 +67986,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -75853,7 +75873,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -77834,7 +77855,8 @@
                                             "flow",
                                             "tempo",
                                             "robinhood-chain",
-                                            "celo"
+                                            "celo",
+                                            "arc"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }

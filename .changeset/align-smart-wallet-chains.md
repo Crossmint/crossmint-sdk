@@ -3,4 +3,4 @@
 "@crossmint/wallets-sdk": minor
 ---
 
-Add Avalanche, Avalanche Fuji, Celo, Celo Sepolia, Robinhood Chain and Robinhood Chain Testnet as supported smart wallet chains, matching the chains supported by the Wallets REST API.
+Add Arc, Avalanche, Avalanche Fuji, Celo, Celo Sepolia, Robinhood Chain and Robinhood Chain Testnet as supported smart wallet chains, matching the chains supported by the Wallets REST API.

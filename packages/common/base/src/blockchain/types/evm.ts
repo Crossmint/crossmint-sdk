@@ -28,6 +28,7 @@ export const EVMBlockchain = {
     AVALANCHE: "avalanche",
     CELO: "celo",
     ROBINHOOD_CHAIN: "robinhood-chain",
+    ARC: "arc",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
