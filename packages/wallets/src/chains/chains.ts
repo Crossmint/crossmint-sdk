@@ -12,6 +12,9 @@ import {
     arbitrumSepolia,
     arbitrum,
     arbitrumNova,
+    avalanche,
+    avalancheFuji,
+    celo,
     modeTestnet,
     mode,
     mainnet,
@@ -26,7 +29,11 @@ import {
     plumeTestnet,
 } from "viem/chains";
 
+import { arc } from "./definitions/arc";
 import { arcTestnet } from "./definitions/arcTestnet";
+import { celoSepolia } from "./definitions/celoSepolia";
+import { robinhoodChain } from "./definitions/robinhoodChain";
+import { robinhoodChainTestnet } from "./definitions/robinhoodChainTestnet";
 import { story } from "./definitions/story";
 import { storyTestnet } from "./definitions/storyTestnet";
 import { tempo } from "./definitions/tempo";
@@ -35,7 +42,9 @@ import { tempoTestnet } from "./definitions/tempoTestnet";
 const TESTNET_AA_CHAINS = [
     Blockchain.ABSTRACT_TESTNET,
     Blockchain.ARBITRUM_SEPOLIA,
+    Blockchain.AVALANCHE_FUJI,
     Blockchain.BASE_SEPOLIA,
+    Blockchain.CELO_SEPOLIA,
     Blockchain.CURTIS,
     Blockchain.ETHEREUM_SEPOLIA,
     Blockchain.FLOW_TESTNET,
@@ -44,6 +53,7 @@ const TESTNET_AA_CHAINS = [
     Blockchain.OPTIMISM_SEPOLIA,
     Blockchain.PLUME_TESTNET,
     Blockchain.POLYGON_AMOY,
+    Blockchain.ROBINHOOD_CHAIN_TESTNET,
     Blockchain.SCROLL_SEPOLIA,
     Blockchain.SEI_ATLANTIC_2_TESTNET,
     Blockchain.STORY_TESTNET,
@@ -58,8 +68,11 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.APECHAIN,
     Blockchain.ARBITRUM,
     Blockchain.ARBITRUMNOVA,
+    Blockchain.ARC,
+    Blockchain.AVALANCHE,
     Blockchain.BASE,
     Blockchain.BSC,
+    Blockchain.CELO,
     Blockchain.ETHEREUM,
     Blockchain.FLOW,
     Blockchain.MANTLE,
@@ -67,6 +80,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.OPTIMISM,
     Blockchain.PLUME,
     Blockchain.POLYGON,
+    Blockchain.ROBINHOOD_CHAIN,
     Blockchain.SCROLL,
     Blockchain.SEI_PACIFIC_1,
     Blockchain.SHAPE,
@@ -100,6 +114,18 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return arbitrum;
         case Blockchain.ARBITRUMNOVA:
             return arbitrumNova;
+        case Blockchain.AVALANCHE:
+            return avalanche;
+        case Blockchain.AVALANCHE_FUJI:
+            return avalancheFuji;
+        case Blockchain.CELO:
+            return celo;
+        case Blockchain.CELO_SEPOLIA:
+            return celoSepolia;
+        case Blockchain.ROBINHOOD_CHAIN:
+            return robinhoodChain;
+        case Blockchain.ROBINHOOD_CHAIN_TESTNET:
+            return robinhoodChainTestnet;
         case Blockchain.STORY_TESTNET:
             return storyTestnet;
         case Blockchain.STORY:
@@ -128,6 +154,8 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return plumeTestnet;
         case Blockchain.PLUME:
             return plume;
+        case Blockchain.ARC:
+            return arc;
         case Blockchain.ARC_TESTNET:
             return arcTestnet;
         case Blockchain.TEMPO:
@@ -172,7 +200,9 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.ABSTRACT]: Blockchain.ABSTRACT_TESTNET,
     [Blockchain.APECHAIN]: Blockchain.CURTIS,
     [Blockchain.ARBITRUM]: Blockchain.ARBITRUM_SEPOLIA,
+    [Blockchain.AVALANCHE]: Blockchain.AVALANCHE_FUJI,
     [Blockchain.BASE]: Blockchain.BASE_SEPOLIA,
+    [Blockchain.CELO]: Blockchain.CELO_SEPOLIA,
     [Blockchain.ETHEREUM]: Blockchain.ETHEREUM_SEPOLIA,
     [Blockchain.FLOW]: Blockchain.FLOW_TESTNET,
     [Blockchain.MANTLE]: Blockchain.MANTLE_SEPOLIA,
@@ -180,12 +210,14 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.OPTIMISM]: Blockchain.OPTIMISM_SEPOLIA,
     [Blockchain.PLUME]: Blockchain.PLUME_TESTNET,
     [Blockchain.POLYGON]: Blockchain.POLYGON_AMOY,
+    [Blockchain.ROBINHOOD_CHAIN]: Blockchain.ROBINHOOD_CHAIN_TESTNET,
     [Blockchain.SCROLL]: Blockchain.SCROLL_SEPOLIA,
     [Blockchain.SEI_PACIFIC_1]: Blockchain.SEI_ATLANTIC_2_TESTNET,
     [Blockchain.STORY]: Blockchain.STORY_TESTNET,
     [Blockchain.WORLDCHAIN]: Blockchain.WORLD_CHAIN_SEPOLIA,
     [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
     [Blockchain.TEMPO]: Blockchain.TEMPO_TESTNET,
+    [Blockchain.ARC]: Blockchain.ARC_TESTNET,
 };
 
 export function mainnetToTestnet(chain: EVMSmartWalletMainnet): EVMSmartWalletTestnet | undefined {

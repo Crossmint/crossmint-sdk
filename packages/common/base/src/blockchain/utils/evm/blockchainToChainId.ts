@@ -47,9 +47,16 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "flow-testnet": 1231,
     plume: 98865,
     "plume-testnet": 161221135,
+    arc: 5042,
     "arc-testnet": 5042002,
     tempo: 4217,
     "tempo-testnet": 42431,
+    avalanche: 43114,
+    "avalanche-fuji": 43113,
+    celo: 42220,
+    "celo-sepolia": 11142220,
+    "robinhood-chain": 4663,
+    "robinhood-chain-testnet": 46630,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

@@ -50,9 +50,16 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "flow-testnet": "Flow Testnet",
     plume: "Plume",
     "plume-testnet": "Plume Testnet",
+    arc: "Arc",
     "arc-testnet": "Arc Testnet",
     tempo: "Tempo",
     "tempo-testnet": "Tempo Testnet",
+    avalanche: "Avalanche",
+    "avalanche-fuji": "Avalanche Fuji",
+    celo: "Celo",
+    "celo-sepolia": "Celo Sepolia",
+    "robinhood-chain": "Robinhood Chain",
+    "robinhood-chain-testnet": "Robinhood Chain Testnet",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
