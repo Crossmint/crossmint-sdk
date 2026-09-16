@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 1.16.0
+
+### Minor Changes
+
+- 0db7d3f: Add Arc, Avalanche, Avalanche Fuji, Celo, Celo Sepolia, Robinhood Chain and Robinhood Chain Testnet as supported smart wallet chains, matching the chains supported by the Wallets REST API.
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/common-sdk-auth@1.1.20
+
 ## 1.15.0
 
 ### Minor Changes
