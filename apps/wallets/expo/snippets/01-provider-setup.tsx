@@ -15,7 +15,7 @@ export function Providers({ children }: ProvidersProps) {
                 <CrossmintWalletProvider
                     createOnLogin={{
                         chain: (process.env.EXPO_PUBLIC_CHAIN as any) || "base-sepolia",
-                        recovery: { type: "email" },
+                        recoveryMethods: { type: "email" },
                     }}
                     showOtpSignerPrompt
                 >

@@ -58,7 +58,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 signers: [deviceDesc],
                 options: { deviceSignerKeyStorage: storage },
                 owner: `userId:sdk-device-evm-${Date.now()}`,
@@ -79,10 +79,10 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
             const storage = new MockDeviceSignerKeyStorage(API_KEY);
             const deviceDesc = await sdk.createDeviceSigner(storage);
 
-            // Create wallet without device signer — recovery signer only
+            // Create wallet without device signer — recovery method only
             const wallet = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 owner: `userId:sdk-addSigner-full-evm-${Date.now()}`,
             });
 
@@ -112,7 +112,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const { address } = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 signers: [deviceDesc],
                 options: { deviceSignerKeyStorage: storage },
                 owner: `userId:sdk-getWallet-evm-${Date.now()}`,
@@ -140,7 +140,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 owner: `userId:sdk-addSigner-evm-${Date.now()}`,
             });
 
@@ -159,7 +159,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "solana",
-                recovery: {
+                recoveryMethods: {
                     type: "external-wallet",
                     address: generateSolanaAddress(),
                     onSign: async (tx) => tx,
@@ -178,7 +178,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "solana",
-                recovery: {
+                recoveryMethods: {
                     type: "external-wallet",
                     address: generateSolanaAddress(),
                     onSign: async (tx) => tx,
@@ -203,7 +203,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 signers: [deviceDesc],
                 options: { deviceSignerKeyStorage: storage },
                 owner: `userId:sdk-error-deleted-key-${Date.now()}`,
@@ -224,7 +224,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const originalWallet = await sdk.createWallet({
                 chain: "base-sepolia",
-                recovery: makeEvmRecovery(),
+                recoveryMethods: makeEvmRecovery(),
                 signers: [deviceDesc],
                 options: { deviceSignerKeyStorage: storage },
                 owner: `userId:sdk-error-wrong-device-${Date.now()}`,
@@ -252,7 +252,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
 
             const wallet = await sdk.createWallet({
                 chain: "stellar",
-                recovery: {
+                recoveryMethods: {
                     type: "external-wallet",
                     address: generateStellarAddress(),
                     onSign: async (tx) => tx,

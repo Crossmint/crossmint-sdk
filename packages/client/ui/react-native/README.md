@@ -34,7 +34,7 @@ export default function App() {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recovery: { type: "email" },
+            recoveryMethods: { type: "email" },
           }}
         >
           <MainApp />
@@ -61,7 +61,7 @@ export default function App() {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recovery: {
+          recoveryMethods: {
             type: "email",
             email: "user@example.com",
           },
@@ -114,7 +114,7 @@ function WalletActions() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` + optional `signers`. |
+| `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recoveryMethods` + optional `signers`. |
 | `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
@@ -138,7 +138,7 @@ const {
 
 ### `useWalletOtpSigner()`
 
-For custom OTP UI when using email/phone recovery signers. When `showOtpSignerPrompt` is set to `false`, use this hook to handle OTP flows manually:
+For custom OTP UI when using email/phone recovery methods. When `showOtpSignerPrompt` is set to `false`, use this hook to handle OTP flows manually:
 
 ```tsx
 const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();

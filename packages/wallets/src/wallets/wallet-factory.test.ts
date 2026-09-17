@@ -69,13 +69,13 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         vi.restoreAllMocks();
     });
 
-    describe("createWallet with recovery and signers", () => {
-        it("creates wallet with top-level recovery", async () => {
+    describe("createWallet recovery methods", () => {
+        it("creates a wallet with a single recovery method under adminSigner", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
             const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
-                recovery: {
+                recoveryMethods: {
                     type: "external-wallet",
                     address: "AdminSignerAddress123",
                 },
@@ -94,6 +94,66 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                     }),
                 })
             );
+        });
+
+        it("creates a Solana wallet with recovery methods under recoveryMethods", async () => {
+            const recoveryMethods = [
+                { type: "external-wallet" as const, address: "AdminSignerAddress123" },
+                { type: "external-wallet" as const, address: "SecondSignerAddress456" },
+            ];
+            mockApiClient.createWallet.mockResolvedValue({
+                ...mockWalletWithAdminAndDelegated,
+                config: {
+                    ...mockWalletWithAdminAndDelegated.config,
+                    recoveryMethods,
+                },
+            });
+
+            await walletFactory.createWallet({ chain: "solana", recoveryMethods });
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({ recoveryMethods }),
+                })
+            );
+        });
+
+        it("continues to accept the deprecated recovery alias", async () => {
+            mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
+
+            await walletFactory.createWallet({
+                chain: "solana",
+                recovery: {
+                    type: "external-wallet",
+                    address: "AdminSignerAddress123",
+                },
+            });
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: expect.objectContaining({ address: "AdminSignerAddress123" }),
+                    }),
+                })
+            );
+        });
+
+        it("rejects both recovery configuration keys", async () => {
+            await expect(
+                walletFactory.createWallet({
+                    chain: "solana",
+                    recoveryMethods: { type: "api-key" },
+                    recovery: { type: "api-key" },
+                })
+            ).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("rejects wallet creation without a recovery configuration", async () => {
+            await expect(walletFactory.createWallet({ chain: "solana" })).rejects.toThrow(
+                new InvalidRecoveryConfigError("A recovery method is required")
+            );
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
     });
 

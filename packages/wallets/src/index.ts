@@ -1,8 +1,8 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
-// Recovery signers
-export { toRecoverySignerList } from "./utils/recovery";
+// Recovery methods
+export { recoveryMethodsFromCreateArgs, toRecoverySignerList } from "./utils/recovery";
 
 // Errors
 export {

@@ -13,6 +13,7 @@ import {
     type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
     type DeviceSignerConfig,
+    recoveryMethodsFromCreateArgs,
     toRecoverySignerList,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
@@ -230,16 +231,16 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        const hasPasskeyRecoverySigner = toRecoverySignerList(createOnLogin?.recovery).some(
-            (s) => s.type === "passkey"
-        );
+        const hasPasskeyRecoverySigner = toRecoverySignerList(
+            createOnLogin == null ? undefined : recoveryMethodsFromCreateArgs(createOnLogin)
+        ).some((s) => s.type === "passkey");
         if (hasPasskeyRecoverySigner && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.recovery, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, createOnLogin?.recovery, createOnLogin?.recoveryMethods, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -308,7 +309,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(toRecoverySignerList(args.recovery));
+                await initializeWebViewIfNeeded(toRecoverySignerList(recoveryMethodsFromCreateArgs(args)));
 
                 const walletOptions = buildWalletOptions(args.options);
 
@@ -331,7 +332,7 @@ export function CrossmintWalletBaseProvider({
                     wallet = await wallets.createWallet<C>({
                         chain: args.chain,
                         plugins: args.plugins,
-                        recovery: args.recovery,
+                        recoveryMethods: recoveryMethodsFromCreateArgs(args),
                         signers: args.signers,
                         alias: args.alias,
                         options: walletOptions,
@@ -402,10 +403,12 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(toRecoverySignerList(args.recovery));
+                await initializeWebViewIfNeeded(toRecoverySignerList(recoveryMethodsFromCreateArgs(args)));
 
                 const wallet = await wallets.createWallet<C>({
                     ...args,
+                    recoveryMethods: recoveryMethodsFromCreateArgs(args),
+                    recovery: undefined,
                     options: buildWalletOptions(args.options),
                 });
                 setWallet(wallet);
@@ -452,7 +455,7 @@ export function CrossmintWalletBaseProvider({
         }
 
         // Check if any email signer (in recovery or signers array) is missing its email value
-        const recoverySigners = toRecoverySignerList(createOnLogin.recovery);
+        const recoverySigners = toRecoverySignerList(recoveryMethodsFromCreateArgs(createOnLogin));
         const hasEmailSignerNeedingPopulation =
             recoverySigners.some((s) => s.type === "email" && s.email == null) ||
             (createOnLogin.signers?.some((s) => s.type === "email" && s.email == null) ?? false);
@@ -473,13 +476,20 @@ export function CrossmintWalletBaseProvider({
             const userEmail = authBaseContext.user.email;
             const processed = { ...createOnLogin };
 
-            // Populate email on every recovery signer that needs it
+            // Populate email on every recovery method that needs it
             const populatedRecoverySigners = recoverySigners.map((s) =>
                 s.type === "email" && s.email == null ? { ...s, email: userEmail } : s
             );
-            processed.recovery = (
-                Array.isArray(processed.recovery) ? populatedRecoverySigners : populatedRecoverySigners[0]
-            ) as typeof processed.recovery;
+            const populatedRecoveryMethods = (
+                Array.isArray(recoveryMethodsFromCreateArgs(processed))
+                    ? populatedRecoverySigners
+                    : populatedRecoverySigners[0]
+            ) as typeof processed.recoveryMethods;
+            if (processed.recoveryMethods != null) {
+                processed.recoveryMethods = populatedRecoveryMethods;
+            } else {
+                processed.recovery = populatedRecoveryMethods as typeof processed.recovery;
+            }
 
             // Populate email on each signer in the signers array if needed
             if (processed.signers != null) {
@@ -502,8 +512,12 @@ export function CrossmintWalletBaseProvider({
     useEffect(() => {
         if (processedCreateOnLogin != null) {
             // Guard: don't attempt wallet creation if required signer fields are still missing.
-            const { recovery, signers } = processedCreateOnLogin;
-            if (toRecoverySignerList(recovery).some((s) => s.type === "external-wallet" && s.address == null)) {
+            const { signers } = processedCreateOnLogin;
+            if (
+                toRecoverySignerList(recoveryMethodsFromCreateArgs(processedCreateOnLogin)).some(
+                    (s) => s.type === "external-wallet" && s.address == null
+                )
+            ) {
                 return;
             }
             if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {

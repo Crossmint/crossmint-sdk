@@ -134,7 +134,7 @@ export function Permissions({
                 </TouchableOpacity>
             </View>
             <ScrollView testID="signers-list" style={{ maxHeight: 160, marginTop: 8 }}>
-                {/* Recovery signer */}
+                {/* Recovery method */}
                 {wallet &&
                     (() => {
                         const recovery = (wallet as any).recovery;
@@ -291,7 +291,7 @@ export function Permissions({
                 <Text style={{ fontWeight: "600" }}>Add Signer</Text>
             </TouchableOpacity>
             <Text style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>
-                Triggers recovery (OTP) if needed. Recovery signers: 1 per wallet.
+                Triggers recovery (OTP) if needed. Recovery methods: 1 per wallet.
             </Text>
 
             {separator}

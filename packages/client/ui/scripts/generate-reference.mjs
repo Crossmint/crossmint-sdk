@@ -34,13 +34,13 @@ const WALLET_CREATE_ARGS_CHILDREN = [
         },
     },
     {
-        name: "recovery",
+        name: "recoveryMethods",
         type: { type: "reference", name: "SignerConfigForChain" },
         comment: {
             summary: [
                 {
                     kind: "text",
-                    text: 'The recovery signer configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                    text: 'The recovery method configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
                 },
             ],
         },

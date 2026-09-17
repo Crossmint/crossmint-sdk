@@ -63,14 +63,14 @@ export const useFirebaseConnector = () => {
                 if (email != null) {
                     return await createWallet({
                         chain,
-                        recovery: { type: "email", email },
+                        recoveryMethods: { type: "email", email },
                     });
                 }
 
                 if (phone != null) {
                     return await createWallet({
                         chain,
-                        recovery: { type: "phone", phone },
+                        recoveryMethods: { type: "phone", phone },
                     });
                 }
             } catch (error) {

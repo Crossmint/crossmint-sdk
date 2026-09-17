@@ -245,8 +245,10 @@ export type RecoveryCreateArg<C extends Chain> = C extends SolanaChain | Stellar
     : RecoverySignerConfigFor<C>;
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery signer, or list of recovery signers on Solana and Stellar. */
-    recovery: RecoveryCreateArg<C>;
+    /** Recovery method, or list of recovery methods on Solana and Stellar. */
+    recoveryMethods?: RecoveryCreateArg<C>;
+    /** @deprecated Use `recoveryMethods` instead. */
+    recovery?: RecoveryCreateArg<C>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;
