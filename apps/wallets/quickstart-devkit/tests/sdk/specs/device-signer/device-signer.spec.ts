@@ -79,7 +79,7 @@ test.describe("Device Signer — SDK", { tag: "@critical" }, () => {
             const storage = new MockDeviceSignerKeyStorage(API_KEY);
             const deviceDesc = await sdk.createDeviceSigner(storage);
 
-            // Create wallet without device signer — recovery signer only
+            // Create wallet without device signer — recovery method only
             const wallet = await sdk.createWallet({
                 chain: "base-sepolia",
                 recovery: makeEvmRecovery(),

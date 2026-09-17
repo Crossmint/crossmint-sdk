@@ -1,13 +1,20 @@
 import type { Chain } from "../chains/chains";
-import type { RecoverySignerConfigForChain } from "../signers/types";
+import type { RecoverySignerConfigFor } from "../wallets/types";
 import type { WalletCreateArgs } from "../wallets/types";
+import { InvalidRecoveryConfigError } from "./errors";
 
-/** Normalizes the single-or-list `recovery` wallet creation argument into a list. */
-export function toRecoverySignerList<C extends Chain>(
-    recovery?: WalletCreateArgs<C>["recovery"]
-): Array<RecoverySignerConfigForChain<C>> {
-    if (recovery == null) {
+/** Reads and normalizes the recovery methods from creation args. */
+export function recoveryMethodsFromCreateArgs<C extends Chain>(
+    args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
+): Array<RecoverySignerConfigFor<C>> {
+    if (args.recoveryMethods != null && args.recovery != null) {
+        throw new InvalidRecoveryConfigError("Pass either `recovery` or `recoveryMethods`, not both");
+    }
+    if (args.recoveryMethods != null) {
+        return args.recoveryMethods;
+    }
+    if (args.recovery == null) {
         return [];
     }
-    return (Array.isArray(recovery) ? recovery : [recovery]) as Array<RecoverySignerConfigForChain<C>>;
+    return [args.recovery];
 }

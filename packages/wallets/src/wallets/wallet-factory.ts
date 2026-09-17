@@ -29,7 +29,7 @@ import type {
 } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
-import { toRecoverySignerList } from "../utils/recovery";
+import { recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
@@ -51,8 +51,8 @@ type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams
 
 /**
  * The recovery half of a wallet-creation request. The API rejects requests carrying both fields
- * (`RECOVERY_ADMIN_SIGNER_CONFLICT`), so a list goes under `recoveryMethods` while a single signer keeps
- * using the deprecated `adminSigner` field.
+ * (`RECOVERY_ADMIN_SIGNER_CONFLICT`), so a list goes under `recoveryMethods` while a single signer uses
+ * the `adminSigner` field.
  */
 type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recoveryMethods: ResolvedRecoverySigner[] };
 
@@ -134,6 +134,14 @@ export class WalletFactory {
     })
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        const recoveryMethods = recoveryMethodsFromCreateArgs(validatedArgs);
+        if (recoveryMethods.length === 0) {
+            throw new InvalidRecoveryConfigError(
+                validatedArgs.recoveryMethods != null
+                    ? "At least one recovery method is required"
+                    : "A recovery method is required"
+            );
+        }
         await validatedArgs.options?.callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
@@ -160,15 +168,13 @@ export class WalletFactory {
             validatedArgs.options?.deviceSignerKeyStorage
         );
 
-        const recoverySigners = this.validatedRecoverySignerList(validatedArgs.recovery, validatedArgs.chain);
+        const recoverySigners = this.validatedRecoverySignerList(recoveryMethods, validatedArgs.chain);
         const resolvedRecoverySigners: ResolvedRecoverySigner[] = [];
         // Sequential: resolving a passkey signer prompts the user, and browsers reject concurrent WebAuthn calls.
         for (const recoverySigner of recoverySigners) {
             resolvedRecoverySigners.push(await this.resolveRecoverySigner(recoverySigner, validatedArgs.chain));
         }
-        const recoveryRequestConfig: RecoveryRequestConfig = Array.isArray(validatedArgs.recovery)
-            ? { recoveryMethods: resolvedRecoverySigners }
-            : { adminSigner: resolvedRecoverySigners[0] };
+        const recoveryRequestConfig = this.buildRecoveryRequestConfig(validatedArgs, resolvedRecoverySigners);
 
         const walletResponse = await this.createSmartWallet(
             validatedArgs,
@@ -229,27 +235,30 @@ export class WalletFactory {
         return await this.apiClient.createWallet(buildParams(signersWithoutDeviceSigner));
     }
 
-    /**
-     * Normalizes the caller's recovery config into a list, rejecting locally what the API would reject
-     * anyway so callers fail fast and without a round trip.
-     */
+    private buildRecoveryRequestConfig<C extends Chain>(
+        args: WalletCreateArgs<C>,
+        resolvedRecoverySigners: ResolvedRecoverySigner[]
+    ): RecoveryRequestConfig {
+        // The API only accepts recoveryMethods on Solana and Stellar; EVM still requires adminSigner for one method.
+        if (args.recoveryMethods != null && (args.chain === "solana" || args.chain === "stellar")) {
+            return { recoveryMethods: resolvedRecoverySigners };
+        }
+        return { adminSigner: resolvedRecoverySigners[0] };
+    }
+
     private validatedRecoverySignerList<C extends Chain>(
-        recovery: WalletCreateArgs<C>["recovery"],
+        recoveryMethods: Array<RecoverySignerConfigFor<C>>,
         chain: C
     ): Array<RecoverySignerConfigFor<C>> {
-        const recoverySigners = toRecoverySignerList(recovery) as Array<RecoverySignerConfigFor<C>>;
-        if (!Array.isArray(recovery)) {
-            return recoverySigners;
+        if (recoveryMethods.length === 0) {
+            throw new InvalidRecoveryConfigError("At least one recovery method is required");
         }
-        if (chain !== "solana" && chain !== "stellar") {
+        if (recoveryMethods.length > 1 && chain !== "solana" && chain !== "stellar") {
             throw new RecoveryNotSupportedOnChainError(
-                `Multiple recovery signers are not supported on ${chain} yet. Pass a single recovery signer.`
+                `Multiple recovery methods are not supported on ${chain} yet. Pass a single recovery method.`
             );
         }
-        if (recoverySigners.length === 0) {
-            throw new InvalidRecoveryConfigError("At least one recovery signer is required");
-        }
-        return recoverySigners;
+        return recoveryMethods;
     }
 
     /** Creates the passkey / derives the server signer address a recovery signer needs to be sent to the API. */
@@ -313,7 +322,7 @@ export class WalletFactory {
         >;
         const recoverySigners = this.mergeRecoverySigners(
             apiRecoverySigners,
-            toRecoverySignerList<C>(createArgs.recovery),
+            recoveryMethodsFromCreateArgs(createArgs),
             args.chain
         );
 
@@ -514,13 +523,14 @@ export class WalletFactory {
         }
 
         const createArgs = args as WalletCreateArgs<C>;
-        if (createArgs.recovery != null || createArgs.signers != null) {
+        const recoveryMethods = recoveryMethodsFromCreateArgs(createArgs);
+        if (createArgs.recovery != null || createArgs.recoveryMethods != null || createArgs.signers != null) {
             const config = existingWallet.config as SmartWalletConfig;
             const existingWalletSigners =
                 config?.recoveryMethods ?? (config?.adminSigner != null ? [config.adminSigner] : []);
 
             const unmatchedExistingSigners = [...existingWalletSigners] as Array<RecoverySignerConfigForChain<C>>;
-            for (const inputRecoverySigner of toRecoverySignerList<C>(createArgs.recovery)) {
+            for (const inputRecoverySigner of recoveryMethods) {
                 if (existingWalletSigners.length === 0) {
                     break;
                 }

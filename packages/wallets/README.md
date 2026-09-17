@@ -64,7 +64,7 @@ console.log(wallet.address);
 
 ### Server signer
 
-Create a wallet with a server key as the recovery signer:
+Create a wallet with a server key as a recovery method:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
@@ -141,10 +141,10 @@ const wallet = await wallets.getWallet("0xWalletAddress", {
 
 Wallets SDK uses a two-tier signer model:
 
-- **Recovery signer** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
+- **Recovery method** — High-security, used for wallet recovery and adding new signers. Supports email OTP, phone OTP, external wallet, or server key.
 - **Operational signer** — Low-friction, used for day-to-day signing. Supports server key, external wallet, passkey, and device (browser/mobile only). For server-side (Node.js) usage, use a **server** or **external-wallet** signer.
 
-When no operational signer is available, the recovery signer automatically serves as a fallback for signing.
+When no operational signer is available, the recovery method automatically serves as a fallback for signing.
 
 ## Usage
 
@@ -252,8 +252,8 @@ const result = await wallet.approve({
 |---|---|---|
 | `device` | Hardware-backed, no OTP. **Browser and React Native only** — not available in Node.js. | Browser, React Native |
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
-| `email` | OTP-based recovery signer. | All |
-| `phone` | OTP-based recovery signer. | All |
+| `email` | OTP-based recovery method. | All |
+| `phone` | OTP-based recovery method. | All |
 | `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
 | `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
 

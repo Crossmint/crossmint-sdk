@@ -40,7 +40,20 @@ const WALLET_CREATE_ARGS_CHILDREN = [
             summary: [
                 {
                     kind: "text",
-                    text: 'The recovery signer configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                    text: 'A single recovery method configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                },
+            ],
+        },
+    },
+    {
+        name: "recoveryMethods",
+        flags: { isOptional: true },
+        type: { type: "array", elementType: { type: "reference", name: "SignerConfigForChain" } },
+        comment: {
+            summary: [
+                {
+                    kind: "text",
+                    text: "Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.",
                 },
             ],
         },

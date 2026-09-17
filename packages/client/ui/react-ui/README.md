@@ -121,19 +121,19 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 <CrossmintWalletProvider
   createOnLogin={{
     chain: "base-sepolia",       // required — the blockchain
-    recovery: { type: "email" }, // required — recovery signer config
+    recovery: { type: "email" }, // required — recovery method config
     signers: [{ type: "device" }], // optional — defaults to device signer
   }}
 >
 ```
 
-On Solana and Stellar, `recovery` also accepts a list of signers, each able to recover the wallet on its own. EVM chains take a single recovery signer:
+On Solana and Stellar, `recoveryMethods` accepts a list of methods, each able to recover the wallet on its own. EVM chains take a single recovery method with `recovery`:
 
 ```tsx
 <CrossmintWalletProvider
   createOnLogin={{
     chain: "solana",
-    recovery: [{ type: "email" }, { type: "external-wallet", address: "9WzD..." }],
+    recoveryMethods: [{ type: "email" }, { type: "external-wallet", address: "9WzD..." }],
   }}
 >
 ```
@@ -157,7 +157,7 @@ const {
 
 ### `useWalletOtpSigner()`
 
-For custom OTP UI when using email/phone recovery signers:
+For custom OTP UI when using email/phone recovery methods:
 
 ```tsx
 const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();

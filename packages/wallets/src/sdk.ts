@@ -55,8 +55,8 @@ export class CrossmintWallets {
     /**
      * Create a new wallet.
      * Works on both client and server side.
-     * Either a signer or recovery must be provided.
-     * If no signer is provided but recovery is set, the wallet will be read-only.
+     * A recovery method (`recovery` or `recoveryMethods`) is required; `signers` are optional.
+     * If no signer is provided, the wallet is read-only until one is added.
      * @param options - Wallet creation options
      * @returns A new wallet
      */
