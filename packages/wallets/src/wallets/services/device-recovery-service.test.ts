@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Chain } from "../../chains/chains";
 import { walletsLogger } from "../../logger";
 import { assembleSigner } from "../../signers";
-import { AuthRejectedError, OtpValidationError, type SignerAdapter } from "../../signers/types";
+import {
+    AuthRejectedError,
+    OtpValidationError,
+    SignerAuthenticationError,
+    type SignerAdapter,
+} from "../../signers/types";
 import { createDeviceSigner } from "@/utils/device-signers";
 import { DeviceSignerNotSupportedError } from "../../utils/errors";
 import { DeviceRecoveryService, type DeviceRecoveryServiceParams } from "./device-recovery-service";
@@ -251,6 +256,11 @@ describe("DeviceRecoveryService", () => {
             ["a plain Error named AuthRejectedError", Object.assign(new Error("auth"), { name: "AuthRejectedError" })],
             ["OtpValidationError instance", new OtpValidationError("otp", "INVALID_OTP" as never)],
             ["a plain Error named OtpValidationError", Object.assign(new Error("otp"), { name: "OtpValidationError" })],
+            ["SignerAuthenticationError instance", new SignerAuthenticationError("jwt", "jwt-required")],
+            [
+                "a plain Error named SignerAuthenticationError",
+                Object.assign(new Error("jwt"), { name: "SignerAuthenticationError" }),
+            ],
         ])("keeps the local key and rethrows for %s", async (_name, error) => {
             const addSigner = vi.fn().mockRejectedValue(error);
             const { service, storage } = setup({ addSigner });
