@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
-import { OnboardingSessionExpiredError, OtpValidationError } from "../types";
+import { OnboardingSessionExpiredError, OtpValidationError, SignerAuthenticationError } from "../types";
 import { EVMNonCustodialSigner } from "./ncs-evm-signer";
+import { JWT_REQUIRED_ERROR_CODE } from "./ncs-signer";
 
 function makeReadyConnection(onSendAction?: () => void) {
     return {
@@ -139,6 +140,79 @@ describe("NonCustodialSigner._exportPrivateKey", () => {
         expect(resetSignerFrame).toHaveBeenCalledTimes(1);
         // The reset runs before authenticating and before the export request.
         expect(calls).toEqual(["reset", "get-status", "export"]);
+    });
+});
+
+describe("NonCustodialSigner JWT handling", () => {
+    it.each([undefined, "", "   "])("fails before contacting the frame when the JWT is %j", async (jwt) => {
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection, crossmint: { apiKey: "ck_staging_test", jwt } as never })
+        );
+
+        const error = await signer.ensureAuthenticated().catch((e) => e);
+
+        expect(error).toBeInstanceOf(SignerAuthenticationError);
+        expect(error.code).toBe(JWT_REQUIRED_ERROR_CODE);
+        expect(clientTEEConnection.sendAction).not.toHaveBeenCalled();
+    });
+
+    it("maps a rejected JWT on get-status to SignerAuthenticationError, not SignerStatusError", async () => {
+        const clientTEEConnection = {
+            sendAction: vi.fn(async () => ({ status: "error", error: "HTTP 401: " })),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ clientTEEConnection }));
+
+        await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(SignerAuthenticationError);
+    });
+
+    it("maps a rejected JWT on start-onboarding to SignerAuthenticationError, not OtpValidationError", async () => {
+        let sendOtp: (() => Promise<void>) | undefined;
+        const clientTEEConnection = {
+            sendAction: vi.fn(async (args: { event: string }) =>
+                args.event === "request:get-status"
+                    ? { status: "success", signerStatus: "new-device" }
+                    : { status: "error", error: "HTTP 401: " }
+            ),
+        };
+        const onAuthRequired = vi.fn(async (_t: string, _l: string, needsAuth: boolean, send: () => Promise<void>) => {
+            if (needsAuth) {
+                sendOtp = send;
+            }
+        });
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: clientTEEConnection as never, onAuthRequired: onAuthRequired as never })
+        );
+        void signer.ensureAuthenticated().catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        const error = await sendOtp?.().catch((e) => e);
+
+        expect(error).toBeInstanceOf(SignerAuthenticationError);
+        expect(error).not.toBeInstanceOf(OtpValidationError);
+    });
+
+    it("still reports a wrong code on start-onboarding as OtpValidationError", async () => {
+        let sendOtp: (() => Promise<void>) | undefined;
+        const clientTEEConnection = {
+            sendAction: vi.fn(async (args: { event: string }) =>
+                args.event === "request:get-status"
+                    ? { status: "success", signerStatus: "new-device" }
+                    : { status: "error", error: "Too many attempts", code: "rate-limit" }
+            ),
+        };
+        const onAuthRequired = vi.fn(async (_t: string, _l: string, needsAuth: boolean, send: () => Promise<void>) => {
+            if (needsAuth) {
+                sendOtp = send;
+            }
+        });
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: clientTEEConnection as never, onAuthRequired: onAuthRequired as never })
+        );
+        void signer.ensureAuthenticated().catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        await expect(sendOtp?.()).rejects.toBeInstanceOf(OtpValidationError);
     });
 });
 

@@ -65,6 +65,7 @@ export {
     KeyExportError,
     OnboardingSessionExpiredError,
     OtpValidationError,
+    SignerAuthenticationError,
     SignerStatusError,
 } from "./signers/types";
 export type {
