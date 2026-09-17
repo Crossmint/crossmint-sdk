@@ -1,7 +1,7 @@
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
 import type { Wallet } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
-import { Transaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 
 export async function handleSolanaTransaction({
@@ -29,9 +29,9 @@ export async function handleSolanaTransaction({
         return;
     }
 
-    let deserializedTransaction: Transaction;
+    let deserializedTransaction: VersionedTransaction;
     try {
-        deserializedTransaction = Transaction.from(base58.decode(serializedTransaction));
+        deserializedTransaction = VersionedTransaction.deserialize(base58.decode(serializedTransaction));
     } catch (error) {
         console.error("[CryptoWalletConnectionHandler] failed to deserialize transaction", error);
         iframeClient.send("crypto:send-transaction:failed", {
