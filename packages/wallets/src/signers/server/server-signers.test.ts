@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import base58 from "bs58";
-import { MessageV0, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { MessageV0, PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
 import { deriveKeyBytes } from "../../utils/server-key-derivation";
 import type { ServerInternalSignerConfig } from "../types";
+import { VERSION_1_MESSAGE, VERSION_1_PREFIX } from "../solana-version-1.fixture";
 import { EVMServerSigner } from "./evm-server-signer";
 import { SolanaServerSigner } from "./solana-server-signer";
 import { StellarServerSigner } from "./stellar-server-signer";
@@ -88,25 +89,27 @@ describe("SolanaServerSigner", () => {
         expect(() => base58.decode(result.signature)).not.toThrow();
     });
 
-    it("signTransaction deserializes and signs the transaction message", async () => {
-        // Build a minimal VersionedTransaction
-        const message = MessageV0.compile({
+    it("signTransaction signs the supplied message bytes", async () => {
+        const messageBytes = MessageV0.compile({
             payerKey: new PublicKey(signer.address()),
             instructions: [],
             recentBlockhash: PublicKey.default.toBase58(),
-        });
-        const tx = new VersionedTransaction(message);
-        const serialized = base58.encode(tx.serialize());
+        }).serialize();
 
-        const result = await signer.signTransaction(serialized);
-        expect(result.signature).toBeDefined();
-        expect(() => base58.decode(result.signature)).not.toThrow();
+        const result = await signer.signTransaction(base58.encode(messageBytes));
 
-        // Verify the signature is valid against the message bytes
-        const sigBytes = base58.decode(result.signature);
-        const messageBytes = tx.message.serialize();
         const pubkey = base58.decode(signer.address());
-        expect(nacl.sign.detached.verify(messageBytes, sigBytes, pubkey)).toBe(true);
+        expect(nacl.sign.detached.verify(messageBytes, base58.decode(result.signature), pubkey)).toBe(true);
+    });
+
+    it("signTransaction signs a version-1 message, which web3.js cannot serialize", async () => {
+        const messageBytes = base58.decode(VERSION_1_MESSAGE);
+        expect(messageBytes[0]).toBe(VERSION_1_PREFIX);
+
+        const result = await signer.signTransaction(VERSION_1_MESSAGE);
+
+        const pubkey = base58.decode(signer.address());
+        expect(nacl.sign.detached.verify(messageBytes, base58.decode(result.signature), pubkey)).toBe(true);
     });
 });
 

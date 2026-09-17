@@ -3,6 +3,7 @@ import type { RegisterSignerResponse } from "../../api";
 import type { TokenBalance, PendingSignerOperation } from "../../wallets/types";
 import { walletsLogger } from "../../logger";
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
+import type { SignerAdapter } from "../../signers/types";
 
 export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
@@ -41,5 +42,9 @@ export const stellarChainAdapter: ChainAdapter = {
 
     emptyBalanceTokenFields(): Partial<TokenBalance> {
         return { contractId: undefined };
+    },
+
+    signApproval(signer: SignerAdapter, _transaction: unknown, approvalMessage: string) {
+        return signer.signTransaction(approvalMessage);
     },
 };
