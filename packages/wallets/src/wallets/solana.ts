@@ -1,4 +1,5 @@
 import bs58 from "bs58";
+import nacl from "tweetnacl";
 import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
@@ -82,6 +83,8 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },
+                    onSignBytes: (payload) =>
+                        Promise.resolve(bs58.encode(nacl.sign.detached(bs58.decode(payload), signer.secretKey))),
                 })
         );
 
