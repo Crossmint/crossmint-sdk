@@ -47,6 +47,20 @@ export class OtpValidationError extends Error {
     }
 }
 
+/**
+ * Thrown when the signer backend rejects the request's credentials (missing, empty or expired JWT).
+ * Distinct from `OtpValidationError`: the OTP flow never ran, the user must re-authenticate with the app first.
+ */
+export class SignerAuthenticationError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "SignerAuthenticationError";
+        this.code = code;
+    }
+}
+
 export class SignerStatusError extends Error {
     public readonly code: string | undefined;
 

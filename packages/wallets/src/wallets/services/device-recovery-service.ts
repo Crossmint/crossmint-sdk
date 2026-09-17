@@ -8,6 +8,7 @@ import {
     type InternalSignerConfig,
     isApiSourcedServerSignerConfig,
     OtpValidationError,
+    SignerAuthenticationError,
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
@@ -195,6 +196,15 @@ export class DeviceRecoveryService<C extends Chain> {
                 (error instanceof Error && error.name === "AuthRejectedError")
             ) {
                 walletsLogger.info("wallet.recover.device.authRejected", { signerLocator: newDeviceSigner.locator });
+                throw error;
+            } else if (
+                error instanceof SignerAuthenticationError ||
+                (error instanceof Error && error.name === "SignerAuthenticationError")
+            ) {
+                walletsLogger.warn("wallet.recover.device.authenticationFailed", {
+                    signerLocator: newDeviceSigner.locator,
+                    code: error instanceof SignerAuthenticationError ? error.code : undefined,
+                });
                 throw error;
             } else if (
                 error instanceof OtpValidationError ||
