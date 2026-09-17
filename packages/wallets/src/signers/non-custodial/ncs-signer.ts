@@ -121,6 +121,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         methodName: "handleAuthRequired",
     })
     protected async handleAuthRequired() {
+        const authData = this.getAuthDataOrThrow();
         const clientTEEConnection = await this.getTEEConnection();
 
         if (this.config.onAuthRequired == null) {
@@ -138,9 +139,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const signerResponse = await clientTEEConnection.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
-            data: {
-                authData: this.getAuthDataOrThrow(),
-            },
+            data: { authData },
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
@@ -220,6 +219,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     public async ensureAuthenticated(): Promise<void> {
+        this.getJwtOrThrow();
         if (this.config.resetSignerFrame != null) {
             await this.config.resetSignerFrame();
         }
@@ -259,6 +259,20 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     private async sendMessageWithOtp() {
+        try {
+            await this.startOnboarding();
+        } catch (error) {
+            // The UI layer's send handlers swallow the thrown error and call `reject`, which would settle the
+            // auth promise with a generic AuthRejectedError, so settle it with the auth failure first.
+            if (error instanceof SignerAuthenticationError) {
+                this._authPromise?.reject(error);
+            }
+            throw error;
+        }
+    }
+
+    private async startOnboarding() {
+        const authData = this.getAuthDataOrThrow();
         const handshakeParent = await this.getTEEConnection();
         const authId = this.getAuthId();
         walletsLogger.info("start-onboarding: sending request");
@@ -268,7 +282,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
             data: {
-                authData: this.getAuthDataOrThrow(),
+                authData,
                 data: { authId, ...(channel != null ? { channel } : {}) },
             },
             options: DEFAULT_EVENT_OPTIONS,

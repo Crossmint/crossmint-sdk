@@ -183,13 +183,15 @@ describe("NonCustodialSigner JWT handling", () => {
         const signer = new EVMNonCustodialSigner(
             makeConfig({ clientTEEConnection: clientTEEConnection as never, onAuthRequired: onAuthRequired as never })
         );
-        void signer.ensureAuthenticated().catch(() => {});
+        const authSettled = signer.ensureAuthenticated().catch((e) => e);
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         const error = await sendOtp?.().catch((e) => e);
 
         expect(error).toBeInstanceOf(SignerAuthenticationError);
         expect(error).not.toBeInstanceOf(OtpValidationError);
+        // The pending auth promise settles with the same error, even if the UI layer later calls `reject`.
+        await expect(authSettled).resolves.toBe(error);
     });
 
     it("still reports a wrong code on start-onboarding as OtpValidationError", async () => {
