@@ -83,7 +83,7 @@ export const useEVMPrivyConnector = () => {
                         }
                         return await createWallet({
                             chain,
-                            recoveryMethods: {
+                            recovery: {
                                 type: "phone",
                                 phone,
                             },
@@ -95,7 +95,7 @@ export const useEVMPrivyConnector = () => {
                         }
                         return await createWallet({
                             chain,
-                            recoveryMethods: {
+                            recovery: {
                                 type: "email",
                                 email,
                             },
@@ -107,7 +107,7 @@ export const useEVMPrivyConnector = () => {
                         const privyProvider = await privyEmbeddedWallet.getEthereumProvider();
                         return await createWallet({
                             chain,
-                            recoveryMethods: {
+                            recovery: {
                                 type: "external-wallet",
                                 address: privyEmbeddedWallet.address,
                                 onSign: async (payload: string) => {
@@ -212,7 +212,7 @@ export const useSolanaPrivyConnector = () => {
                         }
                         return await createWallet({
                             chain: "solana",
-                            recoveryMethods: {
+                            recovery: {
                                 type: "email",
                                 email,
                             },
@@ -223,7 +223,7 @@ export const useSolanaPrivyConnector = () => {
                         }
                         return await createWallet({
                             chain: "solana",
-                            recoveryMethods: {
+                            recovery: {
                                 type: "external-wallet",
                                 address: privyEmbeddedWallet.address,
                                 onSign: (transaction: VersionedTransaction) => {

@@ -38,7 +38,7 @@ export default function App({ children }) {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recoveryMethods: { type: "email" },
+            recovery: { type: "email" },
           }}
         >
           {children}
@@ -67,7 +67,7 @@ export default function App({ children }) {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recoveryMethods: {
+          recovery: {
             type: "email",
             email: "user@example.com",
           },
@@ -121,13 +121,13 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 <CrossmintWalletProvider
   createOnLogin={{
     chain: "base-sepolia",       // required — the blockchain
-    recoveryMethods: { type: "email" }, // required — recovery method config
+    recovery: { type: "email" }, // required — recovery method config
     signers: [{ type: "device" }], // optional — defaults to device signer
   }}
 >
 ```
 
-On Solana and Stellar, `recoveryMethods` also accepts a list of methods, each able to recover the wallet on its own. EVM chains take a single recovery method:
+On Solana and Stellar, `recoveryMethods` accepts a list of methods, each able to recover the wallet on its own. EVM chains take a single recovery method with `recovery`:
 
 ```tsx
 <CrossmintWalletProvider

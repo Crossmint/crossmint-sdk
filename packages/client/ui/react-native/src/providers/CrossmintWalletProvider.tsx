@@ -17,11 +17,7 @@ import {
     type CreateOnLogin,
     useCrossmint,
 } from "@crossmint/client-sdk-react-base";
-import {
-    type DeviceSignerKeyStorage,
-    recoveryMethodsFromCreateArgs,
-    toRecoverySignerList,
-} from "@crossmint/wallets-sdk";
+import { type DeviceSignerKeyStorage, recoveryMethodsFromCreateArgs } from "@crossmint/wallets-sdk";
 import { createDeviceSignerKeyStorage } from "@/native/createDeviceSignerKeyStorage";
 
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -68,7 +64,7 @@ function hasPasskeySigner(config?: CreateOnLogin): boolean {
     if (config == null) {
         return false;
     }
-    if (toRecoverySignerList(recoveryMethodsFromCreateArgs(config)).some((s) => s.type === "passkey")) {
+    if (recoveryMethodsFromCreateArgs(config).some((s) => s.type === "passkey")) {
         return true;
     }
     if (config.signers?.some((s) => s.type === "passkey")) {
@@ -88,7 +84,7 @@ function PasskeyGuard({ children }: { children: ReactNode }) {
     const guardedCreateWallet: typeof baseContext.createWallet = useCallback(
         async (args) => {
             if (
-                toRecoverySignerList(recoveryMethodsFromCreateArgs(args)).some((s) => s.type === "passkey") ||
+                recoveryMethodsFromCreateArgs(args).some((s) => s.type === "passkey") ||
                 args.signers?.some((s) => s.type === "passkey")
             ) {
                 throw new Error(PASSKEY_RN_ERROR);

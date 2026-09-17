@@ -4,4 +4,4 @@
 "@crossmint/client-sdk-react-native-ui": minor
 ---
 
-Wallet creation now takes `recoveryMethods` (single config or list) instead of `recovery`. `recovery` still works but is deprecated and will be removed in a future major.
+BREAKING: `recovery` on wallet creation now takes a single recovery method; pass several recovery methods (Solana and Stellar only) with the new `recoveryMethods` array. Exactly one of the two must be provided.

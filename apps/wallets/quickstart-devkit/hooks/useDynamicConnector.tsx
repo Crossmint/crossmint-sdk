@@ -56,7 +56,7 @@ export const useEVMDynamicConnector = () => {
 
                 return await createWallet({
                     chain,
-                    recoveryMethods: {
+                    recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         onSign: async (payload: string) => {
@@ -127,7 +127,7 @@ export const useSolanaDynamicConnector = () => {
                 const dynamicSigner = await dynamicPrimaryWallet.getSigner();
                 return await createWallet({
                     chain: "solana",
-                    recoveryMethods: {
+                    recovery: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
                         onSign: async (transaction: VersionedTransaction) => {

@@ -4,7 +4,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
-import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
@@ -236,19 +236,11 @@ export type WalletArgsFor<C extends Chain> = {
 /** A signer that can be used as a recovery signer. Device signers cannot be recovery signers. */
 export type RecoverySignerConfigFor<C extends Chain> = Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
 
-/**
- * Solana and Stellar accept a list of recovery signers, each able to authorize on its own.
- * Other chains accept a single recovery signer until their backend DTO supports a list.
- */
-export type RecoveryCreateArg<C extends Chain> = C extends SolanaChain | StellarChain
-    ? RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>
-    : RecoverySignerConfigFor<C>;
-
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery method, or list of recovery methods on Solana and Stellar. */
-    recoveryMethods?: RecoveryCreateArg<C>;
-    /** @deprecated Use `recoveryMethods` instead. */
-    recovery?: RecoveryCreateArg<C>;
+    /** A single recovery method. Exactly one of `recovery` or `recoveryMethods` must be provided. */
+    recovery?: RecoverySignerConfigFor<C>;
+    /** Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one. */
+    recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;

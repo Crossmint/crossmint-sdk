@@ -34,7 +34,7 @@ export default function App() {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recoveryMethods: { type: "email" },
+            recovery: { type: "email" },
           }}
         >
           <MainApp />
@@ -61,7 +61,7 @@ export default function App() {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recoveryMethods: {
+          recovery: {
             type: "email",
             email: "user@example.com",
           },
@@ -114,7 +114,7 @@ function WalletActions() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recoveryMethods` + optional `signers`. |
+| `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` or `recoveryMethods` + optional `signers`. |
 | `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |

@@ -62,7 +62,7 @@ function EVMCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                                  recoveryMethods: { type: "email" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
                               }
                     }
@@ -170,7 +170,7 @@ function SolanaCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: "solana",
-                                  recoveryMethods: { type: "email" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
                               }
                     }
@@ -271,7 +271,7 @@ function StellarCrossmintAuthProvider({
                             ? createOnLogin
                             : {
                                   chain: "stellar",
-                                  recoveryMethods: { type: "email" },
+                                  recovery: { type: "email" },
                                   ...ALIAS_CONFIG,
                                   signers: [
                                       {
@@ -315,11 +315,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
             default:
                 const createOnLogin: any = {
                     chain: chainId,
-                    recoveryMethods: { type: signerType },
+                    recovery: { type: signerType },
                     ...(alias != null ? { alias } : {}),
                 };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.recoveryMethods = {
+                    createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
                         ...(phoneChannel != null ? { channel: phoneChannel } : {}),
@@ -343,11 +343,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
             default:
                 const createOnLogin: any = {
                     chain: "solana",
-                    recoveryMethods: { type: signerType },
+                    recovery: { type: signerType },
                     ...(alias != null ? { alias } : {}),
                 };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.recoveryMethods = {
+                    createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
                         ...(phoneChannel != null ? { channel: phoneChannel } : {}),
@@ -362,11 +362,11 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     } else if (chainType === "stellar") {
         const createOnLogin: any = {
             chain: "stellar",
-            recoveryMethods: { type: signerType },
+            recovery: { type: signerType },
             ...(alias != null ? { alias } : {}),
         };
         if (signerType === "phone" && phoneNumber != null) {
-            createOnLogin.recoveryMethods = {
+            createOnLogin.recovery = {
                 type: signerType,
                 phone: decodeURIComponent(phoneNumber),
                 ...(phoneChannel != null ? { channel: phoneChannel } : {}),

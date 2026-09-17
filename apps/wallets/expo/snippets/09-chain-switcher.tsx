@@ -11,7 +11,7 @@ export function ChainSwitcherSection() {
             const result = await getWallet({ chain });
             if (result == null) {
                 // Wallet doesn't exist for this chain yet — create it with the same email recovery.
-                await createWallet({ chain, recoveryMethods: { type: "email", email: user?.email ?? "" } } as any);
+                await createWallet({ chain, recovery: { type: "email", email: user?.email ?? "" } } as any);
             }
         },
         [getWallet, createWallet, user?.email]
