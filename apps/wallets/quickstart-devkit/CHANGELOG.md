@@ -1,5 +1,11 @@
 # @crossmint/wallets-quickstart-devkit
 
+## 0.2.68
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.6.3
+
 ## 0.2.67
 
 ### Patch Changes
