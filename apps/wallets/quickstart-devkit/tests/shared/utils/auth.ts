@@ -8,6 +8,12 @@ import { recentPageDiagnostics } from "./page-diagnostics";
 // signing operation on a page can require one.
 const confirmedPages = new WeakSet<Page>();
 
+// The modal is rendered by the signer iframe, which gives up on its own handshake after
+// 30s. Waiting longer than that is what lets the SDK's own error reach the diagnostics
+// buffer, so the failure reports the frame that never came up instead of a bare
+// "no modal appeared".
+const MODAL_TIMEOUT_MS = 45_000;
+
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
     try {
         console.log(`🔑 Starting email OTP login for: ${email}`);
@@ -98,7 +104,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         const modal = page.locator("div[role='dialog']").first();
         try {
-            await modal.waitFor({ state: "visible", timeout: 10000 });
+            await modal.waitFor({ state: "visible", timeout: MODAL_TIMEOUT_MS });
             console.log("📱 Signer modal detected");
         } catch (_) {
             if (confirmedPages.has(page)) {
@@ -106,7 +112,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
                 return;
             }
             throw new Error(
-                `Expected the ${signerType} OTP modal to appear within 10s but it never did. ` +
+                `Expected the ${signerType} OTP modal to appear within ${MODAL_TIMEOUT_MS / 1000}s but it never did. ` +
                     `The wallet cannot be recovered without it.${recentPageDiagnostics(page)}`
             );
         }
