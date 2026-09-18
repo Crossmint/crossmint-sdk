@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { handleSignerConfirmation } from "./auth";
+import { recentPageDiagnostics } from "./page-diagnostics";
 import { AUTH_CONFIG } from "../constants/globalConstants";
 
 /**
@@ -284,22 +285,31 @@ export async function transferFunds(
                 timeout: 120000, // 2 minutes for transaction to complete
             });
         } catch (error) {
+            const diagnostics = recentPageDiagnostics(page);
+
             // If success link doesn't appear, check for error messages
-            const errorMessage = page.locator("text=/error/i, text=/failed/i").first();
-            const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false);
+            const errorMessage = page.getByText(/error|failed|insufficient|limit/i).first();
+            // waitFor, not isVisible: isVisible ignores its timeout and returns
+            // immediately, which would miss an error still being rendered.
+            const hasError = await errorMessage
+                .waitFor({ state: "visible", timeout: 2000 })
+                .then(() => true)
+                .catch(() => false);
 
             if (hasError) {
                 const errorText = await errorMessage.textContent();
-                throw new Error(`Transaction failed: ${errorText}`);
+                throw new Error(`Transaction failed: ${errorText}${diagnostics}`);
             }
 
             // Check if transfer button is still enabled (transaction might not have started)
             const isButtonEnabled = await transferButton.isEnabled().catch(() => false);
             if (isButtonEnabled) {
-                throw new Error("Transaction did not start - transfer button is still enabled");
+                throw new Error(`Transaction did not start - transfer button is still enabled.${diagnostics}`);
             }
 
-            throw new Error(`Transaction timeout: Success link did not appear within 2 minutes. ${error}`);
+            throw new Error(
+                `Transaction timeout: Success link did not appear within 2 minutes. ${error}${diagnostics}`
+            );
         }
 
         console.log(`✅ Transfer of ${amount} completed successfully`);
