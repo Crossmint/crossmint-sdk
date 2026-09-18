@@ -57,6 +57,14 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
+export type AddRecoveryMethodOptions = PrepareOnly;
+
+export type RemoveRecoveryMethodOptions = PrepareOnly;
+
+export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+
+export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+
 export type SignMessageInput = {
     message: string;
     options?: SignatureInputOptions;
