@@ -4,6 +4,7 @@ import type {
     ApiClient,
     WalletLocator,
     RegisterSignerParams,
+    RegisterRecoveryMethodParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
     GetWalletSuccessResponse,
@@ -14,6 +15,10 @@ import type {
     AddSignerReturnType,
     RemoveSignerOptions,
     RemoveSignerReturnType,
+    AddRecoveryMethodOptions,
+    AddRecoveryMethodReturnType,
+    RemoveRecoveryMethodOptions,
+    RemoveRecoveryMethodReturnType,
     Signer as WalletSigner,
     WalletOptions,
     UserLocator,
@@ -34,6 +39,7 @@ import {
     InvalidSignerError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
+    RecoveryNotSupportedOnChainError,
     SignatureFailedError,
     SignatureNotAvailableError,
     TransactionFailedError,
@@ -833,6 +839,128 @@ export class Wallet<C extends Chain> {
             });
             return { transactionId, status: "success" } as RemoveSignerReturnType;
         });
+    }
+
+    /**
+     * Add a recovery method to the wallet. Supported on Solana and Stellar only.
+     * Always uses one of the existing recovery methods to approve the change, selected as in {@link addSigner}.
+     * @param recoveryMethod - The recovery method configuration object
+     * @param options - The options for the operation
+     * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.addRecoveryMethod",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async addRecoveryMethod<T extends AddRecoveryMethodOptions | undefined = undefined>(
+        recoveryMethod: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
+        options?: T
+    ): Promise<AddRecoveryMethodReturnType> {
+        this.assertRecoveryMethodManagementSupported();
+        walletsLogger.info("wallet.addRecoveryMethod.start");
+
+        const resolvedMethod =
+            recoveryMethod.type === "server"
+                ? (this.resolveServerSignerApiLocator(recoveryMethod) as `server:${string}`)
+                : recoveryMethod;
+
+        return this.#signerManager.withRecoverySigner(async (approver) => {
+            const recoveryMethodInput =
+                typeof resolvedMethod === "string"
+                    ? resolvedMethod
+                    : getSignerDescriptor<C>(resolvedMethod.type).addSignerPayload(
+                          resolvedMethod as SignerConfigForChain<C>,
+                          this.#signerManager.descriptorContext()
+                      );
+
+            const response = await this.#apiClient.registerRecoveryMethod(this.walletLocator, {
+                recoveryMethods: recoveryMethodInput as RegisterRecoveryMethodParams["recoveryMethods"],
+                approver: this.resolveRecoveryApprover(approver),
+            });
+
+            if ("error" in response) {
+                walletsLogger.error("wallet.addRecoveryMethod.error", {
+                    error: response,
+                });
+                throw new InvalidSignerError(`Failed to add recovery method: ${JSON.stringify(response.message)}`);
+            }
+
+            const transactionId = response.tx.id;
+            if (options?.prepareOnly) {
+                walletsLogger.info("wallet.addRecoveryMethod.prepared", { transactionId });
+                return { transactionId, status: undefined };
+            }
+
+            await this.approveTransactionAndWait(transactionId);
+            walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
+            return { transactionId, status: "success" as const };
+        });
+    }
+
+    /**
+     * Remove a recovery method from the wallet. Supported on Solana and Stellar only.
+     * Always uses one of the remaining recovery methods to approve the change, selected as in {@link addSigner}.
+     * @param recoveryMethod - The recovery method to remove, provided as a signer config object
+     * @param options - The options for the operation
+     * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.removeRecoveryMethod",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async removeRecoveryMethod<T extends RemoveRecoveryMethodOptions | undefined = undefined>(
+        recoveryMethod: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        options?: T
+    ): Promise<RemoveRecoveryMethodReturnType> {
+        this.assertRecoveryMethodManagementSupported();
+        const recoveryMethodLocator = this.resolveSignerLocator(recoveryMethod);
+        walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
+
+        return this.#signerManager.withRecoverySigner(async (approver) => {
+            const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
+                approver: this.resolveRecoveryApprover(approver),
+            });
+
+            if ("error" in response) {
+                walletsLogger.error("wallet.removeRecoveryMethod.error", {
+                    error: response,
+                });
+                throw new Error(`Failed to remove recovery method: ${JSON.stringify(response)}`);
+            }
+
+            const transactionId = response.id;
+            if (options?.prepareOnly) {
+                walletsLogger.info("wallet.removeRecoveryMethod.prepared", { transactionId });
+                return { transactionId, status: undefined };
+            }
+
+            await this.approveTransactionAndWait(transactionId);
+            walletsLogger.info("wallet.removeRecoveryMethod.success", { transactionId });
+            return { transactionId, status: "success" as const };
+        });
+    }
+
+    private assertRecoveryMethodManagementSupported(): void {
+        if (this.chain !== "solana" && this.chain !== "stellar") {
+            throw new RecoveryNotSupportedOnChainError(
+                `Adding and removing recovery methods is not supported on ${this.chain} yet. It is available on Solana and Stellar.`
+            );
+        }
+    }
+
+    /**
+     * The recovery-methods API always needs the approving recovery method, while `withRecoverySigner` only
+     * names it when the wallet has several. On single-recovery wallets the assembled recovery method is the
+     * active signer for the duration of the operation, so its locator is used.
+     */
+    private resolveRecoveryApprover(approver: SignerLocator | undefined): SignerLocator {
+        return approver ?? this.#signerManager.require().locator();
     }
 
     /**
