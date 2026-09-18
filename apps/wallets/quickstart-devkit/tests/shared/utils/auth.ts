@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 import { AUTH_CONFIG, getEmailForSigner, type SignerType } from "../constants/globalConstants";
 import { clearEmailsForAddress, getEmailOTPCode, getPhoneOTPCode } from "./email";
+import { recentPageDiagnostics } from "./page-diagnostics";
+
+// An email or phone signer must be confirmed by OTP once per session. After that the
+// signer reports itself ready and the SDK signs without a modal, so only the first
+// signing operation on a page can require one.
+const confirmedPages = new WeakSet<Page>();
 
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
     try {
@@ -19,10 +25,25 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         await submitButton.click();
 
         console.log("⏳ Waiting for email confirmation message...");
-        await page
-            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
-            .first()
-            .waitFor({ timeout: 60000, state: "visible" });
+        try {
+            await page
+                .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+                .first()
+                .waitFor({ timeout: 60000, state: "visible" });
+        } catch (_) {
+            // The modal renders its own reason in place (a send failure, a rate limit),
+            // so report that rather than the locator that timed out waiting for success.
+            const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
+            const reasonText = await reason
+                .waitFor({ state: "visible", timeout: 2000 })
+                .then(() => reason.textContent())
+                .catch(() => null);
+            throw new Error(
+                `The login OTP was never sent to ${email}. ` +
+                    `${reasonText != null ? `The page reported: "${reasonText.trim()}".` : "The page gave no reason."}` +
+                    recentPageDiagnostics(page)
+            );
+        }
         console.log("📧 Email OTP sent, waiting for email...");
 
         const otpCode = await getEmailOTPCode(email, "login");
@@ -80,14 +101,26 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
             await modal.waitFor({ state: "visible", timeout: 10000 });
             console.log("📱 Signer modal detected");
         } catch (_) {
-            console.log("✅ No signer modal appeared, confirmation not needed");
-            return;
+            if (confirmedPages.has(page)) {
+                console.log("✅ No signer modal appeared, signer already confirmed in this session");
+                return;
+            }
+            throw new Error(
+                `Expected the ${signerType} OTP modal to appear within 10s but it never did. ` +
+                    `The wallet cannot be recovered without it.${recentPageDiagnostics(page)}`
+            );
         }
 
         const sendCodeButton = page.locator('button:has-text("Send code")').first();
-        const hasSendCode = await sendCodeButton.isVisible({ timeout: 3000 });
+        // waitFor, not isVisible: isVisible ignores its timeout, so a button that is
+        // still rendering would be read as "already confirmed" and skip the OTP.
+        const hasSendCode = await sendCodeButton
+            .waitFor({ state: "visible", timeout: 3000 })
+            .then(() => true)
+            .catch(() => false);
         if (!hasSendCode) {
             console.log("✅ No 'Send code' button, signer already confirmed");
+            confirmedPages.add(page);
             return;
         }
 
@@ -183,7 +216,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
                 const modalStillVisible = await modal.isVisible({ timeout: 2000 }).catch(() => false);
                 if (!modalStillVisible) {
                 } else {
-                    const errorMsg = page.locator("text=/invalid/i, text=/incorrect/i, text=/error/i").first();
+                    const errorMsg = page.getByText(/invalid|incorrect|error/i).first();
                     const hasError = await errorMsg.isVisible({ timeout: 2000 }).catch(() => false);
                     if (hasError) {
                         const errorText = await errorMsg.textContent();
@@ -197,6 +230,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
             console.log("⚠️ No submit button found - OTP might auto-submit or modal might have closed");
         }
 
+        confirmedPages.add(page);
         console.log("✅ Signer confirmation flow completed successfully");
     } catch (error) {
         console.error("❌ Signer confirmation failed:", error);
@@ -220,13 +254,21 @@ export async function handleSignerConfirmation(page: Page, signerType?: SignerTy
         await handleEmailPhoneSignerFlow(page, signerType);
     } else {
         const modal = page.locator("div[role='dialog']").first();
-        try {
-            await modal.waitFor({ state: "visible", timeout: 5000 });
+        const modalIsVisible = await modal
+            .waitFor({ state: "visible", timeout: 5000 })
+            .then(() => true)
+            .catch(() => false);
+        if (modalIsVisible) {
             // If modal appears but we don't know signer type, try email first (most common)
             console.log("⚠️ Signer type unknown, trying email flow");
             await handleEmailPhoneSignerFlow(page, "email");
-        } catch (_) {
-            console.log("✅ No signer modal appeared, confirmation not needed");
+        } else if (confirmedPages.has(page)) {
+            console.log("✅ No signer modal appeared, signer already confirmed in this session");
+        } else {
+            throw new Error(
+                "Expected an OTP modal for the first signing operation but none appeared within 5s, " +
+                    `and the signer type could not be read from ${page.url()}.${recentPageDiagnostics(page)}`
+            );
         }
     }
 

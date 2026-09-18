@@ -14,7 +14,6 @@ import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../../../shared/constants/globa
 test.describe("Wallet E2E", { tag: "@critical" }, () => {
     for (const config of TEST_CONFIGURATIONS) {
         test.describe(`${config.provider} - ${config.chain} - ${config.signer}`, () => {
-            test.describe.configure({ mode: "serial" });
             test.use({ testConfig: config });
 
             test("authenticates and fetches wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
