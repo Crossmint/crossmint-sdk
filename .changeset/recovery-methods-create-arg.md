@@ -4,8 +4,8 @@
 "@crossmint/client-sdk-react-native-ui": minor
 ---
 
-BREAKING: `recovery` on wallet creation now takes a single recovery method; pass several recovery methods (Solana and Stellar only) with the new `recoveryMethods` array. Exactly one of the two must be provided.
+Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
 
-Passing an array to `recovery` now throws `InvalidRecoveryConfigError` before any request is sent, with a message that points at `recoveryMethods`. Passing a non-array to `recoveryMethods` throws the same error instead of a `TypeError`.
+`recovery` now documents a single recovery method. Passing a list to `recovery` is deprecated but still works: the SDK treats it exactly like `recoveryMethods` and logs a deprecation warning. Exactly one of `recovery` or `recoveryMethods` must be provided.
 
 Migration: `recovery: [a, b]` → `recoveryMethods: [a, b]`. A single `recovery: a` needs no change.

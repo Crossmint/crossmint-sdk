@@ -1,9 +1,15 @@
 import type { Chain } from "../chains/chains";
+import { walletsLogger } from "../logger";
 import type { RecoverySignerConfigFor } from "../wallets/types";
 import type { WalletCreateArgs } from "../wallets/types";
 import { InvalidRecoveryConfigError } from "./errors";
 
-/** Reads and normalizes the recovery methods from creation args. */
+/**
+ * Reads and normalizes the recovery methods from creation args.
+ *
+ * `recoveryMethods` is the source of truth. A single `recovery` becomes a one-entry list. The deprecated list form
+ * of `recovery` is routed to `recoveryMethods` so pre-1.17 callers keep working.
+ */
 export function recoveryMethodsFromCreateArgs<C extends Chain>(
     args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
 ): Array<RecoverySignerConfigFor<C>> {
@@ -21,12 +27,19 @@ export function recoveryMethodsFromCreateArgs<C extends Chain>(
     if (args.recovery == null) {
         return [];
     }
-    // Pre-1.17 callers on Solana and Stellar passed a list here. Reject it with a migration hint instead of
-    // wrapping it into a one-entry list, which would slip past the chain checks and reach the API malformed.
     if (Array.isArray(args.recovery)) {
-        throw new InvalidRecoveryConfigError(
-            "`recovery` takes a single recovery method. To pass several, use `recoveryMethods: [...]` instead"
-        );
+        walletsLogger.warn("wallet.create.recovery.deprecatedListForm", {
+            message: "Passing a list to `recovery` is deprecated. Use `recoveryMethods` instead.",
+            count: args.recovery.length,
+        });
+        return args.recovery;
     }
     return [args.recovery];
+}
+
+/** True when the caller supplied a list of recovery methods, through `recoveryMethods` or the deprecated list form of `recovery`. */
+export function hasRecoveryMethodList<C extends Chain>(
+    args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
+): boolean {
+    return args.recoveryMethods != null || Array.isArray(args.recovery);
 }

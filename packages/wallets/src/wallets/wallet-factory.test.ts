@@ -190,24 +190,34 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
 
-        it("rejects the removed recovery array form before calling the API on Solana", async () => {
-            const legacyArgs = {
-                chain: "solana",
-                recovery: [{ type: "api-key" }, { type: "email", email: "user@example.com" }],
-            } as unknown as WalletCreateArgs<"solana">;
+        it("routes the deprecated recovery list form to config.recoveryMethods on Solana", async () => {
+            const recovery = [{ type: "api-key" as const }, { type: "email" as const, email: "user@example.com" }];
+            mockApiClient.createWallet.mockResolvedValue({
+                ...mockWalletWithAdminAndDelegated,
+                config: { recoveryMethods: recovery },
+            } as unknown as GetWalletSuccessResponse);
 
-            await expect(walletFactory.createWallet(legacyArgs)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
-            await expect(walletFactory.createWallet(legacyArgs)).rejects.toThrow(/recoveryMethods/);
+            await walletFactory.createWallet({ chain: "solana", recovery });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods: recovery }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
+        });
+
+        it("still rejects more than one method on EVM when passed through the deprecated recovery list form", async () => {
+            await expect(
+                walletFactory.createWallet({
+                    chain: "base-sepolia",
+                    recovery: [{ type: "api-key" }, { type: "api-key" }],
+                })
+            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("rejects the removed recovery array form before calling the API on EVM", async () => {
-            const legacyArgs = {
-                chain: "base-sepolia",
-                recovery: [{ type: "api-key" }, { type: "email", email: "user@example.com" }],
-            } as unknown as WalletCreateArgs<"base-sepolia">;
-
-            await expect(walletFactory.createWallet(legacyArgs)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+        it("rejects an empty deprecated recovery list as empty", async () => {
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: [] })).rejects.toThrow(
+                InvalidRecoveryConfigError
+            );
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
