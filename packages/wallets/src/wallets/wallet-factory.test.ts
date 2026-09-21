@@ -190,6 +190,47 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
 
+        it("routes the deprecated recovery list form to config.recoveryMethods on Solana", async () => {
+            const recovery = [{ type: "api-key" as const }, { type: "email" as const, email: "user@example.com" }];
+            mockApiClient.createWallet.mockResolvedValue({
+                ...mockWalletWithAdminAndDelegated,
+                config: { recoveryMethods: recovery },
+            } as unknown as GetWalletSuccessResponse);
+
+            await walletFactory.createWallet({ chain: "solana", recovery });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods: recovery }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
+        });
+
+        it("still rejects more than one method on EVM when passed through the deprecated recovery list form", async () => {
+            await expect(
+                walletFactory.createWallet({
+                    chain: "base-sepolia",
+                    recovery: [{ type: "api-key" }, { type: "api-key" }],
+                })
+            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("rejects an empty deprecated recovery list as empty", async () => {
+            await expect(walletFactory.createWallet({ chain: "solana", recovery: [] })).rejects.toThrow(
+                InvalidRecoveryConfigError
+            );
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("rejects a non-array recoveryMethods before calling the API", async () => {
+            const args = {
+                chain: "solana",
+                recoveryMethods: { type: "api-key" },
+            } as unknown as WalletCreateArgs<"solana">;
+
+            await expect(walletFactory.createWallet(args)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
         it("rejects multiple recoveryMethods entries on EVM", async () => {
             await expect(
                 walletFactory.createWallet({
