@@ -36,6 +36,7 @@ import { mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
+    InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
@@ -628,9 +629,10 @@ export class Wallet<C extends Chain> {
 
     /**
      * Add a signer to the wallet.
-     * Always uses a recovery method internally to approve the registration: the active signer when it is one of
-     * the recovery methods, or the wallet's single recovery method. Wallets with several recovery methods must
-     * select one via {@link useSigner} first; an operational signer cannot authorize this.
+     * Always uses a recovery method internally to approve the registration: the one selected via
+     * {@link useRecoveryMethod}, else the active signer when it is one of the recovery methods, else the wallet's
+     * single recovery method. Wallets with several recovery methods must select one first; an operational signer
+     * cannot authorize this.
      * If the signer being added is the current operational signer, it will be reassembled with the new locator.
      * Otherwise, the original signer is restored after the operation.
      * @param signer - The signer configuration object
@@ -1019,6 +1021,50 @@ export class Wallet<C extends Chain> {
         const signerLocator = getSignerLocator(signer);
         this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
+    }
+
+    /**
+     * Select which of the wallet's recovery methods authorizes admin operations ({@link addSigner},
+     * {@link removeSigner}, {@link addRecoveryMethod}, {@link removeRecoveryMethod}). Unlike {@link useSigner},
+     * this does not change the active signer used for transactions and signatures.
+     *
+     * The config must refer to one of {@link recoveryMethods}; pass the fuller form when the method needs it to
+     * operate (an `onSign` callback for external wallets, the `secret` for server signers).
+     *
+     * @param recoveryMethod - The recovery method config object to authorize with
+     * @experimental This API is experimental and may change in the future
+     */
+    @WithLoggerContext({
+        logger: walletsLogger,
+        methodName: "wallet.useRecoveryMethod",
+        buildContext(thisArg: Wallet<Chain>) {
+            return { chain: thisArg.chain, address: thisArg.address };
+        },
+    })
+    public async useRecoveryMethod(recoveryMethod: SignerConfigForChain<C>): Promise<void> {
+        walletsLogger.info("wallet.useRecoveryMethod.start");
+        getSignerDescriptor<C>(recoveryMethod.type).validateConfig(recoveryMethod);
+
+        const index = this.matchRecoverySigner(recoveryMethod);
+        if (index == null) {
+            const known = this.recoveryMethods
+                .map((recovery) => this.#signerManager.recoveryLocator(recovery))
+                .filter((locator) => locator != null)
+                .join(", ");
+            throw new InvalidRecoveryConfigError(
+                `Signer "${this.resolveSignerLocator(recoveryMethod)}" is not one of this wallet's recovery methods (${known}).`
+            );
+        }
+        if (recoveryMethod.type === "server") {
+            this.#signerManager.stripSecretFromRecovery(
+                index,
+                this.#serverSignerResolver.resolveRecovery(recoveryMethod)
+            );
+        }
+        this.#signerManager.selectRecovery(index);
+        walletsLogger.info("wallet.useRecoveryMethod.success", {
+            recoveryMethodLocator: this.#signerManager.recoveryLocator(this.recoveryMethods[index]),
+        });
     }
 
     /**
