@@ -28,6 +28,11 @@ if (!webhookUrl) {
 
 const browsers = ["chromium", "firefox", "webkit"];
 
+const SLACK_SECTION_TEXT_LIMIT = 3000;
+// The heading and the "...and N more failures" trailer share the section's budget
+// with the failures themselves.
+const FAILURE_BLOCK_OVERHEAD = 120;
+
 // Strip ANSI escape codes produced by Playwright error formatting
 function stripAnsi(str) {
     return str.replace(/\x1b\[[0-9;]*[mGKHFJA-Za-z]/g, "");
@@ -156,26 +161,38 @@ const slackMessage = {
 const allFailures = browsers.flatMap((b) => (browserResults[b]?.failures || []).map((f) => ({ browser: b, ...f })));
 
 if (allFailures.length > 0) {
-    const shown = allFailures.slice(0, 10);
-    const failText = shown
-        .map((f) => {
-            const cleanError =
-                stripAnsi(f.error)
-                    .split("\n")
-                    .find((l) => l.trim()) || "No error message";
-            const truncatedError = cleanError.length > 250 ? cleanError.substring(0, 250) + "..." : cleanError;
-            const suiteStr = f.suite ? `\n_${f.suite}_` : "";
-            return `\u2022 *[${f.browser}]* ${f.title}${suiteStr}\n\`${truncatedError}\``;
-        })
-        .join("\n\n");
+    const entries = allFailures.map((f) => {
+        const cleanError =
+            stripAnsi(f.error)
+                .split("\n")
+                .find((l) => l.trim()) || "No error message";
+        const truncatedError = cleanError.length > 250 ? cleanError.substring(0, 250) + "..." : cleanError;
+        const suiteStr = f.suite ? `\n_${f.suite}_` : "";
+        return `\u2022 *[${f.browser}]* ${f.title}${suiteStr}\n\`${truncatedError}\``;
+    });
+
+    // Slack rejects the entire message with `invalid_blocks` when one section's text
+    // exceeds 3000 characters, so the cap has to be on length. Capping on a count of
+    // failures only looks safe: ten of ordinary length come to 3790.
+    const shown = [];
+    let used = FAILURE_BLOCK_OVERHEAD;
+    for (const entry of entries) {
+        if (shown.length > 0 && used + entry.length > SLACK_SECTION_TEXT_LIMIT) {
+            break;
+        }
+        shown.push(entry);
+        used += entry.length + 2;
+    }
+
+    const omitted = allFailures.length - shown.length;
+    const failText = `*\u274C Failed Tests (${shown.length} of ${allFailures.length}):*\n\n${shown.join("\n\n")}${omitted > 0 ? `\n\n_...and ${omitted} more failures_` : ""}`;
 
     slackMessage.blocks.push({ type: "divider" });
     slackMessage.blocks.push({
         type: "section",
-        text: {
-            type: "mrkdwn",
-            text: `*\u274C Failed Tests (${Math.min(10, allFailures.length)} of ${allFailures.length}):*\n\n${failText}${allFailures.length > 10 ? `\n\n_...and ${allFailures.length - 10} more failures_` : ""}`,
-        },
+        // A single failure whose text alone exceeds the limit would still overflow,
+        // and one oversized entry must not cost the whole notification.
+        text: { type: "mrkdwn", text: failText.slice(0, SLACK_SECTION_TEXT_LIMIT) },
     });
 }
 
