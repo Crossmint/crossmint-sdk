@@ -475,6 +475,9 @@ export function CrossmintWalletBaseProvider({
             );
             if (processed.recoveryMethods != null) {
                 processed.recoveryMethods = populatedRecoverySigners as typeof processed.recoveryMethods;
+            } else if (Array.isArray(processed.recovery)) {
+                // Deprecated list form of `recovery`: keep every entry, not only the first.
+                processed.recovery = populatedRecoverySigners as typeof processed.recovery;
             } else {
                 processed.recovery = populatedRecoverySigners[0];
             }

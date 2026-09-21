@@ -38,7 +38,7 @@ export default function App({ children }) {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recovery: { type: "email" },
+            recoveryMethods: [{ type: "email" }],
           }}
         >
           {children}
@@ -67,10 +67,12 @@ export default function App({ children }) {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recovery: {
-            type: "email",
-            email: "user@example.com",
-          },
+          recoveryMethods: [
+            {
+              type: "email",
+              email: "user@example.com",
+            },
+          ],
         }}
       >
         {children}
@@ -121,7 +123,7 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 <CrossmintWalletProvider
   createOnLogin={{
     chain: "base-sepolia",       // required — the blockchain
-    recovery: { type: "email" }, // required — recovery method config
+    recoveryMethods: [{ type: "email" }], // required — recovery method config
     signers: [{ type: "device" }], // optional — defaults to device signer
   }}
 >

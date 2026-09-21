@@ -29,7 +29,7 @@ import type {
 } from "../signers/types";
 import { Wallet } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
-import { recoveryMethodsFromCreateArgs } from "../utils/recovery";
+import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
@@ -137,7 +137,7 @@ export class WalletFactory {
         const recoveryMethods = recoveryMethodsFromCreateArgs(validatedArgs);
         if (recoveryMethods.length === 0) {
             throw new InvalidRecoveryConfigError(
-                validatedArgs.recoveryMethods != null
+                hasRecoveryMethodList(validatedArgs)
                     ? "At least one recovery method is required"
                     : "A recovery method is required"
             );
@@ -240,7 +240,7 @@ export class WalletFactory {
         resolvedRecoverySigners: ResolvedRecoverySigner[]
     ): RecoveryRequestConfig {
         // The API only accepts recoveryMethods on Solana and Stellar; EVM still requires adminSigner for one method.
-        if (args.recoveryMethods != null && (args.chain === "solana" || args.chain === "stellar")) {
+        if (hasRecoveryMethodList(args) && (args.chain === "solana" || args.chain === "stellar")) {
             return { recoveryMethods: resolvedRecoverySigners };
         }
         return { adminSigner: resolvedRecoverySigners[0] };

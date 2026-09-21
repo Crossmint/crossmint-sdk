@@ -34,7 +34,7 @@ export default function App() {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recovery: { type: "email" },
+            recoveryMethods: [{ type: "email" }],
           }}
         >
           <MainApp />
@@ -61,10 +61,12 @@ export default function App() {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recovery: {
-            type: "email",
-            email: "user@example.com",
-          },
+          recoveryMethods: [
+            {
+              type: "email",
+              email: "user@example.com",
+            },
+          ],
         }}
       >
         <MainApp />

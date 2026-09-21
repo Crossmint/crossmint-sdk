@@ -237,9 +237,15 @@ export type WalletArgsFor<C extends Chain> = {
 export type RecoverySignerConfigFor<C extends Chain> = Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** A single recovery method. Exactly one of `recovery` or `recoveryMethods` must be provided. */
-    recovery?: RecoverySignerConfigFor<C>;
-    /** Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one. */
+    /**
+     * @deprecated Use `recoveryMethods`. Still accepted: a single recovery method, or a list, which is treated
+     * exactly like `recoveryMethods`. Pass either `recovery` or `recoveryMethods`, not both.
+     */
+    recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
+    /**
+     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Required unless the deprecated `recovery` is passed.
+     */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
