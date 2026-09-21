@@ -1582,6 +1582,10 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             });
             expect(mockApiClient.getTransaction).toHaveBeenCalled();
             expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(solanaWallet.recoveryMethods).toEqual([
+                { type: "api-key" },
+                { type: "external-wallet", address: "NewRecovery555" },
+            ]);
         });
 
         it("registers the recovery method on Stellar", async () => {
@@ -1603,6 +1607,7 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(result).toEqual({ transactionId: "txn-recovery", status: undefined });
             expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+            expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
         it("rejects EVM chains before calling the API", async () => {
@@ -2757,6 +2762,24 @@ describe("Wallet - useSigner()", () => {
                     approver: "external-wallet:SecondRecovery222",
                 });
                 expect(wallet.signer?.locator()).toBe("external-wallet:SecondRecovery222");
+            });
+
+            it("forgets a removed recovery method once its transaction completes", async () => {
+                const wallet = await makeWallet();
+                mockApiClient.removeRecoveryMethod.mockResolvedValue({
+                    id: "txn-remove-recovery",
+                    status: "awaiting-approval",
+                    approvals: { pending: [], submitted: [] },
+                } as any);
+                mockApiClient.getTransaction.mockResolvedValue({
+                    id: "txn-remove-recovery",
+                    status: "success",
+                    onChain: { txId: "hash", explorerLink: "https://explorer.com/tx/hash" },
+                } as any);
+
+                await wallet.removeRecoveryMethod({ type: "external-wallet", address: "SecondRecovery222" });
+
+                expect(wallet.recoveryMethods).toEqual([{ type: "api-key" }]);
             });
 
             it("uses the auto-assembled primary recovery signer as approver when none was selected", async () => {

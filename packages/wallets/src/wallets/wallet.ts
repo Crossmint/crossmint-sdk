@@ -895,6 +895,14 @@ export class Wallet<C extends Chain> {
             }
 
             await this.approveTransactionAndWait(transactionId);
+            this.#signerManager.addRecoverySigner(
+                typeof resolvedMethod === "string"
+                    ? ({
+                          type: "server",
+                          address: resolvedMethod.slice("server:".length),
+                      } as ApiSourcedServerSignerConfig)
+                    : (resolvedMethod as RecoverySignerConfigForChain<C>)
+            );
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };
         });
@@ -941,6 +949,7 @@ export class Wallet<C extends Chain> {
             }
 
             await this.approveTransactionAndWait(transactionId);
+            this.#signerManager.removeRecoverySigner(recoveryMethodLocator);
             walletsLogger.info("wallet.removeRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };
         });
