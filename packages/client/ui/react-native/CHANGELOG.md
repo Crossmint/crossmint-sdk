@@ -1,5 +1,25 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.7.0
+
+### Minor Changes
+
+- 1c54809: BREAKING: `recovery` on wallet creation now takes a single recovery method; pass several recovery methods (Solana and Stellar only) with the new `recoveryMethods` array. Exactly one of the two must be provided.
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-base@4.0.0
+  - @crossmint/wallets-sdk@1.17.0
+  - @crossmint/client-sdk-react-base@2.3.0
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/client-sdk-auth@1.3.23
+  - @crossmint/common-sdk-auth@1.1.21
+
 ## 1.6.4
 
 ### Patch Changes

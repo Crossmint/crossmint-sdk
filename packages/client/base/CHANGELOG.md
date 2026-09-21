@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-base
 
+## 4.0.0
+
+### Major Changes
+
+- ddd0089: Add `CrossmintCvcRecollection`. Render it when an order intent's `encrypted-card` rail reports `status: "pending_cvc_recollection"`; it loads the hosted CVC recollection page and calls `onComplete` once the vault holds a fresh CVC. `OrderIntentEncryptedCardRail.status` is no longer the literal `"active"`: it is now `"active" | "pending_cvc_recollection" | "error"`, so code that narrowed on `"active"` alone must handle the new states.
+
+### Patch Changes
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+
 ## 3.0.1
 
 ### Patch Changes
