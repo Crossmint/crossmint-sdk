@@ -1,5 +1,29 @@
 # @crossmint/wallets-sdk
 
+## 1.17.0
+
+### Minor Changes
+
+- 1c54809: Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
+
+  `recovery` is deprecated in favour of `recoveryMethods`. It still works: a single method or a list is treated exactly like `recoveryMethods`, and the list form logs a deprecation warning. Pass either `recovery` or `recoveryMethods`, not both.
+
+  Migration: `recovery: a` → `recoveryMethods: [a]`, and `recovery: [a, b]` → `recoveryMethods: [a, b]`.
+
+### Patch Changes
+
+- c949fb2: Email/phone signers now throw a new `SignerAuthenticationError` when the Crossmint JWT is missing, empty or rejected by the backend, instead of sending an empty `Authorization` header and surfacing the resulting `HTTP 401` as an opaque `OtpValidationError`/`SignerStatusError`. A missing JWT fails before the signer frame is contacted (`code: "jwt-required"`), so integrators can prompt the user to re-authenticate rather than retry the OTP.
+- ca1b5f1: Solana `sendTransaction` with `additionalSigners` can approve a version-1 transaction. The Keypair wrapper now signs the approval message bytes directly, because `@solana/web3.js` cannot serialize a version-1 transaction for `onSign`. Version 0 still goes through `onSign`.
+- 6f5e26e: Sign Solana approvals from `pendingApproval.message` instead of rebuilding the payload with `VersionedTransaction.deserialize(...).message.serialize()`, which throws `Reached end of buffer unexpectedly` on a version-1 transaction. The bytes signed are unchanged for version 0.
+
+  Solana delegated signers accept a new optional `onSignBytes` callback, base58 payload in and base58 signature out. Version-1 approvals route to it, because `@solana/web3.js` cannot serialize a version-1 message for `onSign`. Version 0 and legacy still use `onSign`.
+
+  Choosing the approval payload moves from `wallet.ts` to `ChainAdapter.signApproval`.
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/common-sdk-auth@1.1.21
+
 ## 1.16.0
 
 ### Minor Changes

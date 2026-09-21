@@ -1,5 +1,29 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.7.0
+
+### Minor Changes
+
+- 1c54809: Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
+
+  `recovery` is deprecated in favour of `recoveryMethods`. It still works: a single method or a list is treated exactly like `recoveryMethods`, and the list form logs a deprecation warning. Pass either `recovery` or `recoveryMethods`, not both.
+
+  Migration: `recovery: a` → `recoveryMethods: [a]`, and `recovery: [a, b]` → `recoveryMethods: [a, b]`.
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-base@4.0.0
+  - @crossmint/wallets-sdk@1.17.0
+  - @crossmint/client-sdk-react-base@2.3.0
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/client-sdk-auth@1.3.23
+  - @crossmint/common-sdk-auth@1.1.21
+
 ## 1.6.4
 
 ### Patch Changes
