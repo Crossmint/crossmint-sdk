@@ -32,7 +32,7 @@ const wallets = CrossmintWallets.from(crossmint);
 // Create a wallet with a server signer
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
-  recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
+  recoveryMethods: [{ type: "server", secret: "<RECOVERY_SECRET>" }],
 });
 
 console.log(wallet.address);
@@ -74,7 +74,7 @@ const wallets = CrossmintWallets.from(crossmint);
 
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
-  recovery: { type: "server", secret: "<RECOVERY_SECRET>" },
+  recoveryMethods: [{ type: "server", secret: "<RECOVERY_SECRET>" }],
 });
 
 console.log(wallet.address);
@@ -87,14 +87,16 @@ Bring your own key (MetaMask, KMS, etc.):
 ```ts
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
-  recovery: {
-    type: "external-wallet",
-    address: "0xYourWalletAddress",
-    onSign: async (message: string) => {
-      // Sign the message with your wallet/KMS and return the signature
-      return await yourWallet.signMessage({ message: { raw: message as `0x${string}` } });
+  recoveryMethods: [
+    {
+      type: "external-wallet",
+      address: "0xYourWalletAddress",
+      onSign: async (message: string) => {
+        // Sign the message with your wallet/KMS and return the signature
+        return await yourWallet.signMessage({ message: { raw: message as `0x${string}` } });
+      },
     },
-  },
+  ],
 });
 ```
 
@@ -114,7 +116,7 @@ const deviceSigner = await createDeviceSigner();
 const wallet = await wallets.createWallet({
   chain: "base-sepolia",
   owner: "email:user@example.com",
-  recovery: { type: "email", email: "user@example.com" },
+  recoveryMethods: [{ type: "email", email: "user@example.com" }],
   signers: [deviceSigner],
 });
 ```

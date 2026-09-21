@@ -236,21 +236,16 @@ export type WalletArgsFor<C extends Chain> = {
 /** A signer that can be used as a recovery signer. Device signers cannot be recovery signers. */
 export type RecoverySignerConfigFor<C extends Chain> = Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
 
-/**
- * @deprecated Passing a list to `recovery` is deprecated. Use `recoveryMethods` instead. The SDK still accepts the
- * list and treats it exactly like `recoveryMethods`.
- */
-export type DeprecatedRecoveryMethodList<C extends Chain> = Array<RecoverySignerConfigFor<C>>;
-
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /**
-     * A single recovery method. Exactly one of `recovery` or `recoveryMethods` must be provided.
-     *
-     * A list is still accepted for backwards compatibility and is treated as `recoveryMethods`, but that form is
-     * deprecated. Do not use it in new code.
+     * @deprecated Use `recoveryMethods`. Still accepted: a single recovery method, or a list, which is treated
+     * exactly like `recoveryMethods`. Pass either `recovery` or `recoveryMethods`, not both.
      */
-    recovery?: RecoverySignerConfigFor<C> | DeprecatedRecoveryMethodList<C>;
-    /** Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one. */
+    recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
+    /**
+     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Required unless the deprecated `recovery` is passed.
+     */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;

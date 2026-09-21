@@ -14,13 +14,13 @@ describe("recoveryMethodsFromCreateArgs", () => {
         vi.spyOn(walletsLogger, "warn").mockReturnValue(undefined);
     });
 
-    describe("when only recovery is given", () => {
+    describe("when only the deprecated recovery is given", () => {
         test("wraps a single method in a list", () => {
             expect(recoveryMethodsFromCreateArgs({ recovery: API_KEY_METHOD })).toEqual([API_KEY_METHOD]);
             expect(walletsLogger.warn).not.toHaveBeenCalled();
         });
 
-        test("routes the deprecated list form to the method list unchanged", () => {
+        test("routes a list to the method list unchanged", () => {
             const recovery = [API_KEY_METHOD, EMAIL_METHOD];
 
             expect(recoveryMethodsFromCreateArgs({ recovery })).toBe(recovery);
@@ -35,7 +35,7 @@ describe("recoveryMethodsFromCreateArgs", () => {
             );
         });
 
-        test("returns an empty list for an empty deprecated list so the caller reports it as empty", () => {
+        test("returns an empty list for an empty list so the caller reports it as empty", () => {
             expect(recoveryMethodsFromCreateArgs({ recovery: [] })).toEqual([]);
         });
     });
@@ -81,7 +81,7 @@ describe("hasRecoveryMethodList", () => {
         expect(hasRecoveryMethodList({ recoveryMethods: [API_KEY_METHOD] })).toBe(true);
     });
 
-    test("is true for the deprecated list form of recovery", () => {
+    test("is true for a list under the deprecated recovery", () => {
         expect(hasRecoveryMethodList({ recovery: [API_KEY_METHOD] })).toBe(true);
     });
 

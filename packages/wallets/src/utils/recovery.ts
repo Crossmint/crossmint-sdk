@@ -7,8 +7,8 @@ import { InvalidRecoveryConfigError } from "./errors";
 /**
  * Reads and normalizes the recovery methods from creation args.
  *
- * `recoveryMethods` is the source of truth. A single `recovery` becomes a one-entry list. The deprecated list form
- * of `recovery` is routed to `recoveryMethods` so pre-1.17 callers keep working.
+ * `recoveryMethods` is the source of truth. The deprecated `recovery` is routed to it: a single method becomes a
+ * one-entry list, and a list is used as is, so pre-1.17 callers keep working.
  */
 export function recoveryMethodsFromCreateArgs<C extends Chain>(
     args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
@@ -37,7 +37,7 @@ export function recoveryMethodsFromCreateArgs<C extends Chain>(
     return [args.recovery];
 }
 
-/** True when the caller supplied a list of recovery methods, through `recoveryMethods` or the deprecated list form of `recovery`. */
+/** True when the caller supplied a list of recovery methods, through `recoveryMethods` or a list under the deprecated `recovery`. */
 export function hasRecoveryMethodList<C extends Chain>(
     args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
 ): boolean {
