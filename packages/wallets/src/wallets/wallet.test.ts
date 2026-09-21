@@ -2866,6 +2866,41 @@ describe("Wallet - useSigner()", () => {
             });
         });
 
+        it("useRecoveryMethod keeps the caller's passkey credential for authorization without rewriting the id-less recovery record", async () => {
+            mockApiClient = createMockApiClient();
+            mockApiClient.getWallet.mockResolvedValue({
+                chainType: "solana",
+                type: "smart",
+                address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
+                config: {
+                    recoveryMethods: [{ type: "api-key" }, { type: "passkey" }],
+                    delegatedSigners: [],
+                },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "external-wallet",
+                address: "NewSigner444",
+                locator: "external-wallet:NewSigner444",
+                transaction: { id: "txn-add", status: "awaiting-approval" },
+            } as any);
+            const wallet = await new WalletFactory(mockApiClient as unknown as ApiClient).getWallet({
+                chain: "solana",
+            });
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            const activeLocator = wallet.signer?.locator();
+
+            await wallet.useRecoveryMethod({ type: "passkey", id: "recovery-credential" });
+            await wallet.addSigner({ type: "external-wallet", address: "NewSigner444" }, { prepareOnly: true });
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({ approver: "passkey:recovery-credential" })
+            );
+            expect(wallet.recoveryMethods[1]).toEqual({ type: "passkey" });
+            expect(wallet.signer?.locator()).toBe(activeLocator);
+        });
+
         it("useRecoveryMethod with a server recovery secret keeps the list address-only and authorizes addSigner", async () => {
             const { deriveServerSignerDetails, deriveServerSignerCandidates, assembleServerSigner } = await import(
                 "@/signers/server"

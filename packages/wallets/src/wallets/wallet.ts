@@ -1061,9 +1061,12 @@ export class Wallet<C extends Chain> {
                 this.#serverSignerResolver.resolveRecovery(recoveryMethod)
             );
         }
-        this.#signerManager.selectRecovery(index);
+        const selected = getSignerDescriptor<C>(recoveryMethod.type).adoptsRecoveryConfigOnMatch
+            ? this.recoveryMethods[index]
+            : (recoveryMethod as RecoverySignerConfigForChain<C>);
+        this.#signerManager.selectRecovery(index, selected);
         walletsLogger.info("wallet.useRecoveryMethod.success", {
-            recoveryMethodLocator: this.#signerManager.recoveryLocator(this.recoveryMethods[index]),
+            recoveryMethodLocator: this.#signerManager.recoveryLocator(selected),
         });
     }
 

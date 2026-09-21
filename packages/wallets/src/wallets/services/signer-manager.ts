@@ -36,7 +36,7 @@ export type SignerManagerParams<C extends Chain> = {
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
     #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
-    #selectedRecoveryIndex: number | null = null;
+    #selectedRecovery: { index: number; config: RecoverySignerConfigForChain<C> } | null = null;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
     #chain: C;
@@ -81,12 +81,17 @@ export class SignerManager<C extends Chain> {
 
     /** The recovery method explicitly selected via `useRecoveryMethod()`, if any. */
     get selectedRecovery(): RecoverySignerConfigForChain<C> | null {
-        return this.#selectedRecoveryIndex == null ? null : this.#recoverySigners[this.#selectedRecoveryIndex];
+        return this.#selectedRecovery?.config ?? null;
     }
 
-    selectRecovery(index: number): void {
+    /**
+     * Select the recovery signer at `index` to authorize admin operations. `config` is the form to assemble it
+     * from when the stored one is not usable on its own (a passkey recovery is stored without its credential
+     * id, so the caller's id-bearing config is kept for the selection without rewriting the recovery list).
+     */
+    selectRecovery(index: number, config: RecoverySignerConfigForChain<C> = this.#recoverySigners[index]): void {
         this.#assertRecoveryIndex(index);
-        this.#selectedRecoveryIndex = index;
+        this.#selectedRecovery = { index, config };
     }
 
     descriptorContext(): SignerDescriptorContext<C> {
@@ -135,10 +140,13 @@ export class SignerManager<C extends Chain> {
 
     /** Forget a recovery method once the API has confirmed it was removed from the wallet. */
     removeRecoverySigner(locator: string): void {
-        const selected = this.selectedRecovery;
+        const selectedEntry =
+            this.#selectedRecovery == null ? null : this.#recoverySigners[this.#selectedRecovery.index];
         this.#recoverySigners = this.#recoverySigners.filter((recovery) => this.recoveryLocator(recovery) !== locator);
-        const selectedIndex = selected == null ? -1 : this.#recoverySigners.indexOf(selected);
-        this.#selectedRecoveryIndex = selectedIndex === -1 ? null : selectedIndex;
+        if (this.#selectedRecovery != null) {
+            const index = selectedEntry == null ? -1 : this.#recoverySigners.indexOf(selectedEntry);
+            this.#selectedRecovery = index === -1 ? null : { ...this.#selectedRecovery, index };
+        }
     }
 
     #assertRecoveryIndex(index: number): void {
