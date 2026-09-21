@@ -4,6 +4,7 @@ export * from "./embed";
 export * from "./system";
 export * from "./payment-method-management";
 export * from "./identity-verification";
+export * from "./cvc-recollection";
 export * from "./CryptoCurrency";
 
 export const BaseUrls = {
