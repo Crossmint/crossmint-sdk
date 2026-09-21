@@ -1,7 +1,7 @@
 ---
-"@crossmint/common-sdk-base": major
-"@crossmint/wallets-sdk": major
-"@crossmint/client-sdk-base": major
+"@crossmint/common-sdk-base": patch
+"@crossmint/wallets-sdk": patch
+"@crossmint/client-sdk-base": patch
 ---
 
 Remove the deprecated chains from the SDK.
