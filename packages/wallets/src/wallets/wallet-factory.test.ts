@@ -190,6 +190,37 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
 
+        it("rejects the removed recovery array form before calling the API on Solana", async () => {
+            const legacyArgs = {
+                chain: "solana",
+                recovery: [{ type: "api-key" }, { type: "email", email: "user@example.com" }],
+            } as unknown as WalletCreateArgs<"solana">;
+
+            await expect(walletFactory.createWallet(legacyArgs)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+            await expect(walletFactory.createWallet(legacyArgs)).rejects.toThrow(/recoveryMethods/);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("rejects the removed recovery array form before calling the API on EVM", async () => {
+            const legacyArgs = {
+                chain: "base-sepolia",
+                recovery: [{ type: "api-key" }, { type: "email", email: "user@example.com" }],
+            } as unknown as WalletCreateArgs<"base-sepolia">;
+
+            await expect(walletFactory.createWallet(legacyArgs)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
+        it("rejects a non-array recoveryMethods before calling the API", async () => {
+            const args = {
+                chain: "solana",
+                recoveryMethods: { type: "api-key" },
+            } as unknown as WalletCreateArgs<"solana">;
+
+            await expect(walletFactory.createWallet(args)).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        });
+
         it("rejects multiple recoveryMethods entries on EVM", async () => {
             await expect(
                 walletFactory.createWallet({
