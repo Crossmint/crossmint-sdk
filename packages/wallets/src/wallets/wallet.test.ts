@@ -2901,6 +2901,52 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.locator()).toBe(activeLocator);
         });
 
+        it("removing the selected passkey by credential id also forgets its id-less recovery record", async () => {
+            mockApiClient = createMockApiClient();
+            mockApiClient.getWallet.mockResolvedValue({
+                chainType: "solana",
+                type: "smart",
+                address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
+                config: {
+                    recoveryMethods: [{ type: "api-key" }, { type: "passkey" }],
+                    delegatedSigners: [],
+                },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+            mockApiClient.removeRecoveryMethod.mockResolvedValue({
+                id: "txn-remove-recovery",
+                status: "awaiting-approval",
+                approvals: { pending: [], submitted: [] },
+            } as any);
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "txn-remove-recovery",
+                status: "success",
+                onChain: { txId: "hash", explorerLink: "https://explorer.com/tx/hash" },
+            } as any);
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "external-wallet",
+                address: "NewSigner444",
+                locator: "external-wallet:NewSigner444",
+                transaction: { id: "txn-add", status: "awaiting-approval" },
+            } as any);
+            const wallet = await new WalletFactory(mockApiClient as unknown as ApiClient).getWallet({
+                chain: "solana",
+            });
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            await wallet.useRecoveryMethod({ type: "passkey", id: "recovery-credential" });
+
+            await wallet.removeRecoveryMethod({ type: "passkey", id: "recovery-credential" });
+            await wallet.addSigner({ type: "external-wallet", address: "NewSigner444" }, { prepareOnly: true });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "passkey:recovery-credential",
+                { approver: "passkey:recovery-credential" }
+            );
+            expect(wallet.recoveryMethods).toEqual([{ type: "api-key" }]);
+            expect(mockApiClient.registerSigner.mock.calls[0][1]).not.toHaveProperty("approver");
+        });
+
         it("useRecoveryMethod with a server recovery secret keeps the list address-only and authorizes addSigner", async () => {
             const { deriveServerSignerDetails, deriveServerSignerCandidates, assembleServerSigner } = await import(
                 "@/signers/server"

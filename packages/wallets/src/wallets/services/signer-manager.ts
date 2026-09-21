@@ -140,12 +140,17 @@ export class SignerManager<C extends Chain> {
 
     /** Forget a recovery method once the API has confirmed it was removed from the wallet. */
     removeRecoverySigner(locator: string): void {
-        const selectedEntry =
-            this.#selectedRecovery == null ? null : this.#recoverySigners[this.#selectedRecovery.index];
-        this.#recoverySigners = this.#recoverySigners.filter((recovery) => this.recoveryLocator(recovery) !== locator);
-        if (this.#selectedRecovery != null) {
-            const index = selectedEntry == null ? -1 : this.#recoverySigners.indexOf(selectedEntry);
-            this.#selectedRecovery = index === -1 ? null : { ...this.#selectedRecovery, index };
+        const selected = this.#selectedRecovery;
+        const selectedEntry = selected == null ? null : this.#recoverySigners[selected.index];
+        // The selected config may carry an identity the stored record lacks (an id-less passkey record).
+        const removingSelected = selected != null && this.recoveryLocator(selected.config) === locator;
+        this.#recoverySigners = this.#recoverySigners.filter(
+            (recovery) =>
+                this.recoveryLocator(recovery) !== locator && !(removingSelected && recovery === selectedEntry)
+        );
+        if (selected != null) {
+            const index = removingSelected || selectedEntry == null ? -1 : this.#recoverySigners.indexOf(selectedEntry);
+            this.#selectedRecovery = index === -1 ? null : { ...selected, index };
         }
     }
 
