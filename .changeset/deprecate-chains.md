@@ -22,4 +22,6 @@ The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and fro
 `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
 
 Migration: use a supported chain. Code that passes one of these names no longer compiles.
-Code that passes one of these names at run time now gets an `InvalidChainError`.
+Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+lookups return `undefined`.
