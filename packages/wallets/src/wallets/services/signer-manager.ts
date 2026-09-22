@@ -36,6 +36,7 @@ export type SignerManagerParams<C extends Chain> = {
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
     #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
+    #selectedRecovery: { index: number; config: RecoverySignerConfigForChain<C> } | null = null;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
     #chain: C;
@@ -78,6 +79,21 @@ export class SignerManager<C extends Chain> {
         return [...this.#recoverySigners];
     }
 
+    /** The recovery method explicitly selected via `useRecoveryMethod()`, if any. */
+    get selectedRecovery(): RecoverySignerConfigForChain<C> | null {
+        return this.#selectedRecovery?.config ?? null;
+    }
+
+    /**
+     * Select the recovery signer at `index` to authorize admin operations. `config` is the form to assemble it
+     * from when the stored one is not usable on its own (a passkey recovery is stored without its credential
+     * id, so the caller's id-bearing config is kept for the selection without rewriting the recovery list).
+     */
+    selectRecovery(index: number, config: RecoverySignerConfigForChain<C> = this.#recoverySigners[index]): void {
+        this.#assertRecoveryIndex(index);
+        this.#selectedRecovery = { index, config };
+    }
+
     descriptorContext(): SignerDescriptorContext<C> {
         return {
             chain: this.#chain,
@@ -114,9 +130,9 @@ export class SignerManager<C extends Chain> {
 
     /** Record a recovery method once the API has confirmed it was added to the wallet. */
     addRecoverySigner(config: RecoverySignerConfigForChain<C>): void {
-        const locator = this.#recoveryLocator(config);
+        const locator = this.recoveryLocator(config);
         const alreadyKnown =
-            locator != null && this.#recoverySigners.some((recovery) => this.#recoveryLocator(recovery) === locator);
+            locator != null && this.#recoverySigners.some((recovery) => this.recoveryLocator(recovery) === locator);
         if (!alreadyKnown) {
             this.#recoverySigners.push(config);
         }
@@ -124,7 +140,18 @@ export class SignerManager<C extends Chain> {
 
     /** Forget a recovery method once the API has confirmed it was removed from the wallet. */
     removeRecoverySigner(locator: string): void {
-        this.#recoverySigners = this.#recoverySigners.filter((recovery) => this.#recoveryLocator(recovery) !== locator);
+        const selected = this.#selectedRecovery;
+        const selectedEntry = selected == null ? null : this.#recoverySigners[selected.index];
+        // The selected config may carry an identity the stored record lacks (an id-less passkey record).
+        const removingSelected = selected != null && this.recoveryLocator(selected.config) === locator;
+        this.#recoverySigners = this.#recoverySigners.filter(
+            (recovery) =>
+                this.recoveryLocator(recovery) !== locator && !(removingSelected && recovery === selectedEntry)
+        );
+        if (selected != null) {
+            const index = removingSelected || selectedEntry == null ? -1 : this.#recoverySigners.indexOf(selectedEntry);
+            this.#selectedRecovery = index === -1 ? null : { ...selected, index };
+        }
     }
 
     #assertRecoveryIndex(index: number): void {
@@ -179,20 +206,25 @@ export class SignerManager<C extends Chain> {
      * The recovery method that authorizes a signer-management operation (add/remove signer), and the
      * `approver` locator to send to the API when the wallet has several recovery methods.
      *
-     * A wallet with a single recovery method always authorizes with it, whatever the active signer is.
-     * A wallet with several recovery methods needs `useSigner()` to have selected one of them: the API
-     * has to know which key will approve, and an operational signer cannot authorize these changes.
+     * A recovery method selected via `useRecoveryMethod()` always wins. Otherwise, a wallet with a single
+     * recovery method authorizes with it whatever the active signer is, and a wallet with several needs
+     * `useSigner()` to have selected one of them: the API has to know which key will approve, and an
+     * operational signer cannot authorize these changes.
      */
     resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
+        const selected = this.selectedRecovery;
+        if (selected != null) {
+            return { recovery: selected, approver: this.recoveryLocator(selected) ?? undefined };
+        }
         if (this.#recoverySigners.length === 1) {
             return { recovery: this.#recoverySigners[0], approver: undefined };
         }
-        const recoveryLocators = this.#recoverySigners.map((recovery) => this.#recoveryLocator(recovery));
+        const recoveryLocators = this.#recoverySigners.map((recovery) => this.recoveryLocator(recovery));
         const activeLocator = this.#activeSigner?.locator();
         const activeIndex = activeLocator == null ? -1 : recoveryLocators.indexOf(activeLocator);
         if (activeIndex === -1) {
             const known = recoveryLocators.filter((locator): locator is SignerLocator => locator != null);
-            const selection = `Call wallet.useSigner() with one of them (${known.join(", ")}) first.`;
+            const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
             throw new SignerRequiredError(
                 activeLocator == null
                     ? `This wallet has multiple recovery methods, so the one authorizing this operation must be selected. ${selection}`
@@ -203,7 +235,7 @@ export class SignerManager<C extends Chain> {
     }
 
     /** Locator of a recovery method, or null when it cannot be known without deriving a server secret. */
-    #recoveryLocator(recovery: RecoverySignerConfigForChain<C>): SignerLocator | null {
+    recoveryLocator(recovery: RecoverySignerConfigForChain<C>): SignerLocator | null {
         if (recovery.type === "server") {
             return isApiSourcedServerSignerConfig(recovery) ? `server:${recovery.address}` : null;
         }
@@ -224,7 +256,7 @@ export class SignerManager<C extends Chain> {
         ) {
             throw new Error(
                 "Cannot assemble server signer: no secret available. " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+                    'Call wallet.useRecoveryMethod({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
@@ -235,7 +267,7 @@ export class SignerManager<C extends Chain> {
         ) {
             throw new Error(
                 "Cannot assemble external wallet signer: no onSign callback available. " +
-                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
+                    'Call wallet.useRecoveryMethod({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
         const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
