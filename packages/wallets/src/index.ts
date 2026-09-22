@@ -55,6 +55,10 @@ export type {
     ApproveOptions,
     AddSignerOptions,
     RemoveSignerOptions,
+    AddRecoveryMethodOptions,
+    RemoveRecoveryMethodOptions,
+    AddRecoveryMethodReturnType,
+    RemoveRecoveryMethodReturnType,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

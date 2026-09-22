@@ -9,6 +9,7 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
+    RecoveryNotSupportedOnChainError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
     WalletNotAvailableError,
@@ -1540,6 +1541,153 @@ describe("Wallet - removeSigner()", () => {
     });
 });
 
+describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
+    let mockApiClient: MockedApiClient;
+    let evmWallet: Wallet<"base-sepolia">;
+    let solanaWallet: Wallet<"solana">;
+    let stellarWallet: Wallet<"stellar">;
+
+    const pendingTransaction = {
+        id: "txn-recovery",
+        status: "awaiting-approval",
+        approvals: { pending: [], submitted: [] },
+    };
+    const successfulTransaction = {
+        id: "txn-recovery",
+        status: "success",
+        onChain: { txId: "hash-recovery", explorerLink: "https://explorer.com/tx/hash-recovery" },
+    };
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        mockApiClient = createMockApiClient();
+        evmWallet = await createMockWallet("base-sepolia", mockApiClient);
+        solanaWallet = await createMockWallet("solana", mockApiClient);
+        stellarWallet = await createMockWallet("stellar", mockApiClient);
+        mockApiClient.registerRecoveryMethod.mockResolvedValue({
+            recoveryMethods: { type: "external-wallet", address: "NewRecovery555" },
+            tx: pendingTransaction,
+        } as any);
+        mockApiClient.removeRecoveryMethod.mockResolvedValue(pendingTransaction as any);
+        mockApiClient.getTransaction.mockResolvedValue(successfulTransaction as any);
+    });
+
+    describe("addRecoveryMethod", () => {
+        it("registers the recovery method on Solana with the active recovery method as approver and approves the transaction", async () => {
+            const result = await solanaWallet.addRecoveryMethod({ type: "external-wallet", address: "NewRecovery555" });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: "external-wallet:NewRecovery555",
+                approver: "api-key",
+            });
+            expect(mockApiClient.getTransaction).toHaveBeenCalled();
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(solanaWallet.recoveryMethods).toEqual([
+                { type: "api-key" },
+                { type: "external-wallet", address: "NewRecovery555" },
+            ]);
+        });
+
+        it("registers the recovery method on Stellar", async () => {
+            const result = await stellarWallet.addRecoveryMethod({ type: "external-wallet", address: "GNEWRECOVERY" });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: "external-wallet:GNEWRECOVERY",
+                approver: "api-key",
+            });
+            expect(result.status).toBe("success");
+        });
+
+        it("returns the pending transaction without approving when prepareOnly is set", async () => {
+            const result = await solanaWallet.addRecoveryMethod(
+                { type: "external-wallet", address: "NewRecovery555" },
+                { prepareOnly: true }
+            );
+
+            expect(result).toEqual({ transactionId: "txn-recovery", status: undefined });
+            expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
+            expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+            expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
+        });
+
+        it("rejects EVM chains before calling the API", async () => {
+            await expect(evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
+                RecoveryNotSupportedOnChainError
+            );
+            expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+        });
+
+        it("throws on API failure", async () => {
+            mockApiClient.registerRecoveryMethod.mockResolvedValue({
+                error: true,
+                message: "Recovery method already exists",
+            } as any);
+
+            await expect(
+                solanaWallet.addRecoveryMethod({ type: "external-wallet", address: "NewRecovery555" })
+            ).rejects.toThrow("Failed to add recovery method");
+        });
+    });
+
+    describe("removeRecoveryMethod", () => {
+        it("removes the recovery method on Solana with the active recovery method as approver and approves the transaction", async () => {
+            const result = await solanaWallet.removeRecoveryMethod({
+                type: "external-wallet",
+                address: "OldRecovery666",
+            });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:OldRecovery666",
+                { approver: "api-key" }
+            );
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+        });
+
+        it("removes the recovery method on Stellar", async () => {
+            const result = await stellarWallet.removeRecoveryMethod({
+                type: "external-wallet",
+                address: "GOLDRECOVERY",
+            });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:GOLDRECOVERY",
+                { approver: "api-key" }
+            );
+            expect(result.status).toBe("success");
+        });
+
+        it("returns the pending transaction without approving when prepareOnly is set", async () => {
+            const result = await solanaWallet.removeRecoveryMethod(
+                { type: "external-wallet", address: "OldRecovery666" },
+                { prepareOnly: true }
+            );
+
+            expect(result).toEqual({ transactionId: "txn-recovery", status: undefined });
+            expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
+        });
+
+        it("rejects EVM chains before calling the API", async () => {
+            await expect(evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
+                RecoveryNotSupportedOnChainError
+            );
+            expect(mockApiClient.removeRecoveryMethod).not.toHaveBeenCalled();
+        });
+
+        it("throws on API failure", async () => {
+            mockApiClient.removeRecoveryMethod.mockResolvedValue({
+                error: true,
+                message: "Cannot remove the last recovery method",
+            } as any);
+
+            await expect(
+                solanaWallet.removeRecoveryMethod({ type: "external-wallet", address: "OldRecovery666" })
+            ).rejects.toThrow("Failed to remove recovery method");
+        });
+    });
+});
+
 describe("Wallet - signers()", () => {
     let mockApiClient: MockedApiClient;
     let wallet: Wallet<"base-sepolia">;
@@ -2585,6 +2733,53 @@ describe("Wallet - useSigner()", () => {
                 expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
                 expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
                 expect(wallet.signer?.locator()).toBe("external-wallet:Delegated333");
+            });
+
+            it("sends the recovery signer selected with useSigner as the approver of addRecoveryMethod / removeRecoveryMethod", async () => {
+                const wallet = await makeWallet();
+                mockApiClient.registerRecoveryMethod.mockResolvedValue({
+                    recoveryMethods: { type: "external-wallet", address: "ThirdRecovery777" },
+                    tx: { id: "txn-add-recovery", status: "awaiting-approval" },
+                } as any);
+                mockApiClient.removeRecoveryMethod.mockResolvedValue({
+                    id: "txn-remove-recovery",
+                    status: "awaiting-approval",
+                    approvals: { pending: [], submitted: [] },
+                } as any);
+                await wallet.useSigner(secondRecovery);
+
+                await wallet.addRecoveryMethod(
+                    { type: "external-wallet", address: "ThirdRecovery777" },
+                    { prepareOnly: true }
+                );
+                await wallet.removeRecoveryMethod({ type: "api-key" }, { prepareOnly: true });
+
+                expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                    recoveryMethods: "external-wallet:ThirdRecovery777",
+                    approver: "external-wallet:SecondRecovery222",
+                });
+                expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(expect.any(String), "api-key", {
+                    approver: "external-wallet:SecondRecovery222",
+                });
+                expect(wallet.signer?.locator()).toBe("external-wallet:SecondRecovery222");
+            });
+
+            it("forgets a removed recovery method once its transaction completes", async () => {
+                const wallet = await makeWallet();
+                mockApiClient.removeRecoveryMethod.mockResolvedValue({
+                    id: "txn-remove-recovery",
+                    status: "awaiting-approval",
+                    approvals: { pending: [], submitted: [] },
+                } as any);
+                mockApiClient.getTransaction.mockResolvedValue({
+                    id: "txn-remove-recovery",
+                    status: "success",
+                    onChain: { txId: "hash", explorerLink: "https://explorer.com/tx/hash" },
+                } as any);
+
+                await wallet.removeRecoveryMethod({ type: "external-wallet", address: "SecondRecovery222" });
+
+                expect(wallet.recoveryMethods).toEqual([{ type: "api-key" }]);
             });
 
             it("uses the auto-assembled primary recovery signer as approver when none was selected", async () => {

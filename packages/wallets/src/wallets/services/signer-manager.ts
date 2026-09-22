@@ -112,6 +112,21 @@ export class SignerManager<C extends Chain> {
         }
     }
 
+    /** Record a recovery method once the API has confirmed it was added to the wallet. */
+    addRecoverySigner(config: RecoverySignerConfigForChain<C>): void {
+        const locator = this.#recoveryLocator(config);
+        const alreadyKnown =
+            locator != null && this.#recoverySigners.some((recovery) => this.#recoveryLocator(recovery) === locator);
+        if (!alreadyKnown) {
+            this.#recoverySigners.push(config);
+        }
+    }
+
+    /** Forget a recovery method once the API has confirmed it was removed from the wallet. */
+    removeRecoverySigner(locator: string): void {
+        this.#recoverySigners = this.#recoverySigners.filter((recovery) => this.#recoveryLocator(recovery) !== locator);
+    }
+
     #assertRecoveryIndex(index: number): void {
         if (index < 0 || index >= this.#recoverySigners.length) {
             throw new Error(`Recovery signer index ${index} is out of range`);

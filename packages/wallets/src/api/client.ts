@@ -30,6 +30,10 @@ import type {
     RegisterSignerResponse,
     RemoveSignerParams,
     RemoveSignerResponse,
+    RegisterRecoveryMethodParams,
+    RegisterRecoveryMethodResponse,
+    RemoveRecoveryMethodParams,
+    RemoveRecoveryMethodResponse,
     GetSignerResponse,
     WalletLocator,
     SendParams,
@@ -257,6 +261,37 @@ class ApiClient extends CrossmintApiClient {
         const response = await this.delete(url, {
             headers: this.headers,
         });
+        return response.json();
+    }
+
+    async registerRecoveryMethod(
+        walletLocator: WalletLocator,
+        params: RegisterRecoveryMethodParams
+    ): Promise<RegisterRecoveryMethodResponse> {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/recovery-methods`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async removeRecoveryMethod(
+        walletLocator: WalletLocator,
+        signer: string,
+        params: RemoveRecoveryMethodParams
+    ): Promise<RemoveRecoveryMethodResponse> {
+        const encodedSigner = encodeURIComponent(signer);
+        const queryParams = new URLSearchParams();
+        if (params.chain != null) {
+            queryParams.append("chain", params.chain);
+        }
+        queryParams.append("approver", params.approver);
+        const response = await this.delete(
+            `${this.apiPrefix}/${walletLocator}/recovery-methods/${encodedSigner}?${queryParams.toString()}`,
+            {
+                headers: this.headers,
+            }
+        );
         return response.json();
     }
 
