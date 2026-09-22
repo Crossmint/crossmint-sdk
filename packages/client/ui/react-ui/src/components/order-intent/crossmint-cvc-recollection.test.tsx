@@ -89,6 +89,19 @@ describe("<CrossmintCvcRecollection />", () => {
             });
         });
 
+        test("forwards a verification-refused error as retriable", () => {
+            const onError = vi.fn();
+            render(<CrossmintCvcRecollection {...PROPS} onError={onError} />);
+
+            emit("cvc:error", { retriable: true, reason: "verification-refused", message: "not verified" });
+
+            expect(onError).toHaveBeenCalledWith({
+                retriable: true,
+                reason: "verification-refused",
+                message: "not verified",
+            });
+        });
+
         test("calls the callback from the latest render, not the one captured at subscribe time", () => {
             const stale = vi.fn();
             const fresh = vi.fn();

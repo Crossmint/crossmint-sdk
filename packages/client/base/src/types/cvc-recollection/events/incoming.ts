@@ -14,6 +14,8 @@ export const cvcRecollectionIncomingEvents = {
             "invalid-configuration",
             "invalid-credentials",
             "provider-error",
+            // The vault accepted the CVC but Crossmint could not verify the write; retriable.
+            "verification-refused",
             "unknown",
         ]),
         message: z.string(),

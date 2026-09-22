@@ -7,7 +7,8 @@ import type { cvcRecollectionIncomingEvents } from "./events/incoming";
  * Error reported by `CrossmintCvcRecollection` through `onError`.
  *
  * `retriable: true` means the hosted form stays mounted and the user can submit again
- * (wrong CVC, provider rejection, transient failure). `retriable: false` means the flow is
+ * (wrong CVC, provider rejection, `verification-refused` when Crossmint could not verify the
+ * vault write, transient failure). `retriable: false` means the flow is
  * dead and the user cannot finish it: the component renders nothing afterwards, so the
  * parent has to show its own message (and, for `invalid-configuration`, fix the props).
  */
