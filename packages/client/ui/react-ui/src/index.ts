@@ -7,10 +7,13 @@ export type { CrossmintWalletBaseContext, LoginMethod } from "@crossmint/client-
 export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {
+    type CrossmintCvcRecollectionProps,
     type CrossmintEvent,
     type CrossmintEventMap,
     CrossmintEvents,
+    type CvcRecollectionError,
     getIdentityVerificationCredentials,
+    type PaymentMethodManagementAppearance,
 } from "@crossmint/client-sdk-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";

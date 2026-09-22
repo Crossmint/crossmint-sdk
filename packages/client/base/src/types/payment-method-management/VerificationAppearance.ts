@@ -5,7 +5,12 @@ export type VerificationAppearance = {
 
 export type VerificationAppearanceVariables = {
     fontFamily?: string;
+    /**
+     * Base body font size, e.g. `"14px"`; the other text sizes scale from it. Unlike
+     * `EmbeddedCheckoutV3AppearanceVariables.fontSizeUnit`, this is a size, not a multiplier.
+     */
     fontSizeUnit?: string;
+    /** Base spacing, e.g. `"16px"`. Same caveat as `fontSizeUnit`. */
     spacingUnit?: string;
     borderRadius?: string;
     colors?: {
