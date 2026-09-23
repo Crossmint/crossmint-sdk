@@ -6,11 +6,12 @@ export type VerificationAppearance = {
 export type VerificationAppearanceVariables = {
     fontFamily?: string;
     /**
-     * Base body font size, e.g. `"14px"`; the other text sizes scale from it. Unlike
-     * `EmbeddedCheckoutV3AppearanceVariables.fontSizeUnit`, this is a size, not a multiplier.
+     * Not applied by `OrderIntentVerification`: only `colors` (and the button / input colors under
+     * `rules`) reach the verification modal. Not the multiplier unit of
+     * `EmbeddedCheckoutV3AppearanceVariables.fontSizeUnit`, so do not share one object between the two.
      */
     fontSizeUnit?: string;
-    /** Base spacing, e.g. `"16px"`. Same caveat as `fontSizeUnit`. */
+    /** Not applied by `OrderIntentVerification`; see `fontSizeUnit`. */
     spacingUnit?: string;
     borderRadius?: string;
     colors?: {
