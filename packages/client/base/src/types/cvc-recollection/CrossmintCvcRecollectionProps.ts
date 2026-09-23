@@ -19,16 +19,15 @@ export type CvcRecollectionError = z.infer<(typeof cvcRecollectionIncomingEvents
  *
  * Render the component when an order intent's `encrypted-card` rail reports
  * `status: "pending_cvc_recollection"`, or when creating a credential for that rail is refused
- * with HTTP 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`. The rail status is a read-time
- * snapshot of Crossmint's CVC clock (roughly 24 hours after the card was saved or the CVC last
- * refreshed), so an `active` rail can still turn into that 409 at mint time; handle both.
+ * with HTTP 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`. A rail read as `active` can still
+ * answer that 409 if the CVC expires before the mint; handle both.
  *
  * After `onComplete`, re-read the order intent: the rail goes back to `active`.
  */
 export interface CrossmintCvcRecollectionProps {
     /** The user's Crossmint auth token, the same one `CrossmintPaymentMethodManagement` takes. */
     jwt: string;
-    /** The saved card whose vaulted CVC has to be refreshed. */
+    /** The saved card whose CVC has to be entered again. */
     paymentMethodId: string;
     /**
      * Same appearance model as `CrossmintPaymentMethodManagement` and the embedded checkout,
@@ -37,7 +36,7 @@ export interface CrossmintCvcRecollectionProps {
      * `EmbeddedCheckoutV3AppearanceVariables`.
      */
     appearance?: PaymentMethodManagementAppearance;
-    /** Called once the vault holds a fresh CVC. Receives no CVC and no token payload. */
+    /** Called once Crossmint has stored the new CVC. Receives no CVC and no token payload. */
     onComplete?: () => void;
     onError?: (error: CvcRecollectionError) => void;
 }
