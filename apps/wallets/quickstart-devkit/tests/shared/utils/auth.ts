@@ -3,10 +3,7 @@ import { AUTH_CONFIG, getEmailForSigner, type SignerType } from "../constants/gl
 import { clearEmailsForAddress, getEmailOTPCode, getPhoneOTPCode } from "./email";
 import { recentPageDiagnostics } from "./page-diagnostics";
 
-// A missing modal is not an error. A signer stays confirmed on the server across runs,
-// so the SDK signs without prompting, and the smoke suite reaches this path on every
-// transfer. Whatever the signer could not do surfaces from the operation that needed
-// it, which carries the same diagnostics.
+// A signer stays confirmed on the server across runs, so a missing modal is not an error.
 const MODAL_TIMEOUT_MS = 10_000;
 
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
@@ -26,14 +23,13 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         await submitButton.click();
 
         console.log("⏳ Waiting for email confirmation message...");
-        try {
-            await page
-                .locator("text=/Check your email|We sent you|verification code|OTP code/i")
-                .first()
-                .waitFor({ timeout: 60000, state: "visible" });
-        } catch (_) {
-            // The modal renders its own reason in place (a send failure, a rate limit),
-            // so report that rather than the locator that timed out waiting for success.
+        const otpSent = await page
+            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+            .first()
+            .waitFor({ timeout: 60000, state: "visible" })
+            .then(() => true)
+            .catch(() => false);
+        if (!otpSent) {
             const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
             const reasonText = await reason
                 .waitFor({ state: "visible", timeout: 2000 })
@@ -107,8 +103,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
         }
 
         const sendCodeButton = page.locator('button:has-text("Send code")').first();
-        // waitFor, not isVisible: isVisible ignores its timeout, so a button that is
-        // still rendering would be read as "already confirmed" and skip the OTP.
+        // isVisible ignores its timeout, so a button still rendering reads as confirmed.
         const hasSendCode = await sendCodeButton
             .waitFor({ state: "visible", timeout: 3000 })
             .then(() => true)
@@ -204,21 +199,18 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         if (isSubmitVisible) {
             await submitBtn.click();
+            await page.waitForTimeout(1000);
 
-            try {
-                await page.waitForTimeout(1000);
-                const modalStillVisible = await modal.isVisible({ timeout: 2000 }).catch(() => false);
-                if (!modalStillVisible) {
-                } else {
-                    const errorMsg = page.getByText(/invalid|incorrect|error/i).first();
-                    const hasError = await errorMsg.isVisible({ timeout: 2000 }).catch(() => false);
-                    if (hasError) {
-                        const errorText = await errorMsg.textContent();
-                        throw new Error(`OTP submission failed: ${errorText}`);
-                    }
+            const modalStillVisible = await modal.isVisible().catch(() => false);
+            if (modalStillVisible) {
+                const errorMsg = page.getByText(/invalid|incorrect|error/i).first();
+                const errorText = await errorMsg
+                    .waitFor({ state: "visible", timeout: 2000 })
+                    .then(() => errorMsg.textContent())
+                    .catch(() => null);
+                if (errorText != null) {
+                    throw new Error(`OTP submission failed: ${errorText}${recentPageDiagnostics(page)}`);
                 }
-            } catch (e) {
-                console.warn("⚠️ Could not verify OTP submission status:", e);
             }
         } else {
             console.log("⚠️ No submit button found - OTP might auto-submit or modal might have closed");
