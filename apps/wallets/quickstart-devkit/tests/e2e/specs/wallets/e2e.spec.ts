@@ -3,7 +3,6 @@ import {
     approveTransactionById,
     createPreparedTransaction,
     fundWalletWithCrossmintFaucet,
-    fundWalletWithSolAirdrop,
     getWalletAddress,
     getWalletBalance,
     getWalletBalances,
@@ -64,14 +63,6 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                     await authenticatedPage.waitForTimeout(2000);
                 } else {
                     console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
-                }
-
-                // Solana token transfers require native SOL for transaction fees.
-                // The Crossmint faucet only funds USDXM; without SOL the tx is
-                // submitted but never confirms (silent on-chain failure).
-                // Skips internally when the reused wallet already holds SOL.
-                if (testConfig.chain === "solana") {
-                    await fundWalletWithSolAirdrop(walletAddress);
                 }
 
                 let recipientAddress: string;
