@@ -312,9 +312,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
     protected getAuthId() {
         if (this.config.type === "email") {
-            return `email:${normalizeEmail(this.config.email)}`;
+            return this.config.email != null ? `email:${normalizeEmail(this.config.email)}` : this.config.locator;
         }
-        return `phone:${this.config.phone}`;
+        return this.config.phone != null ? `phone:${this.config.phone}` : this.config.locator;
     }
 
     private async verifyOtp(encryptedOtp: string) {
