@@ -6,7 +6,13 @@ import { StellarNonCustodialSigner } from "./ncs-stellar-signer";
 const EMAIL_AUTH_ID = "email:test@example.com";
 const PUBLIC_KEY = { bytes: "cHVibGljLWtleQ==", encoding: "base64", keyType: "ed25519" };
 
-function makeSigner({ statusOnGetStatus }: { statusOnGetStatus: "ready" | "new-device" }) {
+function makeSigner({
+    statusOnGetStatus,
+    email = "test@example.com",
+}: {
+    statusOnGetStatus: "ready" | "new-device";
+    email?: string;
+}) {
     const sendAction = vi.fn(async (args: { event: string }) => {
         switch (args.event) {
             case "request:get-status":
@@ -40,7 +46,7 @@ function makeSigner({ statusOnGetStatus }: { statusOnGetStatus: "ready" | "new-d
     );
     const config = {
         type: "email",
-        email: "test@example.com",
+        email,
         locator: EMAIL_AUTH_ID,
         address: "GWALLET",
         crossmint: { apiKey: "ck_staging_test", jwt: "test-jwt" },
@@ -90,6 +96,22 @@ describe("StellarNonCustodialSigner.signTransaction", () => {
             );
             expect(requestData(sendAction, "request:start-onboarding")).toEqual({ authId: EMAIL_AUTH_ID });
             expect(requestData(sendAction, "request:sign")).toMatchObject({ authId: EMAIL_AUTH_ID });
+        });
+    });
+
+    describe("when the recovery method email is not in canonical form", () => {
+        test("uses the canonical email for status, onboarding and signing", async () => {
+            const { signer, sendAction } = makeSigner({
+                statusOnGetStatus: "new-device",
+                email: "Test.User@GoogleMail.com",
+            });
+            const canonicalAuthId = "email:testuser@gmail.com";
+
+            await signer.signTransaction("cGF5bG9hZA==");
+
+            expect(requestData(sendAction, "request:get-status")).toEqual({ authId: canonicalAuthId });
+            expect(requestData(sendAction, "request:start-onboarding")).toEqual({ authId: canonicalAuthId });
+            expect(requestData(sendAction, "request:sign")).toMatchObject({ authId: canonicalAuthId });
         });
     });
 });

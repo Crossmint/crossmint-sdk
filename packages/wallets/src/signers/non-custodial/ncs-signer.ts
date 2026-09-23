@@ -19,6 +19,7 @@ import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
+import { normalizeEmail } from "../../utils/signer-validation";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
@@ -311,7 +312,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
     protected getAuthId() {
         if (this.config.type === "email") {
-            return `email:${this.config.email}`;
+            return `email:${normalizeEmail(this.config.email)}`;
         }
         return `phone:${this.config.phone}`;
     }
