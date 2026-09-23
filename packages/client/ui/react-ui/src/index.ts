@@ -18,6 +18,12 @@ export {
     type ProtectedInputAppearance,
     type ProtectedInputCreated,
     type ProtectedInputError,
+    type CrossmintAgentCardAuthorizationProps,
+    type AgentCardAuthorizationResult,
+    type AgentCardAuthorizationError,
+    type AgentCardAuthorizationErrorCode,
+    type AgentCardPaymentMethodSummary,
+    type AgentCardRail,
 } from "@crossmint/client-sdk-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";
