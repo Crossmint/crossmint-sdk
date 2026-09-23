@@ -55,10 +55,12 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
-                  # Per-browser wallet identity: browser jobs run concurrently, and
-                  # simultaneous OTP requests for the same email get rate-limited/blocked.
-                  # Each browser gets its own persistent wallet, reused across runs.
-                  TESTS_WALLET_EMAIL_SUFFIX: e2e-${{ matrix.browser }}
+                  # Per-browser, per-run wallet identity. The browser component keeps the
+                  # concurrent browser jobs off a shared email, whose simultaneous OTP
+                  # requests get rate-limited. The run id gives each run a fresh wallet:
+                  # a run adds a device signer it cannot remove, so a wallet reused
+                  # across runs eventually hits the backend signer cap and fails every test.
+                  TESTS_WALLET_EMAIL_SUFFIX: e2e-${{ matrix.browser }}-${{ github.run_id }}
               run: |
                   mkdir -p test-results
                   set +e
