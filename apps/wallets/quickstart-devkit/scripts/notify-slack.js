@@ -33,6 +33,8 @@ const SLACK_HEADER_TEXT_LIMIT = 150;
 // The "...and N more" trailer shares the section's budget with the failures themselves.
 const FAILURE_BLOCK_OVERHEAD = 40;
 
+const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
 // Strip ANSI escape codes produced by Playwright error formatting
 function stripAnsi(str) {
     return str.replace(/\x1b\[[0-9;]*[mGKHFJA-Za-z]/g, "");
@@ -182,7 +184,15 @@ if (allFailures.length > 0) {
                 ?.trim() || "No error message";
         const suite = f.suite ? f.suite.split(" \u203A ").pop() : "";
         const name = suite ? `${suite} \u203A ${f.title}` : f.title;
-        const key = `${name}\u0000${error}`;
+        // One failure reads differently per browser without differing: the diagnostics
+        // tail, the per-browser test email and the RPC request id all vary. Group on a
+        // signature with those masked out, but still show the untouched error.
+        const signature = error
+            .split("Recent browser output:")[0]
+            .replace(UUID_PATTERN, "<id>")
+            .split(f.browser)
+            .join("<browser>");
+        const key = `${name}\u0000${signature}`;
         const group = grouped.get(key);
         if (group) {
             group.browsers.push(f.browser);
