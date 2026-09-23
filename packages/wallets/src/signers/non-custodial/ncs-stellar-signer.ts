@@ -1,6 +1,8 @@
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 import { walletsLogger } from "../../logger";
+import { encodeStellarPublicKey } from "../../utils/stellar";
+import { decodeBase64 } from "@crossmint/client-signers-cryptography";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -29,6 +31,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                     keyType: "ed25519",
                     bytes: payload,
                     encoding: "base64",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -46,6 +49,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign transaction");
         }
         StellarNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
+        this.assertPublicKeyBelongsToRecoveryMethod(res.publicKey);
         if (res.signature.encoding !== "base64") {
             throw new Error("Wrong encoding for signature. Expected base64, got " + res.signature.encoding);
         }
@@ -64,6 +68,13 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
+    }
+
+    protected addressFromPublicKey(publicKey: { bytes: string; encoding: string; keyType: string }): string | null {
+        if (publicKey.keyType !== "ed25519" || publicKey.encoding !== "base64") {
+            return null;
+        }
+        return encodeStellarPublicKey(decodeBase64(publicKey.bytes));
     }
 
     protected getChainKeyParams(): { scheme: "ed25519"; encoding: "strkey" } {

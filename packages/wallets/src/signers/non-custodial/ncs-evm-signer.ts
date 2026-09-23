@@ -2,6 +2,7 @@ import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../ty
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
+import { publicKeyToAddress } from "viem/accounts";
 import { walletsLogger } from "../../logger";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
@@ -39,6 +40,7 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
                     keyType: "secp256k1",
                     bytes: hexString,
                     encoding: "hex",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -56,6 +58,7 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign transaction");
         }
         EVMNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
+        this.assertPublicKeyBelongsToRecoveryMethod(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
@@ -69,6 +72,19 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
                 "Not supported. Expected public key to be in hex encoding and secp256k1 key type. Got: " +
                     JSON.stringify(publicKey)
             );
+        }
+    }
+
+    protected addressFromPublicKey(publicKey: { bytes: string; encoding: string; keyType: string }): string | null {
+        if (publicKey.keyType !== "secp256k1" || publicKey.encoding !== "hex") {
+            return null;
+        }
+        try {
+            return publicKeyToAddress(
+                publicKey.bytes.startsWith("0x") ? (publicKey.bytes as Hex) : `0x${publicKey.bytes}`
+            );
+        } catch {
+            return null;
         }
     }
 

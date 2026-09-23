@@ -38,6 +38,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                     keyType: "ed25519",
                     bytes: base58.encode(new Uint8Array(messageData)),
                     encoding: "base58",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -55,6 +56,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign payload");
         }
         SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
+        this.assertPublicKeyBelongsToRecoveryMethod(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
@@ -69,6 +71,13 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
+    }
+
+    protected addressFromPublicKey(publicKey: { bytes: string; encoding: string; keyType: string }): string | null {
+        if (publicKey.keyType !== "ed25519" || publicKey.encoding !== "base58") {
+            return null;
+        }
+        return publicKey.bytes;
     }
 
     protected getChainKeyParams(): { scheme: "ed25519"; encoding: "base58" } {
