@@ -70,7 +70,6 @@ export {
     OnboardingSessionExpiredError,
     OtpValidationError,
     SignerAuthenticationError,
-    SignerKeyMismatchError,
     SignerStatusError,
 } from "./signers/types";
 export type {

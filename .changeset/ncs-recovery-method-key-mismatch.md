@@ -3,16 +3,14 @@
 "@crossmint/client-signers": patch
 ---
 
-Stop email/phone recovery methods from signing with another recovery method's keys.
+Tell the signer frame which recovery method a request is for.
 
 The signer frame stores one key per device and user. After onboarding a phone recovery method, selecting an
 email recovery method on the same device made the frame report `ready`, skip the OTP, and sign with the
 phone-derived key, which the API rejected with `Invalid signature for signer email:...`.
 
-`@crossmint/wallets-sdk` now compares the public key the frame reports on `get-status`, `start-onboarding`
-and `sign` with the selected recovery method's registered address. A mismatch triggers `onAuthRequired`
-so the recovery method is onboarded again, and a signature produced with the wrong key throws
-`SignerKeyMismatchError` instead of being submitted.
+`@crossmint/wallets-sdk` now sends the selected recovery method's `authId` on `get-status` and `sign`, so a
+frame that tracks the recovery method per device can request onboarding for the selected one instead of
+signing with another method's key.
 
-`@crossmint/client-signers` adds an optional `authId` to the `get-status` and `sign` request payloads so the
-frame can answer for the selected recovery method.
+`@crossmint/client-signers` adds the optional `authId` to the `get-status` and `sign` request payloads.

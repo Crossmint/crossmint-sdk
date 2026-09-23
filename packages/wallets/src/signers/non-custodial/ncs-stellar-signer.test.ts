@@ -1,53 +1,40 @@
 import { describe, expect, test, vi } from "vitest";
-import { encodeBase64 } from "@crossmint/client-signers-cryptography";
 
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
-import { SignerKeyMismatchError } from "../types";
-import { encodeStellarPublicKey } from "../../utils/stellar";
 import { StellarNonCustodialSigner } from "./ncs-stellar-signer";
 
-function randomKey() {
-    const bytes = crypto.getRandomValues(new Uint8Array(32));
-    return { bytes, address: encodeStellarPublicKey(bytes), base64: encodeBase64(bytes) };
-}
-
-const PHONE_KEY = randomKey();
-const EMAIL_KEY = randomKey();
 const EMAIL_AUTH_ID = "email:test@example.com";
+const PUBLIC_KEY = { bytes: "cHVibGljLWtleQ==", encoding: "base64", keyType: "ed25519" };
 
-/**
- * Simulates a signer frame whose device holds the keys of `deviceKey`, regardless of which
- * recovery method the SDK asks about.
- */
-function makeSigner({
-    deviceKey,
-    signerAddress,
-    statusOnStart = "ready",
-}: {
-    deviceKey: ReturnType<typeof randomKey>;
-    signerAddress: string;
-    statusOnStart?: "ready" | "new-device";
-}) {
-    const publicKeys = { ed25519: { bytes: deviceKey.base64, encoding: "base64", keyType: "ed25519" } };
+function makeSigner({ statusOnGetStatus }: { statusOnGetStatus: "ready" | "new-device" }) {
     const sendAction = vi.fn(async (args: { event: string }) => {
         switch (args.event) {
             case "request:get-status":
-                return { status: "success", signerStatus: "ready", publicKeys };
+                return { status: "success", signerStatus: statusOnGetStatus, publicKeys: { ed25519: PUBLIC_KEY } };
             case "request:start-onboarding":
-                return { status: "success", signerStatus: statusOnStart, publicKeys };
+                return { status: "success", signerStatus: "new-device" };
+            case "request:complete-onboarding":
+                return { status: "success", signerStatus: "ready", publicKeys: { ed25519: PUBLIC_KEY } };
             default:
                 return {
                     status: "success",
                     signature: { bytes: "c2ln", encoding: "base64", keyType: "ed25519" },
-                    publicKey: publicKeys.ed25519,
+                    publicKey: PUBLIC_KEY,
                 };
         }
     });
-    // Mirrors the UI layer: request the OTP as soon as auth is needed and swallow send failures.
+    // Mirrors the UI layer: request the OTP as soon as auth is needed, then verify it.
     const onAuthRequired = vi.fn(
-        async (_type: string, _locator: string, needsAuth: boolean, sendOtp: () => Promise<void>) => {
+        async (
+            _type: string,
+            _locator: string,
+            needsAuth: boolean,
+            sendOtp: () => Promise<void>,
+            verifyOtp: (otp: string) => Promise<void>
+        ) => {
             if (needsAuth) {
-                await sendOtp().catch(() => {});
+                await sendOtp();
+                await verifyOtp("123456");
             }
         }
     );
@@ -55,7 +42,7 @@ function makeSigner({
         type: "email",
         email: "test@example.com",
         locator: EMAIL_AUTH_ID,
-        address: signerAddress,
+        address: "GWALLET",
         crossmint: { apiKey: "ck_staging_test", jwt: "test-jwt" },
         clientTEEConnection: { sendAction },
         onAuthRequired,
@@ -73,12 +60,9 @@ function requestData(sendAction: ReturnType<typeof makeSigner>["sendAction"], ev
 }
 
 describe("StellarNonCustodialSigner.signTransaction", () => {
-    describe("when the device already holds the keys of the selected recovery method", () => {
-        test("signs without re-onboarding and tells the frame which recovery method is signing", async () => {
-            const { signer, sendAction, onAuthRequired } = makeSigner({
-                deviceKey: EMAIL_KEY,
-                signerAddress: EMAIL_KEY.address,
-            });
+    describe("when the frame reports the device as ready for the selected recovery method", () => {
+        test("signs without onboarding and tells the frame which recovery method is signing", async () => {
+            const { signer, sendAction, onAuthRequired } = makeSigner({ statusOnGetStatus: "ready" });
 
             const result = await signer.signTransaction("cGF5bG9hZA==");
 
@@ -89,15 +73,13 @@ describe("StellarNonCustodialSigner.signTransaction", () => {
         });
     });
 
-    describe("when the device holds the keys of another recovery method (phone onboarded, email selected)", () => {
-        test("re-onboards the selected recovery method instead of trusting the frame's ready status", async () => {
-            const { signer, sendAction, onAuthRequired } = makeSigner({
-                deviceKey: PHONE_KEY,
-                signerAddress: EMAIL_KEY.address,
-            });
+    describe("when the frame reports the device as not onboarded for the selected recovery method", () => {
+        test("onboards the recovery method without an sms channel before signing", async () => {
+            const { signer, sendAction, onAuthRequired } = makeSigner({ statusOnGetStatus: "new-device" });
 
-            await signer.signTransaction("cGF5bG9hZA==").catch(() => {});
+            const result = await signer.signTransaction("cGF5bG9hZA==");
 
+            expect(result).toEqual({ signature: "c2ln" });
             expect(onAuthRequired).toHaveBeenCalledWith(
                 "email",
                 EMAIL_AUTH_ID,
@@ -107,24 +89,7 @@ describe("StellarNonCustodialSigner.signTransaction", () => {
                 expect.any(Function)
             );
             expect(requestData(sendAction, "request:start-onboarding")).toEqual({ authId: EMAIL_AUTH_ID });
-        });
-
-        test("fails with the two addresses when the frame keeps answering with the other recovery method's key", async () => {
-            const { signer, sendAction } = makeSigner({ deviceKey: PHONE_KEY, signerAddress: EMAIL_KEY.address });
-
-            const error = await signer.signTransaction("cGF5bG9hZA==").catch((e: unknown) => e);
-
-            expect(error).toBeInstanceOf(SignerKeyMismatchError);
-            expect(error).toMatchObject({ expectedAddress: EMAIL_KEY.address, actualAddress: PHONE_KEY.address });
-            expect(sendAction.mock.calls.some(([args]) => args.event === "request:sign")).toBe(false);
-        });
-    });
-
-    describe("when the recovery method has no registered address", () => {
-        test("does not compare keys", async () => {
-            const { signer } = makeSigner({ deviceKey: PHONE_KEY, signerAddress: "" });
-
-            await expect(signer.signTransaction("cGF5bG9hZA==")).resolves.toEqual({ signature: "c2ln" });
+            expect(requestData(sendAction, "request:sign")).toMatchObject({ authId: EMAIL_AUTH_ID });
         });
     });
 });

@@ -92,24 +92,6 @@ export class OnboardingSessionExpiredError extends Error {
         this.name = "OnboardingSessionExpiredError";
     }
 }
-/**
- * Thrown when the signer frame holds keys for a different recovery method than the one selected.
- * The frame stores one key per device and user, so switching between two recovery methods
- * (e.g. phone -> email) on the same device without re-authenticating produces this error.
- */
-export class SignerKeyMismatchError extends Error {
-    constructor(
-        public readonly expectedAddress: string,
-        public readonly actualAddress: string
-    ) {
-        super(
-            `The keys on this device belong to a different recovery method (expected ${expectedAddress}, got ${actualAddress}). ` +
-                "Authenticate the selected recovery method again to re-onboard it on this device."
-        );
-        this.name = "SignerKeyMismatchError";
-    }
-}
-
 export type EmailSignerConfig = {
     type: "email";
     email?: string;

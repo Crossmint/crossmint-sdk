@@ -13,7 +13,6 @@ import {
     OnboardingSessionExpiredError,
     OtpValidationError,
     SignerAuthenticationError,
-    SignerKeyMismatchError,
     SignerStatusError,
 } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
@@ -169,19 +168,8 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         });
 
         if (signerResponse.signerStatus === "ready") {
-            const { scheme } = this.getChainKeyParams();
-            const publicKey = signerResponse.publicKeys?.[scheme];
-            if (publicKey != null && this.publicKeyBelongsToAnotherRecoveryMethod({ ...publicKey, keyType: scheme })) {
-                // The frame keeps one key per device, so a key derived for another recovery method
-                // must be replaced by onboarding the selected one again.
-                walletsLogger.warn("get-status: device keys belong to another recovery method, re-onboarding", {
-                    authId: this.getAuthId(),
-                });
-                this._needsAuth = true;
-            } else {
-                this._needsAuth = false;
-                return;
-            }
+            this._needsAuth = false;
+            return;
         } else {
             this._needsAuth = true;
         }
@@ -276,7 +264,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         } catch (error) {
             // The UI layer's send handlers swallow the thrown error and call `reject`, which would settle the
             // auth promise with a generic AuthRejectedError, so settle it with the auth failure first.
-            if (error instanceof SignerAuthenticationError || error instanceof SignerKeyMismatchError) {
+            if (error instanceof SignerAuthenticationError) {
                 this._authPromise?.reject(error);
             }
             throw error;
@@ -307,13 +295,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
-            const { scheme } = this.getChainKeyParams();
-            const publicKey = response.publicKeys?.[scheme];
-            if (publicKey != null) {
-                // A frame that cannot re-onboard a device keeps answering "ready" with the other
-                // recovery method's keys; surface that instead of signing with the wrong key.
-                this.assertPublicKeyBelongsToRecoveryMethod({ ...publicKey, keyType: scheme });
-            }
             this._needsAuth = false;
             return;
         }
@@ -327,43 +308,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             throw new OtpValidationError(errorMessage, response.code);
         }
     }
-
-    /**
-     * Rejects a signature produced with keys that do not belong to the selected recovery method,
-     * which the API would otherwise reject with an opaque "Invalid signature" error.
-     */
-    protected assertPublicKeyBelongsToRecoveryMethod(publicKey: {
-        bytes: string;
-        encoding: string;
-        keyType: string;
-    }) {
-        if (!this.publicKeyBelongsToAnotherRecoveryMethod(publicKey)) {
-            return;
-        }
-        this._needsAuth = true;
-        throw new SignerKeyMismatchError(this.config.address, this.addressFromPublicKey(publicKey) ?? publicKey.bytes);
-    }
-
-    private publicKeyBelongsToAnotherRecoveryMethod(publicKey: { bytes: string; encoding: string; keyType: string }) {
-        if (this.config.address == null || this.config.address === "") {
-            return false;
-        }
-        const address = this.addressFromPublicKey(publicKey);
-        if (address == null) {
-            return false;
-        }
-        return address.toLowerCase() !== this.config.address.toLowerCase();
-    }
-
-    /**
-     * Chain-specific conversion of a signer public key into the address registered as a recovery
-     * method. Returns null when the key cannot be interpreted, in which case no comparison is made.
-     */
-    protected abstract addressFromPublicKey(publicKey: {
-        bytes: string;
-        encoding: string;
-        keyType: string;
-    }): string | null;
 
     protected getAuthId() {
         if (this.config.type === "email") {
