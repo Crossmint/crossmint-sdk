@@ -113,8 +113,6 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
         const balanceNum = parseFloat(balance);
         if (balanceNum < parseFloat(transferAmount)) {
             await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-            // Wait a moment for the funding to complete
-            await authenticatedPage.waitForTimeout(2000);
         } else {
             console.log(`✅ Wallet already holds ${balanceNum} USDXM, skipping faucet`);
         }
@@ -154,8 +152,6 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
         const initialBalanceNum = parseFloat(initialBalance);
         if (initialBalanceNum < parseFloat(transferAmount)) {
             await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-            // Wait a moment for the funding to complete
-            await authenticatedPage.waitForTimeout(2000);
         } else {
             console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
         }

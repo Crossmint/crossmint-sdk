@@ -59,8 +59,6 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                 const initialBalanceNum = parseFloat(initialBalance);
                 if (initialBalanceNum < parseFloat(transferAmount)) {
                     await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-                    // Wait a moment for the funding to complete
-                    await authenticatedPage.waitForTimeout(2000);
                 } else {
                     console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }
@@ -115,8 +113,6 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                 const initialBalanceNum = parseFloat(initialBalance);
                 if (initialBalanceNum < parseFloat(transferAmount)) {
                     await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-                    // Wait a moment for the funding to complete
-                    await authenticatedPage.waitForTimeout(2000);
                 } else {
                     console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }
