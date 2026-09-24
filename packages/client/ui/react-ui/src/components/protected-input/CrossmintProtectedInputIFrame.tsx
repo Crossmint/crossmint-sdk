@@ -66,14 +66,20 @@ function useProtectedInputIframeClient(
 
 /**
  * Routes the hosted page events to the latest callbacks. Returns the relayed height (reset to
- * 0 for every new iframe) and whether the page has reported in yet.
+ * 0 for every new iframe) and whether the current document has reported in yet.
  */
 function useProtectedInputEvents(
     iframeClient: ProtectedInputIFrameEmitter | null,
+    src: string | null,
     latestProps: RefObject<CrossmintProtectedInputProps>
 ) {
     const [height, setHeight] = useState(0);
     const [loaded, setLoaded] = useState(false);
+    // A new `src` (for example a changed `jwt`) navigates the same iframe to a new document that
+    // has to report in again. The height is kept so the field does not collapse meanwhile.
+    useEffect(() => {
+        setLoaded(false);
+    }, [src]);
     useEffect(() => {
         setHeight(0);
         setLoaded(false);
@@ -143,11 +149,12 @@ export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProp
     // The iframe element is replaced only when the embedding origin resolves. A change of
     // `jwt` updates its `src` in place, like `CrossmintPaymentMethodManagement`.
     const iframeKey = targetOrigin ?? "";
+    const src = rendered && targetOrigin != null ? service.iframe.getUrl(props, { targetOrigin }) : null;
     const iframeClient = useProtectedInputIframeClient(ref, service, rendered, iframeKey);
-    const { height, loaded } = useProtectedInputEvents(iframeClient, latestProps);
+    const { height, loaded } = useProtectedInputEvents(iframeClient, src, latestProps);
     useLoadTimeout(iframeClient, loaded, latestProps);
 
-    if (!rendered || targetOrigin == null) {
+    if (src == null) {
         return null;
     }
 
@@ -155,7 +162,7 @@ export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProp
         <iframe
             key={iframeKey}
             ref={ref}
-            src={service.iframe.getUrl(props, { targetOrigin })}
+            src={src}
             id={`crossmint-protected-input.iframe:${iframeId}`}
             title="Protected input"
             style={{

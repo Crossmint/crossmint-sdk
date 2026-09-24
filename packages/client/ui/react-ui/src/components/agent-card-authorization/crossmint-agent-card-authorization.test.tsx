@@ -46,9 +46,13 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 
 // A real ApiClient, so requests go through the shared fetch wrapper and only fetch is mocked.
+// It carries the jwt it was built with, so a request's bearer token shows which client sent it.
 class TestApiClient extends ApiClient {
+    constructor(private readonly jwt: string) {
+        super();
+    }
     get commonHeaders() {
-        return { "x-api-key": "ck_staging_key", Authorization: "Bearer jwt-1" };
+        return { "x-api-key": "ck_staging_key", Authorization: `Bearer ${this.jwt}` };
     }
     get baseUrl() {
         return "https://staging.crossmint.com";
@@ -140,7 +144,9 @@ describe("<CrossmintAgentCardAuthorization />", () => {
     beforeEach(() => {
         vi.stubGlobal("fetch", fetchMock);
         // Built here, after the module body ran, so the hoisted mock never touches the class early.
-        createCrossmintApiClient.mockImplementation(() => new TestApiClient());
+        createCrossmintApiClient.mockImplementation(
+            (crossmint: { jwt: string }) => new TestApiClient(crossmint.jwt)
+        );
     });
 
     afterEach(() => {
@@ -613,6 +619,21 @@ describe("<CrossmintAgentCardAuthorization />", () => {
             expect(createCrossmintApiClient).toHaveBeenLastCalledWith(expect.objectContaining({ jwt: "jwt-2" }), {
                 usageOrigin: "client",
             });
+        });
+
+        test("a card selected after the jwt changed is authorized with the new token", async () => {
+            fetchMock.mockResolvedValueOnce(json(200, REGISTERED)).mockResolvedValueOnce(json(201, orderIntent([VIC_ACTIVE])));
+            const { onError, rerender, onAuthorized } = renderComponent();
+
+            // The payment-method iframe keeps the selection callback from its first render.
+            rerender(
+                <CrossmintAgentCardAuthorization {...PROPS} jwt="jwt-2" onAuthorized={onAuthorized} onError={onError} />
+            );
+            selectCard();
+
+            await waitFor(() => expect(onAuthorized).toHaveBeenCalledTimes(1));
+            const bearers = fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers).get("Authorization"));
+            expect(bearers).toEqual(["Bearer jwt-2", "Bearer jwt-2"]);
         });
     });
 

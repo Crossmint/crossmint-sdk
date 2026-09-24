@@ -131,6 +131,31 @@ describe("<CrossmintProtectedInput />", () => {
             expect(createClient).toHaveBeenCalledTimes(1);
             expect(iframeClient.off).not.toHaveBeenCalled();
         });
+
+        test("keeps the height but re-arms load_timeout for the new document", () => {
+            const onError = vi.fn();
+            const { rerender } = render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
+            emit("ui:height.changed", { height: 180 });
+
+            rerender(<CrossmintProtectedInput {...PROPS} jwt="jwt-2" onError={onError} />);
+            expect(screen.getByTitle("Protected input")).toHaveStyle({ height: "180px" });
+
+            advance(LOAD_TIMEOUT_MS + 1);
+            expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: "load_timeout" }));
+        });
+
+        test("does not report load_timeout when the new document reports in", () => {
+            const onError = vi.fn();
+            const { rerender } = render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
+            emit("ui:height.changed", { height: 180 });
+
+            rerender(<CrossmintProtectedInput {...PROPS} jwt="jwt-2" onError={onError} />);
+            emit("ui:height.changed", { height: 200 });
+            advance(LOAD_TIMEOUT_MS + 1);
+
+            expect(onError).not.toHaveBeenCalled();
+            expect(screen.getByTitle("Protected input")).toHaveStyle({ height: "200px" });
+        });
     });
 
     describe("when the props fail validation", () => {

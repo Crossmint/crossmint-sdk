@@ -401,6 +401,13 @@ export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorization
     const cache = useOrderIntentCache();
     const { settle, awaitRailActive } = useRailSettlement(api, terminal, cache, setStep);
     const authorize = useAuthorizeCard(api, terminal, latestProps, cache, settle);
+    // The payment-method iframe subscribes to its selection callback once, on its first render.
+    // Keep the callback identity stable and route through a ref, so a selection made after the
+    // `jwt` prop changed runs the `authorize` bound to the current API client, not the first one.
+    const latestAuthorize = useRef(authorize);
+    useEffect(() => {
+        latestAuthorize.current = authorize;
+    }, [authorize]);
 
     const onPaymentMethodSelected = useCallback(
         (paymentMethod: unknown) => {
@@ -409,9 +416,9 @@ export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorization
                 terminal.fail("payment_method_selection_failed", "The selected payment method is not a card.");
                 return;
             }
-            void authorize(summary);
+            void latestAuthorize.current(summary);
         },
-        [authorize, terminal]
+        [terminal]
     );
 
     const onRailStepComplete = useCallback((pending: PendingStep) => void awaitRailActive(pending), [awaitRailActive]);
