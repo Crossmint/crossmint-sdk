@@ -78,6 +78,7 @@ describe("CvcRecollectionError", () => {
                 | "invalid-configuration"
                 | "invalid-credentials"
                 | "provider-error"
+                | "verification-refused"
                 | "unknown";
             message: string;
         }>();
