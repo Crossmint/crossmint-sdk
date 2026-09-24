@@ -14,7 +14,7 @@ export function CrossmintAgentCardAuthorization(props: CrossmintAgentCardAuthori
     const { jwt, step, onPaymentMethodSelected, onRailStepComplete, onRailStepError } =
         useAgentCardAuthorization(props);
 
-    if (jwt == null || step.kind === "done") {
+    if (step.kind === "done") {
         return null;
     }
 

@@ -29,8 +29,6 @@ export interface AgentCardAuthorizationResult {
 }
 
 export const AGENT_CARD_AUTHORIZATION_ERROR_CODES = [
-    /** No buyer JWT in the Crossmint context. */
-    "missing_jwt",
     /** The payment-method UI reported something that is not a card, or a payload the SDK could not validate. */
     "payment_method_selection_failed",
     /** Reading or creating the order-intent registration of the card failed. */
@@ -59,6 +57,8 @@ export interface AgentCardAuthorizationAppearance {
 }
 
 export interface CrossmintAgentCardAuthorizationProps {
+    /** The buyer's Crossmint auth token, the same one `CrossmintPaymentMethodManagement` takes. */
+    jwt: string;
     /** `value` is a decimal string with up to 4 places, greater than 0; `currency` is a 3-letter code. */
     amount: { value: string; currency: string };
     merchant: OrderIntentMerchant;
