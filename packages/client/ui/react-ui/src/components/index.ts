@@ -9,5 +9,6 @@ export * from "./card-management";
 export * from "./identity-verification";
 export * from "./order-intent";
 export * from "./protected-input";
+export * from "./agent-card-authorization";
 
 export { EmbeddedAuthForm } from "./auth/EmbeddedAuthForm";
