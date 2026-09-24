@@ -7,7 +7,7 @@ export const PROTECTED_INPUT_PAGE_ERROR_CODES = [
     "invalid_params",
 ] as const;
 /** Codes the SDK component reports itself, without a round trip to the hosted page. */
-export const PROTECTED_INPUT_SDK_ERROR_CODES = ["missing_jwt", "load_timeout"] as const;
+export const PROTECTED_INPUT_SDK_ERROR_CODES = ["load_timeout"] as const;
 export const PROTECTED_INPUT_ERROR_CODES = [
     ...PROTECTED_INPUT_PAGE_ERROR_CODES,
     ...PROTECTED_INPUT_SDK_ERROR_CODES,

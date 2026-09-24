@@ -9,8 +9,6 @@ export type ProtectedInputServiceProps = {
 };
 
 export type ProtectedInputIFrameUrlOptions = {
-    /** Buyer JWT, taken from the Crossmint context rather than from the component props. */
-    jwt: string;
     /**
      * Origin of the embedding page (`window.location.origin`). The hosted page posts its
      * events only to this origin, so a page that embeds the iframe from elsewhere hears nothing.
@@ -24,7 +22,9 @@ const MAX_LABEL_LENGTH = 120;
  * Checks the props the hosted page would otherwise reject with `invalid_params`, so the
  * integrator gets a clear message before the iframe loads. Returns `null` when they are valid.
  */
-export function validateProtectedInputProps(props: CrossmintProtectedInputProps): string | null {
+export function validateProtectedInputProps(
+    props: Pick<CrossmintProtectedInputProps, "merchantUrl" | "expiresAt" | "label">
+): string | null {
     let merchantUrl: URL;
     try {
         merchantUrl = new URL(props.merchantUrl);
@@ -44,7 +44,7 @@ export function validateProtectedInputProps(props: CrossmintProtectedInputProps)
 }
 
 export function createProtectedInputService({ apiClient }: ProtectedInputServiceProps) {
-    function getIFrameUrl(props: CrossmintProtectedInputProps, { jwt, targetOrigin }: ProtectedInputIFrameUrlOptions) {
+    function getIFrameUrl(props: CrossmintProtectedInputProps, { targetOrigin }: ProtectedInputIFrameUrlOptions) {
         const validationError = validateProtectedInputProps(props);
         if (validationError != null) {
             throw new Error(`CrossmintProtectedInput: ${validationError}`);
@@ -56,7 +56,7 @@ export function createProtectedInputService({ apiClient }: ProtectedInputService
         // Only the params of the hosted page contract, picked by name, so an extra key on the
         // props object (or a future prop) never reaches the URL. Objects (appearance) are
         // JSON-encoded; plain strings are sent as-is; unset values are skipped.
-        const { merchantUrl, expiresAt, label, appearance } = props;
+        const { jwt, merchantUrl, expiresAt, label, appearance } = props;
         appendObjectToQueryParams(queryParams, { merchantUrl, expiresAt, label, appearance });
 
         queryParams.append("jwt", jwt);

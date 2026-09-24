@@ -14,12 +14,12 @@ const apiClient = {
     internalConfig: { sdkMetadata: { name: "test-sdk", version: "1.0.0" } },
 } as never;
 
-const AUTH = { jwt: "jwt-1", targetOrigin: "https://shop.example.com" };
+const AUTH = { targetOrigin: "https://shop.example.com" };
 
 function iframeUrl(props: Partial<CrossmintProtectedInputProps>, auth = AUTH) {
     return new URL(
         createProtectedInputService({ apiClient }).iframe.getUrl(
-            { merchantUrl: "https://shop.example.com/login", ...props },
+            { jwt: "jwt-1", merchantUrl: "https://shop.example.com/login", ...props },
             auth
         )
     );
@@ -71,11 +71,8 @@ describe("createProtectedInputService", () => {
             expect(url.toString()).not.toContain("function");
         });
 
-        test("ignores keys outside the hosted page contract, so props cannot smuggle a second jwt", () => {
-            const params = iframeUrl({
-                jwt: "jwt-from-props",
-                extra: "x",
-            } as Partial<CrossmintProtectedInputProps>).searchParams;
+        test("sends the jwt prop once and ignores keys outside the hosted page contract", () => {
+            const params = iframeUrl({ extra: "x" } as Partial<CrossmintProtectedInputProps>).searchParams;
 
             expect(params.getAll("jwt")).toEqual(["jwt-1"]);
             expect(params.has("extra")).toBe(false);
@@ -250,8 +247,8 @@ describe("protectedInputIncomingEvents", () => {
         expect(known.success && known.data.code).toBe("provider_unavailable");
         expect(future.success && future.data.code).toBe("rate_limited");
         // The exported type narrows to the known codes for autocomplete and exhaustive switches.
-        const error: ProtectedInputError = { code: "missing_jwt", message: "" };
-        expect(error.code).toBe("missing_jwt");
+        const error: ProtectedInputError = { code: "load_timeout", message: "" };
+        expect(error.code).toBe("load_timeout");
     });
 
     test("protected-input:error needs both a code and a message", () => {

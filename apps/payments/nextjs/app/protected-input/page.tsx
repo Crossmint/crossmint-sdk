@@ -47,6 +47,7 @@ function ProtectedInputWrapper() {
 
     return (
         <CrossmintProtectedInput
+            jwt={jwt}
             merchantUrl={merchantUrl}
             label={merchantHost}
             onCreated={setCreated}

@@ -10,8 +10,6 @@ import { type RefObject, useEffect, useId, useMemo, useRef, useState } from "rea
 
 type ProtectedInputService = ReturnType<typeof createProtectedInputService>;
 
-/** How long the Crossmint auth provider gets to load a session before `missing_jwt` is reported. */
-export const MISSING_JWT_GRACE_MS = 3_000;
 /** How long the hosted page gets to report in (its first height) before `load_timeout` is reported. */
 export const LOAD_TIMEOUT_MS = 15_000;
 
@@ -31,47 +29,6 @@ function useEmbeddingOrigin() {
         setTargetOrigin(window.location.origin);
     }, []);
     return targetOrigin;
-}
-
-/**
- * The JWT the iframe was opened with. A token refresh (value to value) keeps it, so the iframe
- * and whatever the buyer typed survive; only a logout (value to undefined) drops it, and the
- * next login opens a fresh iframe.
- */
-function useSessionJwt(jwt: string | undefined) {
-    const [sessionJwt, setSessionJwt] = useState(jwt);
-    useEffect(() => {
-        if (jwt == null || sessionJwt == null) {
-            setSessionJwt(jwt);
-        }
-    }, [jwt, sessionJwt]);
-    return sessionJwt;
-}
-
-/**
- * Reports `missing_jwt` when no JWT shows up within the grace period, which covers an auth
- * provider that loads its session asynchronously. Re-arms once a JWT is present, so a later
- * logout is reported again.
- */
-function useMissingJwtReport(jwt: string | undefined, latestProps: RefObject<CrossmintProtectedInputProps>) {
-    const reported = useRef(false);
-    useEffect(() => {
-        if (jwt != null) {
-            reported.current = false;
-            return;
-        }
-        if (reported.current) {
-            return;
-        }
-        const timer = setTimeout(() => {
-            reported.current = true;
-            latestProps.current?.onError?.({
-                code: "missing_jwt",
-                message: "CrossmintProtectedInput needs a buyer JWT in the Crossmint context before it can render.",
-            });
-        }, MISSING_JWT_GRACE_MS);
-        return () => clearTimeout(timer);
-    }, [jwt, latestProps]);
 }
 
 /** Reports `invalid_params` once per distinct problem, before any iframe is mounted. */
@@ -180,17 +137,17 @@ export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProp
     const iframeId = useId();
     const latestProps = useLatestProps(props);
     const targetOrigin = useEmbeddingOrigin();
-    const sessionJwt = useSessionJwt(crossmint.jwt);
-    useMissingJwtReport(crossmint.jwt, latestProps);
     useInvalidParamsReport(validationError, latestProps);
 
-    const rendered = validationError == null && sessionJwt != null && targetOrigin != null;
-    const iframeKey = `${sessionJwt ?? ""}|${targetOrigin ?? ""}`;
+    const rendered = validationError == null && targetOrigin != null;
+    // The iframe element is replaced only when the embedding origin resolves. A change of
+    // `jwt` updates its `src` in place, like `CrossmintPaymentMethodManagement`.
+    const iframeKey = targetOrigin ?? "";
     const iframeClient = useProtectedInputIframeClient(ref, service, rendered, iframeKey);
     const { height, loaded } = useProtectedInputEvents(iframeClient, latestProps);
     useLoadTimeout(iframeClient, loaded, latestProps);
 
-    if (!rendered || sessionJwt == null || targetOrigin == null) {
+    if (!rendered || targetOrigin == null) {
         return null;
     }
 
@@ -198,7 +155,7 @@ export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProp
         <iframe
             key={iframeKey}
             ref={ref}
-            src={service.iframe.getUrl(props, { jwt: sessionJwt, targetOrigin })}
+            src={service.iframe.getUrl(props, { targetOrigin })}
             id={`crossmint-protected-input.iframe:${iframeId}`}
             title="Protected input"
             style={{

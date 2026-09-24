@@ -15,13 +15,14 @@ export type ProtectedInputCreated = z.infer<(typeof protectedInputIncomingEvents
 /**
  * Payload of `protected-input:error`. Codes the hosted page posts: `protected_input_failed`
  * (registration call failed), `provider_unavailable` (the vault widget could not load),
- * `invalid_params` (the page rejected the query params). Codes the SDK component adds:
- * `missing_jwt` (no buyer JWT in the Crossmint context) and `load_timeout` (the hosted page
- * never reported in). See `PROTECTED_INPUT_ERROR_CODES`.
+ * `invalid_params` (the page rejected the query params). Code the SDK component adds:
+ * `load_timeout` (the hosted page never reported in). See `PROTECTED_INPUT_ERROR_CODES`.
  */
 export type ProtectedInputError = z.infer<(typeof protectedInputIncomingEvents)["protected-input:error"]>;
 
 export interface CrossmintProtectedInputProps {
+    /** The buyer's Crossmint auth token, the same one `CrossmintPaymentMethodManagement` takes. */
+    jwt: string;
     /**
      * The merchant sign-in page the password is for. Its host becomes the input's merchant
      * domain; Universal Checkout may only use the input on that host or a subdomain of it.
