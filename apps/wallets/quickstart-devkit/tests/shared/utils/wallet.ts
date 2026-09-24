@@ -21,12 +21,7 @@ interface SolanaTokenAccount {
     };
 }
 
-/**
- * Reads the wallet's USDXM balance straight from the chain. The Crossmint balance API
- * reports the faucet transfer before the associated token account exists, while the
- * transfer endpoint checks the chain, so only the chain can say when a Solana wallet
- * can spend. Returns null when the RPC itself could not be read.
- */
+// The balances API reports a Solana transfer before the funds are spendable. Null means the RPC failed.
 async function readSolanaUsdxmBalance(walletAddress: string): Promise<number | null> {
     const response = await fetch(SOLANA_RPC_URL, {
         method: "POST",
@@ -74,9 +69,7 @@ async function readTokenBalance(walletAddress: string, chainId: string, token: s
 
 /**
  * Funds a wallet using the Crossmint faucet API, then waits until the funds are
- * spendable. The faucet responds before the transfer settles, so a caller that spends
- * right after the response fails. Solana waits on the chain rather than on the balance
- * API, which reports the funds before the associated token account exists.
+ * spendable: the faucet responds before the transfer settles.
  * @param walletAddress - The wallet address to fund
  * @param chainId - The chain ID (e.g., "base-sepolia", "solana", "stellar")
  * @param amount - The amount to fund (default: 10, maximum allowed)
@@ -325,8 +318,7 @@ export async function transferFunds(
 
             // If success link doesn't appear, check for error messages
             const errorMessage = page.getByText(/error|failed|insufficient|limit/i).first();
-            // waitFor, not isVisible: isVisible ignores its timeout and returns
-            // immediately, which would miss an error still being rendered.
+            // isVisible ignores its timeout, so an error still rendering would read as absent.
             const hasError = await errorMessage
                 .waitFor({ state: "visible", timeout: 2000 })
                 .then(() => true)

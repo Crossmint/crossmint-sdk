@@ -17,8 +17,7 @@ function record(page: Page, entry: string, maxLength = MAX_ENTRY_LENGTH): void {
     }
 }
 
-// The devkit reports most failures through the console, a pageerror or a native alert()
-// rather than the DOM, so a test waiting on page text sees nothing at all.
+// The devkit reports failures through the console or a native alert(), never the DOM.
 export function attachPageDiagnostics(page: Page): void {
     diagnosticsByPage.set(page, []);
 
@@ -40,8 +39,7 @@ export function attachPageDiagnostics(page: Page): void {
         await dialog.dismiss().catch(() => undefined);
     });
 
-    // The SDK rethrows an API failure with only its `message`, so the body is the only
-    // place the revert type, reason and simulation link survive.
+    // The SDK rethrows an API failure with only its `message`, losing the body.
     page.on("response", (response) => {
         const status = response.status();
         const url = response.url();
@@ -62,8 +60,7 @@ export function recentPageDiagnostics(page: Page, limit = 20): string {
     if (entries.length === 0) {
         return "";
     }
-    // One SDK failure emits a long chain whose last lines are symptoms, so a plain
-    // tail drops the API error that names the cause.
+    // A plain tail keeps the symptoms and drops the API error that names the cause.
     const apiErrors = entries.filter((entry) => entry.startsWith(API_ERROR_PREFIX)).slice(-2);
     const recent = entries.slice(-limit).filter((entry) => !apiErrors.includes(entry));
     return ` Recent browser output: ${[...apiErrors, ...recent].join(" | ")}`;

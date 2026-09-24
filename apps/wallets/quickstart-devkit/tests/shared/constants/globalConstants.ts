@@ -81,9 +81,7 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     // "external-wallet": "external",
 };
 
-// A fixed suffix reuses one wallet between runs. Each run adds a device signer it
-// cannot remove, so a suite that runs often must pass a unique value to stay under
-// the backend signer cap; the faucet funds the fresh wallet on every chain.
+// A suite that runs often must pass a unique value: each run leaks a device signer.
 const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 
 export function getEmailForSigner(signerType: SignerType): string {

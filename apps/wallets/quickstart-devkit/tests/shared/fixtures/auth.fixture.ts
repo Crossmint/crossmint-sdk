@@ -10,14 +10,9 @@ validateUITestConfig();
 // Cache for authenticated pages per configuration to prevent multiple authentications
 const authenticatedPageCache = new Map<string, { page: Page; context: BrowserContext }>();
 
-// Authentication takes around 90 seconds, so without this a broken configuration would
-// repeat it for all four of its tests. The marker has to live on disk: Playwright
-// starts a fresh worker process after every failed test, which wipes module state.
-// It is keyed by attempt so a retry still gets a real try, and Playwright empties the
-// output directory when a run starts, so nothing leaks between runs.
+// On disk, not in memory: Playwright starts a fresh worker after every failed test.
+// Its parent is the output directory, which Playwright empties when a run starts.
 function failureMarkerPath(cacheKey: string, outputDir: string, retry: number): string {
-    // outputDir is <root>/test-results/<test slug>, so its parent is the directory
-    // Playwright empties when a run starts.
     return join(dirname(outputDir), ".auth-failures", `${cacheKey}-attempt${retry}.txt`);
 }
 
@@ -34,8 +29,7 @@ function recordAuthenticationFailure(path: string, error: unknown): void {
         mkdirSync(dirname(path), { recursive: true });
         writeFileSync(path, error instanceof Error ? error.stack ?? error.message : String(error));
     } catch (_) {
-        // A marker that cannot be written only costs time, so it must never be the
-        // error a run reports.
+        // A marker that cannot be written only costs time.
     }
 }
 
@@ -87,12 +81,10 @@ export const test = base.extend<AuthFixtures>({
             if (!loginButtonIsVisible) {
                 console.log("✅ Already logged in, skipping login");
             } else {
-                // Perform email OTP login - this will only happen ONCE per configuration
                 const email = getEmailForSigner(testConfig.signer as SignerType);
                 await performEmailOTPLogin(page, email);
             }
 
-            // Wait for wallet to be created and ready
             await waitForWalletReady(page);
         } catch (error) {
             recordAuthenticationFailure(markerPath, error);

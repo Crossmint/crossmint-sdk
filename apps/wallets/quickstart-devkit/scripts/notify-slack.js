@@ -30,7 +30,7 @@ const browsers = ["chromium", "firefox", "webkit"];
 
 const SLACK_SECTION_TEXT_LIMIT = 3000;
 const SLACK_HEADER_TEXT_LIMIT = 150;
-// The "...and N more" trailer shares the section's budget with the failures themselves.
+// Budget reserved for the "...and N more" trailer.
 const FAILURE_BLOCK_OVERHEAD = 40;
 
 const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
@@ -142,7 +142,7 @@ const totals = reported.reduce(
     { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 }
 );
 
-// A cancelled job uploads no artifact, so the run can be failed with zero failed tests.
+// A cancelled job uploads no artifact, so a run can fail with zero failed tests.
 const headline =
     totals.failed > 0
         ? `${totals.failed} of ${totals.total} failed`
@@ -173,8 +173,7 @@ const slackMessage = {
 const allFailures = browsers.flatMap((b) => (browserResults[b]?.failures || []).map((f) => ({ browser: b, ...f })));
 
 if (allFailures.length > 0) {
-    // The same test failing on every browser is one failure, not three. Reporting it
-    // per browser is what made ten failures overflow Slack's 3000-character section.
+    // The same test failing on every browser is one failure, not three.
     const grouped = new Map();
     for (const f of allFailures) {
         const error =
@@ -184,9 +183,7 @@ if (allFailures.length > 0) {
                 ?.trim() || "No error message";
         const suite = f.suite ? f.suite.split(" \u203A ").pop() : "";
         const name = suite ? `${suite} \u203A ${f.title}` : f.title;
-        // One failure reads differently per browser without differing: the diagnostics
-        // tail, the per-browser test email and the RPC request id all vary. Group on a
-        // signature with those masked out, but still show the untouched error.
+        // Mask the parts that vary per browser without distinguishing one failure from another.
         const signature = error
             .split("Recent browser output:")[0]
             .replace(UUID_PATTERN, "<id>")
@@ -210,8 +207,7 @@ if (allFailures.length > 0) {
         return `*${g.name}*  \u2014  ${where}\n\`${error}\``;
     });
 
-    // Slack rejects the entire message with `invalid_blocks` when one section's text
-    // exceeds 3000 characters, so the cap has to be on length rather than on a count.
+    // Slack rejects the whole message with `invalid_blocks` when a section passes 3000 characters.
     const shown = [];
     let used = FAILURE_BLOCK_OVERHEAD;
     for (const entry of entries) {
@@ -227,8 +223,7 @@ if (allFailures.length > 0) {
 
     slackMessage.blocks.push({
         type: "section",
-        // A single failure whose text alone exceeds the limit would still overflow,
-        // and one oversized entry must not cost the whole notification.
+        // A lone entry over the limit is always admitted above, so it still needs truncating.
         text: { type: "mrkdwn", text: failText.slice(0, SLACK_SECTION_TEXT_LIMIT) },
     });
 }
