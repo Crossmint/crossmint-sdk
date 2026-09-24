@@ -3,6 +3,8 @@ import type { SimpleMessageEvent, Transport } from "./transport/Transport";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
+const hasSchema = (map: EventMap, event: PropertyKey) => Object.prototype.hasOwnProperty.call(map, event);
+
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
     OutgoingEvents extends EventMap = EventMap,
@@ -62,7 +64,11 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
-        const result = this.outgoingEvents[event].safeParse(data);
+        const schema = hasSchema(this.outgoingEvents, event) ? this.outgoingEvents[event] : undefined;
+        if (schema == null) {
+            throw new Error(`[EventEmitter] send() - No schema registered for outgoing event: ${String(event)}`);
+        }
+        const result = schema.safeParse(data);
         if (result.success) {
             console.info(`[EventEmitter] send: ${String(event)}`);
             this.transport.send({ event, data });
@@ -72,14 +78,22 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): string {
+        const schema = hasSchema(this.incomingEvents, event) ? this.incomingEvents[event] : undefined;
+        if (schema == null) {
+            console.error(
+                `[EventEmitter] on() - No schema registered for incoming event: ${String(event)}, callback will never fire`
+            );
+        }
+
         const listener = (message: SimpleMessageEvent) => {
-            if (message.data.event === event) {
-                const data = this.incomingEvents[event].safeParse(message.data.data);
-                if (data.success) {
-                    callback(data.data);
-                } else {
-                    console.error(`[EventEmitter] on() - Validation failed for event: ${String(event)}`, data.error);
-                }
+            if (schema == null || message.data?.event !== event) {
+                return;
+            }
+            const data = schema.safeParse(message.data.data);
+            if (data.success) {
+                callback(data.data);
+            } else {
+                console.error(`[EventEmitter] on() - Validation failed for event: ${String(event)}`, data.error);
             }
         };
 
