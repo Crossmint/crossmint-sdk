@@ -59,6 +59,31 @@ const PRODUCTS = {
             quickExampleIntro: "Once providers are set up, use the `useCrossmintAuth` hook to access auth state:",
         },
     },
+    agents: {
+        outdir: "agents",
+        navPrefix: "sdk-reference/agents/react",
+        title: "React SDK",
+        description: "React SDK reference for Crossmint agent payments",
+        packageName: "@crossmint/client-sdk-react-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
+        installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
+        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides the user-facing pieces of agent card payments: saving a card, verifying an order intent's allowance with the card network, and re-collecting a saved card's CVC. Agent wallets use the same wallet providers and hooks as the [Wallets React SDK](/sdk-reference/wallets/react/get-started).",
+        exports: [
+            "CrossmintProvider",
+            "CrossmintPaymentMethodManagement",
+            "OrderIntentVerification",
+            "CrossmintCvcRecollection",
+        ],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+            CrossmintPaymentMethodManagement: "Saved payment method management UI",
+        },
+        getStartedExamples: {
+            setup: "agentsProviderSetup",
+            quickExample: "agentsQuickExample",
+            quickExampleIntro: "Once the provider is set up, let the user save a card your agent can pay with:",
+        },
+    },
     checkout: {
         outdir: "checkout",
         navPrefix: "sdk-reference/checkout/react",

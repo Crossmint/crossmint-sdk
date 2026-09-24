@@ -738,9 +738,11 @@ export function generate(config) {
 
         emit("## Next Steps");
         emit("");
-        const { components: comps } = classifyExports(product.exports);
+        const { hooks, components: comps } = classifyExports(product.exports);
         emit(`- [Providers](/${product.navPrefix}/providers) — Configure providers and their options`);
-        emit(`- [Hooks](/${product.navPrefix}/hooks) — Access SDK state via React hooks`);
+        if (hooks.length || product.walletMethods?.enabled) {
+            emit(`- [Hooks](/${product.navPrefix}/hooks) — Access SDK state via React hooks`);
+        }
         if (comps.length) {
             emit(`- [Components](/${product.navPrefix}/components) — Drop-in UI components`);
         }
@@ -970,11 +972,13 @@ export function generate(config) {
         const pages = [
             { file: "get-started.mdx", content: buildGetStarted(product) },
             { file: "providers.mdx", content: buildProviders(product) },
-            { file: "hooks.mdx", content: buildHooks(product) },
         ];
 
-        // Only add components page if there are components
-        const { components: productComponents } = classifyExports(product.exports);
+        // Only add hooks/components pages if the product exports any
+        const { hooks: productHooks, components: productComponents } = classifyExports(product.exports);
+        if (productHooks.length || product.walletMethods?.enabled) {
+            pages.push({ file: "hooks.mdx", content: buildHooks(product) });
+        }
         if (productComponents.length) {
             pages.push({ file: "components.mdx", content: buildComponents(product) });
         }

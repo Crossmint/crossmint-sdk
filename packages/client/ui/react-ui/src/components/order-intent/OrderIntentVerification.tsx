@@ -14,13 +14,21 @@ const AGENTIC_API_URLS = {
 } as const;
 
 export interface OrderIntentVerificationProps {
+    /** The order intent returned by the API, including its `verificationConfig`. */
     orderIntent: OrderIntentWithVerification;
+    /** Name of the agent shown to the user in the card network's verification UI. */
     displayName?: string;
     appearance?: VerificationAppearance;
+    /** Called once the user has approved the allowance. Refetch the order intent afterwards. */
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
 }
 
+/**
+ * Runs the card network's allowance verification for an order intent. Render it when the
+ * intent's `agentic-token` rail reports `status: "pending_verification"`; it renders nothing
+ * itself and opens the network's verification UI on mount.
+ */
 export function OrderIntentVerification({
     orderIntent,
     displayName,
