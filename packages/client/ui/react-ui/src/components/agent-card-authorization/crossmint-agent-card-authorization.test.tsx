@@ -144,9 +144,7 @@ describe("<CrossmintAgentCardAuthorization />", () => {
     beforeEach(() => {
         vi.stubGlobal("fetch", fetchMock);
         // Built here, after the module body ran, so the hoisted mock never touches the class early.
-        createCrossmintApiClient.mockImplementation(
-            (crossmint: { jwt: string }) => new TestApiClient(crossmint.jwt)
-        );
+        createCrossmintApiClient.mockImplementation((crossmint: { jwt: string }) => new TestApiClient(crossmint.jwt));
     });
 
     afterEach(() => {
@@ -622,7 +620,9 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         });
 
         test("a card selected after the jwt changed is authorized with the new token", async () => {
-            fetchMock.mockResolvedValueOnce(json(200, REGISTERED)).mockResolvedValueOnce(json(201, orderIntent([VIC_ACTIVE])));
+            fetchMock
+                .mockResolvedValueOnce(json(200, REGISTERED))
+                .mockResolvedValueOnce(json(201, orderIntent([VIC_ACTIVE])));
             const { onError, rerender, onAuthorized } = renderComponent();
 
             // The payment-method iframe keeps the selection callback from its first render.
