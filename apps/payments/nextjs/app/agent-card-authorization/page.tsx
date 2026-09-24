@@ -7,13 +7,13 @@ import {
     type AgentCardAuthorizationError,
     type AgentCardAuthorizationResult,
     CrossmintAgentCardAuthorization,
+    useCrossmintAuth,
 } from "@crossmint/client-sdk-react-ui";
 
 // Consumes the SDK the way an integrator would: the buyer picks or adds a card, the SDK
 // registers it, creates a bounded order intent and runs rail verification when needed, and
-// the page receives only the orderIntentId to hand to Universal Checkout. The component is
-// rendered before the auth provider has loaded the session on purpose, since that is how most
-// integrations mount it: a missing session surfaces as `missing_jwt` after the grace period.
+// the page receives only the orderIntentId to hand to Universal Checkout. The buyer's JWT is
+// passed as a prop, like the other hosted components take it.
 export default function AgentCardAuthorizationPage() {
     return (
         <ClientProviders>
@@ -24,8 +24,13 @@ export default function AgentCardAuthorizationPage() {
 }
 
 function AgentCardAuthorizationWrapper() {
+    const { jwt } = useCrossmintAuth();
     const [result, setResult] = useState<AgentCardAuthorizationResult | null>(null);
     const [errors, setErrors] = useState<AgentCardAuthorizationError[]>([]);
+
+    if (jwt == null) {
+        return <div>Please login to continue</div>;
+    }
 
     if (result != null) {
         return (
@@ -41,6 +46,7 @@ function AgentCardAuthorizationWrapper() {
     return (
         <>
             <CrossmintAgentCardAuthorization
+                jwt={jwt}
                 amount={{ value: "25.00", currency: "USD" }}
                 merchant={{ name: "Example Shop", url: "https://shop.example.com", countryCode: "US" }}
                 description="Demo purchase placed by a shopping agent"
