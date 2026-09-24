@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom/vitest";
 
 import { act, cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { CrossmintProtectedInput } from "./CrossmintProtectedInput";
-import { LOAD_TIMEOUT_MS } from "./CrossmintProtectedInputIFrame";
 
 const listeners = new Map<string, (data: unknown) => void>();
 // Returns an id distinct from the event name on purpose, so the unmount test
@@ -21,7 +20,6 @@ const getUrl = vi.fn(
 );
 const createClient = vi.fn(() => iframeClient);
 
-// Keep the real prop validator; only the iframe service is stubbed.
 vi.mock("@crossmint/client-sdk-base", async (importOriginal) => ({
     ...(await importOriginal<typeof import("@crossmint/client-sdk-base")>()),
     createProtectedInputService: () => ({
@@ -32,10 +30,8 @@ vi.mock("@crossmint/client-sdk-base", async (importOriginal) => ({
     }),
 }));
 
-// Stable across renders, like the real context value, so the service is not rebuilt per render.
-const crossmintContext = { crossmint: { apiKey: "ck_staging_key" } };
 vi.mock("@crossmint/client-sdk-react-base", () => ({
-    useCrossmint: () => crossmintContext,
+    useCrossmint: () => ({ crossmint: { apiKey: "ck_staging_key" } }),
 }));
 
 vi.mock("@/utils/createCrossmintApiClient", () => ({
@@ -58,38 +54,21 @@ function emit(event: string, data: unknown) {
     act(() => handler(data));
 }
 
-function advance(ms: number) {
-    act(() => {
-        vi.advanceTimersByTime(ms);
-    });
-}
-
 describe("<CrossmintProtectedInput />", () => {
-    beforeEach(() => {
-        vi.useFakeTimers();
-    });
-
     afterEach(() => {
         cleanup();
-        vi.useRealTimers();
         listeners.clear();
         vi.clearAllMocks();
     });
 
-    describe("when mounted with a jwt", () => {
-        test("renders an iframe pointed at the protected-input route", () => {
+    describe("when mounted", () => {
+        test("renders an iframe pointed at the protected-input route, built from the props", () => {
             render(<CrossmintProtectedInput {...PROPS} />);
 
-            expect(screen.getByTitle("Protected input").getAttribute("src")).toContain("/sdk/unstable/protected-input");
-        });
-
-        test("builds the URL from the props, including the jwt, and the embedding page origin", () => {
-            render(<CrossmintProtectedInput {...PROPS} onCreated={vi.fn()} />);
-
-            expect(getUrl).toHaveBeenLastCalledWith(expect.objectContaining(PROPS), {
-                targetOrigin: window.location.origin,
-            });
-            expect(screen.getByTitle("Protected input").getAttribute("src")).toContain("jwt=jwt-1");
+            expect(getUrl).toHaveBeenLastCalledWith(expect.objectContaining(PROPS));
+            expect(screen.getByTitle("Protected input").getAttribute("src")).toContain(
+                "/sdk/unstable/protected-input?merchantUrl=x&jwt=jwt-1"
+            );
         });
 
         test("requests no device permissions, since the password field is a plain text element", () => {
@@ -105,18 +84,6 @@ describe("<CrossmintProtectedInput />", () => {
             expect(container.children).toHaveLength(1);
             expect(container.firstElementChild?.tagName).toBe("IFRAME");
         });
-
-        test("gives each instance its own iframe id", () => {
-            render(
-                <>
-                    <CrossmintProtectedInput {...PROPS} />
-                    <CrossmintProtectedInput {...PROPS} />
-                </>
-            );
-
-            const ids = screen.getAllByTitle("Protected input").map((iframe) => iframe.id);
-            expect(new Set(ids).size).toBe(2);
-        });
     });
 
     describe("when the jwt prop changes", () => {
@@ -130,67 +97,6 @@ describe("<CrossmintProtectedInput />", () => {
             expect(iframe.getAttribute("src")).toContain("jwt=jwt-2");
             expect(createClient).toHaveBeenCalledTimes(1);
             expect(iframeClient.off).not.toHaveBeenCalled();
-        });
-
-        test("keeps the height but re-arms load_timeout for the new document", () => {
-            const onError = vi.fn();
-            const { rerender } = render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
-            emit("ui:height.changed", { height: 180 });
-
-            rerender(<CrossmintProtectedInput {...PROPS} jwt="jwt-2" onError={onError} />);
-            expect(screen.getByTitle("Protected input")).toHaveStyle({ height: "180px" });
-
-            advance(LOAD_TIMEOUT_MS + 1);
-            expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: "load_timeout" }));
-        });
-
-        test("does not report load_timeout when the new document reports in", () => {
-            const onError = vi.fn();
-            const { rerender } = render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
-            emit("ui:height.changed", { height: 180 });
-
-            rerender(<CrossmintProtectedInput {...PROPS} jwt="jwt-2" onError={onError} />);
-            emit("ui:height.changed", { height: 200 });
-            advance(LOAD_TIMEOUT_MS + 1);
-
-            expect(onError).not.toHaveBeenCalled();
-            expect(screen.getByTitle("Protected input")).toHaveStyle({ height: "200px" });
-        });
-    });
-
-    describe("when the props fail validation", () => {
-        test("reports invalid_params without loading the iframe", () => {
-            const onError = vi.fn();
-            render(<CrossmintProtectedInput jwt="jwt-1" merchantUrl="shop.example.com/login" onError={onError} />);
-
-            expect(screen.queryByTitle("Protected input")).toBeNull();
-            expect(getUrl).not.toHaveBeenCalled();
-            expect(onError).toHaveBeenCalledTimes(1);
-            expect(onError).toHaveBeenCalledWith({
-                code: "invalid_params",
-                message: expect.stringContaining("merchantUrl"),
-            });
-        });
-    });
-
-    describe("when the hosted page never reports in", () => {
-        test("reports load_timeout instead of staying invisible", () => {
-            const onError = vi.fn();
-            render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
-
-            advance(LOAD_TIMEOUT_MS + 1);
-
-            expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: "load_timeout" }));
-        });
-
-        test("does not report load_timeout once the page has posted its height", () => {
-            const onError = vi.fn();
-            render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
-
-            emit("ui:height.changed", { height: 180 });
-            advance(LOAD_TIMEOUT_MS + 1);
-
-            expect(onError).not.toHaveBeenCalled();
         });
     });
 

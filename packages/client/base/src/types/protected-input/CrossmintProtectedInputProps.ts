@@ -13,10 +13,9 @@ export type ProtectedInputAppearance = Omit<PaymentMethodManagementAppearance, "
 export type ProtectedInputCreated = z.infer<(typeof protectedInputIncomingEvents)["protected-input:created"]>;
 
 /**
- * Payload of `protected-input:error`. Codes the hosted page posts: `protected_input_failed`
+ * Payload of `protected-input:error`, posted by the hosted page: `protected_input_failed`
  * (registration call failed), `provider_unavailable` (the vault widget could not load),
- * `invalid_params` (the page rejected the query params). Code the SDK component adds:
- * `load_timeout` (the hosted page never reported in). See `PROTECTED_INPUT_ERROR_CODES`.
+ * `invalid_params` (the page rejected the query params). See `PROTECTED_INPUT_ERROR_CODES`.
  */
 export type ProtectedInputError = z.infer<(typeof protectedInputIncomingEvents)["protected-input:error"]>;
 

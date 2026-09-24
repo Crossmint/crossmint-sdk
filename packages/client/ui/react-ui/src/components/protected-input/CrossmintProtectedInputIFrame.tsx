@@ -3,167 +3,59 @@ import {
     type CrossmintProtectedInputProps,
     type ProtectedInputIFrameEmitter,
     createProtectedInputService,
-    validateProtectedInputProps,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { type RefObject, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type ProtectedInputService = ReturnType<typeof createProtectedInputService>;
+export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProps) {
+    const [iframeClient, setIframeClient] = useState<ProtectedInputIFrameEmitter | null>(null);
+    const [height, setHeight] = useState(0);
 
-/** How long the hosted page gets to report in (its first height) before `load_timeout` is reported. */
-export const LOAD_TIMEOUT_MS = 15_000;
+    const ref = useRef<HTMLIFrameElement>(null);
 
-/** Always holds the latest props, so a listener subscribed once still calls the current callbacks. */
-function useLatestProps(props: CrossmintProtectedInputProps) {
+    // The listeners are subscribed once, so reading callbacks off this ref is what keeps a
+    // late event calling the render's props rather than the ones captured at subscribe time.
     const latestProps = useRef(props);
     useEffect(() => {
         latestProps.current = props;
     });
-    return latestProps;
-}
 
-/** Resolved in an effect so server rendering never touches `window` and hydration matches. */
-function useEmbeddingOrigin() {
-    const [targetOrigin, setTargetOrigin] = useState<string | null>(null);
-    useEffect(() => {
-        setTargetOrigin(window.location.origin);
-    }, []);
-    return targetOrigin;
-}
+    const { crossmint } = useCrossmint();
+    const apiClient = createCrossmintApiClient(crossmint, { usageOrigin: "client" });
+    const protectedInputService = createProtectedInputService({ apiClient });
 
-/** Reports `invalid_params` once per distinct problem, before any iframe is mounted. */
-function useInvalidParamsReport(validationError: string | null, latestProps: RefObject<CrossmintProtectedInputProps>) {
-    useEffect(() => {
-        if (validationError == null) {
-            return;
-        }
-        latestProps.current?.onError?.({ code: "invalid_params", message: validationError });
-    }, [validationError, latestProps]);
-}
-
-/**
- * Opens the iframe channel once the iframe is rendered, and drops it whenever the iframe is
- * replaced, so the client never stays bound to a detached iframe's contentWindow.
- */
-function useProtectedInputIframeClient(
-    ref: RefObject<HTMLIFrameElement | null>,
-    service: ProtectedInputService,
-    rendered: boolean,
-    iframeKey: string
-) {
-    const [iframeClient, setIframeClient] = useState<ProtectedInputIFrameEmitter | null>(null);
     useEffect(() => {
         const iframe = ref.current;
-        if (!rendered || iframe == null) {
+        if (!iframe || iframeClient) {
             return;
         }
-        setIframeClient(service.iframe.createClient(iframe));
-        return () => setIframeClient(null);
-        // iframeKey changes exactly when the iframe element is replaced.
-    }, [ref, service, rendered, iframeKey]);
-    return iframeClient;
-}
+        setIframeClient(protectedInputService.iframe.createClient(iframe));
+    }, [iframeClient]);
 
-/**
- * Routes the hosted page events to the latest callbacks. Returns the relayed height (reset to
- * 0 for every new iframe) and whether the current document has reported in yet.
- */
-function useProtectedInputEvents(
-    iframeClient: ProtectedInputIFrameEmitter | null,
-    src: string | null,
-    latestProps: RefObject<CrossmintProtectedInputProps>
-) {
-    const [height, setHeight] = useState(0);
-    const [loaded, setLoaded] = useState(false);
-    // A new `src` (for example a changed `jwt`) navigates the same iframe to a new document that
-    // has to report in again. The height is kept so the field does not collapse meanwhile.
     useEffect(() => {
-        setLoaded(false);
-    }, [src]);
-    useEffect(() => {
-        setHeight(0);
-        setLoaded(false);
         if (iframeClient == null) {
             return;
         }
-        const heightListener = iframeClient.on("ui:height.changed", (data) => {
-            setHeight(data.height);
-            setLoaded(true);
-        });
+
+        const heightListener = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
         const createdListener = iframeClient.on("protected-input:created", (data) =>
-            latestProps.current?.onCreated?.(data)
+            latestProps.current.onCreated?.(data)
         );
-        const errorListener = iframeClient.on("protected-input:error", (data) => latestProps.current?.onError?.(data));
+        const errorListener = iframeClient.on("protected-input:error", (data) => latestProps.current.onError?.(data));
+
         return () => {
             iframeClient.off(heightListener);
             iframeClient.off(createdListener);
             iframeClient.off(errorListener);
         };
-    }, [iframeClient, latestProps]);
-    return { height, loaded };
-}
+    }, [iframeClient]);
 
-/**
- * The iframe starts at 0px and only the hosted page can grow it. If the page never reports in
- * (network error, CSP, frame-ancestors), report `load_timeout` instead of staying invisible.
- */
-function useLoadTimeout(
-    iframeClient: ProtectedInputIFrameEmitter | null,
-    loaded: boolean,
-    latestProps: RefObject<CrossmintProtectedInputProps>
-) {
-    useEffect(() => {
-        if (iframeClient == null || loaded) {
-            return;
-        }
-        const timer = setTimeout(() => {
-            latestProps.current?.onError?.({
-                code: "load_timeout",
-                message: `The protected-input page did not load within ${LOAD_TIMEOUT_MS / 1000}s.`,
-            });
-        }, LOAD_TIMEOUT_MS);
-        return () => clearTimeout(timer);
-    }, [iframeClient, loaded, latestProps]);
-}
-
-export function CrossmintProtectedInputIFrame(props: CrossmintProtectedInputProps) {
-    const { crossmint } = useCrossmint();
-    const service = useMemo(
-        () =>
-            createProtectedInputService({ apiClient: createCrossmintApiClient(crossmint, { usageOrigin: "client" }) }),
-        [crossmint]
-    );
-    const { merchantUrl, expiresAt, label } = props;
-    const validationError = useMemo(
-        () => validateProtectedInputProps({ merchantUrl, expiresAt, label }),
-        [merchantUrl, expiresAt, label]
-    );
-
-    const ref = useRef<HTMLIFrameElement>(null);
-    const iframeId = useId();
-    const latestProps = useLatestProps(props);
-    const targetOrigin = useEmbeddingOrigin();
-    useInvalidParamsReport(validationError, latestProps);
-
-    const rendered = validationError == null && targetOrigin != null;
-    // The iframe element is replaced only when the embedding origin resolves. A change of
-    // `jwt` updates its `src` in place, like `CrossmintPaymentMethodManagement`.
-    const iframeKey = targetOrigin ?? "";
-    const src = rendered && targetOrigin != null ? service.iframe.getUrl(props, { targetOrigin }) : null;
-    const iframeClient = useProtectedInputIframeClient(ref, service, rendered, iframeKey);
-    const { height, loaded } = useProtectedInputEvents(iframeClient, src, latestProps);
-    useLoadTimeout(iframeClient, loaded, latestProps);
-
-    if (src == null) {
-        return null;
-    }
-
+    // No `allow` attribute: the password field is a plain text element and needs no device access.
     return (
         <iframe
-            key={iframeKey}
             ref={ref}
-            src={src}
-            id={`crossmint-protected-input.iframe:${iframeId}`}
+            src={protectedInputService.iframe.getUrl(props)}
+            id="crossmint-protected-input.iframe"
             title="Protected input"
             style={{
                 border: "none",
