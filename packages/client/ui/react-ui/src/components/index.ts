@@ -8,5 +8,6 @@ export * from "./wallets";
 export * from "./card-management";
 export * from "./identity-verification";
 export * from "./order-intent";
+export * from "./protected-input";
 
 export { EmbeddedAuthForm } from "./auth/EmbeddedAuthForm";

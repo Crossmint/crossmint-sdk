@@ -14,6 +14,10 @@ export {
     type CvcRecollectionError,
     getIdentityVerificationCredentials,
     type PaymentMethodManagementAppearance,
+    type CrossmintProtectedInputProps,
+    type ProtectedInputAppearance,
+    type ProtectedInputCreated,
+    type ProtectedInputError,
 } from "@crossmint/client-sdk-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";
