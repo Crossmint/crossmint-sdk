@@ -90,7 +90,7 @@
         "language": "tsx"
     },
     "agentsProviderSetup": {
-        "code": "import { CrossmintProvider } from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            {/* Your app content */}\n        </CrossmintProvider>\n    );\n}",
+        "code": "import type { ReactNode } from \"react\";\nimport { CrossmintProvider } from \"@crossmint/client-sdk-react-ui\";\n\nfunction App({ children }: { children: ReactNode }) {\n    return <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">{children}</CrossmintProvider>;\n}",
         "language": "tsx",
         "note": "The agent card components take the user's JWT directly, so no additional provider is required. Add `CrossmintWalletProvider` only if your agent also uses wallets."
     },
