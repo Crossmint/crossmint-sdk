@@ -7,14 +7,14 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useEffect, useRef } from "react";
 
 import { CrossmintAgentCardAuthorization } from "./CrossmintAgentCardAuthorization";
-import { MISSING_JWT_GRACE_MS, RAIL_POLL_INTERVAL_MS, RAIL_POLL_TIMEOUT_MS } from "./useAgentCardAuthorization";
+import { RAIL_POLL_INTERVAL_MS, RAIL_POLL_TIMEOUT_MS } from "./useAgentCardAuthorization";
 
 // Handles the child-component stubs write their latest props into, so tests can fire callbacks.
 const stubs = vi.hoisted(() => ({
     pmm: { props: null as null | Record<string, (value: unknown) => void> },
     verification: { props: null as null | Record<string, (value?: unknown) => void> },
     cvc: { props: null as null | Record<string, (value?: unknown) => void> },
-    crossmint: { crossmint: { apiKey: "ck_staging_key", jwt: "jwt-1" as string | undefined } },
+    crossmint: { crossmint: { apiKey: "ck_staging_key" } },
 }));
 
 // Like the real iframe wrapper, the stub keeps the props of its first render for the
@@ -46,9 +46,13 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 
 // A real ApiClient, so requests go through the shared fetch wrapper and only fetch is mocked.
+// It carries the jwt it was built with, so a request's bearer token shows which client sent it.
 class TestApiClient extends ApiClient {
+    constructor(private readonly jwt: string) {
+        super();
+    }
     get commonHeaders() {
-        return { "x-api-key": "ck_staging_key", Authorization: "Bearer jwt-1" };
+        return { "x-api-key": "ck_staging_key", Authorization: `Bearer ${this.jwt}` };
     }
     get baseUrl() {
         return "https://staging.crossmint.com";
@@ -57,8 +61,9 @@ class TestApiClient extends ApiClient {
 
 // The factory only builds the arrow function; TestApiClient is read when the component renders,
 // after this module's body has run, so the hoisted mock never touches it early.
+const createCrossmintApiClient = vi.hoisted(() => vi.fn());
 vi.mock("@/utils/createCrossmintApiClient", () => ({
-    createCrossmintApiClient: () => new TestApiClient(),
+    createCrossmintApiClient,
 }));
 
 const fetchMock = vi.fn<typeof fetch>();
@@ -113,6 +118,7 @@ function orderIntent(rails: unknown[], overrides: Record<string, unknown> = {}) 
 }
 
 const PROPS = {
+    jwt: "jwt-1",
     amount: { value: "25.00", currency: "USD" },
     merchant: { name: "Example Shop", url: "https://shop.example.com", countryCode: "US" },
     description: "Sneakers",
@@ -137,6 +143,8 @@ function renderComponent() {
 describe("<CrossmintAgentCardAuthorization />", () => {
     beforeEach(() => {
         vi.stubGlobal("fetch", fetchMock);
+        // Built here, after the module body ran, so the hoisted mock never touches the class early.
+        createCrossmintApiClient.mockImplementation((crossmint: { jwt: string }) => new TestApiClient(crossmint.jwt));
     });
 
     afterEach(() => {
@@ -147,7 +155,6 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         stubs.pmm.props = null;
         stubs.verification.props = null;
         stubs.cvc.props = null;
-        stubs.crossmint.crossmint.jwt = "jwt-1";
     });
 
     describe("when the selected card is registered and its vic rail is active", () => {
@@ -582,69 +589,51 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         });
     });
 
-    describe("when there is no JWT in the Crossmint context", () => {
-        test("renders nothing and reports missing_jwt once, after a grace period for the auth provider", () => {
-            vi.useFakeTimers();
-            stubs.crossmint.crossmint.jwt = undefined;
-
-            const { container, onError, rerender, onAuthorized } = renderComponent();
-            act(() => vi.advanceTimersByTime(MISSING_JWT_GRACE_MS / 2));
-            expect(onError).not.toHaveBeenCalled();
-
-            act(() => vi.advanceTimersByTime(MISSING_JWT_GRACE_MS));
-            rerender(<CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} />);
-            act(() => vi.advanceTimersByTime(MISSING_JWT_GRACE_MS * 2));
-
-            expect(container).toBeEmptyDOMElement();
-            expect(onError).toHaveBeenCalledTimes(1);
-            expect(onError.mock.calls[0][0].code).toBe("missing_jwt");
-        });
-
-        test("does not report missing_jwt when the session arrives within the grace period", () => {
-            vi.useFakeTimers();
-            stubs.crossmint.crossmint.jwt = undefined;
-
-            const { onError, rerender, onAuthorized } = renderComponent();
-            act(() => vi.advanceTimersByTime(MISSING_JWT_GRACE_MS / 2));
-            stubs.crossmint.crossmint.jwt = "jwt-1";
-            rerender(<CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} />);
-            act(() => vi.advanceTimersByTime(MISSING_JWT_GRACE_MS * 2));
-
-            expect(screen.getByTestId("pmm")).toBeInTheDocument();
-            expect(onError).not.toHaveBeenCalled();
-        });
-    });
-
-    describe("when the JWT is refreshed", () => {
-        test("keeps the payment-method UI on the JWT it was opened with, so its iframe is not reloaded", () => {
-            const { onError, rerender, onAuthorized } = renderComponent();
-            expect(screen.getByTestId("pmm").dataset.jwt).toBe("jwt-1");
-
-            stubs.crossmint.crossmint.jwt = "jwt-2";
-            rerender(<CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} />);
-
-            expect(screen.getByTestId("pmm").dataset.jwt).toBe("jwt-1");
-        });
-
-        test("opens a later step, and a re-mounted payment-method UI, with the current JWT", async () => {
+    describe("when given a jwt", () => {
+        test("hands it to the hosted UIs and to the order-intent API client", async () => {
             fetchMock
                 .mockResolvedValueOnce(json(200, REGISTERED))
                 .mockResolvedValueOnce(json(201, orderIntent([ENCRYPTED_PENDING_CVC])));
-            const { onError, rerender, onAuthorized } = renderComponent();
-
-            stubs.crossmint.crossmint.jwt = "jwt-2";
-            rerender(<CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} />);
+            renderComponent();
             expect(screen.getByTestId("pmm").dataset.jwt).toBe("jwt-1");
+            expect(createCrossmintApiClient).toHaveBeenCalledWith(expect.objectContaining({ jwt: "jwt-1" }), {
+                usageOrigin: "client",
+            });
 
             selectCard();
             await waitFor(() => expect(screen.getByTestId("cvc")).toBeInTheDocument());
-            expect(screen.getByTestId("cvc").dataset.jwt).toBe("jwt-2");
+            expect(screen.getByTestId("cvc").dataset.jwt).toBe("jwt-1");
+        });
 
-            act(() =>
-                stubs.cvc.props?.onError?.({ retriable: false, reason: "provider-error", message: "vault timeout" })
+        test("follows a new jwt prop on the next render", () => {
+            const { onError, rerender, onAuthorized } = renderComponent();
+            expect(screen.getByTestId("pmm").dataset.jwt).toBe("jwt-1");
+
+            rerender(
+                <CrossmintAgentCardAuthorization {...PROPS} jwt="jwt-2" onAuthorized={onAuthorized} onError={onError} />
             );
 
             expect(screen.getByTestId("pmm").dataset.jwt).toBe("jwt-2");
+            expect(createCrossmintApiClient).toHaveBeenLastCalledWith(expect.objectContaining({ jwt: "jwt-2" }), {
+                usageOrigin: "client",
+            });
+        });
+
+        test("a card selected after the jwt changed is authorized with the new token", async () => {
+            fetchMock
+                .mockResolvedValueOnce(json(200, REGISTERED))
+                .mockResolvedValueOnce(json(201, orderIntent([VIC_ACTIVE])));
+            const { onError, rerender, onAuthorized } = renderComponent();
+
+            // The payment-method iframe keeps the selection callback from its first render.
+            rerender(
+                <CrossmintAgentCardAuthorization {...PROPS} jwt="jwt-2" onAuthorized={onAuthorized} onError={onError} />
+            );
+            selectCard();
+
+            await waitFor(() => expect(onAuthorized).toHaveBeenCalledTimes(1));
+            const bearers = fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers).get("Authorization"));
+            expect(bearers).toEqual(["Bearer jwt-2", "Bearer jwt-2"]);
         });
     });
 

@@ -6,7 +6,7 @@ import type {
     ProtectedInputIFrameEmitter,
 } from "@/types/protected-input";
 import { protectedInputIncomingEvents } from "@/types/protected-input";
-import { createProtectedInputService, validateProtectedInputProps } from "./protectedInputService";
+import { createProtectedInputService } from "./protectedInputService";
 
 const apiClient = {
     buildUrl: (path: string) => `https://staging.crossmint.com${path}`,
@@ -14,14 +14,13 @@ const apiClient = {
     internalConfig: { sdkMetadata: { name: "test-sdk", version: "1.0.0" } },
 } as never;
 
-const AUTH = { jwt: "jwt-1", targetOrigin: "https://shop.example.com" };
-
-function iframeUrl(props: Partial<CrossmintProtectedInputProps>, auth = AUTH) {
+function iframeUrl(props: Partial<CrossmintProtectedInputProps>) {
     return new URL(
-        createProtectedInputService({ apiClient }).iframe.getUrl(
-            { merchantUrl: "https://shop.example.com/login", ...props },
-            auth
-        )
+        createProtectedInputService({ apiClient }).iframe.getUrl({
+            jwt: "jwt-1",
+            merchantUrl: "https://shop.example.com/login",
+            ...props,
+        })
     );
 }
 
@@ -31,12 +30,12 @@ describe("createProtectedInputService", () => {
             expect(iframeUrl({}).pathname).toBe("/sdk/unstable/protected-input");
         });
 
-        test("carries merchantUrl, jwt, targetOrigin, apiKey and sdkMetadata", () => {
+        test("carries merchantUrl, jwt, apiKey and sdkMetadata", () => {
             const params = iframeUrl({}).searchParams;
 
             expect(params.get("merchantUrl")).toBe("https://shop.example.com/login");
             expect(params.get("jwt")).toBe("jwt-1");
-            expect(params.get("targetOrigin")).toBe("https://shop.example.com");
+            expect(params.has("targetOrigin")).toBe(false);
             expect(params.get("apiKey")).toBe("ck_staging_key");
             expect(JSON.parse(params.get("sdkMetadata") ?? "")).toEqual({ name: "test-sdk", version: "1.0.0" });
         });
@@ -71,42 +70,11 @@ describe("createProtectedInputService", () => {
             expect(url.toString()).not.toContain("function");
         });
 
-        test("ignores keys outside the hosted page contract, so props cannot smuggle a second jwt", () => {
-            const params = iframeUrl({
-                jwt: "jwt-from-props",
-                extra: "x",
-            } as Partial<CrossmintProtectedInputProps>).searchParams;
+        test("sends the jwt prop once and ignores keys outside the hosted page contract", () => {
+            const params = iframeUrl({ extra: "x" } as Partial<CrossmintProtectedInputProps>).searchParams;
 
             expect(params.getAll("jwt")).toEqual(["jwt-1"]);
             expect(params.has("extra")).toBe(false);
-        });
-
-        test("rejects an invalid merchantUrl or expiresAt before the iframe loads", () => {
-            expect(() => iframeUrl({ merchantUrl: "shop.example.com/login" })).toThrow(/merchantUrl/);
-            expect(() => iframeUrl({ merchantUrl: "ftp://shop.example.com" })).toThrow(/http or https/);
-            expect(() => iframeUrl({ expiresAt: "tomorrow" })).toThrow(/expiresAt/);
-        });
-    });
-
-    describe("validateProtectedInputProps", () => {
-        test("accepts a well-formed set of props", () => {
-            expect(
-                validateProtectedInputProps({
-                    merchantUrl: "https://shop.example.com/login",
-                    expiresAt: "2026-09-24T12:00:00.000Z",
-                    label: "Example Shop",
-                })
-            ).toBeNull();
-        });
-
-        test("names the offending prop", () => {
-            expect(validateProtectedInputProps({ merchantUrl: "not a url" })).toMatch(/merchantUrl/);
-            expect(validateProtectedInputProps({ merchantUrl: "https://a.example", expiresAt: "x" })).toMatch(
-                /expiresAt/
-            );
-            expect(validateProtectedInputProps({ merchantUrl: "https://a.example", label: "x".repeat(121) })).toMatch(
-                /label/
-            );
         });
     });
 
@@ -127,10 +95,10 @@ describe("createProtectedInputService", () => {
 
         function mountIframe() {
             const iframe = document.createElement("iframe");
-            iframe.src = createProtectedInputService({ apiClient }).iframe.getUrl(
-                { merchantUrl: "https://shop.example.com/login" },
-                AUTH
-            );
+            iframe.src = createProtectedInputService({ apiClient }).iframe.getUrl({
+                jwt: "jwt-1",
+                merchantUrl: "https://shop.example.com/login",
+            });
             document.body.appendChild(iframe);
             mounted.push(iframe);
             return iframe;
@@ -250,8 +218,8 @@ describe("protectedInputIncomingEvents", () => {
         expect(known.success && known.data.code).toBe("provider_unavailable");
         expect(future.success && future.data.code).toBe("rate_limited");
         // The exported type narrows to the known codes for autocomplete and exhaustive switches.
-        const error: ProtectedInputError = { code: "missing_jwt", message: "" };
-        expect(error.code).toBe("missing_jwt");
+        const error: ProtectedInputError = { code: "invalid_params", message: "" };
+        expect(error.code).toBe("invalid_params");
     });
 
     test("protected-input:error needs both a code and a message", () => {

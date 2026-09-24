@@ -1,16 +1,10 @@
 import { z } from "zod";
 
 /** Codes the hosted page posts in `protected-input:error`. */
-export const PROTECTED_INPUT_PAGE_ERROR_CODES = [
+export const PROTECTED_INPUT_ERROR_CODES = [
     "protected_input_failed",
     "provider_unavailable",
     "invalid_params",
-] as const;
-/** Codes the SDK component reports itself, without a round trip to the hosted page. */
-export const PROTECTED_INPUT_SDK_ERROR_CODES = ["missing_jwt", "load_timeout"] as const;
-export const PROTECTED_INPUT_ERROR_CODES = [
-    ...PROTECTED_INPUT_PAGE_ERROR_CODES,
-    ...PROTECTED_INPUT_SDK_ERROR_CODES,
 ] as const;
 export type ProtectedInputKnownErrorCode = (typeof PROTECTED_INPUT_ERROR_CODES)[number];
 /**
@@ -20,7 +14,7 @@ export type ProtectedInputKnownErrorCode = (typeof PROTECTED_INPUT_ERROR_CODES)[
 export type ProtectedInputErrorCode = ProtectedInputKnownErrorCode | (string & {});
 
 const protectedInputErrorCodeSchema: z.ZodType<ProtectedInputErrorCode> = z.union([
-    z.enum(PROTECTED_INPUT_PAGE_ERROR_CODES),
+    z.enum(PROTECTED_INPUT_ERROR_CODES),
     z.string(),
 ]);
 

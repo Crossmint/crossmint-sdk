@@ -19,8 +19,6 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_EXPIRY_MS = 24 * 60 * 60 * 1000;
-/** How long the Crossmint auth provider gets to load a session before `missing_jwt` is reported. */
-export const MISSING_JWT_GRACE_MS = 3_000;
 /** Pause between two re-reads of the order intent after a rail step. */
 export const RAIL_POLL_INTERVAL_MS = 2_000;
 /**
@@ -121,47 +119,6 @@ function useTerminalCallbacks(
 
     // Memoized so the callbacks built on it keep their identity across renders.
     return useMemo(() => ({ fail, succeed, mounted, generation }), [fail, succeed, mounted, generation]);
-}
-
-/**
- * Reports `missing_jwt` when no JWT shows up within the grace period, which covers an auth
- * provider that loads its session asynchronously. Re-arms once a JWT is present, so a later
- * logout is reported again.
- */
-function useMissingJwtReport(jwt: string | undefined, fail: ReturnType<typeof useTerminalCallbacks>["fail"]) {
-    const reported = useRef(false);
-    useEffect(() => {
-        if (jwt != null) {
-            reported.current = false;
-            return;
-        }
-        if (reported.current) {
-            return;
-        }
-        const timer = setTimeout(() => {
-            reported.current = true;
-            fail("missing_jwt", "CrossmintAgentCardAuthorization needs a buyer JWT in the Crossmint context.");
-        }, MISSING_JWT_GRACE_MS);
-        return () => clearTimeout(timer);
-    }, [jwt, fail]);
-}
-
-/**
- * The JWT frozen for the hosted UI of the current step. A token refresh while a step is open
- * keeps its JWT, so the iframe is not reloaded under the buyer. Each new step (a CVC form, or
- * the payment-method UI mounting again after an error) starts from the current JWT, so an
- * iframe never opens with a token that expired since an earlier refresh. A logout drops it.
- */
-function useStepJwt(jwt: string | undefined, stepKind: AgentCardAuthorizationStep["kind"]) {
-    const [frozen, setFrozen] = useState({ kind: stepKind, jwt });
-    const reusable = frozen.kind === stepKind && frozen.jwt != null && jwt != null;
-    useEffect(() => {
-        if (!reusable) {
-            setFrozen({ kind: stepKind, jwt });
-        }
-    }, [reusable, stepKind, jwt]);
-    // Synchronous, so a new step renders with the current JWT on its first frame.
-    return reusable ? frozen.jwt : jwt;
 }
 
 type OrderIntentRequestFields = Pick<CrossmintAgentCardAuthorizationProps, "amount" | "merchant" | "description"> & {
@@ -426,20 +383,31 @@ function useAuthorizeCard(
 
 export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorizationProps) {
     const { crossmint } = useCrossmint();
+    const { jwt } = props;
+    // The order-intent calls run as the buyer named by the `jwt` prop, not by whatever the
+    // Crossmint context holds, so the API and the hosted UIs always share one token.
     const api = useMemo(
-        () => createOrderIntentsApi({ apiClient: createCrossmintApiClient(crossmint, { usageOrigin: "client" }) }),
-        [crossmint]
+        () =>
+            createOrderIntentsApi({
+                apiClient: createCrossmintApiClient({ ...crossmint, jwt }, { usageOrigin: "client" }),
+            }),
+        [crossmint, jwt]
     );
 
     const [step, setStep] = useState<AgentCardAuthorizationStep>({ kind: "select" });
-    const jwt = useStepJwt(crossmint.jwt, step.kind);
     const latestProps = useLatestProps(props);
     const terminal = useTerminalCallbacks(latestProps, setStep);
-    useMissingJwtReport(crossmint.jwt, terminal.fail);
 
     const cache = useOrderIntentCache();
     const { settle, awaitRailActive } = useRailSettlement(api, terminal, cache, setStep);
     const authorize = useAuthorizeCard(api, terminal, latestProps, cache, settle);
+    // The payment-method iframe subscribes to its selection callback once, on its first render.
+    // Keep the callback identity stable and route through a ref, so a selection made after the
+    // `jwt` prop changed runs the `authorize` bound to the current API client, not the first one.
+    const latestAuthorize = useRef(authorize);
+    useEffect(() => {
+        latestAuthorize.current = authorize;
+    }, [authorize]);
 
     const onPaymentMethodSelected = useCallback(
         (paymentMethod: unknown) => {
@@ -448,9 +416,9 @@ export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorization
                 terminal.fail("payment_method_selection_failed", "The selected payment method is not a card.");
                 return;
             }
-            void authorize(summary);
+            void latestAuthorize.current(summary);
         },
-        [authorize, terminal]
+        [terminal]
     );
 
     const onRailStepComplete = useCallback((pending: PendingStep) => void awaitRailActive(pending), [awaitRailActive]);
