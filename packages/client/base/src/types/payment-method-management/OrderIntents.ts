@@ -38,6 +38,16 @@ export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrol
     allowanceId: string;
 }
 
+export interface OrderIntentMerchant {
+    name: string;
+    /** http or https URL of the merchant. */
+    url: string;
+    /** ISO 3166-1 alpha-2, upper case. */
+    countryCode: string;
+    categoryCode?: string;
+    acquirerBin?: string;
+}
+
 interface OrderIntentBase {
     orderIntentId: string;
     paymentMethodId: string;
@@ -49,6 +59,7 @@ interface OrderIntentBase {
         available: string;
         currency: string;
     };
+    merchant?: OrderIntentMerchant;
     description: string;
     rails: OrderIntentRail[];
     expiresAt: string;

@@ -6,6 +6,7 @@ export * from "./payment-method-management";
 export * from "./identity-verification";
 export * from "./cvc-recollection";
 export * from "./protected-input";
+export * from "./agent-card-authorization";
 export * from "./CryptoCurrency";
 
 export const BaseUrls = {
