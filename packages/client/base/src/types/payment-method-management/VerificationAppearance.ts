@@ -5,7 +5,13 @@ export type VerificationAppearance = {
 
 export type VerificationAppearanceVariables = {
     fontFamily?: string;
+    /**
+     * Not applied by `OrderIntentVerification`: only `colors` (and the button / input colors under
+     * `rules`) reach the verification modal. Not the multiplier unit of
+     * `EmbeddedCheckoutV3AppearanceVariables.fontSizeUnit`, so do not share one object between the two.
+     */
     fontSizeUnit?: string;
+    /** Not applied by `OrderIntentVerification`; see `fontSizeUnit`. */
     spacingUnit?: string;
     borderRadius?: string;
     colors?: {

@@ -85,7 +85,16 @@ export type EmbeddedCheckoutV3Appearance = {
 
 export type EmbeddedCheckoutV3AppearanceVariables = {
     fontFamily?: string;
+    /**
+     * Multiplier unit for paddings and gaps, not a base spacing. Default `"3.33px"`; each
+     * spacing is `calc(spacingUnit * k)` with k between 3.6 and 4.42.
+     */
     spacingUnit?: string;
+    /**
+     * Multiplier unit for font sizes, not a base font size. Default `"4px"`: labels render at
+     * `fontSizeUnit * 3.75` (15px), inputs at `* 4` (16px), the primary button at `* 4.25` (17px).
+     * Passing a body size such as `"14px"` (the `VerificationAppearance` convention) yields ~52px labels.
+     */
     fontSizeUnit?: string;
     borderRadius?: string;
     colors?: {
