@@ -219,7 +219,8 @@ if (allFailures.length > 0) {
     }
 
     const omitted = entries.length - shown.length;
-    const trailer = omitted > 0 ? `\n\n_\u2026and ${omitted} more \u2014 <${runUrl}|full report in the run artifacts>_` : "";
+    const trailer =
+        omitted > 0 ? `\n\n_\u2026and ${omitted} more \u2014 <${runUrl}|full report in the run artifacts>_` : "";
     const failText = `${shown.join("\n\n")}${trailer}`;
 
     slackMessage.blocks.push({
