@@ -231,4 +231,25 @@ describe("signApproval", () => {
             expect(signer.signMessage).not.toHaveBeenCalled();
         });
     });
+
+    describe("when the signer is a passkey", () => {
+        const PREIMAGE_HASH_HEX = `0x${"ab".repeat(32)}`;
+        const PREIMAGE_HASH_BASE64 = btoa(String.fromCharCode(...Array.from({ length: 32 }, () => 0xab)));
+
+        test("stellar signs the base64 preimage hash as hex challenge bytes", async () => {
+            const signer = makeSigner("passkey");
+
+            await getChainAdapter("stellar").signApproval(asAdapter(signer), transaction, PREIMAGE_HASH_BASE64);
+
+            expect(signer.signTransaction).toHaveBeenCalledWith(PREIMAGE_HASH_HEX);
+        });
+
+        test("evm signs the approval message unchanged", async () => {
+            const signer = makeSigner("passkey");
+
+            await getChainAdapter("base-sepolia").signApproval(asAdapter(signer), transaction, PREIMAGE_HASH_HEX);
+
+            expect(signer.signTransaction).toHaveBeenCalledWith(PREIMAGE_HASH_HEX);
+        });
+    });
 });
