@@ -1,5 +1,56 @@
 # @crossmint/client-sdk-base
 
+## 4.1.0
+
+### Minor Changes
+
+- 003bee1: Add `createOrderIntentsApi`, which wraps the buyer-JWT order-intent registration and order-intent routes under `/api/unstable` and validates their responses with zod, plus the `CrossmintAgentCardAuthorizationProps`, `AgentCardAuthorizationResult` and `AgentCardAuthorizationError` types that `CrossmintAgentCardAuthorization` will use. `OrderIntent` gains an optional `merchant`.
+- bb9ccf4: Add `selectCardRail` (the deterministic card rail policy behind `CrossmintAgentCardAuthorization`: `agentic-token`/`vic` with a `card` credential format, then `agentic-token`/`agentpay`, then `encrypted-card`, skipping rails in error), `findCardRail`, `toAgentCardRail`, `needsOrderIntentRegistration`, and `toAgentCardPaymentMethodSummary`, which reduces a selected card to id, brand and last4 and strips `card.source`.
+- 3cecef1: Add the `CrossmintProtectedInputProps` type, the `protected-input:created` / `protected-input:error` / `ui:height.changed` event schemas, the `ProtectedInputCreated` and `ProtectedInputError` types, and `createProtectedInputService`, which builds the URL of the hosted `/sdk/unstable/protected-input` page and opens the iframe channel to it. These back the `CrossmintProtectedInput` React component.
+
+### Patch Changes
+
+- 2bdb870: Export `CrossmintCvcRecollectionProps`, `CvcRecollectionError` and `PaymentMethodManagementAppearance` from `@crossmint/client-sdk-react-ui`, and document when to render `CrossmintCvcRecollection` (rail `pending_cvc_recollection` or mint-time 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`), the `retriable` contract of its errors, and that its appearance `fontSizeUnit`/`spacingUnit` are multiplier units unlike `VerificationAppearance`.
+- 74249cc: Add `verification-refused` to `CvcRecollectionError.reason`: the hosted CVC recollection form reports it (retriable) when Crossmint refuses to confirm the vault write instead of the generic `unknown`.
+- b357d97: Remove the remaining deprecated chains from the wallets OpenAPI spec and the checkout order types.
+
+  PR #2074 removed the deprecated chains from the hand-written chain definitions. It did not touch
+  `packages/wallets/src/openapi.json` or the checkout `Order` types, so the chain names still reached
+  consumers through the generated API client. This completes that work.
+
+  Chains removed: Astar zkEVM, Boss, Coti, Hedera, Lightlink, Mode, Plume, Rari, Soneium, U2U, Viction,
+  World Chain, Xai, Zenchain, zKatana, zKyoto, Polygon Mumbai and the Goerli testnets.
+
+  Zora (`zora`, `zora-sepolia`) is unchanged.
+
+  `@crossmint/wallets-sdk` no longer accepts these chains in any request or response type.
+  `@crossmint/client-sdk-base` no longer lists them in the order payment-method and chain unions.
+
+- 07b7a8c: Remove the deprecated chains from the SDK.
+
+  These chains are no longer supported. The SDK no longer accepts them:
+
+  - Mode (`mode`, `mode-sepolia`)
+  - Plume (`plume`, `plume-testnet`)
+  - World Chain (`world-chain`, `world-chain-sepolia`)
+  - Astar zkEVM (`astar-zkevm`)
+  - zKatana (`zkatana`) and zKyoto (`zkyoto`)
+  - The Goerli testnets (`ethereum-goerli`, `base-goerli`, `optimism-goerli`, `zora-goerli`)
+  - Polygon Mumbai (`polygon-mumbai`)
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain. Code that passes one of these names no longer compiles.
+  Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+  NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+  lookups return `undefined`.
+
+- Updated dependencies [07b7a8c]
+  - @crossmint/common-sdk-base@0.12.2
+
 ## 4.0.0
 
 ### Major Changes

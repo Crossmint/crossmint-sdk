@@ -1,5 +1,68 @@
 # @crossmint/wallets-sdk
 
+## 1.18.0
+
+### Minor Changes
+
+- d23239c: Add `wallet.addRecoveryMethod(recoveryMethod, { prepareOnly? })` and `wallet.removeRecoveryMethod(recoveryMethod, { prepareOnly? })` for Solana and Stellar wallets. Both operations are approved by one of the wallet's existing recovery methods, selected the same way as for `addSigner`/`removeSigner` (automatically when there is one, via `useSigner` when there are several). EVM wallets throw `RecoveryNotSupportedOnChainError` for now.
+- 751a879: Add `wallet.useRecoveryMethod(recoveryMethod)` to choose which of a wallet's recovery methods authorizes `addSigner`, `removeSigner`, `addRecoveryMethod` and `removeRecoveryMethod`, without changing the active signer used for transactions. `useSigner` keeps working as before; an explicit `useRecoveryMethod` selection takes precedence over it.
+
+### Patch Changes
+
+- b357d97: Remove the remaining deprecated chains from the wallets OpenAPI spec and the checkout order types.
+
+  PR #2074 removed the deprecated chains from the hand-written chain definitions. It did not touch
+  `packages/wallets/src/openapi.json` or the checkout `Order` types, so the chain names still reached
+  consumers through the generated API client. This completes that work.
+
+  Chains removed: Astar zkEVM, Boss, Coti, Hedera, Lightlink, Mode, Plume, Rari, Soneium, U2U, Viction,
+  World Chain, Xai, Zenchain, zKatana, zKyoto, Polygon Mumbai and the Goerli testnets.
+
+  Zora (`zora`, `zora-sepolia`) is unchanged.
+
+  `@crossmint/wallets-sdk` no longer accepts these chains in any request or response type.
+  `@crossmint/client-sdk-base` no longer lists them in the order payment-method and chain unions.
+
+- 07b7a8c: Remove the deprecated chains from the SDK.
+
+  These chains are no longer supported. The SDK no longer accepts them:
+
+  - Mode (`mode`, `mode-sepolia`)
+  - Plume (`plume`, `plume-testnet`)
+  - World Chain (`world-chain`, `world-chain-sepolia`)
+  - Astar zkEVM (`astar-zkevm`)
+  - zKatana (`zkatana`) and zKyoto (`zkyoto`)
+  - The Goerli testnets (`ethereum-goerli`, `base-goerli`, `optimism-goerli`, `zora-goerli`)
+  - Polygon Mumbai (`polygon-mumbai`)
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain. Code that passes one of these names no longer compiles.
+  Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+  NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+  lookups return `undefined`.
+
+- 0ec6bcd: Tell the signer frame which recovery method a request is for.
+
+  The signer frame stores one key per device and user. After onboarding a phone recovery method, selecting an
+  email recovery method on the same device made the frame report `ready`, skip the OTP, and sign with the
+  phone-derived key, which the API rejected with `Invalid signature for signer email:...`.
+
+  `@crossmint/wallets-sdk` now sends the selected recovery method's `authId` on `get-status` and `sign`, so a
+  frame that tracks the recovery method per device can request onboarding for the selected one instead of
+  signing with another method's key.
+
+  `@crossmint/client-signers` adds the optional `authId` to the `get-status` and `sign` request payloads.
+
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/common-sdk-auth@1.1.22
+
 ## 1.17.0
 
 ### Minor Changes
