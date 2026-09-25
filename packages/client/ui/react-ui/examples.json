@@ -118,10 +118,5 @@
         "code": "import { CrossmintCvcRecollection } from \"@crossmint/client-sdk-react-ui\";\n\nfunction RefreshCardCvc({ jwt, paymentMethodId }: { jwt: string; paymentMethodId: string }) {\n    return (\n        <CrossmintCvcRecollection\n            jwt={jwt}\n            paymentMethodId={paymentMethodId}\n            onComplete={() => {\n                console.log(\"CVC stored, refetch the order intent\");\n            }}\n            onError={(error) => {\n                if (!error.retriable) {\n                    console.error(\"CVC recollection failed\", error);\n                }\n            }}\n        />\n    );\n}",
         "language": "tsx",
         "note": "Render it when an order intent's `encrypted-card` rail reports `status: \"pending_cvc_recollection\"`, or when creating a credential is refused with HTTP 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`. Retriable errors keep the form mounted; non-retriable ones unmount it, so show your own message."
-    },
-    "CrossmintProtectedInput": {
-        "code": "import { CrossmintProtectedInput } from \"@crossmint/client-sdk-react-ui\";\n\nfunction MerchantPasswordPrompt({\n    jwt,\n    merchantUrl,\n    onProtectedInputId,\n}: {\n    jwt: string;\n    merchantUrl: string;\n    onProtectedInputId: (protectedInputId: string) => void;\n}) {\n    return (\n        <CrossmintProtectedInput\n            jwt={jwt}\n            merchantUrl={merchantUrl}\n            label=\"Password for your merchant account\"\n            onCreated={(created) => {\n                // Send this ID back to the agent checkout; the password itself never reaches your app.\n                onProtectedInputId(created.protectedInputId);\n            }}\n            onError={(error) => {\n                console.error(\"Protected input failed\", error);\n            }}\n        />\n    );\n}",
-        "language": "tsx",
-        "note": "Render it when an agent checkout asks for the merchant password with a protected input request. `merchantUrl` is the merchant sign-in page; Universal Checkout may only use the input on that host or a subdomain of it."
     }
 }
