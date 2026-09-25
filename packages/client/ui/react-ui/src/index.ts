@@ -24,6 +24,9 @@ export {
     type AgentCardAuthorizationErrorCode,
     type AgentCardPaymentMethodSummary,
     type AgentCardRail,
+    type ProtectedInput,
+    type ProtectedInputStatus,
+    type OrderIntent,
 } from "@crossmint/client-sdk-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";
