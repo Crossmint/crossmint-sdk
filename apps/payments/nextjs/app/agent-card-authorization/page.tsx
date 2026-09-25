@@ -12,7 +12,8 @@ import {
 
 // Consumes the SDK the way an integrator would: the buyer picks or adds a card, the SDK
 // registers it, creates a bounded order intent and runs rail verification when needed, and
-// the page receives only the orderIntentId to hand to Universal Checkout. The buyer's JWT is
+// the page receives only the orderIntentId to hand to Universal Checkout. No merchant is set:
+// an Agent Checkout binds the credential to its merchant when it requests it. The buyer's JWT is
 // passed as a prop, like the other hosted components take it.
 export default function AgentCardAuthorizationPage() {
     return (
@@ -48,7 +49,6 @@ function AgentCardAuthorizationWrapper() {
             <CrossmintAgentCardAuthorization
                 jwt={jwt}
                 amount={{ value: "25.00", currency: "USD" }}
-                merchant={{ name: "Example Shop", url: "https://shop.example.com", countryCode: "US" }}
                 description="Demo purchase placed by a shopping agent"
                 displayName="Example Shop"
                 onAuthorized={setResult}
