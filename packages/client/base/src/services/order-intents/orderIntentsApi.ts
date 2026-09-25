@@ -1,6 +1,8 @@
 import type { OrderIntent, OrderIntentMerchant, OrderIntentRail } from "@/types/payment-method-management/OrderIntents";
-import { ApiClientError, type CrossmintApiClient } from "@crossmint/common-sdk-base";
+import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { z } from "zod";
+
+import { UnstableApiError, expectNoContent, parseJsonResponse, sendUnstableRequest } from "../api/unstableApi";
 
 // ---- Order-intent registration (GET/PUT /api/unstable/payment-methods/{id}/order-intent-registration)
 
@@ -41,7 +43,7 @@ export interface OrderIntentRegistrationRequest {
     languageCode?: string;
 }
 
-// ---- Order intents (POST/GET /api/unstable/order-intents)
+// ---- Order intents (POST/GET/DELETE /api/unstable/order-intents)
 
 const railStateSchema = z.union([
     z.object({ status: z.enum(["active", "pending_verification"]) }),
@@ -110,6 +112,7 @@ export interface CreateOrderIntentRequest {
     paymentMethodId: string;
     /** `value` is a decimal string with up to 4 places, greater than 0; `currency` is a 3-letter code. */
     amount: { value: string; currency: string };
+    /** Omit for Agent Checkouts: the checkout binds the credential to its merchant when it requests it. */
     merchant?: OrderIntentMerchant;
     description: string;
     /** ISO 8601 datetime in the future. */
@@ -121,16 +124,15 @@ export interface CreateOrderIntentRequest {
  * and 5xx failures from the shared client, and 2xx bodies that are empty or not the expected shape.
  * @experimental Wraps `/api/unstable` routes; the signature may change in a minor release.
  */
-export class OrderIntentsApiError extends Error {
-    constructor(
-        message: string,
-        public readonly status: number | undefined,
-        public readonly path: string
-    ) {
-        super(message);
+export class OrderIntentsApiError extends UnstableApiError {
+    constructor(message: string, status: number | undefined, path: string) {
+        super(message, status, path);
         this.name = "OrderIntentsApiError";
     }
 }
+
+const toOrderIntentsApiError = (message: string, status: number | undefined, path: string) =>
+    new OrderIntentsApiError(message, status, path);
 
 const railIdentitySchema = z.object({
     rail: z.string().optional(),
@@ -169,21 +171,6 @@ function toOrderIntent(parsed: z.infer<typeof orderIntentSchema>, path: string):
     return { ...rest, rails: knownRails };
 }
 
-// `message` is a string, or a string array in the NestJS validation format.
-const errorBodySchema = z.object({ message: z.union([z.string(), z.array(z.string())]) });
-
-async function readErrorMessage(response: Response, fallback: string): Promise<string> {
-    try {
-        const body = errorBodySchema.safeParse(await response.json());
-        if (body.success) {
-            return Array.isArray(body.data.message) ? body.data.message.join("; ") : body.data.message;
-        }
-    } catch {
-        // Not a JSON body; use the fallback.
-    }
-    return fallback;
-}
-
 export type OrderIntentsApiProps = {
     apiClient: CrossmintApiClient;
 };
@@ -195,39 +182,18 @@ export type OrderIntentsApiProps = {
  * @experimental Wraps `/api/unstable` routes; the signature may change in a minor release.
  */
 export function createOrderIntentsApi({ apiClient }: OrderIntentsApiProps) {
-    // The shared client throws ApiClientError for 5xx and non-JSON 4xx; callers get one class.
-    async function send(path: string, request: () => Promise<Response>): Promise<Response> {
-        try {
-            return await request();
-        } catch (error) {
-            if (error instanceof ApiClientError) {
-                throw new OrderIntentsApiError(error.message, error.status, path);
-            }
-            throw error;
-        }
-    }
-
-    async function parseJsonResponse<T>(response: Response, path: string, schema: z.ZodType<T>): Promise<T> {
-        if (!response.ok) {
-            const message = await readErrorMessage(response, `${response.status} ${response.statusText}`);
-            throw new OrderIntentsApiError(message, response.status, path);
-        }
-        // The shared client lets any 2xx through, so an empty or non-JSON body surfaces here.
-        let body: unknown;
-        try {
-            body = await response.json();
-        } catch {
-            throw new OrderIntentsApiError(`Unexpected non-JSON response from ${path}`, response.status, path);
-        }
-        const result = schema.safeParse(body);
-        if (!result.success) {
-            throw new OrderIntentsApiError(`Unexpected response shape from ${path}`, response.status, path);
-        }
-        return result.data;
-    }
+    const send = (path: string, request: () => Promise<Response>) =>
+        sendUnstableRequest(path, request, toOrderIntentsApiError);
+    const parse = <T>(response: Response, path: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>) =>
+        parseJsonResponse(response, path, schema, toOrderIntentsApiError);
+    const jsonHeaders = { "Content-Type": "application/json" };
 
     function registrationPath(paymentMethodId: string) {
         return `/api/unstable/payment-methods/${encodeURIComponent(paymentMethodId)}/order-intent-registration`;
+    }
+
+    function orderIntentPath(orderIntentId: string) {
+        return `/api/unstable/order-intents/${encodeURIComponent(orderIntentId)}`;
     }
 
     function toRegistration(parsed: z.infer<typeof registrationSchema>, path: string): OrderIntentRegistration {
@@ -253,7 +219,7 @@ export function createOrderIntentsApi({ apiClient }: OrderIntentsApiProps) {
         if (response.status === 404) {
             return null;
         }
-        return toRegistration(await parseJsonResponse(response, path, registrationSchema), path);
+        return toRegistration(await parse(response, path, registrationSchema), path);
     }
 
     /** Scope `payment-methods.create`. Idempotent; never prompts the buyer. */
@@ -263,28 +229,38 @@ export function createOrderIntentsApi({ apiClient }: OrderIntentsApiProps) {
     ): Promise<OrderIntentRegistration> {
         const path = registrationPath(paymentMethodId);
         const response = await send(path, () =>
-            apiClient.put(path, { headers: { "Content-Type": "application/json" }, body: JSON.stringify(request) })
+            apiClient.put(path, { headers: jsonHeaders, body: JSON.stringify(request) })
         );
-        return toRegistration(await parseJsonResponse(response, path, registrationSchema), path);
+        return toRegistration(await parse(response, path, registrationSchema), path);
     }
 
     /** Scope `order-intents.create`. */
     async function createOrderIntent(request: CreateOrderIntentRequest): Promise<OrderIntent> {
         const path = "/api/unstable/order-intents";
         const response = await send(path, () =>
-            apiClient.post(path, { headers: { "Content-Type": "application/json" }, body: JSON.stringify(request) })
+            apiClient.post(path, { headers: jsonHeaders, body: JSON.stringify(request) })
         );
-        return toOrderIntent(await parseJsonResponse(response, path, orderIntentSchema), path);
+        return toOrderIntent(await parse(response, path, orderIntentSchema), path);
     }
 
     /** Scope `order-intents.read`. */
     async function getOrderIntent(orderIntentId: string): Promise<OrderIntent> {
-        const path = `/api/unstable/order-intents/${encodeURIComponent(orderIntentId)}`;
+        const path = orderIntentPath(orderIntentId);
         const response = await send(path, () => apiClient.get(path, {}));
-        return toOrderIntent(await parseJsonResponse(response, path, orderIntentSchema), path);
+        return toOrderIntent(await parse(response, path, orderIntentSchema), path);
     }
 
-    return { getRegistration, register, createOrderIntent, getOrderIntent };
+    /**
+     * Scope `order-intents.revoke`. Cancels an active order intent so Universal Checkout can no
+     * longer draw a credential from it; the route answers 204.
+     */
+    async function cancelOrderIntent(orderIntentId: string): Promise<void> {
+        const path = orderIntentPath(orderIntentId);
+        const response = await send(path, () => apiClient.delete(path, {}));
+        await expectNoContent(response, path, toOrderIntentsApiError);
+    }
+
+    return { getRegistration, register, createOrderIntent, getOrderIntent, cancelOrderIntent };
 }
 
 export type OrderIntentsApi = ReturnType<typeof createOrderIntentsApi>;
