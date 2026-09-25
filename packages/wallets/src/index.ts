@@ -13,6 +13,7 @@ export {
     RecoveryNotSupportedOnChainError,
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
+    RecoveryMethodRequiredError,
     SignerRequiredError,
     WalletNotAvailableError,
     InvalidTransferAmountError,
