@@ -29,6 +29,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                     keyType: "ed25519",
                     bytes: payload,
                     encoding: "base64",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,

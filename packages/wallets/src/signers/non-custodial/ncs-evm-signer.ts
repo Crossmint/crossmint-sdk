@@ -39,6 +39,7 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
                     keyType: "secp256k1",
                     bytes: hexString,
                     encoding: "hex",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,

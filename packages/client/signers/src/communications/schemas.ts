@@ -88,8 +88,19 @@ export const GetPublicKeyPayloadSchema = {
     ),
 };
 
+const AuthIdSchema = z
+    .string()
+    .describe("Locator of the recovery method the request is for, e.g. 'email:foo@bar.com' or 'phone:+1...'");
+
 export const GetStatusPayloadSchema = {
-    request: AuthenticatedEventRequest,
+    request: AuthenticatedEventRequest.extend({
+        data: z
+            .object({
+                authId: AuthIdSchema.optional(),
+            })
+            .optional()
+            .describe("Identifies which recovery method the status is being requested for"),
+    }),
     response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
 
@@ -100,6 +111,7 @@ export const SignPayloadSchema = {
                 keyType: KeyTypeSchema.describe("Type of cryptographic key to use for signing"),
                 bytes: z.string().describe("Data to be signed, in encoded format"),
                 encoding: EncodingSchema.describe("Encoding of the data to be signed"),
+                authId: AuthIdSchema.optional(),
             })
             .describe("Data needed to create a signature"),
     }),

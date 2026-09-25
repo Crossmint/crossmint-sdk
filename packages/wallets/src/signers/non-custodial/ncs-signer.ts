@@ -19,6 +19,7 @@ import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
+import { normalizeEmail } from "../../utils/signer-validation";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
@@ -139,7 +140,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const signerResponse = await clientTEEConnection.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
-            data: { authData },
+            data: { authData, data: { authId: this.getAuthId() } },
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
@@ -309,11 +310,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         }
     }
 
-    private getAuthId() {
+    protected getAuthId() {
         if (this.config.type === "email") {
-            return `email:${this.config.email}`;
+            return this.config.email != null ? `email:${normalizeEmail(this.config.email)}` : this.config.locator;
         }
-        return `phone:${this.config.phone}`;
+        return this.config.phone != null ? `phone:${this.config.phone}` : this.config.locator;
     }
 
     private async verifyOtp(encryptedOtp: string) {
