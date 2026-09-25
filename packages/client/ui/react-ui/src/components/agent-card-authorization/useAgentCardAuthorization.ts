@@ -121,7 +121,8 @@ function useTerminalCallbacks(
     return useMemo(() => ({ fail, succeed, mounted, generation }), [fail, succeed, mounted, generation]);
 }
 
-type OrderIntentRequestFields = Pick<CrossmintAgentCardAuthorizationProps, "amount" | "merchant" | "description"> & {
+type OrderIntentRequestFields = Pick<CrossmintAgentCardAuthorizationProps, "amount" | "description"> & {
+    merchant?: CrossmintAgentCardAuthorizationProps["merchant"];
     expiresAt: string;
 };
 
@@ -325,12 +326,13 @@ function useAuthorizeCard(
     const loadOrderIntent = useCallback(
         async (paymentMethod: AgentCardPaymentMethodSummary): Promise<OrderIntent> => {
             const { amount, merchant, description, expiresAt } = latestProps.current ?? {};
-            if (amount == null || merchant == null || description == null) {
-                throw new Error("amount, merchant and description are required.");
+            if (amount == null || description == null) {
+                throw new Error("amount and description are required.");
             }
+            // `merchant` is sent only when set: Agent Checkouts bind the merchant themselves.
             const request: OrderIntentRequestFields = {
                 amount,
-                merchant,
+                ...(merchant == null ? {} : { merchant }),
                 description,
                 expiresAt: expiresAt ?? defaultExpiresAt.current,
             };
