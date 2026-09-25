@@ -13,7 +13,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { InvalidRecoveryConfigError, SignerRequiredError } from "../../utils/errors";
+import { InvalidRecoveryConfigError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
@@ -225,7 +225,7 @@ export class SignerManager<C extends Chain> {
         if (activeIndex === -1) {
             const known = recoveryLocators.filter((locator): locator is SignerLocator => locator != null);
             const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
-            throw new SignerRequiredError(
+            throw new RecoveryMethodRequiredError(
                 activeLocator == null
                     ? `This wallet has multiple recovery methods, so the one authorizing this operation must be selected. ${selection}`
                     : `Signer "${activeLocator}" is not one of this wallet's recovery methods, and only a recovery method can add or remove signers. ${selection}`

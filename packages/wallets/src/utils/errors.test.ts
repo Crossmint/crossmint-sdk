@@ -13,6 +13,7 @@ import {
     RecoveryNotSupportedOnChainError,
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
+    RecoveryMethodRequiredError,
     SignerRequiredError,
     throwIfCrossmintApiAuthError,
     throwIfRecoverySignerApiError,
@@ -65,6 +66,28 @@ describe("throwIfCrossmintApiAuthError", () => {
         expect(() => throwIfCrossmintApiAuthError({ error: true, code: "SOME_OTHER_ERROR" })).not.toThrow();
         expect(() => throwIfCrossmintApiAuthError(null)).not.toThrow();
         expect(() => throwIfCrossmintApiAuthError("string")).not.toThrow();
+    });
+});
+
+describe("RecoveryMethodRequiredError", () => {
+    test("is a SignerRequiredError with the SIGNER_INVALID code", () => {
+        const error = new RecoveryMethodRequiredError("select a recovery method", "details");
+
+        expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+        expect(error).toBeInstanceOf(SignerRequiredError);
+        expect(error.code).toBe(CrossmintErrors.SIGNER_INVALID);
+        expect(error.message).toBe("select a recovery method");
+        expect(error.details).toBe("details");
+    });
+
+    test("is not thrown for the SIGNER_REQUIRED API code, which stays a plain SignerRequiredError", () => {
+        try {
+            throwIfRecoverySignerApiError({ error: true, code: "SIGNER_REQUIRED" });
+            expect.fail("Expected throwIfRecoverySignerApiError to throw");
+        } catch (error) {
+            expect(error).toBeInstanceOf(SignerRequiredError);
+            expect(error).not.toBeInstanceOf(RecoveryMethodRequiredError);
+        }
     });
 });
 

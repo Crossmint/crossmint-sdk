@@ -134,6 +134,8 @@ export class SignerRequiredError extends CrossmintSDKError {
     }
 }
 
+export class RecoveryMethodRequiredError extends SignerRequiredError {}
+
 export class RecoveryNotSupportedOnChainError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNER_INVALID, details);
@@ -392,6 +394,7 @@ export type WalletError =
     | DuplicateRecoverySignerError
     | RecoverySignerConflictError
     | SignerRequiredError
+    | RecoveryMethodRequiredError
     | RecoveryNotSupportedOnChainError
     | NotSupportedOnApiVersionError
     | RecoveryAdminSignerConflictError

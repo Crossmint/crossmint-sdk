@@ -9,7 +9,7 @@ import type {
     SignerLocator,
 } from "../../signers/types";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
-import { InvalidRecoveryConfigError, SignerRequiredError } from "../../utils/errors";
+import { InvalidRecoveryConfigError, RecoveryMethodRequiredError, SignerRequiredError } from "../../utils/errors";
 import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
@@ -221,12 +221,13 @@ describe("SignerManager", () => {
             /not one of this wallet's recovery methods/,
         ],
     ] as const)(
-        "resolveAuthorizingRecovery() with several recovery signers and %s throws a SignerRequiredError listing them",
+        "resolveAuthorizingRecovery() with several recovery signers and %s throws a RecoveryMethodRequiredError listing them",
         (_name, signer, branchKeyword) => {
             const manager = makeManager({
                 recoverySigners: [...multiRecovery, asRecoveryConfig({ type: "server", secret: "topsecret" })],
                 signer,
             });
+            expect(() => manager.resolveAuthorizingRecovery()).toThrow(RecoveryMethodRequiredError);
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(SignerRequiredError);
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(branchKeyword);
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(
