@@ -4,6 +4,7 @@ import type { TokenBalance, PendingSignerOperation } from "../../wallets/types";
 import { walletsLogger } from "../../logger";
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { SignerAdapter } from "../../signers/types";
+import { Base64, Hex } from "ox";
 
 export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
@@ -45,6 +46,12 @@ export const stellarChainAdapter: ChainAdapter = {
     },
 
     signApproval(signer: SignerAdapter, _transaction: unknown, approvalMessage: string) {
+        // A passkey's approval message is the base64 auth entry preimage hash, and the contract checks that the
+        // WebAuthn challenge is exactly those 32 bytes. WebAuthn signing takes the challenge as hex, so convert
+        // the bytes rather than hand over the base64 text.
+        if (signer.type === "passkey") {
+            return signer.signTransaction(Hex.fromBytes(Base64.toBytes(approvalMessage)));
+        }
         return signer.signTransaction(approvalMessage);
     },
 };
