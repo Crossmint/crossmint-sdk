@@ -1,5 +1,36 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.8.0
+
+### Minor Changes
+
+- 8dc3dd7: Add `CrossmintAgentCardAuthorization`. It composes `CrossmintPaymentMethodManagement` (cards only), order-intent registration, order-intent creation and `OrderIntentVerification` into one component that calls `onAuthorized` with the `orderIntentId` to hand to Universal Checkout. The rail is chosen by a fixed policy (`agentic-token`/`vic` with a card credential format, then `agentic-token`/`agentpay`, then `encrypted-card`); `onError` reports a closed set of codes. Card numbers, CVCs and vault token ids never reach the callbacks.
+- dbc0985: Add `CrossmintProtectedInput`. It embeds the hosted protected-input page so a buyer can type the password of their account on a merchant site, and calls `onCreated` with an opaque `protectedInputId` to hand to Universal Checkout. The password and the vault token id never reach the developer's JavaScript. It takes the buyer's `jwt` as a prop, like `CrossmintPaymentMethodManagement`.
+
+### Patch Changes
+
+- bdcc891: Add `CrossmintProtectedInput` to the generated agents/react SDK reference
+- 3187098: Document `OrderIntentVerification` props and when to render it, so the agents React SDK reference can be generated from source.
+- 2bdb870: Export `CrossmintCvcRecollectionProps`, `CvcRecollectionError` and `PaymentMethodManagementAppearance` from `@crossmint/client-sdk-react-ui`, and document when to render `CrossmintCvcRecollection` (rail `pending_cvc_recollection` or mint-time 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`), the `retriable` contract of its errors, and that its appearance `fontSizeUnit`/`spacingUnit` are multiplier units unlike `VerificationAppearance`.
+- 74249cc: Add `verification-refused` to `CvcRecollectionError.reason`: the hosted CVC recollection form reports it (retriable) when Crossmint refuses to confirm the vault write instead of the generic `unknown`.
+- Updated dependencies [003bee1]
+- Updated dependencies [bb9ccf4]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [b357d97]
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+- Updated dependencies [3cecef1]
+- Updated dependencies [d23239c]
+- Updated dependencies [751a879]
+  - @crossmint/client-sdk-base@4.1.0
+  - @crossmint/wallets-sdk@1.18.0
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/client-sdk-auth@1.3.24
+  - @crossmint/client-sdk-react-base@2.3.1
+  - @crossmint/common-sdk-auth@1.1.22
+
 ## 4.7.0
 
 ### Minor Changes
