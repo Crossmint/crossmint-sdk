@@ -80,12 +80,14 @@ const PRODUCTS = {
             "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
             "CrossmintIdentityVerification",
+            "CrossmintProtectedInput",
         ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
             CrossmintIdentityVerification:
                 'Hosted identity verification step, for merchants taking it over with `identityVerificationHandling="external"`',
+            CrossmintProtectedInput: "Merchant-site password collection for Universal Checkout",
         },
         getStartedExamples: {
             setup: "rnCheckoutProviderSetup",
