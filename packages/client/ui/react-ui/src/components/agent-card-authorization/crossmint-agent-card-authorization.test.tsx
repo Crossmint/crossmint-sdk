@@ -637,6 +637,24 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         });
     });
 
+    describe("when no merchant is given, as Agent Checkouts require", () => {
+        test("creates the order intent without a merchant field", async () => {
+            fetchMock
+                .mockResolvedValueOnce(json(200, REGISTERED))
+                .mockResolvedValueOnce(json(201, orderIntent([VIC_ACTIVE])));
+            const onAuthorized = vi.fn();
+            const { merchant: _omitted, ...withoutMerchant } = PROPS;
+            render(
+                <CrossmintAgentCardAuthorization {...withoutMerchant} onAuthorized={onAuthorized} onError={vi.fn()} />
+            );
+
+            selectCard();
+
+            await waitFor(() => expect(onAuthorized).toHaveBeenCalledTimes(1));
+            expect(Object.keys(requestBody(1))).not.toContain("merchant");
+        });
+    });
+
     describe("when the request props change between two selections of the same card", () => {
         test("creates a new order intent instead of re-reading the one for the old amount", async () => {
             fetchMock

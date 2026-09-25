@@ -61,7 +61,11 @@ export interface CrossmintAgentCardAuthorizationProps {
     jwt: string;
     /** `value` is a decimal string with up to 4 places, greater than 0; `currency` is a 3-letter code. */
     amount: { value: string; currency: string };
-    merchant: OrderIntentMerchant;
+    /**
+     * Omit for Agent Checkouts: the checkout binds the credential to its merchant when it
+     * requests it. Set it only for order intents used outside Agent Checkouts.
+     */
+    merchant?: OrderIntentMerchant;
     description: string;
     /** ISO 8601 datetime in the future. Defaults to 24 hours from mount. */
     expiresAt?: string;
