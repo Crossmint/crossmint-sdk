@@ -16,6 +16,8 @@ import {
     WalletTypeNotSupportedError,
     SignatureNotAvailableError,
     JWTExpiredError,
+    RecoveryMethodRequiredError,
+    SignerRequiredError,
 } from "../utils/errors";
 import {
     createMockWallet,
@@ -1196,6 +1198,29 @@ describe("Wallet - addSigner()", () => {
             await expect(solanaWallet.addSigner({ type: "external-wallet", address: "ABC123" })).rejects.toThrow(
                 "Expected transaction in response for Solana/Stellar chain"
             );
+        });
+
+        it("rejects with RecoveryMethodRequiredError when several recovery methods exist and none is selected", async () => {
+            mockApiClient = createMockApiClient();
+            mockApiClient.getWallet.mockResolvedValue({
+                chainType: "evm",
+                type: "smart",
+                address: "0x1234567890123456789012345678901234567890",
+                config: {
+                    recoveryMethods: [{ type: "external-wallet", address: "0xPrimary" }, { type: "api-key" }],
+                    delegatedSigners: [],
+                },
+                createdAt: Date.now(),
+            } as unknown as GetWalletSuccessResponse);
+            const walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+            const wallet = await walletFactory.getWallet({ chain: "base-sepolia" });
+
+            const attempt = wallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            await expect(attempt).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+            await expect(attempt).rejects.toBeInstanceOf(SignerRequiredError);
+            await expect(attempt).rejects.toThrow("external-wallet:0xPrimary");
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
 
         it("throws error when EVM response missing chains", async () => {
