@@ -50,6 +50,56 @@ export interface CrossmintWalletProviderProps {
 
 const MAX_HANDSHAKE_RETRIES = 2;
 
+type PageLoadState = "not-started" | "loading" | "loaded" | "failed";
+
+interface PageLoad {
+    state: PageLoadState;
+    startedAt: number | null;
+}
+
+interface PageLoadError {
+    code: number;
+    description: string;
+    domain?: string;
+}
+
+interface PageHttpError {
+    statusCode: number;
+    description: string;
+}
+
+type HandshakeFailureReason = "handshake-error" | "page-not-loaded" | "page-load-failed" | "signer-not-responding";
+
+const HANDSHAKE_FAILURE_MESSAGES: Record<HandshakeFailureReason, string> = {
+    "handshake-error": "Handshake error:",
+    "page-not-loaded": "The signer page did not finish loading in the WebView, so the signer could not start.",
+    "page-load-failed": "The signer page failed to load in the WebView, so the signer could not start.",
+    "signer-not-responding": "The signer page loaded, but the signer did not answer the handshake.",
+};
+
+function describePageLoad(pageLoad: PageLoad) {
+    let msSincePageLoadStart: number | null = null;
+    if (pageLoad.startedAt != null) {
+        msSincePageLoadStart = Date.now() - pageLoad.startedAt;
+    }
+    return { pageLoadState: pageLoad.state, msSincePageLoadStart };
+}
+
+function handshakeFailureReason(pageLoad: PageLoad, retriesExhausted: boolean): HandshakeFailureReason {
+    if (!retriesExhausted) {
+        return "handshake-error";
+    }
+    switch (pageLoad.state) {
+        case "loaded":
+            return "signer-not-responding";
+        case "failed":
+            return "page-load-failed";
+        case "not-started":
+        case "loading":
+            return "page-not-loaded";
+    }
+}
+
 // These all configure the non-custodial (TEE) signer webview, not the device signer. "deviceStorage"
 // is the signer frame's own in-frame key storage; on iOS that webview storage isn't reliable across
 // launches, so we keep the key in memory and reload the frame before each signature.
@@ -156,6 +206,7 @@ function CrossmintWalletProviderInternal({
     const handshakeGenerationRef = useRef<number>(0);
     const handshakeStartTimeRef = useRef<number>(0);
     const handshakeRetryCountRef = useRef<number>(0);
+    const pageLoadRef = useRef<PageLoad>({ state: "not-started", startedAt: null });
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -221,6 +272,7 @@ function CrossmintWalletProviderInternal({
                             retryAttempt,
                             maxRetries: MAX_HANDSHAKE_RETRIES,
                             error: errorMessage,
+                            ...describePageLoad(pageLoadRef.current),
                         });
 
                         // Increment generation so stale attempts don't interfere
@@ -239,14 +291,18 @@ function CrossmintWalletProviderInternal({
                     if (generation === handshakeGenerationRef.current) {
                         handshakeTriggeredRef.current = false;
                     }
+                    const reason = handshakeFailureReason(pageLoadRef.current, isTimeout);
+                    const pageLoad = describePageLoad(pageLoadRef.current);
                     logger.error("react-native.wallet.webview.handshake.error", {
                         trigger,
                         generation,
                         durationMs,
                         error: errorMessage,
                         retriesExhausted: isTimeout,
+                        reason,
+                        ...pageLoad,
                     });
-                    console.error("[CrossmintWalletProvider] Handshake error:", e);
+                    console.error(`[CrossmintWalletProvider] ${HANDSHAKE_FAILURE_MESSAGES[reason]}`, pageLoad, e);
                 } finally {
                     if (generation === handshakeGenerationRef.current) {
                         handshakeInProgressRef.current = false;
@@ -299,9 +355,48 @@ function CrossmintWalletProviderInternal({
             handshakeInProgress: handshakeInProgressRef.current,
             isConnected: webViewParentRef.current?.isConnected ?? false,
             generation: handshakeGenerationRef.current,
+            ...describePageLoad(pageLoadRef.current),
         });
         await performHandshake("onLoadEnd");
     }, [logger, performHandshake]);
+
+    const recordPageLoadStart = useCallback(() => {
+        pageLoadRef.current = { state: "loading", startedAt: Date.now() };
+        logger.info("react-native.wallet.webview.onLoadStart", {
+            generation: handshakeGenerationRef.current,
+        });
+    }, [logger]);
+
+    const recordPageLoaded = useCallback(() => {
+        pageLoadRef.current = { ...pageLoadRef.current, state: "loaded" };
+    }, []);
+
+    const recordPageLoadError = useCallback(
+        (error: PageLoadError) => {
+            pageLoadRef.current = { ...pageLoadRef.current, state: "failed" };
+            logger.error("react-native.wallet.webview.onError", {
+                generation: handshakeGenerationRef.current,
+                code: error.code,
+                description: error.description,
+                domain: error.domain,
+                ...describePageLoad(pageLoadRef.current),
+            });
+            console.error("[CrossmintWalletProvider] WebView error:", error);
+        },
+        [logger]
+    );
+
+    const recordPageHttpError = useCallback(
+        (error: PageHttpError) => {
+            logger.error("react-native.wallet.webview.onHttpError", {
+                generation: handshakeGenerationRef.current,
+                statusCode: error.statusCode,
+                description: error.description,
+            });
+            console.error("[CrossmintWalletProvider] WebView HTTP error:", error);
+        },
+        [logger]
+    );
 
     const resetSignerFrame = useCallback(async () => {
         const parent = webViewParentRef.current;
@@ -328,7 +423,10 @@ function CrossmintWalletProviderInternal({
         }
 
         if (!parent.isConnected) {
-            logger.error("react-native.wallet.webview.reset.timeout", { durationMs: Date.now() - startTime });
+            logger.error("react-native.wallet.webview.reset.timeout", {
+                durationMs: Date.now() - startTime,
+                ...describePageLoad(pageLoadRef.current),
+            });
             throw new Error("Timed out reloading the signer frame");
         }
 
@@ -490,14 +588,12 @@ function CrossmintWalletProviderInternal({
                         ref={webviewRef}
                         source={{ uri: frameUrl }}
                         globals={secureGlobals}
+                        onLoadStart={recordPageLoadStart}
+                        onLoad={recordPageLoaded}
                         onLoadEnd={onWebViewLoad}
                         onMessage={handleMessage}
-                        onError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
-                        }}
-                        onHttpError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
-                        }}
+                        onError={(syntheticEvent) => recordPageLoadError(syntheticEvent.nativeEvent)}
+                        onHttpError={(syntheticEvent) => recordPageHttpError(syntheticEvent.nativeEvent)}
                         onContentProcessDidTerminate={() => {
                             const prevGeneration = handshakeGenerationRef.current;
                             handshakeGenerationRef.current++;
