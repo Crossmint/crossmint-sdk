@@ -31,7 +31,7 @@ const browsers = ["chromium", "firefox", "webkit"];
 const SLACK_SECTION_TEXT_LIMIT = 3000;
 const SLACK_HEADER_TEXT_LIMIT = 150;
 // Budget reserved for the "...and N more" trailer.
-const FAILURE_BLOCK_OVERHEAD = 40;
+const FAILURE_BLOCK_OVERHEAD = 120;
 
 const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
@@ -142,13 +142,13 @@ const totals = reported.reduce(
     { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 }
 );
 
-// A cancelled job uploads no artifact, so a run can fail with zero failed tests.
-const headline =
-    totals.failed > 0
-        ? `${totals.failed} of ${totals.total} failed`
-        : missing.length > 0
-          ? `no results from ${missing.join(", ")}`
-          : `${totals.passed}/${totals.total} passed`;
+let headline = `${totals.passed}/${totals.total} passed`;
+if (totals.failed > 0) {
+    headline = `${totals.failed} of ${totals.total} failed`;
+} else if (missing.length > 0) {
+    // A cancelled job uploads no artifact, so a run can fail with zero failed tests.
+    headline = `no results from ${missing.join(", ")}`;
+}
 const title = `${statusEmoji} E2E Regression Tests \u2014 ${headline}`.slice(0, SLACK_HEADER_TEXT_LIMIT);
 
 const statsLine = [
@@ -158,7 +158,7 @@ const statsLine = [
     }),
     `${(totals.duration / 60000).toFixed(1)}m`,
     ...(totals.skipped > 0 ? [`${totals.skipped} skipped`] : []),
-    `<${runUrl}|logs>`,
+    `<${runUrl}|logs & full report>`,
     `<${commitUrl}|${shortSha}>`,
 ].join("  \u00B7  ");
 
@@ -219,7 +219,8 @@ if (allFailures.length > 0) {
     }
 
     const omitted = entries.length - shown.length;
-    const failText = `${shown.join("\n\n")}${omitted > 0 ? `\n\n_\u2026and ${omitted} more_` : ""}`;
+    const trailer = omitted > 0 ? `\n\n_\u2026and ${omitted} more \u2014 <${runUrl}|full report in the run artifacts>_` : "";
+    const failText = `${shown.join("\n\n")}${trailer}`;
 
     slackMessage.blocks.push({
         type: "section",
