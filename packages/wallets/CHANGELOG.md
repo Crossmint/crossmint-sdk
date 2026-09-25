@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.18.1
+
+### Patch Changes
+
+- d68d665: Throw `RecoveryMethodRequiredError` (a `SignerRequiredError` subclass) when a wallet has several recovery methods and none was selected with `useRecoveryMethod()` before `addSigner`, `removeSigner`, `addRecoveryMethod` or `removeRecoveryMethod`.
+
 ## 1.18.0
 
 ### Minor Changes
