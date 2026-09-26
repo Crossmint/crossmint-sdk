@@ -28,6 +28,13 @@ if (!webhookUrl) {
 
 const browsers = ["chromium", "firefox", "webkit"];
 
+const SLACK_SECTION_TEXT_LIMIT = 3000;
+const SLACK_HEADER_TEXT_LIMIT = 150;
+// Budget reserved for the "...and N more" trailer.
+const FAILURE_BLOCK_OVERHEAD = 120;
+
+const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
 // Strip ANSI escape codes produced by Playwright error formatting
 function stripAnsi(str) {
     return str.replace(/\x1b\[[0-9;]*[mGKHFJA-Za-z]/g, "");
@@ -115,75 +122,113 @@ for (const browser of browsers) {
 }
 
 const statusEmoji = overallFailed ? "\u274C" : "\u2705";
-const statusText = overallFailed ? "Failed" : "Passed";
 const runUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
 const commitUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/commit/${process.env.GITHUB_SHA}`;
 const shortSha = process.env.GITHUB_SHA.substring(0, 7);
 
-function browserSummary(browser, result) {
-    if (!result) return `*${browser}:* \u274C  No results \u2014 job failed or was cancelled`;
-    const durationMin = (result.duration / 60000).toFixed(1);
-    const counts = [`${result.passedTests} \u2705 passed`];
-    if (result.failedTests > 0) counts.push(`${result.failedTests} \u274C failed`);
-    if (result.skippedTests > 0) counts.push(`${result.skippedTests} \u23ED skipped`);
-    return `*${browser}:*  ${counts.join("  \u00B7  ")}  _of ${result.totalTests} total (${durationMin}m)_`;
-}
+const reported = browsers.filter((b) => browserResults[b] != null);
+const missing = browsers.filter((b) => browserResults[b] == null);
 
-const summaryLines = browsers.map((b) => browserSummary(b, browserResults[b])).join("\n\n");
+const totals = reported.reduce(
+    (acc, b) => {
+        const r = browserResults[b];
+        acc.total += r.totalTests;
+        acc.passed += r.passedTests;
+        acc.failed += r.failedTests;
+        acc.skipped += r.skippedTests;
+        acc.duration += r.duration;
+        return acc;
+    },
+    { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 }
+);
+
+let headline = `${totals.passed}/${totals.total} passed`;
+if (totals.failed > 0) {
+    headline = `${totals.failed} of ${totals.total} failed`;
+} else if (missing.length > 0) {
+    // A cancelled job uploads no artifact, so a run can fail with zero failed tests.
+    headline = `no results from ${missing.join(", ")}`;
+}
+const title = `${statusEmoji} E2E Regression Tests \u2014 ${headline}`.slice(0, SLACK_HEADER_TEXT_LIMIT);
+
+const statsLine = [
+    ...browsers.map((b) => {
+        const r = browserResults[b];
+        return r == null ? `${b} no results` : `${b} ${r.passedTests}/${r.totalTests}`;
+    }),
+    `${(totals.duration / 60000).toFixed(1)}m`,
+    ...(totals.skipped > 0 ? [`${totals.skipped} skipped`] : []),
+    `<${runUrl}|logs & full report>`,
+    `<${commitUrl}|${shortSha}>`,
+].join("  \u00B7  ");
 
 const slackMessage = {
-    text: `${statusEmoji} E2E Regression Tests \u2014 ${statusText}`,
+    text: title,
     blocks: [
-        {
-            type: "header",
-            text: { type: "plain_text", text: `${statusEmoji} E2E Regression Tests \u2014 ${statusText}` },
-        },
-        {
-            type: "section",
-            text: { type: "mrkdwn", text: summaryLines },
-        },
-        { type: "divider" },
-        {
-            type: "section",
-            text: {
-                type: "mrkdwn",
-                text: `*Run:* <${runUrl}|View workflow>   \u00B7   *Commit:* <${commitUrl}|${shortSha}>`,
-            },
-        },
+        { type: "header", text: { type: "plain_text", text: title } },
+        { type: "context", elements: [{ type: "mrkdwn", text: statsLine }] },
     ],
 };
 
 const allFailures = browsers.flatMap((b) => (browserResults[b]?.failures || []).map((f) => ({ browser: b, ...f })));
 
 if (allFailures.length > 0) {
-    const shown = allFailures.slice(0, 10);
-    const failText = shown
-        .map((f) => {
-            const cleanError =
-                stripAnsi(f.error)
-                    .split("\n")
-                    .find((l) => l.trim()) || "No error message";
-            const truncatedError = cleanError.length > 250 ? cleanError.substring(0, 250) + "..." : cleanError;
-            const suiteStr = f.suite ? `\n_${f.suite}_` : "";
-            return `\u2022 *[${f.browser}]* ${f.title}${suiteStr}\n\`${truncatedError}\``;
-        })
-        .join("\n\n");
+    // The same test failing on every browser is one failure, not three.
+    const grouped = new Map();
+    for (const f of allFailures) {
+        const error =
+            stripAnsi(f.error)
+                .split("\n")
+                .find((l) => l.trim())
+                ?.trim() || "No error message";
+        const suite = f.suite ? f.suite.split(" \u203A ").pop() : "";
+        const name = suite ? `${suite} \u203A ${f.title}` : f.title;
+        // Mask the parts that vary per browser without distinguishing one failure from another.
+        const signature = error
+            .split("Recent browser output:")[0]
+            .replace(UUID_PATTERN, "<id>")
+            .split(f.browser)
+            .join("<browser>");
+        const key = `${name}\u0000${signature}`;
+        const group = grouped.get(key);
+        if (group) {
+            group.browsers.push(f.browser);
+        } else {
+            grouped.set(key, { name, error, browsers: [f.browser] });
+        }
+    }
 
-    slackMessage.blocks.push({ type: "divider" });
+    const entries = [...grouped.values()].map((g) => {
+        const where =
+            g.browsers.length > 1 && g.browsers.length === reported.length
+                ? `all ${g.browsers.length} browsers`
+                : g.browsers.join(", ");
+        const error = g.error.length > 250 ? `${g.error.slice(0, 250)}\u2026` : g.error;
+        return `*${g.name}*  \u2014  ${where}\n\`${error}\``;
+    });
+
+    // Slack rejects the whole message with `invalid_blocks` when a section passes 3000 characters.
+    const shown = [];
+    let used = FAILURE_BLOCK_OVERHEAD;
+    for (const entry of entries) {
+        if (shown.length > 0 && used + entry.length > SLACK_SECTION_TEXT_LIMIT) {
+            break;
+        }
+        shown.push(entry);
+        used += entry.length + 2;
+    }
+
+    const omitted = entries.length - shown.length;
+    const trailer =
+        omitted > 0 ? `\n\n_\u2026and ${omitted} more \u2014 <${runUrl}|full report in the run artifacts>_` : "";
+    const failText = `${shown.join("\n\n")}${trailer}`;
+
     slackMessage.blocks.push({
         type: "section",
-        text: {
-            type: "mrkdwn",
-            text: `*\u274C Failed Tests (${Math.min(10, allFailures.length)} of ${allFailures.length}):*\n\n${failText}${allFailures.length > 10 ? `\n\n_...and ${allFailures.length - 10} more failures_` : ""}`,
-        },
+        // A lone entry over the limit is always admitted above, so it still needs truncating.
+        text: { type: "mrkdwn", text: failText.slice(0, SLACK_SECTION_TEXT_LIMIT) },
     });
 }
-
-slackMessage.blocks.push({ type: "divider" });
-slackMessage.blocks.push({
-    type: "section",
-    text: { type: "mrkdwn", text: `\uD83D\uDD17 <${runUrl}|View full logs and artifacts>` },
-});
 
 const url = new URL(webhookUrl);
 const postData = JSON.stringify(slackMessage);
