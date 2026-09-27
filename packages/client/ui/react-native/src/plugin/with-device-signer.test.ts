@@ -43,11 +43,12 @@ describe("withDeviceSigner", () => {
             expect(podfile).toContain("config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''");
         });
 
-        test("unsets the prebuilt React Native core flags", async () => {
+        test("leaves the prebuilt React Native core settings to Expo", async () => {
             const podfile = await runPodfileMod(templatePodfile);
 
-            expect(podfile).toContain("ENV.delete('RCT_USE_RN_DEP')         # CROSSMINT_RN_PREBUILT_FIX");
-            expect(podfile).toContain("ENV.delete('RCT_USE_PREBUILT_RNCORE')  # CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("ENV.delete('RCT_USE_RN_DEP')");
+            expect(podfile).not.toContain("ENV.delete('RCT_USE_PREBUILT_RNCORE')");
+            expect(podfile).not.toContain("GCC_PREFIX_HEADER");
         });
 
         test("keeps a single post_install block", async () => {
