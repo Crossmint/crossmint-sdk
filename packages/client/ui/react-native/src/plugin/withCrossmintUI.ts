@@ -1,4 +1,4 @@
-import { type ConfigPlugin, createRunOncePlugin } from "@expo/config-plugins";
+import { type ConfigPlugin, createRunOncePlugin } from "expo/config-plugins";
 import { type GooglePayPluginProps, withGooglePay } from "./withGooglePay";
 import { withDeviceSigner } from "./withDeviceSigner";
 

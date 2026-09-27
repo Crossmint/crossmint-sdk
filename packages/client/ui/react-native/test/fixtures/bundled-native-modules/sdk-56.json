@@ -1,0 +1,12 @@
+{
+    "expo": "56.0.22",
+    "react-native": "0.85.3",
+    "expo-constants": "~56.0.26",
+    "expo-device": "~56.0.4",
+    "expo-secure-store": "~56.0.4",
+    "expo-web-browser": "~56.0.6",
+    "expo-modules-core": "~56.0.26",
+    "react-native-webview": "13.16.1",
+    "react-native-svg": "15.15.4",
+    "react-native-get-random-values": "~1.11.0"
+}
