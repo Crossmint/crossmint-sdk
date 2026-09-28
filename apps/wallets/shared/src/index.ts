@@ -8,7 +8,7 @@ export { RECOVERY_METHOD_TYPES, MULTI_RECOVERY_CHAINS } from "./types/recoveryMe
 export type { RecoveryMethodType, MultiRecoveryChain } from "./types/recoveryMethod";
 
 export { getSignerLocator, signerLabel, buildSignerConfig, locatorToSignerConfig } from "./utils/signerUtils";
-export { buildRecoveryMethodConfig } from "./utils/recoveryMethodUtils";
+export { buildRecoveryMethodConfig, getRecoveryMethodValidationError } from "./utils/recoveryMethodUtils";
 
 export { BalanceCard } from "./components/BalanceCard";
 export { TransferForm } from "./components/TransferForm";
