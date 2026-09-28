@@ -43,6 +43,43 @@ describe("ConsoleSink", () => {
         });
     });
 
+    describe("when the same object is shared between sibling fields", () => {
+        test("serializes both fields without flagging a cycle", () => {
+            const info = vi.spyOn(console, "info").mockImplementation(vi.fn());
+            const shared = { id: 1 };
+
+            new ConsoleSink().write({
+                level: "info",
+                message: "msg",
+                context: { first: shared, second: shared },
+                timestamp: Date.now(),
+            });
+
+            expect(info).toHaveBeenCalledWith('[SDK] msg {"first":{"id":1},"second":{"id":1}}');
+        });
+    });
+
+    describe("when context serialization throws", () => {
+        test("still emits the message with a placeholder for the context", () => {
+            const info = vi.spyOn(console, "info").mockImplementation(vi.fn());
+
+            new ConsoleSink().write({
+                level: "info",
+                message: "msg",
+                context: {
+                    payload: {
+                        toJSON: () => {
+                            throw new Error("nope");
+                        },
+                    },
+                },
+                timestamp: Date.now(),
+            });
+
+            expect(info).toHaveBeenCalledWith("[SDK] msg [unserializable context: nope]");
+        });
+    });
+
     describe("when the entry has no context", () => {
         test("emits only the prefixed message", () => {
             const info = vi.spyOn(console, "info").mockImplementation(vi.fn());
