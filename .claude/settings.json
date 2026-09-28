@@ -1,0 +1,14 @@
+{
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "./scripts/fetch-best-practices.sh core.md typescript.md"
+                    }
+                ]
+            }
+        ]
+    }
+}
