@@ -4253,6 +4253,96 @@ describe("Wallet - recover()", () => {
         });
     });
 
+    describe("with a non-primary recovery method selected via useRecoveryMethod", () => {
+        const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
+        const SECOND_RECOVERY_ADDRESS = "0x2222222222222222222222222222222222222222";
+        const SECOND_RECOVERY_LOCATOR = `external-wallet:${SECOND_RECOVERY_ADDRESS}`;
+        const RECOVERY_METHODS = [
+            { type: "api-key" },
+            { type: "external-wallet", address: SECOND_RECOVERY_ADDRESS },
+        ] as any;
+
+        const makeSecondRecovery = () =>
+            ({
+                type: "external-wallet",
+                address: SECOND_RECOVERY_ADDRESS,
+                onSign: vi.fn().mockResolvedValue("0xrecoverysig"),
+            }) as unknown as SignerConfigForChain<"base-sepolia">;
+
+        it("approves a pending device signer operation with the selected recovery method", async () => {
+            const deviceSigner = createDeviceSignerAdapter("device:testkey123", undefined);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: WALLET_ADDRESS,
+                    recovery: RECOVERY_METHODS,
+                    signer: deviceSigner,
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            const secondRecovery = makeSecondRecovery();
+            await wallet.useRecoveryMethod(secondRecovery);
+
+            mockGetSignerPendingSignature("sig-pending-1");
+            mockApiClient.getSignature
+                .mockResolvedValueOnce({
+                    id: "sig-pending-1",
+                    status: "pending",
+                    approvals: {
+                        pending: [{ signer: { locator: SECOND_RECOVERY_LOCATOR }, message: "message-to-sign" }],
+                        submitted: [],
+                    },
+                } as any)
+                .mockResolvedValue({ id: "sig-pending-1", status: "success", outputSignature: "0xsig" } as any);
+            mockApiClient.approveSignature.mockResolvedValue({ id: "sig-pending-1", status: "success" } as any);
+
+            await wallet.recover();
+
+            expect((secondRecovery as any).onSign).toHaveBeenCalledWith("message-to-sign");
+            expect(mockApiClient.approveSignature).toHaveBeenCalledWith(
+                expect.any(String),
+                "sig-pending-1",
+                expect.objectContaining({
+                    approvals: [expect.objectContaining({ signer: SECOND_RECOVERY_LOCATOR })],
+                })
+            );
+            expect(wallet.signer).toBe(deviceSigner);
+            expect(wallet.signer?.status).toBe("success");
+        });
+
+        it("falls back to the selected recovery method when the provider rejects device signers", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: WALLET_ADDRESS,
+                    recovery: RECOVERY_METHODS,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+            await wallet.useRecoveryMethod(makeSecondRecovery());
+
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                message: "Device signers are not supported",
+            } as any);
+
+            await wallet.recover();
+
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({ approver: SECOND_RECOVERY_LOCATOR })
+            );
+            expect(mockStorage.deleteKey).toHaveBeenCalledWith(WALLET_ADDRESS);
+            expect(wallet.signer?.locator()).toBe(SECOND_RECOVERY_LOCATOR);
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+    });
+
     describe("findLocalDeviceSigner with pending op on matched signer that fails check", () => {
         it("falls through to new key generation when local signer is not approved and has no pending op", async () => {
             const mockStorage = createMockDeviceKeyStorage();

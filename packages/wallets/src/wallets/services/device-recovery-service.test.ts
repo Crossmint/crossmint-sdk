@@ -9,7 +9,7 @@ import {
     type SignerAdapter,
 } from "../../signers/types";
 import { createDeviceSigner } from "@/utils/device-signers";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { DeviceRecoveryService, type DeviceRecoveryServiceParams } from "./device-recovery-service";
 
 vi.mock("../../signers", async (importOriginal) => {
@@ -37,6 +37,7 @@ function pendingState(operationType: "signature" | "transaction", id: string) {
 
 function makeSignerManager(overrides: Record<string, unknown> = {}) {
     let active = overrides.activeSigner as SignerAdapter | undefined;
+    const recovery = overrides.recovery ?? { type: "api-key" };
     return {
         get activeSigner() {
             return active;
@@ -44,7 +45,8 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
         setActiveSigner: vi.fn((signer: SignerAdapter | undefined) => {
             active = signer;
         }),
-        recovery: overrides.recovery ?? { type: "api-key" },
+        resolveAuthorizingRecovery:
+            overrides.resolveAuthorizingRecovery ?? vi.fn(() => ({ recovery, approver: undefined })),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -233,6 +235,18 @@ describe("DeviceRecoveryService", () => {
             expect(service.needsRecovery).toBe(false);
             await service.recover();
             expect(addSigner).toHaveBeenCalledTimes(1);
+        });
+
+        it("leaves the wallet without a signer when the provider rejects device signers and no recovery method is selected", async () => {
+            const addSigner = vi.fn().mockRejectedValue(new DeviceSignerNotSupportedError("unsupported"));
+            const resolveAuthorizingRecovery = vi.fn(() => {
+                throw new RecoveryMethodRequiredError("select one");
+            });
+            const { service, signerManager } = setup({ addSigner, signerManager: { resolveAuthorizingRecovery } });
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(signerManager.assemble).not.toHaveBeenCalled();
+            expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
+            expect(service.needsRecovery).toBe(false);
         });
 
         it("swallows an already-approved error and reassembles the device signer", async () => {
