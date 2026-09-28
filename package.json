@@ -56,7 +56,7 @@
             "form-data@3": "3.0.4",
             "form-data@4": "4.0.6",
             "path-to-regexp@0": "0.1.13",
-            "react-native": "0.85.3",
+            "react-native": "0.86.3",
             "@types/react": "19.2.18",
             "@types/react-dom": "19.2.7",
             "pbkdf2": "3.1.3",
