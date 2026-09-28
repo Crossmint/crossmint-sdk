@@ -8,6 +8,7 @@
 REPO="Paella-Labs/best-practices"
 CACHE_FILE="$HOME/.claude/paella-best-practices-cache.md"
 CHECKED_FILE="$HOME/.claude/paella-best-practices-checked.txt"
+LEGACY_KEY_FILE="$HOME/.claude/paella-best-practices-sha.txt"
 mkdir -p "$HOME/.claude"
 
 if [ "$#" -eq 0 ]; then
@@ -16,8 +17,14 @@ fi
 FILES="$*"
 
 # The first line of the cache records "<sha> <files>", so the document and its key are replaced atomically.
+# Caches written by older versions of this script keep the key in a separate file instead.
 cached_key() {
-    [ -f "$CACHE_FILE" ] && sed -n '1s/^<!-- key: \(.*\) -->$/\1/p' "$CACHE_FILE"
+    [ -f "$CACHE_FILE" ] || return
+    if head -n 1 "$CACHE_FILE" | grep -q '^<!-- key: '; then
+        sed -n '1s/^<!-- key: \(.*\) -->$/\1/p' "$CACHE_FILE"
+    elif [ -f "$LEGACY_KEY_FILE" ]; then
+        cat "$LEGACY_KEY_FILE"
+    fi
 }
 
 cached_files() {
@@ -80,4 +87,5 @@ done
 
 cat "$TMP_FILE"
 mv "$TMP_FILE" "$CACHE_FILE"
+rm -f "$LEGACY_KEY_FILE"
 echo "$NOW" > "$CHECKED_FILE"
