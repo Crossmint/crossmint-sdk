@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Crossmint SDK — Persistent Memory
 
 ## Active Project: Test Suite Migration
