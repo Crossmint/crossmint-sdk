@@ -26,6 +26,9 @@ const mockedCreateDeviceSigner = vi.mocked(createDeviceSigner);
 
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
 const NULL_STATE = { response: null, signer: null, pendingOperation: null };
+// api-key needs no setup (no server secret, no onSign callback, no OTP), so tests reach the code under
+// test without tripping the recovery assembly guards. Tests that exercise a guard pass their own recovery.
+const DEFAULT_RECOVERY = { type: "api-key" };
 
 function makeSigner(type: string, locatorValue: string, status?: string): SignerAdapter {
     return { type, status, locator: () => locatorValue } as unknown as SignerAdapter;
@@ -37,7 +40,7 @@ function pendingState(operationType: "signature" | "transaction", id: string) {
 
 function makeSignerManager(overrides: Record<string, unknown> = {}) {
     let active = overrides.activeSigner as SignerAdapter | undefined;
-    const recovery = overrides.recovery ?? { type: "api-key" };
+    const recovery = overrides.recovery ?? DEFAULT_RECOVERY;
     return {
         get activeSigner() {
             return active;
