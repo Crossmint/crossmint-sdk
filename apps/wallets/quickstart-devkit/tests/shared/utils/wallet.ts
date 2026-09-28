@@ -1,15 +1,80 @@
 import type { Page } from "@playwright/test";
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { handleSignerConfirmation } from "./auth";
+import { recentPageDiagnostics } from "./page-diagnostics";
 import { AUTH_CONFIG } from "../constants/globalConstants";
 
+const FAUCET_SETTLEMENT_TIMEOUT_MS = 120000;
+const FAUCET_POLL_INTERVAL_MS = 2000;
+const SOLANA_RPC_URL = process.env.SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com";
+const SOLANA_USDXM_MINT = "z23BZbAiFRb6u5CBH64XjZPUud6dP6y2ZuKoYSM4LCY";
+
+interface SolanaTokenAccount {
+    account: {
+        data: {
+            parsed: {
+                info: {
+                    state: string;
+                    tokenAmount: { amount: string; decimals: number };
+                };
+            };
+        };
+    };
+}
+
+// The balances API reports a Solana transfer before the funds are spendable. Null means the RPC failed.
+async function readSolanaUsdxmBalance(walletAddress: string): Promise<number | null> {
+    const response = await fetch(SOLANA_RPC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "getTokenAccountsByOwner",
+            params: [walletAddress, { mint: SOLANA_USDXM_MINT }, { encoding: "jsonParsed" }],
+        }),
+    }).catch(() => null);
+
+    if (response == null || !response.ok) {
+        return null;
+    }
+
+    const body = (await response.json()) as { result?: { value: SolanaTokenAccount[] } };
+    if (body.result == null) {
+        return null;
+    }
+
+    return body.result.value
+        .map((entry) => entry.account.data.parsed.info)
+        .filter((info) => info.state === "initialized")
+        .reduce((total, info) => total + Number(info.tokenAmount.amount) / 10 ** info.tokenAmount.decimals, 0);
+}
+
+async function readTokenBalance(walletAddress: string, chainId: string, token: string): Promise<number> {
+    const url = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances?tokens=${token}&chains=${chainId}`;
+    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintApiKey } });
+    if (!response.ok) {
+        return 0;
+    }
+    const balances = (await response.json()) as Array<{
+        token: string;
+        decimals: number;
+        balances: { total: string };
+    }>;
+    const entry = balances.find((balance) => balance.token === token);
+    if (entry == null) {
+        return 0;
+    }
+    return Number(entry.balances.total) / 10 ** entry.decimals;
+}
+
 /**
- * Funds a wallet using the Crossmint faucet API
+ * Funds a wallet using the Crossmint faucet API, then waits until the funds are
+ * spendable: the faucet responds before the transfer settles.
  * @param walletAddress - The wallet address to fund
  * @param chainId - The chain ID (e.g., "base-sepolia", "solana", "stellar")
  * @param amount - The amount to fund (default: 10, maximum allowed)
  * @param token - The token to fund (default: "usdxm")
- * @returns Promise that resolves when funding is complete
+ * @returns Promise that resolves once the funds are spendable
  */
 export async function fundWalletWithCrossmintFaucet(
     walletAddress: string,
@@ -41,65 +106,30 @@ export async function fundWalletWithCrossmintFaucet(
         }
 
         await response.json();
-        console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
     } catch (error) {
         console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
         throw error;
     }
-}
 
-const SOLANA_DEVNET_RPC_URL = process.env.SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com";
-// Minimum SOL needed to pay transfer fees + recipient ATA rent (~0.002 SOL).
-const MIN_SOL_FOR_FEES = 0.003;
-// Airdrop the maximum the devnet faucet allows, falling back to smaller amounts
-// (the per-request cap varies; large requests can fail with "Internal error").
-// Since test wallets are reused across runs, a single successful airdrop keeps
-// the wallet funded for thousands of transfers.
-const AIRDROP_AMOUNTS_SOL = [5, 2, 1, 0.1];
-
-/**
- * Ensures the wallet holds native SOL so it can pay transaction fees.
- * The Crossmint faucet only funds USDXM; without SOL the transfer tx is submitted
- * but never confirmed (silent on-chain failure due to insufficient fee balance).
- *
- * Skips the airdrop entirely when the (reused) wallet is already funded, so the
- * heavily rate-limited devnet faucet is only hit when strictly necessary.
- */
-export async function fundWalletWithSolAirdrop(walletAddress: string): Promise<void> {
-    const connection = new Connection(SOLANA_DEVNET_RPC_URL, "confirmed");
-    const publicKey = new PublicKey(walletAddress);
-
-    const balanceSol = (await connection.getBalance(publicKey)) / LAMPORTS_PER_SOL;
-    if (balanceSol >= MIN_SOL_FOR_FEES) {
-        console.log(`✅ Wallet ${walletAddress} already holds ${balanceSol} SOL, skipping airdrop`);
-        return;
-    }
-
-    let lastError: unknown;
-    for (const amountSol of AIRDROP_AMOUNTS_SOL) {
-        console.log(`💰 Requesting SOL airdrop for ${walletAddress} (${amountSol} SOL)...`);
-        try {
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            const signature = await connection.requestAirdrop(publicKey, amountSol * LAMPORTS_PER_SOL);
-            await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
-            console.log(`✅ SOL airdrop of ${amountSol} SOL confirmed for ${walletAddress}`);
+    const readsChain = chainId === "solana" && token === "usdxm";
+    const deadline = Date.now() + FAUCET_SETTLEMENT_TIMEOUT_MS;
+    let observed: number | null = 0;
+    while (Date.now() < deadline) {
+        observed = readsChain
+            ? await readSolanaUsdxmBalance(walletAddress)
+            : await readTokenBalance(walletAddress, chainId, token);
+        if (observed != null && observed >= amount) {
+            console.log(`✅ Funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
             return;
-        } catch (error) {
-            lastError = error;
-            console.warn(`⚠️ Airdrop of ${amountSol} SOL failed for ${walletAddress}:`, error);
         }
+        await new Promise((resolve) => setTimeout(resolve, FAUCET_POLL_INTERVAL_MS));
     }
 
-    // Re-check the balance: an airdrop may have landed on-chain even if its
-    // confirmation timed out, in which case the wallet is funded and we can proceed.
-    const finalBalanceSol = (await connection.getBalance(publicKey)) / LAMPORTS_PER_SOL;
-    if (finalBalanceSol >= MIN_SOL_FOR_FEES) {
-        console.log(`✅ Wallet ${walletAddress} holds ${finalBalanceSol} SOL despite airdrop errors, continuing`);
-        return;
-    }
-
-    console.error(`❌ All airdrop attempts failed for ${walletAddress} (balance: ${finalBalanceSol} SOL)`);
-    throw lastError;
+    throw new Error(
+        `Faucet sent ${amount} ${token} to ${walletAddress} on ${chainId} but ` +
+            `${readsChain ? `the Solana RPC ${SOLANA_RPC_URL}` : "the balance API"} still reports ` +
+            `${observed ?? "an unreadable balance"} after ${FAUCET_SETTLEMENT_TIMEOUT_MS / 1000}s.`
+    );
 }
 
 export async function getWalletAddress(page: Page): Promise<string> {
@@ -284,22 +314,30 @@ export async function transferFunds(
                 timeout: 120000, // 2 minutes for transaction to complete
             });
         } catch (error) {
+            const diagnostics = recentPageDiagnostics(page);
+
             // If success link doesn't appear, check for error messages
-            const errorMessage = page.locator("text=/error/i, text=/failed/i").first();
-            const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false);
+            const errorMessage = page.getByText(/error|failed|insufficient|limit/i).first();
+            // isVisible ignores its timeout, so an error still rendering would read as absent.
+            const hasError = await errorMessage
+                .waitFor({ state: "visible", timeout: 2000 })
+                .then(() => true)
+                .catch(() => false);
 
             if (hasError) {
                 const errorText = await errorMessage.textContent();
-                throw new Error(`Transaction failed: ${errorText}`);
+                throw new Error(`Transaction failed: ${errorText}${diagnostics}`);
             }
 
             // Check if transfer button is still enabled (transaction might not have started)
             const isButtonEnabled = await transferButton.isEnabled().catch(() => false);
             if (isButtonEnabled) {
-                throw new Error("Transaction did not start - transfer button is still enabled");
+                throw new Error(`Transaction did not start - transfer button is still enabled.${diagnostics}`);
             }
 
-            throw new Error(`Transaction timeout: Success link did not appear within 2 minutes. ${error}`);
+            throw new Error(
+                `Transaction timeout: Success link did not appear within 2 minutes. ${error}${diagnostics}`
+            );
         }
 
         console.log(`✅ Transfer of ${amount} completed successfully`);

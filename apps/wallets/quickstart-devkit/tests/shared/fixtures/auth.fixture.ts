@@ -1,12 +1,37 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { test as base, expect } from "@playwright/test";
 import type { Page, BrowserContext } from "@playwright/test";
 import { getEmailForSigner, buildTestUrl, validateUITestConfig } from "../constants/globalConstants";
 import type { SignerType, TestConfiguration } from "../constants/globalConstants";
-import { performEmailOTPLogin, waitForWalletReady } from "../utils";
+import { attachPageDiagnostics, performEmailOTPLogin, waitForWalletReady } from "../utils";
 
 validateUITestConfig();
 // Cache for authenticated pages per configuration to prevent multiple authentications
 const authenticatedPageCache = new Map<string, { page: Page; context: BrowserContext }>();
+
+// On disk, not in memory: Playwright starts a fresh worker after every failed test.
+// Its parent is the output directory, which Playwright empties when a run starts.
+function failureMarkerPath(cacheKey: string, outputDir: string, retry: number): string {
+    return join(dirname(outputDir), ".auth-failures", `${cacheKey}-attempt${retry}.txt`);
+}
+
+function readAuthenticationFailure(path: string): string | null {
+    try {
+        return readFileSync(path, "utf8");
+    } catch (_) {
+        return null;
+    }
+}
+
+function recordAuthenticationFailure(path: string, error: unknown): void {
+    try {
+        mkdirSync(dirname(path), { recursive: true });
+        writeFileSync(path, error instanceof Error ? error.stack ?? error.message : String(error));
+    } catch (_) {
+        // A marker that cannot be written only costs time.
+    }
+}
 
 type AuthFixtures = {
     testConfig: TestConfiguration;
@@ -19,7 +44,7 @@ export const test = base.extend<AuthFixtures>({
         { option: true },
     ],
 
-    authenticatedPage: async ({ browser, testConfig }, use) => {
+    authenticatedPage: async ({ browser, testConfig }, use, testInfo) => {
         const cacheKey = `${testConfig.provider}-${testConfig.chain}-${testConfig.signer}-${testConfig.chainId}`;
 
         const cached = authenticatedPageCache.get(cacheKey);
@@ -29,6 +54,13 @@ export const test = base.extend<AuthFixtures>({
             return;
         }
 
+        const markerPath = failureMarkerPath(cacheKey, testInfo.outputDir, testInfo.retry);
+        const previousFailure = readAuthenticationFailure(markerPath);
+        if (previousFailure != null) {
+            console.log(`⛔ Authentication already failed for ${cacheKey}, reporting the first error`);
+            throw new Error(previousFailure);
+        }
+
         console.log(`🚀 Creating NEW authenticated session for ${cacheKey}`);
 
         const context = await browser.newContext({
@@ -36,24 +68,29 @@ export const test = base.extend<AuthFixtures>({
         });
 
         const page = await context.newPage();
+        attachPageDiagnostics(page);
 
-        const url = buildTestUrl(testConfig);
-        console.log(`🌐 Navigating to: ${url}`);
-        await page.goto(url);
+        try {
+            const url = buildTestUrl(testConfig);
+            console.log(`🌐 Navigating to: ${url}`);
+            await page.goto(url);
 
-        await page.waitForTimeout(4000);
+            await page.waitForTimeout(4000);
 
-        const loginButtonIsVisible = await page.locator('button:has-text("Connect wallet")').first().isVisible();
-        if (!loginButtonIsVisible) {
-            console.log("✅ Already logged in, skipping login");
-        } else {
-            // Perform email OTP login - this will only happen ONCE per configuration
-            const email = getEmailForSigner(testConfig.signer as SignerType);
-            await performEmailOTPLogin(page, email);
+            const loginButtonIsVisible = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+            if (!loginButtonIsVisible) {
+                console.log("✅ Already logged in, skipping login");
+            } else {
+                const email = getEmailForSigner(testConfig.signer as SignerType);
+                await performEmailOTPLogin(page, email);
+            }
+
+            await waitForWalletReady(page);
+        } catch (error) {
+            recordAuthenticationFailure(markerPath, error);
+            await context.close().catch(() => undefined);
+            throw error;
         }
-
-        // Wait for wallet to be created and ready
-        await waitForWalletReady(page);
 
         // Cache this authenticated session for reuse
         authenticatedPageCache.set(cacheKey, { page, context });
