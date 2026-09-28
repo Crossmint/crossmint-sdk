@@ -5,7 +5,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "./scripts/fetch-best-practices.sh core.md typescript.md"
+                        "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/fetch-best-practices.sh core.md typescript.md"
                     }
                 ]
             }

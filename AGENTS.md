@@ -11,7 +11,8 @@ At session start, run `./scripts/fetch-best-practices.sh core.md typescript.md`,
 ```bash
 pnpm install
 pnpm build:libs    # build all packages
-pnpm test:vitest   # run unit tests
+pnpm test:vitest   # run unit tests (packages with a test:vitest script)
+pnpm --filter @crossmint/common-sdk-auth test   # this package only defines `test`
 pnpm lint          # biome check
 pnpm lint:fix
 ```
@@ -20,4 +21,4 @@ pnpm lint:fix
 
 - Test file names, BDD structure, tags and folder layout follow `test-conventions.md` (repo root).
 - The E2E-first testing policy in the fetched best-practices doc applies to new code; existing test suites stay.
-- Default E2E artifact: the Playwright HTML report plus trace/video from the `test-conventions.md` POM tests, extended with a recorded E2E run against the staging sandbox.
+- Default E2E artifact: the Playwright report from the `apps/wallets/quickstart-devkit` POM tests (HTML locally, `test-results/playwright-results.json` in CI; traces are kept on retry and video on failure), extended with a recorded E2E run against the staging sandbox.

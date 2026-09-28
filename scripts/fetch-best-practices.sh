@@ -57,7 +57,7 @@ if [ "$(cached_key)" = "$LATEST_SHA $FILES" ]; then
     serve_cache
 fi
 
-TMP_FILE=$(mktemp "$HOME/.claude/paella-best-practices.XXXXXX")
+TMP_FILE=$(mktemp "$HOME/.claude/paella-best-practices.XXXXXX") || serve_cache
 ERR_FILE="$TMP_FILE.err"
 trap 'rm -f "$TMP_FILE" "$ERR_FILE"' EXIT
 {
@@ -69,7 +69,7 @@ trap 'rm -f "$TMP_FILE" "$ERR_FILE"' EXIT
     echo ""
     echo "When generating any content, such as code, documentation, PRs, plans, design documents, or other outputs, ensure it adheres to the following best practices."
     echo ""
-} > "$TMP_FILE"
+} > "$TMP_FILE" || serve_cache
 
 for file in "$@"; do
     if content=$(gh api "repos/$REPO/contents/$file?ref=$LATEST_SHA" -H "Accept: application/vnd.github.raw" 2>"$ERR_FILE"); then
@@ -78,7 +78,7 @@ for file in "$@"; do
             echo ""
             printf '%s\n' "$content" | sed -E 's/^(#+)/\1##/'
             echo ""
-        } >> "$TMP_FILE"
+        } >> "$TMP_FILE" || serve_cache
     elif ! grep -q "HTTP 404" "$ERR_FILE"; then
         # Any failure other than a missing file keeps the previous cache so the next run retries.
         serve_cache
