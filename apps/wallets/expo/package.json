@@ -6,7 +6,8 @@
     "scripts": {
         "ios": "npx expo run:ios",
         "android": "npx expo run:android",
-        "start": "npx expo start"
+        "start": "npx expo start",
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
