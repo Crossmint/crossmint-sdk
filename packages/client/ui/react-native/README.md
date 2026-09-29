@@ -33,7 +33,7 @@ npx expo install expo-build-properties
 }
 ```
 
-Then run `npx expo prebuild --clean`. The Crossmint config plugin works with scene support in either plugin order.
+Then regenerate the native project. If your app generates `ios/` and `android/` (continuous native generation), run `npx expo prebuild --clean`. If you maintain those folders by hand, `--clean` deletes your changes; apply the scene lifecycle changes to your own AppDelegate and Info.plist instead, as described in [Expo's iOS scene lifecycle guide](https://expo.fyi/ios-scene-lifecycle). The Crossmint config plugin works with scene support in either plugin order.
 
 ## Quick Start
 
