@@ -3,7 +3,7 @@
 # compiles in a clean Expo app of a given SDK, the way a customer app uses it.
 #
 # Usage: scripts/verify-expo-compat.sh <expo-sdk-major> [ios|android|all] [work-dir]
-#   e.g. DEVELOPER_DIR=/Applications/Xcode-26.3.0.app/Contents/Developer scripts/verify-expo-compat.sh 54 ios
+#   e.g. DEVELOPER_DIR=/Applications/Xcode-26.6.0.app/Contents/Developer scripts/verify-expo-compat.sh 57 ios
 #
 # Steps:
 #   1. Build and `pnpm pack` this package and its workspace dependencies.
