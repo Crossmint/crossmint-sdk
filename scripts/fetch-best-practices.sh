@@ -26,21 +26,27 @@ cache_matches() {
     [ "$(cached_key | cut -d' ' -f2-)" = "$STACKS" ]
 }
 
-# The previous fetcher cached every .md file of one commit, so its cache holds everything a fetch of
-# that commit would return, for any stack list.
-legacy_cache_matches() {
-    [ -f "$LEGACY_CACHE_FILE" ] || return 1
-    head -n 1 "$LEGACY_CACHE_FILE" | grep -qF "$LEGACY_HEADER"
+legacy_missing_stacks() {
+    for stack in $STACKS; do
+        grep -qxF "## $stack" "$LEGACY_CACHE_FILE" || printf ' %s' "$stack"
+    done
 }
 
+# The previous fetcher cached every .md file of one commit. Without the requested stacks it is still
+# printed, but the exit status reports the gap.
 serve_cache() {
     if cache_matches; then
         cat "$CACHE_FILE"
         exit 0
     fi
-    if legacy_cache_matches; then
-        echo "fetch-best-practices: could not refresh from $REPO; serving the previous fetcher's cache at $LEGACY_CACHE_FILE" >&2
+    if [ -f "$LEGACY_CACHE_FILE" ] && head -n 1 "$LEGACY_CACHE_FILE" | grep -qF "$LEGACY_HEADER"; then
         cat "$LEGACY_CACHE_FILE"
+        missing=$(legacy_missing_stacks)
+        if [ -n "$missing" ]; then
+            echo "fetch-best-practices: could not refresh from $REPO; printed the previous fetcher's cache at $LEGACY_CACHE_FILE, which lacks:$missing" >&2
+            exit 1
+        fi
+        echo "fetch-best-practices: could not refresh from $REPO; printed the previous fetcher's cache at $LEGACY_CACHE_FILE" >&2
         exit 0
     fi
     echo "fetch-best-practices: could not fetch best practices${STACKS:+ with $STACKS} from $REPO and no cached copy for that stack list exists" >&2
@@ -103,16 +109,14 @@ append_file() {
     } >> "$TMP_FILE"
 }
 
-FETCHED=" "
 while IFS= read -r file; do
     [ -n "$file" ] || continue
     content=$(fetch_file "$file") || serve_cache
     append_file "$file" "$content" || serve_cache
-    FETCHED="$FETCHED$file "
 done <<< "$FILES"
 
 for file in "$@"; do
-    case "$FETCHED" in *" $file "*) continue ;; esac
+    printf '%s\n' "$FILES" | grep -qxF -- "$file" && continue
     if content=$(fetch_file "$file"); then
         append_file "$file" "$content" || serve_cache
     elif ! grep -q "HTTP 404" "$ERR_FILE"; then
