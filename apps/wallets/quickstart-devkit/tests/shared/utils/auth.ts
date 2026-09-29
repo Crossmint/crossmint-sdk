@@ -19,22 +19,48 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         await emailInput.waitFor({ timeout: 10000 });
         await emailInput.fill(email);
 
-        const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
-        await submitButton.click();
+        // The OTP-send endpoint enforces a rate limit ("Too many OTP requests, please
+        // retry later") that a chain-specific test-body failure (unrelated to auth) can
+        // drive straight into: a slow/stuck wallet load fails the test, Playwright retries
+        // with a fresh worker, and the retry needs a brand-new OTP send. One retry here,
+        // backing off long enough for the window to clear, converts that into a slower
+        // pass instead of a failure that reports the wrong symptom (429) for the real one.
+        const RATE_LIMIT_BACKOFF_MS = 65_000;
+        let otpSent = false;
+        let reasonText: string | null = null;
+        for (let attempt = 0; attempt < 2 && !otpSent; attempt++) {
+            if (attempt > 0) {
+                console.log(
+                    `⏳ Rate-limited on the previous OTP send — waiting ${RATE_LIMIT_BACKOFF_MS}ms before retrying`
+                );
+                await page.waitForTimeout(RATE_LIMIT_BACKOFF_MS);
+            }
 
-        console.log("⏳ Waiting for email confirmation message...");
-        const otpSent = await page
-            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
-            .first()
-            .waitFor({ timeout: 60000, state: "visible" })
-            .then(() => true)
-            .catch(() => false);
+            const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
+            await submitButton.click();
+
+            console.log("⏳ Waiting for email confirmation message...");
+            otpSent = await page
+                .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+                .first()
+                .waitFor({ timeout: 60000, state: "visible" })
+                .then(() => true)
+                .catch(() => false);
+
+            if (!otpSent) {
+                const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
+                reasonText = await reason
+                    .waitFor({ state: "visible", timeout: 2000 })
+                    .then(() => reason.textContent())
+                    .catch(() => null);
+                // Only a rate limit is worth retrying — any other reason (a genuine send
+                // failure, an unrelated error) is the real result and should propagate now.
+                if (!reasonText || !/too many|rate limit/i.test(reasonText)) {
+                    break;
+                }
+            }
+        }
         if (!otpSent) {
-            const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
-            const reasonText = await reason
-                .waitFor({ state: "visible", timeout: 2000 })
-                .then(() => reason.textContent())
-                .catch(() => null);
             throw new Error(
                 `The login OTP was never sent to ${email}. ` +
                     `${reasonText != null ? `The page reported: "${reasonText.trim()}".` : "The page gave no reason."}` +
