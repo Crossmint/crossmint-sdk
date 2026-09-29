@@ -53,6 +53,9 @@ for (const file of fs.readdirSync(tarballDir).filter((f) => f.endsWith(".tgz")))
 }
 pkg.overrides = { ...pkg.overrides, ...overrides };
 pkg.dependencies = { ...pkg.dependencies, [packageName]: overrides[packageName] };
+// The React Native Directory check needs a remote service that fails now and then; this app
+// only needs expo-doctor's local checks (duplicate native modules, peer versions, config).
+pkg.expo = { ...pkg.expo, doctor: { reactNativeDirectoryCheck: { enabled: false } } };
 fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 
 const appJsonPath = path.join(appDir, "app.json");
