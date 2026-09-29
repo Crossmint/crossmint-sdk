@@ -82,6 +82,19 @@ export async function waitForWalletReady(page: Page): Promise<void> {
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
         await page.waitForTimeout(1000);
 
+        // The spinner also disappears when the wallet fails to load without throwing: the
+        // page falls back to the login screen instead of rendering the wallet. Catching that
+        // here fails in ~11s with the real symptom, instead of a downstream test timing out
+        // 60s later while waiting for a wallet address that was never going to appear.
+        const backOnLoginScreen = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+        if (backOnLoginScreen) {
+            throw new Error(
+                "The loading spinner cleared but the page landed back on the login screen instead of the " +
+                    "wallet — the wallet failed to load or create without surfacing an error." +
+                    recentPageDiagnostics(page)
+            );
+        }
+
         console.log("✅ Wallet is ready");
     } catch (error) {
         console.error("❌ Wallet failed to load:", error);
