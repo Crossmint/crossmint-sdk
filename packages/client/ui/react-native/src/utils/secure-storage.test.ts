@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { SecureStorage } from "./SecureStorage";
 
@@ -22,12 +22,17 @@ const FUTURE = "2999-01-01T00:00:00.000Z";
 
 describe("SecureStorage", () => {
     let storage: SecureStorage;
+    let consoleError: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         store.clear();
         vi.clearAllMocks();
-        vi.spyOn(console, "error").mockImplementation(() => {});
+        consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
         storage = new SecureStorage();
+    });
+
+    afterEach(() => {
+        consoleError.mockRestore();
     });
 
     describe("when a value is stored without an expiry", () => {
@@ -77,18 +82,21 @@ describe("SecureStorage", () => {
             vi.mocked(SecureStore.getItemAsync).mockRejectedValueOnce(new Error("keychain locked"));
 
             expect(await storage.get(KEY)).toBeUndefined();
+            expect(consoleError).toHaveBeenCalledWith("Error reading from SecureStore:", expect.any(Error));
         });
 
         test("set does not throw", async () => {
             vi.mocked(SecureStore.setItemAsync).mockRejectedValueOnce(new Error("keychain locked"));
 
             await expect(storage.set(KEY, "token")).resolves.toBeUndefined();
+            expect(consoleError).toHaveBeenCalledWith("Error writing to SecureStore:", expect.any(Error));
         });
 
         test("remove does not throw", async () => {
             vi.mocked(SecureStore.deleteItemAsync).mockRejectedValueOnce(new Error("keychain locked"));
 
             await expect(storage.remove(KEY)).resolves.toBeUndefined();
+            expect(consoleError).toHaveBeenCalledWith("Error removing from SecureStore:", expect.any(Error));
         });
 
         test("isAvailable returns false", async () => {
