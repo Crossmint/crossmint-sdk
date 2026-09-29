@@ -60,24 +60,54 @@ describe("NativeDeviceSignerKeyStorage", () => {
         });
     });
 
+    const SIGNATURE = { r: `0x${"1".repeat(64)}`, s: `0x${"2".repeat(64)}` };
+
     test.each([
-        { method: "generateKey", call: (s: any) => s.generateKey({ address: ADDRESS }), args: [ADDRESS] },
+        {
+            method: "generateKey",
+            call: (s: any) => s.generateKey({ address: ADDRESS }),
+            args: [ADDRESS],
+            result: PUBLIC_KEY,
+        },
         {
             method: "mapAddressToKey",
             call: (s: any) => s.mapAddressToKey(ADDRESS, PUBLIC_KEY),
             args: [ADDRESS, PUBLIC_KEY],
+            result: undefined,
         },
-        { method: "getKey", call: (s: any) => s.getKey(ADDRESS), args: [ADDRESS] },
-        { method: "hasKey", call: (s: any) => s.hasKey(PUBLIC_KEY), args: [PUBLIC_KEY] },
-        { method: "signMessage", call: (s: any) => s.signMessage(ADDRESS, "aGVsbG8="), args: [ADDRESS, "aGVsbG8="] },
-        { method: "deleteKey", call: (s: any) => s.deleteKey(ADDRESS), args: [ADDRESS] },
-        { method: "deletePendingKey", call: (s: any) => s.deletePendingKey(PUBLIC_KEY), args: [PUBLIC_KEY] },
-    ] as const)("forwards $method to the native module", async ({ method, call, args }) => {
-        const storage = await loadStorage();
-        nativeModule[method].mockResolvedValue("result");
+        { method: "getKey", call: (s: any) => s.getKey(ADDRESS), args: [ADDRESS], result: PUBLIC_KEY },
+        { method: "hasKey", call: (s: any) => s.hasKey(PUBLIC_KEY), args: [PUBLIC_KEY], result: true },
+        {
+            method: "signMessage",
+            call: (s: any) => s.signMessage(ADDRESS, "aGVsbG8="),
+            args: [ADDRESS, "aGVsbG8="],
+            result: SIGNATURE,
+        },
+        { method: "deleteKey", call: (s: any) => s.deleteKey(ADDRESS), args: [ADDRESS], result: undefined },
+        {
+            method: "deletePendingKey",
+            call: (s: any) => s.deletePendingKey(PUBLIC_KEY),
+            args: [PUBLIC_KEY],
+            result: undefined,
+        },
+    ] as const)(
+        "forwards $method to the native module and returns its result",
+        async ({ method, call, args, result }) => {
+            const storage = await loadStorage();
+            nativeModule[method].mockResolvedValue(result);
 
-        expect(await call(storage)).toBe("result");
-        expect(nativeModule[method]).toHaveBeenCalledWith(...args);
+            expect(await call(storage)).toEqual(result);
+            expect(nativeModule[method]).toHaveBeenCalledWith(...args);
+        }
+    );
+
+    describe("when no key is mapped to the address", () => {
+        test("getKey returns null", async () => {
+            const storage = await loadStorage();
+            nativeModule.getKey.mockResolvedValue(null);
+
+            expect(await storage.getKey(ADDRESS)).toBeNull();
+        });
     });
 
     describe("when the native module is missing", () => {
