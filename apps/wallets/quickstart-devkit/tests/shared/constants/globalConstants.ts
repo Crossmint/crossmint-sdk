@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
@@ -91,9 +93,21 @@ export function getEmailForSigner(signerType: SignerType): string {
 
 // Deterministic alias for Stellar wallets, derived from the same suffix as the email.
 // Same email + same alias = the same Stellar wallet is fetched on every run.
+//
+// The API caps a wallet alias at 36 characters. WALLET_EMAIL_SUFFIX is short by
+// default ("e2e") but CI sets TESTS_WALLET_EMAIL_SUFFIX to
+// `e2e-${matrix.browser}-${github.run_id}`, which alone can run past 30
+// characters — concatenated with a human-readable prefix this always exceeded
+// the cap in CI (never locally, which is why it went unnoticed): every
+// alias-scoped Stellar test failed outright with a 400
+// "Wallet alias cannot be longer than 36 characters", masked for a while
+// behind an unrelated OTP-rate-limit failure downstream. Hashing the suffix
+// keeps the alias deterministic (same input, same short output) while
+// guaranteeing it fits regardless of how long the input ever gets.
 export function getStellarAlias(signerType: SignerType): string {
     const sanitizedSuffix = WALLET_EMAIL_SUFFIX.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return `stellartestingwallet${signerType}${sanitizedSuffix}`;
+    const suffixHash = createHash("sha256").update(sanitizedSuffix).digest("hex").slice(0, 12);
+    return `e2e${signerType}${suffixHash}`;
 }
 
 // Build URL with query parameters for testing
