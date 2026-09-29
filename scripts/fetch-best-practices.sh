@@ -26,14 +26,11 @@ cache_matches() {
     [ "$(cached_key | cut -d' ' -f2-)" = "$STACKS" ]
 }
 
-# The previous fetcher cached every .md file of one commit, so its cache is complete for that
-# commit; it is only usable when it also holds every requested stack file.
+# The previous fetcher cached every .md file of one commit, so its cache holds everything a fetch of
+# that commit would return, for any stack list.
 legacy_cache_matches() {
     [ -f "$LEGACY_CACHE_FILE" ] || return 1
-    head -n 1 "$LEGACY_CACHE_FILE" | grep -qF "$LEGACY_HEADER" || return 1
-    for stack in $STACKS; do
-        grep -qxF "## $stack" "$LEGACY_CACHE_FILE" || return 1
-    done
+    head -n 1 "$LEGACY_CACHE_FILE" | grep -qF "$LEGACY_HEADER"
 }
 
 serve_cache() {
@@ -76,13 +73,6 @@ fetch_file() {
     gh api "repos/$REPO/contents/$1?ref=$LATEST_SHA" -H "Accept: application/vnd.github.raw" 2>"$ERR_FILE"
 }
 
-is_stack() {
-    for stack in $STACKS; do
-        [ "$stack" = "$1" ] && return 0
-    done
-    return 1
-}
-
 if MANIFEST=$(fetch_file manifest.txt); then
     FILES=$(printf '%s\n' "$MANIFEST" | grep -Ev '^[[:space:]]*(#|$)')
 elif grep -q "HTTP 404" "$ERR_FILE"; then
@@ -113,14 +103,16 @@ append_file() {
     } >> "$TMP_FILE"
 }
 
+FETCHED=" "
 while IFS= read -r file; do
     [ -n "$file" ] || continue
-    is_stack "$file" && continue
     content=$(fetch_file "$file") || serve_cache
     append_file "$file" "$content" || serve_cache
+    FETCHED="$FETCHED$file "
 done <<< "$FILES"
 
 for file in "$@"; do
+    case "$FETCHED" in *" $file "*) continue ;; esac
     if content=$(fetch_file "$file"); then
         append_file "$file" "$content" || serve_cache
     elif ! grep -q "HTTP 404" "$ERR_FILE"; then
