@@ -1,6 +1,7 @@
 import { type ConfigPlugin, withDangerousMod } from "expo/config-plugins";
 import path from "path";
 import fs from "fs";
+import { LEGACY_PODFILE_INJECTION, LEGACY_PREBUILT_FIX_MARKER } from "./legacyPodfileInjection";
 
 // Applies an iOS Podfile workaround required by @crossmint/client-sdk-react-native-ui's
 // embedded native device signer module (CrossmintDeviceSigner): a simulator arch fix.
@@ -11,6 +12,13 @@ export const withDeviceSigner: ConfigPlugin = (config) => {
         async (config) => {
             const podfilePath = path.join(config.modRequest.platformProjectRoot, "Podfile");
             let podfile = fs.readFileSync(podfilePath, "utf8");
+
+            // Remove what the previous plugin version wrote, if the app did not regenerate its Podfile.
+            podfile = podfile
+                .split("\n")
+                .filter((line) => !line.includes(LEGACY_PREBUILT_FIX_MARKER))
+                .join("\n")
+                .replace(LEGACY_PODFILE_INJECTION, "");
 
             // Inject into the existing post_install block.
             // CocoaPods only allows one post_install block; we must inject into it.

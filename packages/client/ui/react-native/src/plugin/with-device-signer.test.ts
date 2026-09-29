@@ -76,6 +76,20 @@ describe("withDeviceSigner", () => {
         });
     });
 
+    describe("when the Podfile was written by the previous plugin version", () => {
+        test("replaces the old injection with the current one", async () => {
+            const legacy = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-57", "Podfile.legacy-plugin"), "utf8");
+            const template = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-57", "Podfile"), "utf8");
+
+            const podfile = await runPodfileMod(legacy);
+
+            expect(legacy).toContain("CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("CrossmintExpoFixes.pch");
+            expect(podfile).toBe(await runPodfileMod(template));
+        });
+    });
+
     describe("when the Podfile has no post_install block", () => {
         test("throws a descriptive error", async () => {
             await expect(runPodfileMod("platform :ios, '15.1'\ntarget 'App' do\nend\n")).rejects.toThrow(
