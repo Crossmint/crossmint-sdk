@@ -8,7 +8,7 @@
             "outputs": ["dist/**"]
         },
         "test:vitest": {
-            "inputs": ["src/**", "vitest.config.ts"]
+            "inputs": ["src/**", "test/**", "vitest.config.ts"]
         }
     }
 }
