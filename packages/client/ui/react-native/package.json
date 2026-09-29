@@ -54,15 +54,15 @@
     },
     "peerDependencies": {
         "@solana/web3.js": "^1.98.1",
-        "expo": ">=54.0.0",
-        "expo-constants": "^18.0.9 || >=55.0.0",
-        "expo-device": "^8.0.9 || >=55.0.0",
-        "expo-secure-store": "^15.0.7 || >=55.0.0",
-        "expo-web-browser": "^15.0.8 || >=55.0.0",
+        "expo": "^57.0.0",
+        "expo-constants": "^57.0.0",
+        "expo-device": "^57.0.0",
+        "expo-secure-store": "^57.0.0",
+        "expo-web-browser": "^57.0.0",
         "react": ">=17.0.2",
         "react-native": ">=0.74.3",
-        "react-native-get-random-values": ">=1.11.0 <3",
-        "react-native-svg": ">=15.12.1 <16",
-        "react-native-webview": ">=13.15.0 <15"
+        "react-native-get-random-values": "^1.11.0",
+        "react-native-svg": "^15.15.4",
+        "react-native-webview": "^13.16.1"
     }
 }
