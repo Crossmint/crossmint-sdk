@@ -2,7 +2,7 @@ import { act, render, waitFor } from "@testing-library/react";
 import type React from "react";
 import { useContext } from "react";
 import * as WebBrowser from "expo-web-browser";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { AuthContext, CrossmintAuthProvider } from "./CrossmintAuthProvider";
 
@@ -77,6 +77,10 @@ describe("CrossmintAuthProvider", () => {
         crossmintAuth.handleRefreshAuthMaterial.mockResolvedValue({ jwt: "jwt" });
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     test("prefetches the OAuth URLs with the app schema", async () => {
         renderProvider();
 
@@ -130,15 +134,23 @@ describe("CrossmintAuthProvider", () => {
     });
 
     describe("loginWithOAuth on Android", () => {
-        test("opens the browser and waits for the deep link", async () => {
+        test("opens the OAuth URL in the browser, and the app completes the session from the redirect URL", async () => {
             platform.OS = "android";
             const context = renderProvider();
             await waitFor(() => expect(crossmintAuth.getOAuthUrl).toHaveBeenCalledTimes(2));
 
             await act(() => context.current?.loginWithOAuth("google"));
 
-            expect(WebBrowser.openBrowserAsync).toHaveBeenCalled();
+            const openedUrl = new URL(vi.mocked(WebBrowser.openBrowserAsync).mock.calls[0][0]);
+            expect(openedUrl.origin + openedUrl.pathname).toBe("https://staging.crossmint.com/oauth/google");
+            expect(openedUrl.searchParams.get("provider_prompt")).toBe("select_account");
             expect(WebBrowser.openAuthSessionAsync).not.toHaveBeenCalled();
+            expect(crossmintAuth.handleRefreshAuthMaterial).not.toHaveBeenCalled();
+
+            // Android returns to the app through the deep link, which the app hands to createAuthSession.
+            await act(() => context.current?.createAuthSession(REDIRECT_URL));
+
+            expect(crossmintAuth.handleRefreshAuthMaterial).toHaveBeenCalledWith("secret/value");
         });
     });
 
