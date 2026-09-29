@@ -19,12 +19,7 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         await emailInput.waitFor({ timeout: 10000 });
         await emailInput.fill(email);
 
-        // The OTP-send endpoint enforces a rate limit ("Too many OTP requests, please
-        // retry later") that a chain-specific test-body failure (unrelated to auth) can
-        // drive straight into: a slow/stuck wallet load fails the test, Playwright retries
-        // with a fresh worker, and the retry needs a brand-new OTP send. One retry here,
-        // backing off long enough for the window to clear, converts that into a slower
-        // pass instead of a failure that reports the wrong symptom (429) for the real one.
+        // A retry can hit the OTP send-rate limit; back off once and resend.
         const RATE_LIMIT_BACKOFF_MS = 65_000;
         let otpSent = false;
         let reasonText: string | null = null;
@@ -53,8 +48,7 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
                     .waitFor({ state: "visible", timeout: 2000 })
                     .then(() => reason.textContent())
                     .catch(() => null);
-                // Only a rate limit is worth retrying — any other reason (a genuine send
-                // failure, an unrelated error) is the real result and should propagate now.
+                // Only retry on a rate limit — any other reason is the real result.
                 if (!reasonText || !/too many|rate limit/i.test(reasonText)) {
                     break;
                 }
@@ -108,10 +102,7 @@ export async function waitForWalletReady(page: Page): Promise<void> {
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
         await page.waitForTimeout(1000);
 
-        // The spinner also disappears when the wallet fails to load without throwing: the
-        // page falls back to the login screen instead of rendering the wallet. Catching that
-        // here fails in ~11s with the real symptom, instead of a downstream test timing out
-        // 60s later while waiting for a wallet address that was never going to appear.
+        // The spinner also clears on a failed load, landing back on the login screen.
         const backOnLoginScreen = await page.locator('button:has-text("Connect wallet")').first().isVisible();
         if (backOnLoginScreen) {
             throw new Error(
