@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Prints the Paella-Labs/best-practices files listed in its manifest.txt, followed by
-# the stack files passed as arguments (e.g. typescript.md). Stack files missing upstream
-# are skipped. Results are cached per commit SHA and stack list.
+# the stack files passed as arguments (e.g. typescript.md). Every manifest entry is required;
+# stack files missing upstream are skipped. Results are cached per commit SHA and stack list.
 # Usage: ./scripts/fetch-best-practices.sh [stack.md ...]
 
 REPO="Paella-Labs/best-practices"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/paella-best-practices"
 CACHE_FILE="$CACHE_DIR/best-practices.md"
 CHECKED_FILE="$CACHE_DIR/checked"
+LEGACY_CACHE_FILE="$HOME/.claude/paella-best-practices-cache.md"
 mkdir -p "$CACHE_DIR"
 
 STACKS="$*"
@@ -25,6 +26,11 @@ cache_matches() {
 serve_cache() {
     if cache_matches; then
         cat "$CACHE_FILE"
+        exit 0
+    fi
+    if [ -f "$LEGACY_CACHE_FILE" ]; then
+        echo "fetch-best-practices: could not reach $REPO; serving the pre-manifest cache at $LEGACY_CACHE_FILE, which may be incomplete" >&2
+        cat "$LEGACY_CACHE_FILE"
         exit 0
     fi
     echo "fetch-best-practices: could not fetch best practices${STACKS:+ with $STACKS} from $REPO and no cached copy for that stack list exists" >&2
@@ -71,14 +77,23 @@ FILES=$(printf '%s\n' "$MANIFEST" | grep -Ev '^[[:space:]]*(#|$)')
     echo ""
 } > "$TMP_FILE" || serve_cache
 
-for file in $FILES "$@"; do
+append_file() {
+    {
+        echo "## $1"
+        echo ""
+        printf '%s\n' "$2" | sed -E 's/^(#+)/\1##/'
+        echo ""
+    } >> "$TMP_FILE"
+}
+
+for file in $FILES; do
+    content=$(fetch_file "$file") || serve_cache
+    append_file "$file" "$content" || serve_cache
+done
+
+for file in "$@"; do
     if content=$(fetch_file "$file"); then
-        {
-            echo "## $file"
-            echo ""
-            printf '%s\n' "$content" | sed -E 's/^(#+)/\1##/'
-            echo ""
-        } >> "$TMP_FILE" || serve_cache
+        append_file "$file" "$content" || serve_cache
     elif ! grep -q "HTTP 404" "$ERR_FILE"; then
         serve_cache
     fi
