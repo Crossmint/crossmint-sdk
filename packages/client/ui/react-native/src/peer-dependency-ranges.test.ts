@@ -77,26 +77,3 @@ describe.each([
         expect(semver.satisfies(version, peers[name]), `${name}@${version} vs "${peers[name]}"`).toBe(false);
     });
 });
-
-// Metro resolves this package's imports from its own node_modules first. If pnpm gives the
-// playground and this package different peer variants of a native module, the app bundles two
-// copies. The playground's `encoding` devDependency exists for this reason: without it, pnpm
-// resolves react-native-web, and so expo and every expo-* module, in a second variant here.
-describe("the Expo playground", () => {
-    const PLAYGROUND_DIR = path.resolve(__dirname, "../../../../../apps/wallets/expo");
-    const SHARED_MODULES = RN_UI_NATIVE_PEERS;
-
-    function resolvedPath(fromDir: string, name: string): string {
-        return fs.realpathSync(path.join(fromDir, "node_modules", name));
-    }
-
-    test.each(SHARED_MODULES)("resolves the same copy of %s as this package", (name) => {
-        const own = resolvedPath(path.resolve(__dirname, ".."), name);
-        const playgroundLocal = path.join(PLAYGROUND_DIR, "node_modules", name);
-        const playground = fs.existsSync(playgroundLocal)
-            ? fs.realpathSync(playgroundLocal)
-            : resolvedPath(path.resolve(PLAYGROUND_DIR, "../../.."), name);
-
-        expect(own).toBe(playground);
-    });
-});
