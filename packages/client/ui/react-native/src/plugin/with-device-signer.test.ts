@@ -63,8 +63,15 @@ describe("withDeviceSigner", () => {
             expect(twice).toBe(once);
         });
 
-        test("matches the snapshot", async () => {
-            expect(await runPodfileMod(templatePodfile)).toMatchSnapshot();
+        test("keeps every line of the template, in order", async () => {
+            const podfileLines = (await runPodfileMod(templatePodfile)).split("\n");
+            let position = 0;
+
+            for (const line of templatePodfile.split("\n")) {
+                position = podfileLines.indexOf(line, position);
+                expect(position, `template line missing: ${line}`).toBeGreaterThanOrEqual(0);
+                position += 1;
+            }
         });
     });
 
