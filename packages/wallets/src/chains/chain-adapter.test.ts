@@ -244,6 +244,15 @@ describe("signApproval", () => {
             expect(signer.signTransaction).toHaveBeenCalledWith(PREIMAGE_HASH_HEX);
         });
 
+        test("solana signs the base64 P-256 message as hex challenge bytes", async () => {
+            const signer = makeSigner("passkey");
+
+            await getChainAdapter("solana").signApproval(asAdapter(signer), transaction, PREIMAGE_HASH_BASE64);
+
+            expect(signer.signTransaction).toHaveBeenCalledWith(PREIMAGE_HASH_HEX);
+            expect(signer.signMessage).not.toHaveBeenCalled();
+        });
+
         test("evm signs the approval message unchanged", async () => {
             const signer = makeSigner("passkey");
 
