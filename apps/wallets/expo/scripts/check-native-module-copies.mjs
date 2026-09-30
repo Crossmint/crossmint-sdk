@@ -43,7 +43,9 @@ const mismatches = NATIVE_MODULES.flatMap((name) => {
 if (mismatches.length > 0) {
     console.error("The playground and the React Native SDK do not share one installed copy of:");
     for (const { name, sdkCopy, playgroundCopy } of mismatches) {
-        console.error(`  ${name}\n    SDK:        ${sdkCopy ?? "not installed"}\n    playground: ${playgroundCopy ?? "not installed"}`);
+        console.error(
+            `  ${name}\n    SDK:        ${sdkCopy ?? "not installed"}\n    playground: ${playgroundCopy ?? "not installed"}`
+        );
     }
     process.exit(1);
 }
