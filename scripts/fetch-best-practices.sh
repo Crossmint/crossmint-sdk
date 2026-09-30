@@ -84,11 +84,11 @@ refresh() {
     return 0
 }
 
-# The old writer rewrote its cache in place and only then recorded the commit, so a sha file at least as new
-# as the cache marks a finished write.
+# The old writer rewrote its cache in place and only then recorded the commit, so only a sha file strictly
+# newer than the cache marks a finished write.
 legacy_complete() {
     [ -f "$LEGACY_FILE" ] && head -n 1 "$LEGACY_FILE" | grep -qF "$LEGACY_HEADER" || return 1
-    grep -Eqx '[0-9a-f]{40}' "$LEGACY_SHA_FILE" 2>/dev/null && ! [ "$LEGACY_SHA_FILE" -ot "$LEGACY_FILE" ]
+    grep -Eqx '[0-9a-f]{40}' "$LEGACY_SHA_FILE" 2>/dev/null && [ "$LEGACY_SHA_FILE" -nt "$LEGACY_FILE" ]
 }
 
 report() {
