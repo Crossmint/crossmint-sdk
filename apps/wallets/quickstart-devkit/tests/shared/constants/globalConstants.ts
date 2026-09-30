@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
@@ -89,11 +91,12 @@ export function getEmailForSigner(signerType: SignerType): string {
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
-// Deterministic alias for Stellar wallets, derived from the same suffix as the email.
-// Same email + same alias = the same Stellar wallet is fetched on every run.
+// Hashed so the alias stays under the API's 36-character cap even though CI's
+// WALLET_EMAIL_SUFFIX (which includes github.run_id) can run well past it.
 export function getStellarAlias(signerType: SignerType): string {
     const sanitizedSuffix = WALLET_EMAIL_SUFFIX.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return `stellartestingwallet${signerType}${sanitizedSuffix}`;
+    const suffixHash = createHash("sha256").update(sanitizedSuffix).digest("hex").slice(0, 12);
+    return `e2e${signerType}${suffixHash}`;
 }
 
 // Build URL with query parameters for testing

@@ -19,22 +19,42 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
         await emailInput.waitFor({ timeout: 10000 });
         await emailInput.fill(email);
 
-        const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
-        await submitButton.click();
+        // A retry can hit the OTP send-rate limit; back off once and resend.
+        const RATE_LIMIT_BACKOFF_MS = 65_000;
+        let otpSent = false;
+        let reasonText: string | null = null;
+        for (let attempt = 0; attempt < 2 && !otpSent; attempt++) {
+            if (attempt > 0) {
+                console.log(
+                    `⏳ Rate-limited on the previous OTP send — waiting ${RATE_LIMIT_BACKOFF_MS}ms before retrying`
+                );
+                await page.waitForTimeout(RATE_LIMIT_BACKOFF_MS);
+            }
 
-        console.log("⏳ Waiting for email confirmation message...");
-        const otpSent = await page
-            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
-            .first()
-            .waitFor({ timeout: 60000, state: "visible" })
-            .then(() => true)
-            .catch(() => false);
+            const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
+            await submitButton.click();
+
+            console.log("⏳ Waiting for email confirmation message...");
+            otpSent = await page
+                .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+                .first()
+                .waitFor({ timeout: 60000, state: "visible" })
+                .then(() => true)
+                .catch(() => false);
+
+            if (!otpSent) {
+                const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
+                reasonText = await reason
+                    .waitFor({ state: "visible", timeout: 2000 })
+                    .then(() => reason.textContent())
+                    .catch(() => null);
+                // Only retry on a rate limit — any other reason is the real result.
+                if (!reasonText || !/too many|rate limit/i.test(reasonText)) {
+                    break;
+                }
+            }
+        }
         if (!otpSent) {
-            const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
-            const reasonText = await reason
-                .waitFor({ state: "visible", timeout: 2000 })
-                .then(() => reason.textContent())
-                .catch(() => null);
             throw new Error(
                 `The login OTP was never sent to ${email}. ` +
                     `${reasonText != null ? `The page reported: "${reasonText.trim()}".` : "The page gave no reason."}` +
@@ -81,6 +101,16 @@ export async function waitForWalletReady(page: Page): Promise<void> {
     try {
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
         await page.waitForTimeout(1000);
+
+        // The spinner also clears on a failed load, landing back on the login screen.
+        const backOnLoginScreen = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+        if (backOnLoginScreen) {
+            throw new Error(
+                "The loading spinner cleared but the page landed back on the login screen instead of the " +
+                    "wallet — the wallet failed to load or create without surfacing an error." +
+                    recentPageDiagnostics(page)
+            );
+        }
 
         console.log("✅ Wallet is ready");
     } catch (error) {
