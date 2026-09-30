@@ -4,7 +4,7 @@ Multi-chain SDK monorepo (smart wallets, auth, UI components, server SDK) for we
 
 ## Best practices
 
-At session start, run `./scripts/fetch-best-practices.sh typescript.md`, then follow the fetched best-practices doc. When reviewing PRs in this repo, check changes against the fetched best-practices doc and cite the specific rule when flagging.
+At session start, run `./scripts/fetch-best-practices.sh` and read the file it names before writing or reviewing code. That file holds every rule in `Paella-Labs/best-practices`; this `AGENTS.md` adds what is specific to this repo. When reviewing PRs in this repo, check changes against both and cite the file and rule when flagging.
 
 ## Commands
 
@@ -20,5 +20,5 @@ pnpm lint:fix
 ## Testing
 
 - Test file names, BDD structure, tags and folder layout follow `test-conventions.md` (repo root).
-- The E2E-first testing policy in the fetched best-practices doc applies to new code; existing test suites stay.
+- New and changed code follows `code/test.md` in the fetched best practices; existing test suites stay.
 - PR evidence to link in the PR description: the Playwright report from the `apps/wallets/quickstart-devkit` POM tests (HTML locally, `test-results/playwright-results.json` in CI; traces are kept on retry and video on failure), extended with a recorded E2E run against the staging sandbox.
