@@ -3,6 +3,10 @@ import path from "path";
 import semver from "semver";
 import { describe, expect, test } from "vitest";
 
+// Contract tests for the peer ranges in package.json. Each native peer must accept the version that
+// the supported Expo SDK bundles and reject the version of an older SDK, so that npm's peer
+// auto-install cannot pick a module from the wrong SDK.
+
 // The one Expo SDK line this package supports. npm and pnpm install a missing peer at the newest
 // version in its range, so a range that spans several SDKs installs modules from the wrong SDK.
 const SUPPORTED_EXPO_SDK = "sdk-57";
