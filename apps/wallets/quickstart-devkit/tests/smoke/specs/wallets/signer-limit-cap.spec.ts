@@ -3,7 +3,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import { WalletsApiClient } from "@crossmint/wallets-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const SERVER_API_KEY = process.env.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS || "";
+const SERVER_API_KEY = process.env.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS_PROJECT_B || "";
 
 const MAX_SIGNERS_TO_ATTEMPT = 20;
 
@@ -23,7 +23,7 @@ test.describe("Signer Limit Regression — fresh wallet (QA-91)", { tag: "@smoke
     test.beforeAll(() => {
         if (!SERVER_API_KEY) {
             throw new Error(
-                "TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS environment variable must be set to run this test"
+                "TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS_PROJECT_B environment variable must be set to run this test"
             );
         }
     });
