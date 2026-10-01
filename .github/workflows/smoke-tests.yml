@@ -52,6 +52,9 @@ jobs:
                   NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
                   NEXT_PUBLIC_EVM_CHAIN: "base-sepolia"
                   TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY_SMOKE_TESTS }}
+                  # Server key: QA-91's signer-limit regression seeds signers directly via the SDK,
+                  # which adding a signer after wallet creation needs a server key for.
+                  TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS: ${{ secrets.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS }}
                   MAILOSAUR_API_KEY: ${{ secrets.MAILOSAUR_API_KEY }}
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
