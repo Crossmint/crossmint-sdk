@@ -34,7 +34,7 @@ test.describe("Signer Limit Regression — fresh wallet (QA-91)", { tag: "@smoke
         const createResult = await apiClient.createWallet({
             chainType: "evm",
             type: "smart",
-            owner: `userId:qa-91-signer-limit-${Date.now()}`,
+            owner: "userId:qa-91-signer-limit-cap-fixture",
             config: { adminSigner: { type: "external-wallet", address: freshExternalWalletAddress() } },
         } as Parameters<typeof apiClient.createWallet>[0]);
 
