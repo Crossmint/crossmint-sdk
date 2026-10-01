@@ -4,13 +4,8 @@ import { WalletsApiClient } from "@crossmint/wallets-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { validateAPITestConfig } from "../../../shared/constants/globalConstants";
 
-// Seeded with a server key (not the suite's usual client key) because adding signers after
-// creation needs server-only usage. A dedicated secret so this never shares state with the
-// rotating-per-run wallet the rest of the smoke suite authenticates into.
 const SERVER_API_KEY = process.env.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS || "";
 
-// Comfortably above any plausible signer cap, so an enforcement regression that never rejects
-// fails the test loudly instead of hanging.
 const MAX_SIGNERS_TO_ATTEMPT = 20;
 
 function makeApiClient(): WalletsApiClient {
