@@ -119,32 +119,7 @@ function WalletActions() {
 | `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` or `recoveryMethods` + optional `signers`. |
 | `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
-| `passkeys` | `{ rpId: string; rpName?: string; passkey: typeof Passkey }` | — | Enables passkey signers through the platform passkey APIs. See [Passkeys](#passkeys). Without it, passkey signers are rejected. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
-
-### Passkeys
-
-Passkey signers work on every chain (EVM, Solana, Stellar) once the provider knows the relying party:
-
-```tsx
-import { Passkey } from "react-native-passkey";
-
-<CrossmintWalletProvider passkeys={{ rpId: "app.example.com", rpName: "Example", passkey: Passkey }}>
-    {children}
-</CrossmintWalletProvider>;
-```
-
-The app passes `Passkey` itself, so its bundler links the native module; the SDK does not import the optional package.
-
-Setup:
-
-1. Install the native module: `npx expo install react-native-passkey` (or `npm install react-native-passkey`), then rebuild the app. Passkeys need a development build; Expo Go cannot run native modules.
-2. Associate the app with the `rpId` domain:
-    - iOS: add the associated domain `webcredentials:app.example.com` to the app, and serve an `apple-app-site-association` file from the domain that lists the app.
-    - Android: serve `/.well-known/assetlinks.json` from the domain with the `delegate_permission/common.get_login_creds` relation for the app's package name and signing certificate.
-3. Keep `rpId` fixed once users have created passkeys: a passkey only works for the domain it was created for.
-
-Then use passkeys as in the React SDK, for example `createOnLogin={{ chain, recovery: { type: "passkey" } }}` or `wallet.addSigner({ type: "passkey" })` (on Solana a passkey can only be a delegated signer). Every passkey operation requires user verification (biometrics or a PIN).
 
 ## Hooks
 
@@ -202,7 +177,6 @@ import { ExportPrivateKeyButton } from "@crossmint/client-sdk-react-native-ui";
 | Device signer storage | Browser iframe (`IframeDeviceSignerKeyStorage`) | Native secure storage (iOS Secure Enclave / Android Keystore) |
 | Device storage override | Not exposed | `deviceSignerKeyStorage` prop on provider |
 | Built-in OTP UI | Always rendered | `showOtpSignerPrompt=true` (shown by default) |
-| Passkeys | Browser WebAuthn | Platform passkey APIs through `react-native-passkey`, passed in the `passkeys` prop |
 | Passkey helper UI | `showPasskeyHelpers` prop | Not available |
 | TEE communication | Hidden iframe | Hidden WebView (lazily initialized) |
 
