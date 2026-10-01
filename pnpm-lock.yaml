@@ -1124,6 +1124,21 @@ importers:
         specifier: 4.5.2
         version: 4.5.2(typedoc@0.28.17(typescript@5.5.3))
 
+  tests/integration:
+    dependencies:
+      '@crossmint/common-sdk-base':
+        specifier: workspace:*
+        version: link:../../packages/common/base
+      '@crossmint/wallets-sdk':
+        specifier: workspace:*
+        version: link:../../packages/wallets
+      bs58:
+        specifier: 5.0.0
+        version: 5.0.0
+      viem:
+        specifier: 2.33.1
+        version: 2.33.1(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+
 packages:
 
   '@0no-co/graphql.web@1.2.0':
