@@ -41,11 +41,13 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
             stamp,
             revision: current.current.revision + (current.current.stamp === stamp ? 0 : 1),
         };
+        const collectionIdentity = `${current.current.revision}:${stamp}`;
         const pending = useRef<{
             client: ProtectedInputIFrameEmitter;
             requestId: string;
             identity: string;
             promise: Promise<ProtectedInputCollectionResult>;
+            cancel: () => void;
         } | null>(null);
         const [height, setHeight] = useState(48);
         const [loaded, setLoaded] = useState<{ url: string } | null>(null);
@@ -67,7 +69,13 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
             const listener = client.on("ui:height.changed", ({ height }) => setHeight(height));
             return () => {
                 client.off(listener);
-                connection.current = null;
+                if (pending.current?.client === client) {
+                    pending.current.cancel();
+                    pending.current = null;
+                }
+                if (connection.current === active) {
+                    connection.current = null;
+                }
             };
         }, [url, loaded, service]);
 
@@ -91,8 +99,12 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
         }, [props.disabled, props.invalid, url, loaded]);
 
         useEffect(() => {
+            if (pending.current != null && pending.current.identity !== collectionIdentity) {
+                pending.current.cancel();
+                pending.current = null;
+            }
             const active = connection.current;
-            if (active == null) {
+            if (active == null || loaded?.url !== url) {
                 return;
             }
             active.ready
@@ -104,7 +116,7 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
                 .catch(() => {
                     /* collect() reports a blocked channel. */
                 });
-        }, [stamp, loaded]);
+        }, [collectionIdentity, loaded, url]);
 
         useImperativeHandle(ref, () => ({
             collect() {
@@ -118,7 +130,15 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
                 }
                 const { props, apiKey } = current.current;
                 const requestId = crypto.randomUUID();
-                const promise: Promise<ProtectedInputCollectionResult> =
+                const controller = new AbortController();
+                let cancel = () => controller.abort();
+                const cancelled = new Promise<ProtectedInputCollectionResult>((resolve) => {
+                    cancel = () => {
+                        controller.abort();
+                        resolve(superseded());
+                    };
+                });
+                const operation: Promise<ProtectedInputCollectionResult> =
                     (async (): Promise<ProtectedInputCollectionResult> => {
                         try {
                             await active.ready;
@@ -131,19 +151,21 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
                                 responseEvent: "protected-input:result",
                                 options: {
                                     timeoutMs: 30_000,
+                                    signal: controller.signal,
                                     condition: (response) => response.requestId === requestId,
                                 },
                             });
                             return connection.current === active && identity() === stamp ? result : superseded();
                         } catch {
                             return connection.current === active && identity() === stamp ? unavailable() : superseded();
-                        } finally {
-                            if (pending.current?.requestId === requestId) {
-                                pending.current = null;
-                            }
                         }
                     })();
-                pending.current = { client: active.client, requestId, identity: stamp, promise };
+                const promise = Promise.race([operation, cancelled]).finally(() => {
+                    if (pending.current?.requestId === requestId) {
+                        pending.current = null;
+                    }
+                });
+                pending.current = { client: active.client, requestId, identity: stamp, promise, cancel };
                 return promise;
             },
         }));

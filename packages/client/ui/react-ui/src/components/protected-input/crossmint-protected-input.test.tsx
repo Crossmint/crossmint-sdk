@@ -145,4 +145,46 @@ describe("CrossmintProtectedInput", () => {
         expect(mocks.off).toHaveBeenCalledWith("height-subscription");
         expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
     });
+    test.each(["auth", "reload", "unmount"] as const)(
+        "settles a pending collection immediately on %s",
+        async (change) => {
+            mocks.sendAction.mockReturnValueOnce(
+                new Promise(() => {
+                    /* The old channel never responds. */
+                })
+            );
+            const { input, ref, rerender, unmount } = mount();
+            const pending = input.collect();
+            await act(async () => {
+                await Promise.resolve();
+            });
+            const signal: AbortSignal = mocks.sendAction.mock.calls[0][0].options.signal;
+            if (change === "auth") {
+                rerender(<CrossmintProtectedInput ref={ref} field={FIELD} jwt="replacement-buyer" />);
+            } else if (change === "reload") {
+                fireEvent.load(screen.getByTitle(FIELD.label));
+            } else {
+                unmount();
+            }
+            await expect(pending).resolves.toMatchObject({ status: "superseded" });
+            expect(signal.aborted).toBe(true);
+            if (change !== "unmount") {
+                mocks.sendAction.mockResolvedValueOnce({ result: COLLECTED });
+                await expect(input.collect()).resolves.toEqual(COLLECTED);
+            }
+        }
+    );
+
+    test("settles collection while an iframe handshake is still pending", async () => {
+        mocks.handshakeWithChild.mockReturnValueOnce(
+            new Promise(() => {
+                /* The old channel never responds. */
+            })
+        );
+        const { input, unmount } = mount();
+        const pending = input.collect();
+        unmount();
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+        expect(mocks.sendAction).not.toHaveBeenCalled();
+    });
 });
