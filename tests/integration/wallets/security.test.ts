@@ -9,7 +9,7 @@ import {
     isSuccessWalletResponse,
     TestDataFactory,
 } from "./test-utils";
-import { DELAY_LONG, DELAY_RATE_LIMIT_WINDOW, TEST_ADDRESSES, TEST_VALUES } from "./constants";
+import { DELAY_LONG, DELAY_RATE_LIMIT_WINDOW, TEST_ADDRESSES, TEST_VALUES, TIMEOUT_MEDIUM } from "./constants";
 
 describe("Wallets — API security (Real HTTP)", () => {
     let apiClient: WalletsApiClient;
@@ -475,19 +475,23 @@ describe("Wallets — API security (Real HTTP)", () => {
             expect(result).toBeDefined();
         });
 
-        it("handles concurrent requests without overwhelming server", async () => {
-            for (let batch = 0; batch < TEST_VALUES.RATE_LIMIT_BATCHES; batch++) {
-                const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_BATCH_SIZE }, () =>
-                    apiClient.createWallet({
-                        chainType: "evm",
-                        type: "mpc",
-                    })
-                );
+        it(
+            "handles concurrent requests without overwhelming server",
+            async () => {
+                for (let batch = 0; batch < TEST_VALUES.RATE_LIMIT_BATCHES; batch++) {
+                    const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_BATCH_SIZE }, () =>
+                        apiClient.createWallet({
+                            chainType: "evm",
+                            type: "mpc",
+                        })
+                    );
 
-                await Promise.allSettled(requests);
-                await delay(DELAY_LONG);
-            }
-        });
+                    await Promise.allSettled(requests);
+                    await delay(DELAY_LONG);
+                }
+            },
+            TIMEOUT_MEDIUM
+        );
     });
 
     describe("API Security - Request Validation", () => {
