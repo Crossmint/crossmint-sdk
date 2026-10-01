@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { protectedInputOutgoingEvents } from "../../types/protected-input/events/outgoing";
 import { createProtectedInputService } from "./protectedInputService";
 
 const FIELD = { key: "code", label: "Code", required: true, handling: "protected", input: { kind: "text" } } as const;
@@ -15,6 +16,7 @@ function mount() {
     const subscription = client.on("protected-input:result", received);
     return {
         iframe,
+        client,
         received,
         dispose: () => {
             client.off(subscription);
@@ -45,6 +47,49 @@ describe("protected input transport", () => {
         for (const key of ["jwt", "apiKey", "expiresAt", "merchantUrl"]) {
             expect(url.searchParams.has(key)).toBe(false);
         }
+    });
+
+    test("strips extra field and nested input properties from the URL", () => {
+        const field = {
+            ...FIELD,
+            binding: "secret-binding",
+            value: "secret-value",
+            input: { ...FIELD.input, value: "secret-nested" },
+        };
+        const url = new URL(service.iframe.getUrl({ field, jwt: "buyer-jwt" }));
+        expect(JSON.parse(url.searchParams.get("field") ?? "")).toEqual(FIELD);
+        expect(url.toString()).not.toContain("secret");
+    });
+
+    test("validates collection payloads before transport sends them", () => {
+        const schema = protectedInputOutgoingEvents["protected-input:collect"];
+        const data = { requestId: "request", jwt: "buyer-jwt", apiKey: "client-key" };
+        expect(schema.safeParse(data).success).toBe(true);
+        expect(schema.safeParse({ ...data, expiresAt: "2026-10-01T12:00:00+02:00" }).success).toBe(true);
+        for (const invalid of [
+            { ...data, requestId: "" },
+            { ...data, jwt: "" },
+            { ...data, apiKey: "" },
+            { ...data, expiresAt: "2026-10-01" },
+        ]) {
+            expect(schema.safeParse(invalid).success).toBe(false);
+        }
+    });
+
+    test("sends only valid collection credentials through the channel", () => {
+        const field = mount();
+        disposals.push(field.dispose);
+        const frame = field.iframe.contentWindow;
+        if (frame == null) {
+            throw new Error("Frame window is unavailable");
+        }
+        const post = vi.spyOn(frame, "postMessage");
+        vi.spyOn(console, "error").mockImplementation(() => undefined);
+        const data = { requestId: "request", jwt: "buyer-jwt", apiKey: "client-key" };
+        field.client.send("protected-input:collect", { ...data, jwt: "" });
+        expect(post).not.toHaveBeenCalled();
+        field.client.send("protected-input:collect", data);
+        expect(post).toHaveBeenCalledWith({ event: "protected-input:collect", data }, "https://staging.crossmint.com");
     });
 
     test("accepts only the hosted frame's messages, even among same-origin siblings", () => {
