@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/test";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import { WalletsApiClient } from "@crossmint/wallets-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { validateAPITestConfig } from "../../../shared/constants/globalConstants";
 
 const SERVER_API_KEY = process.env.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS || "";
 
@@ -22,7 +21,6 @@ function freshExternalWalletAddress(): `0x${string}` {
 
 test.describe("Signer Limit Regression — fresh wallet (QA-91)", { tag: "@smoke" }, () => {
     test.beforeAll(() => {
-        validateAPITestConfig();
         if (!SERVER_API_KEY) {
             throw new Error(
                 "TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS environment variable must be set to run this test"
