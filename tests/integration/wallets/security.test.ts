@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { WalletLocator, WalletsApiClient } from "@crossmint/wallets-sdk";
 import { createIntegrationApiClient, PREVIEW_API_KEY } from "../shared/client";
+import { externalWalletSigner } from "../shared/signer";
 import {
     delay,
     createFreshWallet,
@@ -109,9 +110,7 @@ describe("Wallets — API security (Real HTTP)", () => {
                 type: "mpc",
             });
 
-            if (isErrorResponse(result)) {
-                expectErrorResponse(result);
-            }
+            expectErrorResponse(result);
         });
 
         it("validates appId and extensionId headers when provided", async () => {
@@ -138,7 +137,7 @@ describe("Wallets — API security (Real HTTP)", () => {
             }
         });
 
-        it("prevents unauthorized access to other users wallets", async () => {
+        it("returns a not-found error for a non-existent wallet address", async () => {
             const result = await apiClient.getWallet(TEST_ADDRESSES.EVM_NON_EXISTENT as WalletLocator);
             expectErrorResponse(result);
         });
@@ -147,13 +146,15 @@ describe("Wallets — API security (Real HTTP)", () => {
     describe("API Security - Input Sanitization", () => {
         it("sanitizes SQL injection attempts in wallet locator", async () => {
             const sqlInjection = "'; DROP TABLE wallets; --";
+            let result: unknown;
             try {
-                // A WAF can intercept this payload and throw instead of returning a clean JSON error.
-                const result = await apiClient.getWallet(sqlInjection as WalletLocator);
-                expectErrorResponse(result);
+                result = await apiClient.getWallet(sqlInjection as WalletLocator);
             } catch (error) {
+                // A WAF can intercept this payload and throw instead of returning a clean JSON error.
                 expect(error).toBeDefined();
+                return;
             }
+            expectErrorResponse(result);
         });
 
         it("sanitizes XSS attempts in parameters", async () => {
@@ -188,38 +189,44 @@ describe("Wallets — API security (Real HTTP)", () => {
 
         it("sanitizes path traversal attempts", async () => {
             const pathTraversal = "../../../etc/passwd";
+            let result: unknown;
             try {
-                const result = await apiClient.getWallet(pathTraversal as WalletLocator);
-                expectErrorResponse(result);
+                result = await apiClient.getWallet(pathTraversal as WalletLocator);
             } catch (error) {
                 expect(error).toBeDefined();
+                return;
             }
+            expectErrorResponse(result);
         });
 
         it("sanitizes null byte injection", async () => {
             const nullByte = "0x123\0DROP TABLE";
+            let result: unknown;
             try {
-                const result = await apiClient.getWallet(nullByte as WalletLocator);
-                expectErrorResponse(result);
+                result = await apiClient.getWallet(nullByte as WalletLocator);
             } catch (error) {
                 expect(error).toBeDefined();
+                return;
             }
+            expectErrorResponse(result);
         });
 
         it("sanitizes special characters in recipient address", async () => {
             const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
             const maliciousRecipient = "0x123'; DROP TABLE; --";
+            let result: unknown;
             try {
-                // Same WAF caveat as the SQL-injection locator test above.
-                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", {
+                result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", {
                     recipient: maliciousRecipient,
                     amount: "1.0",
                 });
-                expectErrorResponse(result);
             } catch (error) {
+                // Same WAF caveat as the SQL-injection locator test above.
                 expect(error).toBeDefined();
+                return;
             }
+            expectErrorResponse(result);
         });
 
         it("sanitizes extremely long input strings", async () => {
@@ -253,20 +260,14 @@ describe("Wallets — API security (Real HTTP)", () => {
         });
 
         it("sanitizes nested object injection", async () => {
-            const nestedInjection = {
-                chainType: "evm",
-                type: "smart",
-                config: {
-                    adminSigner: {
-                        type: "external-wallet",
-                        address: "0x123",
-                        __proto__: { malicious: true },
-                    },
-                },
-            };
+            // `__proto__` as an object-literal key sets the prototype rather than an own property,
+            // so it never reaches JSON.stringify; JSON.parse is what actually puts it on the wire.
+            const nestedInjection = JSON.parse(
+                '{"chainType":"evm","type":"smart","config":{"adminSigner":{"type":"external-wallet","address":"0x123","__proto__":{"malicious":true}}}}'
+            );
 
-            const result = await apiClient.createWallet(nestedInjection as any);
-            expect(isErrorResponse(result) || isSuccessWalletResponse(result)).toBe(true);
+            const result = await apiClient.createWallet(nestedInjection);
+            expectErrorResponse(result);
         });
 
         it("sanitizes LDAP injection attempts", async () => {
@@ -380,16 +381,13 @@ describe("Wallets — API security (Real HTTP)", () => {
             }
         });
 
-        it("does not log sensitive data in error messages", async () => {
+        it("does not include the API key in the response body", async () => {
             const result = await apiClient.createWallet({
                 chainType: "evm",
                 type: "mpc",
             });
 
-            if (isErrorResponse(result)) {
-                const errorMessage = JSON.stringify(result);
-                expect(errorMessage).not.toContain(PREVIEW_API_KEY);
-            }
+            expect(JSON.stringify(result)).not.toContain(PREVIEW_API_KEY);
         });
 
         it("uses secure HTTP methods", async () => {
@@ -418,7 +416,8 @@ describe("Wallets — API security (Real HTTP)", () => {
             const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_RAPID_COUNT }, () =>
                 apiClient.createWallet({
                     chainType: "evm",
-                    type: "mpc",
+                    type: "smart",
+                    config: { adminSigner: externalWalletSigner().signer },
                 })
             );
 
@@ -443,7 +442,8 @@ describe("Wallets — API security (Real HTTP)", () => {
                 apiClient
                     .createWallet({
                         chainType: "evm",
-                        type: "mpc",
+                        type: "smart",
+                        config: { adminSigner: externalWalletSigner().signer },
                     })
                     .catch((error) => ({ error: true, message: error.message }))
             );
@@ -469,10 +469,11 @@ describe("Wallets — API security (Real HTTP)", () => {
 
             const result = await apiClient.createWallet({
                 chainType: "evm",
-                type: "mpc",
+                type: "smart",
+                config: { adminSigner: externalWalletSigner().signer },
             });
 
-            expect(result).toBeDefined();
+            expect(isSuccessWalletResponse(result)).toBe(true);
         });
 
         it(
@@ -482,7 +483,8 @@ describe("Wallets — API security (Real HTTP)", () => {
                     const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_BATCH_SIZE }, () =>
                         apiClient.createWallet({
                             chainType: "evm",
-                            type: "mpc",
+                            type: "smart",
+                            config: { adminSigner: externalWalletSigner().signer },
                         })
                     );
 
@@ -501,7 +503,7 @@ describe("Wallets — API security (Real HTTP)", () => {
             expectErrorResponse(result);
         });
 
-        it("rejects malformed JSON in request body", async () => {
+        it("rejects a non-JSON error response from the server", async () => {
             const originalFetch = global.fetch;
 
             global.fetch = (async (url, init) => {
