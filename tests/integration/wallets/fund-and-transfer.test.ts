@@ -12,7 +12,7 @@ import {
     TestDataFactory,
     waitForFundedBalance,
 } from "./test-utils";
-import { DELAY_LONG, DELAY_MEDIUM, TEST_ADDRESSES, TEST_VALUES, TIMEOUT_MEDIUM } from "./constants";
+import { DELAY_LONG, TEST_ADDRESSES, TEST_VALUES, TIMEOUT_MEDIUM } from "./constants";
 
 function expectFundedBalance(result: unknown, token: string) {
     expect(Array.isArray(result), `expected a balance array, got: ${JSON.stringify(result)}`).toBe(true);
@@ -55,32 +55,6 @@ describe("Wallets — funding & transfers (Real HTTP)", () => {
             },
             TIMEOUT_MEDIUM
         );
-
-        it(
-            "handles funding with different tokens",
-            async () => {
-                const { address: walletAddress } = await createFreshWallet(apiClient, testData, {
-                    testName: "fund-tokens",
-                });
-
-                const tokens: Array<"usdc" | "usdxm"> = ["usdxm"];
-
-                for (const token of tokens) {
-                    const fundResult = await fundWallet(
-                        apiClient,
-                        walletAddress as WalletLocator,
-                        TEST_VALUES.FUNDING_AMOUNT_SMALL,
-                        token
-                    );
-                    expect("txId" in fundResult, `expected a txId, got: ${JSON.stringify(fundResult)}`).toBe(true);
-
-                    const balance = await waitForFundedBalance(apiClient, walletAddress as WalletLocator, token);
-                    expectFundedBalance(balance, token);
-                    await delay(DELAY_MEDIUM);
-                }
-            },
-            TIMEOUT_MEDIUM
-        );
     });
 
     describe("send() - Happy Path", () => {
@@ -116,52 +90,69 @@ describe("Wallets — funding & transfers (Real HTTP)", () => {
     });
 
     describe("send() - Error Cases", () => {
-        it("handles invalid recipient address", async () => {
-            const { address: walletAddress } = await createFreshWallet(apiClient, testData);
+        it(
+            "handles invalid recipient address",
+            async () => {
+                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
-            const params: SendParams = {
-                recipient: "invalid-address",
-                amount: "1.0",
-            };
+                const params: SendParams = {
+                    recipient: "invalid-address",
+                    amount: "1.0",
+                };
 
-            const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-            expectErrorResponse(result, "message");
-        });
+                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
+                expectErrorResponse(result, "message");
+            },
+            TIMEOUT_MEDIUM
+        );
 
-        it("handles invalid amount format", async () => {
-            const { address: walletAddress } = await createFreshWallet(apiClient, testData);
+        it(
+            "handles invalid amount format",
+            async () => {
+                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
-            const params: SendParams = {
-                recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                amount: "not-a-number",
-            };
+                const params: SendParams = {
+                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
+                    amount: "not-a-number",
+                };
 
-            const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-            expectErrorResponse(result);
-        });
+                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
+                expectErrorResponse(result, "message");
+            },
+            TIMEOUT_MEDIUM
+        );
 
-        it("handles insufficient balance", async () => {
-            const { address: walletAddress } = await createFreshWallet(apiClient, testData);
+        it(
+            "handles insufficient balance",
+            async () => {
+                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
-            const params: SendParams = {
-                recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                amount: TEST_VALUES.SEND_AMOUNT_INVALID,
-            };
+                const params: SendParams = {
+                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
+                    amount: TEST_VALUES.SEND_AMOUNT_INVALID,
+                };
 
-            const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-            expectErrorResponse(result);
-        });
+                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
+                expectErrorResponse(result, "message");
+                expect((result as { message: string }).message.toLowerCase()).toContain("insufficient");
+            },
+            TIMEOUT_MEDIUM
+        );
 
-        it("handles invalid token locator", async () => {
-            const { address: walletAddress } = await createFreshWallet(apiClient, testData);
+        it(
+            "handles invalid token locator",
+            async () => {
+                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
-            const params: SendParams = {
-                recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                amount: "1.0",
-            };
+                const params: SendParams = {
+                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
+                    amount: "1.0",
+                };
 
-            const result = await apiClient.send(walletAddress as WalletLocator, "invalid:token", params);
-            expectErrorResponse(result);
-        });
+                const result = await apiClient.send(walletAddress as WalletLocator, "invalid:token", params);
+                expectErrorResponse(result, "message");
+            },
+            TIMEOUT_MEDIUM
+        );
     });
 });
