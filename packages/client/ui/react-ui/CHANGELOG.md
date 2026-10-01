@@ -1,5 +1,34 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.9.0
+
+### Minor Changes
+
+- e7905a8: Add individual protected buyer fields with typed field descriptors and per-field
+  `ref.collect()` results. The application supplies its buyer JWT and owns labels,
+  errors and submission; the existing CrossmintProvider supplies the client API key.
+
+  Replace the password-only `merchantUrl`/`onCreated` interface with `field` and
+  `jwt` props plus `collected`, `invalid`, `unavailable` and `superseded` outcomes.
+  Protected fields support single-line text, number and integer. Authentication
+  travels through the iframe channel rather than its URL; `disabled` and `invalid`
+  update through that channel. Add AbortSignal cancellation to window actions so
+  pending collection waits settle on authentication changes, reload or unmount.
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/client-sdk-react-base@2.3.2
+  - @crossmint/common-sdk-auth@1.1.23
+
 ## 4.8.0
 
 ### Minor Changes
