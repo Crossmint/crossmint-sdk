@@ -3,7 +3,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EVMChain } from "../../chains/chains";
 import type { DeviceSignerKeyStorage } from "../../utils/device-signers/DeviceSignerKeyStorage";
 import type { ServerSignerResolver } from "../server/resolver";
-import type { ApiSourcedServerSignerConfig, ServerSignerConfig, SignerConfigForChain } from "../types";
+import type { ApiSourcedServerSignerConfig, PasskeyProvider, ServerSignerConfig, SignerConfigForChain } from "../types";
 import { getSignerDescriptor } from "./index";
 import type { SignerDescriptorContext } from "./types";
 
@@ -20,6 +20,7 @@ const cfg = (c: object) => c as unknown as Config;
 function makeCtx(
     overrides: {
         deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+        passkeyProvider?: PasskeyProvider;
         hasRecoveryResolution?: boolean;
         apiLocator?: ServerSignerResolver["apiLocator"];
         candidateAddresses?: ServerSignerResolver["candidateAddresses"];
@@ -32,6 +33,7 @@ function makeCtx(
         clientTEEConnection,
         onAuthRequired,
         deviceSignerKeyStorage: overrides.deviceSignerKeyStorage,
+        passkeyProvider: overrides.passkeyProvider,
         serverSigners: {
             keyMaterialForAssembly: vi.fn(() => SERVER_KEY_MATERIAL),
             hasRecoveryResolutionFor: vi.fn(() => overrides.hasRecoveryResolution ?? false),
@@ -159,6 +161,32 @@ it.each<[name: string, config: Config, expected: object]>([
     ],
 ])("buildInternalConfig: passkey %s", (_name, config, expected) => {
     expect(getSignerDescriptor("passkey").buildInternalConfig(config as never, makeCtx())).toMatchObject(expected);
+});
+
+describe("buildInternalConfig: passkey with a passkeyProvider", () => {
+    const passkeyProvider: PasskeyProvider = { createPasskey: vi.fn(), signWithPasskey: vi.fn() };
+
+    it("uses the provider when the config has no callbacks of its own", () => {
+        const internal = getSignerDescriptor("passkey").buildInternalConfig(
+            cfg({ type: "passkey", id: "cred-1" }) as never,
+            makeCtx({ passkeyProvider })
+        );
+
+        expect(internal).toMatchObject({
+            onCreatePasskey: passkeyProvider.createPasskey,
+            onSignWithPasskey: passkeyProvider.signWithPasskey,
+        });
+    });
+
+    it("keeps the config's own callbacks over the provider", () => {
+        const onSignWithPasskey = vi.fn();
+        const internal = getSignerDescriptor("passkey").buildInternalConfig(
+            cfg({ type: "passkey", id: "cred-1", onSignWithPasskey }) as never,
+            makeCtx({ passkeyProvider })
+        );
+
+        expect(internal).toMatchObject({ onSignWithPasskey });
+    });
 });
 
 it.each<[type: string]>([["email"], ["phone"], ["passkey"], ["api-key"]])(

@@ -9,13 +9,14 @@ import type {
     SignerLocator,
 } from "../types";
 import { passkeyCredentialId } from "../../utils/signer-locator";
-import type { SignerDescriptor } from "./types";
+import type { SignerDescriptor, SignerDescriptorContext } from "./types";
 
 export const passkeySignerDescriptor: SignerDescriptor = {
     type: "passkey",
     validateConfig(): void {},
     buildInternalConfig<C extends Chain>(
-        config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig
+        config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
+        ctx: SignerDescriptorContext<C>
     ): InternalSignerConfig<C> {
         const passkeyConfig = config as PasskeySignerConfig;
         const id = passkeyCredentialId(passkeyConfig) ?? "";
@@ -25,8 +26,8 @@ export const passkeySignerDescriptor: SignerDescriptor = {
             locator: `passkey:${id}` as SignerLocator,
             name: "name" in passkeyConfig ? passkeyConfig.name : undefined,
             publicKey: "publicKey" in passkeyConfig ? passkeyConfig.publicKey : undefined,
-            onCreatePasskey: passkeyConfig.onCreatePasskey,
-            onSignWithPasskey: passkeyConfig.onSignWithPasskey,
+            onCreatePasskey: passkeyConfig.onCreatePasskey ?? ctx.passkeyProvider?.createPasskey,
+            onSignWithPasskey: passkeyConfig.onSignWithPasskey ?? ctx.passkeyProvider?.signWithPasskey,
         } as InternalSignerConfig<C>;
     },
     canAutoAssemble(): boolean {

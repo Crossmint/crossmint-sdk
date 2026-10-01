@@ -1296,6 +1296,55 @@ describe("WalletFactory - recovery signer lists", () => {
         });
     });
 
+    describe("createWallet with a passkeyProvider", () => {
+        it("creates passkey signers that have no onCreatePasskey through the provider", async () => {
+            const passkeyProvider = {
+                createPasskey: vi.fn().mockResolvedValue({ id: "native-credential", publicKey: { x: "1", y: "2" } }),
+                signWithPasskey: vi.fn(),
+            };
+            const response = walletResponseWithRecovery("solana", SOLANA_ADDRESS, [{ type: "api-key" }]);
+            mockApiClient.createWallet.mockResolvedValue({
+                ...response,
+                config: {
+                    ...(response as unknown as { config: object }).config,
+                    delegatedSigners: [
+                        {
+                            type: "passkey",
+                            id: "native-credential",
+                            name: "My passkey",
+                            publicKey: { x: "1", y: "2" },
+                            locator: "passkey:native-credential",
+                        },
+                    ],
+                },
+            } as unknown as GetWalletSuccessResponse);
+
+            await walletFactory.createWallet({
+                chain: "solana",
+                recoveryMethods: [{ type: "api-key" }],
+                signers: [{ type: "passkey", name: "My passkey" }],
+                options: { passkeyProvider },
+            });
+
+            expect(passkeyProvider.createPasskey).toHaveBeenCalledWith("My passkey");
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        delegatedSigners: [
+                            expect.objectContaining({
+                                signer: expect.objectContaining({
+                                    type: "passkey",
+                                    id: "native-credential",
+                                    publicKey: { x: "1", y: "2" },
+                                }),
+                            }),
+                        ],
+                    }),
+                })
+            );
+        });
+    });
+
     describe("createWallet validation", () => {
         it("rejects a recovery list on a chain that only supports one recovery signer", async () => {
             const recovery = [{ type: "api-key" as const }, { type: "api-key" as const }];
