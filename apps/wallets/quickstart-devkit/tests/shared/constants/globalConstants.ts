@@ -59,11 +59,7 @@ export const TEST_CONFIGURATIONS = [
     { provider: "crossmint", chain: "stellar", signer: "email", chainId: "stellar", alias: undefined },
 ] as const;
 
-export type TestConfiguration = (typeof TEST_CONFIGURATIONS)[number] & {
-    // Overrides getEmailForSigner's rotating identity with a fixed one, e.g. to re-authenticate
-    // into a specific pre-existing wallet rather than the suite's own rotating-per-run wallet.
-    emailOverride?: string;
-};
+export type TestConfiguration = (typeof TEST_CONFIGURATIONS)[number] & { emailOverride?: string };
 
 // Legacy support - keep existing signer types for backward compatibility
 export const SIGNER_TYPES = TEST_CONFIGURATIONS.map((config) => config.signer).filter(
@@ -95,9 +91,6 @@ export function getEmailForSigner(signerType: SignerType): string {
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
-// The suite's original identity, from before TESTS_WALLET_EMAIL_SUFFIX started rotating per run
-// (see smoke-tests.yml). Fixed regardless of that env var, so tests can re-authenticate into that
-// specific pre-existing wallet on purpose (e.g. QA-91's signer-limit regression).
 export function getLegacySmokeWalletEmail(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
     return `test-${baseAlias}-e2e@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
