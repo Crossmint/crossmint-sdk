@@ -45,18 +45,6 @@ jobs:
               run: pnpm build --filter=@crossmint/client-sdk-react-ui --filter=@crossmint/wallets-sdk --filter=@crossmint/client-sdk-react-base
               working-directory: .
 
-            - name: Debug - print signer count for the legacy QA-91 wallet
-              env:
-                  TESTS_CROSSMINT_API_KEY: ${{ secrets.TESTS_CROSSMINT_API_KEY_SMOKE_TESTS }}
-              run: |
-                  curl -s "https://staging.crossmint.com/api/2025-06-09/wallets/0x74fe4Bd5098818bebea9573A53F5A053E0DE0F87?chain=base-sepolia" \
-                    -H "x-api-key: $TESTS_CROSSMINT_API_KEY" | \
-                    node -e '
-                      const body = JSON.parse(require("fs").readFileSync(0, "utf8"));
-                      const delegated = body.config?.delegatedSigners?.length ?? 0;
-                      console.log(JSON.stringify({ adminSigner: body.config?.adminSigner, delegatedCount: delegated, total: 1 + delegated }, null, 2));
-                    '
-
             - name: Run smoke tests
               id: run_tests
               working-directory: apps/wallets/quickstart-devkit
