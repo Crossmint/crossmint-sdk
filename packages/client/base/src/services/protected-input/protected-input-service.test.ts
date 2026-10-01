@@ -61,6 +61,14 @@ describe("protected input transport", () => {
         expect(url.toString()).not.toContain("secret");
     });
 
+    test("keeps the iframe URL unchanged when disabled and invalid change", () => {
+        const props = { field: FIELD, jwt: "buyer-jwt" };
+        const url = service.iframe.getUrl(props);
+        for (const state of [true, false]) {
+            expect(service.iframe.getUrl({ ...props, disabled: state, invalid: state })).toBe(url);
+        }
+    });
+
     test("validates collection payloads before transport sends them", () => {
         const schema = protectedInputOutgoingEvents["protected-input:collect"];
         const data = { requestId: "request", jwt: "buyer-jwt", apiKey: "client-key" };

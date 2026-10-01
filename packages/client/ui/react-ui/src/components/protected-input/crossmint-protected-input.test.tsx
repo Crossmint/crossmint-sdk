@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { createRef } from "react";
+import { createRef, startTransition, Suspense, useLayoutEffect } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { CrossmintProtectedInputRef } from "@crossmint/client-sdk-base";
 import { CrossmintProtectedInput } from "./CrossmintProtectedInput";
@@ -114,6 +114,125 @@ describe("CrossmintProtectedInput", () => {
         complete({ result: COLLECTED });
         await expect(pending).resolves.toMatchObject({ status: "superseded" });
         expect(mocks.send).toHaveBeenCalledWith("protected-input:reset", {});
+    });
+
+    test("cancels the old collection before a parent layout effect collects for a new buyer", async () => {
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise(() => {
+                /* The old buyer's frame never replies. */
+            })
+        );
+        mocks.sendAction.mockResolvedValueOnce({ result: COLLECTED });
+        const ref = createRef<CrossmintProtectedInputRef>();
+        let replacement: Promise<unknown> | undefined;
+        function Parent({ jwt }: { jwt: string }) {
+            useLayoutEffect(() => {
+                if (jwt === "replacement-buyer") {
+                    replacement = ref.current?.collect();
+                }
+            }, [jwt]);
+            return <CrossmintProtectedInput ref={ref} field={FIELD} jwt={jwt} />;
+        }
+        const { rerender } = render(<Parent jwt="buyer-jwt" />);
+        fireEvent.load(screen.getByTitle(FIELD.label));
+        const original = ref.current?.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        const signal: AbortSignal = mocks.sendAction.mock.calls[0][0].options.signal;
+        mocks.send.mockClear();
+        rerender(<Parent jwt="replacement-buyer" />);
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(signal.aborted).toBe(true);
+        await expect(original).resolves.toMatchObject({ status: "superseded" });
+        await expect(replacement).resolves.toEqual(COLLECTED);
+        expect(mocks.sendAction.mock.calls[1][0].data.jwt).toBe("replacement-buyer");
+        expect(mocks.send).toHaveBeenCalledWith("protected-input:reset", {});
+        expect(mocks.send.mock.invocationCallOrder[0]).toBeLessThan(mocks.sendAction.mock.invocationCallOrder[1]);
+    });
+
+    test("keeps the committed buyer's collection when a concurrent render suspends", async () => {
+        let complete!: (value: { result: typeof COLLECTED }) => void;
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const ref = createRef<CrossmintProtectedInputRef>();
+        const suspended = new Promise(() => {
+            /* The replacement buyer's render never becomes ready to commit. */
+        });
+        const attempted = vi.fn();
+        function SuspendNewBuyer({ jwt }: { jwt: string }) {
+            if (jwt === "uncommitted-buyer") {
+                attempted();
+                throw suspended;
+            }
+            return null;
+        }
+        function Parent({ jwt }: { jwt: string }) {
+            return (
+                <Suspense fallback={<p>Loading buyer</p>}>
+                    <CrossmintProtectedInput ref={ref} field={FIELD} jwt={jwt} />
+                    <SuspendNewBuyer jwt={jwt} />
+                </Suspense>
+            );
+        }
+        const { rerender } = render(<Parent jwt="buyer-jwt" />);
+        const frame = screen.getByTitle(FIELD.label);
+        fireEvent.load(frame);
+        const original = ref.current?.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        mocks.send.mockClear();
+        await act(async () => {
+            startTransition(() => rerender(<Parent jwt="uncommitted-buyer" />));
+        });
+        expect(attempted).toHaveBeenCalled();
+        expect(screen.queryByText("Loading buyer")).toBeNull();
+        expect(screen.getByTitle(FIELD.label)).toBe(frame);
+        expect(mocks.send).not.toHaveBeenCalledWith("protected-input:reset", {});
+        expect(ref.current?.collect()).toBe(original);
+        await act(async () => complete({ result: COLLECTED }));
+        await expect(original).resolves.toEqual(COLLECTED);
+    });
+
+    test("updates disabled and invalid without reloading or cancelling collection", async () => {
+        let complete!: (value: { result: typeof COLLECTED }) => void;
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const { ref, input, rerender } = mount();
+        const frame = screen.getByTitle(FIELD.label);
+        const src = frame.getAttribute("src");
+        const pending = input.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        mocks.send.mockClear();
+        for (const state of [true, false]) {
+            rerender(
+                <CrossmintProtectedInput ref={ref} field={FIELD} jwt="buyer-jwt" disabled={state} invalid={state} />
+            );
+            await act(async () => {
+                await Promise.resolve();
+            });
+            expect(screen.getByTitle(FIELD.label)).toBe(frame);
+            expect(frame.getAttribute("src")).toBe(src);
+            expect(mocks.send).toHaveBeenLastCalledWith("protected-input:state", { disabled: state, invalid: state });
+            expect(ref.current?.collect()).toBe(pending);
+        }
+        expect(mocks.handshakeWithChild).toHaveBeenCalledOnce();
+        expect(mocks.off).not.toHaveBeenCalled();
+        expect(mocks.send).not.toHaveBeenCalledWith("protected-input:reset", {});
+        expect(mocks.sendAction.mock.calls[0][0].options.signal.aborted).toBe(false);
+        await act(async () => complete({ result: COLLECTED }));
+        await expect(pending).resolves.toEqual(COLLECTED);
     });
 
     test("returns a safe failure without exposing a transport exception", async () => {

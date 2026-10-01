@@ -7,7 +7,9 @@ import {
     createProtectedInputService,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const unavailable = (): ProtectedInputCollectionResult => ({
     status: "unavailable",
@@ -35,13 +37,6 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
         const connection = useRef<{ client: ProtectedInputIFrameEmitter; ready: Promise<void> } | null>(null);
         const stamp = JSON.stringify([props.field, props.jwt, crossmint.apiKey, props.expiresAt]);
         const current = useRef({ props, apiKey: crossmint.apiKey, stamp, revision: 0 });
-        current.current = {
-            props,
-            apiKey: crossmint.apiKey,
-            stamp,
-            revision: current.current.revision + (current.current.stamp === stamp ? 0 : 1),
-        };
-        const collectionIdentity = `${current.current.revision}:${stamp}`;
         const pending = useRef<{
             client: ProtectedInputIFrameEmitter;
             requestId: string;
@@ -56,7 +51,17 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
             return `${current.current.revision}:${current.current.stamp}`;
         }
 
-        useEffect(() => {
+        // An abandoned concurrent render must not change the buyer of an active collection.
+        useCommittedLayoutEffect(() => {
+            current.current = {
+                props,
+                apiKey: crossmint.apiKey,
+                stamp,
+                revision: current.current.revision + (current.current.stamp === stamp ? 0 : 1),
+            };
+        }, [props, crossmint.apiKey, stamp]);
+
+        useCommittedLayoutEffect(() => {
             if (iframe.current == null || loaded?.url !== url) {
                 return;
             }
@@ -98,8 +103,10 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
                 });
         }, [props.disabled, props.invalid, url, loaded]);
 
-        useEffect(() => {
-            if (pending.current != null && pending.current.identity !== collectionIdentity) {
+        // Reset before a parent layout effect can start collection for the committed buyer.
+        useCommittedLayoutEffect(() => {
+            const committedIdentity = identity();
+            if (pending.current != null && pending.current.identity !== committedIdentity) {
                 pending.current.cancel();
                 pending.current = null;
             }
@@ -109,14 +116,14 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
             }
             active.ready
                 .then(() => {
-                    if (connection.current === active) {
+                    if (connection.current === active && identity() === committedIdentity) {
                         active.client.send("protected-input:reset", {});
                     }
                 })
                 .catch(() => {
                     /* collect() reports a blocked channel. */
                 });
-        }, [collectionIdentity, loaded, url]);
+        }, [stamp, loaded, url]);
 
         useImperativeHandle(ref, () => ({
             collect() {
@@ -127,6 +134,10 @@ export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, Cr
                 const stamp = identity();
                 if (pending.current?.identity === stamp && pending.current.client === active.client) {
                     return pending.current.promise;
+                }
+                if (pending.current != null) {
+                    pending.current.cancel();
+                    pending.current = null;
                 }
                 const { props, apiKey } = current.current;
                 const requestId = crypto.randomUUID();
