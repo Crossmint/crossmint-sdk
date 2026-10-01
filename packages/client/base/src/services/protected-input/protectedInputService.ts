@@ -14,7 +14,7 @@ export function createProtectedInputService({ apiClient }: ProtectedInputService
         const queryParams = new URLSearchParams();
 
         // Authentication crosses the verified window channel, never the iframe URL.
-        appendObjectToQueryParams(queryParams, { field: props.field, appearance: props.appearance });
+        appendObjectToQueryParams(queryParams, { field: publicField(props.field), appearance: props.appearance });
         if (typeof window !== "undefined") {
             queryParams.set("targetOrigin", window.location.origin);
         }
@@ -36,5 +36,27 @@ export function createProtectedInputService({ apiClient }: ProtectedInputService
             getUrl: getIFrameUrl,
             createClient: createIframeClient,
         },
+    };
+}
+
+/** Strip undeclared runtime data before it can enter the URL. */
+function publicField(field: CrossmintProtectedInputProps["field"]) {
+    const input = field.input;
+    return {
+        key: field.key,
+        label: field.label,
+        required: field.required,
+        handling: field.handling,
+        input:
+            input.kind === "text"
+                ? {
+                      kind: input.kind,
+                      ...(input.multiline === undefined ? {} : { multiline: input.multiline }),
+                      ...(input.placeholder === undefined ? {} : { placeholder: input.placeholder }),
+                      ...(input.display === undefined ? {} : { display: input.display }),
+                      ...(input.autoComplete === undefined ? {} : { autoComplete: input.autoComplete }),
+                      ...(input.inputMode === undefined ? {} : { inputMode: input.inputMode }),
+                  }
+                : { kind: input.kind },
     };
 }
