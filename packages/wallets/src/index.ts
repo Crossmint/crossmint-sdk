@@ -35,6 +35,7 @@ export type {
     SendResponse,
     FundWalletParams,
     FundWalletResponse,
+    GetBalanceResponse,
     GetTransactionResponse,
     ApproveTransactionParams,
 } from "./api/types";
