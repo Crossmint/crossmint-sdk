@@ -1,0 +1,39 @@
+name: SDK Heartbeat
+
+on:
+    schedule:
+        - cron: "0 7,19 * * *"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    heartbeat:
+        name: wallets API contract (preview)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
+              run: pnpm turbo build --concurrency=1
+
+            - name: Run heartbeat suite
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:heartbeat
+
+            - name: Notify Slack on failure
+              if: failure()
+              run: |
+                  curl --fail-with-body -sS -X POST -H 'Content-type: application/json' \
+                      --data "{\"text\": \":rotating_light: SDK heartbeat failed — the wallets API contract may have changed. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\"}" \
+                      "$SLACK_WEBHOOK"
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_QA_ALERTS_WEBHOOK }}
