@@ -11,11 +11,14 @@ CHECKED_FILE="$CACHE_DIR/checked"
 MAX_AGE=86400
 
 export GIT_TERMINAL_PROMPT=0
-export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes}"
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=2}"
+GIT_NET=(-c http.lowSpeedLimit=1000 -c http.lowSpeedTime=20)
 mkdir -p "$CACHE_DIR" 2>/dev/null
 
+END_MARK="<!-- end of $REPO -->"
+
 valid() {
-    [ -f "$1" ] && head -n 1 "$1" | grep -Eq "^<!-- $REPO@[0-9a-f]{40} -->$"
+    [ -f "$1" ] && head -n 1 "$1" | grep -Eq "^<!-- $REPO@[0-9a-f]{40} -->$" && [ "$(tail -n 1 "$1")" = "$END_MARK" ]
 }
 
 fresh() {
@@ -31,11 +34,11 @@ fetch() {
     git init -q --bare "$GIT_DIR_PATH" || return 1
     for attempt in 1 2; do
         for url in "https://github.com/$REPO.git" "git@github.com:$REPO.git"; do
-            if git --git-dir="$GIT_DIR_PATH" fetch -q --depth 1 "$url" HEAD 2>/dev/null; then
+            if git --git-dir="$GIT_DIR_PATH" "${GIT_NET[@]}" fetch -q --depth 1 "$url" HEAD 2>/dev/null; then
                 return 0
             fi
         done
-        if command -v gh >/dev/null 2>&1 && git --git-dir="$GIT_DIR_PATH" -c credential.helper= -c credential.helper='!gh auth git-credential' \
+        if command -v gh >/dev/null 2>&1 && git --git-dir="$GIT_DIR_PATH" "${GIT_NET[@]}" -c credential.helper= -c credential.helper='!gh auth git-credential' \
             fetch -q --depth 1 "https://github.com/$REPO.git" HEAD 2>/dev/null; then
             return 0
         fi
@@ -49,23 +52,25 @@ build() {
     sha=$(git --git-dir="$GIT_DIR_PATH" rev-parse FETCH_HEAD) || return 1
     tmp=$(mktemp "$CACHE_DIR/best-practices.md.XXXXXX") || return 1
     if (
+        set -o pipefail
         git --git-dir="$GIT_DIR_PATH" ls-tree -rz --name-only "$sha" > "$GIT_DIR_PATH/paths" || exit 1
-        echo "<!-- $REPO@$sha -->"
-        echo "# Paella/Crossmint best practices"
-        echo "Source: https://github.com/$REPO (commit $sha). Follow these when writing or reviewing code, tests, docs, PRs, deployments and operations; cite the file and rule when flagging a violation."
-        echo ""
+        echo "<!-- $REPO@$sha -->" &&
+            echo "# Paella/Crossmint best practices" &&
+            echo "Source: https://github.com/$REPO (commit $sha). Follow these when writing or reviewing code, tests, docs, PRs, deployments and operations; cite the file and rule when flagging a violation." &&
+            echo "" || exit 1
         found=0
         while IFS= read -r -d '' path; do
             case "$path" in *.md) ;; *) continue ;; esac
             found=1
             content=$(git --git-dir="$GIT_DIR_PATH" show "$sha:$path") || exit 1
-            echo "## $path"
-            echo ""
-            printf '%s\n' "$content" | sed -E 's/^(#+)/\1##/'
-            echo ""
+            echo "## $path" &&
+                echo "" &&
+                printf '%s\n' "$content" | sed -E 's/^(#+)/\1##/' &&
+                echo "" || exit 1
         done < "$GIT_DIR_PATH/paths"
-        [ "$found" = 1 ]
-    ) > "$tmp" && mv -f "$tmp" "$CACHE_FILE"; then
+        [ "$found" = 1 ] || exit 1
+        echo "$END_MARK"
+    ) > "$tmp" && valid "$tmp" && mv -f "$tmp" "$CACHE_FILE"; then
         return 0
     fi
     rm -f "$tmp"
