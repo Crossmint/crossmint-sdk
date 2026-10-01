@@ -240,9 +240,9 @@ export type DeviceSignerConfig = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+    ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////

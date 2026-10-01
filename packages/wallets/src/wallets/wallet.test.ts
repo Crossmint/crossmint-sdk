@@ -2926,6 +2926,66 @@ describe("Wallet - useSigner()", () => {
             expect(wallet.signer?.locator()).toBe(activeLocator);
         });
 
+        describe("useRecoveryMethod with an id-less passkey on Stellar", () => {
+            const STELLAR_ADDRESS = "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY";
+            const storedPasskey = (id: string) => ({
+                type: "passkey",
+                id,
+                name: "Recovery passkey",
+                locator: `passkey:${id}`,
+            });
+
+            async function stellarWalletWith(recoveryMethods: unknown[]) {
+                mockApiClient = createMockApiClient();
+                mockApiClient.getWallet.mockResolvedValue({
+                    chainType: "stellar",
+                    type: "smart",
+                    address: STELLAR_ADDRESS,
+                    config: { recoveryMethods, delegatedSigners: [] },
+                    createdAt: Date.now(),
+                } as unknown as GetWalletSuccessResponse);
+                mockApiClient.registerSigner.mockResolvedValue({
+                    type: "external-wallet",
+                    address: "GNEWSIGNER",
+                    locator: "external-wallet:GNEWSIGNER",
+                    transaction: { id: "txn-add", status: "awaiting-approval" },
+                } as any);
+                const wallet = await new WalletFactory(mockApiClient as unknown as ApiClient).getWallet({
+                    chain: "stellar",
+                });
+                vi.spyOn(wallet, "signers").mockResolvedValue([]);
+                return wallet;
+            }
+
+            it("signs with the stored recovery method's credential id", async () => {
+                const wallet = await stellarWalletWith([{ type: "api-key" }, storedPasskey("stored-credential")]);
+
+                await wallet.useRecoveryMethod({ type: "passkey" });
+                await wallet.addSigner({ type: "external-wallet", address: "GNEWSIGNER" }, { prepareOnly: true });
+
+                expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                    expect.any(String),
+                    expect.objectContaining({ approver: "passkey:stored-credential" })
+                );
+            });
+
+            it("asks for the credential id when several passkey recovery methods exist", async () => {
+                const wallet = await stellarWalletWith([storedPasskey("first"), storedPasskey("second")]);
+
+                await expect(wallet.useRecoveryMethod({ type: "passkey" })).rejects.toThrow(
+                    "Multiple passkey recovery methods are registered on this wallet"
+                );
+            });
+
+            it("asks for the credential id when the recovery method has none", async () => {
+                const wallet = await stellarWalletWith([{ type: "api-key" }, { type: "passkey" }]);
+
+                await expect(wallet.useRecoveryMethod({ type: "passkey" })).rejects.toThrow(
+                    "The passkey recovery method has no credential id"
+                );
+            });
+        });
+
         it("removing the selected passkey by credential id also forgets its id-less recovery record", async () => {
             mockApiClient = createMockApiClient();
             mockApiClient.getWallet.mockResolvedValue({
