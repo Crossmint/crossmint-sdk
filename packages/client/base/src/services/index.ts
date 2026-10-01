@@ -5,6 +5,7 @@ export * from "./identity-verification";
 export * from "./cvc-recollection";
 export * from "./protected-input";
 export * from "./order-intents";
+export * from "./agent-checkouts";
 
 export * from "./api";
 export * from "./logging";
