@@ -3,12 +3,12 @@ import type { SendParams, WalletLocator, WalletsApiClient } from "@crossmint/wal
 import { createIntegrationApiClient } from "../shared/client";
 import {
     delay,
+    approveTransaction,
     createFreshWallet,
     expectErrorResponse,
     expectSuccessTransactionResponse,
     expectSuccessWalletResponse,
     fundWalletAndWait,
-    isErrorResponse,
     sendTokenAndApprove,
     TestDataFactory,
 } from "./test-utils";
@@ -34,19 +34,6 @@ describe("Wallets — edge cases & response validation (Real HTTP)", () => {
             const params: SendParams = {
                 recipient: TEST_ADDRESSES.EVM_RECIPIENT,
                 amount: TEST_VALUES.SEND_AMOUNT_EXTREME,
-            };
-
-            const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-            expectErrorResponse(result);
-        });
-
-        // TODO: Fix zero amount handling - see WAL-7928
-        it.skip("handles zero amount", async () => {
-            const { address: walletAddress } = await createFreshWallet(apiClient, testData);
-
-            const params: SendParams = {
-                recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                amount: TEST_VALUES.SEND_AMOUNT_ZERO,
             };
 
             const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
@@ -83,23 +70,27 @@ describe("Wallets — edge cases & response validation (Real HTTP)", () => {
             TIMEOUT_MEDIUM
         );
 
-        it("handles concurrent wallet creation", async () => {
-            const promises = Array.from({ length: TEST_VALUES.CONCURRENT_REQUESTS }, (_, i) =>
-                apiClient.createWallet({
-                    chainType: "evm",
-                    type: "smart",
-                    owner: `userId:integration-concurrent-${Date.now()}-${i}`,
-                    config: { adminSigner: { type: "external-wallet", address: TEST_ADDRESSES.EVM_ADMIN_SIGNER } },
-                } as Parameters<typeof apiClient.createWallet>[0])
-            );
+        it(
+            "handles concurrent wallet creation",
+            async () => {
+                const promises = Array.from({ length: TEST_VALUES.CONCURRENT_REQUESTS }, (_, i) =>
+                    apiClient.createWallet({
+                        chainType: "evm",
+                        type: "smart",
+                        owner: `userId:integration-concurrent-${Date.now()}-${i}`,
+                        config: { adminSigner: { type: "external-wallet", address: TEST_ADDRESSES.EVM_ADMIN_SIGNER } },
+                    } as Parameters<typeof apiClient.createWallet>[0])
+                );
 
-            const results = await Promise.all(promises);
+                const results = await Promise.all(promises);
 
-            results.forEach((result) => {
-                expectSuccessWalletResponse(result);
-                testData.addWallet(result.address);
-            });
-        });
+                results.forEach((result) => {
+                    expectSuccessWalletResponse(result);
+                    testData.addWallet(result.address);
+                });
+            },
+            TIMEOUT_SHORT
+        );
 
         it(
             "handles rapid sequential requests",
@@ -152,12 +143,16 @@ describe("Wallets — edge cases & response validation (Real HTTP)", () => {
                     "base-sepolia"
                 );
 
-                const transaction = await sendTokenAndApprove(
+                const sendResult = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", {
+                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
+                    amount: TEST_VALUES.SEND_AMOUNT_SMALL,
+                });
+                expectSuccessTransactionResponse(sendResult);
+
+                const transaction = await approveTransaction(
                     apiClient,
                     walletAddress as WalletLocator,
-                    "base-sepolia:usdxm",
-                    TEST_ADDRESSES.EVM_RECIPIENT,
-                    TEST_VALUES.SEND_AMOUNT_SMALL,
+                    sendResult.id,
                     signer
                 );
 
@@ -179,9 +174,7 @@ describe("Wallets — edge cases & response validation (Real HTTP)", () => {
                 },
             });
 
-            if (isErrorResponse(result)) {
-                expectErrorResponse(result, "message");
-            }
+            expectErrorResponse(result, "message");
         });
     });
 
@@ -198,7 +191,7 @@ describe("Wallets — edge cases & response validation (Real HTTP)", () => {
 
             try {
                 await testClient.createWallet({ chainType: "evm", type: "mpc", owner: `userId:test-${Date.now()}` });
-                expect(capturedUrl).toContain("api/2025-06-09/wallets");
+                expect(new URL(capturedUrl!).pathname).toBe("/api/2025-06-09/wallets");
             } finally {
                 global.fetch = originalFetch;
             }
