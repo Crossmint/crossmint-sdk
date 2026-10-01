@@ -1,159 +1,190 @@
 import "@testing-library/jest-dom/vitest";
-
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-
+import type { CrossmintProtectedInputRef } from "@crossmint/client-sdk-base";
 import { CrossmintProtectedInput } from "./CrossmintProtectedInput";
 
-const listeners = new Map<string, (data: unknown) => void>();
-// Returns an id distinct from the event name on purpose, so the unmount test
-// fails if cleanup passes event names to off() instead of the returned ids.
-const iframeClient = {
-    on: vi.fn((event: string, handler: (data: unknown) => void) => {
-        listeners.set(event, handler);
-        return `listener-id:${event}`;
-    }),
+const mocks = vi.hoisted(() => ({
+    crossmint: { apiKey: "ck_test" },
+    send: vi.fn(),
     off: vi.fn(),
-};
-const getUrl = vi.fn(
-    ({ jwt }: { jwt: string }) => `https://staging.crossmint.com/sdk/unstable/protected-input?merchantUrl=x&jwt=${jwt}`
-);
-const createClient = vi.fn(() => iframeClient);
-
-vi.mock("@crossmint/client-sdk-base", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("@crossmint/client-sdk-base")>()),
+    handshakeWithChild: vi.fn().mockResolvedValue(undefined),
+    sendAction: vi.fn(),
+    on: vi.fn().mockReturnValue("height-subscription"),
+}));
+vi.mock("@crossmint/client-sdk-base", async (original) => ({
+    ...(await original<typeof import("@crossmint/client-sdk-base")>()),
     createProtectedInputService: () => ({
         iframe: {
-            getUrl,
-            createClient,
+            getUrl: () => "https://staging.crossmint.com/sdk/unstable/protected-input",
+            createClient: () => ({ ...mocks }),
         },
     }),
 }));
-
-vi.mock("@crossmint/client-sdk-react-base", () => ({
-    useCrossmint: () => ({ crossmint: { apiKey: "ck_staging_key" } }),
-}));
-
-vi.mock("@/utils/createCrossmintApiClient", () => ({
-    createCrossmintApiClient: () => ({}),
-}));
-
-const PROPS = { jwt: "jwt-1", merchantUrl: "https://shop.example.com/login", label: "Example Shop" } as const;
-const CREATED = {
-    protectedInputId: "pi_1",
-    purpose: "password",
-    merchant: { domain: "shop.example.com" },
-    expiresAt: "2026-09-24T12:00:00.000Z",
+vi.mock("@crossmint/client-sdk-react-base", () => ({ useCrossmint: () => ({ crossmint: mocks.crossmint }) }));
+vi.mock("@/utils/createCrossmintApiClient", () => ({ createCrossmintApiClient: () => ({}) }));
+const FIELD = {
+    key: "code",
+    label: "Verification code",
+    required: true,
+    handling: "protected",
+    input: { kind: "text" },
 } as const;
+const COLLECTED = { status: "collected", input: { protectedInputId: "pi_test" } } as const;
 
-function emit(event: string, data: unknown) {
-    const handler = listeners.get(event);
-    if (handler == null) {
-        throw new Error(`no listener registered for ${event}`);
+function mount(jwt = "buyer-jwt") {
+    const ref = createRef<CrossmintProtectedInputRef>();
+    const view = render(<CrossmintProtectedInput ref={ref} field={FIELD} jwt={jwt} />);
+    fireEvent.load(screen.getByTitle(FIELD.label));
+    if (ref.current == null) {
+        throw new Error("Protected input ref did not mount");
     }
-    act(() => handler(data));
+    return { ...view, ref, input: ref.current };
 }
 
-describe("<CrossmintProtectedInput />", () => {
+describe("CrossmintProtectedInput", () => {
     afterEach(() => {
         cleanup();
-        listeners.clear();
         vi.clearAllMocks();
     });
 
-    describe("when mounted", () => {
-        test("renders an iframe pointed at the protected-input route, built from the props", () => {
-            render(<CrossmintProtectedInput {...PROPS} />);
+    test("renders only an accessible iframe without permissions or host controls", () => {
+        const { container } = mount();
+        expect(container.querySelectorAll("input, textarea, select, button")).toHaveLength(0);
+        expect(screen.getByTitle(FIELD.label)).not.toHaveAttribute("allow");
+        expect(mocks.handshakeWithChild).toHaveBeenCalledOnce();
+    });
 
-            expect(getUrl).toHaveBeenLastCalledWith(expect.objectContaining(PROPS));
-            expect(screen.getByTitle("Protected input").getAttribute("src")).toContain(
-                "/sdk/unstable/protected-input?merchantUrl=x&jwt=jwt-1"
+    test("shares concurrent collections and returns only the protected reference", async () => {
+        let complete: (value: { result: typeof COLLECTED }) => void = () => {
+            throw new Error("not collecting");
+        };
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const { input } = mount();
+        const first = input.collect();
+        const second = input.collect();
+        expect(first).toBe(second);
+        await act(async () => {
+            complete({ result: COLLECTED });
+            expect(await first).toEqual(COLLECTED);
+        });
+        expect(mocks.sendAction).toHaveBeenCalledOnce();
+        expect(mocks.sendAction.mock.calls[0][0].data).toMatchObject({ jwt: "buyer-jwt", apiKey: "ck_test" });
+        expect(mocks.sendAction.mock.calls[0][0].data).not.toHaveProperty("value");
+    });
+
+    test("supersedes a completed collection when buyer authentication changes", async () => {
+        let complete: (value: { result: typeof COLLECTED }) => void = () => {
+            throw new Error("not collecting");
+        };
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const { input, ref, rerender } = mount();
+        const pending = input.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        rerender(<CrossmintProtectedInput ref={ref} field={FIELD} jwt="new-buyer" />);
+        complete({ result: COLLECTED });
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+    });
+
+    test("invalidates auth that changes and returns to the original buyer", async () => {
+        let complete!: (value: { result: typeof COLLECTED }) => void;
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const { input, ref, rerender } = mount();
+        const pending = input.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        rerender(<CrossmintProtectedInput ref={ref} field={FIELD} jwt="another-buyer" />);
+        rerender(<CrossmintProtectedInput ref={ref} field={FIELD} jwt="buyer-jwt" />);
+        complete({ result: COLLECTED });
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+        expect(mocks.send).toHaveBeenCalledWith("protected-input:reset", {});
+    });
+
+    test("returns a safe failure without exposing a transport exception", async () => {
+        mocks.sendAction.mockRejectedValueOnce(new Error("sensitive provider details"));
+        const { input } = mount();
+        await expect(input.collect()).resolves.toMatchObject({
+            status: "unavailable",
+            code: "collector_unavailable",
+        });
+    });
+
+    test("reconnects after iframe reload and supersedes the old completion", async () => {
+        let complete: (value: { result: typeof COLLECTED }) => void = () => {
+            throw new Error("not collecting");
+        };
+        mocks.sendAction.mockReturnValueOnce(
+            new Promise((resolve) => {
+                complete = resolve;
+            })
+        );
+        const { input } = mount();
+        const pending = input.collect();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        fireEvent.load(screen.getByTitle(FIELD.label));
+        complete({ result: COLLECTED });
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+        expect(mocks.off).toHaveBeenCalledWith("height-subscription");
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+    });
+    test.each(["auth", "reload", "unmount"] as const)(
+        "settles a pending collection immediately on %s",
+        async (change) => {
+            mocks.sendAction.mockReturnValueOnce(
+                new Promise(() => {
+                    /* The old channel never responds. */
+                })
             );
-        });
-
-        test("requests no device permissions, since the password field is a plain text element", () => {
-            render(<CrossmintProtectedInput {...PROPS} />);
-
-            expect(screen.getByTitle("Protected input").hasAttribute("allow")).toBe(false);
-        });
-
-        test("renders nothing but the iframe: no field of its own that could hold the password", () => {
-            const { container } = render(<CrossmintProtectedInput {...PROPS} />);
-
-            expect(container.querySelectorAll("input, textarea, form")).toHaveLength(0);
-            expect(container.children).toHaveLength(1);
-            expect(container.firstElementChild?.tagName).toBe("IFRAME");
-        });
-    });
-
-    describe("when the jwt prop changes", () => {
-        test("points the same iframe at the new token instead of remounting it", () => {
-            const { rerender } = render(<CrossmintProtectedInput {...PROPS} />);
-            const iframe = screen.getByTitle("Protected input");
-
-            rerender(<CrossmintProtectedInput {...PROPS} jwt="jwt-2" />);
-
-            expect(screen.getByTitle("Protected input")).toBe(iframe);
-            expect(iframe.getAttribute("src")).toContain("jwt=jwt-2");
-            expect(createClient).toHaveBeenCalledTimes(1);
-            expect(iframeClient.off).not.toHaveBeenCalled();
-        });
-    });
-
-    describe("when the iframe relays lifecycle events", () => {
-        test("forwards protected-input:created to onCreated with the payload untouched", () => {
-            const onCreated = vi.fn();
-            render(<CrossmintProtectedInput {...PROPS} onCreated={onCreated} />);
-
-            emit("protected-input:created", CREATED);
-
-            expect(onCreated).toHaveBeenCalledTimes(1);
-            expect(onCreated).toHaveBeenCalledWith(CREATED);
-        });
-
-        test("forwards protected-input:error to onError", () => {
-            const onError = vi.fn();
-            render(<CrossmintProtectedInput {...PROPS} onError={onError} />);
-
-            emit("protected-input:error", { code: "provider_unavailable", message: "vault widget failed to load" });
-
-            expect(onError).toHaveBeenCalledWith({
-                code: "provider_unavailable",
-                message: "vault widget failed to load",
+            const { input, ref, rerender, unmount } = mount();
+            const pending = input.collect();
+            await act(async () => {
+                await Promise.resolve();
             });
-        });
-
-        test("calls the callback from the latest render, not the one captured at subscribe time", () => {
-            const stale = vi.fn();
-            const fresh = vi.fn();
-            const { rerender } = render(<CrossmintProtectedInput {...PROPS} onCreated={stale} />);
-
-            rerender(<CrossmintProtectedInput {...PROPS} onCreated={fresh} />);
-            emit("protected-input:created", CREATED);
-
-            expect(fresh).toHaveBeenCalledTimes(1);
-            expect(stale).not.toHaveBeenCalled();
-        });
-
-        test("applies the relayed height to the iframe", () => {
-            render(<CrossmintProtectedInput {...PROPS} />);
-
-            emit("ui:height.changed", { height: 180 });
-
-            expect(screen.getByTitle("Protected input")).toHaveStyle({ height: "180px" });
-        });
-    });
-
-    describe("when unmounted", () => {
-        test("removes every listener by its returned id, not by event name", () => {
-            const { unmount } = render(<CrossmintProtectedInput {...PROPS} />);
-
-            unmount();
-
-            for (const event of ["ui:height.changed", "protected-input:created", "protected-input:error"]) {
-                expect(iframeClient.off).toHaveBeenCalledWith(`listener-id:${event}`);
+            const signal: AbortSignal = mocks.sendAction.mock.calls[0][0].options.signal;
+            if (change === "auth") {
+                rerender(<CrossmintProtectedInput ref={ref} field={FIELD} jwt="replacement-buyer" />);
+            } else if (change === "reload") {
+                fireEvent.load(screen.getByTitle(FIELD.label));
+            } else {
+                unmount();
             }
-            expect(iframeClient.off).toHaveBeenCalledTimes(3);
-        });
+            await expect(pending).resolves.toMatchObject({ status: "superseded" });
+            expect(signal.aborted).toBe(true);
+            if (change !== "unmount") {
+                mocks.sendAction.mockResolvedValueOnce({ result: COLLECTED });
+                await expect(input.collect()).resolves.toEqual(COLLECTED);
+            }
+        }
+    );
+
+    test("settles collection while an iframe handshake is still pending", async () => {
+        mocks.handshakeWithChild.mockReturnValueOnce(
+            new Promise(() => {
+                /* The old channel never responds. */
+            })
+        );
+        const { input, unmount } = mount();
+        const pending = input.collect();
+        unmount();
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+        expect(mocks.sendAction).not.toHaveBeenCalled();
     });
 });
