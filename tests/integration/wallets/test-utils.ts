@@ -222,7 +222,7 @@ export async function fundWalletAndWait(
     await waitForFundedBalance(apiClient, walletLocator, token, chain);
 }
 
-async function approveTransaction(
+export async function approveTransaction(
     apiClient: WalletsApiClient,
     walletLocator: WalletLocator,
     transactionId: string,
