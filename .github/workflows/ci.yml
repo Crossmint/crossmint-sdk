@@ -34,6 +34,9 @@ jobs:
             - name: Typecheck apps
               run: pnpm typecheck
 
+            - name: Check the Expo playground shares native modules with the RN SDK
+              run: pnpm --filter @crossmint/wallets-playground-expo check:native-copies
+
     lint:
         name: lint
         runs-on: ubuntu-latest

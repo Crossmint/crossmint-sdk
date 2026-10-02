@@ -13,6 +13,10 @@
 set -euo pipefail
 # CocoaPods fails with an encoding error without a UTF-8 locale.
 export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+# Use the xcrun shims in /usr/bin, so `clang` is the selected Xcode's (DEVELOPER_DIR) even when a
+# toolchain manager such as swiftenv puts its own clang first. From Expo SDK 56, `pod install`
+# compiles a stub library, and a non-Xcode clang fails with "ld: library 'System' not found".
+export PATH="/usr/bin:$PATH"
 
 SDK="${1:?Usage: verify-expo-compat.sh <expo-sdk-major> [ios|android|all] [work-dir]}"
 PLATFORM="${2:-all}"
