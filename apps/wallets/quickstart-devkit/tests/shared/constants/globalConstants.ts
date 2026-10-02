@@ -59,7 +59,7 @@ export const TEST_CONFIGURATIONS = [
     { provider: "crossmint", chain: "stellar", signer: "email", chainId: "stellar", alias: undefined },
 ] as const;
 
-export type TestConfiguration = (typeof TEST_CONFIGURATIONS)[number];
+export type TestConfiguration = (typeof TEST_CONFIGURATIONS)[number] & { emailOverride?: string };
 
 // Legacy support - keep existing signer types for backward compatibility
 export const SIGNER_TYPES = TEST_CONFIGURATIONS.map((config) => config.signer).filter(
@@ -89,6 +89,11 @@ const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 export function getEmailForSigner(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
+}
+
+export function getLegacySmokeWalletEmail(signerType: SignerType): string {
+    const baseAlias = SIGNER_EMAIL_BASE[signerType];
+    return `test-${baseAlias}-smoke@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
 // Hashed so the alias stays under the API's 36-character cap even though CI's
