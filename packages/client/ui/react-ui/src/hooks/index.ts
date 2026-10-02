@@ -3,3 +3,5 @@ export type { OtpSignerFunctions } from "@crossmint/client-sdk-react-base";
 export * from "./useCrossmintCheckout";
 export * from "./useIdentityVerificationCredentials";
 export * from "./useAuth";
+export * from "./useProtectedInputs";
+export * from "./useOrderIntents";
