@@ -28,6 +28,17 @@ export {
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";
+export type {
+    WalletLocator,
+    CreateWalletParams,
+    CreateWalletResponse,
+    SendResponse,
+    FundWalletParams,
+    FundWalletResponse,
+    GetBalanceResponse,
+    GetTransactionResponse,
+    ApproveTransactionParams,
+} from "./api/types";
 
 // Wallets
 export { Wallet } from "./wallets/wallet";
