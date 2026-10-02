@@ -1438,6 +1438,29 @@ describe("WalletFactory - recovery signer lists", () => {
         });
     });
 
+    describe("getWallet with the caller's recovery config", () => {
+        it("keeps the phone channel, which the API never returns, on an existing wallet", async () => {
+            const phone = "+15550000001";
+            mockApiClient.isServerSide = false;
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "phone", phone, locator: `phone:${phone}` },
+                ])
+            );
+
+            const withoutRecovery = await walletFactory.getWallet({ chain: "solana" });
+            const withRecovery = await walletFactory.getWallet({
+                chain: "solana",
+                recovery: { type: "phone", phone, channel: "whatsapp" },
+            } as WalletCreateArgs<"solana">);
+
+            expect(withoutRecovery.recoveryMethods[0]).not.toHaveProperty("channel");
+            expect(withRecovery.recoveryMethods[0]).toEqual(
+                expect.objectContaining({ type: "phone", channel: "whatsapp" })
+            );
+        });
+    });
+
     describe("createWallet response", () => {
         it("exposes every recovery signer from the response as wallet.recoveryMethods", async () => {
             const recovery = [
