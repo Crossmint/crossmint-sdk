@@ -24,7 +24,7 @@ const superseded = (): ProtectedInputCollectionResult => ({
 /**
  * Collect a protected text or numeric field in a Crossmint-hosted iframe.
  * Call `ref.collect()` from your submit action to receive a protected reference or a collection error.
- * Your page renders the label, button, and error message; values and token IDs stay inside the iframe.
+ * Your page renders the label, button, and error message; collection keeps the entered value out of application JavaScript.
  */
 export const CrossmintProtectedInput = forwardRef<CrossmintProtectedInputRef, CrossmintProtectedInputProps>(
     function CrossmintProtectedInput(props, ref) {
