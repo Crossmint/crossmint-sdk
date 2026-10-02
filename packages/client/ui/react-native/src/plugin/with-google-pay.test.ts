@@ -68,6 +68,21 @@ describe("withGooglePay", () => {
                 expect(paymentQueryActions(manifest)).toEqual(expect.arrayContaining(PAYMENT_ACTIONS));
             });
 
+            test("adds the payment queries and meta-data once when it runs twice", async () => {
+                const once = await runManifestMod(templateManifest, { enableGooglePay: true });
+                const twice = await runManifestMod(once, { enableGooglePay: true });
+                const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(twice);
+
+                // The template already declares other queries (a browser VIEW intent), so look at ours only.
+                const paymentActions = paymentQueryActions(twice).filter((action) => PAYMENT_ACTIONS.includes(action));
+                expect(paymentActions).toEqual(PAYMENT_ACTIONS);
+                expect(
+                    mainApplication["meta-data"]?.filter(
+                        (item) => item.$["android:name"] === "com.google.android.gms.wallet.api.enabled"
+                    )
+                ).toHaveLength(1);
+            });
+
             test("matches the snapshot", async () => {
                 const manifest = await runManifestMod(templateManifest, { enableGooglePay: true });
 
