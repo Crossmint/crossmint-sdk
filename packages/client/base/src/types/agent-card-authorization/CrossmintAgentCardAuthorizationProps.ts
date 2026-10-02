@@ -14,13 +14,13 @@ export interface AgentCardPaymentMethodSummary {
     last4: string;
 }
 
-/** The rail Universal Checkout will draw the card credential from. */
+/** The rail used to provide the card credential for the Agent Checkout. */
 export type AgentCardRail =
     | { rail: "agentic-token"; provider: OrderIntentProvider }
     | { rail: "encrypted-card"; provider?: never };
 
 export interface AgentCardAuthorizationResult {
-    /** Pass this to Universal Checkout as `payment: { orderIntentId }` or as the `payment` input response. */
+    /** Submit this as `response.orderIntentId` in the Agent Checkout's `payment` input response. */
     orderIntentId: string;
     paymentMethod: AgentCardPaymentMethodSummary;
     rail: AgentCardRail;

@@ -111,7 +111,7 @@ const PRODUCTS = {
             CrossmintCheckoutProvider: "Checkout order state management",
             CrossmintPaymentMethodManagement: "Saved payment method management UI",
             CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
-            CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Universal Checkout",
+            CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Agent Checkouts",
         },
         getStartedExamples: {
             setup: "checkoutProviderSetup",
