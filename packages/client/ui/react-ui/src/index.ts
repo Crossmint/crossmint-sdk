@@ -41,6 +41,8 @@ export {
     type AgentCheckoutBuyerProfileInput,
     type AgentCheckoutBuyerProfileUpdate,
     type AgentCheckoutBrowserProfile,
+    type AgentCheckoutBrowserRequest,
+    type AgentCheckoutCdpBrowser,
     type AgentCheckoutProfilePage,
     type AcceptedAgentCheckoutMessage,
     type AcceptedAgentCheckoutCancel,

@@ -102,6 +102,27 @@ describe("createAgentCheckoutsApi", () => {
         expect(run).toEqual(RUN);
     });
 
+    test("create sends a caller-owned CDP browser on the first request", async () => {
+        const browser = {
+            cdp: {
+                url: "wss://browser.example/devtools/browser/abc",
+                headers: { authorization: "Bearer provider-key" },
+            },
+        };
+        fetchMock.mockResolvedValueOnce(
+            jsonResponse(201, { ...RUN, input: { ...RUN.input, browser: { cdp: { redacted: true } } } })
+        );
+
+        const run = await api().create({
+            request: { startUrl: "https://shop.example" },
+            constraints: { maxCost: { amount: "25.00", currency: "USD" } },
+            browser,
+        });
+
+        expect(JSON.parse(String(request().init.body))).toMatchObject({ browser });
+        expect(run.input).toEqual({ ...RUN.input, browser: { cdp: { redacted: true } } });
+    });
+
     test("routes each operation to its public path", async () => {
         fetchMock
             .mockResolvedValueOnce(jsonResponse(200, RUN))

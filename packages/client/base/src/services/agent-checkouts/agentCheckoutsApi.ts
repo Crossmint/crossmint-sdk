@@ -81,7 +81,26 @@ export interface CreateAgentCheckoutInput {
     constraints: { maxCost: { amount: string; currency: string } };
     buyerProfileId?: string;
     merchantGuidance?: string;
-    browser?: { profileId?: string; location?: { type: "country"; countryCode: string } };
+    browser?: AgentCheckoutBrowserRequest;
+}
+
+/**
+ * A browser you run, controlled through the Chrome DevTools Protocol. Universal Checkout connects
+ * to it and disconnects when done; it never launches or closes it. In production the URL must be
+ * a `wss://` URL to a public host. The URL and headers are treated as secrets: the API never
+ * returns them, and a run's input shows only `{ redacted: true }`.
+ */
+export interface AgentCheckoutCdpBrowser {
+    url: string;
+    /** Sent when connecting, for example a browser provider's credentials. */
+    headers?: Record<string, string>;
+}
+
+/** A Crossmint-run browser (`profileId`, `location`) or your own browser (`cdp`); the API refuses both. */
+export interface AgentCheckoutBrowserRequest {
+    profileId?: string;
+    location?: { type: "country"; countryCode: string };
+    cdp?: AgentCheckoutCdpBrowser;
 }
 
 export type AgentCheckoutInputResponse =
