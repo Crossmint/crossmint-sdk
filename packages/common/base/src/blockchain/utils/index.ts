@@ -4,3 +4,4 @@ export * from "./blockchainToCopyName";
 export * from "./isValidAddress";
 
 export * from "./evm";
+export * from "./handleAddressDisplay";
