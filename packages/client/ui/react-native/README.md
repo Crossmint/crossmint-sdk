@@ -14,6 +14,27 @@ npx expo install @crossmint/client-sdk-react-native-ui expo-constants expo-devic
 
 The SDK requires Expo SDK 57 (React Native 0.86, iOS 16.4 or later). The native modules are peer dependencies, and `npx expo install` picks the versions that match your Expo SDK.
 
+### Xcode 27 and iOS 27
+
+Apps built with Xcode 27 (the iOS 27 SDK) must use the UIKit scene lifecycle. If they do not, they stop at launch with "UIScene life cycle is required for apps built with this SDK". On Expo SDK 57, use `expo` 57.0.23 or later and turn on scene support:
+
+```bash
+npx expo install expo-build-properties
+```
+
+```json
+{
+    "expo": {
+        "plugins": [
+            "@crossmint/client-sdk-react-native-ui",
+            ["expo-build-properties", { "ios": { "enableSceneSupport": true } }]
+        ]
+    }
+}
+```
+
+Then regenerate the native project. If your app generates `ios/` and `android/` (continuous native generation), run `npx expo prebuild --clean`. If you maintain those folders by hand, `--clean` deletes your changes; apply the scene lifecycle changes to your own AppDelegate and Info.plist instead, as described in [Expo's iOS scene lifecycle guide](https://expo.fyi/ios-scene-lifecycle). The Crossmint config plugin works with scene support in either plugin order.
+
 ## Quick Start
 
 ### 1. Setup Providers
