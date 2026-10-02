@@ -9,6 +9,7 @@ import {
     type ClientSideWalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
+    type PasskeyProvider,
     type WalletOptions,
     type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
@@ -94,6 +95,11 @@ export interface CrossmintWalletBaseProviderProps {
      * Storage for the device signer key.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /**
+     * @internal
+     * Creates and signs with passkeys where the browser WebAuthn API is not available (React Native).
+     */
+    passkeyProvider?: PasskeyProvider;
     /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
@@ -180,6 +186,7 @@ export function CrossmintWalletBaseProvider({
     clientTEEConnection,
     resetSignerFrame,
     deviceSignerKeyStorage,
+    passkeyProvider,
     initializeWebView,
     appearance,
     showOtpSignerPrompt,
@@ -284,9 +291,17 @@ export function CrossmintWalletBaseProvider({
                     onAuthRequired: argsOptions?.callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
+                passkeyProvider,
             };
         },
-        [clientTEEConnection, resetSignerFrame, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [
+            clientTEEConnection,
+            resetSignerFrame,
+            updateCallbacks,
+            deviceSignerKeyStorage,
+            passkeyProvider,
+            wrappedOnAuthRequired,
+        ]
     );
 
     const getOrCreateWallet = useCallback(
@@ -432,9 +447,9 @@ export function CrossmintWalletBaseProvider({
     const createPasskeySigner = useCallback(
         async (passkeyName: string) => {
             const wallets = CrossmintWallets.from(crossmint);
-            return await wallets.createPasskeySigner(passkeyName);
+            return await wallets.createPasskeySigner(passkeyName, passkeyProvider);
         },
-        [crossmint]
+        [crossmint, passkeyProvider]
     );
 
     // When using createOnLogin with an email signer, automatically populate the email from the auth context.
