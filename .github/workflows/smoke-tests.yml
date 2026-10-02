@@ -7,6 +7,8 @@ on:
             - "packages/client/ui/react-ui/**"
             - "packages/wallets/**"
             - "packages/client/react-base/**"
+            - "package.json"
+            - "pnpm-lock.yaml"
     workflow_dispatch:
 
 permissions:

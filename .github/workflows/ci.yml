@@ -31,6 +31,9 @@ jobs:
             - name: Test all
               run: pnpm test:vitest
 
+            - name: Typecheck apps
+              run: pnpm typecheck
+
     lint:
         name: lint
         runs-on: ubuntu-latest
