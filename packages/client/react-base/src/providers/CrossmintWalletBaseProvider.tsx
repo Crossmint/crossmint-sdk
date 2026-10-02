@@ -164,15 +164,11 @@ export function isCloudflareRegionBlock(responseBody: string | null): boolean {
 }
 
 /**
- * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
- * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
- * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
- */
-/**
  * Loads the user's existing wallet, or throws `WalletNotAvailableError`. The create args go with the request
  * because they carry signer fields that the API never returns, such as the phone signer's OTP `channel`;
  * `getWallet` merges them into the loaded signers. Passing them also makes `getWallet` check them against the
- * wallet, so a wallet whose signers no longer match `createOnLogin` loads without them, as it did before.
+ * wallet. On a mismatch it tries again with less: first without `signers`, so a recovery signer that still
+ * matches keeps its fields, then with no config, which loads the wallet as before.
  */
 export async function getExistingWallet<C extends Chain>(
     wallets: Pick<CrossmintWallets, "getWallet">,
@@ -180,25 +176,34 @@ export async function getExistingWallet<C extends Chain>(
     options: WalletOptions,
     logger: Pick<SdkLogger, "warn">
 ): Promise<Wallet<C>> {
-    const withSignerConfig: WalletCreateArgs<C> = {
-        chain: args.chain,
-        alias: args.alias,
-        recovery: args.recovery,
-        recoveryMethods: args.recoveryMethods,
-        signers: args.signers,
-        options,
-    };
-    try {
-        return await wallets.getWallet<C>(withSignerConfig);
-    } catch (error) {
-        if (!(error instanceof CrossmintSDKError) || error.code !== WalletErrorCode.WALLET_CREATION_FAILED) {
-            throw error;
+    const base = { chain: args.chain, alias: args.alias, options };
+    const recovery = { recovery: args.recovery, recoveryMethods: args.recoveryMethods };
+    const hasRecovery = args.recovery != null || args.recoveryMethods != null;
+    const attempts: Array<WalletCreateArgs<C>> = [
+        ...(args.signers != null ? [{ ...base, ...recovery, signers: args.signers }] : []),
+        ...(hasRecovery ? [{ ...base, ...recovery }] : []),
+    ];
+    for (const attempt of attempts) {
+        try {
+            return await wallets.getWallet<C>(attempt);
+        } catch (error) {
+            if (!(error instanceof CrossmintSDKError) || error.code !== WalletErrorCode.WALLET_CREATION_FAILED) {
+                throw error;
+            }
+            logger.warn("react.wallet.getOrCreateWallet.signerConfigMismatch", {
+                error,
+                withSigners: attempt.signers != null,
+            });
         }
-        logger.warn("react.wallet.getOrCreateWallet.signerConfigMismatch", { error });
-        return await wallets.getWallet<C>({ chain: args.chain, alias: args.alias, options });
     }
+    return await wallets.getWallet<C>(base);
 }
 
+/**
+ * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
+ * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
+ * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
+ */
 export function mapWalletError(error: unknown): WalletContextError {
     if (error instanceof ApiClientError) {
         if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {

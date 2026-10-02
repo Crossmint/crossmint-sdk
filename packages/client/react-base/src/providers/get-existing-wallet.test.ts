@@ -13,6 +13,10 @@ const args: WalletCreateArgs<"base-sepolia"> = {
     signers: [{ type: "phone", phone: "+5491168907058", channel: "whatsapp" }],
 };
 
+function mismatch() {
+    return new CrossmintSDKError("signer config mismatch", WalletErrorCode.WALLET_CREATION_FAILED);
+}
+
 function setup(getWallet: ReturnType<typeof vi.fn>) {
     const logger = { warn: vi.fn() };
     return { wallets: { getWallet } as never, logger };
@@ -36,17 +40,49 @@ describe("getExistingWallet", () => {
         });
     });
 
-    test("loads the wallet without the config when it no longer matches the existing wallet", async () => {
-        const mismatch = new CrossmintSDKError("recovery signer mismatch", WalletErrorCode.WALLET_CREATION_FAILED);
-        const getWallet = vi.fn().mockRejectedValueOnce(mismatch).mockResolvedValueOnce(wallet);
+    test("keeps the recovery config when only the signers no longer match", async () => {
+        const getWallet = vi.fn().mockRejectedValueOnce(mismatch()).mockResolvedValueOnce(wallet);
         const { wallets, logger } = setup(getWallet);
 
         await expect(getExistingWallet(wallets, args, options, logger)).resolves.toBe(wallet);
 
-        expect(getWallet).toHaveBeenLastCalledWith({ chain: "base-sepolia", alias: "main", options });
-        expect(logger.warn).toHaveBeenCalledWith("react.wallet.getOrCreateWallet.signerConfigMismatch", {
-            error: mismatch,
+        expect(getWallet).toHaveBeenCalledTimes(2);
+        expect(getWallet).toHaveBeenLastCalledWith({
+            chain: "base-sepolia",
+            alias: "main",
+            recovery: args.recovery,
+            recoveryMethods: undefined,
+            options,
         });
+        expect(logger.warn).toHaveBeenCalledWith(
+            "react.wallet.getOrCreateWallet.signerConfigMismatch",
+            expect.objectContaining({ withSigners: true })
+        );
+    });
+
+    test("loads the wallet without any config when the recovery config does not match either", async () => {
+        const getWallet = vi
+            .fn()
+            .mockRejectedValueOnce(mismatch())
+            .mockRejectedValueOnce(mismatch())
+            .mockResolvedValueOnce(wallet);
+        const { wallets, logger } = setup(getWallet);
+
+        await expect(getExistingWallet(wallets, args, options, logger)).resolves.toBe(wallet);
+
+        expect(getWallet).toHaveBeenCalledTimes(3);
+        expect(getWallet).toHaveBeenLastCalledWith({ chain: "base-sepolia", alias: "main", options });
+        expect(logger.warn).toHaveBeenCalledTimes(2);
+    });
+
+    test("loads without config at once when createOnLogin has none", async () => {
+        const getWallet = vi.fn().mockResolvedValue(wallet);
+        const { wallets, logger } = setup(getWallet);
+
+        await getExistingWallet(wallets, { chain: "base-sepolia" }, options, logger);
+
+        expect(getWallet).toHaveBeenCalledTimes(1);
+        expect(getWallet).toHaveBeenCalledWith({ chain: "base-sepolia", alias: undefined, options });
     });
 
     test("lets WalletNotAvailableError through, so the caller creates the wallet", async () => {
