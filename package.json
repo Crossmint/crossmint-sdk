@@ -18,6 +18,7 @@
         "lint": "biome check --diagnostic-level=error --max-diagnostics=200",
         "lint:fix": "biome check --write",
         "test:vitest": "pnpm turbo test:vitest",
+        "typecheck": "pnpm turbo typecheck",
         "playground:react": "pnpm --filter @crossmint/wallets-playground-react dev",
         "playground:expo:ios": "pnpm --filter @crossmint/wallets-playground-expo ios",
         "playground:expo:android": "pnpm --filter @crossmint/wallets-playground-expo android"
