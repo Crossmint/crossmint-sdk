@@ -16,11 +16,17 @@ class InProcessSignerTransport implements Transport<typeof signerInboundEvents> 
     constructor(private readonly respond: (event: string, data: unknown, deliver: Deliver) => void) {}
 
     send(message: { event: string; data: unknown }): void {
+        // Deferred to a microtask: EventEmitter.sendAction only assigns its retry interval
+        // *after* this synchronous send() call returns, so a synchronous reply would resolve
+        // the response listener before that assignment runs — leaving a setInterval with
+        // nothing left to ever clear it, resending the request forever.
         const deliver: Deliver = (event, data) => {
-            const simpleEvent: SimpleMessageEvent = { type: "message", data: { event, data: data as object } };
-            for (const listener of this.listeners.values()) {
-                listener(simpleEvent);
-            }
+            queueMicrotask(() => {
+                const simpleEvent: SimpleMessageEvent = { type: "message", data: { event, data: data as object } };
+                for (const listener of this.listeners.values()) {
+                    listener(simpleEvent);
+                }
+            });
         };
         this.respond(String(message.event), message.data, deliver);
     }
@@ -36,11 +42,13 @@ class InProcessSignerTransport implements Transport<typeof signerInboundEvents> 
     }
 }
 
-const READY_STATUS = { status: "success" as const, signerStatus: "ready" as const, publicKeys: {} };
+const readyStatus = () => ({ status: "success" as const, signerStatus: "ready" as const, publicKeys: {} });
+const newDeviceStatus = () => ({ status: "success" as const, signerStatus: "new-device" as const });
 
 export class SandboxNcsConnection {
     private failure?: SandboxTEEFailure;
     private torndown = false;
+    private signerStatus: "ready" | "new-device" = "ready";
 
     setFailure(failure: SandboxTEEFailure | undefined): void {
         this.failure = failure;
@@ -48,6 +56,12 @@ export class SandboxNcsConnection {
 
     tearDownFrame(): void {
         this.torndown = true;
+    }
+
+    // Lets a test simulate a device that hasn't completed onboarding yet, so NonCustodialSigner's
+    // handleAuthRequired takes the OTP branch instead of resolving immediately as "ready".
+    setSignerStatus(status: "ready" | "new-device"): void {
+        this.signerStatus = status;
     }
 
     createConnection(): HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents> {
@@ -76,7 +90,7 @@ export class SandboxNcsConnection {
                     });
                     return;
                 }
-                deliver("response:get-status", READY_STATUS);
+                deliver("response:get-status", this.signerStatus === "ready" ? readyStatus() : newDeviceStatus());
                 return;
             }
 
@@ -87,7 +101,10 @@ export class SandboxNcsConnection {
                     deliver(responseEvent, { status: "error", error: "Device signer storage is unavailable" });
                     return;
                 }
-                deliver(responseEvent, READY_STATUS);
+                if (event === "request:complete-onboarding") {
+                    this.signerStatus = "ready";
+                }
+                deliver(responseEvent, readyStatus());
             }
         });
 

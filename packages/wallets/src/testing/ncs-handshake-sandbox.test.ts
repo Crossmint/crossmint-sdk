@@ -20,6 +20,22 @@ describe("SandboxNcsConnection", () => {
         vi.useRealTimers();
     });
 
+    it("does not keep retrying after the handshake succeeds", async () => {
+        vi.useRealTimers();
+
+        const sandbox = new SandboxNcsConnection();
+        const connection = sandbox.createConnection();
+        const sendSpy = vi.spyOn(connection, "send");
+
+        await connection.handshakeWithChild();
+        const requestsAtSuccess = sendSpy.mock.calls.filter(([event]) => event === "handshakeRequest").length;
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        const requestsAfterWaiting = sendSpy.mock.calls.filter(([event]) => event === "handshakeRequest").length;
+        expect(requestsAfterWaiting).toBe(requestsAtSuccess);
+    });
+
     it("completes the handshake and reports ready via get-status", async () => {
         const sandbox = new SandboxNcsConnection();
         const connection = await connectAndHandshake(sandbox);
