@@ -12,6 +12,16 @@ export default defineConfig({
         {
             name: "zod",
             compatibilityVersion: 3,
+            "~resolvers": {
+                // A null-only enum (`z.null()` in the API) has no members to build from.
+                enum: (ctx) => {
+                    const { isNullable, literalMembers } = ctx.nodes.items(ctx);
+                    if (literalMembers.length === 0 && isNullable) {
+                        return ctx.$(ctx.symbols.z).attr("null").call();
+                    }
+                    return undefined;
+                },
+            },
         },
     ],
 });
