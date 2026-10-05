@@ -241,6 +241,78 @@ describe("createAgentCheckoutsApi", () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
+    test("streamMessages keeps a CRLF split across chunks as one line ending", async () => {
+        fetchMock.mockResolvedValueOnce(
+            sseResponse([
+                "id: c2\r\nevent: message.upsert\r",
+                `\ndata: ${JSON.stringify(MESSAGE)}\r\n\r`,
+                "\nid: c3\r\nevent: run.updated\r",
+                `\ndata: ${JSON.stringify(SUCCEEDED)}\r\n\r\n`,
+            ])
+        );
+
+        const events = await collect(api().streamMessages(RUN_ID));
+
+        expect(events.map((event) => [event.type, event.cursor])).toEqual([
+            ["message.upsert", "c2"],
+            ["run.updated", "c3"],
+        ]);
+    });
+
+    test("streamMessages cancels the response body once the run is terminal", async () => {
+        const cancel = vi.fn();
+        const encoder = new TextEncoder();
+        const body = new ReadableStream<Uint8Array>({
+            start(controller) {
+                controller.enqueue(
+                    encoder.encode(`id: c3\nevent: run.updated\ndata: ${JSON.stringify(SUCCEEDED)}\n\n`)
+                );
+            },
+            cancel,
+        });
+        fetchMock.mockResolvedValueOnce(new Response(body, { status: 200 }));
+
+        const events = await collect(api().streamMessages(RUN_ID));
+
+        expect(events).toHaveLength(1);
+        expect(cancel).toHaveBeenCalled();
+    });
+
+    test("a network failure becomes AgentCheckoutsApiError with the original error as its cause", async () => {
+        const cause = new TypeError("fetch failed");
+        fetchMock.mockRejectedValueOnce(cause);
+
+        const error = await api()
+            .get(RUN_ID)
+            .catch((failure: unknown) => failure);
+
+        expect(error).toBeInstanceOf(AgentCheckoutsApiError);
+        expect(error).toMatchObject({ status: undefined, code: "network_error", cause });
+    });
+
+    test("streamMessages surfaces repeated 5xx as the server error, not resync_required", async () => {
+        fetchMock.mockImplementation(
+            async () => new Response("down", { status: 503, statusText: "Service Unavailable" })
+        );
+
+        const error = await collect(api().streamMessages(RUN_ID, { reconnectDelayMs: 0, maxEmptyReconnects: 1 })).catch(
+            (cause: unknown) => cause
+        );
+
+        expect(error).toMatchObject({ name: "AgentCheckoutsApiError", status: 503 });
+        expect(error).not.toMatchObject({ code: "resync_required" });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    test("streamMessages reports a 409 as resync_required", async () => {
+        fetchMock.mockResolvedValueOnce(jsonResponse(409, { message: "Stale cursor" }));
+
+        await expect(collect(api().streamMessages(RUN_ID, { after: "old" }))).rejects.toMatchObject({
+            status: 409,
+            code: "resync_required",
+        });
+    });
+
     test("streamMessages surfaces a 4xx without retrying", async () => {
         fetchMock.mockResolvedValueOnce(jsonResponse(404, { message: "Checkout not found" }));
 

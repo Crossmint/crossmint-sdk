@@ -97,7 +97,7 @@ export interface StreamAgentCheckoutMessagesOptions {
     maxEmptyReconnects?: number;
 }
 
-export type AgentCheckoutsApiErrorCode = "resync_required";
+export type AgentCheckoutsApiErrorCode = "resync_required" | "network_error";
 
 export class AgentCheckoutsApiError extends Error {
     constructor(
@@ -105,7 +105,9 @@ export class AgentCheckoutsApiError extends Error {
         public readonly status: number | undefined,
         public readonly path: string,
         public readonly body?: unknown,
-        public readonly code?: AgentCheckoutsApiErrorCode
+        public readonly code?: AgentCheckoutsApiErrorCode,
+        /** The underlying failure of a `network_error`. */
+        public readonly cause?: unknown
     ) {
         super(message);
         this.name = "AgentCheckoutsApiError";
@@ -117,6 +119,11 @@ export type AgentCheckoutsApiProps = {
 };
 
 type Result<T> = { data?: T; error?: unknown; request?: Request; response?: Response };
+
+type StreamState = { cursor: string | undefined; delayMs: number };
+
+/** How one stream connection ended: `done` when the stream is over, `failure` when the connection failed. */
+type ConnectionOutcome = { delivered: boolean; done: boolean; failure?: AgentCheckoutsApiError };
 
 /**
  * Agent checkouts: an AI agent buys on a merchant's site for the signed-in buyer. Every request
@@ -131,7 +138,7 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
     async function call<T>(operation: Promise<Result<T>>, schema: z.ZodTypeAny): Promise<T> {
         const { data, error, request, response } = await operation;
         if (response === undefined) {
-            throw error;
+            throw networkError(request === undefined ? "" : pathOf(request), error);
         }
         const path = pathOf(request ?? response);
         if (!response.ok) {
@@ -149,34 +156,81 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
         options: StreamAgentCheckoutMessagesOptions = {}
     ): AsyncGenerator<AgentCheckoutStreamEvent> {
         const maxEmpty = options.maxEmptyReconnects ?? DEFAULT_MAX_EMPTY_RECONNECTS;
-        let delayMs = options.reconnectDelayMs ?? DEFAULT_RECONNECT_DELAY_MS;
-        let cursor = options.after;
+        const state: StreamState = {
+            cursor: options.after,
+            delayMs: options.reconnectDelayMs ?? DEFAULT_RECONNECT_DELAY_MS,
+        };
         let emptyConnections = 0;
-        let path = `api/unstable/agent-checkouts/${encodeURIComponent(id)}/messages/stream`;
 
         while (!options.signal?.aborted) {
-            let delivered = false;
-            let failure: AgentCheckoutsApiError | undefined;
-            let frame: { event?: string; id?: string; retry?: number } | undefined;
-            let complete = false;
+            const { delivered, done, failure } = yield* readConnection(id, state, options.signal);
+            if (done || options.signal?.aborted) {
+                return;
+            }
+            if (failure?.status === 409) {
+                throw new AgentCheckoutsApiError(failure.message, 409, failure.path, failure.body, "resync_required");
+            }
+            if (failure?.status !== undefined && failure.status < 500) {
+                throw failure;
+            }
+            emptyConnections = delivered ? 0 : emptyConnections + 1;
+            if (emptyConnections > maxEmpty) {
+                throw (
+                    failure ??
+                    new AgentCheckoutsApiError(
+                        "The message stream keeps closing without events; re-read the conversation and resubscribe from its streamCursor",
+                        undefined,
+                        streamPath(id),
+                        undefined,
+                        "resync_required"
+                    )
+                );
+            }
+            await sleep(state.delayMs, options.signal);
+        }
+    }
 
+    /** One stream connection, closed (and its body cancelled) however the caller stops reading it. */
+    async function* readConnection(
+        id: string,
+        state: StreamState,
+        signal: AbortSignal | undefined
+    ): AsyncGenerator<AgentCheckoutStreamEvent, ConnectionOutcome> {
+        const connection = new AbortController();
+        const abort = () => connection.abort();
+        signal?.addEventListener("abort", abort, { once: true });
+        const { cursor } = state;
+        let path = streamPath(id);
+        let failure: AgentCheckoutsApiError | undefined;
+        let frame: { event?: string; id?: string; retry?: number } | undefined;
+        let complete = false;
+        let delivered = false;
+
+        try {
             const { stream } = await operations.streamMessages({
                 client,
                 path: { id },
                 ...(cursor === undefined ? {} : { query: { after: cursor } }),
                 headers: { Accept: "text/event-stream", ...(cursor === undefined ? {} : { "last-event-id": cursor }) },
                 cache: "no-store",
-                ...(options.signal === undefined ? {} : { signal: options.signal }),
-                // One connection per loop: reconnects, cursors and the empty-connection budget are ours.
+                signal: connection.signal,
+                // One attempt per connection: reconnects, cursors and the empty-connection budget are ours.
                 sseMaxRetryAttempts: 1,
-                sseDefaultRetryDelay: delayMs,
+                sseDefaultRetryDelay: state.delayMs,
                 fetch: async (request) => {
                     path = pathOf(request);
-                    const response = await globalThis.fetch(request);
+                    let response: Response;
+                    try {
+                        response = await globalThis.fetch(request);
+                    } catch (cause) {
+                        failure = networkError(path, cause);
+                        throw cause;
+                    }
                     if (!response.ok) {
                         failure = toApiError(response, path, await readBody(response));
+                        return response;
                     }
-                    return response;
+                    return withLineFeeds(response, connection.signal);
                 },
                 onSseEvent: (event) => {
                     frame = event;
@@ -186,45 +240,26 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
 
             for await (const data of stream) {
                 if (complete) {
-                    return;
+                    return { delivered, done: true };
+                }
+                if (frame?.retry !== undefined) {
+                    state.delayMs = frame.retry;
                 }
                 const event = toStreamEvent(frame, data, path);
-                if (frame?.retry !== undefined) {
-                    delayMs = frame.retry;
-                }
                 if (event === undefined) {
                     continue;
                 }
                 delivered = true;
-                cursor = event.cursor;
+                state.cursor = event.cursor;
                 yield event;
                 if (event.type === "run.updated" && TERMINAL_STATUSES.has(event.run.status)) {
-                    return;
+                    return { delivered, done: true };
                 }
             }
-
-            if (complete || options.signal?.aborted) {
-                return;
-            }
-            const rejected: AgentCheckoutsApiError | undefined = failure;
-            if (rejected?.status !== undefined && rejected.status < 500) {
-                if (rejected.status === 409) {
-                    throw new AgentCheckoutsApiError(rejected.message, 409, path, rejected.body, "resync_required");
-                }
-                throw rejected;
-            }
-            // Network failures, 5xx and dropped connections count against the same budget as empty connections.
-            emptyConnections = delivered ? 0 : emptyConnections + 1;
-            if (emptyConnections > maxEmpty) {
-                throw new AgentCheckoutsApiError(
-                    "The message stream keeps closing without events; re-read the conversation and resubscribe from its streamCursor",
-                    undefined,
-                    path,
-                    undefined,
-                    "resync_required"
-                );
-            }
-            await sleep(delayMs, options.signal);
+            return { delivered, done: complete, failure };
+        } finally {
+            signal?.removeEventListener("abort", abort);
+            connection.abort();
         }
     }
 
@@ -318,6 +353,56 @@ function toStreamEvent(
         throw new AgentCheckoutsApiError("Unexpected run update shape in the message stream", undefined, path, data);
     }
     return { type, cursor: frame.id, run: data as AgentCheckoutUpdate };
+}
+
+function streamPath(id: string): string {
+    return `api/unstable/agent-checkouts/${encodeURIComponent(id)}/messages/stream`;
+}
+
+function networkError(path: string, cause: unknown): AgentCheckoutsApiError {
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    return new AgentCheckoutsApiError(
+        `Could not reach the Crossmint API: ${reason}`,
+        undefined,
+        path,
+        undefined,
+        "network_error",
+        cause
+    );
+}
+
+/**
+ * The response with every CRLF or CR turned into LF, holding a trailing CR until the next chunk so a CRLF split across
+ * chunks stays one line ending. The generated SSE reader normalises chunk by chunk and would read it as two. Aborting
+ * `signal` cancels the underlying body.
+ */
+function withLineFeeds(response: Response, signal: AbortSignal): Response {
+    if (response.body === null) {
+        return response;
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let pending = "";
+    const cancel = () => {
+        reader.cancel().catch(() => undefined);
+    };
+    signal.addEventListener("abort", cancel, { once: true });
+    const body = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+            const { done, value } = await reader.read();
+            const text = pending + (done ? decoder.decode() : decoder.decode(value, { stream: true }));
+            pending = !done && text.endsWith("\r") ? "\r" : "";
+            const complete = pending === "" ? text : text.slice(0, -1);
+            controller.enqueue(encoder.encode(complete.replace(/\r\n?/g, "\n")));
+            if (done) {
+                signal.removeEventListener("abort", cancel);
+                controller.close();
+            }
+        },
+        cancel,
+    });
+    return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
 }
 
 function toApiError(response: Response, path: string, body: unknown): AgentCheckoutsApiError {
