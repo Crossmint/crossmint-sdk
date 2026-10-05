@@ -6,8 +6,6 @@ import { recentPageDiagnostics } from "./page-diagnostics";
 // A signer stays confirmed on the server across runs, so a missing modal is not an error.
 const MODAL_TIMEOUT_MS = 10_000;
 
-// Generous margin over the brief post-auth re-render gap this tolerates (observed ~1s),
-// while still failing a genuinely stuck load fast rather than waiting out AUTH_CONFIG.timeout.
 const LOGIN_SCREEN_SETTLE_MS = 5_000;
 
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
@@ -103,15 +101,8 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
 
 export async function waitForWalletReady(page: Page): Promise<void> {
     try {
-        // waitFor({ state: "detached" }) resolves immediately if the spinner never
-        // attached in the first place — it does not wait for the spinner to appear.
-        // Right after auth completes, the page can briefly re-render through a state
-        // where neither the spinner nor the wallet UI is mounted yet, which makes
-        // this resolve vacuously before the real wallet-creation spinner ever shows.
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
 
-        // So don't trust a single snapshot right after: poll for the login screen to
-        // go away, which tolerates that transient gap instead of racing against it.
         const loginButton = page.getByTestId("connect-wallet-button");
         const deadline = Date.now() + LOGIN_SCREEN_SETTLE_MS;
         let backOnLoginScreen = true;
