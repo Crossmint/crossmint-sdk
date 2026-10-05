@@ -77,7 +77,7 @@ export const test = base.extend<AuthFixtures>({
 
             await page.waitForTimeout(4000);
 
-            const loginButtonIsVisible = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+            const loginButtonIsVisible = await page.getByTestId("connect-wallet-button").isVisible();
             if (!loginButtonIsVisible) {
                 console.log("✅ Already logged in, skipping login");
             } else {

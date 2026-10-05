@@ -6,13 +6,17 @@ import { recentPageDiagnostics } from "./page-diagnostics";
 // A signer stays confirmed on the server across runs, so a missing modal is not an error.
 const MODAL_TIMEOUT_MS = 10_000;
 
+// Generous margin over the brief post-auth re-render gap this tolerates (observed ~1s),
+// while still failing a genuinely stuck load fast rather than waiting out AUTH_CONFIG.timeout.
+const LOGIN_SCREEN_SETTLE_MS = 5_000;
+
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
     try {
         console.log(`🔑 Starting email OTP login for: ${email}`);
 
         await clearEmailsForAddress(email);
 
-        const loginButton = page.locator('button:has-text("Connect wallet")').first();
+        const loginButton = page.getByTestId("connect-wallet-button");
         await loginButton.click();
 
         const emailInput = page.locator('input[type="email"], input[placeholder*="email" i]').first();
@@ -108,8 +112,8 @@ export async function waitForWalletReady(page: Page): Promise<void> {
 
         // So don't trust a single snapshot right after: poll for the login screen to
         // go away, which tolerates that transient gap instead of racing against it.
-        const loginButton = page.locator('button:has-text("Connect wallet")').first();
-        const deadline = Date.now() + AUTH_CONFIG.timeout;
+        const loginButton = page.getByTestId("connect-wallet-button");
+        const deadline = Date.now() + LOGIN_SCREEN_SETTLE_MS;
         let backOnLoginScreen = true;
         while (Date.now() < deadline) {
             backOnLoginScreen = await loginButton.isVisible();
