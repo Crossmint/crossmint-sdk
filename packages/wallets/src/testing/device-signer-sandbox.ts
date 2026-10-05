@@ -93,10 +93,11 @@ export class SandboxDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     async deleteKey(address: string): Promise<void> {
         this.assertStorageReadable();
         const base64 = this.addressMap.get(address);
-        if (base64) {
+        this.addressMap.delete(address);
+        const stillReferenced = base64 != null && [...this.addressMap.values()].includes(base64);
+        if (base64 != null && !stillReferenced) {
             this.keys.delete(base64);
         }
-        this.addressMap.delete(address);
     }
 
     getDeviceName(): string {

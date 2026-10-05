@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Wallet } from "../wallet";
 import { createDeviceSigner } from "../../utils/device-signers/createDeviceSigner";
 import { SandboxDeviceSignerKeyStorage } from "../../testing/device-signer-sandbox";
@@ -69,6 +69,38 @@ describe("device signer sandbox — SDK integration (no network, no real frame)"
         const wallet = makeDeviceWallet(storage);
 
         await expect(wallet.useSigner(descriptor)).rejects.toThrow(/unavailable/);
+    });
+
+    it("registers a brand-new device signer through the real registration call", async () => {
+        const storage = new SandboxDeviceSignerKeyStorage("sk_test");
+        const descriptor = await createDeviceSigner(storage);
+
+        const registerSigner = vi.fn(async () => ({
+            type: "device" as const,
+            locator: descriptor.locator,
+            publicKey: descriptor.publicKey,
+            name: descriptor.name,
+            chains: {},
+        }));
+        const wallet = new Wallet(
+            {
+                chain: "base-sepolia",
+                address: WALLET_ADDRESS,
+                recovery: { type: "api-key" },
+                options: { deviceSignerKeyStorage: storage },
+            },
+            createMockApiClient({ registerSigner }) as unknown as ApiClient
+        );
+
+        const result = await wallet.addSigner(descriptor);
+
+        expect(registerSigner).toHaveBeenCalledWith(
+            wallet.walletLocator,
+            expect.objectContaining({
+                signer: expect.objectContaining({ type: "device", publicKey: descriptor.publicKey }),
+            })
+        );
+        expect(result).toMatchObject({ type: "device", status: "success" });
     });
 
     it("rejects adding a signer with SIGNER_LIMIT_EXCEEDED once the wallet is at its cap", async () => {

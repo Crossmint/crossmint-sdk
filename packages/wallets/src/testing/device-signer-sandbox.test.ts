@@ -1,11 +1,22 @@
+import { P256 } from "ox";
 import { describe, expect, it } from "vitest";
 import { SandboxDeviceSignerKeyStorage } from "./device-signer-sandbox";
 
 const ADDRESS = "0x1234567890123456789012345678901234567890";
+const OTHER_ADDRESS = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
 const MESSAGE = `0x${"ab".repeat(32)}`;
 
+function publicKeyFromBase64(base64: string) {
+    const bytes = Buffer.from(base64, "base64");
+    return {
+        prefix: 4 as const,
+        x: BigInt(`0x${bytes.subarray(1, 33).toString("hex")}`),
+        y: BigInt(`0x${bytes.subarray(33, 65).toString("hex")}`),
+    };
+}
+
 describe("SandboxDeviceSignerKeyStorage", () => {
-    it("generates a key, maps it to an address, and produces a valid signature", async () => {
+    it("generates a key, maps it to an address, and produces a signature verifiable against the public key", async () => {
         const storage = new SandboxDeviceSignerKeyStorage("sk_test");
 
         const publicKeyBase64 = await storage.generateKey({ address: ADDRESS });
@@ -13,8 +24,11 @@ describe("SandboxDeviceSignerKeyStorage", () => {
         expect(await storage.hasKey(publicKeyBase64)).toBe(true);
 
         const { r, s } = await storage.signMessage(ADDRESS, MESSAGE);
-        expect(r).toMatch(/^0x[0-9a-f]{64}$/);
-        expect(s).toMatch(/^0x[0-9a-f]{64}$/);
+        const publicKey = publicKeyFromBase64(publicKeyBase64);
+        const signature = { r: BigInt(r), s: BigInt(s) };
+
+        expect(P256.verify({ publicKey, payload: MESSAGE, signature, hash: false })).toBe(true);
+        expect(P256.verify({ publicKey, payload: `0x${"cd".repeat(32)}`, signature, hash: false })).toBe(false);
     });
 
     it("deletes a key so the address no longer resolves", async () => {
@@ -25,6 +39,22 @@ describe("SandboxDeviceSignerKeyStorage", () => {
 
         expect(await storage.getKey(ADDRESS)).toBeNull();
         await expect(storage.signMessage(ADDRESS, MESSAGE)).rejects.toThrow(/No key mapped/);
+    });
+
+    it("keeps a key usable for a second address until both are deleted", async () => {
+        const storage = new SandboxDeviceSignerKeyStorage("sk_test");
+        const publicKeyBase64 = await storage.generateKey({ address: ADDRESS });
+        await storage.mapAddressToKey(OTHER_ADDRESS, publicKeyBase64);
+
+        await storage.deleteKey(ADDRESS);
+
+        expect(await storage.getKey(OTHER_ADDRESS)).toBe(publicKeyBase64);
+        await expect(storage.signMessage(OTHER_ADDRESS, MESSAGE)).resolves.toMatchObject({
+            r: expect.stringMatching(/^0x[0-9a-f]{64}$/),
+        });
+
+        await storage.deleteKey(OTHER_ADDRESS);
+        await expect(storage.signMessage(OTHER_ADDRESS, MESSAGE)).rejects.toThrow(/No key mapped/);
     });
 
     describe("failure overrides", () => {
