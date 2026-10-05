@@ -36,8 +36,11 @@ function request(index = -1) {
     if (call == null) {
         throw new Error("fetch was not called");
     }
-    const [url, init] = call;
-    return { url: String(url), init: init ?? {}, headers: new Headers(init?.headers) };
+    const [input] = call;
+    if (!(input instanceof Request)) {
+        throw new Error("fetch was not called with a Request");
+    }
+    return { url: input.url, method: input.method, headers: input.headers, body: () => input.text() };
 }
 
 const RUN_ID = "11111111-1111-4111-8111-111111111111";
@@ -53,6 +56,13 @@ const RUN = {
     browser: null,
     requiredAction: null,
 };
+const SUCCEEDED = {
+    ...RUN,
+    revision: 3,
+    status: "succeeded",
+    result: { outcome: "succeeded", purchase: { kind: "confirmed_without_receipt" }, summary: "Bought it" },
+};
+const FAILED = { ...RUN, revision: 3, status: "failed", reason: "runtime_error" };
 const MESSAGE = {
     id: "m1",
     revision: 1,
@@ -90,12 +100,12 @@ describe("createAgentCheckoutsApi", () => {
             constraints: { maxCost: { amount: "25.00", currency: "USD" } },
         });
 
-        const { url, init, headers } = request();
+        const { url, method, headers, body } = request();
         expect(url).toBe("http://localhost:3000/api/unstable/agent-checkouts");
-        expect(init.method).toBe("POST");
+        expect(method).toBe("POST");
         expect(headers.get("x-api-key")).toBe("ck_development_key");
         expect(headers.get("authorization")).toBe("Bearer jwt-1");
-        expect(JSON.parse(String(init.body))).toEqual({
+        expect(JSON.parse(await body())).toEqual({
             request: { startUrl: "https://shop.example" },
             constraints: { maxCost: { amount: "25.00", currency: "USD" } },
         });
@@ -119,7 +129,7 @@ describe("createAgentCheckoutsApi", () => {
             browser,
         });
 
-        expect(JSON.parse(String(request().init.body))).toMatchObject({ browser });
+        expect(JSON.parse(await request().body())).toMatchObject({ browser });
         expect(run.input).toEqual({ ...RUN.input, browser: { cdp: { redacted: true } } });
     });
 
@@ -142,7 +152,10 @@ describe("createAgentCheckoutsApi", () => {
         await client.buyerProfiles.list({});
         await client.browserProfiles.delete("bp/1");
 
-        const calls = fetchMock.mock.calls.map(([url, init]) => `${init?.method} ${String(url)}`);
+        const calls = fetchMock.mock.calls.map((_, index) => {
+            const { method, url } = request(index);
+            return `${method} ${url}`;
+        });
         const base = "http://localhost:3000/api/unstable/agent-checkouts";
         expect(calls).toEqual([
             `GET ${base}/${RUN_ID}`,
@@ -188,7 +201,7 @@ describe("createAgentCheckoutsApi", () => {
             sseResponse([
                 ": keep-alive\n\n",
                 `id: c2\nevent: message.upsert\ndata: ${JSON.stringify(MESSAGE)}\n\n`,
-                `id: c3\nevent: run.updated\ndata: ${JSON.stringify({ ...RUN, revision: 3, status: "succeeded" })}\n\n`,
+                `id: c3\nevent: run.updated\ndata: ${JSON.stringify(SUCCEEDED)}\n\n`,
                 `id: c4\nevent: message.upsert\ndata: ${JSON.stringify(MESSAGE)}\n\n`,
             ])
         );
@@ -209,9 +222,7 @@ describe("createAgentCheckoutsApi", () => {
     test("streamMessages reconnects from the last cursor after the connection closes", async () => {
         fetchMock
             .mockResolvedValueOnce(sseResponse([`id: c2\nevent: message.upsert\ndata: ${JSON.stringify(MESSAGE)}\n\n`]))
-            .mockResolvedValueOnce(
-                sseResponse([`id: c3\nevent: run.updated\ndata: ${JSON.stringify({ ...RUN, status: "failed" })}\n\n`])
-            );
+            .mockResolvedValueOnce(sseResponse([`id: c3\nevent: run.updated\ndata: ${JSON.stringify(FAILED)}\n\n`]));
 
         const events = await collect(api().streamMessages(RUN_ID, { reconnectDelayMs: 0 }));
 
