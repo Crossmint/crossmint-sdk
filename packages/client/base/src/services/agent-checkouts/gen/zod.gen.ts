@@ -74,7 +74,7 @@ export const zAgentCheckoutCancellationAcceptedDto = z.object({
 export const zAgentCheckoutListResponseDto = z.object({
     data: z.array(z.union([
         z.object({
-            browser: z.unknown().nullable(),
+            browser: z.null().nullable(),
             createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
             input: z.object({
                 browser: z.object({
@@ -97,7 +97,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['queued'])
@@ -140,7 +140,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                 'reconciliation_required',
                 'runtime_error'
             ]),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['failed'])
@@ -172,7 +172,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 code: z.enum([
                     'merchant.access_blocked',
@@ -219,7 +219,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['cancelled']),
                 summary: z.string().min(1).max(2000)
@@ -255,7 +255,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['succeeded']),
                 purchase: z.union([
@@ -306,7 +306,7 @@ export const zAgentCheckoutListResponseDto = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['running'])
@@ -579,7 +579,7 @@ export const zAgentCheckoutMessageListResponseDto = z.object({
 
 export const zAgentCheckoutResponseDto = z.union([
     z.object({
-        browser: z.unknown().nullable(),
+        browser: z.null().nullable(),
         createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
         input: z.object({
             browser: z.object({
@@ -602,7 +602,7 @@ export const zAgentCheckoutResponseDto = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['queued'])
@@ -645,7 +645,7 @@ export const zAgentCheckoutResponseDto = z.union([
             'reconciliation_required',
             'runtime_error'
         ]),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['failed'])
@@ -677,7 +677,7 @@ export const zAgentCheckoutResponseDto = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             code: z.enum([
                 'merchant.access_blocked',
@@ -724,7 +724,7 @@ export const zAgentCheckoutResponseDto = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             outcome: z.enum(['cancelled']),
             summary: z.string().min(1).max(2000)
@@ -760,7 +760,7 @@ export const zAgentCheckoutResponseDto = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             outcome: z.enum(['succeeded']),
             purchase: z.union([
@@ -811,7 +811,7 @@ export const zAgentCheckoutResponseDto = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['running'])
@@ -890,7 +890,7 @@ export const zAgentCheckoutResponseDto = z.union([
 export const zAgentCheckoutStreamEventDto = z.union([
     z.union([
         z.object({
-            browser: z.unknown().nullable(),
+            browser: z.null().nullable(),
             createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
             input: z.object({
                 browser: z.object({
@@ -913,7 +913,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['queued'])
@@ -956,7 +956,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                 'reconciliation_required',
                 'runtime_error'
             ]),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['failed'])
@@ -988,7 +988,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 code: z.enum([
                     'merchant.access_blocked',
@@ -1035,7 +1035,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['cancelled']),
                 summary: z.string().min(1).max(2000)
@@ -1071,7 +1071,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['succeeded']),
                 purchase: z.union([
@@ -1122,7 +1122,7 @@ export const zAgentCheckoutStreamEventDto = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['running'])
@@ -1504,7 +1504,7 @@ export const zUpdateAgentCheckoutBuyerProfileDto = z.object({
 export const zAgentCheckoutListResponseDtoWritable = z.object({
     data: z.array(z.union([
         z.object({
-            browser: z.unknown().nullable(),
+            browser: z.null().nullable(),
             createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
             input: z.object({
                 browser: z.object({
@@ -1527,7 +1527,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['queued'])
@@ -1569,7 +1569,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                 'reconciliation_required',
                 'runtime_error'
             ]),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['failed'])
@@ -1600,7 +1600,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 code: z.enum([
                     'merchant.access_blocked',
@@ -1646,7 +1646,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['cancelled']),
                 summary: z.string().min(1).max(2000)
@@ -1681,7 +1681,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['succeeded']),
                 purchase: z.union([
@@ -1731,7 +1731,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['running'])
@@ -1810,7 +1810,7 @@ export const zAgentCheckoutListResponseDtoWritable = z.object({
 
 export const zAgentCheckoutResponseDtoWritable = z.union([
     z.object({
-        browser: z.unknown().nullable(),
+        browser: z.null().nullable(),
         createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
         input: z.object({
             browser: z.object({
@@ -1833,7 +1833,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['queued'])
@@ -1875,7 +1875,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
             'reconciliation_required',
             'runtime_error'
         ]),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['failed'])
@@ -1906,7 +1906,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             code: z.enum([
                 'merchant.access_blocked',
@@ -1952,7 +1952,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             outcome: z.enum(['cancelled']),
             summary: z.string().min(1).max(2000)
@@ -1987,7 +1987,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         result: z.object({
             outcome: z.enum(['succeeded']),
             purchase: z.union([
@@ -2037,7 +2037,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
                 task: z.string().min(1).max(20000).optional()
             })
         }),
-        requiredAction: z.unknown().nullable(),
+        requiredAction: z.null().nullable(),
         revision: z.number().int().gte(0).lte(9007199254740991),
         runId: z.string().min(1),
         status: z.enum(['running'])
@@ -2115,7 +2115,7 @@ export const zAgentCheckoutResponseDtoWritable = z.union([
 export const zAgentCheckoutStreamEventDtoWritable = z.union([
     z.union([
         z.object({
-            browser: z.unknown().nullable(),
+            browser: z.null().nullable(),
             createdAt: z.string().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$/),
             input: z.object({
                 browser: z.object({
@@ -2138,7 +2138,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['queued'])
@@ -2180,7 +2180,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                 'reconciliation_required',
                 'runtime_error'
             ]),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['failed'])
@@ -2211,7 +2211,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 code: z.enum([
                     'merchant.access_blocked',
@@ -2257,7 +2257,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['cancelled']),
                 summary: z.string().min(1).max(2000)
@@ -2292,7 +2292,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             result: z.object({
                 outcome: z.enum(['succeeded']),
                 purchase: z.union([
@@ -2342,7 +2342,7 @@ export const zAgentCheckoutStreamEventDtoWritable = z.union([
                     task: z.string().min(1).max(20000).optional()
                 })
             }),
-            requiredAction: z.unknown().nullable(),
+            requiredAction: z.null().nullable(),
             revision: z.number().int().gte(0).lte(9007199254740991),
             runId: z.string().min(1),
             status: z.enum(['running'])
