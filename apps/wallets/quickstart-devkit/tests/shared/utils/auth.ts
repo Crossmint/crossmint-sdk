@@ -99,11 +99,26 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
 
 export async function waitForWalletReady(page: Page): Promise<void> {
     try {
+        // waitFor({ state: "detached" }) resolves immediately if the spinner never
+        // attached in the first place — it does not wait for the spinner to appear.
+        // Right after auth completes, the page can briefly re-render through a state
+        // where neither the spinner nor the wallet UI is mounted yet, which makes
+        // this resolve vacuously before the real wallet-creation spinner ever shows.
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
-        await page.waitForTimeout(1000);
 
-        // The spinner also clears on a failed load, landing back on the login screen.
-        const backOnLoginScreen = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+        // So don't trust a single snapshot right after: poll for the login screen to
+        // go away, which tolerates that transient gap instead of racing against it.
+        const loginButton = page.locator('button:has-text("Connect wallet")').first();
+        const deadline = Date.now() + AUTH_CONFIG.timeout;
+        let backOnLoginScreen = true;
+        while (Date.now() < deadline) {
+            backOnLoginScreen = await loginButton.isVisible();
+            if (!backOnLoginScreen) {
+                break;
+            }
+            await page.waitForTimeout(500);
+        }
+
         if (backOnLoginScreen) {
             throw new Error(
                 "The loading spinner cleared but the page landed back on the login screen instead of the " +
