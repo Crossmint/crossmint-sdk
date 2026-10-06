@@ -91,9 +91,9 @@ export function getEmailForSigner(signerType: SignerType): string {
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
-export function getLegacySmokeWalletEmail(signerType: SignerType): string {
+export function getCapFixtureWalletEmail(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
-    return `test-${baseAlias}-smoke@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
+    return `test-${baseAlias}-cap-fixture@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
 // Hashed so the alias stays under the API's 36-character cap even though CI's

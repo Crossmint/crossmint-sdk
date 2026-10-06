@@ -1,9 +1,9 @@
 import { test } from "../../../shared/fixtures/auth.fixture";
 import { handleSignerConfirmation } from "../../../shared/utils";
-import { AUTH_CONFIG } from "../../../shared/constants/globalConstants";
+import { getCapFixtureWalletEmail } from "../../../shared/constants/globalConstants";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const FIXTURE_EMAIL = `test-email-cap-fixture@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
+const FIXTURE_EMAIL = getCapFixtureWalletEmail("email");
 const TARGET_DELEGATED_SIGNERS = 15;
 
 const FIXTURE_TEST_CONFIG = {
