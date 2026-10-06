@@ -6,13 +6,15 @@ import { recentPageDiagnostics } from "./page-diagnostics";
 // A signer stays confirmed on the server across runs, so a missing modal is not an error.
 const MODAL_TIMEOUT_MS = 10_000;
 
+const LOGIN_SCREEN_SETTLE_MS = 5_000;
+
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
     try {
         console.log(`🔑 Starting email OTP login for: ${email}`);
 
         await clearEmailsForAddress(email);
 
-        const loginButton = page.locator('button:has-text("Connect wallet")').first();
+        const loginButton = page.getByTestId("connect-wallet-button");
         await loginButton.click();
 
         const emailInput = page.locator('input[type="email"], input[placeholder*="email" i]').first();
@@ -100,10 +102,18 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
 export async function waitForWalletReady(page: Page): Promise<void> {
     try {
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
-        await page.waitForTimeout(1000);
 
-        // The spinner also clears on a failed load, landing back on the login screen.
-        const backOnLoginScreen = await page.locator('button:has-text("Connect wallet")').first().isVisible();
+        const loginButton = page.getByTestId("connect-wallet-button");
+        const deadline = Date.now() + LOGIN_SCREEN_SETTLE_MS;
+        let backOnLoginScreen = true;
+        while (Date.now() < deadline) {
+            backOnLoginScreen = await loginButton.isVisible();
+            if (!backOnLoginScreen) {
+                break;
+            }
+            await page.waitForTimeout(500);
+        }
+
         if (backOnLoginScreen) {
             throw new Error(
                 "The loading spinner cleared but the page landed back on the login screen instead of the " +

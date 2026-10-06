@@ -48,48 +48,40 @@ function parseResults(filePath) {
             passedTests = 0,
             failedTests = 0,
             skippedTests = 0,
+            flakyTests = 0,
             duration = 0;
         const failures = [];
+
+        function recordTest(test, title, suitePath) {
+            totalTests++;
+            const status = test.status || "unknown";
+            if (status === "expected") passedTests++;
+            else if (status === "flaky") {
+                passedTests++;
+                flakyTests++;
+            } else if (status === "unexpected") {
+                failedTests++;
+                const lastResult = test.results?.[test.results.length - 1] ?? null;
+                failures.push({ title, suite: suitePath, error: lastResult?.error?.message || "No error message" });
+            } else if (status === "skipped") skippedTests++;
+            test.results?.forEach((r) => {
+                if (r.duration) duration += r.duration;
+            });
+        }
 
         // spec.title is the test name; suite path is built from ancestor describe blocks
         function processSpec(spec, suitePath) {
             if (!spec.tests) return;
-            spec.tests.forEach((test) => {
-                totalTests++;
-                const result = test.results && test.results[0] ? test.results[0] : null;
-                const status = result?.status || "unknown";
-                if (status === "passed") passedTests++;
-                else if (status === "failed") {
-                    failedTests++;
-                    failures.push({
-                        title: spec.title || test.title || "Unknown Test",
-                        suite: suitePath,
-                        error: result?.error?.message || "No error message",
-                    });
-                } else if (status === "skipped") skippedTests++;
-                if (result?.duration) duration += result.duration;
-            });
+            spec.tests.forEach((test) => recordTest(test, spec.title || test.title || "Unknown Test", suitePath));
         }
 
         function processSuite(suite, parentPath) {
             const currentPath = parentPath ? `${parentPath} › ${suite.title}` : suite.title;
             if (suite.specs) suite.specs.forEach((spec) => processSpec(spec, currentPath));
             if (suite.tests) {
-                suite.tests.forEach((test) => {
-                    totalTests++;
-                    const result = test.results && test.results[0] ? test.results[0] : null;
-                    const status = result?.status || "unknown";
-                    if (status === "passed") passedTests++;
-                    else if (status === "failed") {
-                        failedTests++;
-                        failures.push({
-                            title: test.title || suite.title || "Unknown Test",
-                            suite: parentPath || "",
-                            error: result?.error?.message || "No error message",
-                        });
-                    } else if (status === "skipped") skippedTests++;
-                    if (result?.duration) duration += result.duration;
-                });
+                suite.tests.forEach((test) =>
+                    recordTest(test, test.title || suite.title || "Unknown Test", parentPath || "")
+                );
             }
             if (suite.suites) suite.suites.forEach((s) => processSuite(s, currentPath));
         }
@@ -97,14 +89,15 @@ function parseResults(filePath) {
         if (results.suites) results.suites.forEach((s) => processSuite(s, ""));
 
         if (totalTests === 0 && results.stats) {
-            passedTests = results.stats.expected || results.stats.passed || 0;
+            passedTests = (results.stats.expected || results.stats.passed || 0) + (results.stats.flaky || 0);
             failedTests = results.stats.unexpected || results.stats.failed || 0;
             skippedTests = results.stats.skipped || 0;
-            totalTests = passedTests + failedTests + skippedTests + (results.stats.flaky || 0);
+            flakyTests = results.stats.flaky || 0;
+            totalTests = passedTests + failedTests + skippedTests;
             duration = results.stats.duration || 0;
         }
 
-        return { totalTests, passedTests, failedTests, skippedTests, duration, failures };
+        return { totalTests, passedTests, failedTests, skippedTests, flakyTests, duration, failures };
     } catch (e) {
         console.error("Error parsing results:", e.message);
         return null;
@@ -136,10 +129,11 @@ const totals = reported.reduce(
         acc.passed += r.passedTests;
         acc.failed += r.failedTests;
         acc.skipped += r.skippedTests;
+        acc.flaky += r.flakyTests;
         acc.duration += r.duration;
         return acc;
     },
-    { total: 0, passed: 0, failed: 0, skipped: 0, duration: 0 }
+    { total: 0, passed: 0, failed: 0, skipped: 0, flaky: 0, duration: 0 }
 );
 
 let headline = `${totals.passed}/${totals.total} passed`;
@@ -148,6 +142,8 @@ if (totals.failed > 0) {
 } else if (missing.length > 0) {
     // A cancelled job uploads no artifact, so a run can fail with zero failed tests.
     headline = `no results from ${missing.join(", ")}`;
+} else if (totals.flaky > 0) {
+    headline = `${headline} (${totals.flaky} flaky)`;
 }
 const title = `${statusEmoji} E2E Regression Tests \u2014 ${headline}`.slice(0, SLACK_HEADER_TEXT_LIMIT);
 
@@ -158,6 +154,7 @@ const statsLine = [
     }),
     `${(totals.duration / 60000).toFixed(1)}m`,
     ...(totals.skipped > 0 ? [`${totals.skipped} skipped`] : []),
+    ...(totals.flaky > 0 ? [`${totals.flaky} flaky`] : []),
     `<${runUrl}|logs & full report>`,
     `<${commitUrl}|${shortSha}>`,
 ].join("  \u00B7  ");
