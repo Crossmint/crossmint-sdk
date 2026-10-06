@@ -7,9 +7,6 @@ const SERVER_API_KEY = process.env.TESTS_CROSSMINT_SERVER_API_KEY_SMOKE_TESTS_PR
 
 const MAX_SIGNERS_TO_ATTEMPT = 20;
 
-// Fixed so createWallet's idempotent-by-owner lookup keeps matching this exact fixture wallet
-// across runs — a random admin signer on every run conflicts with whichever address the wallet
-// was actually created with the first time.
 const FIXTURE_ADMIN_SIGNER_ADDRESS = "0xC0784e8Ef9Ec09096DCd4D6cdFd5DB3AD9A1Cd86";
 
 function makeApiClient(): WalletsApiClient {
