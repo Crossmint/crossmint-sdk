@@ -67,10 +67,6 @@ test.describe("Signer Limit Regression — wallet already over the default cap (
                 `expected no SIGNER_LIMIT_EXCEEDED response, got: ${signerLimitResponses.join(", ")}`
             ).toHaveLength(0);
         } finally {
-            // The transfer above silently registers a new device signer for this fresh browser
-            // session. Remove it whenever one was added — even if an earlier step in this test
-            // threw — so this wallet's signer count stays flat run over run instead of growing by
-            // one every time the suite runs.
             if (addedSignerLocator != null) {
                 await authenticatedPage.reload();
                 await waitForWalletReady(authenticatedPage);
