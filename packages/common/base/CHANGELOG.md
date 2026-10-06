@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.12.3
+
+### Patch Changes
+
+- bc9f0b4: ConsoleSink now emits a single self-contained string with the serialized context instead of passing the context object as a second console argument, so text-based console consumers (Playwright, Sentry breadcrumbs, log shippers) no longer see `JSHandle@object`.
+
 ## 0.12.2
 
 ### Patch Changes

@@ -30,6 +30,7 @@ import type {
     Signature,
     ApproveResult,
     PrepareOnly,
+    RecoverySignerConfigFor,
     SendTokenTransactionOptions,
 } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
@@ -858,7 +859,7 @@ export class Wallet<C extends Chain> {
         },
     })
     public async addRecoveryMethod<T extends AddRecoveryMethodOptions | undefined = undefined>(
-        recoveryMethod: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
+        recoveryMethod: RecoverySignerConfigFor<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<AddRecoveryMethodReturnType> {
         this.assertRecoveryMethodManagementSupported();
@@ -1063,7 +1064,9 @@ export class Wallet<C extends Chain> {
         }
         const selected = getSignerDescriptor<C>(recoveryMethod.type).adoptsRecoveryConfigOnMatch
             ? this.recoveryMethods[index]
-            : (recoveryMethod as RecoverySignerConfigForChain<C>);
+            : recoveryMethod.type === "passkey"
+              ? (this.withPasskeyRecoveryCredentialId(recoveryMethod, index) as RecoverySignerConfigForChain<C>)
+              : (recoveryMethod as RecoverySignerConfigForChain<C>);
         this.#signerManager.selectRecovery(index, selected);
         walletsLogger.info("wallet.useRecoveryMethod.success", {
             recoveryMethodLocator: this.#signerManager.recoveryLocator(selected),
@@ -1146,6 +1149,30 @@ export class Wallet<C extends Chain> {
             case "unregistered":
                 throw new Error(resolution.message);
         }
+    }
+
+    /**
+     * The passkey recovery method to sign with, keeping the caller's config (its callbacks) and filling in the
+     * credential id from the matched recovery method when the caller did not pass one. Signing needs the id: WebAuthn
+     * would otherwise be asked for an empty credential.
+     */
+    private withPasskeyRecoveryCredentialId(recoveryMethod: PasskeySignerConfig, index: number): PasskeySignerConfig {
+        const callerId = passkeyCredentialId(recoveryMethod);
+        if (callerId != null) {
+            return recoveryMethod;
+        }
+        if (this.recoveryMethods.filter((recovery) => recovery.type === "passkey").length > 1) {
+            throw new InvalidRecoveryConfigError(
+                'Multiple passkey recovery methods are registered on this wallet. Please specify the credential id: wallet.useRecoveryMethod({ type: "passkey", id: "<credential-id>" })'
+            );
+        }
+        const storedId = passkeyCredentialId(this.recoveryMethods[index] as PasskeySignerConfig);
+        if (storedId == null) {
+            throw new InvalidRecoveryConfigError(
+                'The passkey recovery method has no credential id. Please specify it: wallet.useRecoveryMethod({ type: "passkey", id: "<credential-id>" })'
+            );
+        }
+        return { ...recoveryMethod, id: storedId };
     }
 
     /**

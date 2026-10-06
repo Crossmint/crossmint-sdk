@@ -529,9 +529,11 @@ export function generate(config) {
 
     function extractProps(node) {
         const sig = node?.signatures?.[0];
-        if (!sig?.parameters?.length) return [];
-        const param = sig.parameters[0];
-        const type = param.type;
+        // TypeDoc serializes forwardRef components as variables with their props in a type argument.
+        const type =
+            sig?.parameters?.[0]?.type ??
+            (node?.type?.name === "ForwardRefExoticComponent" ? node.type.typeArguments?.[0] : undefined);
+        if (!type) return [];
         let allProps = [];
         function collectProps(t) {
             if (!t) return;
@@ -916,7 +918,14 @@ export function generate(config) {
 
         let componentIdx = 0;
         for (const name of components) {
-            const node = findByName(name, KIND.FUNCTION);
+            const node =
+                findByName(name, KIND.FUNCTION) ??
+                allExports.find(
+                    (entry) =>
+                        entry.name === name &&
+                        entry.kind === KIND.VARIABLE &&
+                        entry.type?.name === "ForwardRefExoticComponent"
+                );
             if (!node) continue;
 
             if (componentIdx++ > 0) {

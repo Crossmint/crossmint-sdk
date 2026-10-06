@@ -5,7 +5,7 @@ import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
 export type ProtectedInputServiceProps = {
-    apiClient: CrossmintApiClient;
+    apiClient: Pick<CrossmintApiClient, "buildUrl">;
 };
 
 export function createProtectedInputService({ apiClient }: ProtectedInputServiceProps) {
@@ -13,17 +13,11 @@ export function createProtectedInputService({ apiClient }: ProtectedInputService
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/protected-input");
         const queryParams = new URLSearchParams();
 
-        // Only the params of the hosted page contract, picked by name, so an extra key on the
-        // props object (or a future prop) never reaches the URL. Objects (appearance) are
-        // JSON-encoded; plain strings are sent as-is; unset values are skipped. The page
-        // validates them and posts `protected-input:error` with `invalid_params` if it rejects
-        // any, and posts its events to the embedding page's origin (its referrer).
-        const { jwt, merchantUrl, expiresAt, label, appearance } = props;
-        appendObjectToQueryParams(queryParams, { merchantUrl, expiresAt, label, appearance });
-
-        queryParams.append("jwt", jwt);
-        queryParams.append("apiKey", apiClient.crossmint.apiKey);
-        queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
+        // Authentication crosses the verified window channel, never the iframe URL.
+        appendObjectToQueryParams(queryParams, { field: publicField(props.field), appearance: props.appearance });
+        if (typeof window !== "undefined") {
+            queryParams.set("targetOrigin", window.location.origin);
+        }
 
         return `${urlWithPath}?${queryParams.toString()}`;
     }
@@ -42,5 +36,27 @@ export function createProtectedInputService({ apiClient }: ProtectedInputService
             getUrl: getIFrameUrl,
             createClient: createIframeClient,
         },
+    };
+}
+
+/** Strip undeclared runtime data before it can enter the URL. */
+function publicField(field: CrossmintProtectedInputProps["field"]) {
+    const input = field.input;
+    return {
+        key: field.key,
+        label: field.label,
+        required: field.required,
+        handling: field.handling,
+        input:
+            input.kind === "text"
+                ? {
+                      kind: input.kind,
+                      ...(input.multiline === undefined ? {} : { multiline: input.multiline }),
+                      ...(input.placeholder === undefined ? {} : { placeholder: input.placeholder }),
+                      ...(input.display === undefined ? {} : { display: input.display }),
+                      ...(input.autoComplete === undefined ? {} : { autoComplete: input.autoComplete }),
+                      ...(input.inputMode === undefined ? {} : { inputMode: input.inputMode }),
+                  }
+                : { kind: input.kind },
     };
 }
