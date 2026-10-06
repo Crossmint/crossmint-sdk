@@ -1,16 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { WalletLocator, WalletsApiClient } from "@crossmint/wallets-sdk";
 import { createIntegrationApiClient, PREVIEW_API_KEY } from "../shared/client";
-import { externalWalletSigner } from "../shared/signer";
-import {
-    delay,
-    createFreshWallet,
-    expectErrorResponse,
-    isErrorResponse,
-    isSuccessWalletResponse,
-    TestDataFactory,
-} from "./test-utils";
-import { DELAY_LONG, DELAY_RATE_LIMIT_WINDOW, TEST_ADDRESSES, TEST_VALUES, TIMEOUT_MEDIUM } from "./constants";
+import { delay, createFreshWallet, expectErrorResponse, isSuccessWalletResponse, TestDataFactory } from "./test-utils";
+import { DELAY_LONG, TEST_ADDRESSES, TEST_VALUES } from "./constants";
 
 describe("Wallets — API security (Real HTTP)", () => {
     let apiClient: WalletsApiClient;
@@ -412,88 +404,52 @@ describe("Wallets — API security (Real HTTP)", () => {
     });
 
     describe("API Security - Rate Limiting", () => {
-        it("handles rate limiting gracefully", async () => {
-            const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_RAPID_COUNT }, () =>
-                apiClient.createWallet({
-                    chainType: "evm",
-                    type: "smart",
-                    config: { adminSigner: externalWalletSigner().signer },
-                })
-            );
+        it("surfaces a 429 rate-limit response as a typed error", async () => {
+            const originalFetch = global.fetch;
 
-            const results = await Promise.allSettled(requests);
+            global.fetch = (async () => {
+                return new Response(JSON.stringify({ error: true, message: "Rate limit exceeded" }), {
+                    status: 429,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }) as typeof global.fetch;
 
-            const rateLimited = results.filter(
-                (result) =>
-                    result.status === "fulfilled" &&
-                    isErrorResponse(result.value) &&
-                    (result.value.message?.toLowerCase().includes("rate") ||
-                        result.value.message?.toLowerCase().includes("limit") ||
-                        result.value.message?.toLowerCase().includes("429"))
-            );
-
-            if (rateLimited.length > 0) {
-                expect(rateLimited[0].status).toBe("fulfilled");
+            try {
+                const result = await apiClient.createWallet({ chainType: "evm", type: "mpc" });
+                expectErrorResponse(result);
+                expect(result.message?.toLowerCase()).toContain("rate limit");
+            } finally {
+                global.fetch = originalFetch;
             }
         });
 
-        it("returns 429 status when rate limit exceeded", async () => {
-            const rapidRequests = Array.from({ length: TEST_VALUES.RATE_LIMIT_STRESS_COUNT }, (_, i) =>
-                apiClient
-                    .createWallet({
-                        chainType: "evm",
-                        type: "smart",
-                        config: { adminSigner: externalWalletSigner().signer },
-                    })
-                    .catch((error) => ({ error: true, message: error.message }))
-            );
+        it("recovers normally on the next request after a 429", async () => {
+            const originalFetch = global.fetch;
+            let callCount = 0;
 
-            const results = await Promise.all(rapidRequests);
-
-            const rateLimitErrors = results.filter(
-                (result: any) =>
-                    result?.error &&
-                    (result?.message?.toLowerCase().includes("rate") ||
-                        result?.message?.toLowerCase().includes("limit") ||
-                        result?.message?.toLowerCase().includes("429") ||
-                        result?.message?.toLowerCase().includes("too many"))
-            );
-
-            if (rateLimitErrors.length > 0) {
-                expect((rateLimitErrors[0] as { error: boolean }).error).toBe(true);
-            }
-        });
-
-        it("allows requests after rate limit window", async () => {
-            await delay(DELAY_RATE_LIMIT_WINDOW);
-
-            const result = await apiClient.createWallet({
-                chainType: "evm",
-                type: "smart",
-                config: { adminSigner: externalWalletSigner().signer },
-            });
-
-            expect(isSuccessWalletResponse(result)).toBe(true);
-        });
-
-        it(
-            "handles concurrent requests without overwhelming server",
-            async () => {
-                for (let batch = 0; batch < TEST_VALUES.RATE_LIMIT_BATCHES; batch++) {
-                    const requests = Array.from({ length: TEST_VALUES.RATE_LIMIT_BATCH_SIZE }, () =>
-                        apiClient.createWallet({
-                            chainType: "evm",
-                            type: "smart",
-                            config: { adminSigner: externalWalletSigner().signer },
-                        })
-                    );
-
-                    await Promise.allSettled(requests);
-                    await delay(DELAY_LONG);
+            global.fetch = (async () => {
+                callCount++;
+                if (callCount === 1) {
+                    return new Response(JSON.stringify({ error: true, message: "Rate limit exceeded" }), {
+                        status: 429,
+                        headers: { "Content-Type": "application/json" },
+                    });
                 }
-            },
-            TIMEOUT_MEDIUM
-        );
+                return new Response(JSON.stringify({ address: "0x123", chainType: "evm", type: "mpc" }), {
+                    status: 200,
+                });
+            }) as typeof global.fetch;
+
+            try {
+                const limited = await apiClient.createWallet({ chainType: "evm", type: "mpc" });
+                expectErrorResponse(limited);
+
+                const recovered = await apiClient.createWallet({ chainType: "evm", type: "mpc" });
+                expect(isSuccessWalletResponse(recovered)).toBe(true);
+            } finally {
+                global.fetch = originalFetch;
+            }
+        });
     });
 
     describe("API Security - Request Validation", () => {
