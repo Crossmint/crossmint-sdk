@@ -7,19 +7,19 @@ import {
     handleSignerConfirmation,
     waitForWalletReady,
 } from "../../../shared/utils";
-import { TEST_RECIPIENT_WALLET_ADDRESSES, getLegacySmokeWalletEmail } from "../../../shared/constants/globalConstants";
+import { TEST_RECIPIENT_WALLET_ADDRESSES, getCapFixtureWalletEmail } from "../../../shared/constants/globalConstants";
 
-const LEGACY_SMOKE_TEST_CONFIG = {
+const CAP_FIXTURE_TEST_CONFIG = {
     provider: "crossmint",
     chain: "evm",
     signer: "email",
     chainId: "base-sepolia",
     alias: undefined,
-    emailOverride: getLegacySmokeWalletEmail("email"),
+    emailOverride: getCapFixtureWalletEmail("email"),
 } as const;
 
-test.describe("Signer Limit Regression — legacy over-the-cap wallet (QA-91)", { tag: "@smoke" }, () => {
-    test.use({ testConfig: LEGACY_SMOKE_TEST_CONFIG });
+test.describe("Signer Limit Regression — wallet already over the default cap (QA-91)", { tag: "@smoke" }, () => {
+    test.use({ testConfig: CAP_FIXTURE_TEST_CONFIG });
 
     test("transfers funds without hitting the signer cap", async ({ authenticatedPage, testConfig }) => {
         const signerLimitResponses: string[] = [];
