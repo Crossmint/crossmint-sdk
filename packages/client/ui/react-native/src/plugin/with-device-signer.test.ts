@@ -43,11 +43,12 @@ describe("withDeviceSigner", () => {
             expect(podfile).toContain("config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''");
         });
 
-        test("unsets the prebuilt React Native core flags", async () => {
+        test("leaves the prebuilt React Native core settings to Expo", async () => {
             const podfile = await runPodfileMod(templatePodfile);
 
-            expect(podfile).toContain("ENV.delete('RCT_USE_RN_DEP')         # CROSSMINT_RN_PREBUILT_FIX");
-            expect(podfile).toContain("ENV.delete('RCT_USE_PREBUILT_RNCORE')  # CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("ENV.delete('RCT_USE_RN_DEP')");
+            expect(podfile).not.toContain("ENV.delete('RCT_USE_PREBUILT_RNCORE')");
+            expect(podfile).not.toContain("GCC_PREFIX_HEADER");
         });
 
         test("keeps a single post_install block", async () => {
@@ -72,6 +73,20 @@ describe("withDeviceSigner", () => {
                 expect(position, `template line missing: ${line}`).toBeGreaterThanOrEqual(0);
                 position += 1;
             }
+        });
+    });
+
+    describe("when the Podfile was written by the previous plugin version", () => {
+        test("replaces the old injection with the current one", async () => {
+            const legacy = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-57", "Podfile.legacy-plugin"), "utf8");
+            const template = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-57", "Podfile"), "utf8");
+
+            const podfile = await runPodfileMod(legacy);
+
+            expect(legacy).toContain("CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("CROSSMINT_RN_PREBUILT_FIX");
+            expect(podfile).not.toContain("CrossmintExpoFixes.pch");
+            expect(podfile).toBe(await runPodfileMod(template));
         });
     });
 

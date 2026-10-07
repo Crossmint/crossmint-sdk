@@ -4,10 +4,8 @@
         "slug": "wallets-playground-expo",
         "version": "1.0.0",
         "scheme": "crossmint-wallets",
-        "newArchEnabled": true,
         "platforms": ["ios", "android"],
         "plugins": ["@crossmint/client-sdk-react-native-ui", "expo-secure-store", "expo-web-browser"],
-        "entryPoint": "./index.ts",
         "android": {
             "package": "com.crossmint.walletsplayground"
         },
