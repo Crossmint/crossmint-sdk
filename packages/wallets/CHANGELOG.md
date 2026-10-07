@@ -1,5 +1,26 @@
 # @crossmint/wallets-sdk
 
+## 1.20.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+## 1.19.0
+
+### Minor Changes
+
+- f17f8bc: Stellar and Solana smart wallets accept passkey signers. On Stellar a passkey can be the admin signer, a recovery method or a delegated signer, and it signs the auth entry preimage hash as its WebAuthn challenge. On Solana a passkey can be a delegated signer, and it signs the transaction's P-256 message as its WebAuthn challenge.
+
+### Patch Changes
+
+- d68d665: Throw `RecoveryMethodRequiredError` (a `SignerRequiredError` subclass) when a wallet has several recovery methods and none was selected with `useRecoveryMethod()` before `addSigner`, `removeSigner`, `addRecoveryMethod` or `removeRecoveryMethod`.
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/common-sdk-auth@1.1.23
+
 ## 1.18.0
 
 ### Minor Changes

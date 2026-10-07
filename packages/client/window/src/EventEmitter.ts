@@ -13,6 +13,8 @@ export interface EventEmitterOptions<
 
 export interface SendActionOptions<IncomingEvents extends EventMap, R extends keyof IncomingEvents> {
     timeoutMs?: number;
+    /** Cancels local waiting; it does not undo a remote effect already sent. */
+    signal?: AbortSignal;
     intervalMs?: number;
     maxRetries?: number;
     condition?: (data: z.infer<IncomingEvents[R]>) => boolean;
@@ -108,6 +110,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                     clearInterval(interval);
                 }
                 this.off(responseListenerId);
+                options?.signal?.removeEventListener("abort", onAbort);
                 console.warn(
                     `[EventEmitter] sendAction: timeout after ${timeoutMs / 1000}s waiting for ${String(responseEvent)}`
                 );
@@ -128,11 +131,29 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 }
                 clearTimeout(timer);
                 this.off(responseListenerId);
+                options?.signal?.removeEventListener("abort", onAbort);
                 console.info(`[EventEmitter] sendAction: received ${String(responseEvent)}`);
                 resolve(responseData);
             });
 
+            const onAbort = () => {
+                clearTimeout(timer);
+                if (interval) {
+                    clearInterval(interval);
+                }
+                this.off(responseListenerId);
+                options?.signal?.removeEventListener("abort", onAbort);
+                reject(new DOMException("Action waiting was cancelled", "AbortError"));
+            };
+            options?.signal?.addEventListener("abort", onAbort, { once: true });
+            if (options?.signal?.aborted) {
+                onAbort();
+                return;
+            }
             this.send(event, data);
+            if (options?.signal?.aborted) {
+                return;
+            }
 
             if (options?.intervalMs) {
                 interval = setInterval(() => {
@@ -140,6 +161,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                         clearInterval(interval!);
                         clearTimeout(timer);
                         this.off(responseListenerId);
+                        options?.signal?.removeEventListener("abort", onAbort);
                         console.warn(
                             `[EventEmitter] sendAction: max retries (${maxRetries}) reached for ${String(event)}`
                         );

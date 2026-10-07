@@ -1,5 +1,34 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.8.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- Updated dependencies [dc31134]
+- Updated dependencies [2aaeabe]
+  - @crossmint/client-sdk-react-base@2.4.0
+  - @crossmint/wallets-sdk@1.20.0
+
+## 1.7.2
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/client-sdk-react-base@2.3.2
+  - @crossmint/common-sdk-auth@1.1.23
+  - @crossmint/client-sdk-rn-window@0.3.19
+
 ## 1.7.1
 
 ### Patch Changes

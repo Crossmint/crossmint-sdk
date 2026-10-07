@@ -1,4 +1,5 @@
 import base58 from "bs58";
+import { Base64, Hex } from "ox";
 import type { GetTransactionSuccessResponse, RegisterSignerResponse } from "../../api";
 import type { SignerAdapter } from "../../signers/types";
 import { walletsLogger } from "../../logger";
@@ -57,6 +58,12 @@ export const solanaChainAdapter: ChainAdapter = {
     },
 
     signApproval(signer: SignerAdapter, transaction: GetTransactionSuccessResponse, approvalMessage: string) {
+        // A passkey's approval message is the base64 of the transaction's 32-byte P-256 message, and the program
+        // checks that the WebAuthn challenge is exactly those bytes. WebAuthn signing takes the challenge as hex,
+        // so convert the bytes rather than hand over the base64 text.
+        if (signer.type === "passkey") {
+            return signer.signTransaction(Hex.fromBytes(Base64.toBytes(approvalMessage)));
+        }
         if (signer.type !== "external-wallet") {
             return signer.signTransaction(approvalMessage);
         }

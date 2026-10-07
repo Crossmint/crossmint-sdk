@@ -1,69 +1,70 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRef, useState } from "react";
+import {
+    CrossmintProtectedInput,
+    type CrossmintProtectedInputRef,
+    type ProtectedInputCollectionResult,
+    useCrossmintAuth,
+} from "@crossmint/client-sdk-react-ui";
 import { AuthButton } from "../../components/common/AuthButton";
 import { ClientProviders } from "../payment-method-management/components/ClientProviders";
-import { CrossmintProtectedInput, type ProtectedInputCreated, useCrossmintAuth } from "@crossmint/client-sdk-react-ui";
 
-// Consumes the SDK the way an integrator would. Open it as
-// /protected-input?merchantUrl=https://shop.example.com/login to collect the password of the
-// buyer's account on that merchant. Only the returned protectedInputId is shown; the page
-// never sees the password.
+// This demo supplies a JWT through its existing login; the component also accepts external auth.
 export default function ProtectedInputPage() {
     return (
         <ClientProviders>
             <AuthButton />
-            {/* useSearchParams needs a Suspense boundary or `next build` refuses the page. */}
-            <Suspense fallback={null}>
-                <ProtectedInputWrapper />
-            </Suspense>
+            <ProtectedField />
         </ClientProviders>
     );
 }
 
-function ProtectedInputWrapper() {
+function ProtectedField() {
     const { jwt } = useCrossmintAuth();
-    const merchantUrl = useSearchParams()?.get("merchantUrl") ?? null;
-    const [created, setCreated] = useState<ProtectedInputCreated | null>(null);
-
+    const ref = useRef<CrossmintProtectedInputRef>(null);
+    const [result, setResult] = useState<ProtectedInputCollectionResult | null>(null);
+    const [busy, setBusy] = useState(false);
     if (jwt == null) {
-        return <div>Please login to continue</div>;
+        return <p>Please login to continue</p>;
     }
 
-    const merchantHost = hostnameOf(merchantUrl);
-    if (merchantUrl == null || merchantHost == null) {
-        return <div>Add ?merchantUrl=&lt;sign-in page URL&gt; (an absolute http(s) URL) to the URL</div>;
-    }
-
-    if (created != null) {
-        return (
-            <div>
-                Protected input <code>{created.protectedInputId}</code> registered for {created.merchant.domain}, valid
-                until {created.expiresAt}.
-            </div>
-        );
+    async function collect() {
+        if (ref.current == null || busy) {
+            return;
+        }
+        setBusy(true);
+        try {
+            setResult(await ref.current.collect());
+        } finally {
+            setBusy(false);
+        }
     }
 
     return (
-        <CrossmintProtectedInput
-            jwt={jwt}
-            merchantUrl={merchantUrl}
-            label={merchantHost}
-            onCreated={setCreated}
-            onError={(error) => console.error("protected-input:error", error)}
-        />
+        <div>
+            <label>Verification code</label>
+            <CrossmintProtectedInput
+                ref={ref}
+                jwt={jwt}
+                disabled={busy}
+                invalid={result?.status === "invalid"}
+                field={{
+                    key: "code",
+                    label: "Verification code",
+                    required: true,
+                    handling: "protected",
+                    input: { kind: "text", autoComplete: "one-time-code", inputMode: "numeric" },
+                }}
+            />
+            <button type="button" disabled={busy} onClick={collect}>
+                Continue
+            </button>
+            {result?.status === "collected" ? (
+                <p>Protected reference: {result.input.protectedInputId}</p>
+            ) : (
+                result != null && <p role="alert">{result.message}</p>
+            )}
+        </div>
     );
-}
-
-// The query string is untrusted; a malformed value must not crash the page.
-function hostnameOf(url: string | null): string | null {
-    if (url == null) {
-        return null;
-    }
-    try {
-        return new URL(url).hostname;
-    } catch {
-        return null;
-    }
 }

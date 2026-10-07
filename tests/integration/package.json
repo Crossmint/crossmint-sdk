@@ -1,0 +1,14 @@
+{
+    "name": "@crossmint/integration-tests",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "test:integration": "vitest run"
+    },
+    "dependencies": {
+        "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*",
+        "bs58": "5.0.0",
+        "viem": "2.33.1"
+    }
+}
