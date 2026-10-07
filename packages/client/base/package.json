@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-base",
-    "version": "4.1.0",
+    "version": "4.2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -17,13 +17,12 @@
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "tsup --watch",
-        "test:vitest": "vitest run",
-        "extract:agent-checkouts-openapi": "node scripts/extract-agent-checkouts-openapi.mjs",
-        "generate": "openapi-ts"
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/rest-js": "0.1.0",
         "@datadog/browser-logs": "6.24.1",
         "exponential-backoff": "3.1.1",
         "uuid": "11.1.1",
@@ -31,7 +30,6 @@
     },
     "devDependencies": {
         "@ethersproject/transactions": "5.7.0",
-        "@hey-api/openapi-ts": "0.95.0",
         "@solana/web3.js": "1.98.1",
         "@types/uuid": "11.0.0"
     }

@@ -9,6 +9,7 @@ import {
     type ClientSideWalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
+    type PasskeyProvider,
     type WalletOptions,
     type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
@@ -17,7 +18,13 @@ import {
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import { ApiClientError, type UIConfig } from "@crossmint/common-sdk-base";
+import {
+    ApiClientError,
+    CrossmintSDKError,
+    type SdkLogger,
+    type UIConfig,
+    WalletErrorCode,
+} from "@crossmint/common-sdk-base";
 import { useCrossmint, useSignerAuth } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
@@ -94,6 +101,11 @@ export interface CrossmintWalletBaseProviderProps {
      * Storage for the device signer key.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /**
+     * @internal
+     * Creates and signs with passkeys where the browser WebAuthn API is not available (React Native).
+     */
+    passkeyProvider?: PasskeyProvider;
     /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
@@ -152,6 +164,42 @@ export function isCloudflareRegionBlock(responseBody: string | null): boolean {
 }
 
 /**
+ * Loads the user's existing wallet, or throws `WalletNotAvailableError`. The create args go with the request
+ * because they carry signer fields that the API never returns, such as the phone signer's OTP `channel`;
+ * `getWallet` merges them into the loaded signers. Passing them also makes `getWallet` check them against the
+ * wallet. On a mismatch it tries again with less: first without `signers`, so a recovery signer that still
+ * matches keeps its fields, then with no config, which loads the wallet as before.
+ */
+export async function getExistingWallet<C extends Chain>(
+    wallets: Pick<CrossmintWallets, "getWallet">,
+    args: WalletCreateArgs<C>,
+    options: WalletOptions,
+    logger: Pick<SdkLogger, "warn">
+): Promise<Wallet<C>> {
+    const base = { chain: args.chain, alias: args.alias, options };
+    const recovery = { recovery: args.recovery, recoveryMethods: args.recoveryMethods };
+    const hasRecovery = args.recovery != null || args.recoveryMethods != null;
+    const attempts: Array<WalletCreateArgs<C>> = [
+        ...(args.signers != null ? [{ ...base, ...recovery, signers: args.signers }] : []),
+        ...(hasRecovery ? [{ ...base, ...recovery }] : []),
+    ];
+    for (const attempt of attempts) {
+        try {
+            return await wallets.getWallet<C>(attempt);
+        } catch (error) {
+            if (!(error instanceof CrossmintSDKError) || error.code !== WalletErrorCode.WALLET_CREATION_FAILED) {
+                throw error;
+            }
+            logger.warn("react.wallet.getOrCreateWallet.signerConfigMismatch", {
+                error,
+                withSigners: attempt.signers != null,
+            });
+        }
+    }
+    return await wallets.getWallet<C>(base);
+}
+
+/**
  * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
  * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
  * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
@@ -180,6 +228,7 @@ export function CrossmintWalletBaseProvider({
     clientTEEConnection,
     resetSignerFrame,
     deviceSignerKeyStorage,
+    passkeyProvider,
     initializeWebView,
     appearance,
     showOtpSignerPrompt,
@@ -284,9 +333,17 @@ export function CrossmintWalletBaseProvider({
                     onAuthRequired: argsOptions?.callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
+                passkeyProvider,
             };
         },
-        [clientTEEConnection, resetSignerFrame, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [
+            clientTEEConnection,
+            resetSignerFrame,
+            updateCallbacks,
+            deviceSignerKeyStorage,
+            passkeyProvider,
+            wrappedOnAuthRequired,
+        ]
     );
 
     const getOrCreateWallet = useCallback(
@@ -315,11 +372,7 @@ export function CrossmintWalletBaseProvider({
                 // Try to get existing wallet first, then create if not found
                 let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
                 try {
-                    wallet = await wallets.getWallet<C>({
-                        chain: args.chain,
-                        alias: args.alias,
-                        options: walletOptions,
-                    });
+                    wallet = await getExistingWallet(wallets, args, walletOptions, logger);
                 } catch (error) {
                     if (!(error instanceof WalletNotAvailableError)) {
                         throw error;
@@ -432,9 +485,9 @@ export function CrossmintWalletBaseProvider({
     const createPasskeySigner = useCallback(
         async (passkeyName: string) => {
             const wallets = CrossmintWallets.from(crossmint);
-            return await wallets.createPasskeySigner(passkeyName);
+            return await wallets.createPasskeySigner(passkeyName, passkeyProvider);
         },
-        [crossmint]
+        [crossmint, passkeyProvider]
     );
 
     // When using createOnLogin with an email signer, automatically populate the email from the auth context.

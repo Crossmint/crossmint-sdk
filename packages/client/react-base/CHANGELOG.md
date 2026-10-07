@@ -1,5 +1,32 @@
 # @crossmint/client-sdk-react-base
 
+## 2.4.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- dc31134: An existing wallet keeps the phone signer's OTP `channel` from `createOnLogin`. The API never returns `channel`, so after a reload a WhatsApp phone signer sent its OTP by SMS. `getOrCreateWallet` now passes the recovery and signer config to `getWallet`, which merges it in. If the signers no longer match the existing wallet, it loads with the recovery config only; if that does not match either, it loads without config, as before.
+- Updated dependencies [2aaeabe]
+  - @crossmint/wallets-sdk@1.20.0
+
+## 2.3.2
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/common-sdk-auth@1.1.23
+
 ## 2.3.1
 
 ### Patch Changes

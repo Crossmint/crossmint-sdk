@@ -5,7 +5,7 @@ import { CrossmintCvcRecollection, OrderIntentVerification } from "../order-inte
 import { useAgentCardAuthorization } from "./useAgentCardAuthorization";
 
 /**
- * Lets a buyer authorize a bounded card spend for Universal Checkout and hands back an
+ * Lets a buyer authorize a bounded card spend for Agent Checkouts and hands back an
  * `orderIntentId`. Composes card selection, order-intent registration, order-intent creation
  * and rail verification; the rail is chosen by a fixed policy, never by the model or the
  * buyer. The card number, CVC and vault token id never reach this component's callbacks.

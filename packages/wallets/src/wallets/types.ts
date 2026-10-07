@@ -4,7 +4,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
-import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
@@ -14,6 +14,8 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
+    PasskeySignerConfig,
+    PasskeyProvider,
     ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -227,6 +229,8 @@ export type WalletOptions = {
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /** Creates and signs with passkeys where the browser WebAuthn API is not available (e.g. React Native). */
+    passkeyProvider?: PasskeyProvider;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -241,8 +245,13 @@ export type WalletArgsFor<C extends Chain> = {
     alias?: string;
 };
 
-/** A signer that can be used as a recovery signer. Device signers cannot be recovery signers. */
-export type RecoverySignerConfigFor<C extends Chain> = Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+/**
+ * A signer that can be used as a recovery signer. Device signers cannot be recovery signers, and on Solana a passkey
+ * can only be a delegated signer.
+ */
+export type RecoverySignerConfigFor<C extends Chain> = C extends SolanaChain
+    ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
+    : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /**

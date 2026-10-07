@@ -1,58 +1,48 @@
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
-import type { z } from "zod";
-
-import { type Client, createClient } from "./gen/client";
-import * as operations from "./gen/sdk.gen";
-import type {
-    AgentCheckoutBrowserProfileListResponseDto,
-    AgentCheckoutBrowserProfileResponseDto,
-    AgentCheckoutBuyerProfileListResponseDto,
-    AgentCheckoutBuyerProfileResponseDto,
-    AgentCheckoutCancellationAcceptedDto,
-    AgentCheckoutListResponseDto,
-    AgentCheckoutMessageAcceptedDto,
-    AgentCheckoutMessageListResponseDto,
-    AgentCheckoutResponseDto,
-    AgentCheckoutStreamEventDto,
-    CreateAgentCheckoutBrowserProfileDto,
-    CreateAgentCheckoutBuyerProfileDto,
-    CreateAgentCheckoutDto,
-    ListCheckoutsData,
-    SendAgentCheckoutMessageDto,
-    UpdateAgentCheckoutBrowserProfileDto,
-    UpdateAgentCheckoutBuyerProfileDto,
-} from "./gen/types.gen";
 import {
-    zAgentCheckoutMessageListResponseDto,
-    zAgentCheckoutStreamEventDto,
-    zCancelCheckoutResponse,
-    zCreateBrowserProfileResponse,
-    zCreateBuyerProfileResponse,
-    zCreateCheckoutResponse,
-    zGetBrowserProfileResponse,
-    zGetBuyerProfileResponse,
-    zGetCheckoutResponse,
-    zListBrowserProfilesResponse,
-    zListBuyerProfilesResponse,
-    zListCheckoutsResponse,
-    zListMessagesResponse,
-    zSendMessageResponse,
-    zUpdateBrowserProfileResponse,
-    zUpdateBuyerProfileResponse,
-} from "./gen/zod.gen";
+    type AgentCheckoutBrowserProfileListResponseDto,
+    type AgentCheckoutBrowserProfileResponseDto,
+    type AgentCheckoutBuyerProfileListResponseDto,
+    type AgentCheckoutBuyerProfileResponseDto,
+    type AgentCheckoutCancellationAcceptedDto,
+    type AgentCheckoutListResponseDto,
+    type AgentCheckoutMessageAcceptedDto,
+    type AgentCheckoutMessageListResponseDto,
+    type AgentCheckoutResponseDto,
+    type AgentCheckoutsListData,
+    type AgentCheckoutsMessagesStreamResponse,
+    type CreateAgentCheckoutBrowserProfileDto,
+    type CreateAgentCheckoutBuyerProfileDto,
+    type CreateAgentCheckoutDto,
+    CrossmintSdk,
+    type SendAgentCheckoutMessageDto,
+    type UpdateAgentCheckoutBrowserProfileDto,
+    type UpdateAgentCheckoutBuyerProfileDto,
+    createCrossmintClient,
+} from "@crossmint/rest-js";
 
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set(["succeeded", "blocked", "cancelled", "failed"]);
+const AGENT_CHECKOUT_STATUSES: ReadonlySet<string> = new Set<AgentCheckoutStatus>([
+    "queued",
+    "running",
+    "awaiting_input",
+    "succeeded",
+    "blocked",
+    "cancelled",
+    "failed",
+]);
 const DEFAULT_RECONNECT_DELAY_MS = 1_000;
 const DEFAULT_MAX_EMPTY_RECONNECTS = 3;
 
-// ---- Wire shapes, generated from the Crossmint API's OpenAPI spec (`pnpm generate`).
+// ---- Wire shapes, from the types `@crossmint/rest-js` generates from the Crossmint API's OpenAPI spec.
 
 export type AgentCheckout = AgentCheckoutResponseDto;
 export type AgentCheckoutStatus = AgentCheckout["status"];
 export type AgentCheckoutPage = AgentCheckoutListResponseDto;
 export type AgentCheckoutMessagePage = AgentCheckoutMessageListResponseDto;
 export type AgentCheckoutMessage = AgentCheckoutMessagePage["data"][number];
-export type AgentCheckoutUpdate = Exclude<AgentCheckoutStreamEventDto, AgentCheckoutMessage>;
+/** A `run.updated` payload. The spec types stream data loosely; the SDK checks only the fields it reads. */
+export type AgentCheckoutUpdate = AgentCheckoutsMessagesStreamResponse & { runId: string; status: AgentCheckoutStatus };
 export type AcceptedAgentCheckoutMessage = AgentCheckoutMessageAcceptedDto;
 export type AcceptedAgentCheckoutCancel = AgentCheckoutCancellationAcceptedDto;
 export type AgentCheckoutBuyerProfile = AgentCheckoutBuyerProfileResponseDto;
@@ -77,7 +67,7 @@ export type SendAgentCheckoutMessageInput = SendAgentCheckoutMessageDto;
 export type AgentCheckoutMessagePart = SendAgentCheckoutMessageInput["parts"][number];
 export type AgentCheckoutInputResponse = Extract<AgentCheckoutMessagePart, { type: "input_response" }>;
 export type AgentCheckoutProfilePage<T> = { data: T[]; nextCursor: string | null };
-export type PageOptions = NonNullable<ListCheckoutsData["query"]>;
+export type PageOptions = NonNullable<AgentCheckoutsListData["query"]>;
 
 export type AgentCheckoutStreamEvent =
     | { type: "message.upsert"; cursor: string; message: AgentCheckoutMessage }
@@ -133,9 +123,9 @@ type ConnectionOutcome = { delivered: boolean; done: boolean; failure?: AgentChe
  * @experimental Wraps `/api/unstable` routes; the signature may change in a minor release.
  */
 export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
-    const client = createGeneratedClient(apiClient);
+    const { agentCheckouts } = new CrossmintSdk({ client: createGeneratedClient(apiClient) });
 
-    async function call<T>(operation: Promise<Result<T>>, schema: z.ZodTypeAny): Promise<T> {
+    async function call<T>(operation: Promise<Result<T>>): Promise<T> {
         const { data, error, request, response } = await operation;
         if (response === undefined) {
             throw networkError(request === undefined ? "" : pathOf(request), error);
@@ -144,10 +134,7 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
         if (!response.ok) {
             throw toApiError(response, path, error);
         }
-        if (!schema.safeParse(data).success) {
-            throw new AgentCheckoutsApiError(`Unexpected response shape from ${path}`, response.status, path, data);
-        }
-        // Validated against the spec but returned as received, so fields newer than the spec reach callers.
+        // Returned as received, so fields newer than the published spec reach callers.
         return data as T;
     }
 
@@ -207,8 +194,7 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
         let delivered = false;
 
         try {
-            const { stream } = await operations.streamMessages({
-                client,
+            const { stream } = await agentCheckouts.messages.stream({
                 path: { id },
                 ...(cursor === undefined ? {} : { query: { after: cursor } }),
                 headers: { Accept: "text/event-stream", ...(cursor === undefined ? {} : { "last-event-id": cursor }) },
@@ -265,45 +251,39 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
 
     return {
         create: (input: CreateAgentCheckoutInput): Promise<AgentCheckout> =>
-            call(operations.createCheckout({ client, body: input }), zCreateCheckoutResponse),
-        get: (id: string): Promise<AgentCheckout> =>
-            call(operations.getCheckout({ client, path: { id } }), zGetCheckoutResponse),
-        list: (options: PageOptions = {}): Promise<AgentCheckoutPage> =>
-            call(operations.listCheckouts({ client, query: options }), zListCheckoutsResponse),
-        cancel: (id: string): Promise<AcceptedAgentCheckoutCancel> =>
-            call(operations.cancelCheckout({ client, path: { id } }), zCancelCheckoutResponse),
+            call(agentCheckouts.create({ body: input })),
+        get: (id: string): Promise<AgentCheckout> => call(agentCheckouts.get({ path: { id } })),
+        list: (options: PageOptions = {}): Promise<AgentCheckoutPage> => call(agentCheckouts.list({ query: options })),
+        cancel: (id: string): Promise<AcceptedAgentCheckoutCancel> => call(agentCheckouts.cancel({ path: { id } })),
         listMessages: (id: string, options: PageOptions = {}): Promise<AgentCheckoutMessagePage> =>
-            call(operations.listMessages({ client, path: { id }, query: options }), zListMessagesResponse),
+            call(agentCheckouts.messages.list({ path: { id }, query: options })),
         sendMessage: (id: string, message: SendAgentCheckoutMessageInput): Promise<AcceptedAgentCheckoutMessage> =>
-            call(operations.sendMessage({ client, path: { id }, body: message }), zSendMessageResponse),
+            call(agentCheckouts.messages.create({ path: { id }, body: message })),
         streamMessages,
         buyerProfiles: {
             list: (options: PageOptions = {}): Promise<AgentCheckoutBuyerProfilePage> =>
-                call(operations.listBuyerProfiles({ client, query: options }), zListBuyerProfilesResponse),
+                call(agentCheckouts.buyerProfiles.list({ query: options })),
             get: (id: string): Promise<AgentCheckoutBuyerProfile> =>
-                call(operations.getBuyerProfile({ client, path: { id } }), zGetBuyerProfileResponse),
+                call(agentCheckouts.buyerProfiles.get({ path: { id } })),
             create: (input: AgentCheckoutBuyerProfileInput): Promise<AgentCheckoutBuyerProfile> =>
-                call(operations.createBuyerProfile({ client, body: input }), zCreateBuyerProfileResponse),
+                call(agentCheckouts.buyerProfiles.create({ body: input })),
             update: (id: string, input: AgentCheckoutBuyerProfileUpdate): Promise<AgentCheckoutBuyerProfile> =>
-                call(operations.updateBuyerProfile({ client, path: { id }, body: input }), zUpdateBuyerProfileResponse),
+                call(agentCheckouts.buyerProfiles.update({ path: { id }, body: input })),
             async delete(id: string): Promise<void> {
-                await call(operations.deleteBuyerProfile({ client, path: { id } }), anything);
+                await call(agentCheckouts.buyerProfiles.delete({ path: { id } }));
             },
         },
         browserProfiles: {
             list: (options: PageOptions = {}): Promise<AgentCheckoutBrowserProfilePage> =>
-                call(operations.listBrowserProfiles({ client, query: options }), zListBrowserProfilesResponse),
+                call(agentCheckouts.browserProfiles.list({ query: options })),
             get: (id: string): Promise<AgentCheckoutBrowserProfile> =>
-                call(operations.getBrowserProfile({ client, path: { id } }), zGetBrowserProfileResponse),
+                call(agentCheckouts.browserProfiles.get({ path: { id } })),
             create: (input: AgentCheckoutBrowserProfileInput = {}): Promise<AgentCheckoutBrowserProfile> =>
-                call(operations.createBrowserProfile({ client, body: input }), zCreateBrowserProfileResponse),
+                call(agentCheckouts.browserProfiles.create({ body: input })),
             update: (id: string, input: AgentCheckoutBrowserProfileUpdate): Promise<AgentCheckoutBrowserProfile> =>
-                call(
-                    operations.updateBrowserProfile({ client, path: { id }, body: input }),
-                    zUpdateBrowserProfileResponse
-                ),
+                call(agentCheckouts.browserProfiles.update({ path: { id }, body: input })),
             async delete(id: string): Promise<void> {
-                await call(operations.deleteBrowserProfile({ client, path: { id } }), anything);
+                await call(agentCheckouts.browserProfiles.delete({ path: { id } }));
             },
         },
     };
@@ -311,19 +291,25 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
 
 export type AgentCheckoutsApi = ReturnType<typeof createAgentCheckoutsApi>;
 
-const anything = { safeParse: () => ({ success: true }) } as unknown as z.ZodTypeAny;
-const zMessage = zAgentCheckoutMessageListResponseDto.shape.data.element;
-
-/** The generated operations on the API client's base URL and headers (client key, buyer JWT, app id). */
-function createGeneratedClient(apiClient: CrossmintApiClient): Client {
-    const client = createClient({ baseUrl: apiClient.baseUrl.replace(/\/$/, ""), fetch: (request) => fetch(request) });
-    client.interceptors.request.use((request) => {
+/**
+ * The published client on the API client's base URL and headers (client key, buyer JWT, app id). The base
+ * URL can be a key's environment or an `overrideBaseUrl` such as a backend proxy, so this rebuilds each
+ * request URL from it instead of the spec's server.
+ */
+function createGeneratedClient(apiClient: CrossmintApiClient) {
+    const client = createCrossmintClient({
+        environment: apiClient.environment === "production" ? "production" : "staging",
+        fetch: (request) => fetch(request),
+    });
+    const baseUrl = `${apiClient.baseUrl.replace(/\/$/, "")}/api`;
+    client.interceptors.request.use((request, options) => {
+        const routed = new Request(client.buildUrl({ ...options, baseUrl }), request);
         new Headers(apiClient.commonHeaders).forEach((value, name) => {
-            if (!request.headers.has(name)) {
-                request.headers.set(name, value);
+            if (!routed.headers.has(name)) {
+                routed.headers.set(name, value);
             }
         });
-        return request;
+        return routed;
     });
     return client;
 }
@@ -344,15 +330,22 @@ function toStreamEvent(
         throw new AgentCheckoutsApiError(`A ${type} event carried non-JSON data`, undefined, path);
     }
     if (type === "message.upsert") {
-        if (!zMessage.safeParse(data).success) {
-            throw new AgentCheckoutsApiError("Unexpected message shape in the message stream", undefined, path, data);
-        }
         return { type, cursor: frame.id, message: data as AgentCheckoutMessage };
     }
-    if (!("runId" in data) || !zAgentCheckoutStreamEventDto.safeParse(data).success) {
+    if (!isRunUpdate(data)) {
         throw new AgentCheckoutsApiError("Unexpected run update shape in the message stream", undefined, path, data);
     }
-    return { type, cursor: frame.id, run: data as AgentCheckoutUpdate };
+    return { type, cursor: frame.id, run: data };
+}
+
+function isRunUpdate(data: object): data is AgentCheckoutUpdate {
+    return (
+        "runId" in data &&
+        typeof data.runId === "string" &&
+        "status" in data &&
+        typeof data.status === "string" &&
+        AGENT_CHECKOUT_STATUSES.has(data.status)
+    );
 }
 
 function streamPath(id: string): string {

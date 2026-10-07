@@ -57,3 +57,41 @@ describe("a timeout the caller receives as a rejection", () => {
         expect(consoleError).not.toHaveBeenCalled();
     });
 });
+
+describe("cancelled actions", () => {
+    test("settles immediately and removes the response listener and timers", async () => {
+        vi.useFakeTimers();
+        try {
+            const transport = silentTransport();
+            const client = new EventEmitter(transport, incoming, outgoing);
+            const controller = new AbortController();
+            const waiting = client.sendAction({
+                event: "ping",
+                data: {},
+                responseEvent: "pong",
+                options: { signal: controller.signal, timeoutMs: 30_000, intervalMs: 1000 },
+            });
+            controller.abort();
+            await expect(waiting).rejects.toMatchObject({ name: "AbortError" });
+            expect(transport.removeMessageListener).toHaveBeenCalledOnce();
+            expect(vi.getTimerCount()).toBe(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+    test("does not dispatch an already cancelled action", async () => {
+        const transport = silentTransport();
+        const controller = new AbortController();
+        controller.abort();
+        const client = new EventEmitter(transport, incoming, outgoing);
+        await expect(
+            client.sendAction({
+                event: "ping",
+                data: {},
+                responseEvent: "pong",
+                options: { signal: controller.signal },
+            })
+        ).rejects.toMatchObject({ name: "AbortError" });
+        expect(transport.send).not.toHaveBeenCalled();
+    });
+});
