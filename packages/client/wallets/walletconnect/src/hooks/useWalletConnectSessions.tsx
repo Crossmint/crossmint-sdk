@@ -1,7 +1,7 @@
 import { mockRequiredNamespaceMethods } from "@/utils/walletconnect/mockRequiredNamespaceMethods";
 import type { SessionTypes } from "@walletconnect/types";
 import { type SdkErrorKey, buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { type Dispatch, type SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -9,13 +9,13 @@ import { useWalletConnectProvider } from "./useWalletConnectProvider";
 import { useWalletConnectWallets } from "./useWalletConnectWallets";
 
 export type WalletConnectSessionsContext = {
-    sessionProposals: Web3WalletTypes.SessionProposal[];
-    setSessionProposals: Dispatch<SetStateAction<Web3WalletTypes.SessionProposal[]>>;
+    sessionProposals: WalletKitTypes.SessionProposal[];
+    setSessionProposals: Dispatch<SetStateAction<WalletKitTypes.SessionProposal[]>>;
     sessions: SessionTypes.Struct[];
     setSessions: Dispatch<SetStateAction<SessionTypes.Struct[]>>;
-    approveSession: (proposal: Web3WalletTypes.SessionProposal) => Promise<void>;
-    rejectSession: (proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) => Promise<void>;
-    getSessionForRequest: (request: Web3WalletTypes.SessionRequest) => SessionTypes.Struct | undefined;
+    approveSession: (proposal: WalletKitTypes.SessionProposal) => Promise<void>;
+    rejectSession: (proposal: WalletKitTypes.SessionProposal, reason?: SdkErrorKey) => Promise<void>;
+    getSessionForRequest: (request: WalletKitTypes.SessionRequest) => SessionTypes.Struct | undefined;
 };
 const WalletConnectSessionsContext = createContext<WalletConnectSessionsContext>({
     sessionProposals: [],
@@ -38,13 +38,13 @@ const WalletConnectSessionsContext = createContext<WalletConnectSessionsContext>
 });
 
 export function WalletConnectSessionsContextProvider({ children }: { children: React.ReactNode }) {
-    const [sessionProposals, setSessionProposals] = useState<Web3WalletTypes.SessionProposal[]>([]);
+    const [sessionProposals, setSessionProposals] = useState<WalletKitTypes.SessionProposal[]>([]);
     const [sessions, setSessions] = useState<SessionTypes.Struct[]>([]);
 
     const { provider } = useWalletConnectProvider();
     const { getSupportedNamespaces } = useWalletConnectWallets();
 
-    const onSessionProposal = useCallback((proposal: Web3WalletTypes.SessionProposal) => {
+    const onSessionProposal = useCallback((proposal: WalletKitTypes.SessionProposal) => {
         console.log("[WalletConnectSessionsContextProvider] Incoming session_proposal", proposal);
         setSessionProposals((prev) => [...prev, proposal]);
     }, []);
@@ -56,11 +56,11 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         provider.on("session_proposal", onSessionProposal);
     }, [provider, onSessionProposal]);
 
-    function removeSessionProposal(proposal: Web3WalletTypes.SessionProposal) {
+    function removeSessionProposal(proposal: WalletKitTypes.SessionProposal) {
         setSessionProposals((proposals) => proposals.filter((p) => p.id !== proposal.id));
     }
 
-    async function approveSession(proposal: Web3WalletTypes.SessionProposal) {
+    async function approveSession(proposal: WalletKitTypes.SessionProposal) {
         if (!provider) {
             console.error("[WalletConnectSessionsContextProvider.approveSession()] provider is undefined");
             return;
@@ -96,11 +96,11 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         }
     }
 
-    function getSessionForRequest(request: Web3WalletTypes.SessionRequest) {
+    function getSessionForRequest(request: WalletKitTypes.SessionRequest) {
         return sessions.find((s) => s.topic === request.topic);
     }
 
-    async function rejectSession(proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) {
+    async function rejectSession(proposal: WalletKitTypes.SessionProposal, reason?: SdkErrorKey) {
         if (!provider) {
             console.error("[WalletConnectSessionsContextProvider.rejectSession()] provider is undefined");
             return;

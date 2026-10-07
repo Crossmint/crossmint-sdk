@@ -1,11 +1,11 @@
+import type { IWalletKit } from "@reown/walletkit";
 import type { CoreTypes } from "@walletconnect/types";
-import type { IWeb3Wallet } from "@walletconnect/web3wallet";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 import { createProvider } from "../utils/walletconnect/createProvider";
 
 export type WalletConnectProviderContext = {
-    provider?: IWeb3Wallet;
+    provider?: IWalletKit;
 };
 
 export const WalletConnectProviderContext = createContext<WalletConnectProviderContext>({
@@ -24,7 +24,7 @@ export function WalletConnectProviderProvider({
     walletConnectConfig: WalletConnectConfig;
     children: ReactNode;
 }) {
-    const [provider, setProvider] = useState<IWeb3Wallet | undefined>(undefined);
+    const [provider, setProvider] = useState<IWalletKit | undefined>(undefined);
 
     useEffect(() => {
         createProvider(walletConnectConfig).then((provider) => {

@@ -6,7 +6,7 @@ import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
 import { supportedNamespacesSatisfiesMethod } from "@/utils/wallet/supportedNamespacesSatisfiesMethod";
 import type { SessionTypes } from "@walletconnect/types";
 import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { useEffect, useState } from "react";
 
 import type { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
@@ -14,7 +14,7 @@ import SendTransactionModal from "./SendTransactionModal";
 import SignMessageModal from "./SignMessageModal";
 import UnsupportedMethodRequestedModal from "./UnsupportedMethodRequestedModal";
 
-export default function SessionRequestViewRouter({ request }: { request: Web3WalletTypes.SessionRequest }) {
+export default function SessionRequestViewRouter({ request }: { request: WalletKitTypes.SessionRequest }) {
     const [supportedNamespaces, setSupportedNamespaces] = useState<
         BuildApprovedNamespacesParams["supportedNamespaces"] | undefined
     >(undefined);
@@ -64,7 +64,7 @@ export default function SessionRequestViewRouter({ request }: { request: Web3Wal
 }
 
 function buildRequesterMetadata(
-    request: Web3WalletTypes.SessionRequest,
+    request: WalletKitTypes.SessionRequest,
     sessionForRequest: SessionTypes.Struct
 ): RequesterMetadata {
     const requesterMetadata = sessionForRequest.peer.metadata;

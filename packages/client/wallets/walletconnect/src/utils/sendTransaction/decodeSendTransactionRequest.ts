@@ -1,7 +1,7 @@
 import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 
-export function decodeSendTransactionRequest(request: Web3WalletTypes.SessionRequest): {
+export function decodeSendTransactionRequest(request: WalletKitTypes.SessionRequest): {
     uiTransaction: string;
     rawTransaction: any; // TODO: type this
     requestedSignerAddress: string;

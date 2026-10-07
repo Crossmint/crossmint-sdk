@@ -2,10 +2,10 @@ import ModalLayout from "@/components/common/layouts/modal/ModalLayout";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectSessions } from "@/hooks/useWalletConnectSessions";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { useState } from "react";
 
-export default function RequestedPermissionsModal({ proposal }: { proposal: Web3WalletTypes.SessionProposal }) {
+export default function RequestedPermissionsModal({ proposal }: { proposal: WalletKitTypes.SessionProposal }) {
     const [loading, setLoading] = useState(false);
 
     const { uiConfig, dictionary } = useCrossmintWalletConnect();

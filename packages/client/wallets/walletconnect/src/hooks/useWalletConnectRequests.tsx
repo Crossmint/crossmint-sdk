@@ -2,7 +2,7 @@ import { handleAcceptSendTransaction } from "@/utils/sendTransaction/handleAccep
 import { handleAcceptSignMessage } from "@/utils/signMessage/handleAcceptSignMessage";
 import { type JsonRpcResult, formatJsonRpcError } from "@walletconnect/jsonrpc-utils";
 import { type SdkErrorKey, getSdkError } from "@walletconnect/utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -14,9 +14,9 @@ import { useWalletConnectSessions } from "./useWalletConnectSessions";
 import { useWalletConnectWallets } from "./useWalletConnectWallets";
 
 export type WalletConnectRequestsContext = {
-    requests: Web3WalletTypes.SessionRequest[];
-    acceptRequest: (request: Web3WalletTypes.SessionRequest) => Promise<void>;
-    rejectRequest: (request: Web3WalletTypes.SessionRequest, reason?: SdkErrorKey) => Promise<void>;
+    requests: WalletKitTypes.SessionRequest[];
+    acceptRequest: (request: WalletKitTypes.SessionRequest) => Promise<void>;
+    rejectRequest: (request: WalletKitTypes.SessionRequest, reason?: SdkErrorKey) => Promise<void>;
 };
 const WalletConnectRequestsContext = createContext<WalletConnectRequestsContext>({
     requests: [],
@@ -29,14 +29,14 @@ const WalletConnectRequestsContext = createContext<WalletConnectRequestsContext>
 });
 
 export function WalletConnectRequestsContextProvider({ children }: { children: React.ReactNode }) {
-    const [requests, setRequests] = useState<Web3WalletTypes.SessionRequest[]>([]);
+    const [requests, setRequests] = useState<WalletKitTypes.SessionRequest[]>([]);
 
     const { provider } = useWalletConnectProvider();
     const { sessions } = useWalletConnectSessions();
     const { getWalletForRequest } = useWalletConnectWallets();
 
     const onSessionRequest = useCallback(
-        (request: Web3WalletTypes.SessionRequest) => {
+        (request: WalletKitTypes.SessionRequest) => {
             if (sessions.length === 0) {
                 console.log("[ModalController] Incoming session_request, but no sessions available. Ignoring.");
                 return;
@@ -54,7 +54,7 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
         provider.on("session_request", onSessionRequest);
     }, [provider, onSessionRequest]);
 
-    async function rejectRequest(request: Web3WalletTypes.SessionRequest, reason?: SdkErrorKey) {
+    async function rejectRequest(request: WalletKitTypes.SessionRequest, reason?: SdkErrorKey) {
         const { id, topic } = request;
         try {
             await provider?.respondSessionRequest({
@@ -67,7 +67,7 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
         removeRequest(request);
     }
 
-    async function acceptRequest(request: Web3WalletTypes.SessionRequest) {
+    async function acceptRequest(request: WalletKitTypes.SessionRequest) {
         const {
             topic,
             params: {
@@ -107,7 +107,7 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
         }
     }
 
-    function removeRequest(request: Web3WalletTypes.SessionRequest) {
+    function removeRequest(request: WalletKitTypes.SessionRequest) {
         setRequests((prev) => prev.filter((r) => r.id !== request.id));
     }
 
@@ -122,7 +122,7 @@ export function useWalletConnectRequests() {
     return useContext(WalletConnectRequestsContext);
 }
 
-async function handleAcceptRequest(request: Web3WalletTypes.SessionRequest, wallet: CrossmintWalletConnectWallet) {
+async function handleAcceptRequest(request: WalletKitTypes.SessionRequest, wallet: CrossmintWalletConnectWallet) {
     const { params } = request;
     const method = params.request.method;
 

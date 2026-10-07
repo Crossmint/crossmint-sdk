@@ -1,7 +1,8 @@
 import type { CrossmintWalletConnectWallet } from "@/types/wallet";
+import { getWalletByAddressAndChainId } from "@/utils/wallet/getWalletByAddressAndChainId";
 import { walletToSupportedNamespaces } from "@/utils/wallet/walletToSupportedNamespaces";
 import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { createContext, useContext } from "react";
 
 import { decodeSendTransactionRequest } from "../utils/sendTransaction/decodeSendTransactionRequest";
@@ -13,7 +14,7 @@ import { mergeSupportedNamespaces } from "../utils/walletconnect/mergeSupportedN
 export type WalletConnectWalletsContext = {
     wallets: CrossmintWalletConnectWallet[];
     getSupportedNamespaces: () => Promise<BuildApprovedNamespacesParams["supportedNamespaces"]>;
-    getWalletForRequest: (request: Web3WalletTypes.SessionRequest) => Promise<CrossmintWalletConnectWallet | undefined>;
+    getWalletForRequest: (request: WalletKitTypes.SessionRequest) => Promise<CrossmintWalletConnectWallet | undefined>;
 };
 
 const WalletConnectWalletsContext = createContext<WalletConnectWalletsContext>({
@@ -35,7 +36,7 @@ export function WalletConnectWalletsContextProvider({
 }) {
     // const supportedNamespaces = mergeSupportedNamespaces(wallets.map((wallet) => wallet.supportedNamespaces));
 
-    function getWalletForRequest(request: Web3WalletTypes.SessionRequest) {
+    function getWalletForRequest(request: WalletKitTypes.SessionRequest) {
         const method = request.params.request.method;
 
         let requestedSignerAddress: string;
@@ -65,21 +66,4 @@ export function WalletConnectWalletsContextProvider({
 
 export function useWalletConnectWallets() {
     return useContext(WalletConnectWalletsContext);
-}
-
-async function getWalletByAddressAndChainId(
-    wallets: CrossmintWalletConnectWallet[],
-    requestedSignerAddress: string,
-    chainId: string
-) {
-    const namespaceKey = chainId.includes(":") ? chainId.split(":")[0] : chainId;
-
-    return wallets.find(async (w) => {
-        const supportedNamespaces = await walletToSupportedNamespaces(w);
-        const namespace = supportedNamespaces[namespaceKey];
-        if (!namespace) {
-            return false;
-        }
-        return namespace.accounts.includes(`${chainId}:${requestedSignerAddress}`);
-    });
 }

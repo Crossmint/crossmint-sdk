@@ -1,12 +1,12 @@
 import type { CrossmintWalletConnectWallet } from "@/types/wallet";
 import type { SendEthersTransaction } from "@/types/wallet/features";
 import { type JsonRpcResult, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 
 import { decodeSendTransactionRequest } from "./decodeSendTransactionRequest";
 
 export async function handleAcceptSendTransaction(
-    request: Web3WalletTypes.SessionRequest,
+    request: WalletKitTypes.SessionRequest,
     wallet: CrossmintWalletConnectWallet
 ): Promise<JsonRpcResult> {
     const { rawTransaction } = decodeSendTransactionRequest(request);

@@ -2,7 +2,7 @@ import ModalLayout from "@/components/common/layouts/modal/ModalLayout";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
 import { decodeSignMessageRequest } from "@/utils/signMessage/decodeSignMessageRequest";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { useState } from "react";
 
 import type { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
@@ -11,7 +11,7 @@ export default function SignMessageModal({
     request,
     requesterMetadata,
 }: {
-    request: Web3WalletTypes.SessionRequest;
+    request: WalletKitTypes.SessionRequest;
     requesterMetadata: RequesterMetadata;
 }) {
     const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ export default function SignMessageModal({
     );
 }
 
-function MessagePreview({ request }: { request: Web3WalletTypes.SessionRequest }) {
+function MessagePreview({ request }: { request: WalletKitTypes.SessionRequest }) {
     const { dictionary, uiConfig } = useCrossmintWalletConnect();
 
     return (

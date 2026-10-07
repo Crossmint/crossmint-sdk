@@ -5,14 +5,14 @@ import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
 import type { CrossmintWalletConnectDictionary } from "@/i18n/dictionary";
 import { isSendTransactionMethod } from "@/utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { useState } from "react";
 
 export default function UnsupportedMethodRequestedModal({
     request,
     requesterMetadata,
 }: {
-    request: Web3WalletTypes.SessionRequest;
+    request: WalletKitTypes.SessionRequest;
     requesterMetadata: RequesterMetadata;
 }) {
     const [loading, setLoading] = useState(false);

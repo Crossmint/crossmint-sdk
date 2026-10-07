@@ -1,9 +1,9 @@
 import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
 import { arrayify } from "@ethersproject/bytes";
 import { hexToUtf8 } from "@walletconnect/encoding";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 
-export function decodeSignMessageRequest(request: Web3WalletTypes.SessionRequest): {
+export function decodeSignMessageRequest(request: WalletKitTypes.SessionRequest): {
     uiMessage: string;
     rawMessage: any;
     requestedSignerAddress: string;

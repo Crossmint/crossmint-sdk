@@ -1,13 +1,13 @@
 import type { CrossmintWalletConnectWallet } from "@/types/wallet";
 import type { SignTypedData } from "@/types/wallet/features";
 import { type JsonRpcResult, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 
 import { decodeSignMessageRequest } from "./decodeSignMessageRequest";
 import { isSignTypedDataMethod } from "./isSignTypedDataMethod";
 
 export async function handleAcceptSignMessage(
-    request: Web3WalletTypes.SessionRequest,
+    request: WalletKitTypes.SessionRequest,
     wallet: CrossmintWalletConnectWallet
 ): Promise<JsonRpcResult> {
     const { rawMessage } = decodeSignMessageRequest(request);

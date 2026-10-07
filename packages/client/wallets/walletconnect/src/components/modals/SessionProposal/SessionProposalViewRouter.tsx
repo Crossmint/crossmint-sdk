@@ -1,13 +1,13 @@
 import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
 import { supportedNamespacesSatisfiesRequiredChains } from "@/utils/wallet/supportedNamespacesSatisfiesRequiredChains";
 import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { WalletKitTypes } from "@reown/walletkit";
 import { useEffect, useState } from "react";
 
 import RequestedPermissionsModal from "./RequestedPermissionsModal";
 import UnsupportedChainsRequestedModal from "./UnsupportedChainsRequestedModal";
 
-export default function SessionProposalViewRouter({ proposal }: { proposal: Web3WalletTypes.SessionProposal }) {
+export default function SessionProposalViewRouter({ proposal }: { proposal: WalletKitTypes.SessionProposal }) {
     const [supportedNamespaces, setSupportedNamespaces] = useState<
         BuildApprovedNamespacesParams["supportedNamespaces"] | undefined
     >(undefined);
