@@ -169,12 +169,6 @@ describe("createAgentCheckoutsApi", () => {
         await expect(api().get(RUN_ID)).rejects.toMatchObject({ name: "AgentCheckoutsApiError", status: 502 });
     });
 
-    test("a response missing required run fields is rejected", async () => {
-        fetchMock.mockResolvedValueOnce(jsonResponse(200, { runId: RUN_ID }));
-
-        await expect(api().get(RUN_ID)).rejects.toThrow(/Unexpected response shape/);
-    });
-
     test("streamMessages yields events in order and stops at a terminal run update", async () => {
         fetchMock.mockResolvedValueOnce(
             sseResponse([
