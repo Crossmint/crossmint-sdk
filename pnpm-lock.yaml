@@ -341,6 +341,9 @@ importers:
       react-native-get-random-values:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))
+      react-native-passkey:
+        specifier: ^3
+        version: 3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)
       react-native-safe-area-context:
         specifier: 5.6.2
         version: 5.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)
@@ -10428,6 +10431,12 @@ packages:
 
   react-native-is-edge-to-edge@1.2.1:
     resolution: {integrity: sha512-FLbPWl/MyYQWz+KwqOZsSyj2JmLKglHatd3xLZWskXOpRaio4LfEDEz8E/A6uD8QoTHW6Aobw1jbEwK7KMgR7Q==}
+    peerDependencies:
+      react: 19.1.1
+      react-native: 0.82.1
+
+  react-native-passkey@3.6.2:
+    resolution: {integrity: sha512-3x7uS0EYx3KkHYdYDvDOOmw5DVrKqqDDJxP9Lwph922EwHJT6HR5/2cQs4+MfK6iE/N0FCCNjUJEvQ8XuYj+/A==}
     peerDependencies:
       react: 19.1.1
       react-native: 0.82.1
@@ -27953,6 +27962,11 @@ snapshots:
       react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10)
 
   react-native-is-edge-to-edge@1.2.1(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1):
+    dependencies:
+      react: 19.1.1
+      react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10)
+
+  react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1):
     dependencies:
       react: 19.1.1
       react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10)
