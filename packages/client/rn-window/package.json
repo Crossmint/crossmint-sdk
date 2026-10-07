@@ -21,11 +21,11 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
-        "react-native-get-random-values": "^1.11.0",
         "zod": "3.22.4"
     },
     "peerDependencies": {
         "react": ">=18.0.0",
+        "react-native-get-random-values": "^1.11.0",
         "react-native-webview": ">=13.15.0 <14"
     },
     "devDependencies": {
@@ -35,6 +35,8 @@
         "jsdom": "^23.0.0",
         "react": "19.1.1",
         "react-dom": "19.1.1",
+        "react-native-get-random-values": "1.11.0",
+        "react-native-webview": "13.15.0",
         "vitest": "3.2.6"
     }
 }
