@@ -101,6 +101,8 @@ export type {
     PasskeySignerLocator,
     DeviceSignerLocator,
     DeviceSignerConfig,
+    PasskeyProvider,
+    PasskeySignResult,
     ExternalWalletSignerLocator,
     ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,

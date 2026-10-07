@@ -67,7 +67,7 @@ const PRODUCTS = {
         packageName: "@crossmint/client-sdk-react-ui",
         npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
         installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
-        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides the user-facing pieces of agent card payments: saving a card, verifying an order intent's allowance with the card network, re-collecting a saved card's CVC, and collecting a merchant password for an agent checkout without it ever reaching your app. Agent wallets use the same wallet providers and hooks as the [Wallets React SDK](/sdk-reference/wallets/react/get-started).",
+        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides the user-facing pieces of agent card payments: saving a card, verifying an order intent's allowance with the card network, re-collecting a saved card's CVC, and collecting protected text or numeric fields for an agent checkout without it ever reaching your app. Agent wallets use the same wallet providers and hooks as the [Wallets React SDK](/sdk-reference/wallets/react/get-started).",
         exports: [
             "CrossmintProvider",
             "CrossmintPaymentMethodManagement",
@@ -78,6 +78,7 @@ const PRODUCTS = {
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintPaymentMethodManagement: "Saved payment method management UI",
+            CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
         },
         getStartedExamples: {
             setup: "agentsProviderSetup",
@@ -109,8 +110,8 @@ const PRODUCTS = {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
             CrossmintPaymentMethodManagement: "Saved payment method management UI",
-            CrossmintProtectedInput: "Merchant-site password collection for Universal Checkout",
-            CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Universal Checkout",
+            CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
+            CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Agent Checkouts",
         },
         getStartedExamples: {
             setup: "checkoutProviderSetup",

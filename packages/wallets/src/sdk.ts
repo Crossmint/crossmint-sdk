@@ -6,6 +6,7 @@ import type { Chain } from "./chains/chains";
 import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
 import { initWalletsLogger, walletsLogger } from "./logger";
 import { createDeviceSigner, type DeviceSignerKeyStorage } from "./utils/device-signers";
+import type { PasskeyProvider } from "./signers/types";
 import { WebAuthnP256 } from "ox";
 
 export class CrossmintWallets {
@@ -68,8 +69,16 @@ export class CrossmintWallets {
         return await createDeviceSigner(deviceKeyStorage, address);
     }
 
-    public async createPasskeySigner(passkeyName: string): Promise<RegisterSignerPasskeyParams> {
-        const passkeyCredential = await WebAuthnP256.createCredential({ name: passkeyName });
+    /**
+     * @param passkeyProvider - Creates the passkey where the browser WebAuthn API is not available (e.g. React Native).
+     */
+    public async createPasskeySigner(
+        passkeyName: string,
+        passkeyProvider?: PasskeyProvider
+    ): Promise<RegisterSignerPasskeyParams> {
+        const passkeyCredential = passkeyProvider
+            ? await passkeyProvider.createPasskey(passkeyName)
+            : await WebAuthnP256.createCredential({ name: passkeyName });
         return {
             type: "passkey",
             id: passkeyCredential.id,
