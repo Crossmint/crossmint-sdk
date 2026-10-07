@@ -9,7 +9,6 @@ export class DelegationSignature {
         const url = `${baseUrl}/api/v1-alpha1/credentials/decryption/delegateLitCapacity`;
 
         const options = { method: "GET", headers: headers };
-        console.log(url, options);
 
         const response = await fetch(url, options);
         const sig = (await response.json()) as AuthSig;

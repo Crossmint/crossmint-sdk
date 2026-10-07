@@ -50,7 +50,6 @@ export class CrossmintCredentialRetrieval {
         }
 
         const options = { method: "GET", headers: headers };
-        console.log(url, options);
         try {
             const response = await fetch(url, options);
             const data = await response.json();
