@@ -200,6 +200,19 @@ export async function getExistingWallet<C extends Chain>(
 }
 
 /**
+ * A cached wallet is only reusable for the exact chain and alias it was loaded for. Returning it
+ * for a different chain mid-session — e.g. `createOnLogin` switches from "ethereum" to "solana"
+ * without the provider unmounting — silently hands back the wrong wallet instead of loading the
+ * one the new args ask for.
+ */
+export function cachedWalletMatchesArgs<C extends Chain>(
+    wallet: Wallet<Chain> | undefined,
+    args: Pick<WalletCreateArgs<C>, "chain" | "alias">
+): wallet is Wallet<Chain> {
+    return wallet != null && wallet.chain === args.chain && wallet.alias === args.alias;
+}
+
+/**
  * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
  * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
  * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
@@ -353,7 +366,7 @@ export function CrossmintWalletBaseProvider({
             if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
-            if (wallet != null) {
+            if (cachedWalletMatchesArgs(wallet, args)) {
                 return wallet;
             }
             if (walletError?.code === "region-blocked") {
