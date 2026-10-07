@@ -241,7 +241,8 @@ export function createAgentCheckoutsApi({ apiClient }: AgentCheckoutsApiProps) {
     }
 
     return {
-        create: (input: CreateAgentCheckoutInput): Promise<AgentCheckout> => call(agentCheckouts.create({ body: input })),
+        create: (input: CreateAgentCheckoutInput): Promise<AgentCheckout> =>
+            call(agentCheckouts.create({ body: input })),
         get: (id: string): Promise<AgentCheckout> => call(agentCheckouts.get({ path: { id } })),
         list: (options: PageOptions = {}): Promise<AgentCheckoutPage> => call(agentCheckouts.list({ query: options })),
         cancel: (id: string): Promise<AcceptedAgentCheckoutCancel> => call(agentCheckouts.cancel({ path: { id } })),
