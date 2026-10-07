@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MOCK_API_KEY } from "../../api/__tests__/constants";
 import { IframeDeviceSignerKeyStorage } from "./IframeDeviceSignerKeyStorage";
 
+if (process.env.PREVIEW_CK_KEY == null) {
+    throw new Error("PREVIEW_CK_KEY must be set to run this test suite.");
+}
+const API_KEY = process.env.PREVIEW_CK_KEY;
 const IFRAME_ORIGIN = "https://development.devicekey.store";
 
 function setChromeUserAgent(): void {
@@ -17,7 +20,7 @@ let iframeCreationCount = 0;
 let pendingIframeResolvers: Array<(iframe: HTMLIFrameElement) => void> = [];
 
 function createStorage(): IframeDeviceSignerKeyStorage {
-    activeStorage = new IframeDeviceSignerKeyStorage(MOCK_API_KEY);
+    activeStorage = new IframeDeviceSignerKeyStorage(API_KEY);
     return activeStorage;
 }
 
