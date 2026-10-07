@@ -7,34 +7,36 @@
         "ios": "npx expo run:ios",
         "android": "npx expo run:android",
         "start": "npx expo start",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "check:native-copies": "node scripts/check-native-module-copies.mjs"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
         "@crossmint/wallets-playground-shared": "workspace:*",
         "@stellar/stellar-sdk": "^14.6.1",
         "buffer": "^6.0.3",
-        "expo": "~55.0.31",
-        "expo-clipboard": "~55.0.17",
-        "expo-constants": "~55.0.17",
-        "expo-device": "~55.0.21",
-        "expo-linking": "~55.0.17",
-        "expo-secure-store": "~55.0.18",
-        "expo-web-browser": "~55.0.20",
-        "react": "19.2.0",
-        "react-dom": "19.2.0",
-        "react-native": "0.83.10",
+        "expo": "~56.0.22",
+        "expo-clipboard": "~56.0.4",
+        "expo-constants": "~56.0.26",
+        "expo-device": "~56.0.4",
+        "expo-linking": "~56.0.18",
+        "expo-secure-store": "~56.0.4",
+        "expo-web-browser": "~56.0.6",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.85.3",
         "react-native-get-random-values": "~1.11.0",
-        "react-native-safe-area-context": "~5.6.2",
-        "react-native-screens": "~4.23.0",
-        "react-native-svg": "15.15.3",
+        "react-native-safe-area-context": "~5.7.0",
+        "react-native-screens": "~4.26.0",
+        "react-native-svg": "15.15.4",
         "react-native-web": "~0.21.2",
-        "react-native-webview": "13.16.0",
+        "react-native-webview": "13.16.1",
         "stream-browserify": "^3.0.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.26.10",
+        "@babel/core": "^7.29.0",
         "@types/react": "~19.2.2",
-        "typescript": "~5.9.2"
+        "encoding": "0.1.13",
+        "typescript": "~6.0.3"
     }
 }
