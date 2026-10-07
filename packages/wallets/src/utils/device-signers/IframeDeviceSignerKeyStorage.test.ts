@@ -13,25 +13,40 @@ function setChromeUserAgent(): void {
     });
 }
 
-async function captureNextIframe(): Promise<HTMLIFrameElement> {
+let activeStorage: IframeDeviceSignerKeyStorage | undefined;
+let iframeCreationCount = 0;
+let pendingIframeResolvers: Array<(iframe: HTMLIFrameElement) => void> = [];
+
+function createStorage(): IframeDeviceSignerKeyStorage {
+    activeStorage = new IframeDeviceSignerKeyStorage(API_KEY);
+    return activeStorage;
+}
+
+function nextIframe(): Promise<HTMLIFrameElement> {
     return new Promise((resolve) => {
-        const originalCreateElement = document.createElement.bind(document);
-        const spy = vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
-            const element = originalCreateElement(tagName);
-            if (tagName === "iframe") {
-                spy.mockRestore();
-                element.addEventListener("load", () => resolve(element as HTMLIFrameElement), { once: true });
-                queueMicrotask(() => element.dispatchEvent(new Event("load")));
-            }
-            return element;
-        });
+        pendingIframeResolvers.push(resolve);
+    });
+}
+
+function installIframeTracking(): void {
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+        const element = originalCreateElement(tagName);
+        if (tagName === "iframe") {
+            iframeCreationCount++;
+            element.addEventListener("load", () => pendingIframeResolvers.shift()?.(element as HTMLIFrameElement), {
+                once: true,
+            });
+            queueMicrotask(() => element.dispatchEvent(new Event("load")));
+        }
+        return element;
     });
 }
 
 function respondToNextRpc(
     iframe: HTMLIFrameElement,
     respond: (message: { type: string; id: string; payload: Record<string, unknown> }) => unknown
-): void {
+) {
     const postMessage = vi.fn((message: { type: string; id: string; payload: Record<string, unknown> }) => {
         const result = respond(message);
         queueMicrotask(() => {
@@ -47,9 +62,10 @@ function respondToNextRpc(
         value: { postMessage },
         configurable: true,
     });
+    return postMessage;
 }
 
-function failNextRpcWithIdbFatal(iframe: HTMLIFrameElement): void {
+function failNextRpcWithIdbFatal(iframe: HTMLIFrameElement) {
     const postMessage = vi.fn((message: { type: string; id: string }) => {
         queueMicrotask(() => {
             window.dispatchEvent(
@@ -64,57 +80,86 @@ function failNextRpcWithIdbFatal(iframe: HTMLIFrameElement): void {
         value: { postMessage },
         configurable: true,
     });
+    return postMessage;
 }
 
 describe("IframeDeviceSignerKeyStorage — recovers from a fatal IndexedDB error", () => {
     beforeEach(() => {
         setChromeUserAgent();
+        iframeCreationCount = 0;
+        pendingIframeResolvers = [];
+        installIframeTracking();
     });
 
     afterEach(() => {
+        activeStorage?.destroy();
+        activeStorage = undefined;
+        vi.restoreAllMocks();
         vi.unstubAllGlobals();
         document.body.innerHTML = "";
     });
 
     it("reloads the iframe once and retries after a fatal IDB error, resolving with the retried value", async () => {
-        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+        const storage = createStorage();
 
-        const firstIframePromise = captureNextIframe();
+        const firstIframePromise = nextIframe();
         const getKeyPromise = storage.getKey("0xaddress");
         const firstIframe = await firstIframePromise;
-        failNextRpcWithIdbFatal(firstIframe);
+        const firstPostMessage = failNextRpcWithIdbFatal(firstIframe);
 
-        const secondIframe = await captureNextIframe();
-        respondToNextRpc(secondIframe, () => ({ publicKeyBase64: "recovered-key" }));
+        const secondIframe = await nextIframe();
+        const secondPostMessage = respondToNextRpc(secondIframe, () => ({ publicKeyBase64: "recovered-key" }));
 
         await expect(getKeyPromise).resolves.toBe("recovered-key");
+
+        expect(iframeCreationCount).toBe(2);
+        expect(firstPostMessage).toHaveBeenCalledTimes(1);
+        expect(firstPostMessage).toHaveBeenCalledWith(
+            expect.objectContaining({ type: "getKey", payload: { address: "0xaddress" } }),
+            IFRAME_ORIGIN
+        );
+        expect(secondPostMessage).toHaveBeenCalledTimes(1);
+        expect(secondPostMessage).toHaveBeenCalledWith(
+            expect.objectContaining({ type: "getKey", payload: { address: "0xaddress" } }),
+            IFRAME_ORIGIN
+        );
     });
 
     it("throws a named error when the fatal IDB error persists after the iframe reload", async () => {
-        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+        const storage = createStorage();
 
-        const firstIframePromise = captureNextIframe();
+        const firstIframePromise = nextIframe();
         const getKeyPromise = storage.getKey("0xaddress");
         const firstIframe = await firstIframePromise;
         failNextRpcWithIdbFatal(firstIframe);
 
-        const secondIframe = await captureNextIframe();
-        failNextRpcWithIdbFatal(secondIframe);
+        const secondIframe = await nextIframe();
+        const secondPostMessage = failNextRpcWithIdbFatal(secondIframe);
 
         await expect(getKeyPromise).rejects.toThrow(
             'Device signer IDB fatal error on "getKey" persisted after iframe reload'
         );
+
+        expect(iframeCreationCount).toBe(2);
+        expect(secondPostMessage).toHaveBeenCalledTimes(1);
     });
 
-    it("does not reload the iframe when the RPC succeeds on the first attempt", async () => {
-        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+    it("keeps the original iframe when the RPC succeeds on the first attempt", async () => {
+        const storage = createStorage();
 
-        const iframePromise = captureNextIframe();
+        const iframePromise = nextIframe();
         const getKeyPromise = storage.getKey("0xaddress");
 
         const iframe = await iframePromise;
-        respondToNextRpc(iframe, () => ({ publicKeyBase64: "first-try-key" }));
+        const postMessage = respondToNextRpc(iframe, () => ({ publicKeyBase64: "first-try-key" }));
 
         await expect(getKeyPromise).resolves.toBe("first-try-key");
+
+        expect(iframeCreationCount).toBe(1);
+        expect(postMessage).toHaveBeenCalledTimes(1);
+        expect(postMessage).toHaveBeenCalledWith(
+            expect.objectContaining({ type: "getKey", payload: { address: "0xaddress" } }),
+            IFRAME_ORIGIN
+        );
     });
 });
