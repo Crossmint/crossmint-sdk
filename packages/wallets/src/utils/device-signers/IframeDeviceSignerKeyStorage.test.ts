@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MOCK_API_KEY } from "../../api/__tests__/constants";
 import { IframeDeviceSignerKeyStorage } from "./IframeDeviceSignerKeyStorage";
 
-const API_KEY =
-    "ck_development_A61UZQnvjSQcM5qVBaBactgqebxafWAVsNdD2xLkgBxoYuH5q2guM8r9DUmZQzE1WYyoByGVYpEG2o9gVSzAZFsrLbfKGERUJ6D5CW6S9AsJGAc3ctgrsD4n2ioekzGj7KPbLwT3SysDjMamYXLxEroUbQSdwf6aLF4zeEpECq2crkTUQeLFzxzmjWNxFDHFYefDrfrFPCURvBXJLf5pCxCQ";
 const IFRAME_ORIGIN = "https://development.devicekey.store";
 
 function setChromeUserAgent(): void {
@@ -18,7 +17,7 @@ let iframeCreationCount = 0;
 let pendingIframeResolvers: Array<(iframe: HTMLIFrameElement) => void> = [];
 
 function createStorage(): IframeDeviceSignerKeyStorage {
-    activeStorage = new IframeDeviceSignerKeyStorage(API_KEY);
+    activeStorage = new IframeDeviceSignerKeyStorage(MOCK_API_KEY);
     return activeStorage;
 }
 
