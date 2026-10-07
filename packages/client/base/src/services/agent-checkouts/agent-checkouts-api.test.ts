@@ -129,7 +129,9 @@ describe("createAgentCheckoutsApi", () => {
             browser,
         });
 
-        expect(JSON.parse(await request().body())).toMatchObject({ browser });
+        const { headers, body } = request();
+        expect(headers.get("authorization")).toBe("Bearer jwt-1");
+        expect(JSON.parse(await body())).toMatchObject({ browser });
         expect(run.input).toEqual({ ...RUN.input, browser: { cdp: { redacted: true } } });
     });
 
