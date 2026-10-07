@@ -3,7 +3,8 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "test:integration": "vitest run"
+        "test:integration": "vitest run",
+        "test:heartbeat": "vitest run --config vitest.heartbeat.config.ts"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",
