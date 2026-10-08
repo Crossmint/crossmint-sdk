@@ -51,4 +51,20 @@ describe("getWalletByAddressAndChainId", () => {
 
         expect(wallet).toBe(expected);
     });
+
+    it("selects the owner when another wallet cannot load its address", async () => {
+        const lockedWallet: CrossmintWalletConnectEVMWallet = {
+            getSupportedChains: () => ["base"],
+            getAddress: () => Promise.reject(new Error("unknown account #0")),
+            sendTransaction: async () => `0x${"4b".repeat(32)}`,
+        };
+
+        const wallet = await getWalletByAddressAndChainId(
+            [lockedWallet, ethereumWallet, polygonWallet],
+            POLYGON_WALLET_ADDRESS,
+            "eip155:137"
+        );
+
+        expect(wallet).toBe(polygonWallet);
+    });
 });

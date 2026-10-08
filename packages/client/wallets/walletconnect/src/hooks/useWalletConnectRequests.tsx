@@ -75,7 +75,18 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
             },
         } = request;
 
-        const wallet = await getWalletForRequest(request);
+        // A lookup error can be transient (e.g. a locked extension), so keep the modal open for a retry
+        let wallet: CrossmintWalletConnectWallet | undefined;
+        try {
+            wallet = await getWalletForRequest(request);
+        } catch (e) {
+            console.error(
+                "[WalletConnectRequestsContextProvider.acceptRequest()] failed to find wallet for request",
+                e
+            );
+            toast.error(`Failed to load your wallet for ${method}. Please try again.`);
+            return;
+        }
         if (!wallet) {
             console.error("[WalletConnectRequestsContextProvider.acceptRequest()] wallet not found for request");
             rejectRequest(request);
