@@ -38,7 +38,7 @@ export default function App({ children }) {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "base-sepolia",
-            recovery: { type: "email" },
+            recoveryMethods: [{ type: "email" }],
           }}
         >
           {children}
@@ -67,10 +67,12 @@ export default function App({ children }) {
       <CrossmintWalletProvider
         createOnLogin={{
           chain: "base-sepolia",
-          recovery: {
-            type: "email",
-            email: "user@example.com",
-          },
+          recoveryMethods: [
+            {
+              type: "email",
+              email: "user@example.com",
+            },
+          ],
         }}
       >
         {children}
@@ -121,8 +123,19 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 <CrossmintWalletProvider
   createOnLogin={{
     chain: "base-sepolia",       // required — the blockchain
-    recovery: { type: "email" }, // required — recovery signer config
+    recoveryMethods: [{ type: "email" }], // required — recovery method config
     signers: [{ type: "device" }], // optional — defaults to device signer
+  }}
+>
+```
+
+On Solana and Stellar, `recoveryMethods` accepts a list of methods, each able to recover the wallet on its own. EVM chains take a single recovery method with `recovery`:
+
+```tsx
+<CrossmintWalletProvider
+  createOnLogin={{
+    chain: "solana",
+    recoveryMethods: [{ type: "email" }, { type: "external-wallet", address: "9WzD..." }],
   }}
 >
 ```
@@ -146,7 +159,7 @@ const {
 
 ### `useWalletOtpSigner()`
 
-For custom OTP UI when using email/phone recovery signers:
+For custom OTP UI when using email/phone recovery methods:
 
 ```tsx
 const { needsAuth, sendOtp, verifyOtp, reject } = useWalletOtpSigner();
@@ -199,3 +212,40 @@ Run with `pnpm generate:docs` or `node scripts/generate-reference.mjs --product 
 ## License
 
 Apache-2.0
+
+## Protected buyer fields (in development)
+
+Render each protected UC field independently; an HTML form and Crossmint auth provider
+are not required. The provider supplies the browser client key; `jwt` may come from
+external authentication.
+
+```tsx
+const codeRef = useRef<CrossmintProtectedInputRef>(null);
+
+<CrossmintProvider apiKey={clientApiKey}>
+  <CrossmintProtectedInput ref={codeRef} field={codeField} jwt={buyerJwt} />
+</CrossmintProvider>
+
+const result = await codeRef.current.collect();
+if (result.status === "collected") {
+  // Combine with ordinary answers in the application's complete UC response.
+  answers[codeField.key] = result.input;
+} else {
+  showError(result.message);
+}
+```
+
+Collection returns `collected`, `invalid`, `unavailable` or `superseded`. The developer
+owns submission and error rendering. Authentication changes and frame reloads invalidate
+pending host results. Only reference/outcome metadata crosses back from the hosted iframe.
+Authentication crosses the verified window channel, rather than the iframe URL.
+
+Supported protected inputs are single-line text (visible or masked), number and integer.
+All use a nested Basis Theory TextElement; tokenization never reads plaintext in
+Crossmint browser code. Codes and identifiers use text to preserve exact spelling.
+Unchanged references are cached until expiry; edits, clear, auth or descriptor changes
+invalidate collection. Disabled controls may still be collected while submission is locked.
+
+This replaces the password-only `merchantUrl`/`onCreated` interface. The matching hosted
+iframe and per-field collection are implemented locally. SDK publication, Reactor
+deployment and composed provider/browser qualification remain release gates. Track AGENT-473.

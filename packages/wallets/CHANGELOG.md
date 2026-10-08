@@ -1,5 +1,348 @@
 # @crossmint/wallets-sdk
 
+## 1.20.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+## 1.19.0
+
+### Minor Changes
+
+- f17f8bc: Stellar and Solana smart wallets accept passkey signers. On Stellar a passkey can be the admin signer, a recovery method or a delegated signer, and it signs the auth entry preimage hash as its WebAuthn challenge. On Solana a passkey can be a delegated signer, and it signs the transaction's P-256 message as its WebAuthn challenge.
+
+### Patch Changes
+
+- d68d665: Throw `RecoveryMethodRequiredError` (a `SignerRequiredError` subclass) when a wallet has several recovery methods and none was selected with `useRecoveryMethod()` before `addSigner`, `removeSigner`, `addRecoveryMethod` or `removeRecoveryMethod`.
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/common-sdk-auth@1.1.23
+
+## 1.18.0
+
+### Minor Changes
+
+- d23239c: Add `wallet.addRecoveryMethod(recoveryMethod, { prepareOnly? })` and `wallet.removeRecoveryMethod(recoveryMethod, { prepareOnly? })` for Solana and Stellar wallets. Both operations are approved by one of the wallet's existing recovery methods, selected the same way as for `addSigner`/`removeSigner` (automatically when there is one, via `useSigner` when there are several). EVM wallets throw `RecoveryNotSupportedOnChainError` for now.
+- 751a879: Add `wallet.useRecoveryMethod(recoveryMethod)` to choose which of a wallet's recovery methods authorizes `addSigner`, `removeSigner`, `addRecoveryMethod` and `removeRecoveryMethod`, without changing the active signer used for transactions. `useSigner` keeps working as before; an explicit `useRecoveryMethod` selection takes precedence over it.
+
+### Patch Changes
+
+- b357d97: Remove the remaining deprecated chains from the wallets OpenAPI spec and the checkout order types.
+
+  PR #2074 removed the deprecated chains from the hand-written chain definitions. It did not touch
+  `packages/wallets/src/openapi.json` or the checkout `Order` types, so the chain names still reached
+  consumers through the generated API client. This completes that work.
+
+  Chains removed: Astar zkEVM, Boss, Coti, Hedera, Lightlink, Mode, Plume, Rari, Soneium, U2U, Viction,
+  World Chain, Xai, Zenchain, zKatana, zKyoto, Polygon Mumbai and the Goerli testnets.
+
+  Zora (`zora`, `zora-sepolia`) is unchanged.
+
+  `@crossmint/wallets-sdk` no longer accepts these chains in any request or response type.
+  `@crossmint/client-sdk-base` no longer lists them in the order payment-method and chain unions.
+
+- 07b7a8c: Remove the deprecated chains from the SDK.
+
+  These chains are no longer supported. The SDK no longer accepts them:
+
+  - Mode (`mode`, `mode-sepolia`)
+  - Plume (`plume`, `plume-testnet`)
+  - World Chain (`world-chain`, `world-chain-sepolia`)
+  - Astar zkEVM (`astar-zkevm`)
+  - zKatana (`zkatana`) and zKyoto (`zkyoto`)
+  - The Goerli testnets (`ethereum-goerli`, `base-goerli`, `optimism-goerli`, `zora-goerli`)
+  - Polygon Mumbai (`polygon-mumbai`)
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain. Code that passes one of these names no longer compiles.
+  Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+  NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+  lookups return `undefined`.
+
+- 0ec6bcd: Tell the signer frame which recovery method a request is for.
+
+  The signer frame stores one key per device and user. After onboarding a phone recovery method, selecting an
+  email recovery method on the same device made the frame report `ready`, skip the OTP, and sign with the
+  phone-derived key, which the API rejected with `Invalid signature for signer email:...`.
+
+  `@crossmint/wallets-sdk` now sends the selected recovery method's `authId` on `get-status` and `sign`, so a
+  frame that tracks the recovery method per device can request onboarding for the selected one instead of
+  signing with another method's key.
+
+  `@crossmint/client-signers` adds the optional `authId` to the `get-status` and `sign` request payloads.
+
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 1.17.0
+
+### Minor Changes
+
+- 1c54809: Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
+
+  `recovery` is deprecated in favour of `recoveryMethods`. It still works: a single method or a list is treated exactly like `recoveryMethods`, and the list form logs a deprecation warning. Pass either `recovery` or `recoveryMethods`, not both.
+
+  Migration: `recovery: a` → `recoveryMethods: [a]`, and `recovery: [a, b]` → `recoveryMethods: [a, b]`.
+
+### Patch Changes
+
+- c949fb2: Email/phone signers now throw a new `SignerAuthenticationError` when the Crossmint JWT is missing, empty or rejected by the backend, instead of sending an empty `Authorization` header and surfacing the resulting `HTTP 401` as an opaque `OtpValidationError`/`SignerStatusError`. A missing JWT fails before the signer frame is contacted (`code: "jwt-required"`), so integrators can prompt the user to re-authenticate rather than retry the OTP.
+- ca1b5f1: Solana `sendTransaction` with `additionalSigners` can approve a version-1 transaction. The Keypair wrapper now signs the approval message bytes directly, because `@solana/web3.js` cannot serialize a version-1 transaction for `onSign`. Version 0 still goes through `onSign`.
+- 6f5e26e: Sign Solana approvals from `pendingApproval.message` instead of rebuilding the payload with `VersionedTransaction.deserialize(...).message.serialize()`, which throws `Reached end of buffer unexpectedly` on a version-1 transaction. The bytes signed are unchanged for version 0.
+
+  Solana delegated signers accept a new optional `onSignBytes` callback, base58 payload in and base58 signature out. Version-1 approvals route to it, because `@solana/web3.js` cannot serialize a version-1 message for `onSign`. Version 0 and legacy still use `onSign`.
+
+  Choosing the approval payload moves from `wallet.ts` to `ChainAdapter.signApproval`.
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 1.16.0
+
+### Minor Changes
+
+- 0db7d3f: Add Arc, Avalanche, Avalanche Fuji, Celo, Celo Sepolia, Robinhood Chain and Robinhood Chain Testnet as supported smart wallet chains, matching the chains supported by the Wallets REST API.
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 1.15.0
+
+### Minor Changes
+
+- 72d0001: Remove the exported `MAX_RECOVERY_SIGNERS` constant and the client-side recovery-list length check. The backend is the single source of truth for the signer limit; requests over it still surface as `RecoverySignerLimitExceededError`.
+- 3b4d5eb: `wallet.recovery` returns the primary recovery signer config again (the shape it had before 1.14.0), and the new `wallet.recoveryMethods` exposes the full list of recovery signers on wallets created with several of them.
+
+### Patch Changes
+
+- 010d904: `wallet.recovery` and `wallet.recoveryMethods` no longer return the caller's raw server secret after `createWallet` (or after constructing a `Wallet` with a `{ type: "server", secret }` recovery config). The secret is retained internally for signing; the public getters now expose the same address-only `{ type: "server", address }` form that `getWallet` already returned.
+- 93d34b1: `wallet.addSigner` and `wallet.removeSigner` now work on wallets with several recovery methods: they are authorized by the recovery method selected with `wallet.useSigner`, whose locator is sent to the API as `approver`. Selecting an operational (delegated) signer and then adding or removing a signer throws a `SignerRequiredError` before any request is made. `RegisterSignerParams` and `RemoveSignerParams` expose the new optional `approver` field.
+- 30f14cd: Harden `wallet.useSigner` for recovery signer lists: server secrets are stripped from every entry of `wallet.recoveryMethods` (not only the primary), each server recovery signer resolves its own primary/legacy derivation and cached secret, and a passkey only matches a recovery signer with the same credential id when both are known. Constructing a wallet with an empty recovery list now throws `InvalidRecoveryConfigError`.
+- 4424fd8: `wallet.useSigner` now matches against every recovery signer in the list, so any recovery signer of a Solana or Stellar wallet can be selected and approve transactions, not just the primary one.
+- ded1d68: Use `recoveryMethods` for wallet recovery-method request and response payloads.
+- 27a65f2: Preserve the optional `available`, `locked`, and `accounts` fields in `wallet.balances()` results, including their API types. Card-backed token balances now expose spending power and pending charges alongside the total balance.
+  - @crossmint/common-sdk-auth@1.1.19
+
+## 1.14.0
+
+### Minor Changes
+
+- 0003592: Solana and Stellar wallets can now be created with up to 10 recovery signers: `recovery` accepts a list, each entry resolved (passkey creation, server signer derivation) on its own, and `wallet.recoverySigners` exposes all of them. EVM still takes a single recovery signer.
+
+### Patch Changes
+
+- 0fb459c: Add recovery signer error classes (`RecoverySignerLimitExceededError`, `DuplicateRecoverySignerError`, `RecoverySignerConflictError`, `SignerRequiredError`, `RecoveryNotSupportedOnChainError`, `NotSupportedOnApiVersionError`, `RecoveryAdminSignerConflictError`, `InvalidRecoveryConfigError`), the `MAX_RECOVERY_SIGNERS` constant, and mapping of the backend recovery error codes to those errors.
+- d459c4a: Update the wallets OpenAPI spec so Solana and Stellar wallet creation configs describe a `recovery` list (1-10 signers) alongside the deprecated `adminSigner`, and expose a `RecoverySignerListConfig` API type.
+- 90507b0: Remove the Wallets SDK V1 version banner from generated SDK reference docs
+  - @crossmint/common-sdk-auth@1.1.18
+
+## 1.13.0
+
+### Minor Changes
+
+- 85bc2d9: Solana email/phone signers can now sign arbitrary payloads: `SolanaNonCustodialSigner.signMessage(base58Payload)` returns a raw Ed25519 signature instead of rejecting.
+
+### Patch Changes
+
+- 4db65cd: Reject passkey assertions returned by a custom `onSignWithPasskey` handler when the WebAuthn user verification flag is unset, since the on-chain verifier requires it and the bundler would reject the transaction with an opaque AA24 signature error.
+
+## 1.12.1
+
+### Patch Changes
+
+- 3528a4e: `wallet.isSignerApproved` now throws when the signer state cannot be fetched instead of resolving to `false`, so callers can tell a failed request apart from a signer that is not approved. A signer that is not registered still resolves to `false`. This matches the behavior of the Swift and Kotlin SDKs.
+- Updated dependencies [7d99607]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/common-sdk-auth@1.1.17
+
+## 1.12.0
+
+### Minor Changes
+
+- 08b4f7b: Added a `channel` option to the phone signer `start-onboarding` flow so OTPs can be delivered via WhatsApp as well as SMS.
+
+### Patch Changes
+
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/common-sdk-auth@1.1.16
+
+## 1.11.0
+
+### Minor Changes
+
+- 305a238: Device signer recovery now removes the old, unusable device signer from the wallet after successfully registering its replacement, instead of leaving it registered indefinitely.
+
+### Patch Changes
+
+- 0fe195e: Regenerate OpenAPI types with quorum boundary shapes. Approving with a quorum signer now throws `QuorumSignerNotSupportedError` until quorum approval support ships.
+  - @crossmint/common-sdk-auth@1.1.15
+
+## 1.10.0
+
+### Minor Changes
+
+- df216a8: Fix wallet approval failures when a device signer holds a valid local key but isn't in the wallet's currently-assembled signers list. `wallet.approve()` now falls back to local device-signer key storage instead of throwing `Signer not found in pending approvals`.
+
+## 1.9.0
+
+### Minor Changes
+
+- 9604fec: Surface authentication failures (e.g. expired JWTs) from `wallet.approve` and transaction/signature polling instead of masking them behind generic `wallet:no-transaction` / `wallet:no-signature` errors. When the API responds with an auth error code, the SDK now throws a typed `JWTExpiredError` (carrying `expiredAt`), `JWTInvalidError`, `JWTDecryptionError`, `JWTIdentifierError`, or `NotAuthorizedError`.
+
+  The canonical auth error classes now live in `@crossmint/common-sdk-base` and are re-exported from `@crossmint/client-sdk-base` and `@crossmint/wallets-sdk`, so `instanceof` checks work across packages. `client-sdk-base`'s `APIErrorService` also now maps the correct backend identifier code (`ERROR_JWT_IDENTIFIER_ERROR`) and handles `ERROR_JWT_AUDIENCE_MISMATCH`.
+
+- 3468b87: Solana wallets now inject a device signer at creation time by default, reaching parity with EVM and Stellar. When `deviceSignerKeyStorage` is configured, `WalletFactory.createWallet` includes a `device` signer in the creation payload for every chain.
+
+  Because a Solana wallet's provider is only known server-side and some providers (e.g. Squads) reject device signers at creation with the stable `DEVICE_SIGNER_NOT_SUPPORTED` error code, creation is retried once without the device signer when that specific rejection occurs. Wallet creation therefore succeeds regardless of the backing provider; for providers without device-signer support, a device signer is registered post-creation via the wallet's existing recovery flow (or falls back to the recovery signer).
+
+  A device signer that the caller supplies explicitly is never stripped — a `DEVICE_SIGNER_NOT_SUPPORTED` rejection for an explicit signer surfaces as before. Behavior for EVM and Stellar is unchanged.
+
+### Patch Changes
+
+- 558be6e: Reduce transaction polling delay and avoid sleeping after a successful status check.
+- 558be6e: Two-phase transaction status polling: fixed 500ms cadence during the first 5 seconds (when most transactions confirm), then exponential backoff (1.5x, capped at 2s). The poll request's own duration now counts toward the cadence, and sleeps are clamped to the confirmation timeout.
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/common-sdk-auth@1.1.14
+
+## 1.8.0
+
+### Minor Changes
+
+- 2f788d0: feat(wallets): add `deployImmediately` flag to EVM `addSigner`
+
+  When registering a delegated signer on an EVM wallet, the SDK now sends
+  `deployImmediately: true` by default, causing the API to return an on-chain
+  registration transaction instead of the lazy signature-request flow. This can be
+  overridden by passing `{ deployImmediately: false }` in the options.
+
+## 1.7.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-window@1.1.0
+  - @crossmint/common-sdk-auth@1.1.13
+
+## 1.6.2
+
+### Patch Changes
+
+- 890d49a: Fix Gmail dot normalization in signer locator construction. The backend normalizes Gmail addresses by stripping dots from the local part (e.g., `first.last@gmail.com` -> `firstlast@gmail.com`), but the SDK was using the raw email. This caused signer locator mismatches that blocked all outbound wallet operations (send, swap, transfer) for Gmail users with dots in their email address.
+
+## 1.6.1
+
+### Patch Changes
+
+- fe8f948: refactor: introduce ChainAdapter to centralize per-chain behavior in wallet.ts
+
+  - `chains/chain-adapter.ts` + `chains/adapters/{evm,solana,stellar}.ts`: a `ChainAdapter` homing the per-chain switches (native token, wallet-locator prefix, signature support, add-signer chain + operation extraction, balance token fields)
+  - `wallet.ts` and `services/balance-formatter.ts` now dispatch through `getChainAdapter(chain)`; `getSignerRegistrationChain` and `isSolanaWallet` removed
+  - `PendingSignerOperation` type defined once in `wallets/types.ts`
+
+  Internal refactor — no behavior or public API changes.
+
+- 8ef5fd5: WAL-10668: clear a stale needs-recovery status when resolveAvailability adopts a local device key
+- 4be9685: refactor: extract balance formatting and recipient/token locators from wallet.ts
+
+  - `services/balance-formatter.ts`: `formatBalanceResponse` (moved from `Wallet.transformBalanceResponse`)
+  - `utils/locators.ts`: `toRecipientLocator` / `toTokenLocator`
+
+  Internal refactor — no behavior or public API changes.
+
+- 204c221: refactor: extract DeviceRecoveryService from wallet.ts
+
+  - `wallets/services/device-recovery-service.ts`: a `DeviceRecoveryService` owning device-signer initialization and recovery (`initDeviceSigner`, `recover`, `resolveAvailability`, pending-approval resumption, local-key matching, unsupported-provider fallback)
+  - the three device flags (`#needsRecovery` / `#deviceSignerApproved` / `#deviceSignerUnsupported`) are replaced by an explicit `DeviceSignerState` lifecycle (`"unknown" | "needs-recovery" | "resolved"`) plus an orthogonal provider-rejection latch
+  - `wallet.ts` delegates `recover()` / `needsRecovery()` and the device branch of `useSigner`; the signer-session → device-recovery coupling collapses to one `onSignerSelected()` notification
+
+  Internal refactor — no behavior or public API changes.
+
+- bdb9f85: refactor: extract transaction/signature polling from wallet.ts
+
+  - `services/operation-poller.ts`: `waitForTransactionCompletion` / `waitForSignatureCompletion` (moved from `Wallet.waitForTransaction` / `Wallet.waitForSignature`); `Wallet` keeps thin protected wrappers with identical signatures and defaults
+
+  Internal refactor — no behavior or public API changes.
+
+- 21bf2da: fix(wallets): support locator-based token matching in balances filter
+
+  `wallet.balances(tokens)` now correctly matches tokens requested via chain locators (e.g. `solana:<mint>`, `base-sepolia:<contractAddress>`, `stellar:<contractId>`) in addition to plain symbols.
+
+- 8149b8a: WAL-10669: validate the transfer amount in `send()` before resolving the chain so an invalid amount no longer remaps `wallet.chain`
+- 6af8cef: refactor: extract ServerSignerResolver from wallet.ts
+
+  Moves server-signer key derivation, the dual primary/legacy derivation caches, and the secure-wipe discipline out of `wallet.ts` into a dedicated `ServerSignerResolver` (`signers/server/resolver.ts`). `wallet.ts` now delegates derivation, locator resolution, recovery resolution, and key-material assembly to the resolver. Internal refactor — no behavior or public API changes.
+
+- fe8f948: fix: block signature approval on Stellar wallets (EVM-only)
+
+  Message signing/approval is only implemented for EVM smart wallets: there is no
+  signature-creation entry point for Stellar (only `EVMWallet` exposes
+  `signMessage`/`signTypedData`), and the Stellar external-wallet and non-custodial
+  signers reject `signMessage`. The approval guard previously blocked only Solana,
+  letting Stellar fall through to an unusable path. It now blocks Stellar too, so
+  `approve({ signatureId })` on a Stellar wallet throws the accurate
+  "Approving signatures is only supported for EVM smart wallets" error.
+
+- 4b6e985: refactor: introduce SignerDescriptor registry for per-signer-type config shaping
+
+  Moves the synchronous per-type `switch` logic out of `wallet.ts` into a `SignerDescriptor` per signer type (`signers/descriptors/`): config validation, internal-config building, and auto-assemblability. `wallet.ts` now dispatches via `getSignerDescriptor(type)`. Internal refactor — no behavior or public API changes.
+
+- 9b93386: refactor: move add-signer payload and recovery matching into SignerDescriptor
+
+  Adds `addSignerPayload` and `matchesRecovery` to each `SignerDescriptor`, removing the per-signer-type branches from `wallet.ts`'s `addSigner` payload construction and `isRecoverySigner`. The `#recovery` upgrade on a recovery match is now an explicit `adoptRecoveryConfig`. Internal refactor — no behavior or public API changes.
+
+- 400549a: refactor: extract SignerManager from wallet.ts
+
+  Moves the device-independent signer-session core — the active signer, the recovery config, and the operations on them (`require`, `withRecoverySigner`, signer assembly, recovery-config adoption/secret-stripping, signer-state queries) — out of `wallet.ts` into a dedicated `SignerManager` (`services/signer-manager.ts`). `wallet.ts` delegates to it through a one-way seam; device recovery and `useSigner` orchestration remain in `Wallet`. Internal refactor — no behavior or public API changes.
+
+- cfe1f33: refactor(wallets): move SignerManager.require() per-type guidance into SignerDescriptor
+
+  `require()` no longer switches on the recovery signer type for its "no signer is set" guidance.
+  Each `SignerDescriptor` now provides `signerUnavailableReason(): string | null` — server and
+  external-wallet return their type-specific message, the rest return null and `require()` applies the
+  generic auto-assemblability fallback. Internal refactor — no behavior or public API changes.
+
+- fe8f948: fix: `signers()` error names the unsupported chain type instead of the wallet type
+
+  When a smart wallet has an unsupported `chainType`, `signers()` now throws
+  `Wallet chain type <chainType> not supported` instead of the misleading
+  `Wallet type smart not supported`. The supported-chain check is also now driven
+  by the chain adapter registry rather than hard-coded chain literals.
+
+- 84fafa0: fix(wallets): wipe server-signer key bytes on locator-only resolution (WAL-10667)
+
+  `ServerSignerResolver.apiLocator()` resolves a server signer to its on-chain locator (used by `addSigner` and by `send` with a server `options.signer`), which needs only the derived address. The selected candidate's `derivedKeyBytes` were left live in memory until GC — only the losing candidate was wiped. They are now `secureWipe`d unless the resolution is a cached slot, consistent with the existing secure-wipe hardening.
+
+- 2a8f396: fix(wallets): transaction-failure message + signature polling timeout (WAL-10670, WAL-10675)
+
+  - `waitForTransactionCompletion`: the `failed` branch interpolated `transactionResponse.error`, which is always falsy there (any truthy error already threw earlier in the loop), so consumers always saw `Transaction sending failed: undefined`. It now serializes the full failed transaction response.
+  - `waitForSignatureCompletion`: previously polled a perpetually-pending signature forever. It now honors a `timeoutMs` (default 60s, matching `waitForTransactionCompletion`) and throws the new `SignatureConfirmationTimeoutError` on timeout.
+
+- b484ab4: Fix wallet read + scope handling: nfts() now resolves the chain for the environment and throws on API errors (WAL-10671), transaction() serializes response.message instead of response.error (WAL-10672), and addSigner() fails loudly instead of silently dropping scopes when resuming a pending registration (WAL-10674).
+
 ## 1.6.0
 
 ### Minor Changes

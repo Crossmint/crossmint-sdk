@@ -4,19 +4,27 @@ import {
     CrossmintWallets,
     type Callbacks,
     type ClientSideWalletCreateArgs,
-    type SignerConfigForChain,
+    type RecoverySignerConfigForChain,
     type Wallet,
     type ClientSideWalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
+    type PasskeyProvider,
     type WalletOptions,
     type RegisterSignerPasskeyParams,
     WalletNotAvailableError,
     type DeviceSignerConfig,
+    recoveryMethodsFromCreateArgs,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import type { UIConfig } from "@crossmint/common-sdk-base";
+import {
+    ApiClientError,
+    CrossmintSDKError,
+    type SdkLogger,
+    type UIConfig,
+    WalletErrorCode,
+} from "@crossmint/common-sdk-base";
 import { useCrossmint, useSignerAuth } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
@@ -25,11 +33,26 @@ import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
 import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 
+/**
+ * Structured detail about the last wallet load/creation failure, exposed alongside `status`
+ * so integrators can render an actionable message and decide whether to retry.
+ * - `region-blocked`: request was blocked (e.g. Cloudflare 403 from a restricted region). Permanent — do not retry.
+ * - `network`: transient failure (fetch reject/timeout, 5xx, or 429). Retryable.
+ * - `unknown`: anything else.
+ */
+export type WalletContextError = {
+    code: "region-blocked" | "network" | "unknown";
+    status?: number;
+    message: string;
+};
+
 export type CrossmintWalletBaseContext = {
     /** The current wallet instance, or undefined if no wallet is loaded. */
     wallet: Wallet<Chain> | undefined;
     /** Current wallet status. */
     status: "not-loaded" | "in-progress" | "loaded" | "error";
+    /** Detail about the last failure, or null when there is no error. */
+    error: WalletContextError | null;
     /** Retrieves an existing wallet. */
     getWallet: <C extends Chain>(
         props: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">
@@ -54,6 +77,7 @@ export type CrossmintWalletBaseContext = {
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
     wallet: undefined,
     status: "not-loaded",
+    error: null,
     getWallet: () => Promise.resolve(undefined),
     createWallet: () => Promise.resolve(undefined),
     clientTEEConnection: undefined,
@@ -77,6 +101,11 @@ export interface CrossmintWalletBaseProviderProps {
      * Storage for the device signer key.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /**
+     * @internal
+     * Creates and signs with passkeys where the browser WebAuthn API is not available (React Native).
+     */
+    passkeyProvider?: PasskeyProvider;
     /** Lifecycle callbacks for wallet creation and transaction events. */
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
@@ -94,6 +123,8 @@ export interface CrossmintWalletBaseProviderProps {
     children: ReactNode;
     /** @internal */
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    /** @internal */
+    resetSignerFrame?: () => Promise<void>;
     /** @internal */
     initializeWebView?: () => Promise<void>;
     /** @internal */
@@ -114,12 +145,100 @@ export type PasskeyPromptState = {
     secondaryActionOnClick?: () => void;
 };
 
+/**
+ * Cloudflare serves an HTTP 403 with an HTML body when it bans the requester's country/region.
+ * Its error code 1009 ("Access denied: ... has banned the country or region your IP address is
+ * in") is the distinguishing signal — it lets us treat a genuine geo-block as permanent without
+ * also labelling every other non-JSON 403 (nginx access controls, a CDN/reverse-proxy rule) as
+ * `region-blocked` and permanently suppressing the auto-retry loop.
+ *
+ * Crossmint also serves a custom 403 page ("Crossmint does not work in the following countries
+ * and regions") in some edge configurations, which we match so integrators can surface a clear
+ * `region-blocked` error instead of a generic wallet failure.
+ */
+const CLOUDFLARE_REGION_BLOCK_PATTERN =
+    /error\s*1009|banned\s+(?:the\s+)?(?:country|region)|Crossmint\s+does\s+not\s+work\s+in\s+the\s+following\s+countries/i;
+
+export function isCloudflareRegionBlock(responseBody: string | null): boolean {
+    return responseBody != null && CLOUDFLARE_REGION_BLOCK_PATTERN.test(responseBody);
+}
+
+/**
+ * Loads the user's existing wallet, or throws `WalletNotAvailableError`. The create args go with the request
+ * because they carry signer fields that the API never returns, such as the phone signer's OTP `channel`;
+ * `getWallet` merges them into the loaded signers. Passing them also makes `getWallet` check them against the
+ * wallet. On a mismatch it tries again with less: first without `signers`, so a recovery signer that still
+ * matches keeps its fields, then with no config, which loads the wallet as before.
+ */
+export async function getExistingWallet<C extends Chain>(
+    wallets: Pick<CrossmintWallets, "getWallet">,
+    args: WalletCreateArgs<C>,
+    options: WalletOptions,
+    logger: Pick<SdkLogger, "warn">
+): Promise<Wallet<C>> {
+    const base = { chain: args.chain, alias: args.alias, options };
+    const recovery = { recovery: args.recovery, recoveryMethods: args.recoveryMethods };
+    const hasRecovery = args.recovery != null || args.recoveryMethods != null;
+    const attempts: Array<WalletCreateArgs<C>> = [
+        ...(args.signers != null ? [{ ...base, ...recovery, signers: args.signers }] : []),
+        ...(hasRecovery ? [{ ...base, ...recovery }] : []),
+    ];
+    for (const attempt of attempts) {
+        try {
+            return await wallets.getWallet<C>(attempt);
+        } catch (error) {
+            if (!(error instanceof CrossmintSDKError) || error.code !== WalletErrorCode.WALLET_CREATION_FAILED) {
+                throw error;
+            }
+            logger.warn("react.wallet.getOrCreateWallet.signerConfigMismatch", {
+                error,
+                withSigners: attempt.signers != null,
+            });
+        }
+    }
+    return await wallets.getWallet<C>(base);
+}
+
+export type LoadedWalletArgs = Pick<WalletCreateArgs<Chain>, "chain" | "alias">;
+
+export function cachedWalletMatchesArgs<C extends Chain>(
+    wallet: Wallet<Chain> | undefined,
+    loadedArgs: LoadedWalletArgs | undefined,
+    args: Pick<WalletCreateArgs<C>, "chain" | "alias">
+): wallet is Wallet<Chain> {
+    return wallet != null && loadedArgs != null && loadedArgs.chain === args.chain && loadedArgs.alias === args.alias;
+}
+
+/**
+ * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
+ * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
+ * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
+ */
+export function mapWalletError(error: unknown): WalletContextError {
+    if (error instanceof ApiClientError) {
+        if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {
+            return { code: "region-blocked", status: error.status, message: error.message };
+        }
+        if (error.status >= 500 || error.status === 429) {
+            return { code: "network", status: error.status, message: error.message };
+        }
+        return { code: "unknown", status: error.status, message: error.message };
+    }
+    // A rejected fetch (no response) surfaces as a TypeError; treat as transient network failure.
+    if (error instanceof TypeError) {
+        return { code: "network", message: error.message };
+    }
+    return { code: "unknown", message: error instanceof Error ? error.message : String(error) };
+}
+
 export function CrossmintWalletBaseProvider({
     children,
     createOnLogin,
     callbacks,
     clientTEEConnection,
+    resetSignerFrame,
     deviceSignerKeyStorage,
+    passkeyProvider,
     initializeWebView,
     appearance,
     showOtpSignerPrompt,
@@ -130,7 +249,9 @@ export function CrossmintWalletBaseProvider({
     const logger = useLogger(LoggerContext);
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
+    const [loadedWalletArgs, setLoadedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
+    const [walletError, setWalletError] = useState<WalletContextError | null>(null);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth();
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
@@ -169,13 +290,16 @@ export function CrossmintWalletBaseProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.recovery?.type === "passkey" && showPasskeyHelpers) {
+        const hasPasskeyRecoverySigner = (
+            createOnLogin == null ? [] : recoveryMethodsFromCreateArgs(createOnLogin)
+        ).some((s) => s.type === "passkey");
+        if (hasPasskeyRecoverySigner && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
         return { onWalletCreationStart, onTransactionStart };
-    }, [callbacks, createOnLogin?.recovery?.type, showPasskeyHelpers, createPasskeyPrompt]);
+    }, [callbacks, createOnLogin?.recovery, createOnLogin?.recoveryMethods, showPasskeyHelpers, createPasskeyPrompt]);
 
     const wrappedOnAuthRequired = useCallback(
         async (
@@ -199,8 +323,8 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signer: SignerConfigForChain<Chain>) => {
-            if (signer.type === "email" || signer.type === "phone") {
+        async (signers: Array<RecoverySignerConfigForChain<Chain>>) => {
+            if (signers.some((signer) => signer.type === "email" || signer.type === "phone")) {
                 await initializeWebView?.();
             }
         },
@@ -211,6 +335,7 @@ export function CrossmintWalletBaseProvider({
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
                 clientTEEConnection: clientTEEConnection?.(),
+                resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
                         argsOptions?.callbacks?.onWalletCreationStart ?? updateCallbacks?.onWalletCreationStart,
@@ -219,9 +344,17 @@ export function CrossmintWalletBaseProvider({
                     onAuthRequired: argsOptions?.callbacks?.onAuthRequired ?? wrappedOnAuthRequired,
                 },
                 deviceSignerKeyStorage,
+                passkeyProvider,
             };
         },
-        [clientTEEConnection, updateCallbacks, deviceSignerKeyStorage, wrappedOnAuthRequired]
+        [
+            clientTEEConnection,
+            resetSignerFrame,
+            updateCallbacks,
+            deviceSignerKeyStorage,
+            passkeyProvider,
+            wrappedOnAuthRequired,
+        ]
     );
 
     const getOrCreateWallet = useCallback(
@@ -231,26 +364,26 @@ export function CrossmintWalletBaseProvider({
             if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
-            if (wallet != null) {
+            if (cachedWalletMatchesArgs(wallet, loadedWalletArgs, args)) {
                 return wallet;
+            }
+            if (walletError?.code === "region-blocked") {
+                return undefined;
             }
 
             try {
                 setWalletStatus("in-progress");
+                setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(args.recovery);
+                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
 
                 const walletOptions = buildWalletOptions(args.options);
 
                 // Try to get existing wallet first, then create if not found
                 let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
                 try {
-                    wallet = await wallets.getWallet<C>({
-                        chain: args.chain,
-                        alias: args.alias,
-                        options: walletOptions,
-                    });
+                    wallet = await getExistingWallet(wallets, args, walletOptions, logger);
                 } catch (error) {
                     if (!(error instanceof WalletNotAvailableError)) {
                         throw error;
@@ -260,26 +393,34 @@ export function CrossmintWalletBaseProvider({
 
                 if (wallet == null) {
                     wallet = await wallets.createWallet<C>({
-                        chain: args.chain,
-                        plugins: args.plugins,
-                        recovery: args.recovery,
-                        signers: args.signers,
-                        alias: args.alias,
+                        ...args,
                         options: walletOptions,
                     });
                 }
 
                 setWallet(wallet);
+                setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.getOrCreateWallet.error", { error });
                 setWallet(undefined);
+                setLoadedWalletArgs(undefined);
+                setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
             }
         },
-        [crossmint, crossmint.jwt, walletStatus, wallet, initializeWebViewIfNeeded, buildWalletOptions]
+        [
+            crossmint,
+            crossmint.jwt,
+            walletStatus,
+            wallet,
+            loadedWalletArgs,
+            walletError,
+            initializeWebViewIfNeeded,
+            buildWalletOptions,
+        ]
     );
 
     const getWallet = useCallback(
@@ -290,6 +431,7 @@ export function CrossmintWalletBaseProvider({
 
             try {
                 setWalletStatus("in-progress");
+                setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
                 // Initialize WebView before building options. Unlike getOrCreateWallet/createWallet,
@@ -305,6 +447,7 @@ export function CrossmintWalletBaseProvider({
                 });
                 if (wallet != null) {
                     setWallet(wallet);
+                    setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
                     setWalletStatus("loaded");
                 } else {
                     setWalletStatus("not-loaded");
@@ -312,6 +455,7 @@ export function CrossmintWalletBaseProvider({
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.getWallet.error", { error });
+                setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
             }
@@ -327,20 +471,24 @@ export function CrossmintWalletBaseProvider({
 
             try {
                 setWalletStatus("in-progress");
+                setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(args.recovery);
+                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
 
                 const wallet = await wallets.createWallet<C>({
                     ...args,
                     options: buildWalletOptions(args.options),
                 });
                 setWallet(wallet);
+                setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.createWallet.error", { error });
                 setWallet(undefined);
+                setLoadedWalletArgs(undefined);
+                setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
             }
@@ -362,9 +510,9 @@ export function CrossmintWalletBaseProvider({
     const createPasskeySigner = useCallback(
         async (passkeyName: string) => {
             const wallets = CrossmintWallets.from(crossmint);
-            return await wallets.createPasskeySigner(passkeyName);
+            return await wallets.createPasskeySigner(passkeyName, passkeyProvider);
         },
-        [crossmint]
+        [crossmint, passkeyProvider]
     );
 
     // When using createOnLogin with an email signer, automatically populate the email from the auth context.
@@ -378,8 +526,9 @@ export function CrossmintWalletBaseProvider({
         }
 
         // Check if any email signer (in recovery or signers array) is missing its email value
+        const recoverySigners = recoveryMethodsFromCreateArgs(createOnLogin);
         const hasEmailSignerNeedingPopulation =
-            (createOnLogin.recovery?.type === "email" && createOnLogin.recovery.email == null) ||
+            recoverySigners.some((s) => s.type === "email" && s.email == null) ||
             (createOnLogin.signers?.some((s) => s.type === "email" && s.email == null) ?? false);
 
         if (hasEmailSignerNeedingPopulation) {
@@ -398,9 +547,17 @@ export function CrossmintWalletBaseProvider({
             const userEmail = authBaseContext.user.email;
             const processed = { ...createOnLogin };
 
-            // Populate email on recovery signer if needed
-            if (processed.recovery?.type === "email" && processed.recovery.email == null) {
-                processed.recovery = { ...processed.recovery, email: userEmail };
+            // Populate email on every recovery method that needs it
+            const populatedRecoverySigners = recoverySigners.map((s) =>
+                s.type === "email" && s.email == null ? { ...s, email: userEmail } : s
+            );
+            if (processed.recoveryMethods != null) {
+                processed.recoveryMethods = populatedRecoverySigners as typeof processed.recoveryMethods;
+            } else if (Array.isArray(processed.recovery)) {
+                // Deprecated list form of `recovery`: keep every entry, not only the first.
+                processed.recovery = populatedRecoverySigners as typeof processed.recovery;
+            } else {
+                processed.recovery = populatedRecoverySigners[0];
             }
 
             // Populate email on each signer in the signers array if needed
@@ -424,8 +581,12 @@ export function CrossmintWalletBaseProvider({
     useEffect(() => {
         if (processedCreateOnLogin != null) {
             // Guard: don't attempt wallet creation if required signer fields are still missing.
-            const { recovery, signers } = processedCreateOnLogin;
-            if (recovery?.type === "external-wallet" && recovery.address == null) {
+            const { signers } = processedCreateOnLogin;
+            if (
+                recoveryMethodsFromCreateArgs(processedCreateOnLogin).some(
+                    (s) => s.type === "external-wallet" && s.address == null
+                )
+            ) {
                 return;
             }
             if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {
@@ -439,6 +600,8 @@ export function CrossmintWalletBaseProvider({
         if (crossmint.jwt == null && walletStatus !== "not-loaded") {
             setWalletStatus("not-loaded");
             setWallet(undefined);
+            setLoadedWalletArgs(undefined);
+            setWalletError(null);
         }
     }, [crossmint.jwt, walletStatus]);
 
@@ -446,6 +609,7 @@ export function CrossmintWalletBaseProvider({
         () => ({
             wallet,
             status: walletStatus,
+            error: walletError,
             getWallet,
             createWallet,
             clientTEEConnection,
@@ -458,6 +622,7 @@ export function CrossmintWalletBaseProvider({
             createWallet,
             wallet,
             walletStatus,
+            walletError,
             clientTEEConnection,
             otpSignerState,
             createDeviceSigner,

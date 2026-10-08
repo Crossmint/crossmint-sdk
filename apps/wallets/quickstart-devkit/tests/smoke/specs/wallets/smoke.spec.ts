@@ -104,19 +104,17 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
 
     test("transfers funds", async ({ authenticatedPage, testConfig }) => {
         const walletAddress = await getWalletAddress(authenticatedPage);
+        // Transfer the minimum practical amount so the reused wallet's funds
+        // last across many runs without needing the faucet.
+        const transferAmount = "0.001";
 
-        // Fund wallet before transfer test
-        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-        // Wait a moment for the funding to complete
-        await authenticatedPage.waitForTimeout(2000);
-
-        // Check wallet balance and log warning if 0
+        // Only hit the faucet when the reused wallet doesn't have enough USDXM
         const balance = await getWalletBalance(authenticatedPage);
         const balanceNum = parseFloat(balance);
-
-        if (balanceNum === 0) {
-            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
+        if (balanceNum < parseFloat(transferAmount)) {
+            await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+        } else {
+            console.log(`✅ Wallet already holds ${balanceNum} USDXM, skipping faucet`);
         }
 
         let recipientAddress: string;
@@ -130,7 +128,7 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
                 : TEST_RECIPIENT_WALLET_ADDRESSES.solana;
         }
 
-        await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
+        await transferFunds(authenticatedPage, recipientAddress, transferAmount, testConfig.signer);
 
         console.log(
             `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -139,7 +137,9 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
 
     test("creates and approves a prepared transaction", async ({ authenticatedPage, testConfig }) => {
         const recipientAddress = TEST_RECIPIENT_WALLET_ADDRESSES.evm;
-        const transferAmount = "10";
+        // Transfer the minimum practical amount so the reused wallet's funds
+        // last across many runs without needing the faucet.
+        const transferAmount = "0.001";
         const walletAddress = await getWalletAddress(authenticatedPage);
 
         expectAuth(recipientAddress).toBeTruthy();
@@ -147,18 +147,13 @@ test.describe("Wallet Smoke", { tag: "@smoke" }, () => {
         expectAuth(recipientAddress.length).toBe(42);
         expectAuth(/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)).toBe(true);
 
-        // Fund wallet before prepared transaction test with the same amount we'll transfer
-        await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-        // Wait a moment for the funding to complete
-        await authenticatedPage.waitForTimeout(2000);
-
-        // Check wallet balance and log warning if 0
+        // Only hit the faucet when the reused wallet doesn't have enough USDXM
         const initialBalance = await getWalletBalance(authenticatedPage);
         const initialBalanceNum = parseFloat(initialBalance);
-
-        if (initialBalanceNum === 0) {
-            console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-            console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM to run this test`);
+        if (initialBalanceNum < parseFloat(transferAmount)) {
+            await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
+        } else {
+            console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
         }
 
         //check approval test heading

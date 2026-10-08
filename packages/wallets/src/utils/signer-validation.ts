@@ -12,7 +12,7 @@ const signerConfigMismatchErrorMessage = (fieldPath: string, newValue: unknown, 
  * For all addresses:
  * - Converts to lowercase
  */
-function normalizeEmail(email: string): string {
+export function normalizeEmail(email: string): string {
     const lowerCaseEmail = email.toLowerCase();
     const emailParts = lowerCaseEmail.split("@");
     const domain = emailParts[1];

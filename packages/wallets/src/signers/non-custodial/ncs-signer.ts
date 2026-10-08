@@ -7,11 +7,19 @@ import type {
     PhoneSignerLocator,
     SignerAdapter,
 } from "../types";
-import { AuthRejectedError, KeyExportError, OtpValidationError, SignerStatusError } from "../types";
+import {
+    AuthRejectedError,
+    KeyExportError,
+    OnboardingSessionExpiredError,
+    OtpValidationError,
+    SignerAuthenticationError,
+    SignerStatusError,
+} from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
+import { normalizeEmail } from "../../utils/signer-validation";
 
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
@@ -22,6 +30,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
+    private _onboardingConnectionGeneration: number | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
@@ -113,6 +122,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         methodName: "handleAuthRequired",
     })
     protected async handleAuthRequired() {
+        const authData = this.getAuthDataOrThrow();
         const clientTEEConnection = await this.getTEEConnection();
 
         if (this.config.onAuthRequired == null) {
@@ -130,12 +140,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const signerResponse = await clientTEEConnection.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
-            data: {
-                authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
-                },
-            },
+            data: { authData, data: { authId: this.getAuthId() } },
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
@@ -152,6 +157,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 code: errorCode,
                 durationMs,
             });
+            if (isUnauthorizedResponse(errorMessage, errorCode)) {
+                throw new SignerAuthenticationError(errorMessage, errorCode);
+            }
             throw new SignerStatusError(errorMessage, errorCode);
         }
 
@@ -212,15 +220,27 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     public async ensureAuthenticated(): Promise<void> {
+        this.getJwtOrThrow();
+        if (this.config.resetSignerFrame != null) {
+            await this.config.resetSignerFrame();
+        }
         await this.handleAuthRequired();
     }
 
     protected getJwtOrThrow() {
         const jwt = this.config.crossmint.jwt;
-        if (jwt == null) {
-            throw new Error("JWT is required");
+        if (jwt == null || jwt.trim() === "") {
+            throw new SignerAuthenticationError(
+                `${this.type} signer requires a valid Crossmint JWT. The user's session is missing or has expired: ` +
+                    "re-authenticate the user and refresh the JWT before retrying.",
+                JWT_REQUIRED_ERROR_CODE
+            );
         }
         return jwt;
+    }
+
+    private getAuthDataOrThrow() {
+        return { jwt: this.getJwtOrThrow(), apiKey: this.config.crossmint.apiKey };
     }
 
     private createAuthPromise(): {
@@ -240,23 +260,36 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     private async sendMessageWithOtp() {
+        try {
+            await this.startOnboarding();
+        } catch (error) {
+            // The UI layer's send handlers swallow the thrown error and call `reject`, which would settle the
+            // auth promise with a generic AuthRejectedError, so settle it with the auth failure first.
+            if (error instanceof SignerAuthenticationError) {
+                this._authPromise?.reject(error);
+            }
+            throw error;
+        }
+    }
+
+    private async startOnboarding() {
+        const authData = this.getAuthDataOrThrow();
         const handshakeParent = await this.getTEEConnection();
         const authId = this.getAuthId();
         walletsLogger.info("start-onboarding: sending request");
         const startTime = Date.now();
+        const channel = this.config.type === "phone" ? this.config.channel : undefined;
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
             data: {
-                authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
-                },
-                data: { authId },
+                authData,
+                data: { authId, ...(channel != null ? { channel } : {}) },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
         const durationMs = Date.now() - startTime;
+        this._onboardingConnectionGeneration = handshakeParent.connectionGeneration;
         walletsLogger.info("start-onboarding: response received", {
             status: response?.status,
             durationMs,
@@ -269,16 +302,19 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
         if (response?.status === "error") {
             walletsLogger.error("start-onboarding: failed", { error: response.error, code: response.code });
-            const error = new OtpValidationError(response.error || "Failed to initiate OTP process.", response.code);
-            this._authPromise?.reject(error);
+            const errorMessage = response.error || "Failed to initiate OTP process.";
+            if (isUnauthorizedResponse(errorMessage, response.code)) {
+                throw new SignerAuthenticationError(errorMessage, response.code);
+            }
+            throw new OtpValidationError(errorMessage, response.code);
         }
     }
 
-    private getAuthId() {
+    protected getAuthId() {
         if (this.config.type === "email") {
-            return `email:${this.config.email}`;
+            return this.config.email != null ? `email:${normalizeEmail(this.config.email)}` : this.config.locator;
         }
-        return `phone:${this.config.phone}`;
+        return this.config.phone != null ? `phone:${this.config.phone}` : this.config.locator;
     }
 
     private async verifyOtp(encryptedOtp: string) {
@@ -291,10 +327,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 event: "request:complete-onboarding",
                 responseEvent: "response:complete-onboarding",
                 data: {
-                    authData: {
-                        jwt: this.config.crossmint.jwt ?? "",
-                        apiKey: this.config.crossmint.apiKey,
-                    },
+                    authData: this.getAuthDataOrThrow(),
                     data: {
                         onboardingAuthentication: { encryptedOtp },
                     },
@@ -307,9 +340,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             });
         } catch (err) {
             walletsLogger.error("complete-onboarding: error", { error: err });
-            this._needsAuth = true;
-            this._authPromise?.reject(err as Error);
-            throw err;
+            return await this.handleOnboardingVerificationFailure(err as Error);
         }
 
         if (response?.status === "success") {
@@ -334,13 +365,44 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             error: response?.status === "error" ? response.error : undefined,
             code: response?.status === "error" ? response.code : undefined,
         });
-        this._needsAuth = true;
         const errorMessage =
             response?.status === "error"
                 ? response.error || "Failed to validate encrypted OTP"
                 : "Failed to validate encrypted OTP";
         const errorCode = response?.status === "error" ? response.code : undefined;
-        const error = new OtpValidationError(errorMessage, errorCode);
+        return await this.handleOnboardingVerificationFailure(new OtpValidationError(errorMessage, errorCode));
+    }
+
+    private async handleOnboardingVerificationFailure(error: Error): Promise<void> {
+        this._needsAuth = true;
+
+        const connection = this.config.clientTEEConnection;
+        const frameReloaded =
+            this._onboardingConnectionGeneration != null &&
+            connection != null &&
+            connection.connectionGeneration !== this._onboardingConnectionGeneration;
+
+        if (frameReloaded) {
+            walletsLogger.warn("tee.signer.onboarding.reissued", {
+                reason: "signer frame reloaded mid-onboarding, re-issuing OTP",
+                onboardingGeneration: this._onboardingConnectionGeneration,
+                currentGeneration: connection?.connectionGeneration,
+            });
+            try {
+                await this.sendMessageWithOtp();
+            } catch (reissueError) {
+                this._authPromise?.reject(reissueError as Error);
+                throw reissueError;
+            }
+            if (!this._needsAuth) {
+                // The re-issued onboarding came back ready, so no new code was sent and the signer is
+                // already authenticated. Resolve instead of telling the user a fresh code is coming.
+                this._authPromise?.resolve();
+                return;
+            }
+            throw new OnboardingSessionExpiredError();
+        }
+
         this._authPromise?.reject(error);
         throw error;
     }
@@ -353,7 +415,9 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         exportTEEConnection: ExportSignerTEEConnection,
         onExport?: () => void | Promise<void>
     ): Promise<void> {
-        await this.handleAuthRequired();
+        // Use ensureAuthenticated (not handleAuthRequired) so export resets the signer frame on iOS
+        // just like signing does, rather than authenticating against a possibly stale ephemeral frame.
+        await this.ensureAuthenticated();
         const jwt = this.getJwtOrThrow();
 
         const { scheme, encoding } = this.getChainKeyParams();
@@ -410,3 +474,15 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 export const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 30_000,
 };
+
+export const JWT_REQUIRED_ERROR_CODE = "jwt-required";
+
+const UNAUTHORIZED_ERROR_CODES = new Set(["unauthorized", "unauthenticated"]);
+
+// The signer frame reports a rejected JWT as a bare `HTTP 401: <statusText>` (statusText is empty in React Native).
+function isUnauthorizedResponse(errorMessage: string, code: string | undefined): boolean {
+    if (code != null && UNAUTHORIZED_ERROR_CODES.has(code.toLowerCase())) {
+        return true;
+    }
+    return /\bHTTP 401\b/.test(errorMessage);
+}

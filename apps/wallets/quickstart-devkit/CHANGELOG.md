@@ -1,5 +1,127 @@
 # @crossmint/wallets-quickstart-devkit
 
+## 0.2.71
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.9.1
+
+## 0.2.70
+
+### Patch Changes
+
+- Updated dependencies [e7905a8]
+  - @crossmint/client-sdk-react-ui@4.9.0
+
+## 0.2.69
+
+### Patch Changes
+
+- Updated dependencies [8dc3dd7]
+- Updated dependencies [bdcc891]
+- Updated dependencies [3187098]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [dbc0985]
+  - @crossmint/client-sdk-react-ui@4.8.0
+
+## 0.2.68
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+  - @crossmint/client-sdk-react-ui@4.7.0
+
+## 0.2.67
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.6.2
+
+## 0.2.66
+
+### Patch Changes
+
+- Updated dependencies [ac0d6ad]
+  - @crossmint/client-sdk-react-ui@4.6.1
+
+## 0.2.65
+
+### Patch Changes
+
+- Updated dependencies [970fe2b]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/client-sdk-react-ui@4.6.0
+
+## 0.2.64
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.5.1
+
+## 0.2.63
+
+### Patch Changes
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-react-ui@4.5.0
+
+## 0.2.62
+
+### Patch Changes
+
+- Updated dependencies [74f6176]
+- Updated dependencies [a0e8c70]
+  - @crossmint/client-sdk-react-ui@4.4.0
+
+## 0.2.61
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.4
+
+## 0.2.60
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.3
+
+## 0.2.59
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.2
+
+## 0.2.58
+
+### Patch Changes
+
+- Updated dependencies [a92a335]
+  - @crossmint/client-sdk-react-ui@4.3.1
+
+## 0.2.57
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-react-ui@4.3.0
+
+## 0.2.56
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.13
+
+## 0.2.55
+
+### Patch Changes
+
+- Updated dependencies [696adbe]
+  - @crossmint/client-sdk-react-ui@4.2.12
+
 ## 0.2.54
 
 ### Patch Changes

@@ -26,8 +26,8 @@ export class StellarWallet extends Wallet<StellarChain> {
                 owner: wallet.owner,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
-                recovery: Wallet.getRecovery(wallet),
-                apiRecoveryServerSignerAddress: Wallet.getApiRecoveryServerSignerAddress(wallet),
+                recovery: Wallet.getRecoverySigners(wallet),
+                apiRecoveryServerSignerAddresses: Wallet.getApiRecoveryServerSignerAddresses(wallet),
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
@@ -270,7 +270,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private resolveStellarSigner(signerOverride: string | ServerSignerConfig | undefined): string {
         if (signerOverride == null) {
-            return this.requireSigner().locator();
+            return this.signerManager.require().locator();
         }
         if (typeof signerOverride === "string") {
             return signerOverride;

@@ -16,6 +16,14 @@ export interface RecoveryOptions {
      * Example: ["indexeddb-fatal"]
      */
     recoverableErrorCodes: string[];
+    /**
+     * Outgoing event names that, on a timeout or recoverable error, should reload and re-handshake the
+     * WebView (advancing connectionGeneration so the caller can detect the reload) but NOT replay the
+     * request. Use for requests that depend on frame-side session state and would be guaranteed to fail
+     * on a freshly reloaded frame, e.g. completing onboarding. Replaying those just wastes a round-trip
+     * before the caller's own recovery runs.
+     */
+    reloadWithoutRetryEvents?: string[];
 }
 
 export interface WebViewParentOptions<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>
@@ -114,21 +122,34 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
     public override async sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>(
         args: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>
     ): Promise<z.infer<IncomingEvents[R]>> {
+        const reloadWithoutRetry =
+            this.recoveryOptions?.reloadWithoutRetryEvents?.includes(String(args.event)) ?? false;
+
         let response: z.infer<IncomingEvents[R]>;
         try {
             response = await super.sendAction(args);
         } catch (error) {
             if (this.isTimeoutError(error)) {
-                console.info("[WebViewParent] Timeout detected, reloading WebView and retrying");
                 await this.reloadAndHandshake();
+                if (reloadWithoutRetry) {
+                    // The frame is recovered (generation advanced) so the caller can detect the reload,
+                    // but replaying this request would just fail again. Surface the timeout instead.
+                    console.info("[WebViewParent] Timeout detected, reloaded WebView without retrying");
+                    throw error;
+                }
+                console.info("[WebViewParent] Timeout detected, reloading WebView and retrying");
                 return await super.sendAction(args);
             }
             throw error;
         }
 
         if (this.isRecoverableError(response)) {
-            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
             await this.reloadAndHandshake();
+            if (reloadWithoutRetry) {
+                console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloaded without retrying`);
+                return response;
+            }
+            console.info(`[WebViewParent] Recoverable error (code: ${response.code}), reloading and retrying`);
             return await super.sendAction(args);
         }
 

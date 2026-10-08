@@ -6,6 +6,7 @@ const mockWalletsLogger = {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
+    debug: vi.fn(),
 };
 
 vi.mock("../../logger/init", () => ({

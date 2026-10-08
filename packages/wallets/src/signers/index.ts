@@ -6,7 +6,7 @@ import { PasskeySigner } from "./passkey";
 import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain, EVMChain, SolanaChain, StellarChain } from "../chains/chains";
-import type { ExternalWalletInternalSignerConfig, InternalSignerConfig, SignerAdapter } from "./types";
+import type { ExternalWalletInternalSignerConfig, InternalSignerConfig, SignerAdapter, SignerLocator } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 import { DeviceSigner } from "./device";
 import type { DeviceSignerKeyStorage } from "../utils/device-signers/DeviceSignerKeyStorage";
@@ -51,4 +51,25 @@ export function assembleSigner<C extends Chain>(
             }
             return new DeviceSigner(config, deviceSignerKeyStorage);
     }
+}
+
+export async function tryAssembleLocalDeviceSigner<C extends Chain>(
+    chain: C,
+    locator: string,
+    address: string,
+    deviceSignerKeyStorage: DeviceSignerKeyStorage
+): Promise<SignerAdapter | null> {
+    if (!locator.startsWith("device:")) {
+        return null;
+    }
+    const publicKeyBase64 = locator.replace("device:", "");
+    const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
+    if (!hasKey) {
+        return null;
+    }
+    return assembleSigner(
+        chain,
+        { type: "device", locator: locator as SignerLocator, address } as InternalSignerConfig<C>,
+        deviceSignerKeyStorage
+    );
 }

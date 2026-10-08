@@ -2,6 +2,7 @@ import {
     type Crossmint,
     APIKeyEnvironmentPrefix,
     APIKeyUsageOrigin,
+    ApiClientError,
     CrossmintApiClient,
 } from "@crossmint/common-sdk-base";
 
@@ -29,6 +30,10 @@ import type {
     RegisterSignerResponse,
     RemoveSignerParams,
     RemoveSignerResponse,
+    RegisterRecoveryMethodParams,
+    RegisterRecoveryMethodResponse,
+    RemoveRecoveryMethodParams,
+    RemoveRecoveryMethodResponse,
     GetSignerResponse,
     WalletLocator,
     SendParams,
@@ -249,10 +254,44 @@ class ApiClient extends CrossmintApiClient {
         if (params.chain) {
             queryParams.append("chain", params.chain);
         }
+        if (params.approver != null) {
+            queryParams.append("approver", params.approver);
+        }
         const url = `${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
         const response = await this.delete(url, {
             headers: this.headers,
         });
+        return response.json();
+    }
+
+    async registerRecoveryMethod(
+        walletLocator: WalletLocator,
+        params: RegisterRecoveryMethodParams
+    ): Promise<RegisterRecoveryMethodResponse> {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/recovery-methods`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async removeRecoveryMethod(
+        walletLocator: WalletLocator,
+        signer: string,
+        params: RemoveRecoveryMethodParams
+    ): Promise<RemoveRecoveryMethodResponse> {
+        const encodedSigner = encodeURIComponent(signer);
+        const queryParams = new URLSearchParams();
+        if (params.chain != null) {
+            queryParams.append("chain", params.chain);
+        }
+        queryParams.append("approver", params.approver);
+        const response = await this.delete(
+            `${this.apiPrefix}/${walletLocator}/recovery-methods/${encodedSigner}?${queryParams.toString()}`,
+            {
+                headers: this.headers,
+            }
+        );
         return response.json();
     }
 
@@ -261,6 +300,18 @@ class ApiClient extends CrossmintApiClient {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}`, {
             headers: this.headers,
         });
+        if (!response.ok) {
+            let responseBody: string | null = null;
+            try {
+                responseBody = await response.text();
+            } catch {}
+            throw new ApiClientError(
+                `API request failed: ${response.status} ${response.statusText}`,
+                response.status,
+                response.statusText,
+                responseBody
+            );
+        }
         return response.json();
     }
 

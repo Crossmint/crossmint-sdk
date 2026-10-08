@@ -28,8 +28,22 @@
         "language": "tsx",
         "note": "CrossmintWalletProvider must be nested inside CrossmintProvider."
     },
-    "useAuth": {
-        "code": "import { useAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginButton() {\n    const { login, logout, user, status } = useAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
+    "useCrossmintAuth": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginButton() {\n    const { login, logout, user, status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
+        "language": "tsx"
+    },
+    "EmbeddedAuthForm": {
+        "code": "import { EmbeddedAuthForm, useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction LoginPage() {\n    const { status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return <p>You are logged in!</p>;\n    }\n\n    return (\n        <div style={{ maxWidth: 400, margin: \"0 auto\" }}>\n            <EmbeddedAuthForm />\n        </div>\n    );\n}",
+        "language": "tsx",
+        "note": "Must be rendered inside CrossmintAuthProvider. Renders the same auth form shown in the login modal, but inline in your page."
+    },
+    "authProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintAuthProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintAuthProvider loginMethods={[\"email\", \"google\"]}>\n                {/* Your app content */}\n            </CrossmintAuthProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintAuthProvider must be nested inside CrossmintProvider."
+    },
+    "authQuickExample": {
+        "code": "import { useCrossmintAuth } from \"@crossmint/client-sdk-react-ui\";\n\nfunction AuthButton() {\n    const { login, logout, user, status } = useCrossmintAuth();\n\n    if (status === \"logged-in\") {\n        return (\n            <div>\n                <p>Welcome, {user?.email}</p>\n                <button onClick={logout}>Logout</button>\n            </div>\n        );\n    }\n\n    return <button onClick={() => login()}>Sign In</button>;\n}",
         "language": "tsx"
     },
     "useWallet": {
@@ -40,5 +54,69 @@
         "code": "import { ExportPrivateKeyButton } from \"@crossmint/client-sdk-react-ui\";\n\nfunction WalletSettings() {\n    return (\n        <div>\n            <h3>Export Private Key</h3>\n            <ExportPrivateKeyButton\n                appearance={{\n                    colors: { border: \"#e2e8f0\" },\n                    borderRadius: \"12px\",\n                }}\n            />\n        </div>\n    );\n}",
         "language": "tsx",
         "note": "Only works with email and phone signers. Will not render for passkey or external wallet signers."
+    },
+    "checkoutProviderSetup": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintCheckoutProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintCheckoutProvider>\n                {/* Your checkout components */}\n            </CrossmintCheckoutProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx"
+    },
+    "checkoutQuickExample": {
+        "code": "import { CrossmintEmbeddedCheckout } from \"@crossmint/client-sdk-react-ui\";\n\nfunction CheckoutPage() {\n    return (\n        <CrossmintEmbeddedCheckout\n            lineItems={{\n                collectionLocator: \"crossmint:YOUR_COLLECTION_ID\",\n                callData: {\n                    totalPrice: \"0.001\",\n                },\n            }}\n            payment={{\n                crypto: { enabled: true },\n                fiat: { enabled: true, defaultCurrency: \"usd\" },\n                receiptEmail: \"buyer@example.com\",\n            }}\n            recipient={{ email: \"buyer@example.com\" }}\n        />\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintCheckoutProvider": {
+        "code": "import {\n    CrossmintProvider,\n    CrossmintCheckoutProvider,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction App() {\n    return (\n        <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">\n            <CrossmintCheckoutProvider>\n                {/* Your checkout components */}\n            </CrossmintCheckoutProvider>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintCheckoutProvider must be nested inside CrossmintProvider."
+    },
+    "useCrossmintCheckout": {
+        "code": "import { useCrossmintCheckout } from \"@crossmint/client-sdk-react-ui\";\n\nfunction OrderStatus() {\n    const { order } = useCrossmintCheckout();\n\n    if (!order) return <p>No active order</p>;\n\n    return (\n        <div>\n            <p>Order ID: {order.orderId}</p>\n            <p>Phase: {order.phase}</p>\n        </div>\n    );\n}",
+        "language": "tsx"
+    },
+    "useIdentityVerificationCredentials": {
+        "code": "import {\n    CrossmintIdentityVerification,\n    useIdentityVerificationCredentials,\n} from \"@crossmint/client-sdk-react-ui\";\n\nfunction VerificationStep() {\n    const credentials = useIdentityVerificationCredentials();\n\n    if (credentials == null) {\n        return null;\n    }\n\n    return (\n        <CrossmintIdentityVerification\n            credentials={credentials}\n            onComplete={({ status }) => console.log(status)}\n        />\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintEmbeddedCheckout": {
+        "code": "import { CrossmintEmbeddedCheckout } from \"@crossmint/client-sdk-react-ui\";\n\nfunction Checkout() {\n    return (\n        <CrossmintEmbeddedCheckout\n            lineItems={{\n                collectionLocator: \"crossmint:YOUR_COLLECTION_ID\",\n                callData: {\n                    totalPrice: \"0.001\",\n                },\n            }}\n            payment={{\n                crypto: {\n                    enabled: true,\n                    defaultChain: \"base-sepolia\",\n                    defaultCurrency: \"usdc\",\n                },\n                fiat: {\n                    enabled: true,\n                    defaultCurrency: \"usd\",\n                    allowedMethods: {\n                        card: true,\n                        applePay: true,\n                        googlePay: true,\n                    },\n                },\n                receiptEmail: \"buyer@example.com\",\n            }}\n            recipient={{ email: \"buyer@example.com\" }}\n            locale=\"en-US\"\n        />\n    );\n}",
+        "language": "tsx"
+    },
+    "CrossmintPaymentMethodManagement": {
+        "code": "import { CrossmintPaymentMethodManagement } from \"@crossmint/client-sdk-react-ui\";\n\nfunction PaymentMethods({ jwt }: { jwt: string }) {\n    return (\n        <CrossmintPaymentMethodManagement\n            jwt={jwt}\n            allowedModes={[\"new\", \"existing\"]}\n            allowedPaymentMethodTypes={[\"card\"]}\n            onPaymentMethodSelected={(paymentMethod) => {\n                if (paymentMethod.type === \"card\") {\n                    console.log(\"Card selected:\", paymentMethod.card.last4);\n                }\n            }}\n        />\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintPaymentMethodManagement renders an iframe-based UI for managing saved payment methods. Requires a valid JWT for authentication. The onPaymentMethodSelected callback receives a discriminated union — narrow on `type` before accessing variant-specific fields."
+    },
+    "CrossmintProtectedInput": {
+        "code": "import { useRef, useState } from \"react\";\nimport {\n    CrossmintProvider,\n    CrossmintProtectedInput,\n    type CrossmintProtectedInputRef,\n    type ProtectedInputField,\n} from \"@crossmint/client-sdk-react-ui\";\n\ntype Props = {\n    apiKey: string;\n    jwt: string;\n    field: ProtectedInputField;\n    onCollected: (answer: { protectedInputId: string }) => Promise<void>;\n};\n\nexport function ProtectedField({ apiKey, jwt, field, onCollected }: Props) {\n    const ref = useRef<CrossmintProtectedInputRef>(null);\n    const [busy, setBusy] = useState(false);\n    const [error, setError] = useState(\"\");\n\n    async function collect() {\n        if (busy || ref.current === null) {\n            return;\n        }\n        setBusy(true);\n        setError(\"\");\n        try {\n            const result = await ref.current.collect();\n            if (result.status !== \"collected\") {\n                setError(result.message);\n                return;\n            }\n            await onCollected(result.input);\n        } catch {\n            setError(\"Could not confirm submission. Retry the same message.\");\n        } finally {\n            setBusy(false);\n        }\n    }\n\n    return (\n        <CrossmintProvider apiKey={apiKey}>\n            <div>{field.label}</div>\n            <CrossmintProtectedInput\n                ref={ref}\n                jwt={jwt}\n                field={field}\n                disabled={busy}\n                invalid={error !== \"\"}\n            />\n            {error !== \"\" && <p role=\"alert\">{error}</p>}\n            <button type=\"button\" disabled={busy} onClick={collect}>\n                Continue\n            </button>\n        </CrossmintProvider>\n    );\n}",
+        "language": "tsx",
+        "note": "Pass the protected field descriptor from an Agent Checkout form as field, your browser client API key to CrossmintProvider, and the buyer JWT as jwt. The iframe renders only an input; your page owns the button and errors. ref.collect() returns collected, invalid, unavailable, or superseded. Submit result.input under the field key in response.answers alongside ordinary answers. Unchanged successful collections reuse the reference; edits invalidate that reuse. Use one ref per protected field. display: \"masked\" controls presentation independently of handling. Collection keeps plaintext out of application JavaScript; it does not mask merchant-page screenshots or recordings."
+    },
+    "CrossmintAgentCardAuthorization": {
+        "code": "import { CrossmintAgentCardAuthorization } from \"@crossmint/client-sdk-react-ui\";\n\nfunction AuthorizeCard({ jwt, onOrderIntentId }: { jwt: string; onOrderIntentId: (id: string) => void }) {\n    return (\n        <CrossmintAgentCardAuthorization\n            jwt={jwt}\n            amount={{ value: \"120.00\", currency: \"USD\" }}\n            merchant={{ name: \"Example Shop\", url: \"https://shop.example.com\", countryCode: \"US\" }}\n            description=\"Running shoes, order placed by your shopping agent\"\n            displayName=\"Example Shop\"\n            onAuthorized={({ orderIntentId }) => onOrderIntentId(orderIntentId)}\n            onError={({ code, message }) => console.error(code, message)}\n        />\n    );\n}",
+        "language": "tsx",
+        "note": "CrossmintAgentCardAuthorization composes card selection, order-intent registration, order-intent creation and rail verification, and calls onAuthorized once with an orderIntentId. Submit that ID as `response.orderIntentId` in the Agent Checkout's `payment` input response. The rail is chosen by the same policy the server applies (vic, then agentpay, then encrypted-card, preferring a rail that is already active); card numbers, CVCs and vault token ids never reach your JavaScript. Lifecycle: after onAuthorized the component renders nothing; after onError it returns to card selection so the buyer can try again; state lives for one mount, so a remount (a `key` or route change) creates a new order intent for the same spend and your app must store the orderIntentId from onAuthorized. Pass the buyer's JWT as `jwt`, like CrossmintPaymentMethodManagement. `appearance.paymentMethodManagement` styles the card selection and the CVC recollection form, `appearance.verification` the card-network verification modal."
+    },
+    "CrossmintHostedCheckout": {
+        "code": "import { CrossmintHostedCheckout } from \"@crossmint/client-sdk-react-ui\";\n\nfunction BuyButton() {\n    return (\n        <CrossmintHostedCheckout\n            lineItems={{\n                collectionLocator: \"crossmint:YOUR_COLLECTION_ID\",\n                callData: {\n                    totalPrice: \"0.001\",\n                },\n            }}\n            payment={{\n                crypto: {\n                    enabled: true,\n                    defaultChain: \"base-sepolia\",\n                    defaultCurrency: \"usdc\",\n                },\n                fiat: {\n                    enabled: true,\n                    defaultCurrency: \"usd\",\n                },\n                receiptEmail: \"buyer@example.com\",\n            }}\n            recipient={{ email: \"buyer@example.com\" }}\n            appearance={{\n                display: \"popup\",\n                overlay: { enabled: true },\n                theme: {\n                    button: \"dark\",\n                    checkout: \"light\",\n                },\n            }}\n            locale=\"en-US\"\n        />\n    );\n}",
+        "language": "tsx"
+    },
+    "agentsProviderSetup": {
+        "code": "import type { ReactNode } from \"react\";\nimport { CrossmintProvider } from \"@crossmint/client-sdk-react-ui\";\n\nfunction App({ children }: { children: ReactNode }) {\n    return <CrossmintProvider apiKey=\"YOUR_CLIENT_API_KEY\">{children}</CrossmintProvider>;\n}",
+        "language": "tsx",
+        "note": "The agent card components take the user's JWT directly, so no additional provider is required. Add `CrossmintWalletProvider` only if your agent also uses wallets."
+    },
+    "agentsQuickExample": {
+        "code": "import { CrossmintPaymentMethodManagement } from \"@crossmint/client-sdk-react-ui\";\n\nfunction PaymentMethodsPage({ jwt }: { jwt: string }) {\n    // jwt comes from your own auth provider (for example Stytch, Auth0, Dynamic)\n    return (\n        <CrossmintPaymentMethodManagement\n            jwt={jwt}\n            onPaymentMethodSelected={(paymentMethod) => {\n                // Persist this ID so your backend can register the card and create order intents.\n                console.log(\"Card saved:\", paymentMethod.paymentMethodId);\n            }}\n        />\n    );\n}",
+        "language": "tsx",
+        "note": "Card data is collected directly by Crossmint and never passes through your servers. Store the returned paymentMethodId on your backend; it is the input for registering the card and creating order intents."
+    },
+    "OrderIntentVerification": {
+        "code": "import { OrderIntentVerification, type OrderIntentVerificationProps } from \"@crossmint/client-sdk-react-ui\";\n\nfunction VerifyOrderIntent({\n    orderIntent,\n}: {\n    orderIntent: OrderIntentVerificationProps[\"orderIntent\"];\n}) {\n    return (\n        <OrderIntentVerification\n            orderIntent={orderIntent}\n            displayName=\"Acme Shopping Agent\"\n            onVerificationComplete={() => {\n                console.log(\"Allowance verified\");\n            }}\n            onVerificationError={(error) => {\n                console.error(\"Allowance verification failed\", error);\n            }}\n        />\n    );\n}",
+        "language": "tsx",
+        "note": "After `onVerificationComplete`, fetch the order intent again and wait for the `agentic-token` rail to report `status: \"active\"` before creating a credential."
+    },
+    "CrossmintCvcRecollection": {
+        "code": "import { CrossmintCvcRecollection } from \"@crossmint/client-sdk-react-ui\";\n\nfunction RefreshCardCvc({ jwt, paymentMethodId }: { jwt: string; paymentMethodId: string }) {\n    return (\n        <CrossmintCvcRecollection\n            jwt={jwt}\n            paymentMethodId={paymentMethodId}\n            onComplete={() => {\n                console.log(\"CVC stored, refetch the order intent\");\n            }}\n            onError={(error) => {\n                if (!error.retriable) {\n                    console.error(\"CVC recollection failed\", error);\n                }\n            }}\n        />\n    );\n}",
+        "language": "tsx",
+        "note": "Render it when an order intent's `encrypted-card` rail reports `status: \"pending_cvc_recollection\"`, or when creating a credential is refused with HTTP 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`. Retriable errors keep the form mounted; non-retriable ones unmount it, so show your own message."
     }
 }

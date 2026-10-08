@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
-import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
+import { PopupWindow } from "@crossmint/client-sdk-window";
 import { useCrossmintAuth } from "@/hooks";
 import { z } from "zod";
 
@@ -10,27 +10,9 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
     const { crossmintAuth } = useCrossmintAuth();
     // Track which OAuth provider's window is currently being interacted with
     const [activeOAuthProvider, setActiveOAuthProvider] = useState<OAuthProvider | null>(null);
-    const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
-
-    useEffect(() => {
-        if (childRef.current == null) {
-            childRef.current = new ChildWindow<IncomingEvents, OutgoingEvents>(window.opener || window.parent, "*", {
-                incomingEvents,
-            });
-        }
-
-        return () => {
-            if (childRef.current != null) {
-                childRef.current.off("authMaterialFromPopupCallback");
-            }
-        };
-    }, []);
 
     const createPopupAndSetupListeners = useCallback(
         async (provider: OAuthProvider, providerLoginHint?: string) => {
-            if (childRef.current == null) {
-                throw new Error("Child window not initialized");
-            }
             setActiveOAuthProvider(provider);
             setError(null);
 
@@ -81,31 +63,42 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 popup.window.location.href = baseUrl.toString();
             }
 
+            // Listen on the popup itself: it is the window that sends these events, and its
+            // transport drops anything from another sender.
+            let stopListening = () => {
+                // reassigned below, once there is something to unsubscribe
+            };
+
             const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
                 await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
-                childRef.current?.off("authMaterialFromPopupCallback");
+                stopListening();
                 popup.window?.close();
                 setActiveOAuthProvider(null);
             };
 
             const handleError = (data: { error: string }) => {
                 setError(data.error);
-                childRef.current?.off("errorFromPopupCallback");
+                stopListening();
                 popup.window?.close();
                 setActiveOAuthProvider(null);
             };
 
-            childRef.current.on("authMaterialFromPopupCallback", handleAuthMaterial);
-            childRef.current.on("errorFromPopupCallback", handleError);
+            const authMaterialListenerId = popup.on("authMaterialFromPopupCallback", handleAuthMaterial);
+            const errorListenerId = popup.on("errorFromPopupCallback", handleError);
             // Add a check for manual window closure
             // Ideally we should find a more explicit way of doing this, but I think this is fine for now.
             const checkWindowClosure = setInterval(() => {
                 if (popup.window?.closed) {
-                    clearInterval(checkWindowClosure);
+                    stopListening();
                     setActiveOAuthProvider(null);
-                    childRef.current?.off("authMaterialFromPopupCallback");
                 }
             }, 2500); // Check every 2.5 seconds
+
+            stopListening = () => {
+                popup.off(authMaterialListenerId);
+                popup.off(errorListenerId);
+                clearInterval(checkWindowClosure);
+            };
         },
         [oauthUrlMap, crossmintAuth, setError]
     );

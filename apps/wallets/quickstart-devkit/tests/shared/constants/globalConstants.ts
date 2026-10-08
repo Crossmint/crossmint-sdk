@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
@@ -73,7 +75,6 @@ export const TEST_RECIPIENT_WALLET_ADDRESSES = {
 };
 
 // Base email aliases for different signer types
-// Random numbers are appended to prevent email blocking
 const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     email: "email",
     phone: "phone",
@@ -82,41 +83,20 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     // "external-wallet": "external",
 };
 
-// Cache for email addresses per signer type to ensure consistency within a test run
-const emailCache = new Map<SignerType, string>();
-// Cache for timestamp suffix per signer type to ensure alias consistency
-const timestampSuffixCache = new Map<SignerType, number>();
+// A suite that runs often must pass a unique value: each run leaks a device signer.
+const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 
-// Generate email address for a specific signer type with timestamp-based suffix to prevent blocking
-// The email is cached per signer type to ensure consistency within a test run
 export function getEmailForSigner(signerType: SignerType): string {
-    // Return cached email if it exists
-    const cached = emailCache.get(signerType);
-    if (cached) {
-        return cached;
-    }
-
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
-    // Use timestamp for unique email addresses (reused for Stellar alias)
-    const timestampSuffix = Date.now();
-    timestampSuffixCache.set(signerType, timestampSuffix);
-    const alias = `${baseAlias}${timestampSuffix}`;
-    const email = `test-${alias}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
-
-    emailCache.set(signerType, email);
-    console.log(`📧 Generated and cached email for ${signerType}: ${email}`);
-
-    return email;
+    return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
-// Generate a unique alias for Stellar wallets based on the email's timestamp suffix
-// This ensures consistency - same email = same alias
+// Hashed so the alias stays under the API's 36-character cap even though CI's
+// WALLET_EMAIL_SUFFIX (which includes github.run_id) can run well past it.
 export function getStellarAlias(signerType: SignerType): string {
-    const timestampSuffix = timestampSuffixCache.get(signerType) ?? Date.now();
-    if (!timestampSuffixCache.has(signerType)) {
-        timestampSuffixCache.set(signerType, timestampSuffix);
-    }
-    return `stellartestingwallet${timestampSuffix}`;
+    const sanitizedSuffix = WALLET_EMAIL_SUFFIX.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const suffixHash = createHash("sha256").update(sanitizedSuffix).digest("hex").slice(0, 12);
+    return `e2e${signerType}${suffixHash}`;
 }
 
 // Build URL with query parameters for testing

@@ -24,10 +24,15 @@ jobs:
 
             # Serial build to avoid OOM on 7GB runner (Next.js apps are memory-heavy)
             - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
               run: pnpm turbo build --concurrency=1
 
             - name: Test all
               run: pnpm test:vitest
+
+            - name: Typecheck apps
+              run: pnpm typecheck
 
     lint:
         name: lint
@@ -41,3 +46,26 @@ jobs:
 
             - name: Check for lint errors
               run: pnpm lint
+
+    # Advisory only — do not add to required checks; a failure here can be preview, not the SDK.
+    integration-tests:
+        name: integration tests (advisory)
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
+              run: pnpm turbo build --concurrency=1
+
+            # Scoped to this step only — a branch's own install/build scripts must not read it.
+            - name: Run integration tests
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:integration

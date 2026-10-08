@@ -1,5 +1,88 @@
 # @crossmint/server-sdk
 
+## 1.2.87
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/common-sdk-auth@1.1.23
+
+## 1.2.86
+
+### Patch Changes
+
+- Updated dependencies [07b7a8c]
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 1.2.85
+
+### Patch Changes
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 1.2.84
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 1.2.83
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.19
+
+## 1.2.82
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.18
+
+## 1.2.81
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.17
+
+## 1.2.80
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.16
+
+## 1.2.79
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.15
+
+## 1.2.78
+
+### Patch Changes
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/common-sdk-auth@1.1.14
+
+## 1.2.77
+
+### Patch Changes
+
+- a92a335: Add SDK reference docs generation (TypeDoc) and JSDoc comments for the auth API. Also export the `CrossmintAuthServerOptions`, `GenericRequest`, and `GenericResponse` types.
+
+## 1.2.76
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.13
+
 ## 1.2.75
 
 ### Patch Changes

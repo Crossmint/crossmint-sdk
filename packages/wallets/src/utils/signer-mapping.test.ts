@@ -24,6 +24,28 @@ describe("getPendingSignerOperation", () => {
             });
         });
 
+        it("returns a transaction operation for EVM deployImmediately chain entries", () => {
+            const apiSigner = {
+                type: "external-wallet",
+                address: "0x123",
+                locator: "external-wallet:0x123",
+                chains: {
+                    "base-sepolia": {
+                        id: "tx-456",
+                        status: "awaiting-approval",
+                        onChain: { userOperation: "0xabc", userOperationHash: "0xdef" },
+                        chainType: "evm",
+                        walletType: "smart",
+                    },
+                },
+            } as unknown as APISigner;
+
+            expect(getPendingSignerOperation(apiSigner, "base-sepolia")).toEqual({
+                type: "transaction",
+                id: "tx-456",
+            });
+        });
+
         it("returns null for failed signer registrations", () => {
             const apiSigner = {
                 type: "email",

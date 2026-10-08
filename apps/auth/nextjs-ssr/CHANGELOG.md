@@ -1,5 +1,140 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.4.201
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.9.1
+
+## 0.4.200
+
+### Patch Changes
+
+- Updated dependencies [e7905a8]
+  - @crossmint/client-sdk-react-ui@4.9.0
+  - @crossmint/server-sdk@1.2.87
+
+## 0.4.199
+
+### Patch Changes
+
+- Updated dependencies [8dc3dd7]
+- Updated dependencies [bdcc891]
+- Updated dependencies [3187098]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [dbc0985]
+  - @crossmint/client-sdk-react-ui@4.8.0
+  - @crossmint/server-sdk@1.2.86
+
+## 0.4.198
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+  - @crossmint/client-sdk-react-ui@4.7.0
+  - @crossmint/server-sdk@1.2.85
+
+## 0.4.197
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.6.2
+- @crossmint/server-sdk@1.2.84
+
+## 0.4.196
+
+### Patch Changes
+
+- Updated dependencies [ac0d6ad]
+  - @crossmint/client-sdk-react-ui@4.6.1
+  - @crossmint/server-sdk@1.2.83
+
+## 0.4.195
+
+### Patch Changes
+
+- Updated dependencies [970fe2b]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/client-sdk-react-ui@4.6.0
+  - @crossmint/server-sdk@1.2.82
+
+## 0.4.194
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.5.1
+
+## 0.4.193
+
+### Patch Changes
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-react-ui@4.5.0
+  - @crossmint/server-sdk@1.2.81
+
+## 0.4.192
+
+### Patch Changes
+
+- Updated dependencies [74f6176]
+- Updated dependencies [a0e8c70]
+  - @crossmint/client-sdk-react-ui@4.4.0
+  - @crossmint/server-sdk@1.2.80
+
+## 0.4.191
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.4
+- @crossmint/server-sdk@1.2.79
+
+## 0.4.190
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.3
+
+## 0.4.189
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.3.2
+- @crossmint/server-sdk@1.2.78
+
+## 0.4.188
+
+### Patch Changes
+
+- Updated dependencies [a92a335]
+- Updated dependencies [a92a335]
+  - @crossmint/server-sdk@1.2.77
+  - @crossmint/client-sdk-react-ui@4.3.1
+
+## 0.4.187
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-react-ui@4.3.0
+  - @crossmint/server-sdk@1.2.76
+
+## 0.4.186
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.2.13
+
+## 0.4.185
+
+### Patch Changes
+
+- Updated dependencies [696adbe]
+  - @crossmint/client-sdk-react-ui@4.2.12
+
 ## 0.4.184
 
 ### Patch Changes

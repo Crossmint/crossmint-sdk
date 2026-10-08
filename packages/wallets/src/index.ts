@@ -1,11 +1,44 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
+// Recovery methods
+export { recoveryMethodsFromCreateArgs } from "./utils/recovery";
+
 // Errors
-export { WalletNotAvailableError, InvalidTransferAmountError, UnsupportedBrowserError } from "./utils/errors";
+export {
+    DuplicateRecoverySignerError,
+    InvalidRecoveryConfigError,
+    NotSupportedOnApiVersionError,
+    RecoveryAdminSignerConflictError,
+    RecoveryNotSupportedOnChainError,
+    RecoverySignerConflictError,
+    RecoverySignerLimitExceededError,
+    RecoveryMethodRequiredError,
+    SignerRequiredError,
+    WalletNotAvailableError,
+    InvalidTransferAmountError,
+    QuorumSignerNotSupportedError,
+    UnsupportedBrowserError,
+    NotAuthorizedError,
+    JWTExpiredError,
+    JWTInvalidError,
+    JWTDecryptionError,
+    JWTIdentifierError,
+} from "./utils/errors";
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";
+export type {
+    WalletLocator,
+    CreateWalletParams,
+    CreateWalletResponse,
+    SendResponse,
+    FundWalletParams,
+    FundWalletResponse,
+    GetBalanceResponse,
+    GetTransactionResponse,
+    ApproveTransactionParams,
+} from "./api/types";
 
 // Wallets
 export { Wallet } from "./wallets/wallet";
@@ -34,6 +67,10 @@ export type {
     ApproveOptions,
     AddSignerOptions,
     RemoveSignerOptions,
+    AddRecoveryMethodOptions,
+    RemoveRecoveryMethodOptions,
+    AddRecoveryMethodReturnType,
+    RemoveRecoveryMethodReturnType,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
@@ -42,7 +79,9 @@ export {
     isExportableSignerAdapter,
     AuthRejectedError,
     KeyExportError,
+    OnboardingSessionExpiredError,
     OtpValidationError,
+    SignerAuthenticationError,
     SignerStatusError,
 } from "./signers/types";
 export type {
@@ -55,12 +94,15 @@ export type {
     ExternalWalletSignerConfigForChain,
     ServerSignerConfig,
     SignerConfigForChain,
+    RecoverySignerConfigForChain,
     SignerLocator,
     EmailSignerLocator,
     PhoneSignerLocator,
     PasskeySignerLocator,
     DeviceSignerLocator,
     DeviceSignerConfig,
+    PasskeyProvider,
+    PasskeySignResult,
     ExternalWalletSignerLocator,
     ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,

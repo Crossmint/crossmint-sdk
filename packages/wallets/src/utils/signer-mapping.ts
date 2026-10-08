@@ -1,5 +1,5 @@
 import type { Signer as APISigner, Scope } from "../api";
-import type { Signer, SignerStatus } from "../wallets/types";
+import type { PendingSignerOperation, Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
@@ -47,6 +47,7 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
                 type: "device",
                 publicKey: apiSigner.publicKey,
                 locator: apiSigner.locator,
+                name: apiSigner.name,
             };
         case "server":
             return {
@@ -91,10 +92,7 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
     return { ...base, status: "success", ...(scopes != null && { scopes }) } as Signer;
 }
 
-export function getPendingSignerOperation(
-    apiSigner: APISigner,
-    chain: Chain
-): { type: "signature" | "transaction"; id: string } | null {
+export function getPendingSignerOperation(apiSigner: APISigner, chain: Chain): PendingSignerOperation | null {
     if (chain === "solana" || chain === "stellar") {
         if (
             "transaction" in apiSigner &&
@@ -109,7 +107,8 @@ export function getPendingSignerOperation(
     if ("chains" in apiSigner && apiSigner.chains != null) {
         const chainEntry = apiSigner.chains[chain];
         if (chainEntry != null && (chainEntry.status === "pending" || chainEntry.status === "awaiting-approval")) {
-            return { type: "signature", id: chainEntry.id };
+            const operationType = "onChain" in chainEntry ? "transaction" : "signature";
+            return { type: operationType, id: chainEntry.id };
         }
     }
 

@@ -7,7 +7,11 @@ export function addQueryToAndroidManifest(androidManifest: AndroidManifest, quer
         manifest.queries = [];
     }
 
-    manifest.queries.push(query);
+    // `expo prebuild` without --clean runs the plugin on a manifest it already changed.
+    const alreadyPresent = manifest.queries.some((existing) => JSON.stringify(existing) === JSON.stringify(query));
+    if (!alreadyPresent) {
+        manifest.queries.push(query);
+    }
 
     return androidManifest;
 }

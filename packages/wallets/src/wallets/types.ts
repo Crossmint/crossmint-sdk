@@ -3,8 +3,8 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse, Scope } from "../api";
-import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
+import type { CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
+import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
@@ -14,6 +14,8 @@ import type {
     DeviceSignResult,
     DeviceSignerConfig,
     DeviceSignerLocator,
+    PasskeySignerConfig,
+    PasskeyProvider,
     ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -38,6 +40,7 @@ export type SignatureInputOptions = PrepareOnly;
 
 export type AddSignerOptions = PrepareOnly & {
     scopes?: Scope[];
+    deployImmediately?: boolean;
 };
 
 export type RemoveSignerOptions = PrepareOnly;
@@ -52,9 +55,17 @@ export type MigrateOptions = Partial<PrepareOnly> & {
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? Signer & { transactionId: string }
-    : Signer & { signatureId?: string };
+    : Signer & { signatureId?: string; transactionId?: string };
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
+
+export type AddRecoveryMethodOptions = PrepareOnly;
+
+export type RemoveRecoveryMethodOptions = PrepareOnly;
+
+export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+
+export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
 
 export type SignMessageInput = {
     message: string;
@@ -128,6 +139,8 @@ export type FormattedEVMTransaction =
 
 export type SignerStatus = "success" | "active" | "pending" | "awaiting-approval" | "failed";
 
+export type PendingSignerOperation = { type: "signature" | "transaction"; id: string };
+
 export type SignerInput = {
     signer: string | ServerSignerConfig;
 };
@@ -179,6 +192,7 @@ export type Signer =
           locator: string;
           status: SignerStatus;
           scopes?: Scope[];
+          name?: string;
       }
     | {
           type: "server";
@@ -213,7 +227,10 @@ export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWall
 export type WalletOptions = {
     callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /** Creates and signs with passkeys where the browser WebAuthn API is not available (e.g. React Native). */
+    passkeyProvider?: PasskeyProvider;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -228,9 +245,25 @@ export type WalletArgsFor<C extends Chain> = {
     alias?: string;
 };
 
+/**
+ * A signer that can be used as a recovery signer. Device signers cannot be recovery signers, and on Solana a passkey
+ * can only be a delegated signer.
+ */
+export type RecoverySignerConfigFor<C extends Chain> = C extends SolanaChain
+    ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
+    : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    /** Recovery signer for wallet creation. Device signers cannot be recovery signers. */
-    recovery: Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+    /**
+     * @deprecated Use `recoveryMethods`. Still accepted: a single recovery method, or a list, which is treated
+     * exactly like `recoveryMethods`. Pass either `recovery` or `recoveryMethods`, not both.
+     */
+    recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
+    /**
+     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Required unless the deprecated `recovery` is passed.
+     */
+    recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
     signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
     alias?: string;
@@ -265,7 +298,8 @@ export type TokenBalance<C extends Chain = Chain> = {
     amount: string;
     decimals?: number;
     rawAmount?: string;
-} & ChainExtras[ChainToExtrasKey<C>];
+} & Omit<GetBalanceSuccessResponse[number]["chains"][string], "locator" | "amount" | "rawAmount"> &
+    ChainExtras[ChainToExtrasKey<C>];
 
 export type Balances<C extends Chain = Chain> = {
     nativeToken: TokenBalance<C>;

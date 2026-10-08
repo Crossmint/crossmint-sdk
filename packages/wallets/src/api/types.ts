@@ -1,6 +1,8 @@
 import type { Address } from "viem";
 
 import type {
+    AddRecoveryMethodsResponseV2025DtoClass,
+    AddRecoveryMethodsV2025DtoClass,
     BalanceControllerFundWallet4Error,
     BalanceControllerFundWallet4Responses,
     BalanceV20250609ControllerGetBalanceForLocator2Error,
@@ -96,15 +98,34 @@ export type RegisterSignerParams = {
     signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain>;
     chain?: RegisterSignerChain;
     scopes?: Scope[];
+    deployImmediately?: boolean;
+    approver?: CreateSignerV2025InputDtoClass["approver"];
 };
 export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type RemoveSignerParams = {
     chain?: RegisterSignerChain;
+    approver?: CreateSignerV2025InputDtoClass["approver"];
 };
 export type RemoveSignerResponse =
     | WalletsTransactionV2025ResponseDtoClass
     | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type GetSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerGetDelegatedSigner2Error;
+
+export type RegisterRecoveryMethodParams = {
+    recoveryMethods: AddRecoveryMethodsV2025DtoClass["recoveryMethods"];
+    approver: AddRecoveryMethodsV2025DtoClass["approver"];
+    chain?: RegisterSignerChain;
+};
+export type RegisterRecoveryMethodResponse =
+    | AddRecoveryMethodsResponseV2025DtoClass
+    | WalletsV2025ControllerCreateDelegatedSigner2Error;
+export type RemoveRecoveryMethodParams = {
+    approver: AddRecoveryMethodsV2025DtoClass["approver"];
+    chain?: RegisterSignerChain;
+};
+export type RemoveRecoveryMethodResponse =
+    | WalletsTransactionV2025ResponseDtoClass
+    | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type GetSignersResponse = Array<DelegatedSignerV2025DtoClass> | WalletsV2025ControllerGetDelegatedSigner2Error;
 export type Signer = DelegatedSignerV2025DtoClass;
 

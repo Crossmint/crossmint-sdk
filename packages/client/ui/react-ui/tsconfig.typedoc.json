@@ -1,20 +1,31 @@
 {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
-        "rootDir": "src",
         "baseUrl": ".",
         "paths": {
+            "@/types": ["../../base/src/types/index.ts"],
+            "@/types/*": ["../../base/src/types/*"],
             "@/*": ["src/*"],
             "@crossmint/client-sdk-react-base": ["../../react-base/src/index.ts"],
             "@crossmint/client-sdk-react-base/*": ["../../react-base/src/*"],
+            "@crossmint/client-sdk-base": ["../../base/src/index.ts"],
+            "@crossmint/client-sdk-base/*": ["../../base/src/*"],
             "@crossmint/wallets-sdk": ["../../../wallets/src/index.ts"],
-            "@crossmint/wallets-sdk/*": ["../../../wallets/src/*"]
+            "@crossmint/wallets-sdk/*": ["../../../wallets/src/*"],
+            "@crossmint/common-sdk-base": ["../../../common/base/src/index.ts"],
+            "@crossmint/common-sdk-base/*": ["../../../common/base/src/*"]
         },
         "jsx": "react-jsx",
         "module": "commonjs",
         "esModuleInterop": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*"],
+    "include": [
+        "src/**/*",
+        "../../base/src/**/*",
+        "../../react-base/src/**/*",
+        "../../../wallets/src/**/*",
+        "../../../common/base/src/**/*"
+    ],
     "exclude": ["__tests__"]
 }

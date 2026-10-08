@@ -3,7 +3,7 @@ import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { SignerConfigForChain, SignerLocator } from "../../signers/types";
+import type { RecoverySignerConfigForChain, SignerConfigForChain, SignerLocator } from "../../signers/types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -19,6 +19,8 @@ export type MockedApiClient = {
     getWallet: MockedFunction<ApiClient["getWallet"]>;
     registerSigner: MockedFunction<ApiClient["registerSigner"]>;
     removeSigner: MockedFunction<ApiClient["removeSigner"]>;
+    registerRecoveryMethod: MockedFunction<ApiClient["registerRecoveryMethod"]>;
+    removeRecoveryMethod: MockedFunction<ApiClient["removeRecoveryMethod"]>;
     getSigner: MockedFunction<ApiClient["getSigner"]>;
 };
 
@@ -66,14 +68,15 @@ export const createMockSigner = <C extends Chain>(
 export const createMockWallet = async <C extends Chain>(
     chain: C,
     mockApiClient: MockedApiClient,
-    signerType: "api-key" | "external-wallet" = "api-key"
+    signerType: "api-key" | "external-wallet" = "api-key",
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => {
     const signer = createMockSigner(signerType, chain);
     const wallet = new Wallet(
         {
             chain,
             address: getChainAddress(chain),
-            recovery: { type: "api-key" } as SignerConfigForChain<C>,
+            recovery: recoverySigners ?? ({ type: "api-key" } as RecoverySignerConfigForChain<C>),
         },
         mockApiClient as unknown as ApiClient
     );
@@ -105,6 +108,8 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     getWallet: vi.fn(),
     registerSigner: vi.fn(),
     removeSigner: vi.fn(),
+    registerRecoveryMethod: vi.fn(),
+    removeRecoveryMethod: vi.fn(),
     getSigner: vi.fn(),
     ...overrides,
 });

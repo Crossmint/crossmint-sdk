@@ -1,30 +1,76 @@
-import type { ObjectValues } from "@crossmint/common-sdk-base";
 import type { PaymentMethodAgenticEnrollmentVerificationConfig } from "./PaymentMethodAgenticEnrollment";
 
-export const OrderIntentPhase = {
-    REQUIRES_PAYMENT: "requires-payment-method",
-    REQUIRES_VERIFICATION: "requires-verification",
-    ACTIVE: "active",
-    EXPIRED: "expired",
+export type OrderIntentStatus = "active" | "cancelled" | "expired";
+export type OrderIntentProvider = "vic" | "agentpay";
+export type OrderIntentCredentialFormat = "card" | "network-token";
+export type OrderIntentSptCredentialFormat = "identifier";
+
+type OrderIntentRailState =
+    | { status: "active" | "pending_verification"; error?: never }
+    | { status: "error"; error: { code: string } };
+
+export type OrderIntentAgenticTokenRail = OrderIntentRailState & {
+    rail: "agentic-token";
+    provider: OrderIntentProvider;
+    credentialFormats: OrderIntentCredentialFormat[];
 };
-export type OrderIntentPhase = ObjectValues<typeof OrderIntentPhase>;
+
+// Rail-local on purpose: `encrypted-card` never goes through `pending_verification`.
+// Its only user step is refreshing the vaulted CVC, which `CrossmintCvcRecollection` drives.
+type EncryptedCardRailState =
+    | { status: "active" | "pending_cvc_recollection"; error?: never }
+    | { status: "error"; error: { code: string } };
+
+export type OrderIntentEncryptedCardRail = EncryptedCardRailState & {
+    rail: "encrypted-card";
+    credentialFormats: "card"[];
+};
+
+export type OrderIntentSptRail = OrderIntentRailState & {
+    rail: "spt";
+    provider: "stripe";
+    credentialFormats: OrderIntentSptCredentialFormat[];
+};
+
+export type OrderIntentRail = OrderIntentAgenticTokenRail | OrderIntentEncryptedCardRail | OrderIntentSptRail;
+
+export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
+    allowanceId: string;
+}
+
+export interface OrderIntentMerchant {
+    name: string;
+    /** http or https URL of the merchant. */
+    url: string;
+    /** ISO 3166-1 alpha-2, upper case. */
+    countryCode: string;
+    categoryCode?: string;
+    acquirerBin?: string;
+}
 
 interface OrderIntentBase {
     orderIntentId: string;
-    mandates: any[];
-    payment: {
-        paymentMethodId: string;
+    paymentMethodId: string;
+    status: OrderIntentStatus;
+    amount: {
+        total: string;
+        spent: string;
+        reserved: string;
+        available: string;
+        currency: string;
     };
+    merchant?: OrderIntentMerchant;
+    description: string;
+    rails: OrderIntentRail[];
+    expiresAt: string;
 }
+
 export interface OrderIntentWithVerification extends OrderIntentBase {
-    phase: "requires-verification";
     verificationConfig: OrderIntentVerificationConfig;
 }
-export interface OrderIntentVerificationConfig extends PaymentMethodAgenticEnrollmentVerificationConfig {
-    agentId: string;
-    instructionId: string;
-}
+
 export interface OrderIntentWithoutVerification extends OrderIntentBase {
-    phase: Exclude<OrderIntentPhase, "requires-verification">;
+    verificationConfig?: never;
 }
+
 export type OrderIntent = OrderIntentWithVerification | OrderIntentWithoutVerification;

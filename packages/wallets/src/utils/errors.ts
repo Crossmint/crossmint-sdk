@@ -1,4 +1,20 @@
-import { CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
+import {
+    CrossmintSDKError,
+    JWTDecryptionError,
+    JWTExpiredError,
+    JWTIdentifierError,
+    JWTInvalidError,
+    NotAuthorizedError,
+    WalletErrorCode,
+} from "@crossmint/common-sdk-base";
+
+export {
+    NotAuthorizedError,
+    JWTExpiredError,
+    JWTInvalidError,
+    JWTDecryptionError,
+    JWTIdentifierError,
+} from "@crossmint/common-sdk-base";
 
 export class InvalidApiKeyError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -60,6 +76,12 @@ export class InvalidSignerError extends CrossmintSDKError {
     }
 }
 
+export class UnknownSignerTypeError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
 /**
  * Stable error code returned by the wallets API when a Solana smart wallet's underlying
  * provider does not support device signers. The SDK catches this code in `recover()` and
@@ -70,6 +92,63 @@ export class InvalidSignerError extends CrossmintSDKError {
 export const DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE = "DEVICE_SIGNER_NOT_SUPPORTED";
 
 export class DeviceSignerNotSupportedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class QuorumSignerNotSupportedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+/** Thrown for recovery configurations the SDK can reject before calling the API. */
+export class InvalidRecoveryConfigError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoverySignerLimitExceededError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class DuplicateRecoverySignerError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoverySignerConflictError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class SignerRequiredError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoveryMethodRequiredError extends SignerRequiredError {}
+
+export class RecoveryNotSupportedOnChainError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class NotSupportedOnApiVersionError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+export class RecoveryAdminSignerConflictError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNER_INVALID, details);
     }
@@ -135,6 +214,12 @@ export class SignatureFailedError extends CrossmintSDKError {
     }
 }
 
+export class SignatureConfirmationTimeoutError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+    }
+}
+
 export class InvalidTransferAmountError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
@@ -195,6 +280,101 @@ export class InvalidAddressError extends CrossmintSDKError {
     }
 }
 
+/**
+ * Shape of the structured error body returned by the Crossmint wallets API. `code` carries a
+ * stable identifier for the failure and, for auth failures, extra fields (e.g. `expiredAt`) are
+ * spread onto the top level of the response by the backend exception filter.
+ */
+type CrossmintApiErrorBody = {
+    error?: boolean;
+    message?: string;
+    code?: string;
+    expiredAt?: string;
+    identifierKey?: string;
+};
+
+function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErrorBody {
+    return typeof response === "object" && response != null;
+}
+
+/**
+ * Inspects a Crossmint wallets API error response and, when it carries a recognized auth error
+ * code, throws the corresponding typed error so callers surface the real failure (e.g. an expired
+ * JWT) instead of masking it behind a generic wallet error. Returns without throwing when the
+ * response is not a recognized auth error, letting callers throw their own contextual error.
+ */
+export function throwIfCrossmintApiAuthError(response: unknown): void {
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return;
+    }
+
+    const details = JSON.stringify(response);
+    switch (response.code) {
+        case "ERROR_JWT_EXPIRED":
+            throw new JWTExpiredError(response.expiredAt, details);
+        case "ERROR_JWT_INVALID":
+            throw new JWTInvalidError(details);
+        case "ERROR_JWT_DECRYPTION":
+            throw new JWTDecryptionError(details);
+        case "ERROR_JWT_IDENTIFIER_ERROR":
+            throw new JWTIdentifierError(response.identifierKey, details);
+        case "ERROR_JWT_AUDIENCE_MISMATCH":
+            throw new NotAuthorizedError(response.message ?? "JWT audience mismatch", details);
+    }
+}
+
+/**
+ * Inspects a Crossmint wallets API error response and, when it carries a recognized recovery-signer
+ * error code, throws the corresponding typed error. Returns without throwing for every other
+ * response so callers can fall back to their own contextual error.
+ */
+export function throwIfRecoverySignerApiError(response: unknown): void {
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return;
+    }
+
+    const details = JSON.stringify(response);
+    const message = response.message;
+    switch (response.code) {
+        case "SIGNER_LIMIT_EXCEEDED":
+            throw new RecoverySignerLimitExceededError(
+                message ?? "The wallet exceeds the maximum number of recovery signers",
+                details
+            );
+        case "RECOVERY_DUPLICATE_SIGNER":
+            throw new DuplicateRecoverySignerError(
+                message ?? "The recovery list contains the same signer more than once",
+                details
+            );
+        case "RECOVERY_SIGNER_CONFLICT":
+            throw new RecoverySignerConflictError(
+                message ?? "A recovery signer cannot also be registered as an operational signer",
+                details
+            );
+        case "SIGNER_REQUIRED":
+            throw new SignerRequiredError(
+                message ??
+                    "This wallet has multiple recovery signers, so the signer to authorize with must be specified explicitly",
+                details
+            );
+        case "RECOVERY_NOT_SUPPORTED_ON_CHAIN":
+            throw new RecoveryNotSupportedOnChainError(
+                message ?? "Multiple recovery signers are not supported on this chain yet",
+                details
+            );
+        case "NOT_SUPPORTED_ON_API_VERSION":
+            throw new NotSupportedOnApiVersionError(
+                message ?? "Multiple recovery signers are not supported on this API version",
+                details
+            );
+        case "RECOVERY_ADMIN_SIGNER_CONFLICT":
+            throw new RecoveryAdminSignerConflictError(
+                message ?? "Only one of `adminSigner` and `recovery` can be provided",
+                details
+            );
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -207,7 +387,17 @@ export type WalletError =
     | WalletTypeMismatchError
     | SignerTypeMismatchError
     | InvalidSignerError
+    | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | InvalidRecoveryConfigError
+    | RecoverySignerLimitExceededError
+    | DuplicateRecoverySignerError
+    | RecoverySignerConflictError
+    | SignerRequiredError
+    | RecoveryMethodRequiredError
+    | RecoveryNotSupportedOnChainError
+    | NotSupportedOnApiVersionError
+    | RecoveryAdminSignerConflictError
     | InvalidMessageFormatError
     | InvalidTypedDataError
     | SignatureNotFoundError
@@ -225,4 +415,9 @@ export type WalletError =
     | TransactionFailedError
     | PendingApprovalsError
     | InvalidAddressError
-    | UnsupportedBrowserError;
+    | UnsupportedBrowserError
+    | NotAuthorizedError
+    | JWTExpiredError
+    | JWTInvalidError
+    | JWTDecryptionError
+    | JWTIdentifierError;

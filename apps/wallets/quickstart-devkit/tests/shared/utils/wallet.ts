@@ -1,14 +1,80 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
+import { recentPageDiagnostics } from "./page-diagnostics";
 import { AUTH_CONFIG } from "../constants/globalConstants";
 
+const FAUCET_SETTLEMENT_TIMEOUT_MS = 120000;
+const FAUCET_POLL_INTERVAL_MS = 2000;
+const SOLANA_RPC_URL = process.env.SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com";
+const SOLANA_USDXM_MINT = "z23BZbAiFRb6u5CBH64XjZPUud6dP6y2ZuKoYSM4LCY";
+
+interface SolanaTokenAccount {
+    account: {
+        data: {
+            parsed: {
+                info: {
+                    state: string;
+                    tokenAmount: { amount: string; decimals: number };
+                };
+            };
+        };
+    };
+}
+
+// The balances API reports a Solana transfer before the funds are spendable. Null means the RPC failed.
+async function readSolanaUsdxmBalance(walletAddress: string): Promise<number | null> {
+    const response = await fetch(SOLANA_RPC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "getTokenAccountsByOwner",
+            params: [walletAddress, { mint: SOLANA_USDXM_MINT }, { encoding: "jsonParsed" }],
+        }),
+    }).catch(() => null);
+
+    if (response == null || !response.ok) {
+        return null;
+    }
+
+    const body = (await response.json()) as { result?: { value: SolanaTokenAccount[] } };
+    if (body.result == null) {
+        return null;
+    }
+
+    return body.result.value
+        .map((entry) => entry.account.data.parsed.info)
+        .filter((info) => info.state === "initialized")
+        .reduce((total, info) => total + Number(info.tokenAmount.amount) / 10 ** info.tokenAmount.decimals, 0);
+}
+
+async function readTokenBalance(walletAddress: string, chainId: string, token: string): Promise<number> {
+    const url = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances?tokens=${token}&chains=${chainId}`;
+    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintApiKey } });
+    if (!response.ok) {
+        return 0;
+    }
+    const balances = (await response.json()) as Array<{
+        token: string;
+        decimals: number;
+        balances: { total: string };
+    }>;
+    const entry = balances.find((balance) => balance.token === token);
+    if (entry == null) {
+        return 0;
+    }
+    return Number(entry.balances.total) / 10 ** entry.decimals;
+}
+
 /**
- * Funds a wallet using the Crossmint faucet API
+ * Funds a wallet using the Crossmint faucet API, then waits until the funds are
+ * spendable: the faucet responds before the transfer settles.
  * @param walletAddress - The wallet address to fund
  * @param chainId - The chain ID (e.g., "base-sepolia", "solana", "stellar")
  * @param amount - The amount to fund (default: 10, maximum allowed)
  * @param token - The token to fund (default: "usdxm")
- * @returns Promise that resolves when funding is complete
+ * @returns Promise that resolves once the funds are spendable
  */
 export async function fundWalletWithCrossmintFaucet(
     walletAddress: string,
@@ -40,11 +106,30 @@ export async function fundWalletWithCrossmintFaucet(
         }
 
         await response.json();
-        console.log(`✅ Successfully funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
     } catch (error) {
         console.error(`❌ Failed to fund wallet ${walletAddress}:`, error);
         throw error;
     }
+
+    const readsChain = chainId === "solana" && token === "usdxm";
+    const deadline = Date.now() + FAUCET_SETTLEMENT_TIMEOUT_MS;
+    let observed: number | null = 0;
+    while (Date.now() < deadline) {
+        observed = readsChain
+            ? await readSolanaUsdxmBalance(walletAddress)
+            : await readTokenBalance(walletAddress, chainId, token);
+        if (observed != null && observed >= amount) {
+            console.log(`✅ Funded wallet ${walletAddress} with ${amount} ${token} on ${chainId}`);
+            return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, FAUCET_POLL_INTERVAL_MS));
+    }
+
+    throw new Error(
+        `Faucet sent ${amount} ${token} to ${walletAddress} on ${chainId} but ` +
+            `${readsChain ? `the Solana RPC ${SOLANA_RPC_URL}` : "the balance API"} still reports ` +
+            `${observed ?? "an unreadable balance"} after ${FAUCET_SETTLEMENT_TIMEOUT_MS / 1000}s.`
+    );
 }
 
 export async function getWalletAddress(page: Page): Promise<string> {
@@ -229,22 +314,30 @@ export async function transferFunds(
                 timeout: 120000, // 2 minutes for transaction to complete
             });
         } catch (error) {
+            const diagnostics = recentPageDiagnostics(page);
+
             // If success link doesn't appear, check for error messages
-            const errorMessage = page.locator("text=/error/i, text=/failed/i").first();
-            const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false);
+            const errorMessage = page.getByText(/error|failed|insufficient|limit/i).first();
+            // isVisible ignores its timeout, so an error still rendering would read as absent.
+            const hasError = await errorMessage
+                .waitFor({ state: "visible", timeout: 2000 })
+                .then(() => true)
+                .catch(() => false);
 
             if (hasError) {
                 const errorText = await errorMessage.textContent();
-                throw new Error(`Transaction failed: ${errorText}`);
+                throw new Error(`Transaction failed: ${errorText}${diagnostics}`);
             }
 
             // Check if transfer button is still enabled (transaction might not have started)
             const isButtonEnabled = await transferButton.isEnabled().catch(() => false);
             if (isButtonEnabled) {
-                throw new Error("Transaction did not start - transfer button is still enabled");
+                throw new Error(`Transaction did not start - transfer button is still enabled.${diagnostics}`);
             }
 
-            throw new Error(`Transaction timeout: Success link did not appear within 2 minutes. ${error}`);
+            throw new Error(
+                `Transaction timeout: Success link did not appear within 2 minutes. ${error}${diagnostics}`
+            );
         }
 
         console.log(`✅ Transfer of ${amount} completed successfully`);

@@ -20,10 +20,13 @@ export abstract class ApiClient {
             headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
         });
 
-        // Only throw on server errors (5xx) where the response body is likely
-        // non-JSON (e.g. HTML 502 from load balancer). 4xx responses are passed
-        // through so callers can inspect the JSON error body as before.
-        if (response.status >= 500) {
+        // Throw on server errors (5xx) and on any non-ok response whose body is not JSON
+        // (e.g. an HTML 502 from a load balancer, or a Cloudflare 403 geo-block). Calling
+        // `.json()` on those bodies would otherwise raise an opaque SyntaxError. JSON 4xx
+        // responses are still passed through so callers can inspect the structured error body.
+        const contentType = response.headers.get("content-type") ?? "";
+        const isJsonResponse = contentType.includes("application/json");
+        if (response.status >= 500 || (!response.ok && !isJsonResponse)) {
             let responseBody: string | null = null;
             try {
                 responseBody = await response.text();

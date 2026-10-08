@@ -24,9 +24,17 @@ import { verifyCrossmintJwt } from "./utils/jwt";
 import type { JSONWebKeySet } from "jose";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
+    /** Options applied to the auth cookies set by the SDK (e.g. `domain`). */
     cookieOptions?: CookieOptions;
 };
 
+/**
+ * Server-side Crossmint authentication client: validate sessions, verify JWTs, refresh tokens,
+ * fetch users, and manage auth cookies. Works with both Node.js (`IncomingMessage`/`ServerResponse`)
+ * and Fetch API (`Request`/`Response`) request/response objects.
+ *
+ * Create an instance with {@link CrossmintAuthServer.from}.
+ */
 export class CrossmintAuthServer extends CrossmintAuth {
     private cookieOptions: CookieOptions;
 
@@ -35,10 +43,19 @@ export class CrossmintAuthServer extends CrossmintAuth {
         this.cookieOptions = options.cookieOptions ?? {};
     }
 
+    /** Create a `CrossmintAuth` instance from a `Crossmint` object (created with `createCrossmint`). */
     public static from(crossmint: Crossmint, options: CrossmintAuthServerOptions = {}): CrossmintAuthServer {
         return new CrossmintAuthServer(crossmint, CrossmintAuth.defaultApiClient(crossmint), options);
     }
 
+    /**
+     * Validate the user's session and return it, refreshing it if expired.
+     * Accepts either a request object (auth material is read from cookies) or the auth material
+     * itself (`{ jwt, refreshToken }`). If a response object is provided, refreshed auth material
+     * is stored in its cookies.
+     *
+     * @throws CrossmintAuthenticationError if no valid session can be established.
+     */
     public async getSession(
         options: GenericRequest | AuthMaterialBasic,
         response?: GenericResponse
@@ -65,6 +82,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
     }
 
+    /** Fetch the Crossmint user associated with the given external user ID. */
     public async getUser(externalUserId: string) {
         const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
             headers: {
@@ -76,6 +94,11 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return user;
     }
 
+    /**
+     * Handle a token refresh request on a custom refresh route. Reads the refresh token from the
+     * request body or cookies, refreshes the session, and returns a response with the new auth
+     * material stored in cookies. Returns a 401 response if the refresh fails.
+     */
     public async handleCustomRefresh(request: GenericRequest, response?: GenericResponse): Promise<GenericResponse> {
         const requestAdapter = isNodeRequest(request)
             ? new NodeRequestAdapter(request)
@@ -127,6 +150,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
     }
 
+    /** Verify a Crossmint-issued JWT and return its decoded payload. Uses Crossmint's JWKS endpoint unless a key set is provided. */
     public verifyCrossmintJwt(token: string, jwks?: JSONWebKeySet) {
         if (jwks != null) {
             return verifyCrossmintJwt(token, jwks);
@@ -134,10 +158,12 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return verifyCrossmintJwt(token, this.getJwksUri());
     }
 
+    /** Store auth material (JWT and refresh token) in the response's cookies. */
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
         setAuthCookies(response, authMaterial, this.cookieOptions);
     }
 
+    /** Log the user out: invalidate the refresh token with Crossmint and clear the auth cookies on the response. */
     public async logout(request?: GenericRequest, response?: GenericResponse) {
         try {
             // It's not necessary to call the logout endpoint, but desirable

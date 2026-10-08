@@ -1,5 +1,48 @@
 # @crossmint/client-sdk-window
 
+## 1.2.0
+
+### Minor Changes
+
+- e7905a8: Add individual protected buyer fields with typed field descriptors and per-field
+  `ref.collect()` results. The application supplies its buyer JWT and owns labels,
+  errors and submission; the existing CrossmintProvider supplies the client API key.
+
+  Replace the password-only `merchantUrl`/`onCreated` interface with `field` and
+  `jwt` props plus `collected`, `invalid`, `unavailable` and `superseded` outcomes.
+  Protected fields support single-line text, number and integer. Authentication
+  travels through the iframe channel rather than its URL; `disabled` and `invalid`
+  update through that channel. Add AbortSignal cancellation to window actions so
+  pending collection waits settle on authentication changes, reload or unmount.
+
+## 1.1.1
+
+### Patch Changes
+
+- 7d99607: `EventEmitter` no longer logs `console.error` for a timeout it hands back to the caller as a rejection.
+
+  `sendAction` and `onAction` reject on timeout, and `sendAction` also rejects once it exhausts `maxRetries`. Each of those rejections was preceded by a `console.error`, so a caller that catches the rejection and recovers still left an error behind. Only the caller knows whether a timeout is fatal — `CrossmintWalletProvider` retries the WebView handshake twice and logs `handshake.error` itself if those run out.
+
+  On React Native the duplicate is not just noise. `console.error` raises a LogBox notification, which renders on top of the app: a handshake that timed out at 30s and succeeded on retry 16s later left a toast covering the bottom of the screen, over the app's own controls.
+
+- cfa9710: `WindowTransport` now matches `event.source` against the peer window instead of trusting the origin alone.
+
+  Each client subscribes to the global `message` event and accepted anything arriving from a matching origin. With one Crossmint iframe per page, no other frame could send from that origin, so the gap stayed invisible. Put two on a page and each client receives the other's events.
+
+  Embedded checkout with `identityVerificationHandling="external"` puts two on the page. The verification iframe sends `ui:height.changed` at 660, the checkout iframe takes that height after collapsing to 0, and the merchant gets 660px of empty space above their widget. Reverse the order and checkout's 0 reaches the verification iframe and hides the Persona form.
+
+  A message whose sending window has closed carries a null source. The transport drops it.
+
+  OAuth login moves its listeners onto the popup it opens. They used to sit on a `ChildWindow` built over `window.opener || window.parent`, which on a merchant's top-level page resolves to that page's own window, so the peer never matched the popup the callback arrives from. That client only ever listened, never sent, so the mismatch was invisible until the peer became part of the receive path. Attaching to the popup also unsubscribes correctly between attempts, where the previous `off(eventName)` calls passed an event name to an API that takes a listener id and silently did nothing.
+
+## 1.1.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
 ## 1.0.10
 
 ### Patch Changes

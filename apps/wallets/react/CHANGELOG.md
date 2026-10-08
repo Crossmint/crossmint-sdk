@@ -1,5 +1,198 @@
 # @crossmint/wallets-playground-react
 
+## 0.0.34
+
+### Patch Changes
+
+- Updated dependencies [2aaeabe]
+  - @crossmint/wallets-sdk@1.20.0
+  - @crossmint/client-sdk-react-ui@4.9.1
+
+## 0.0.33
+
+### Patch Changes
+
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/client-sdk-react-ui@4.9.0
+  - @crossmint/wallets-sdk@1.19.0
+
+## 0.0.32
+
+### Patch Changes
+
+- Updated dependencies [8dc3dd7]
+- Updated dependencies [bdcc891]
+- Updated dependencies [3187098]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [b357d97]
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+- Updated dependencies [dbc0985]
+- Updated dependencies [d23239c]
+- Updated dependencies [751a879]
+  - @crossmint/client-sdk-react-ui@4.8.0
+  - @crossmint/wallets-sdk@1.18.0
+
+## 0.0.31
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-react-ui@4.7.0
+  - @crossmint/wallets-sdk@1.17.0
+
+## 0.0.30
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/wallets-sdk@1.16.0
+  - @crossmint/client-sdk-react-ui@4.6.2
+
+## 0.0.29
+
+### Patch Changes
+
+- Updated dependencies [72d0001]
+- Updated dependencies [010d904]
+- Updated dependencies [93d34b1]
+- Updated dependencies [ac0d6ad]
+- Updated dependencies [30f14cd]
+- Updated dependencies [4424fd8]
+- Updated dependencies [ded1d68]
+- Updated dependencies [3b4d5eb]
+- Updated dependencies [27a65f2]
+  - @crossmint/wallets-sdk@1.15.0
+  - @crossmint/client-sdk-react-ui@4.6.1
+
+## 0.0.28
+
+### Patch Changes
+
+- Updated dependencies [0fb459c]
+- Updated dependencies [970fe2b]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-react-ui@4.6.0
+
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [4db65cd]
+- Updated dependencies [85bc2d9]
+  - @crossmint/wallets-sdk@1.13.0
+  - @crossmint/client-sdk-react-ui@4.5.1
+
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-react-ui@4.5.0
+  - @crossmint/wallets-sdk@1.12.1
+
+## 0.0.25
+
+### Patch Changes
+
+- Updated dependencies [74f6176]
+- Updated dependencies [a0e8c70]
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-sdk-react-ui@4.4.0
+  - @crossmint/wallets-sdk@1.12.0
+
+## 0.0.24
+
+### Patch Changes
+
+- Updated dependencies [0fe195e]
+- Updated dependencies [305a238]
+  - @crossmint/wallets-sdk@1.11.0
+  - @crossmint/client-sdk-react-ui@4.3.4
+
+## 0.0.23
+
+### Patch Changes
+
+- Updated dependencies [df216a8]
+  - @crossmint/wallets-sdk@1.10.0
+  - @crossmint/client-sdk-react-ui@4.3.3
+
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [9604fec]
+- Updated dependencies [558be6e]
+- Updated dependencies [558be6e]
+- Updated dependencies [3468b87]
+  - @crossmint/wallets-sdk@1.9.0
+  - @crossmint/client-sdk-react-ui@4.3.2
+
+## 0.0.21
+
+### Patch Changes
+
+- Updated dependencies [2f788d0]
+- Updated dependencies [a92a335]
+  - @crossmint/wallets-sdk@1.8.0
+  - @crossmint/client-sdk-react-ui@4.3.1
+
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-react-ui@4.3.0
+
+## 0.0.19
+
+### Patch Changes
+
+- Updated dependencies [890d49a]
+  - @crossmint/wallets-sdk@1.6.2
+  - @crossmint/client-sdk-react-ui@4.2.13
+
+## 0.0.18
+
+### Patch Changes
+
+- Updated dependencies [fe8f948]
+- Updated dependencies [696adbe]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+  - @crossmint/client-sdk-react-ui@4.2.12
+
 ## 0.0.17
 
 ### Patch Changes

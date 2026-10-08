@@ -7,14 +7,25 @@ import { ExternalWalletSigner } from "./external-wallet-signer";
 
 export class SolanaExternalWalletSigner extends ExternalWalletSigner<SolanaChain> {
     private onSign?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    private onSignBytes?: (payload: string) => Promise<string>;
 
     constructor(config: ExternalWalletInternalSignerConfig<SolanaChain>) {
         super(config);
         this.onSign = config.onSign;
+        this.onSignBytes = config.onSignBytes;
     }
 
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for solana external wallet signer"));
+    async signMessage(message: string) {
+        if (this.onSignBytes == null) {
+            throw new Error(
+                "[SolanaExternalWalletSigner] No onSignBytes callback provided. Pass an onSignBytes callback when configuring the external wallet signer."
+            );
+        }
+        const signature = await this.onSignBytes(message);
+        if (signature == null) {
+            throw new TransactionFailedError("[SolanaExternalWalletSigner] onSignBytes returned no signature");
+        }
+        return { signature };
     }
 
     async signTransaction(transaction: string) {

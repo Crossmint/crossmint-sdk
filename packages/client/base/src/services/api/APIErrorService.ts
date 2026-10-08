@@ -6,14 +6,16 @@ import {
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
+    NotAuthorizedError,
     OutOfCreditsError,
 } from "../../error";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
     | "ERROR_JWT_DECRYPTION"
-    | "ERROR_JWT_IDENTIFIER"
-    | "ERROR_JWT_EXPIRED";
+    | "ERROR_JWT_IDENTIFIER_ERROR"
+    | "ERROR_JWT_EXPIRED"
+    | "ERROR_JWT_AUDIENCE_MISMATCH";
 
 export class APIErrorService<PackageErrorCodes extends string> {
     constructor(
@@ -22,8 +24,10 @@ export class APIErrorService<PackageErrorCodes extends string> {
             ERROR_JWT_INVALID: () => new JWTInvalidError(),
             ERROR_JWT_DECRYPTION: () => new JWTDecryptionError(),
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
-            ERROR_JWT_IDENTIFIER: ({ identifierKey }: { identifierKey: string }) =>
+            ERROR_JWT_IDENTIFIER_ERROR: ({ identifierKey }: { identifierKey: string }) =>
                 new JWTIdentifierError(identifierKey),
+            ERROR_JWT_AUDIENCE_MISMATCH: ({ message }: { message?: string }) =>
+                new NotAuthorizedError(message ?? "JWT audience does not match the expected value for this project"),
         }
     ) {}
 

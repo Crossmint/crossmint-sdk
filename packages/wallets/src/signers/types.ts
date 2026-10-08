@@ -47,6 +47,20 @@ export class OtpValidationError extends Error {
     }
 }
 
+/**
+ * Thrown when the signer backend rejects the request's credentials (missing, empty or expired JWT).
+ * Distinct from `OtpValidationError`: the OTP flow never ran, the user must re-authenticate with the app first.
+ */
+export class SignerAuthenticationError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "SignerAuthenticationError";
+        this.code = code;
+    }
+}
+
 export class SignerStatusError extends Error {
     public readonly code: string | undefined;
 
@@ -66,6 +80,18 @@ export class KeyExportError extends Error {
         this.code = code;
     }
 }
+
+/**
+ * Thrown when the signer frame was reloaded between starting and completing onboarding, so the
+ * in-memory onboarding state (and the OTP issued for it) is gone. A fresh OTP has already been
+ * requested when this is thrown; the caller should prompt the user to enter the new code.
+ */
+export class OnboardingSessionExpiredError extends Error {
+    constructor(message = "The signer session expired before the code could be verified. A new code has been sent.") {
+        super(message);
+        this.name = "OnboardingSessionExpiredError";
+    }
+}
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
@@ -76,6 +102,7 @@ export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
     locator?: string;
+    channel?: "sms" | "whatsapp";
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
@@ -120,7 +147,19 @@ export type PasskeySignerConfig = {
     id?: string;
     locator?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
-    onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey's credential id when it is known. */
+    onSignWithPasskey?: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
+};
+
+/**
+ * Creates passkeys and signs with them where the browser WebAuthn API is not available (e.g. React Native).
+ * Passed as the `passkeyProvider` wallet option, it is used for every passkey signer that has no
+ * `onCreatePasskey` / `onSignWithPasskey` of its own.
+ */
+export type PasskeyProvider = {
+    createPasskey: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey to sign with, when it is known. */
+    signWithPasskey: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
 };
 
 ////////////////////////////////////////////////////////////
@@ -131,6 +170,7 @@ type BaseInternalSignerConfig = {
     address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    resetSignerFrame?: () => Promise<void>;
 };
 
 export type EmailInternalSignerConfig = EmailSignerConfig &
@@ -212,9 +252,9 @@ export type DeviceSignerConfig = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+    ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////

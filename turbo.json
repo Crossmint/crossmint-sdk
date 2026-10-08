@@ -8,6 +8,15 @@
         },
         "test:vitest": {
             "outputLogs": "new-only"
+        },
+        "test:integration": {
+            "env": ["TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY", "CROSSMINT_BASE_URL"],
+            "outputLogs": "new-only",
+            "cache": false
+        },
+        "typecheck": {
+            "outputLogs": "new-only",
+            "dependsOn": ["^build"]
         }
     }
 }

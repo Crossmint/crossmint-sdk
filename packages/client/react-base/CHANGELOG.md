@@ -1,5 +1,261 @@
 # @crossmint/client-sdk-react-base
 
+## 2.4.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- dc31134: An existing wallet keeps the phone signer's OTP `channel` from `createOnLogin`. The API never returns `channel`, so after a reload a WhatsApp phone signer sent its OTP by SMS. `getOrCreateWallet` now passes the recovery and signer config to `getWallet`, which merges it in. If the signers no longer match the existing wallet, it loads with the recovery config only; if that does not match either, it loads without config, as before.
+- Updated dependencies [2aaeabe]
+  - @crossmint/wallets-sdk@1.20.0
+
+## 2.3.2
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/common-sdk-auth@1.1.23
+
+## 2.3.1
+
+### Patch Changes
+
+- Updated dependencies [003bee1]
+- Updated dependencies [bb9ccf4]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [b357d97]
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+- Updated dependencies [3cecef1]
+- Updated dependencies [d23239c]
+- Updated dependencies [751a879]
+  - @crossmint/client-sdk-base@4.1.0
+  - @crossmint/wallets-sdk@1.18.0
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/client-sdk-auth@1.3.24
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 2.3.0
+
+### Minor Changes
+
+- 1c54809: Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
+
+  `recovery` is deprecated in favour of `recoveryMethods`. It still works: a single method or a list is treated exactly like `recoveryMethods`, and the list form logs a deprecation warning. Pass either `recovery` or `recoveryMethods`, not both.
+
+  Migration: `recovery: a` → `recoveryMethods: [a]`, and `recovery: [a, b]` → `recoveryMethods: [a, b]`.
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-base@4.0.0
+  - @crossmint/wallets-sdk@1.17.0
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/client-sdk-auth@1.3.23
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 2.2.8
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/wallets-sdk@1.16.0
+  - @crossmint/client-sdk-auth@1.3.22
+  - @crossmint/client-sdk-base@3.0.1
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 2.2.7
+
+### Patch Changes
+
+- Updated dependencies [72d0001]
+- Updated dependencies [010d904]
+- Updated dependencies [93d34b1]
+- Updated dependencies [ac0d6ad]
+- Updated dependencies [30f14cd]
+- Updated dependencies [4424fd8]
+- Updated dependencies [ded1d68]
+- Updated dependencies [3b4d5eb]
+- Updated dependencies [27a65f2]
+  - @crossmint/wallets-sdk@1.15.0
+  - @crossmint/client-sdk-base@3.0.0
+  - @crossmint/client-sdk-auth@1.3.21
+  - @crossmint/common-sdk-auth@1.1.19
+
+## 2.2.6
+
+### Patch Changes
+
+- 0003592: Handle `createOnLogin.recovery` given as a list of recovery signers: email population, external-wallet readiness, and passkey/webview detection now inspect every entry.
+- Updated dependencies [0fb459c]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-base@2.9.0
+  - @crossmint/client-sdk-auth@1.3.20
+  - @crossmint/common-sdk-auth@1.1.18
+
+## 2.2.5
+
+### Patch Changes
+
+- Updated dependencies [4db65cd]
+- Updated dependencies [85bc2d9]
+  - @crossmint/wallets-sdk@1.13.0
+
+## 2.2.4
+
+### Patch Changes
+
+- de7771e: Map Crossmint's custom Cloudflare geoblock page (`Crossmint does not work in the following countries and regions`) to the `region-blocked` error code in `useWallet`, instead of treating it as `unknown`.
+- Updated dependencies [cfa9710]
+- Updated dependencies [7d99607]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+
+## 2.2.3
+
+### Patch Changes
+
+- Updated dependencies [74f6176]
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-sdk-base@2.7.0
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/wallets-sdk@1.12.0
+  - @crossmint/client-sdk-auth@1.3.18
+  - @crossmint/common-sdk-auth@1.1.16
+
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [4028c8b]
+- Updated dependencies [0fe195e]
+- Updated dependencies [305a238]
+  - @crossmint/client-sdk-base@2.6.0
+  - @crossmint/wallets-sdk@1.11.0
+  - @crossmint/client-sdk-auth@1.3.17
+  - @crossmint/common-sdk-auth@1.1.15
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [df216a8]
+  - @crossmint/wallets-sdk@1.10.0
+
+## 2.2.0
+
+### Minor Changes
+
+- e3f04e6: Expose structured error details for failed wallet loads/creations so integrators can distinguish a permanent geo-block from a transient network failure.
+
+  `ApiClient.makeRequest` now throws a typed `ApiClientError` (carrying HTTP `status` and body) for any non-`ok` response whose body is not JSON — e.g. a Cloudflare 403 geo-block returning HTML — instead of letting callers hit an opaque `SyntaxError` from `.json()`. JSON 4xx responses are still passed through unchanged.
+
+  The wallet context now exposes an `error` field alongside `status`:
+
+  ```ts
+  error: { code: "region-blocked" | "network" | "unknown"; status?: number; message: string } | null
+  ```
+
+  A 403 whose body carries the Cloudflare country/region-ban signature (error 1009) maps to `region-blocked` (permanent, don't retry); fetch rejects/timeouts, 5xx, and 429 map to `network` (transient, retryable); everything else (including other 403s) is `unknown`. `getOrCreateWallet`'s auto-retry loop is gated on `region-blocked` so it no longer hammers a permanently region-blocked endpoint.
+
+### Patch Changes
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+- Updated dependencies [558be6e]
+- Updated dependencies [558be6e]
+- Updated dependencies [3468b87]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/wallets-sdk@1.9.0
+  - @crossmint/client-sdk-base@2.5.1
+  - @crossmint/client-sdk-auth@1.3.16
+  - @crossmint/common-sdk-auth@1.1.14
+
+## 2.1.1
+
+### Patch Changes
+
+- a92a335: Add JSDoc descriptions to React Native auth provider, hook, and prop types for SDK reference docs
+- a92a335: Add JSDoc descriptions to auth provider, hook, and prop types for SDK reference docs
+- Updated dependencies [2f788d0]
+  - @crossmint/wallets-sdk@1.8.0
+
+## 2.1.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [02b275e]
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-base@2.5.0
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-window@1.1.0
+  - @crossmint/client-sdk-auth@1.3.15
+  - @crossmint/common-sdk-auth@1.1.13
+
+## 2.0.31
+
+### Patch Changes
+
+- Updated dependencies [890d49a]
+  - @crossmint/wallets-sdk@1.6.2
+
+## 2.0.30
+
+### Patch Changes
+
+- Updated dependencies [fe8f948]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+
 ## 2.0.29
 
 ### Patch Changes

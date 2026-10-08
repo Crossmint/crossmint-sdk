@@ -1,5 +1,310 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.9.1
+
+### Patch Changes
+
+- Updated dependencies [dc31134]
+- Updated dependencies [2aaeabe]
+  - @crossmint/client-sdk-react-base@2.4.0
+  - @crossmint/wallets-sdk@1.20.0
+
+## 4.9.0
+
+### Minor Changes
+
+- e7905a8: Add individual protected buyer fields with typed field descriptors and per-field
+  `ref.collect()` results. The application supplies its buyer JWT and owns labels,
+  errors and submission; the existing CrossmintProvider supplies the client API key.
+
+  Replace the password-only `merchantUrl`/`onCreated` interface with `field` and
+  `jwt` props plus `collected`, `invalid`, `unavailable` and `superseded` outcomes.
+  Protected fields support single-line text, number and integer. Authentication
+  travels through the iframe channel rather than its URL; `disabled` and `invalid`
+  update through that channel. Add AbortSignal cancellation to window actions so
+  pending collection waits settle on authentication changes, reload or unmount.
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/client-sdk-window@1.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/client-sdk-react-base@2.3.2
+  - @crossmint/common-sdk-auth@1.1.23
+
+## 4.8.0
+
+### Minor Changes
+
+- 8dc3dd7: Add `CrossmintAgentCardAuthorization`. It composes `CrossmintPaymentMethodManagement` (cards only), order-intent registration, order-intent creation and `OrderIntentVerification` into one component that calls `onAuthorized` with the `orderIntentId` to hand to Universal Checkout. The rail is chosen by a fixed policy (`agentic-token`/`vic` with a card credential format, then `agentic-token`/`agentpay`, then `encrypted-card`); `onError` reports a closed set of codes. Card numbers, CVCs and vault token ids never reach the callbacks.
+- dbc0985: Add `CrossmintProtectedInput`. It embeds the hosted protected-input page so a buyer can type the password of their account on a merchant site, and calls `onCreated` with an opaque `protectedInputId` to hand to Universal Checkout. The password and the vault token id never reach the developer's JavaScript. It takes the buyer's `jwt` as a prop, like `CrossmintPaymentMethodManagement`.
+
+### Patch Changes
+
+- bdcc891: Add `CrossmintProtectedInput` to the generated agents/react SDK reference
+- 3187098: Document `OrderIntentVerification` props and when to render it, so the agents React SDK reference can be generated from source.
+- 2bdb870: Export `CrossmintCvcRecollectionProps`, `CvcRecollectionError` and `PaymentMethodManagementAppearance` from `@crossmint/client-sdk-react-ui`, and document when to render `CrossmintCvcRecollection` (rail `pending_cvc_recollection` or mint-time 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`), the `retriable` contract of its errors, and that its appearance `fontSizeUnit`/`spacingUnit` are multiplier units unlike `VerificationAppearance`.
+- 74249cc: Add `verification-refused` to `CvcRecollectionError.reason`: the hosted CVC recollection form reports it (retriable) when Crossmint refuses to confirm the vault write instead of the generic `unknown`.
+- Updated dependencies [003bee1]
+- Updated dependencies [bb9ccf4]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [b357d97]
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+- Updated dependencies [3cecef1]
+- Updated dependencies [d23239c]
+- Updated dependencies [751a879]
+  - @crossmint/client-sdk-base@4.1.0
+  - @crossmint/wallets-sdk@1.18.0
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/client-sdk-auth@1.3.24
+  - @crossmint/client-sdk-react-base@2.3.1
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 4.7.0
+
+### Minor Changes
+
+- ddd0089: Add `CrossmintCvcRecollection`. Render it when an order intent's `encrypted-card` rail reports `status: "pending_cvc_recollection"`; it loads the hosted CVC recollection page and calls `onComplete` once the vault holds a fresh CVC. `OrderIntentEncryptedCardRail.status` is no longer the literal `"active"`: it is now `"active" | "pending_cvc_recollection" | "error"`, so code that narrowed on `"active"` alone must handle the new states.
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-base@4.0.0
+  - @crossmint/wallets-sdk@1.17.0
+  - @crossmint/client-sdk-react-base@2.3.0
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/client-sdk-auth@1.3.23
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 4.6.2
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/wallets-sdk@1.16.0
+  - @crossmint/client-sdk-auth@1.3.22
+  - @crossmint/client-sdk-base@3.0.1
+  - @crossmint/client-sdk-react-base@2.2.8
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 4.6.1
+
+### Patch Changes
+
+- ac0d6ad: `OrderIntentRail` is now a union of `agentic-token`, `encrypted-card`, and `spt` rails, matching the order-intent API. Narrow on `rail` before reading `provider`; `OrderIntentVerification` keeps verifying the pending `agentic-token` rail.
+- Updated dependencies [72d0001]
+- Updated dependencies [010d904]
+- Updated dependencies [93d34b1]
+- Updated dependencies [ac0d6ad]
+- Updated dependencies [30f14cd]
+- Updated dependencies [4424fd8]
+- Updated dependencies [ded1d68]
+- Updated dependencies [3b4d5eb]
+- Updated dependencies [27a65f2]
+  - @crossmint/wallets-sdk@1.15.0
+  - @crossmint/client-sdk-base@3.0.0
+  - @crossmint/client-sdk-react-base@2.2.7
+  - @crossmint/client-sdk-auth@1.3.21
+  - @crossmint/common-sdk-auth@1.1.19
+
+## 4.6.0
+
+### Minor Changes
+
+- 65841c5: Update order intent types and verify Basis Theory allowances through `OrderIntentVerification`.
+
+### Patch Changes
+
+- 970fe2b: Document that `createOnLogin.recovery` accepts a list of up to 10 recovery signers on Solana and Stellar.
+- 90507b0: Remove the Wallets SDK V1 version banner from generated SDK reference docs
+- Updated dependencies [0fb459c]
+- Updated dependencies [0003592]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-react-base@2.2.6
+  - @crossmint/client-sdk-base@2.9.0
+  - @crossmint/client-sdk-auth@1.3.20
+  - @crossmint/common-sdk-auth@1.1.18
+
+## 4.5.1
+
+### Patch Changes
+
+- Updated dependencies [4db65cd]
+- Updated dependencies [85bc2d9]
+  - @crossmint/wallets-sdk@1.13.0
+  - @crossmint/client-sdk-react-base@2.2.5
+
+## 4.5.0
+
+### Minor Changes
+
+- cfa9710: Added `identityVerificationHandling` to embedded checkout on web. Setting it to `"external"` stops checkout from rendering the identity verification step, so a merchant can render `CrossmintIdentityVerification` in their own layout using `getIdentityVerificationCredentials(order)`.
+
+  Requires a Crossmint deployment that understands the flag. Against an older one it is ignored, and checkout renders the verification step alongside the merchant's, both against the same inquiry.
+
+- a8b6b60: Added a `useIdentityVerificationCredentials` hook, so a merchant taking the identity verification step over with `identityVerificationHandling="external"` reads the credentials in one line instead of plumbing the order through `getIdentityVerificationCredentials`. The plain function stays exported for orders that do not come from checkout context.
+
+### Patch Changes
+
+- cfa9710: `WindowTransport` now matches `event.source` against the peer window instead of trusting the origin alone.
+
+  Each client subscribes to the global `message` event and accepted anything arriving from a matching origin. With one Crossmint iframe per page, no other frame could send from that origin, so the gap stayed invisible. Put two on a page and each client receives the other's events.
+
+  Embedded checkout with `identityVerificationHandling="external"` puts two on the page. The verification iframe sends `ui:height.changed` at 660, the checkout iframe takes that height after collapsing to 0, and the merchant gets 660px of empty space above their widget. Reverse the order and checkout's 0 reaches the verification iframe and hides the Persona form.
+
+  A message whose sending window has closed carries a null source. The transport drops it.
+
+  OAuth login moves its listeners onto the popup it opens. They used to sit on a `ChildWindow` built over `window.opener || window.parent`, which on a merchant's top-level page resolves to that page's own window, so the peer never matched the popup the callback arrives from. That client only ever listened, never sent, so the mismatch was invisible until the peer became part of the receive path. Attaching to the popup also unsubscribes correctly between attempts, where the previous `off(eventName)` calls passed an event name to an API that takes a listener id and silently did nothing.
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [7d99607]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [de7771e]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/client-sdk-window@1.1.1
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-react-base@2.2.4
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+
+## 4.4.0
+
+### Minor Changes
+
+- 74f6176: Added `CrossmintIdentityVerification`, a standalone component that renders a Crossmint-hosted identity verification step from an order's `payment.preparation.kyc` credentials.
+
+### Patch Changes
+
+- a0e8c70: `CrossmintIdentityVerification` now grants its iframe `allow="camera"` rather than `allow="microphone; camera"`. Persona's document and selfie capture needs the camera, and no verification template records audio.
+- Updated dependencies [74f6176]
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-sdk-base@2.7.0
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/wallets-sdk@1.12.0
+  - @crossmint/client-sdk-auth@1.3.18
+  - @crossmint/client-sdk-react-base@2.2.3
+  - @crossmint/common-sdk-auth@1.1.16
+
+## 4.3.4
+
+### Patch Changes
+
+- Updated dependencies [4028c8b]
+- Updated dependencies [0fe195e]
+- Updated dependencies [305a238]
+  - @crossmint/client-sdk-base@2.6.0
+  - @crossmint/wallets-sdk@1.11.0
+  - @crossmint/client-sdk-auth@1.3.17
+  - @crossmint/client-sdk-react-base@2.2.2
+  - @crossmint/common-sdk-auth@1.1.15
+
+## 4.3.3
+
+### Patch Changes
+
+- Updated dependencies [df216a8]
+  - @crossmint/wallets-sdk@1.10.0
+  - @crossmint/client-sdk-react-base@2.2.1
+
+## 4.3.2
+
+### Patch Changes
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+- Updated dependencies [558be6e]
+- Updated dependencies [558be6e]
+- Updated dependencies [3468b87]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/client-sdk-react-base@2.2.0
+  - @crossmint/wallets-sdk@1.9.0
+  - @crossmint/client-sdk-base@2.5.1
+  - @crossmint/client-sdk-auth@1.3.16
+  - @crossmint/common-sdk-auth@1.1.14
+
+## 4.3.1
+
+### Patch Changes
+
+- a92a335: Add JSDoc descriptions to auth provider, hook, and prop types for SDK reference docs
+- Updated dependencies [2f788d0]
+- Updated dependencies [a92a335]
+- Updated dependencies [a92a335]
+  - @crossmint/wallets-sdk@1.8.0
+  - @crossmint/client-sdk-react-base@2.1.1
+
+## 4.3.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [02b275e]
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-base@2.5.0
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-react-base@2.1.0
+  - @crossmint/client-sdk-window@1.1.0
+  - @crossmint/client-sdk-auth@1.3.15
+  - @crossmint/common-sdk-auth@1.1.13
+
+## 4.2.13
+
+### Patch Changes
+
+- Updated dependencies [890d49a]
+  - @crossmint/wallets-sdk@1.6.2
+  - @crossmint/client-sdk-react-base@2.0.31
+
+## 4.2.12
+
+### Patch Changes
+
+- 696adbe: Add checkout product to SDK reference docs generation pipeline
+- Updated dependencies [fe8f948]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+  - @crossmint/client-sdk-react-base@2.0.30
+
 ## 4.2.11
 
 ### Patch Changes

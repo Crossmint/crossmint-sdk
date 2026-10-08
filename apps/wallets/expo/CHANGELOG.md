@@ -1,5 +1,143 @@
 # @crossmint/wallets-playground-expo
 
+## 0.0.37
+
+### Patch Changes
+
+- Updated dependencies [2aaeabe]
+  - @crossmint/client-sdk-react-native-ui@1.8.0
+
+## 0.0.36
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.7.2
+
+## 0.0.35
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.7.1
+
+## 0.0.34
+
+### Patch Changes
+
+- Updated dependencies [1c54809]
+  - @crossmint/client-sdk-react-native-ui@1.7.0
+
+## 0.0.33
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.4
+
+## 0.0.32
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.3
+
+## 0.0.31
+
+### Patch Changes
+
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+  - @crossmint/client-sdk-react-native-ui@1.6.2
+
+## 0.0.30
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.1
+
+## 0.0.29
+
+### Patch Changes
+
+- Updated dependencies [13584ba]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [a8b6b60]
+  - @crossmint/client-sdk-react-native-ui@1.6.0
+
+## 0.0.28
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.5.2
+
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [305a238]
+- Updated dependencies [91eb56f]
+  - @crossmint/client-sdk-react-native-ui@1.5.1
+
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [d121b09]
+  - @crossmint/client-sdk-react-native-ui@1.5.0
+
+## 0.0.25
+
+### Patch Changes
+
+- Updated dependencies [97f0eb0]
+  - @crossmint/client-sdk-react-native-ui@1.4.4
+
+## 0.0.24
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.4.3
+
+## 0.0.23
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.4.2
+
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [a92a335]
+  - @crossmint/client-sdk-react-native-ui@1.4.1
+
+## 0.0.21
+
+### Patch Changes
+
+- Updated dependencies [b993632]
+- Updated dependencies [faa97e3]
+  - @crossmint/client-sdk-react-native-ui@1.4.0
+
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-react-native-ui@1.3.0
+
+## 0.0.19
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.2.13
+
+## 0.0.18
+
+### Patch Changes
+
+- Updated dependencies [696adbe]
+- Updated dependencies [cfa3985]
+  - @crossmint/client-sdk-react-native-ui@1.2.12
+
 ## 0.0.17
 
 ### Patch Changes

@@ -7,6 +7,9 @@ interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
     payment: EmbeddedCheckoutV3Payment;
     jwt?: string;
+    /** `"external"`: you mount `CrossmintIdentityVerification` from
+     * `getIdentityVerificationCredentials(order)`, or the buyer cannot finish. */
+    identityVerificationHandling?: "external";
 }
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
@@ -28,6 +31,9 @@ export interface CrossmintEmbeddedCheckoutV3NewOrderProps extends CrossmintEmbed
 export type CrossmintEmbeddedCheckoutV3Props =
     | CrossmintEmbeddedCheckoutV3ExistingOrderProps
     | CrossmintEmbeddedCheckoutV3NewOrderProps;
+
+/** @deprecated `identityVerificationHandling` is on the shared props now. Use `CrossmintEmbeddedCheckoutV3Props`. */
+export type CrossmintEmbeddedCheckoutV3WebProps = CrossmintEmbeddedCheckoutV3Props;
 
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
 
@@ -79,7 +85,16 @@ export type EmbeddedCheckoutV3Appearance = {
 
 export type EmbeddedCheckoutV3AppearanceVariables = {
     fontFamily?: string;
+    /**
+     * Multiplier unit for paddings and gaps, not a base spacing. Default `"3.33px"`; each
+     * spacing is `calc(spacingUnit * k)` with k between 3.6 and 4.42.
+     */
     spacingUnit?: string;
+    /**
+     * Multiplier unit for font sizes, not a base font size. Default `"4px"`: labels render at
+     * `fontSizeUnit * 3.75` (15px), inputs at `* 4` (16px), the primary button at `* 4.25` (17px).
+     * Passing a body size such as `"14px"` (the `VerificationAppearance` convention) yields ~52px labels.
+     */
     fontSizeUnit?: string;
     borderRadius?: string;
     colors?: {
@@ -99,6 +114,9 @@ export type EmbeddedCheckoutV3AppearanceRules = {
     };
     ReceiptEmailInput?: {
         display?: "hidden";
+    };
+    GlobalMessage?: {
+        display?: "hidden" | "visible";
     };
     Label?: {
         font?: {

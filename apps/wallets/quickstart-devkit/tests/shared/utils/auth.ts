@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 import { AUTH_CONFIG, getEmailForSigner, type SignerType } from "../constants/globalConstants";
 import { clearEmailsForAddress, getEmailOTPCode, getPhoneOTPCode } from "./email";
+import { recentPageDiagnostics } from "./page-diagnostics";
+
+// A signer stays confirmed on the server across runs, so a missing modal is not an error.
+const MODAL_TIMEOUT_MS = 10_000;
+
+const LOGIN_SCREEN_SETTLE_MS = 5_000;
 
 export async function performEmailOTPLogin(page: Page, email: string): Promise<void> {
     try {
@@ -8,21 +14,55 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
 
         await clearEmailsForAddress(email);
 
-        const loginButton = page.locator('button:has-text("Connect wallet")').first();
+        const loginButton = page.getByTestId("connect-wallet-button");
         await loginButton.click();
 
         const emailInput = page.locator('input[type="email"], input[placeholder*="email" i]').first();
         await emailInput.waitFor({ timeout: 10000 });
         await emailInput.fill(email);
 
-        const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
-        await submitButton.click();
+        // A retry can hit the OTP send-rate limit; back off once and resend.
+        const RATE_LIMIT_BACKOFF_MS = 65_000;
+        let otpSent = false;
+        let reasonText: string | null = null;
+        for (let attempt = 0; attempt < 2 && !otpSent; attempt++) {
+            if (attempt > 0) {
+                console.log(
+                    `⏳ Rate-limited on the previous OTP send — waiting ${RATE_LIMIT_BACKOFF_MS}ms before retrying`
+                );
+                await page.waitForTimeout(RATE_LIMIT_BACKOFF_MS);
+            }
 
-        console.log("⏳ Waiting for email confirmation message...");
-        await page
-            .locator("text=/Check your email|We sent you|verification code|OTP code/i")
-            .first()
-            .waitFor({ timeout: 60000, state: "visible" });
+            const submitButton = page.locator('button:has-text("Submit"), button[type="submit"]').first();
+            await submitButton.click();
+
+            console.log("⏳ Waiting for email confirmation message...");
+            otpSent = await page
+                .locator("text=/Check your email|We sent you|verification code|OTP code/i")
+                .first()
+                .waitFor({ timeout: 60000, state: "visible" })
+                .then(() => true)
+                .catch(() => false);
+
+            if (!otpSent) {
+                const reason = page.getByText(/failed|error|try again|too many|rate limit/i).first();
+                reasonText = await reason
+                    .waitFor({ state: "visible", timeout: 2000 })
+                    .then(() => reason.textContent())
+                    .catch(() => null);
+                // Only retry on a rate limit — any other reason is the real result.
+                if (!reasonText || !/too many|rate limit/i.test(reasonText)) {
+                    break;
+                }
+            }
+        }
+        if (!otpSent) {
+            throw new Error(
+                `The login OTP was never sent to ${email}. ` +
+                    `${reasonText != null ? `The page reported: "${reasonText.trim()}".` : "The page gave no reason."}` +
+                    recentPageDiagnostics(page)
+            );
+        }
         console.log("📧 Email OTP sent, waiting for email...");
 
         const otpCode = await getEmailOTPCode(email, "login");
@@ -62,7 +102,25 @@ export async function performEmailOTPLogin(page: Page, email: string): Promise<v
 export async function waitForWalletReady(page: Page): Promise<void> {
     try {
         await page.locator(".animate-spin").waitFor({ state: "detached", timeout: AUTH_CONFIG.timeout });
-        await page.waitForTimeout(1000);
+
+        const loginButton = page.getByTestId("connect-wallet-button");
+        const deadline = Date.now() + LOGIN_SCREEN_SETTLE_MS;
+        let backOnLoginScreen = true;
+        while (Date.now() < deadline) {
+            backOnLoginScreen = await loginButton.isVisible();
+            if (!backOnLoginScreen) {
+                break;
+            }
+            await page.waitForTimeout(500);
+        }
+
+        if (backOnLoginScreen) {
+            throw new Error(
+                "The loading spinner cleared but the page landed back on the login screen instead of the " +
+                    "wallet — the wallet failed to load or create without surfacing an error." +
+                    recentPageDiagnostics(page)
+            );
+        }
 
         console.log("✅ Wallet is ready");
     } catch (error) {
@@ -77,15 +135,19 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         const modal = page.locator("div[role='dialog']").first();
         try {
-            await modal.waitFor({ state: "visible", timeout: 10000 });
+            await modal.waitFor({ state: "visible", timeout: MODAL_TIMEOUT_MS });
             console.log("📱 Signer modal detected");
         } catch (_) {
-            console.log("✅ No signer modal appeared, confirmation not needed");
+            console.log("✅ No signer modal appeared, signer already confirmed");
             return;
         }
 
         const sendCodeButton = page.locator('button:has-text("Send code")').first();
-        const hasSendCode = await sendCodeButton.isVisible({ timeout: 3000 });
+        // isVisible ignores its timeout, so a button still rendering reads as confirmed.
+        const hasSendCode = await sendCodeButton
+            .waitFor({ state: "visible", timeout: 3000 })
+            .then(() => true)
+            .catch(() => false);
         if (!hasSendCode) {
             console.log("✅ No 'Send code' button, signer already confirmed");
             return;
@@ -177,21 +239,18 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         if (isSubmitVisible) {
             await submitBtn.click();
+            await page.waitForTimeout(1000);
 
-            try {
-                await page.waitForTimeout(1000);
-                const modalStillVisible = await modal.isVisible({ timeout: 2000 }).catch(() => false);
-                if (!modalStillVisible) {
-                } else {
-                    const errorMsg = page.locator("text=/invalid/i, text=/incorrect/i, text=/error/i").first();
-                    const hasError = await errorMsg.isVisible({ timeout: 2000 }).catch(() => false);
-                    if (hasError) {
-                        const errorText = await errorMsg.textContent();
-                        throw new Error(`OTP submission failed: ${errorText}`);
-                    }
+            const modalStillVisible = await modal.isVisible().catch(() => false);
+            if (modalStillVisible) {
+                const errorMsg = page.getByText(/invalid|incorrect|error/i).first();
+                const errorText = await errorMsg
+                    .waitFor({ state: "visible", timeout: 2000 })
+                    .then(() => errorMsg.textContent())
+                    .catch(() => null);
+                if (errorText != null) {
+                    throw new Error(`OTP submission failed: ${errorText}${recentPageDiagnostics(page)}`);
                 }
-            } catch (e) {
-                console.warn("⚠️ Could not verify OTP submission status:", e);
             }
         } else {
             console.log("⚠️ No submit button found - OTP might auto-submit or modal might have closed");
@@ -220,12 +279,15 @@ export async function handleSignerConfirmation(page: Page, signerType?: SignerTy
         await handleEmailPhoneSignerFlow(page, signerType);
     } else {
         const modal = page.locator("div[role='dialog']").first();
-        try {
-            await modal.waitFor({ state: "visible", timeout: 5000 });
+        const modalIsVisible = await modal
+            .waitFor({ state: "visible", timeout: 5000 })
+            .then(() => true)
+            .catch(() => false);
+        if (modalIsVisible) {
             // If modal appears but we don't know signer type, try email first (most common)
             console.log("⚠️ Signer type unknown, trying email flow");
             await handleEmailPhoneSignerFlow(page, "email");
-        } catch (_) {
+        } else {
             console.log("✅ No signer modal appeared, confirmation not needed");
         }
     }

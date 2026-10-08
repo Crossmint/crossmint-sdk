@@ -1,5 +1,311 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.8.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- Updated dependencies [dc31134]
+- Updated dependencies [2aaeabe]
+  - @crossmint/client-sdk-react-base@2.4.0
+  - @crossmint/wallets-sdk@1.20.0
+
+## 1.7.2
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+- Updated dependencies [d68d665]
+- Updated dependencies [f17f8bc]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-base@4.2.0
+  - @crossmint/wallets-sdk@1.19.0
+  - @crossmint/client-sdk-auth@1.3.25
+  - @crossmint/client-sdk-react-base@2.3.2
+  - @crossmint/common-sdk-auth@1.1.23
+  - @crossmint/client-sdk-rn-window@0.3.19
+
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [003bee1]
+- Updated dependencies [bb9ccf4]
+- Updated dependencies [2bdb870]
+- Updated dependencies [74249cc]
+- Updated dependencies [b357d97]
+- Updated dependencies [07b7a8c]
+- Updated dependencies [0ec6bcd]
+- Updated dependencies [3cecef1]
+- Updated dependencies [d23239c]
+- Updated dependencies [751a879]
+  - @crossmint/client-sdk-base@4.1.0
+  - @crossmint/wallets-sdk@1.18.0
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/client-signers@0.3.1
+  - @crossmint/client-sdk-auth@1.3.24
+  - @crossmint/client-sdk-react-base@2.3.1
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 1.7.0
+
+### Minor Changes
+
+- 1c54809: Add `recoveryMethods` to wallet creation. It takes a list of recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one entry.
+
+  `recovery` is deprecated in favour of `recoveryMethods`. It still works: a single method or a list is treated exactly like `recoveryMethods`, and the list form logs a deprecation warning. Pass either `recovery` or `recoveryMethods`, not both.
+
+  Migration: `recovery: a` → `recoveryMethods: [a]`, and `recovery: [a, b]` → `recoveryMethods: [a, b]`.
+
+### Patch Changes
+
+- Updated dependencies [ddd0089]
+- Updated dependencies [c949fb2]
+- Updated dependencies [1c54809]
+- Updated dependencies [ca1b5f1]
+- Updated dependencies [6f5e26e]
+  - @crossmint/client-sdk-base@4.0.0
+  - @crossmint/wallets-sdk@1.17.0
+  - @crossmint/client-sdk-react-base@2.3.0
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/client-sdk-auth@1.3.23
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 1.6.4
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/wallets-sdk@1.16.0
+  - @crossmint/client-sdk-auth@1.3.22
+  - @crossmint/client-sdk-base@3.0.1
+  - @crossmint/client-sdk-react-base@2.2.8
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 1.6.3
+
+### Patch Changes
+
+- Updated dependencies [72d0001]
+- Updated dependencies [010d904]
+- Updated dependencies [93d34b1]
+- Updated dependencies [ac0d6ad]
+- Updated dependencies [30f14cd]
+- Updated dependencies [4424fd8]
+- Updated dependencies [ded1d68]
+- Updated dependencies [3b4d5eb]
+- Updated dependencies [27a65f2]
+  - @crossmint/wallets-sdk@1.15.0
+  - @crossmint/client-sdk-base@3.0.0
+  - @crossmint/client-sdk-react-base@2.2.7
+  - @crossmint/client-sdk-auth@1.3.21
+  - @crossmint/common-sdk-auth@1.1.19
+
+## 1.6.2
+
+### Patch Changes
+
+- 0003592: Handle `createOnLogin.recovery` given as a list of recovery signers: email population, external-wallet readiness, and passkey/webview detection now inspect every entry.
+- 90507b0: Remove the Wallets SDK V1 version banner from generated SDK reference docs
+- Updated dependencies [0fb459c]
+- Updated dependencies [0003592]
+- Updated dependencies [d459c4a]
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+- Updated dependencies [65841c5]
+  - @crossmint/wallets-sdk@1.14.0
+  - @crossmint/client-sdk-react-base@2.2.6
+  - @crossmint/client-sdk-base@2.9.0
+  - @crossmint/client-sdk-auth@1.3.20
+  - @crossmint/common-sdk-auth@1.1.18
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [4db65cd]
+- Updated dependencies [85bc2d9]
+  - @crossmint/wallets-sdk@1.13.0
+  - @crossmint/client-sdk-react-base@2.2.5
+
+## 1.6.0
+
+### Minor Changes
+
+- a8b6b60: `identityVerificationHandling` is now accepted by React Native embedded checkout, not web only. Setting it to `"external"` stops checkout from rendering the identity verification step, so you can render `CrossmintIdentityVerification` in your own screen using `getIdentityVerificationCredentials(order)`.
+- a8b6b60: Added `CrossmintIdentityVerification` to the React Native SDK. It renders Crossmint's hosted identity verification step in a WebView from an order's `payment.preparation.kyc` credentials, and reports `onReady`, `onComplete`, `onCancel` and `onError`.
+- a8b6b60: Added a `useIdentityVerificationCredentials` hook, so a merchant taking the identity verification step over with `identityVerificationHandling="external"` reads the credentials in one line instead of plumbing the order through `getIdentityVerificationCredentials`. The plain function stays exported for orders that do not come from checkout context.
+
+### Patch Changes
+
+- 13584ba: The signer OTP field now submits from the keyboard's done key.
+
+  `BaseCodeInput` only accepted the code via the Submit button, which sits below the field and therefore behind the keyboard the field just opened. Entering a code meant dismissing the keyboard first — and dismissing it reflows the dialog, moving the button that was the only way to continue.
+
+  `returnKeyType="done"` with `onSubmitEditing` submits in place, from where the user already is. The Submit button is unchanged.
+
+- Updated dependencies [cfa9710]
+- Updated dependencies [3528a4e]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [de7771e]
+  - @crossmint/client-sdk-base@2.8.0
+  - @crossmint/wallets-sdk@1.12.1
+  - @crossmint/client-sdk-react-base@2.2.4
+  - @crossmint/client-sdk-auth@1.3.19
+  - @crossmint/common-sdk-auth@1.1.17
+  - @crossmint/client-sdk-rn-window@0.3.18
+
+## 1.5.2
+
+### Patch Changes
+
+- Updated dependencies [74f6176]
+- Updated dependencies [08b4f7b]
+  - @crossmint/client-sdk-base@2.7.0
+  - @crossmint/client-signers@0.3.0
+  - @crossmint/wallets-sdk@1.12.0
+  - @crossmint/client-sdk-auth@1.3.18
+  - @crossmint/client-sdk-react-base@2.2.3
+  - @crossmint/common-sdk-auth@1.1.16
+
+## 1.5.1
+
+### Patch Changes
+
+- 305a238: Bumped the pinned `CrossmintDeviceSigner` native module to 1.1.3, which fixes `getKey`/`hasKey` to correctly report a Secure Enclave key as unusable when it's present but broken, and fixes a stale signer locator being submitted on device signer approvals.
+- 91eb56f: Fixed device signer native errors reaching JS as "undefined reason" instead of the actual failure message, by overriding `reason` on the thrown Expo `Exception` instead of relying on `description`.
+- Updated dependencies [4028c8b]
+- Updated dependencies [0fe195e]
+- Updated dependencies [305a238]
+  - @crossmint/client-sdk-base@2.6.0
+  - @crossmint/wallets-sdk@1.11.0
+  - @crossmint/client-sdk-auth@1.3.17
+  - @crossmint/client-sdk-react-base@2.2.2
+  - @crossmint/common-sdk-auth@1.1.15
+
+## 1.5.0
+
+### Minor Changes
+
+- d121b09: Surface the device signer error code and underlying reason from the native module, so a failed sign is diagnosable from its logs instead of a generic `SignMessageFailed`.
+
+  `DeviceSignerModule.signMessage` now throws the Expo exception with the SDK error code passed explicitly through `code:` (Expo otherwise derives the code from the exception name, which garbles an `UPPER_SNAKE` value like `DEVICE_SIGNER_SIGNING_FAILED`), and with the underlying error in the message. Also bumps the `CrossmintDeviceSigner` pod to `~> 1.1.2`, which carries that underlying detail.
+
+## 1.4.4
+
+### Patch Changes
+
+- 97f0eb0: Fix signer OTP dialog hiding the Submit/Re-send buttons behind the on-screen keyboard on mobile. The email and phone signer dialogs now wrap their content in a `KeyboardAvoidingView`, and the shared code-entry view is scrollable, so the OTP input and actions stay reachable when the keyboard is open.
+
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies [df216a8]
+  - @crossmint/wallets-sdk@1.10.0
+  - @crossmint/client-sdk-react-base@2.2.1
+
+## 1.4.2
+
+### Patch Changes
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+- Updated dependencies [558be6e]
+- Updated dependencies [558be6e]
+- Updated dependencies [3468b87]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/client-sdk-react-base@2.2.0
+  - @crossmint/wallets-sdk@1.9.0
+  - @crossmint/client-sdk-base@2.5.1
+  - @crossmint/client-sdk-auth@1.3.16
+  - @crossmint/common-sdk-auth@1.1.14
+
+## 1.4.1
+
+### Patch Changes
+
+- a92a335: Add JSDoc descriptions to React Native auth provider, hook, and prop types for SDK reference docs
+- Updated dependencies [2f788d0]
+- Updated dependencies [a92a335]
+- Updated dependencies [a92a335]
+  - @crossmint/wallets-sdk@1.8.0
+  - @crossmint/client-sdk-react-base@2.1.1
+
+## 1.4.0
+
+### Minor Changes
+
+- b993632: Fix Android device signer key lookup failures on low-end devices by injecting the React context directly into `KeystoreKeyStorage` instead of relying on a `ContentProvider` to set it via a static singleton.
+
+  The `DeviceSignerModule` now passes `appContext.reactContext` to `DeviceSignerStorageFactory.create(context)`, bypassing the `DeviceSignerContextHolder` initialization race that caused `SharedPreferences` to be permanently unavailable on some devices.
+
+  Requires `com.crossmint:sdk-device-signer` >= 0.0.16 (with the `create(context)` factory overload).
+
+- faa97e3: Fix iOS build failure under Swift 6 strict concurrency (Expo SDK 56+).
+
+  The native `DeviceSignerModule` called an instance helper (`self.defaultStorage()`) inside Expo's `AsyncFunction` closures. Those closures are `@Sendable` in newer `ExpoModulesCore`, and `DeviceSignerModule` (an `ExpoModulesCore.Module` subclass) is not `Sendable`, so capturing `self` is an error under the Swift 6 language mode that newer Xcode toolchains enforce.
+
+  The storage-selection helper is now a `static` method, so the closures no longer capture `self`. Behavior is unchanged — it reads only compile-time (`targetEnvironment`) and global (`SecureEnclave.isAvailable`) state.
+
+## 1.3.0
+
+### Minor Changes
+
+- 2dbcdee: On iOS the non-custodial signer stops relying on the signer webview's storage, which isn't reliable across launches and could drop the signer and break signing. The frame now uses non-persistent storage with in-memory key storage, and reloads to re-onboard with a fresh OTP before each signature. Android keeps its existing persistent behavior.
+
+  It also recovers the OTP flow when the frame reloads mid-onboarding: the signer detects the reload, requests a fresh code, and keeps the prompt open so the user can enter the new one.
+
+### Patch Changes
+
+- Updated dependencies [02b275e]
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-base@2.5.0
+  - @crossmint/wallets-sdk@1.7.0
+  - @crossmint/client-sdk-react-base@2.1.0
+  - @crossmint/client-sdk-auth@1.3.15
+  - @crossmint/common-sdk-auth@1.1.13
+  - @crossmint/client-sdk-rn-window@0.3.17
+
+## 1.2.13
+
+### Patch Changes
+
+- Updated dependencies [890d49a]
+  - @crossmint/wallets-sdk@1.6.2
+  - @crossmint/client-sdk-react-base@2.0.31
+
+## 1.2.12
+
+### Patch Changes
+
+- 696adbe: Add checkout product to SDK reference docs generation pipeline
+- cfa3985: Fix device signers failing with `keyNotFound` after restoring a wallet onto a new phone. `hasKey` now checks the live keychain instead of a backup-eligible record, so a key that did not transfer to the new device is detected as missing and the device re-registers a fresh signer.
+- Updated dependencies [fe8f948]
+- Updated dependencies [8ef5fd5]
+- Updated dependencies [4be9685]
+- Updated dependencies [204c221]
+- Updated dependencies [bdb9f85]
+- Updated dependencies [21bf2da]
+- Updated dependencies [8149b8a]
+- Updated dependencies [6af8cef]
+- Updated dependencies [fe8f948]
+- Updated dependencies [4b6e985]
+- Updated dependencies [9b93386]
+- Updated dependencies [400549a]
+- Updated dependencies [cfe1f33]
+- Updated dependencies [fe8f948]
+- Updated dependencies [84fafa0]
+- Updated dependencies [2a8f396]
+- Updated dependencies [b484ab4]
+  - @crossmint/wallets-sdk@1.6.1
+  - @crossmint/client-sdk-react-base@2.0.30
+
 ## 1.2.11
 
 ### Patch Changes

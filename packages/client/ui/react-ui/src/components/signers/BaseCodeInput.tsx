@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import styled from "@emotion/styled";
 import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { OnboardingSessionExpiredError } from "@crossmint/wallets-sdk";
 import { globalReset, theme } from "@/styles";
 import Color from "color";
 import { ScreenReaderText } from "../common/ScreenReaderText";
@@ -178,8 +179,13 @@ export function BaseCodeInput({
             await onSubmitOTP(otpCode);
             setError(null);
         } catch (err) {
-            console.error(`Error confirming ${contactType} OTP:`, err);
-            setError("Invalid code. Please try again.");
+            if (err instanceof OnboardingSessionExpiredError) {
+                setOtpCode("");
+                setError("That code expired. We sent a new one. Enter it below.");
+            } else {
+                console.error(`Error confirming ${contactType} OTP:`, err);
+                setError("Invalid code. Please try again.");
+            }
         } finally {
             setLoading(false);
         }

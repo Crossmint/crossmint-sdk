@@ -1,5 +1,165 @@
 # @crossmint/client-sdk-base
 
+## 4.2.0
+
+### Minor Changes
+
+- e7905a8: Add individual protected buyer fields with typed field descriptors and per-field
+  `ref.collect()` results. The application supplies its buyer JWT and owns labels,
+  errors and submission; the existing CrossmintProvider supplies the client API key.
+
+  Replace the password-only `merchantUrl`/`onCreated` interface with `field` and
+  `jwt` props plus `collected`, `invalid`, `unavailable` and `superseded` outcomes.
+  Protected fields support single-line text, number and integer. Authentication
+  travels through the iframe channel rather than its URL; `disabled` and `invalid`
+  update through that channel. Add AbortSignal cancellation to window actions so
+  pending collection waits settle on authentication changes, reload or unmount.
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+- Updated dependencies [e7905a8]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/client-sdk-window@1.2.0
+
+## 4.1.0
+
+### Minor Changes
+
+- 003bee1: Add `createOrderIntentsApi`, which wraps the buyer-JWT order-intent registration and order-intent routes under `/api/unstable` and validates their responses with zod, plus the `CrossmintAgentCardAuthorizationProps`, `AgentCardAuthorizationResult` and `AgentCardAuthorizationError` types that `CrossmintAgentCardAuthorization` will use. `OrderIntent` gains an optional `merchant`.
+- bb9ccf4: Add `selectCardRail` (the deterministic card rail policy behind `CrossmintAgentCardAuthorization`: `agentic-token`/`vic` with a `card` credential format, then `agentic-token`/`agentpay`, then `encrypted-card`, skipping rails in error), `findCardRail`, `toAgentCardRail`, `needsOrderIntentRegistration`, and `toAgentCardPaymentMethodSummary`, which reduces a selected card to id, brand and last4 and strips `card.source`.
+- 3cecef1: Add the `CrossmintProtectedInputProps` type, the `protected-input:created` / `protected-input:error` / `ui:height.changed` event schemas, the `ProtectedInputCreated` and `ProtectedInputError` types, and `createProtectedInputService`, which builds the URL of the hosted `/sdk/unstable/protected-input` page and opens the iframe channel to it. These back the `CrossmintProtectedInput` React component.
+
+### Patch Changes
+
+- 2bdb870: Export `CrossmintCvcRecollectionProps`, `CvcRecollectionError` and `PaymentMethodManagementAppearance` from `@crossmint/client-sdk-react-ui`, and document when to render `CrossmintCvcRecollection` (rail `pending_cvc_recollection` or mint-time 409 `ORDER_INTENT_CVC_RECOLLECTION_REQUIRED`), the `retriable` contract of its errors, and that its appearance `fontSizeUnit`/`spacingUnit` are multiplier units unlike `VerificationAppearance`.
+- 74249cc: Add `verification-refused` to `CvcRecollectionError.reason`: the hosted CVC recollection form reports it (retriable) when Crossmint refuses to confirm the vault write instead of the generic `unknown`.
+- b357d97: Remove the remaining deprecated chains from the wallets OpenAPI spec and the checkout order types.
+
+  PR #2074 removed the deprecated chains from the hand-written chain definitions. It did not touch
+  `packages/wallets/src/openapi.json` or the checkout `Order` types, so the chain names still reached
+  consumers through the generated API client. This completes that work.
+
+  Chains removed: Astar zkEVM, Boss, Coti, Hedera, Lightlink, Mode, Plume, Rari, Soneium, U2U, Viction,
+  World Chain, Xai, Zenchain, zKatana, zKyoto, Polygon Mumbai and the Goerli testnets.
+
+  Zora (`zora`, `zora-sepolia`) is unchanged.
+
+  `@crossmint/wallets-sdk` no longer accepts these chains in any request or response type.
+  `@crossmint/client-sdk-base` no longer lists them in the order payment-method and chain unions.
+
+- 07b7a8c: Remove the deprecated chains from the SDK.
+
+  These chains are no longer supported. The SDK no longer accepts them:
+
+  - Mode (`mode`, `mode-sepolia`)
+  - Plume (`plume`, `plume-testnet`)
+  - World Chain (`world-chain`, `world-chain-sepolia`)
+  - Astar zkEVM (`astar-zkevm`)
+  - zKatana (`zkatana`) and zKyoto (`zkyoto`)
+  - The Goerli testnets (`ethereum-goerli`, `base-goerli`, `optimism-goerli`, `zora-goerli`)
+  - Polygon Mumbai (`polygon-mumbai`)
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain. Code that passes one of these names no longer compiles.
+  Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+  NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+  lookups return `undefined`.
+
+- Updated dependencies [07b7a8c]
+  - @crossmint/common-sdk-base@0.12.2
+
+## 4.0.0
+
+### Major Changes
+
+- ddd0089: Add `CrossmintCvcRecollection`. Render it when an order intent's `encrypted-card` rail reports `status: "pending_cvc_recollection"`; it loads the hosted CVC recollection page and calls `onComplete` once the vault holds a fresh CVC. `OrderIntentEncryptedCardRail.status` is no longer the literal `"active"`: it is now `"active" | "pending_cvc_recollection" | "error"`, so code that narrowed on `"active"` alone must handle the new states.
+
+### Patch Changes
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+
+## 3.0.1
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+
+## 3.0.0
+
+### Major Changes
+
+- ac0d6ad: `OrderIntentRail` is now a union of `agentic-token`, `encrypted-card`, and `spt` rails, matching the order-intent API. Narrow on `rail` before reading `provider`; `OrderIntentVerification` keeps verifying the pending `agentic-token` rail.
+
+## 2.9.0
+
+### Minor Changes
+
+- 65841c5: Update order intent types and verify Basis Theory allowances through `OrderIntentVerification`.
+
+## 2.8.0
+
+### Minor Changes
+
+- cfa9710: Added `identityVerificationHandling` to embedded checkout on web. Setting it to `"external"` stops checkout from rendering the identity verification step, so a merchant can render `CrossmintIdentityVerification` in their own layout using `getIdentityVerificationCredentials(order)`.
+
+  Requires a Crossmint deployment that understands the flag. Against an older one it is ignored, and checkout renders the verification step alongside the merchant's, both against the same inquiry.
+
+- a8b6b60: `identityVerificationHandling` is now accepted by React Native embedded checkout, not web only. Setting it to `"external"` stops checkout from rendering the identity verification step, so you can render `CrossmintIdentityVerification` in your own screen using `getIdentityVerificationCredentials(order)`.
+
+### Patch Changes
+
+- Updated dependencies [7d99607]
+- Updated dependencies [cfa9710]
+  - @crossmint/client-sdk-window@1.1.1
+
+## 2.7.0
+
+### Minor Changes
+
+- 74f6176: Added `CrossmintIdentityVerification`, a standalone component that renders a Crossmint-hosted identity verification step from an order's `payment.preparation.kyc` credentials.
+
+## 2.6.0
+
+### Minor Changes
+
+- 4028c8b: Added `GlobalMessage` display rule to `EmbeddedCheckoutV3AppearanceRules`.
+
+## 2.5.1
+
+### Patch Changes
+
+- 9604fec: Surface authentication failures (e.g. expired JWTs) from `wallet.approve` and transaction/signature polling instead of masking them behind generic `wallet:no-transaction` / `wallet:no-signature` errors. When the API responds with an auth error code, the SDK now throws a typed `JWTExpiredError` (carrying `expiredAt`), `JWTInvalidError`, `JWTDecryptionError`, `JWTIdentifierError`, or `NotAuthorizedError`.
+
+  The canonical auth error classes now live in `@crossmint/common-sdk-base` and are re-exported from `@crossmint/client-sdk-base` and `@crossmint/wallets-sdk`, so `instanceof` checks work across packages. `client-sdk-base`'s `APIErrorService` also now maps the correct backend identifier code (`ERROR_JWT_IDENTIFIER_ERROR`) and handles `ERROR_JWT_AUDIENCE_MISMATCH`.
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+  - @crossmint/common-sdk-base@0.11.0
+
+## 2.5.0
+
+### Minor Changes
+
+- 02b275e: payment-method-management: add `allowedModes` and `allowedPaymentMethodTypes` props and a `bank-account-us` return variant.
+
+  - `allowedModes?: Array<"new" | "existing">` (default `["new"]`) — which sections render: `"new"` shows the "add new" form, `"existing"` shows the saved-methods list.
+  - `allowedPaymentMethodTypes?: ("card" | "bank-account-us")[]` (default `["card"]`).
+  - `CrossmintPaymentMethod` is now a discriminated union on `type`. The new `bank-account-us` variant carries only a safe display summary (`paymentMethodId` + `bankAccount: { accountSuffix, bankName, accountType }`); no token id or raw account number.
+
+  Type-breaking for consumers of `onPaymentMethodSelected`: a payment method must now be narrowed on `type` before reading variant-specific fields (e.g. `pm.card` is only valid after `pm.type === "card"`). Existing card-only integrations that already narrow, or that do not read variant fields, are unaffected.
+
+### Patch Changes
+
+- Updated dependencies [2dbcdee]
+  - @crossmint/client-sdk-window@1.1.0
+
 ## 2.4.2
 
 ### Patch Changes

@@ -2,8 +2,10 @@ import { jwtVerify, errors, type createRemoteJWKSet, createLocalJWKSet, type JSO
 
 import { createJWKSClient } from "./jwksClient";
 
+/** A JWKS endpoint URI or an inline JSON Web Key Set. */
 export type JWKSInput = string | JSONWebKeySet;
 
+/** Verify a Crossmint-issued JWT against the given JWKS (endpoint URI or key set) and return its decoded payload. */
 export async function verifyCrossmintJwt(token: string, jwks: JWKSInput) {
     try {
         const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);

@@ -1,0 +1,342 @@
+import { ApiClientError } from "@crossmint/common-sdk-base";
+
+import type { ApiClient, GetSignerResponse, WalletLocator } from "../../api";
+import type { Chain } from "../../chains/chains";
+import { getSignerDescriptor, type SignerDescriptorContext } from "../../signers/descriptors";
+import type { ServerSignerResolver } from "../../signers/server/resolver";
+import { assembleSigner } from "../../signers";
+import {
+    isApiSourcedServerSignerConfig,
+    type InternalSignerConfig,
+    type RecoverySignerConfigForChain,
+    type SignerAdapter,
+    type SignerConfigForChain,
+    type SignerLocator,
+} from "../../signers/types";
+import { InvalidRecoveryConfigError, RecoveryMethodRequiredError } from "../../utils/errors";
+import { getSignerLocator } from "../../utils/signer-locator";
+import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
+import { walletsLogger } from "../../logger";
+import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
+
+export type SignerManagerParams<C extends Chain> = {
+    apiClient: ApiClient;
+    options: WalletOptions | undefined;
+    chain: C;
+    walletAddress: string;
+    walletLocator: () => WalletLocator;
+    serverSignerResolver: ServerSignerResolver;
+    /** The wallet's recovery signers; the first entry is the primary one. Must not be empty. */
+    recoverySigners: Array<RecoverySignerConfigForChain<C>>;
+    initialSigners: SignerConfigForChain<C>[];
+    signers: () => Promise<WalletSigner[]>;
+    signer?: SignerAdapter;
+};
+
+export class SignerManager<C extends Chain> {
+    #activeSigner: SignerAdapter | undefined;
+    #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
+    #selectedRecovery: { index: number; config: RecoverySignerConfigForChain<C> } | null = null;
+    #apiClient: ApiClient;
+    #options: WalletOptions | undefined;
+    #chain: C;
+    #walletAddress: string;
+    #walletLocator: () => WalletLocator;
+    #serverSignerResolver: ServerSignerResolver;
+    #initialSigners: SignerConfigForChain<C>[];
+    #signers: () => Promise<WalletSigner[]>;
+
+    constructor(params: SignerManagerParams<C>) {
+        this.#apiClient = params.apiClient;
+        this.#options = params.options;
+        this.#chain = params.chain;
+        this.#walletAddress = params.walletAddress;
+        this.#walletLocator = params.walletLocator;
+        this.#serverSignerResolver = params.serverSignerResolver;
+        if (params.recoverySigners.length === 0) {
+            throw new InvalidRecoveryConfigError("At least one recovery signer is required");
+        }
+        this.#recoverySigners = [...params.recoverySigners];
+        this.#initialSigners = params.initialSigners;
+        this.#signers = params.signers;
+        this.#activeSigner = params.signer;
+    }
+
+    get activeSigner(): SignerAdapter | undefined {
+        return this.#activeSigner;
+    }
+
+    setActiveSigner(signer: SignerAdapter | undefined): void {
+        this.#activeSigner = signer;
+    }
+
+    /** The primary recovery signer, i.e. `recoverySigners[0]`. */
+    get recovery(): SignerConfigForChain<C> {
+        return this.#recoverySigners[0] as SignerConfigForChain<C>;
+    }
+
+    get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
+        return [...this.#recoverySigners];
+    }
+
+    /** The recovery method explicitly selected via `useRecoveryMethod()`, if any. */
+    get selectedRecovery(): RecoverySignerConfigForChain<C> | null {
+        return this.#selectedRecovery?.config ?? null;
+    }
+
+    /**
+     * Select the recovery signer at `index` to authorize admin operations. `config` is the form to assemble it
+     * from when the stored one is not usable on its own (a passkey recovery is stored without its credential
+     * id, so the caller's id-bearing config is kept for the selection without rewriting the recovery list).
+     */
+    selectRecovery(index: number, config: RecoverySignerConfigForChain<C> = this.#recoverySigners[index]): void {
+        this.#assertRecoveryIndex(index);
+        this.#selectedRecovery = { index, config };
+    }
+
+    descriptorContext(): SignerDescriptorContext<C> {
+        return {
+            chain: this.#chain,
+            walletAddress: this.#walletAddress,
+            crossmint: this.#apiClient.crossmint,
+            clientTEEConnection: this.#options?.clientTEEConnection,
+            resetSignerFrame: this.#options?.resetSignerFrame,
+            onAuthRequired: this.#options?.callbacks?.onAuthRequired,
+            deviceSignerKeyStorage: this.#options?.deviceSignerKeyStorage,
+            passkeyProvider: this.#options?.passkeyProvider,
+            serverSigners: this.#serverSignerResolver,
+        };
+    }
+
+    /** Replace the recovery signer at `index` with the caller's (typically fuller) config for the same signer. */
+    adoptRecoveryConfig(index: number, config: SignerConfigForChain<C>): void {
+        this.#assertRecoveryIndex(index);
+        this.#recoverySigners[index] = config as RecoverySignerConfigForChain<C>;
+    }
+
+    /**
+     * Replace a secret-carrying server recovery config with its address-only form, so the secret is
+     * never retained (or exposed through `recoverySigners`) once the derivation has been resolved.
+     */
+    stripSecretFromRecovery(index: number, resolvedAddress: string): void {
+        this.#assertRecoveryIndex(index);
+        const recovery = this.#recoverySigners[index];
+        if (recovery.type === "server" && !isApiSourcedServerSignerConfig(recovery)) {
+            this.#recoverySigners[index] = {
+                type: "server",
+                address: resolvedAddress,
+            } as RecoverySignerConfigForChain<C>;
+        }
+    }
+
+    /** Record a recovery method once the API has confirmed it was added to the wallet. */
+    addRecoverySigner(config: RecoverySignerConfigForChain<C>): void {
+        const locator = this.recoveryLocator(config);
+        const alreadyKnown =
+            locator != null && this.#recoverySigners.some((recovery) => this.recoveryLocator(recovery) === locator);
+        if (!alreadyKnown) {
+            this.#recoverySigners.push(config);
+        }
+    }
+
+    /** Forget a recovery method once the API has confirmed it was removed from the wallet. */
+    removeRecoverySigner(locator: string): void {
+        const selected = this.#selectedRecovery;
+        const selectedEntry = selected == null ? null : this.#recoverySigners[selected.index];
+        // The selected config may carry an identity the stored record lacks (an id-less passkey record).
+        const removingSelected = selected != null && this.recoveryLocator(selected.config) === locator;
+        this.#recoverySigners = this.#recoverySigners.filter(
+            (recovery) =>
+                this.recoveryLocator(recovery) !== locator && !(removingSelected && recovery === selectedEntry)
+        );
+        if (selected != null) {
+            const index = removingSelected || selectedEntry == null ? -1 : this.#recoverySigners.indexOf(selectedEntry);
+            this.#selectedRecovery = index === -1 ? null : { ...selected, index };
+        }
+    }
+
+    #assertRecoveryIndex(index: number): void {
+        if (index < 0 || index >= this.#recoverySigners.length) {
+            throw new Error(`Recovery signer index ${index} is out of range`);
+        }
+    }
+
+    async assemble(
+        internalConfig: InternalSignerConfig<C>,
+        options?: { isAdminSigner?: boolean }
+    ): Promise<SignerAdapter> {
+        const signer = assembleSigner(this.#chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+        if (options?.isAdminSigner) {
+            // Admin signers are always approved for their wallet — skip the getSigner API call
+            // which only works for delegated signers (returns 404/400 for admin signers).
+            signer.status = "active";
+        } else {
+            const signerState = await this.getSignerState(signer.locator());
+            signer.status = signerState.signer?.status;
+        }
+        return signer;
+    }
+
+    require(): SignerAdapter {
+        if (this.#activeSigner == null) {
+            if (this.#initialSigners.length > 1) {
+                throw new Error(
+                    "No signer is set. This wallet has multiple signers configured. " +
+                        "Call wallet.useSigner() to select which signer to use before signing operations."
+                );
+            }
+            const recovery = this.recovery;
+            const descriptor = getSignerDescriptor<C>(recovery.type);
+            const typeReason = descriptor.signerUnavailableReason();
+            if (typeReason != null) {
+                throw new Error(typeReason);
+            }
+            if (!descriptor.canAutoAssemble(recovery, this.descriptorContext())) {
+                throw new Error(
+                    "No signer is set. This wallet requires calling wallet.useSigner() before signing operations."
+                );
+            }
+            throw new Error(
+                "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
+            );
+        }
+        return this.#activeSigner;
+    }
+
+    /**
+     * The recovery method that authorizes a signer-management operation (add/remove signer), and the
+     * `approver` locator to send to the API when the wallet has several recovery methods.
+     *
+     * A recovery method selected via `useRecoveryMethod()` always wins. Otherwise, a wallet with a single
+     * recovery method authorizes with it whatever the active signer is, and a wallet with several needs
+     * `useSigner()` to have selected one of them: the API has to know which key will approve, and an
+     * operational signer cannot authorize these changes.
+     */
+    resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
+        const selected = this.selectedRecovery;
+        if (selected != null) {
+            return { recovery: selected, approver: this.recoveryLocator(selected) ?? undefined };
+        }
+        if (this.#recoverySigners.length === 1) {
+            return { recovery: this.#recoverySigners[0], approver: undefined };
+        }
+        const recoveryLocators = this.#recoverySigners.map((recovery) => this.recoveryLocator(recovery));
+        const activeLocator = this.#activeSigner?.locator();
+        const activeIndex = activeLocator == null ? -1 : recoveryLocators.indexOf(activeLocator);
+        if (activeIndex === -1) {
+            const known = recoveryLocators.filter((locator): locator is SignerLocator => locator != null);
+            const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
+            throw new RecoveryMethodRequiredError(
+                activeLocator == null
+                    ? `This wallet has multiple recovery methods, so the one authorizing this operation must be selected. ${selection}`
+                    : `Signer "${activeLocator}" is not one of this wallet's recovery methods, and only a recovery method can add or remove signers. ${selection}`
+            );
+        }
+        return { recovery: this.#recoverySigners[activeIndex], approver: activeLocator };
+    }
+
+    /** Locator of a recovery method, or null when it cannot be known without deriving a server secret. */
+    recoveryLocator(recovery: RecoverySignerConfigForChain<C>): SignerLocator | null {
+        if (recovery.type === "server") {
+            return isApiSourcedServerSignerConfig(recovery) ? `server:${recovery.address}` : null;
+        }
+        return getSignerLocator(recovery);
+    }
+
+    /**
+     * Run `operation` with the authorizing recovery method temporarily set as the active signer.
+     * The operation receives the `approver` locator to forward to the API (see {@link resolveAuthorizingRecovery}).
+     */
+    async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {
+        const originalSigner = this.#activeSigner;
+        const { recovery: authorizingRecovery, approver } = this.resolveAuthorizingRecovery();
+        const recovery = authorizingRecovery as SignerConfigForChain<C>;
+        if (
+            isApiSourcedServerSignerConfig(recovery) &&
+            !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
+        ) {
+            throw new Error(
+                "Cannot assemble server signer: no secret available. " +
+                    'Call wallet.useRecoveryMethod({ type: "server", secret: ... }) first with the recovery server secret.'
+            );
+        }
+        const signerDescriptor = getSignerDescriptor<C>(recovery.type);
+        const signerDescriptorContext = this.descriptorContext();
+        if (
+            recovery.type === "external-wallet" &&
+            !signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)
+        ) {
+            throw new Error(
+                "Cannot assemble external wallet signer: no onSign callback available. " +
+                    'Call wallet.useRecoveryMethod({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
+            );
+        }
+        const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
+        this.#activeSigner = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
+
+        try {
+            return await operation(approver);
+        } finally {
+            this.#activeSigner = originalSigner;
+        }
+    }
+
+    async getSignerState(signerLocator: SignerLocator): Promise<{
+        response: GetSignerResponse | null;
+        signer: WalletSigner | null;
+        pendingOperation: PendingSignerOperation | null;
+    }> {
+        let signerResponse: GetSignerResponse | null = null;
+        try {
+            signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
+        } catch (error) {
+            walletsLogger.warn("wallet.signers.getSignerState.fetchFailed", { signerLocator, error });
+            return { response: null, signer: null, pendingOperation: null };
+        }
+
+        if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
+            walletsLogger.warn("wallet.signers.getSignerState.errorResponse", {
+                signerLocator,
+                response: signerResponse,
+            });
+            return { response: null, signer: null, pendingOperation: null };
+        }
+
+        const signer = mapApiSignerToSigner(signerResponse, this.#chain);
+        return {
+            response: signerResponse,
+            signer,
+            pendingOperation: getPendingSignerOperation(signerResponse, this.#chain),
+        };
+    }
+
+    async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
+        const existingSigners = await this.#signers();
+        return existingSigners.some((s) => s.locator === signerLocator);
+    }
+
+    async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
+        try {
+            const signer = await this.#fetchSigner(signerLocator as SignerLocator);
+            return this.isApprovedSignerStatus(signer?.status);
+        } catch (error) {
+            if (error instanceof ApiClientError && error.status === 404) {
+                return false;
+            }
+            walletsLogger.error("wallet.signers.isSignerApproved.failed", { signerLocator, error });
+            throw error;
+        }
+    }
+
+    isApprovedSignerStatus(status: SignerStatus | undefined): boolean {
+        return status === "success" || status === "active";
+    }
+
+    async #fetchSigner(signerLocator: SignerLocator): Promise<WalletSigner | null> {
+        const signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
+        if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
+            throw new Error(`Failed to fetch the approval state of signer ${signerLocator}`);
+        }
+        return mapApiSignerToSigner(signerResponse, this.#chain);
+    }
+}

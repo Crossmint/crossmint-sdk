@@ -13,7 +13,6 @@ import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../../../shared/constants/globa
 test.describe("Wallet E2E", { tag: "@critical" }, () => {
     for (const config of TEST_CONFIGURATIONS) {
         test.describe(`${config.provider} - ${config.chain} - ${config.signer}`, () => {
-            test.describe.configure({ mode: "serial" });
             test.use({ testConfig: config });
 
             test("authenticates and fetches wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
@@ -51,21 +50,17 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
 
             test("transfers funds", async ({ authenticatedPage, testConfig }) => {
                 const walletAddress = await getWalletAddress(authenticatedPage);
+                // Transfer the minimum practical amount so the reused wallet's funds
+                // last across many runs without needing the faucet.
+                const transferAmount = "0.001";
 
-                // Fund wallet before transfer test
-                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
-
+                // Only hit the faucet when the reused wallet doesn't have enough USDXM
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
-
-                // Log warning if balance is low but continue with test
-                if (initialBalanceNum < 0.0001) {
-                    console.log(
-                        `⚠️ ${testConfig.chain}:${testConfig.signer}:${walletAddress} wallet balance is low (${initialBalanceNum}). Test may fail if insufficient funds.`
-                    );
-                    console.log(`💡 Please fund wallet: ${walletAddress} with some stablecoin for successful transfer`);
+                if (initialBalanceNum < parseFloat(transferAmount)) {
+                    await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
+                } else {
+                    console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }
 
                 let recipientAddress: string;
@@ -79,7 +74,7 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                     throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
-                await transferFunds(authenticatedPage, recipientAddress, "10", testConfig.signer);
+                await transferFunds(authenticatedPage, recipientAddress, transferAmount, testConfig.signer);
 
                 console.log(
                     `✅ ${testConfig.provider}/${testConfig.chain}/${testConfig.signer} transfer completed successfully!`
@@ -108,21 +103,18 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                     throw new Error(`Unknown chain: ${(testConfig as { chain: string }).chain}`);
                 }
 
-                const transferAmount = "10";
+                // Transfer the minimum practical amount so the reused wallet's funds
+                // last across many runs without needing the faucet.
+                const transferAmount = "0.001";
                 const walletAddress = await getWalletAddress(authenticatedPage);
 
-                // Fund wallet before prepared transaction test with the same amount we'll transfer
-                await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-                // Wait a moment for the funding to complete
-                await authenticatedPage.waitForTimeout(2000);
-
-                // Check wallet balance and log warning if 0
+                // Only hit the faucet when the reused wallet doesn't have enough USDXM
                 const initialBalance = await getWalletBalance(authenticatedPage);
                 const initialBalanceNum = parseFloat(initialBalance);
-
-                if (initialBalanceNum === 0) {
-                    console.log(`⚠️ Wallet ${walletAddress} has 0 balance. Test may fail if insufficient funds.`);
-                    console.log(`💡 Please fund wallet: ${walletAddress} with some USDXM for successful transaction`);
+                if (initialBalanceNum < parseFloat(transferAmount)) {
+                    await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
+                } else {
+                    console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }
 
                 const approvalTestHeading = authenticatedPage.locator("text=/Approval Method Test/i").first();

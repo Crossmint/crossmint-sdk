@@ -7,6 +7,8 @@ on:
             - "packages/client/ui/react-ui/**"
             - "packages/wallets/**"
             - "packages/client/react-base/**"
+            - "package.json"
+            - "pnpm-lock.yaml"
     workflow_dispatch:
 
 permissions:
@@ -31,7 +33,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "22"
                   cache: "pnpm"
 
             - name: Install dependencies
@@ -56,6 +58,9 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
+                  # A new wallet per run; a reused one collects a device signer every run
+                  # until it reaches the backend signer cap and transfers start failing.
+                  TESTS_WALLET_EMAIL_SUFFIX: smoke-${{ github.run_id }}
               run: |
                   pnpm exec playwright test --project=smoke
 
