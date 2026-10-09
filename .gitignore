@@ -15,7 +15,7 @@ docs
 
 .env
 
-.claude/settings.local.json
+.claude
 .next
 *.tsbuildinfo
 
