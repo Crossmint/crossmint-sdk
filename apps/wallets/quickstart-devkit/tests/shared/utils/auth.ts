@@ -129,7 +129,7 @@ export async function waitForWalletReady(page: Page): Promise<void> {
     }
 }
 
-async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): Promise<void> {
+async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType, emailOverride?: string): Promise<void> {
     try {
         console.log("🔐 Checking if signer confirmation is needed...");
 
@@ -157,7 +157,7 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
 
         // Clear emails before requesting a new code to avoid getting stale codes
         if (signerType === "email") {
-            const email = getEmailForSigner(signerType);
+            const email = emailOverride ?? getEmailForSigner(signerType);
             await clearEmailsForAddress(email);
             console.log("🗑️ Cleared existing emails before requesting new code");
         }
@@ -218,7 +218,11 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
         let signerConfirmationCode: string | undefined;
         console.log(`📧 Fetching OTP code from ${signerType}...`);
         if (signerType === "email") {
-            signerConfirmationCode = await getEmailOTPCode(getEmailForSigner(signerType), "signer", beforeSendCodeTime);
+            signerConfirmationCode = await getEmailOTPCode(
+                emailOverride ?? getEmailForSigner(signerType),
+                "signer",
+                beforeSendCodeTime
+            );
         } else if (signerType === "phone") {
             signerConfirmationCode = await getPhoneOTPCode(beforeSendCodeTime);
         }
@@ -263,7 +267,11 @@ async function handleEmailPhoneSignerFlow(page: Page, signerType: SignerType): P
     }
 }
 
-export async function handleSignerConfirmation(page: Page, signerType?: SignerType): Promise<void> {
+export async function handleSignerConfirmation(
+    page: Page,
+    signerType?: SignerType,
+    emailOverride?: string
+): Promise<void> {
     if (signerType == null) {
         try {
             const url = new URL(page.url());
@@ -276,7 +284,7 @@ export async function handleSignerConfirmation(page: Page, signerType?: SignerTy
     console.log(`🔐 Signer type: ${signerType || "unknown"}`);
 
     if (signerType === "email" || signerType === "phone") {
-        await handleEmailPhoneSignerFlow(page, signerType);
+        await handleEmailPhoneSignerFlow(page, signerType, emailOverride);
     } else {
         const modal = page.locator("div[role='dialog']").first();
         const modalIsVisible = await modal
@@ -286,7 +294,7 @@ export async function handleSignerConfirmation(page: Page, signerType?: SignerTy
         if (modalIsVisible) {
             // If modal appears but we don't know signer type, try email first (most common)
             console.log("⚠️ Signer type unknown, trying email flow");
-            await handleEmailPhoneSignerFlow(page, "email");
+            await handleEmailPhoneSignerFlow(page, "email", emailOverride);
         } else {
             console.log("✅ No signer modal appeared, confirmation not needed");
         }

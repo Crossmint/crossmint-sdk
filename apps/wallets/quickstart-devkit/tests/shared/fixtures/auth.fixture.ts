@@ -45,7 +45,7 @@ export const test = base.extend<AuthFixtures>({
     ],
 
     authenticatedPage: async ({ browser, testConfig }, use, testInfo) => {
-        const cacheKey = `${testConfig.provider}-${testConfig.chain}-${testConfig.signer}-${testConfig.chainId}`;
+        const cacheKey = `${testConfig.provider}-${testConfig.chain}-${testConfig.signer}-${testConfig.chainId}-${testConfig.emailOverride ?? ""}`;
 
         const cached = authenticatedPageCache.get(cacheKey);
         if (cached) {
@@ -83,7 +83,7 @@ export const test = base.extend<AuthFixtures>({
             if (!loginButtonIsVisible) {
                 console.log("✅ Already logged in, skipping login");
             } else {
-                const email = getEmailForSigner(testConfig.signer as SignerType);
+                const email = testConfig.emailOverride ?? getEmailForSigner(testConfig.signer as SignerType);
                 await performEmailOTPLogin(page, email);
             }
 
