@@ -7,7 +7,7 @@ Multi-chain SDK monorepo (smart wallets, auth, UI components, server SDK) for we
 Before you write or change code, write tests, write a PR description, write docs or prose, define alerts or observability, plan a deployment, or write an SOP or post-mortem, read the Paella best practices that match the action and apply them. A topic is a directory or file of the rules repo: `read code` before changing code, `read code/test` before writing tests, `read operations/pull-requests documentation` before a PR description; `list` prints all of them.
 
 ```bash
-BP=~/.cache/paella-best-practices/bin/best-practices.sh
+BP="${PAELLA_BEST_PRACTICES_DIR:-$HOME/.cache/paella-best-practices}/bin/best-practices.sh"
 [ -x "$BP" ] || { mkdir -p "$(dirname "$BP")" && { gh api -H 'Accept: application/vnd.github.raw' repos/Paella-Labs/best-practices/contents/bin/best-practices.sh > "$BP.$$" 2>/dev/null || { T=$(mktemp -d) && GIT_TERMINAL_PROMPT=0 git clone -q --depth=1 https://github.com/Paella-Labs/best-practices.git "$T" && cp "$T/bin/best-practices.sh" "$BP.$$"; s=$?; rm -rf "$T"; [ "$s" = 0 ]; }; } && [ -s "$BP.$$" ] && bash -n "$BP.$$" && chmod +x "$BP.$$" && mv -f "$BP.$$" "$BP" || rm -f "$BP.$$"; }
 "$BP" read <topic>...
 ```
