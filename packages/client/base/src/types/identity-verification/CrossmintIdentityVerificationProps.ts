@@ -32,7 +32,9 @@ export interface CrossmintIdentityVerificationProps {
     appearance?: IdentityVerificationAppearance;
     locale?: Locale;
     onReady?: () => void;
+    /** The flow ended with a result. Unmount here, not when the credentials go away: the order moves on first. */
     onComplete?: (result: { status: IdentityVerificationStatus }) => void;
+    /** The user closed the flow: Done on a blocked screen, or closing document capture. Without it, Done does nothing. */
     onCancel?: () => void;
     onError?: (error: IdentityVerificationError) => void;
 }

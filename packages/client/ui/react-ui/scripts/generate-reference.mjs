@@ -102,6 +102,7 @@ const PRODUCTS = {
             "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
             "CrossmintHostedCheckout",
+            "CrossmintIdentityVerification",
             "CrossmintPaymentMethodManagement",
             "CrossmintProtectedInput",
             "CrossmintAgentCardAuthorization",
@@ -109,6 +110,8 @@ const PRODUCTS = {
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
+            CrossmintIdentityVerification:
+                'Hosted identity verification step, for merchants taking it over with `identityVerificationHandling="external"`',
             CrossmintPaymentMethodManagement: "Saved payment method management UI",
             CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
             CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Agent Checkouts",
