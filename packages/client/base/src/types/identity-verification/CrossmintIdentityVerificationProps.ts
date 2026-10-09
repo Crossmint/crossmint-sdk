@@ -14,10 +14,10 @@ export type IdentityVerificationCredentials =
     | { verificationId: string; clientSecret: string; deviceSessionKey?: string };
 
 /**
- * Embedded checkout's appearance, so the same object themes both. `theme` forces light or dark;
- * without it, the flow reads it from `variables.colors.backgroundPrimary`.
+ * Embedded checkout's appearance, so the same object themes both. The flow reads light or dark from
+ * `variables.colors.backgroundPrimary`.
  */
-export type IdentityVerificationAppearance = EmbeddedCheckoutV3Appearance & { theme?: "light" | "dark" };
+export type IdentityVerificationAppearance = EmbeddedCheckoutV3Appearance;
 
 /** Provider-agnostic outcome. `unknown` is an unrecognised provider state, never a success. */
 export type IdentityVerificationStatus = z.infer<
