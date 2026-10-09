@@ -8,6 +8,7 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 export { getIdentityVerificationCredentials } from "@crossmint/client-sdk-base";
 export type {
     CrossmintIdentityVerificationProps,
+    IdentityVerificationAppearance,
     IdentityVerificationCredentials,
     IdentityVerificationStatus,
     IdentityVerificationError,

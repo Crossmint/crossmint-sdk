@@ -39,6 +39,16 @@ describe("createIdentityVerificationService", () => {
             expect(url.searchParams.get("sdkMetadata")).toBeTruthy();
         });
 
+        test("serializes session credentials and the appearance as JSON", () => {
+            const credentials = { verificationId: "ver-1", clientSecret: "secret-1" };
+            const appearance = { theme: "dark", variables: { colors: { backgroundPrimary: "#060510" } } };
+
+            const url = iframeUrl({ credentials, appearance });
+
+            expect(JSON.parse(url.searchParams.get("credentials") ?? "")).toEqual(credentials);
+            expect(JSON.parse(url.searchParams.get("appearance") ?? "")).toEqual(appearance);
+        });
+
         test("omits the lifecycle callbacks from the query string", () => {
             const url = iframeUrl({
                 credentials: { provider: "persona", inquiryId: "inq-1" },
