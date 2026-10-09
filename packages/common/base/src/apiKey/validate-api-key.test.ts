@@ -3,8 +3,10 @@ import { describe, expect, test } from "vitest";
 
 import { validateAPIKey } from "./validateAPIKey";
 
-const VALID_API_KEY =
-    "ck_development_A61UZQnvjSQcM5qVBaBactgqebxafWAVsNdD2xLkgBxoYuH5q2guM8r9DUmZQzE1WYyoByGVYpEG2o9gVSzAZFsrLbfKGERUJ6D5CW6S9AsJGAc3ctgrsD4n2ioekzGj7KPbLwT3SysDjMamYXLxEroUbQSdwf6aLF4zeEpECq2crkTUQeLFzxzmjWNxFDHFYefDrfrFPCURvBXJLf5pCxCQ";
+if (process.env.PREVIEW_CK_KEY == null) {
+    throw new Error("PREVIEW_CK_KEY must be set to run this test suite.");
+}
+const VALID_API_KEY = process.env.PREVIEW_CK_KEY;
 
 describe("validateAPIKey", () => {
     // All prefix validation tests are in validateAPIKeyPrefix.test.ts
