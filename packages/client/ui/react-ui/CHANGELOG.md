@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.10.0
+
+### Minor Changes
+
+- 4ab8408: `CrossmintIdentityVerification` supports the Crossmint verification flow and takes an `appearance` prop.
+
+  - `IdentityVerificationCredentials` now also has the session shape `{ verificationId, clientSecret, deviceSessionKey? }`, which an order carries when it uses the Crossmint verification flow. Pass the credentials through as they come. TypeScript code that reads `credentials.inquiryId` must first check for `"provider" in credentials`.
+  - New `appearance` prop: embedded checkout's appearance object. The flow reads light or dark from `variables.colors.backgroundPrimary`.
+  - Keep the component mounted until `onComplete` or `onCancel`. The order leaves `requires-kyc`, and `useIdentityVerificationCredentials` returns undefined, before the flow shows its result. Handle `onCancel`: the Done button on blocked screens sends it.
+  - `@crossmint/client-sdk-react-ui` now exports `CrossmintIdentityVerificationProps`, `IdentityVerificationAppearance`, `IdentityVerificationCredentials`, `IdentityVerificationStatus` and `IdentityVerificationError`.
+
+### Patch Changes
+
+- Updated dependencies [4ab8408]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/wallets-sdk@1.20.1
+  - @crossmint/client-sdk-auth@1.3.26
+  - @crossmint/client-sdk-react-base@2.4.1
+  - @crossmint/common-sdk-auth@1.1.24
+
 ## 4.9.1
 
 ### Patch Changes
