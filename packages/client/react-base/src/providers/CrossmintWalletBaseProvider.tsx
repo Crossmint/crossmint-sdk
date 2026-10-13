@@ -28,6 +28,7 @@ import {
 import { useCrossmint, useSignerAuth } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
+import isEqual from "lodash.isequal";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
@@ -201,19 +202,23 @@ export async function getExistingWallet<C extends Chain>(
 
 export type LoadedWalletArgs = Pick<WalletCreateArgs<Chain>, "chain" | "alias">;
 
-export function walletArgsMatch<C extends Chain>(
-    recorded: LoadedWalletArgs | undefined,
-    args: Pick<WalletCreateArgs<C>, "chain" | "alias">
-): boolean {
-    return recorded != null && recorded.chain === args.chain && recorded.alias === args.alias;
-}
-
 export function cachedWalletMatchesArgs<C extends Chain>(
     wallet: Wallet<Chain> | undefined,
     loadedArgs: LoadedWalletArgs | undefined,
     args: Pick<WalletCreateArgs<C>, "chain" | "alias">
 ): wallet is Wallet<Chain> {
-    return wallet != null && walletArgsMatch(loadedArgs, args);
+    return wallet != null && loadedArgs != null && loadedArgs.chain === args.chain && loadedArgs.alias === args.alias;
+}
+
+/** The exact request that last failed: the full create args and the JWT they were sent with. */
+export type FailedWalletAttempt = { args: WalletCreateArgs<Chain>; jwt: string };
+
+export function isSameFailedAttempt<C extends Chain>(
+    failed: FailedWalletAttempt | undefined,
+    args: WalletCreateArgs<C>,
+    jwt: string | undefined
+): boolean {
+    return failed != null && failed.jwt === jwt && isEqual(failed.args, args);
 }
 
 /**
@@ -257,7 +262,7 @@ export function CrossmintWalletBaseProvider({
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [loadedWalletArgs, setLoadedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
-    const [failedWalletArgs, setFailedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
+    const [failedAttempt, setFailedAttempt] = useState<FailedWalletAttempt | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [walletError, setWalletError] = useState<WalletContextError | null>(null);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
@@ -379,8 +384,9 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
             // A failed attempt rewrites walletError, which recreates this callback and refires the
-            // createOnLogin effect; without this latch the same args would be retried forever.
-            if (walletStatus === "error" && walletArgsMatch(failedWalletArgs, args)) {
+            // createOnLogin effect; without this latch the same request would be retried forever.
+            // Any change to the args or the JWT is a new request and goes through.
+            if (walletStatus === "error" && isSameFailedAttempt(failedAttempt, args, crossmint.jwt)) {
                 return undefined;
             }
 
@@ -413,14 +419,14 @@ export function CrossmintWalletBaseProvider({
 
                 setWallet(wallet);
                 setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
-                setFailedWalletArgs(undefined);
+                setFailedAttempt(undefined);
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.getOrCreateWallet.error", { error });
                 setWallet(undefined);
                 setLoadedWalletArgs(undefined);
-                setFailedWalletArgs({ chain: args.chain, alias: args.alias });
+                setFailedAttempt({ args, jwt: crossmint.jwt });
                 setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
@@ -432,7 +438,7 @@ export function CrossmintWalletBaseProvider({
             walletStatus,
             wallet,
             loadedWalletArgs,
-            failedWalletArgs,
+            failedAttempt,
             walletError,
             initializeWebViewIfNeeded,
             buildWalletOptions,
@@ -617,7 +623,7 @@ export function CrossmintWalletBaseProvider({
             setWalletStatus("not-loaded");
             setWallet(undefined);
             setLoadedWalletArgs(undefined);
-            setFailedWalletArgs(undefined);
+            setFailedAttempt(undefined);
             setWalletError(null);
         }
     }, [crossmint.jwt, walletStatus]);
