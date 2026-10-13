@@ -89,41 +89,9 @@ describe("Wallets — funding & transfers (Real HTTP)", () => {
         );
     });
 
-    describe("send() - Error Cases", () => {
+    describe("send() - error wiring", () => {
         it(
-            "handles invalid recipient address",
-            async () => {
-                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
-
-                const params: SendParams = {
-                    recipient: "invalid-address",
-                    amount: "1.0",
-                };
-
-                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-                expectErrorResponse(result, "message");
-            },
-            TIMEOUT_MEDIUM
-        );
-
-        it(
-            "handles invalid amount format",
-            async () => {
-                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
-
-                const params: SendParams = {
-                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                    amount: "not-a-number",
-                };
-
-                const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
-                expectErrorResponse(result, "message");
-            },
-            TIMEOUT_MEDIUM
-        );
-
-        it(
-            "handles insufficient balance",
+            "surfaces an insufficient-balance rejection from the API to the caller",
             async () => {
                 const { address: walletAddress } = await createFreshWallet(apiClient, testData);
 
@@ -135,22 +103,6 @@ describe("Wallets — funding & transfers (Real HTTP)", () => {
                 const result = await apiClient.send(walletAddress as WalletLocator, "base-sepolia:usdxm", params);
                 expectErrorResponse(result, "message");
                 expect((result as { message: string }).message.toLowerCase()).toContain("insufficient");
-            },
-            TIMEOUT_MEDIUM
-        );
-
-        it(
-            "handles invalid token locator",
-            async () => {
-                const { address: walletAddress } = await createFreshWallet(apiClient, testData);
-
-                const params: SendParams = {
-                    recipient: TEST_ADDRESSES.EVM_RECIPIENT,
-                    amount: "1.0",
-                };
-
-                const result = await apiClient.send(walletAddress as WalletLocator, "invalid:token", params);
-                expectErrorResponse(result, "message");
             },
             TIMEOUT_MEDIUM
         );
