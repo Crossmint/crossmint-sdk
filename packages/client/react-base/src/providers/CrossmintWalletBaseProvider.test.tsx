@@ -1,4 +1,5 @@
-import { render, waitFor } from "@testing-library/react";
+import { act, render, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
 import { describe, expect, test, vi } from "vitest";
 
 import { createCrossmint } from "@crossmint/common-sdk-base";
@@ -28,6 +29,21 @@ function TestConsumer() {
             <div data-testid="status">{status}</div>
             <div data-testid="chain">{wallet?.chain ?? ""}</div>
             <div data-testid="error">{error?.message ?? ""}</div>
+        </div>
+    );
+}
+
+type GetWallet = ReturnType<typeof useWallet>["getWallet"];
+
+function TestSwitcher({ onReady }: { onReady: (getWallet: GetWallet) => void }) {
+    const { wallet, status, getWallet } = useWallet();
+    useEffect(() => {
+        onReady(getWallet);
+    }, [getWallet, onReady]);
+    return (
+        <div>
+            <div data-testid="status">{status}</div>
+            <div data-testid="chain">{wallet?.chain ?? ""}</div>
         </div>
     );
 }
@@ -101,5 +117,44 @@ describe("CrossmintWalletBaseProvider — createOnLogin wallet cache", () => {
 
         await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
         expect(callCount).toBe(1);
+    });
+
+    test("keeps a wallet the consumer switched to with getWallet, instead of re-running createOnLogin for its chain", async () => {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        const chainsLoaded: string[] = [];
+        const getWallet = vi.fn(({ chain }: { chain: string }) => {
+            chainsLoaded.push(chain);
+            // The createOnLogin chain does not exist yet on first load; everything else resolves.
+            if (chain === "ethereum" && chainsLoaded.filter((c) => c === "ethereum").length === 1) {
+                return Promise.reject(new WalletNotAvailableError("not found"));
+            }
+            return Promise.resolve({ chain, alias: undefined });
+        });
+        const createWallet = vi.fn(({ chain }: { chain: string }) => Promise.resolve({ chain, alias: undefined }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({ getWallet, createWallet } as unknown as CrossmintWallets);
+
+        let latestGetWallet: GetWallet | undefined;
+        const { getByTestId } = render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider createOnLogin={{ chain: "ethereum" }}>
+                    <TestSwitcher onReady={(fn) => (latestGetWallet = fn)} />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+
+        await waitFor(() => expect(getByTestId("chain").textContent).toBe("ethereum"));
+        expect(createWallet).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            await latestGetWallet?.({ chain: "solana" });
+        });
+
+        await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"));
+        // Let any effect cascade triggered by the wallet change settle.
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+        expect(getByTestId("chain").textContent).toBe("solana");
+        expect(chainsLoaded).toEqual(["ethereum", "solana"]);
+        expect(createWallet).toHaveBeenCalledTimes(1);
     });
 });

@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -28,6 +28,7 @@ import {
 import { useCrossmint, useSignerAuth } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
+import isEqual from "lodash.isequal";
 import { useLogger } from "./LoggerProvider";
 import { LoggerContext } from "./CrossmintProvider";
 import { CrossmintWalletUIBaseProvider, type UIRenderProps } from "./CrossmintWalletUIBaseProvider";
@@ -578,23 +579,42 @@ export function CrossmintWalletBaseProvider({
         setProcessedCreateOnLogin(createOnLogin);
     }, [createOnLogin, authBaseContext?.user, authBaseContext?.user?.email]);
 
+    // createOnLogin runs once per (jwt, createOnLogin). getOrCreateWallet's identity changes with every
+    // wallet state update, so keying this effect on it alone re-ran createOnLogin after the consumer
+    // had switched chains with getWallet/createWallet, and flipped the wallet back (WAL-12884).
+    const handledCreateOnLogin = useRef<{ jwt: string; createOnLogin: CreateOnLogin } | null>(null);
     useEffect(() => {
-        if (processedCreateOnLogin != null) {
-            // Guard: don't attempt wallet creation if required signer fields are still missing.
-            const { signers } = processedCreateOnLogin;
-            if (
-                recoveryMethodsFromCreateArgs(processedCreateOnLogin).some(
-                    (s) => s.type === "external-wallet" && s.address == null
-                )
-            ) {
-                return;
-            }
-            if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {
-                return;
-            }
-            getOrCreateWallet(processedCreateOnLogin);
+        if (processedCreateOnLogin == null || crossmint.jwt == null) {
+            return;
         }
-    }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt]);
+        // Guard: don't attempt wallet creation if required signer fields are still missing.
+        const { signers } = processedCreateOnLogin;
+        if (
+            recoveryMethodsFromCreateArgs(processedCreateOnLogin).some(
+                (s) => s.type === "external-wallet" && s.address == null
+            )
+        ) {
+            return;
+        }
+        if (signers?.some((s) => s.type === "external-wallet" && s.address == null)) {
+            return;
+        }
+        const handled = handledCreateOnLogin.current;
+        if (
+            handled != null &&
+            handled.jwt === crossmint.jwt &&
+            isEqual(handled.createOnLogin, processedCreateOnLogin)
+        ) {
+            return;
+        }
+        if (walletStatus === "in-progress") {
+            // Another load is running; getOrCreateWallet would no-op. Leave it unhandled so the
+            // next status change re-evaluates.
+            return;
+        }
+        handledCreateOnLogin.current = { jwt: crossmint.jwt, createOnLogin: processedCreateOnLogin };
+        getOrCreateWallet(processedCreateOnLogin);
+    }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt, walletStatus]);
 
     useEffect(() => {
         if (crossmint.jwt == null && walletStatus !== "not-loaded") {
