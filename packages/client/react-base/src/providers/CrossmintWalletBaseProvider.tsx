@@ -201,12 +201,19 @@ export async function getExistingWallet<C extends Chain>(
 
 export type LoadedWalletArgs = Pick<WalletCreateArgs<Chain>, "chain" | "alias">;
 
+export function walletArgsMatch<C extends Chain>(
+    recorded: LoadedWalletArgs | undefined,
+    args: Pick<WalletCreateArgs<C>, "chain" | "alias">
+): boolean {
+    return recorded != null && recorded.chain === args.chain && recorded.alias === args.alias;
+}
+
 export function cachedWalletMatchesArgs<C extends Chain>(
     wallet: Wallet<Chain> | undefined,
     loadedArgs: LoadedWalletArgs | undefined,
     args: Pick<WalletCreateArgs<C>, "chain" | "alias">
 ): wallet is Wallet<Chain> {
-    return wallet != null && loadedArgs != null && loadedArgs.chain === args.chain && loadedArgs.alias === args.alias;
+    return wallet != null && walletArgsMatch(loadedArgs, args);
 }
 
 /**
@@ -250,6 +257,7 @@ export function CrossmintWalletBaseProvider({
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [loadedWalletArgs, setLoadedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
+    const [failedWalletArgs, setFailedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [walletError, setWalletError] = useState<WalletContextError | null>(null);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
@@ -370,6 +378,11 @@ export function CrossmintWalletBaseProvider({
             if (walletError?.code === "region-blocked") {
                 return undefined;
             }
+            // A failed attempt rewrites walletError, which recreates this callback and refires the
+            // createOnLogin effect; without this latch the same args would be retried forever.
+            if (walletStatus === "error" && walletArgsMatch(failedWalletArgs, args)) {
+                return undefined;
+            }
 
             try {
                 setWalletStatus("in-progress");
@@ -400,12 +413,14 @@ export function CrossmintWalletBaseProvider({
 
                 setWallet(wallet);
                 setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                setFailedWalletArgs(undefined);
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.getOrCreateWallet.error", { error });
                 setWallet(undefined);
                 setLoadedWalletArgs(undefined);
+                setFailedWalletArgs({ chain: args.chain, alias: args.alias });
                 setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
@@ -417,6 +432,7 @@ export function CrossmintWalletBaseProvider({
             walletStatus,
             wallet,
             loadedWalletArgs,
+            failedWalletArgs,
             walletError,
             initializeWebViewIfNeeded,
             buildWalletOptions,
@@ -601,6 +617,7 @@ export function CrossmintWalletBaseProvider({
             setWalletStatus("not-loaded");
             setWallet(undefined);
             setLoadedWalletArgs(undefined);
+            setFailedWalletArgs(undefined);
             setWalletError(null);
         }
     }, [crossmint.jwt, walletStatus]);

@@ -103,3 +103,52 @@ describe("CrossmintWalletBaseProvider — createOnLogin wallet cache", () => {
         expect(callCount).toBe(1);
     });
 });
+
+describe("CrossmintWalletBaseProvider — createOnLogin failure", () => {
+    function failingWallets(createWallet: ReturnType<typeof vi.fn>) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({
+            getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+            createWallet,
+        } as unknown as CrossmintWallets);
+    }
+
+    test("settles on error once when createWallet keeps failing, instead of retrying forever", async () => {
+        const createWallet = vi.fn().mockRejectedValue(new Error("A recovery method is required"));
+        failingWallets(createWallet);
+
+        const { getByTestId } = renderWithCreateOnLogin({ chain: "ethereum" });
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("error"));
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(createWallet).toHaveBeenCalledTimes(1);
+        expect(getByTestId("status").textContent).toBe("error");
+        expect(getByTestId("error").textContent).toBe("A recovery method is required");
+    });
+
+    test("retries when createOnLogin changes after a failure", async () => {
+        const createWallet = vi.fn(({ chain }: { chain: string }) => {
+            if (chain === "ethereum") {
+                return Promise.reject(new Error("A recovery method is required"));
+            }
+            return Promise.resolve({ chain, alias: undefined });
+        });
+        failingWallets(createWallet);
+
+        const { getByTestId, rerender } = renderWithCreateOnLogin({ chain: "ethereum" });
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("error"));
+
+        rerender(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider createOnLogin={{ chain: "solana" }}>
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+
+        await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"));
+        expect(createWallet).toHaveBeenCalledTimes(2);
+        expect(getByTestId("status").textContent).toBe("loaded");
+    });
+});
