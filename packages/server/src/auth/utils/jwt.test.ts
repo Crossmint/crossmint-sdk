@@ -46,6 +46,18 @@ describe("JWT Verification", () => {
             expect(result).toEqual(mockPayload);
         });
 
+        it("passes the audience and required claims to jwtVerify when an audience is provided", async () => {
+            vi.mocked(jwtVerify).mockResolvedValue({ payload: mockPayload } as any);
+
+            const result = await verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" });
+
+            expect(jwtVerify).toHaveBeenCalledWith(mockToken, mockJwks, {
+                audience: "project-a",
+                requiredClaims: ["exp", "sub", "aud"],
+            });
+            expect(result).toEqual(mockPayload);
+        });
+
         it("throws error for expired JWT", async () => {
             const expiredTimestamp = 1234567890;
             const expiredDate = new Date(expiredTimestamp * 1000).toISOString();
