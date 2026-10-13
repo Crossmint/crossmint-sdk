@@ -201,3 +201,31 @@ describe("CrossmintWalletBaseProvider — createOnLogin failure", () => {
         expect(getByTestId("status").textContent).toBe("loaded");
     });
 });
+
+describe("CrossmintWalletBaseProvider — createOnLogin switched while a load is in flight", () => {
+    test("ends on the wallet for the latest createOnLogin, not the one that was loading", async () => {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        const createWallet = vi.fn(({ chain }: { chain: string }) => {
+            const delay = chain === "ethereum" ? 60 : 0;
+            return new Promise((resolve) => setTimeout(() => resolve({ chain, alias: undefined }), delay));
+        });
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({
+            getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+            createWallet,
+        } as unknown as CrossmintWallets);
+
+        const { getByTestId, rerender } = renderWithCreateOnLogin({ chain: "ethereum" });
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("in-progress"));
+
+        rerender(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider createOnLogin={{ chain: "solana" }}>
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+
+        await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"), { timeout: 1500 });
+        expect(createWallet).toHaveBeenCalledTimes(2);
+    });
+});
