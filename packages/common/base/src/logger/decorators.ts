@@ -24,6 +24,14 @@ export interface WithLoggerContextOptions<T = unknown> {
      * Optional function to build additional context from the method's this and arguments
      */
     buildContext?: ContextBuilder<T>;
+
+    /**
+     * Error classes that represent expected/business-logic outcomes (e.g. "not found").
+     * Errors matching any of these classes are logged at `warn` instead of `error`
+     * so they do not pollute error-level monitoring.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expectedErrors?: Array<new (...args: any[]) => Error>;
 }
 
 /**
@@ -72,14 +80,14 @@ export function WithLoggerContext<TThis = unknown>(options: WithLoggerContextOpt
                 try {
                     result = original.apply(this, args);
                 } catch (error) {
-                    options.logger.error(`${options.methodName} threw an error`, { error });
+                    logThrownError(options, error);
                     throw error;
                 }
 
                 // Handle async functions
                 if (result instanceof Promise) {
                     return result.catch((error) => {
-                        options.logger.error(`${options.methodName} threw an error`, { error });
+                        logThrownError(options, error);
                         throw error;
                     });
                 }
@@ -92,4 +100,21 @@ export function WithLoggerContext<TThis = unknown>(options: WithLoggerContextOpt
         descriptor.value = wrapped as typeof descriptor.value;
         return descriptor;
     };
+}
+
+/**
+ * Log an error thrown by a decorated method. Expected errors (those matching
+ * `options.expectedErrors`) are logged at `warn`; everything else at `error`.
+ */
+function logThrownError(
+    options: Pick<WithLoggerContextOptions, "logger" | "methodName" | "expectedErrors">,
+    error: unknown
+): void {
+    const isExpected = options.expectedErrors?.some((ErrorClass) => error instanceof ErrorClass) ?? false;
+    const message = `${options.methodName} threw an error`;
+    if (isExpected) {
+        options.logger.warn(message, { error });
+    } else {
+        options.logger.error(message, { error });
+    }
 }
