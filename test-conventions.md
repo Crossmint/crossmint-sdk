@@ -367,7 +367,7 @@ Decided by **what the test asserts**, not by what it touches. A test that sends 
 | The test asserts… | Tier | Where | Network |
 | --- | --- | --- | --- |
 | **SDK logic** — orchestration, signer resolution, configuration validation, what `ApiClient` puts on the wire (headers, URL, method, error parsing) | Sandbox | `packages/<pkg>/src/**/*.test.ts` | `fetch` mocked, no key |
-| **The API's response shape as the SDK reads it** — the fields it reads, the error codes it branches on | Heartbeat | `tests/integration/heartbeat/` | Real, scheduled |
+| **The API's response shape as the SDK reads it** — the fields it reads, the error codes it branches on | Heartbeat | `tests/integration/heartbeat/` | Real; scheduled twice daily by `.github/workflows/heartbeat.yml` (lands with #2126 — until then it runs only inside the advisory integration job) |
 | **A flow across the real API** — create → send → approve → poll, register → sign → remove | Integration | `tests/integration/<area>/` | Real, on PR, advisory |
 | **The API's own validation, sanitisation, rate limiting, response-shape rules** | — | crossbit-main, not here | — |
 
