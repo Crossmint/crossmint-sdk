@@ -226,7 +226,7 @@ describe("CrossmintAuthServer", () => {
                     secret: "new-refresh-token",
                     expiresAt: "2023-12-31T23:59:59Z",
                 },
-                user: { id: "victim" },
+                user: { id: "other-user" },
             };
             const fetchMock = vi.fn().mockResolvedValue(
                 new Response(JSON.stringify(refreshedAuthMaterial), {
@@ -274,7 +274,7 @@ describe("CrossmintAuthServer", () => {
                     secret: "new-refresh-token",
                     expiresAt: "2023-12-31T23:59:59Z",
                 },
-                user: { id: "victim" },
+                user: { id: "other-user" },
             };
             vi.stubGlobal(
                 "fetch",
@@ -550,7 +550,7 @@ describe("CrossmintAuthServer", () => {
                             secret: "new-refresh-token",
                             expiresAt: "2023-12-31T23:59:59Z",
                         },
-                        user: { id: "victim" },
+                        user: { id: "other-user" },
                     }),
                 ok: true,
             });
