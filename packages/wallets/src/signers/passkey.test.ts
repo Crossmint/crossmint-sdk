@@ -31,7 +31,9 @@ function signerWithoutCallback(): PasskeySigner {
     } as PasskeyInternalSignerConfig);
 }
 
-function webAuthnAssertion(flags: string) {
+type WebAuthnAssertion = Awaited<ReturnType<typeof WebAuthnP256.sign>>;
+
+function webAuthnAssertion(flags: string): WebAuthnAssertion {
     return { signature: { r: 1n, s: 2n }, metadata: signResult(flags).metadata };
 }
 
@@ -81,7 +83,7 @@ describe("PasskeySigner", () => {
 
     describe("when the browser's WebAuthn API returns a user-verified assertion", () => {
         it("returns the signature and metadata", async () => {
-            vi.mocked(WebAuthnP256.sign).mockResolvedValue(webAuthnAssertion("1d") as never);
+            vi.mocked(WebAuthnP256.sign).mockResolvedValue(webAuthnAssertion("1d"));
 
             const result = await signerWithoutCallback().signMessage("0xdeadbeef");
 
@@ -93,7 +95,7 @@ describe("PasskeySigner", () => {
 
     describe("when the browser's WebAuthn API returns an assertion without user verification", () => {
         it("throws instead of forwarding a signature the on-chain verifier will reject", async () => {
-            vi.mocked(WebAuthnP256.sign).mockResolvedValue(webAuthnAssertion("19") as never);
+            vi.mocked(WebAuthnP256.sign).mockResolvedValue(webAuthnAssertion("19"));
 
             await expect(signerWithoutCallback().signMessage("0xdeadbeef")).rejects.toThrow(
                 "without user verification"

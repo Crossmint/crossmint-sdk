@@ -44,8 +44,6 @@ export class PasskeySigner implements SignerAdapter {
         return result;
     }
 
-    // `WebAuthnP256.sign` only *requests* user verification; it does not check that the authenticator
-    // honoured it, so the returned assertion is verified above like any other.
     private async signWithWebAuthn(message: string): Promise<PasskeySignResult> {
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
