@@ -1,5 +1,14 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.4.202
+
+### Patch Changes
+
+- Updated dependencies [4ab8408]
+- Updated dependencies [3ef10b3]
+  - @crossmint/client-sdk-react-ui@4.10.0
+  - @crossmint/server-sdk@1.2.88
+
 ## 0.4.201
 
 ### Patch Changes
