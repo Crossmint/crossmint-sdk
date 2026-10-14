@@ -7,29 +7,22 @@ import {
     createPaymentMethodManagementService,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 
+const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
 
 const unavailable = (message: string): PaymentMethodSubmitResult => ({ status: "unavailable", message });
+const superseded = (): PaymentMethodSubmitResult => ({
+    status: "superseded",
+    message: "The payment method component changed. Please submit again.",
+});
 
 export const CrossmintPaymentMethodManagementIFrame = forwardRef<
     CrossmintPaymentMethodManagementRef,
     CrossmintPaymentMethodManagementProps
 >(function CrossmintPaymentMethodManagementIFrame(props, ref) {
-    const [iframeClient, setIframeClient] = useState<PaymentMethodManagementIFrameEmitter | null>(null);
-    const [height, setHeight] = useState(0);
-    const [loaded, setLoaded] = useState(false);
-    const iframe = useRef<HTMLIFrameElement>(null);
-    // The listeners subscribe once; reading the callback off this ref keeps a late event calling
-    // the current props instead of the ones captured at subscribe time.
-    const latestProps = useRef(props);
-    useEffect(() => {
-        latestProps.current = props;
-    });
-    const pending = useRef<{ promise: Promise<PaymentMethodSubmitResult>; cancel: () => void } | null>(null);
-
     const { crossmint } = useCrossmint();
     const service = useMemo(
         () =>
@@ -39,44 +32,93 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
         [crossmint]
     );
     const url = service.iframe.getUrl(props);
+    // Authentication and form configuration live in the URL. A committed change must
+    // retire the old window too, so its events cannot reach the next buyer's callbacks.
+    return <PaymentMethodConnection key={url} ref={ref} url={url} service={service} props={props} />;
+});
 
-    useEffect(() => {
-        if (iframe.current == null || iframeClient != null) {
+const PaymentMethodConnection = forwardRef<
+    CrossmintPaymentMethodManagementRef,
+    {
+        url: string;
+        service: ReturnType<typeof createPaymentMethodManagementService>;
+        props: CrossmintPaymentMethodManagementProps;
+    }
+>(function PaymentMethodConnection({ url, service, props }, ref) {
+    const [iframeService] = useState(service);
+    const iframe = useRef<HTMLIFrameElement>(null);
+    const [height, setHeight] = useState(0);
+    const [loaded, setLoaded] = useState<object | null>(null);
+    const latestProps = useRef(props);
+    const connection = useRef<{ client: PaymentMethodManagementIFrameEmitter; ready: Promise<void> } | null>(null);
+    const pending = useRef<{
+        client: PaymentMethodManagementIFrameEmitter;
+        promise: Promise<PaymentMethodSubmitResult>;
+        cancel: () => void;
+    } | null>(null);
+
+    useCommittedLayoutEffect(() => {
+        latestProps.current = props;
+    });
+
+    useCommittedLayoutEffect(() => {
+        if (iframe.current == null || loaded == null) {
             return;
         }
-        setIframeClient(service.iframe.createClient(iframe.current));
-    }, [iframeClient, service]);
-
-    useEffect(() => {
-        if (iframeClient == null) {
-            return;
-        }
-        const heightListener = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
-        const selectedListener = iframeClient.on("payment-method:selected", (data) =>
-            latestProps.current.onPaymentMethodSelected?.(data)
-        );
+        const client = iframeService.iframe.createClient(iframe.current);
+        const active = { client, ready: client.handshakeWithChild() };
+        active.ready.catch(() => {
+            /* submit() reports a blocked channel. */
+        });
+        connection.current = active;
+        const heightListener = client.on("ui:height.changed", ({ height }) => {
+            if (connection.current === active) {
+                setHeight(height);
+            }
+        });
+        const selectedListener = client.on("payment-method:selected", (method) => {
+            if (connection.current === active) {
+                return latestProps.current.onPaymentMethodSelected?.(method);
+            }
+        });
         return () => {
-            iframeClient.off(heightListener);
-            iframeClient.off(selectedListener);
-            pending.current?.cancel();
-            pending.current = null;
+            client.off(heightListener);
+            client.off(selectedListener);
+            if (pending.current?.client === client) {
+                pending.current.cancel();
+                pending.current = null;
+            }
+            if (connection.current === active) {
+                connection.current = null;
+            }
         };
-    }, [iframeClient]);
+    }, [iframeService, loaded]);
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            submit() {
-                if (iframeClient == null || !loaded) {
-                    return Promise.resolve(unavailable("The payment method component has not loaded yet."));
-                }
-                if (pending.current != null) {
-                    return pending.current.promise;
-                }
-                const requestId = crypto.randomUUID();
-                const controller = new AbortController();
-                const promise: Promise<PaymentMethodSubmitResult> = iframeClient
-                    .sendAction({
+    useImperativeHandle(ref, () => ({
+        submit() {
+            const active = connection.current;
+            if (active == null) {
+                return Promise.resolve(unavailable("The payment method component has not loaded yet."));
+            }
+            if (pending.current?.client === active.client) {
+                return pending.current.promise;
+            }
+            const controller = new AbortController();
+            let cancel = () => controller.abort();
+            const cancelled = new Promise<PaymentMethodSubmitResult>((resolve) => {
+                cancel = () => {
+                    controller.abort();
+                    resolve(superseded());
+                };
+            });
+            const operation = (async (): Promise<PaymentMethodSubmitResult> => {
+                try {
+                    await active.ready;
+                    if (connection.current !== active) {
+                        return superseded();
+                    }
+                    const requestId = crypto.randomUUID();
+                    const { result } = await active.client.sendAction({
                         event: "payment-method:submit",
                         data: { requestId },
                         responseEvent: "payment-method:result",
@@ -85,28 +127,29 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
                             signal: controller.signal,
                             condition: (response) => response.requestId === requestId,
                         },
-                    })
-                    .then(
-                        ({ result }) => result as PaymentMethodSubmitResult,
-                        () => unavailable("The payment method component did not answer. Please try again.")
-                    )
-                    .finally(() => {
-                        if (pending.current?.promise === promise) {
-                            pending.current = null;
-                        }
                     });
-                pending.current = { promise, cancel: () => controller.abort() };
-                return promise;
-            },
-        }),
-        [iframeClient, loaded]
-    );
+                    return connection.current === active ? (result as PaymentMethodSubmitResult) : superseded();
+                } catch {
+                    return connection.current === active
+                        ? unavailable("The payment method component did not answer. Please try again.")
+                        : superseded();
+                }
+            })();
+            const promise = Promise.race([operation, cancelled]).finally(() => {
+                if (pending.current?.promise === promise) {
+                    pending.current = null;
+                }
+            });
+            pending.current = { client: active.client, promise, cancel };
+            return promise;
+        },
+    }));
 
     return (
         <iframe
             ref={iframe}
             src={url}
-            onLoad={() => setLoaded(true)}
+            onLoad={() => setLoaded({})}
             id="crossmint-payment-method-management.iframe"
             role="crossmint-payment-method-management.iframe"
             allow="payment *; microphone; camera"
