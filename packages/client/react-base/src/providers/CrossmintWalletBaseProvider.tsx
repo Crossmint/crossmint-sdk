@@ -210,6 +210,17 @@ export function cachedWalletMatchesArgs<C extends Chain>(
     return wallet != null && loadedArgs != null && loadedArgs.chain === args.chain && loadedArgs.alias === args.alias;
 }
 
+/** The exact request that last failed: the full create args and the JWT they were sent with. */
+export type FailedWalletAttempt = { args: WalletCreateArgs<Chain>; jwt: string };
+
+export function isSameFailedAttempt<C extends Chain>(
+    failed: FailedWalletAttempt | undefined,
+    args: WalletCreateArgs<C>,
+    jwt: string | undefined
+): boolean {
+    return failed != null && failed.jwt === jwt && isEqual(failed.args, args);
+}
+
 /**
  * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
  * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
@@ -251,6 +262,7 @@ export function CrossmintWalletBaseProvider({
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [loadedWalletArgs, setLoadedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
+    const [failedAttempt, setFailedAttempt] = useState<FailedWalletAttempt | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [walletError, setWalletError] = useState<WalletContextError | null>(null);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
@@ -371,6 +383,12 @@ export function CrossmintWalletBaseProvider({
             if (walletError?.code === "region-blocked") {
                 return undefined;
             }
+            // A failed attempt rewrites walletError, which recreates this callback and refires the
+            // createOnLogin effect; without this latch the same request would be retried forever.
+            // Any change to the args or the JWT is a new request and goes through.
+            if (walletStatus === "error" && isSameFailedAttempt(failedAttempt, args, crossmint.jwt)) {
+                return undefined;
+            }
 
             try {
                 setWalletStatus("in-progress");
@@ -401,12 +419,14 @@ export function CrossmintWalletBaseProvider({
 
                 setWallet(wallet);
                 setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                setFailedAttempt(undefined);
                 setWalletStatus("loaded");
                 return wallet;
             } catch (error) {
                 logger.error("react.wallet.getOrCreateWallet.error", { error });
                 setWallet(undefined);
                 setLoadedWalletArgs(undefined);
+                setFailedAttempt({ args, jwt: crossmint.jwt });
                 setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
@@ -418,6 +438,7 @@ export function CrossmintWalletBaseProvider({
             walletStatus,
             wallet,
             loadedWalletArgs,
+            failedAttempt,
             walletError,
             initializeWebViewIfNeeded,
             buildWalletOptions,
@@ -579,12 +600,13 @@ export function CrossmintWalletBaseProvider({
         setProcessedCreateOnLogin(createOnLogin);
     }, [createOnLogin, authBaseContext?.user, authBaseContext?.user?.email]);
 
-    // createOnLogin runs once per (jwt, createOnLogin). getOrCreateWallet's identity changes with every
-    // wallet state update, so keying this effect on it alone re-ran createOnLogin after the consumer
-    // had switched chains with getWallet/createWallet, and flipped the wallet back (WAL-12884).
-    const handledCreateOnLogin = useRef<{ jwt: string; createOnLogin: CreateOnLogin } | null>(null);
+    const handledCreateOnLogin = useRef<{ createOnLogin: CreateOnLogin; jwt: string } | null>(null);
     useEffect(() => {
-        if (processedCreateOnLogin == null || crossmint.jwt == null) {
+        if (crossmint.jwt == null) {
+            handledCreateOnLogin.current = null;
+            return;
+        }
+        if (processedCreateOnLogin == null) {
             return;
         }
         // Guard: don't attempt wallet creation if required signer fields are still missing.
@@ -602,17 +624,15 @@ export function CrossmintWalletBaseProvider({
         const handled = handledCreateOnLogin.current;
         if (
             handled != null &&
-            handled.jwt === crossmint.jwt &&
-            isEqual(handled.createOnLogin, processedCreateOnLogin)
+            isEqual(handled.createOnLogin, processedCreateOnLogin) &&
+            (walletStatus !== "error" || handled.jwt === crossmint.jwt)
         ) {
             return;
         }
         if (walletStatus === "in-progress") {
-            // Another load is running; getOrCreateWallet would no-op. Leave it unhandled so the
-            // next status change re-evaluates.
             return;
         }
-        handledCreateOnLogin.current = { jwt: crossmint.jwt, createOnLogin: processedCreateOnLogin };
+        handledCreateOnLogin.current = { createOnLogin: processedCreateOnLogin, jwt: crossmint.jwt };
         getOrCreateWallet(processedCreateOnLogin);
     }, [processedCreateOnLogin, getOrCreateWallet, crossmint.jwt, walletStatus]);
 
@@ -621,6 +641,7 @@ export function CrossmintWalletBaseProvider({
             setWalletStatus("not-loaded");
             setWallet(undefined);
             setLoadedWalletArgs(undefined);
+            setFailedAttempt(undefined);
             setWalletError(null);
         }
     }, [crossmint.jwt, walletStatus]);

@@ -8,7 +8,7 @@ import {
     CROSSMINT_API_VERSION,
     type CookieOptions,
 } from "@crossmint/common-sdk-auth";
-import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { validateAPIKey, type Crossmint, type CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
     FetchRequestAdapter,
     FetchResponseAdapter,
@@ -20,7 +20,7 @@ import {
     type GenericResponse,
 } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
-import { verifyCrossmintJwt } from "./utils/jwt";
+import { assertJwtAudience, verifyCrossmintJwt } from "./utils/jwt";
 import type { JSONWebKeySet } from "jose";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
@@ -37,9 +37,15 @@ export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
  */
 export class CrossmintAuthServer extends CrossmintAuth {
     private cookieOptions: CookieOptions;
+    private projectId: string;
 
     private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, options: CrossmintAuthServerOptions) {
         super(crossmint, apiClient, options);
+        const apiKeyResult = validateAPIKey(crossmint.apiKey);
+        if (!apiKeyResult.isValid) {
+            throw new Error(apiKeyResult.message);
+        }
+        this.projectId = apiKeyResult.projectId;
         this.cookieOptions = options.cookieOptions ?? {};
     }
 
@@ -123,6 +129,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
             }
 
             const refreshedAuthMaterial = await this.refresh(refreshToken);
+            assertJwtAudience(refreshedAuthMaterial.jwt, this.projectId);
 
             const responseWithBody = responseAdapter.setAuthMaterial(refreshedAuthMaterial);
 
@@ -150,12 +157,16 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
     }
 
-    /** Verify a Crossmint-issued JWT and return its decoded payload. Uses Crossmint's JWKS endpoint unless a key set is provided. */
+    /**
+     * Verify a Crossmint-issued JWT and return its decoded payload — checks the signature, expiry,
+     * and that it was issued for this project (`aud` matches the API key's project ID).
+     * Uses Crossmint's JWKS endpoint unless a key set is provided.
+     */
     public verifyCrossmintJwt(token: string, jwks?: JSONWebKeySet) {
         if (jwks != null) {
-            return verifyCrossmintJwt(token, jwks);
+            return verifyCrossmintJwt(token, jwks, { audience: this.projectId });
         }
-        return verifyCrossmintJwt(token, this.getJwksUri());
+        return verifyCrossmintJwt(token, this.getJwksUri(), { audience: this.projectId });
     }
 
     /** Store auth material (JWT and refresh token) in the response's cookies. */
@@ -211,6 +222,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
 
         const refreshedAuthMaterial = await this.refreshAuthMaterial(refreshToken);
+        assertJwtAudience(refreshedAuthMaterial.jwt, this.projectId);
 
         if (response != null) {
             this.storeAuthMaterial(response, refreshedAuthMaterial);
