@@ -607,7 +607,9 @@ export function CrossmintWalletBaseProvider({
             return;
         }
         if (processedCreateOnLogin == null) {
+            handledCreateOnLogin.current = null;
             return;
+        }
         }
         // Guard: don't attempt wallet creation if required signer fields are still missing.
         const { signers } = processedCreateOnLogin;
