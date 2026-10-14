@@ -26,9 +26,8 @@ export async function verifyCrossmintJwt(token: string, jwks: JWKSInput, options
 }
 
 /**
- * Assert that a JWT's `aud` claim matches the expected project ID. Decodes the token without verifying
- * its signature — only safe for tokens that come straight from Crossmint's refresh endpoint or the
- * integrator's own refresh route.
+ * @deprecated This does not verify the JWT signature and must not be used to authenticate a token.
+ * Use `verifyCrossmintJwt` instead.
  */
 export function assertJwtAudience(jwt: string, expectedAudience: string): void {
     try {
