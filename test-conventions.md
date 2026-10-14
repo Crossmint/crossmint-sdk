@@ -360,7 +360,27 @@ export async function approveDelegatedSigner(...): Promise<void> { ... }
 
 ---
 
-## 11. Quick Reference
+## 11. Where an SDK Test Lives
+
+Decided by **what the test asserts**, not by what it touches. A test that sends a bad input to the real API and asserts the API refuses it is testing the backend with a slower, flakier harness — it does not belong in an SDK repo.
+
+| The test asserts… | Tier | Where | Network |
+| --- | --- | --- | --- |
+| **SDK logic** — orchestration, signer resolution, configuration validation, what `ApiClient` puts on the wire (headers, URL, method, error parsing) | Sandbox | `packages/<pkg>/src/**/*.test.ts` | `fetch` mocked, no key |
+| **The API's response shape as the SDK reads it** — the fields it reads, the error codes it branches on | Heartbeat | `tests/integration/heartbeat/` | Real, scheduled |
+| **A flow across the real API** — create → send → approve → poll, register → sign → remove | Integration | `tests/integration/<area>/` | Real, on PR, advisory |
+| **The API's own validation, sanitisation, rate limiting, response-shape rules** | — | crossbit-main, not here | — |
+
+Rules of thumb:
+
+-   One test per endpoint in the heartbeat; it asserts only what the SDK reads, nothing else.
+-   One file per flow family in the integration tier, and **at most one negative per flow**, chosen to prove that an API rejection reaches the caller — not to enumerate the API's validation rules.
+-   If a test can pass with `fetch` mocked, it is a sandbox test. Move it there.
+-   If the only thing the SDK does with an input is forward it, the test for that input is the backend's.
+
+---
+
+## 12. Quick Reference
 
 |                |                                                                   |
 | -------------- | ----------------------------------------------------------------- |
