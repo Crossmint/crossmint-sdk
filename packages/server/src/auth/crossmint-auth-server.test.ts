@@ -342,6 +342,51 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
+        it("rejects and clears cookies when a custom refresh response has no JWT", async () => {
+            const refreshRoute = "https://app.example.com/api/refresh";
+            const mockResponse = {} as GenericResponse;
+            const refreshedAuthMaterial = {
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user456" },
+            };
+            const fetchMock = vi.fn().mockResolvedValue(
+                new Response(JSON.stringify(refreshedAuthMaterial), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                })
+            );
+            vi.stubGlobal("fetch", fetchMock);
+            crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint, { refreshRoute });
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new Error("Invalid stored JWT"));
+
+            await expect(
+                crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)
+            ).rejects.toBeInstanceOf(CrossmintAuthenticationError);
+
+            expect(fetchMock).toHaveBeenCalledWith(refreshRoute, expect.objectContaining({ method: "POST" }));
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledTimes(1);
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ refreshToken: refreshedAuthMaterial.refreshToken }),
+                expect.anything()
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                {}
+            );
+        });
+
         it("accepts AuthMaterialBasic as input", async () => {
             const mockAuthMaterial = {
                 jwt: "mock.jwt.token",
@@ -560,6 +605,35 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: refreshedJwt }),
+                expect.anything()
+            );
+        });
+
+        it("returns 401 without verifying or storing a refresh response that has no JWT", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            const refreshedAuthMaterial = {
+                refresh: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user123" },
+            };
+
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(refreshedAuthMaterial),
+                ok: true,
+            });
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(jwtUtils.verifyCrossmintJwt).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ refreshToken: refreshedAuthMaterial.refresh }),
                 expect.anything()
             );
         });

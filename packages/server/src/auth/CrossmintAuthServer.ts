@@ -240,6 +240,10 @@ export class CrossmintAuthServer extends CrossmintAuth {
     }
 
     private async verifyRefreshedAuthMaterial(authMaterial: AuthMaterialWithUser): Promise<string> {
+        if (typeof authMaterial?.jwt !== "string" || authMaterial.jwt === "") {
+            throw new CrossmintAuthenticationError("Refreshed JWT is missing or malformed");
+        }
+
         let payload: JWTPayload;
         try {
             payload = await this.verifyCrossmintJwt(authMaterial.jwt);
