@@ -12,6 +12,16 @@ export type VerifyCrossmintJwtOptions = {
     audience?: string;
 };
 
+export class JwksUnavailableError extends Error {
+    cause: unknown;
+
+    constructor(message: string, cause?: unknown) {
+        super(message);
+        this.name = "JwksUnavailableError";
+        this.cause = cause;
+    }
+}
+
 /**
  * Verify a Crossmint-issued JWT against the given JWKS (endpoint URI or key set) and return its decoded payload.
  * When `options.audience` is provided, the JWT's `aud` claim must match it.
@@ -68,6 +78,13 @@ async function verifyJWT(
         }
         if (err instanceof Error && err.message.includes("invalid algorithm")) {
             throw new Error("invalid algorithm");
+        }
+        if (
+            err instanceof errors.JWKSTimeout ||
+            !(err instanceof errors.JOSEError) ||
+            err.code === errors.JOSEError.code
+        ) {
+            throw new JwksUnavailableError(err instanceof Error ? err.message : String(err), err);
         }
         throw err;
     }

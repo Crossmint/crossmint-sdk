@@ -216,6 +216,35 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
+        it("rejects the session without logging out when refreshed JWT verification is unavailable", async () => {
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const mockResponse = {} as GenericResponse;
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid stored JWT"))
+                .mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: refreshedJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user456" },
+                    }),
+                ok: true,
+            });
+
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)).rejects.toThrow(
+                "Failed to get session"
+            );
+
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
+        });
+
         it("rejects the session when a custom refresh JWT fails verification", async () => {
             const refreshRoute = "https://app.example.com/api/refresh";
             const mockResponse = {} as GenericResponse;
@@ -533,6 +562,66 @@ describe("CrossmintAuthServer", () => {
                 expect.objectContaining({ jwt: refreshedJwt }),
                 expect.anything()
             );
+        });
+
+        it("returns 503 without logging out when refreshed JWT verification is unavailable", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: jwtForProject(PROJECT_ID),
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(503);
+            expect(result.statusText).toBe("Service Unavailable");
+            expect(await result.json()).toEqual({ error: "Service Unavailable", message: "timeout" });
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
+        });
+
+        it("returns a Node 503 response without logging out when refreshed JWT verification is unavailable", async () => {
+            const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: jwtForProject(PROJECT_ID),
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+
+            const result = await crossmintAuthServer.handleCustomRefresh(mockNodeRequest, mockNodeResponse);
+
+            expect(result).toBe(mockNodeResponse);
+            expect(mockNodeResponse.statusCode).toBe(503);
+            expect(mockNodeResponse.statusMessage).toBe("Service Unavailable");
+            expect(mockNodeResponse.write).toHaveBeenCalledWith(
+                JSON.stringify({ error: "Service Unavailable", message: "timeout" })
+            );
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
         });
 
         it("returns 401 when the refreshed user does not match the JWT subject", async () => {

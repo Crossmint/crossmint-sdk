@@ -21,7 +21,7 @@ import {
     type GenericResponse,
 } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
-import { verifyCrossmintJwt } from "./utils/jwt";
+import { JwksUnavailableError, verifyCrossmintJwt } from "./utils/jwt";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
@@ -142,6 +142,9 @@ export class CrossmintAuthServer extends CrossmintAuth {
 
             return responseWithBody;
         } catch (error) {
+            if (error instanceof JwksUnavailableError) {
+                return responseAdapter.setError(503, { error: "Service Unavailable", message: error.message });
+            }
             const errorResponseBody = { error: "Unauthorized", message: (error as Error).message };
             const errorResponse = isNodeResponse(response)
                 ? response
@@ -241,6 +244,9 @@ export class CrossmintAuthServer extends CrossmintAuth {
         try {
             payload = await this.verifyCrossmintJwt(authMaterial.jwt);
         } catch (error) {
+            if (error instanceof JwksUnavailableError) {
+                throw error;
+            }
             throw new CrossmintAuthenticationError(`Refreshed JWT failed verification: ${(error as Error).message}`);
         }
         const userId = payload.sub;
