@@ -42,26 +42,39 @@ describe("JWT Verification", () => {
     });
 
     describe("verifyCrossmintJwt", () => {
-        it("successfully verifies a valid JWT", async () => {
-            vi.mocked(jwtVerify).mockResolvedValue({ payload: mockPayload } as any);
-
-            const result = await verifyCrossmintJwt(mockToken, mockJwksUri);
-
-            expect(createJWKSClient).toHaveBeenCalledWith(mockJwksUri);
-            expect(jwtVerify).toHaveBeenCalledWith(mockToken, mockJwks);
-            expect(result).toEqual(mockPayload);
-        });
-
-        it("passes the audience and required claims to jwtVerify when an audience is provided", async () => {
+        it("verifies a valid JWT with the expected audience and required claims", async () => {
             vi.mocked(jwtVerify).mockResolvedValue({ payload: mockPayload } as any);
 
             const result = await verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" });
 
+            expect(createJWKSClient).toHaveBeenCalledWith(mockJwksUri);
             expect(jwtVerify).toHaveBeenCalledWith(mockToken, mockJwks, {
                 audience: "project-a",
+                algorithms: ["RS256"],
                 requiredClaims: ["exp", "sub", "aud"],
             });
             expect(result).toEqual(mockPayload);
+        });
+
+        it("throws without options before creating the JWKS client or verifying the JWT", async () => {
+            await expect(
+                // @ts-expect-error Runtime callers may omit options.
+                verifyCrossmintJwt(mockToken, mockJwksUri)
+            ).rejects.toThrow(
+                "verifyCrossmintJwt requires options.audience: the Crossmint project ID the JWT must be issued for"
+            );
+
+            expect(createJWKSClient).not.toHaveBeenCalled();
+            expect(jwtVerify).not.toHaveBeenCalled();
+        });
+
+        it("throws with an empty audience before creating the JWKS client or verifying the JWT", async () => {
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "" })).rejects.toThrow(
+                "verifyCrossmintJwt requires options.audience: the Crossmint project ID the JWT must be issued for"
+            );
+
+            expect(createJWKSClient).not.toHaveBeenCalled();
+            expect(jwtVerify).not.toHaveBeenCalled();
         });
 
         it("throws error for expired JWT", async () => {
@@ -70,7 +83,7 @@ describe("JWT Verification", () => {
 
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWTExpired("token expired", { exp: expiredTimestamp }));
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
                 `JWT provided expired at timestamp ${expiredDate}`
             );
         });
@@ -78,7 +91,7 @@ describe("JWT Verification", () => {
         it("handles expired JWT with unknown expiration", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWTExpired("token expired", { exp: undefined }));
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
                 "JWT provided expired at timestamp unknown"
             );
         });
@@ -86,20 +99,26 @@ describe("JWT Verification", () => {
         it("throws error for signature verification failure", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWSSignatureVerificationFailed());
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("signature verification failed");
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
+                "signature verification failed"
+            );
         });
 
         it("throws error for invalid algorithm", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new Error("invalid algorithm"));
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("invalid algorithm");
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
+                "invalid algorithm"
+            );
         });
 
         it("propagates unknown errors", async () => {
             const unknownError = new Error("unknown error");
             vi.mocked(jwtVerify).mockRejectedValue(unknownError);
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(unknownError);
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
+                unknownError
+            );
         });
 
         it("propagates JWKS client errors", async () => {
@@ -108,7 +127,9 @@ describe("JWT Verification", () => {
                 throw jwksError;
             });
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow(jwksError);
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
+                jwksError
+            );
         });
     });
 });
@@ -160,6 +181,31 @@ describe("JWT audience validation", () => {
             const token = await signToken({});
 
             await expect(verifyCrossmintJwt(token, jwks, { audience: "project-b" })).rejects.toThrow();
+        });
+
+        it("rejects when the JWT has no exp claim", async () => {
+            const token = await new actualJose.SignJWT({ aud: "project-a" })
+                .setProtectedHeader({ alg: "RS256", kid: "test-key" })
+                .setIssuer("crossmint")
+                .setSubject("user123")
+                .sign(privateKey);
+
+            await expect(verifyCrossmintJwt(token, jwks, { audience: "project-a" })).rejects.toThrow();
+        });
+
+        it("rejects a JWT signed with a non-RS256 algorithm", async () => {
+            const keyPair = await actualJose.generateKeyPair("RS512");
+            const jwk = await actualJose.exportJWK(keyPair.publicKey);
+            jwk.kid = "rs512-key";
+            jwk.alg = "RS512";
+            const localJwks = { keys: [jwk] };
+            const token = await new actualJose.SignJWT({ aud: "project-a" })
+                .setProtectedHeader({ alg: "RS512", kid: "rs512-key" })
+                .setSubject("user123")
+                .setExpirationTime("1h")
+                .sign(keyPair.privateKey);
+
+            await expect(verifyCrossmintJwt(token, localJwks, { audience: "project-a" })).rejects.toThrow();
         });
 
         it("resolves when the expected project is one of several JWT audiences", async () => {
