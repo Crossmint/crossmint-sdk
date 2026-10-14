@@ -4,6 +4,7 @@ import type { WebViewMessageEvent, WebView } from "react-native-webview";
 import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
+import { getRNWebViewPostMessage, isRNWebViewHost } from "./rnWebViewHost";
 
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
     private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
@@ -11,7 +12,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     private globalListenerAttached = false;
 
     constructor(private webviewRef?: RefObject<WebView | null>) {
-        this.isWebView = typeof (window as any).ReactNativeWebView !== "undefined";
+        this.isWebView = isRNWebViewHost();
     }
 
     private handleGlobalMessage = (event: MessageEvent) => {
@@ -37,8 +38,9 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
 
     send<K extends keyof OutgoingEvents>(message: { event: K; data: z.infer<OutgoingEvents[K]> }): void {
         if (this.isWebView) {
-            if ((window as any).ReactNativeWebView?.postMessage) {
-                (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
+            const postMessage = getRNWebViewPostMessage();
+            if (postMessage != null) {
+                postMessage(JSON.stringify(message));
             } else {
                 console.error("[RNTransport WebView] ReactNativeWebView.postMessage not available");
             }
