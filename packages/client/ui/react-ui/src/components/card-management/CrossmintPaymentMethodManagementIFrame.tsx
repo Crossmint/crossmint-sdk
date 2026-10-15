@@ -50,7 +50,9 @@ const PaymentMethodConnection = forwardRef<
     const [height, setHeight] = useState(0);
     const [loaded, setLoaded] = useState<object | null>(null);
     const latestProps = useRef(props);
-    const connection = useRef<{ client: PaymentMethodManagementIFrameEmitter; ready: Promise<void> } | null>(null);
+    const connection = useRef<{ client: PaymentMethodManagementIFrameEmitter; ready: () => Promise<void> } | null>(
+        null
+    );
     const pending = useRef<{
         client: PaymentMethodManagementIFrameEmitter;
         promise: Promise<PaymentMethodSubmitResult>;
@@ -66,8 +68,20 @@ const PaymentMethodConnection = forwardRef<
             return;
         }
         const client = iframeService.iframe.createClient(iframe.current);
-        const active = { client, ready: client.handshakeWithChild() };
-        active.ready.catch(() => {
+        // Keep successful readiness, but discard a failed handshake so a later
+        // submit can retry without reloading the iframe.
+        let ready: Promise<void> | undefined;
+        const active = {
+            client,
+            ready: () => {
+                ready ??= client.handshakeWithChild().catch((error) => {
+                    ready = undefined;
+                    throw error;
+                });
+                return ready;
+            },
+        };
+        active.ready().catch(() => {
             /* submit() reports a blocked channel. */
         });
         connection.current = active;
@@ -113,7 +127,7 @@ const PaymentMethodConnection = forwardRef<
             });
             const operation = (async (): Promise<PaymentMethodSubmitResult> => {
                 try {
-                    await active.ready;
+                    await active.ready();
                     if (connection.current !== active) {
                         return superseded();
                     }

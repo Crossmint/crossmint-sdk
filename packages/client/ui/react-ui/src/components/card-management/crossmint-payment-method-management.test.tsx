@@ -191,6 +191,44 @@ describe("submit connection lifecycle", () => {
         expect(mocks.sendAction).not.toHaveBeenCalled();
     });
 
+    test("retries a failed handshake and shares the pending retry between submits", async () => {
+        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
+        const { component } = mount();
+        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+
+        const retry = deferred<void>();
+        mocks.handshakeWithChild.mockReturnValueOnce(retry.promise);
+        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
+        const first = component.submit();
+        const second = component.submit();
+
+        expect(first).toBe(second);
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+        expect(mocks.sendAction).not.toHaveBeenCalled();
+        retry.resolve();
+        await expect(first).resolves.toEqual(SAVED);
+        expect(mocks.sendAction).toHaveBeenCalledOnce();
+    });
+
+    test("supersedes a pending handshake retry on unmount and never sends its late submit", async () => {
+        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
+        const { component, unmount } = mount();
+        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+
+        const retry = deferred<void>();
+        mocks.handshakeWithChild.mockReturnValueOnce(retry.promise);
+        const pending = component.submit();
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+        unmount();
+
+        await expect(pending).resolves.toMatchObject({ status: "superseded" });
+        await act(async () => {
+            retry.resolve();
+            await retry.promise;
+        });
+        expect(mocks.sendAction).not.toHaveBeenCalled();
+    });
+
     test.each(["buyer", "configuration", "reload", "unmount"] as const)(
         "supersedes an unanswered submit immediately on %s and ignores its late result",
         async (change) => {
