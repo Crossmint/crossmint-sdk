@@ -3,6 +3,7 @@
     "private": true,
     "version": "0.0.35",
     "scripts": {
+        "build": "next build",
         "dev": "next dev",
         "start": "next start"
     },
