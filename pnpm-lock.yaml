@@ -783,18 +783,6 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
-      '@dynamic-labs/ethereum':
-        specifier: 4.100.5
-        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(@types/react@19.1.10)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(use-sync-external-store@1.6.0(react@19.1.1))(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
-      '@dynamic-labs/sdk-react-core':
-        specifier: 4.100.5
-        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(@types/react@19.1.10)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(utf-8-validate@5.0.10)
-      '@dynamic-labs/solana':
-        specifier: 4.100.5
-        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
-      '@dynamic-labs/sui':
-        specifier: 4.100.5
-        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@emotion/react':
         specifier: ^11.11.0
         version: 11.14.0(@types/react@19.1.10)(react@19.1.1)
@@ -835,6 +823,18 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
+      '@dynamic-labs/ethereum':
+        specifier: 4.100.5
+        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(@types/react@19.1.10)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(use-sync-external-store@1.6.0(react@19.1.1))(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+      '@dynamic-labs/sdk-react-core':
+        specifier: 4.100.5
+        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(@types/react@19.1.10)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana':
+        specifier: 4.100.5
+        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+      '@dynamic-labs/sui':
+        specifier: 4.100.5
+        version: 4.100.5(@dynamic-labs-wallet/primitives@1.1.33)(@types/node@20.14.8)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react-native-passkey@3.6.2(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.1.10)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@testing-library/react':
         specifier: ^16.0.1
         version: 16.3.0(@testing-library/dom@10.4.2)(@types/react-dom@19.1.0(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -853,6 +853,12 @@ importers:
       '@types/react-transition-group':
         specifier: 4.4.12
         version: 4.4.12(@types/react@19.1.10)
+      buffer:
+        specifier: 6.0.3
+        version: 6.0.3
+      esbuild:
+        specifier: 0.21.5
+        version: 0.21.5
       pino-pretty:
         specifier: ^7.6.0
         version: 7.6.1
