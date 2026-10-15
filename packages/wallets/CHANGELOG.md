@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 1.20.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
 ## 1.20.2
 
 ### Patch Changes

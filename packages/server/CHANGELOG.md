@@ -1,5 +1,17 @@
 # @crossmint/server-sdk
 
+## 1.2.90
+
+### Patch Changes
+
+- 74b5507: `verifyCrossmintJwt` now requires an `audience` option.
+
+  Pass your project ID when you call the standalone function: `verifyCrossmintJwt(token, jwks, { audience: projectId })`. The function throws if `audience` is missing. It also requires the `exp`, `sub` and `aud` claims and accepts only RS256 signatures. `CrossmintAuth#verifyCrossmintJwt` and `getSession` already pass the project ID, so no change is needed there.
+
+- 6dc366a: `CrossmintAuth.getSession` and `handleCustomRefresh` now verify refreshed session JWTs against Crossmint's JWKS and take the user ID from the verified JWT `sub` claim. `refreshRoute` should be a static absolute URL.
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
 ## 1.2.89
 
 ### Patch Changes
