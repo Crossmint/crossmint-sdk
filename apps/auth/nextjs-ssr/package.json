@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/auth-ssr-nextjs-demo",
-    "version": "0.4.202",
+    "version": "0.4.203",
     "private": true,
     "scripts": {
         "dev": "next dev",
@@ -13,7 +13,7 @@
         "@crossmint/server-sdk": "workspace:*",
         "react": "^18",
         "react-dom": "^18",
-        "next": "15.5.21"
+        "next": "15.5.27"
     },
     "devDependencies": {
         "typescript": "^5",

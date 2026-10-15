@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-base
 
+## 4.4.0
+
+### Minor Changes
+
+- 2ed2e02: `Currency` and the `Order` type now include `mxn` and `xcd`, which card payments accept.
+
+  You can set one of them as `payment.fiat.defaultCurrency` on embedded or hosted checkout without a type cast, and orders priced in them type-check. A currency must be enabled for your project before orders can use it.
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+
 ## 4.3.0
 
 ### Minor Changes

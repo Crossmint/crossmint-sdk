@@ -2,28 +2,37 @@ import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
 import { createLocalJWKSet, decodeJwt, jwtVerify } from "jose";
 import { createJWKSClient } from "./jwksClient";
 import { errors } from "jose";
-import { assertJwtAudience, verifyCrossmintJwt } from "./jwt";
+import { assertJwtAudience, JwksUnavailableError, verifyCrossmintJwt } from "./jwt";
 import { CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
 import type { JWK, KeyLike } from "jose";
 
 const actualJose = await vi.importActual<typeof import("jose")>("jose");
 
-vi.mock("jose", () => ({
-    createRemoteJWKSet: vi.fn(),
-    createLocalJWKSet: vi.fn(),
-    decodeJwt: vi.fn(),
-    jwtVerify: vi.fn(),
-    errors: {
-        JWTExpired: class JWTExpired extends Error {
-            payload: { exp?: number };
-            constructor(message: string, payload: { exp?: number }) {
-                super(message);
-                this.payload = payload;
-            }
+vi.mock("jose", () => {
+    class JOSEError extends Error {
+        static code = "ERR_JOSE_GENERIC";
+        code = JOSEError.code;
+    }
+
+    return {
+        createRemoteJWKSet: vi.fn(),
+        createLocalJWKSet: vi.fn(),
+        decodeJwt: vi.fn(),
+        jwtVerify: vi.fn(),
+        errors: {
+            JOSEError,
+            JWKSTimeout: class JWKSTimeout extends JOSEError {},
+            JWTExpired: class JWTExpired extends Error {
+                payload: { exp?: number };
+                constructor(message: string, payload: { exp?: number }) {
+                    super(message);
+                    this.payload = payload;
+                }
+            },
+            JWSSignatureVerificationFailed: class JWSSignatureVerificationFailed extends Error {},
         },
-        JWSSignatureVerificationFailed: class JWSSignatureVerificationFailed extends Error {},
-    },
-}));
+    };
+});
 
 vi.mock("./jwksClient", () => ({
     createJWKSClient: vi.fn(),
@@ -83,25 +92,28 @@ describe("JWT Verification", () => {
 
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWTExpired("token expired", { exp: expiredTimestamp }));
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
-                `JWT provided expired at timestamp ${expiredDate}`
-            );
+            const verification = verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" });
+
+            await expect(verification).rejects.toThrow(`JWT provided expired at timestamp ${expiredDate}`);
+            await expect(verification).rejects.not.toBeInstanceOf(JwksUnavailableError);
         });
 
         it("handles expired JWT with unknown expiration", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWTExpired("token expired", { exp: undefined }));
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
-                "JWT provided expired at timestamp unknown"
-            );
+            const verification = verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" });
+
+            await expect(verification).rejects.toThrow("JWT provided expired at timestamp unknown");
+            await expect(verification).rejects.not.toBeInstanceOf(JwksUnavailableError);
         });
 
         it("throws error for signature verification failure", async () => {
             vi.mocked(jwtVerify).mockRejectedValue(new errors.JWSSignatureVerificationFailed());
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
-                "signature verification failed"
-            );
+            const verification = verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" });
+
+            await expect(verification).rejects.toThrow("signature verification failed");
+            await expect(verification).rejects.not.toBeInstanceOf(JwksUnavailableError);
         });
 
         it("throws error for invalid algorithm", async () => {
@@ -112,13 +124,15 @@ describe("JWT Verification", () => {
             );
         });
 
-        it("propagates unknown errors", async () => {
+        it("reports unknown errors as unavailable", async () => {
             const unknownError = new Error("unknown error");
             vi.mocked(jwtVerify).mockRejectedValue(unknownError);
 
-            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
-                unknownError
-            );
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toMatchObject({
+                name: "JwksUnavailableError",
+                message: "unknown error",
+                cause: unknownError,
+            });
         });
 
         it("propagates JWKS client errors", async () => {
@@ -130,6 +144,39 @@ describe("JWT Verification", () => {
             await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toThrow(
                 jwksError
             );
+        });
+
+        it("reports a JWKS request timeout as unavailable", async () => {
+            const timeoutError = new errors.JWKSTimeout("JWKS request timed out");
+            vi.mocked(jwtVerify).mockRejectedValue(timeoutError);
+
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toMatchObject({
+                name: "JwksUnavailableError",
+                message: "JWKS request timed out",
+                cause: timeoutError,
+            });
+        });
+
+        it("reports generic JOSE response errors as unavailable", async () => {
+            const responseError = new errors.JOSEError("Expected 200 OK from the JSON Web Key Set HTTP response");
+            vi.mocked(jwtVerify).mockRejectedValue(responseError);
+
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toMatchObject({
+                name: "JwksUnavailableError",
+                message: "Expected 200 OK from the JSON Web Key Set HTTP response",
+                cause: responseError,
+            });
+        });
+
+        it("reports network errors as unavailable with the original message", async () => {
+            const networkError = new TypeError("fetch failed");
+            vi.mocked(jwtVerify).mockRejectedValue(networkError);
+
+            await expect(verifyCrossmintJwt(mockToken, mockJwksUri, { audience: "project-a" })).rejects.toMatchObject({
+                name: "JwksUnavailableError",
+                message: "fetch failed",
+                cause: networkError,
+            });
         });
     });
 });

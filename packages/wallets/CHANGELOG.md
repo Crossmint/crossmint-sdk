@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 1.20.2
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
 ## 1.20.1
 
 ### Patch Changes
