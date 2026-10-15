@@ -60,12 +60,7 @@ export type Currency =
     | "inr"
     | "vnd"
     | "jpy"
-    | "cop"
     | "mxn"
-    | "php"
-    | "idr"
-    | "thb"
-    | "ngn"
     | "xcd";
 
 export interface FiatPrice {
