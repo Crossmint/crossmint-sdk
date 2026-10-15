@@ -9,6 +9,7 @@ import type { ServerSignerResolver } from "../server/resolver";
 import type {
     ApiSourcedServerSignerConfig,
     InternalSignerConfig,
+    PasskeyProvider,
     RecoverySignerConfigForChain,
     SignerConfigForChain,
 } from "../types";
@@ -21,6 +22,7 @@ export interface SignerDescriptorContext<C extends Chain> {
     resetSignerFrame?: () => Promise<void>;
     onAuthRequired?: Callbacks["onAuthRequired"];
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    passkeyProvider?: PasskeyProvider;
     serverSigners: ServerSignerResolver;
 }
 

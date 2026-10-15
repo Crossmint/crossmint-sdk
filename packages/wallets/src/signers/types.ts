@@ -147,7 +147,19 @@ export type PasskeySignerConfig = {
     id?: string;
     locator?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
-    onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey's credential id when it is known. */
+    onSignWithPasskey?: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
+};
+
+/**
+ * Creates passkeys and signs with them where the browser WebAuthn API is not available (e.g. React Native).
+ * Passed as the `passkeyProvider` wallet option, it is used for every passkey signer that has no
+ * `onCreatePasskey` / `onSignWithPasskey` of its own.
+ */
+export type PasskeyProvider = {
+    createPasskey: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey to sign with, when it is known. */
+    signWithPasskey: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
 };
 
 ////////////////////////////////////////////////////////////

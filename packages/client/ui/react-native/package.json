@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-native-ui",
-    "version": "1.7.2",
+    "version": "1.9.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -41,6 +41,7 @@
     },
     "devDependencies": {
         "@expo/config-plugins": "^9.0.17",
+        "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.0.1",
         "@types/react": "19.1.10",
         "expo-modules-core": "~3.0.29",
@@ -55,6 +56,12 @@
         "@solana/web3.js": "^1.98.1",
         "expo-modules-core": ">=2.0.0",
         "react": ">=17.0.2",
-        "react-native": ">=0.74.3"
+        "react-native": ">=0.74.3",
+        "react-native-passkey": ">=3.0.0"
+    },
+    "peerDependenciesMeta": {
+        "react-native-passkey": {
+            "optional": true
+        }
     }
 }

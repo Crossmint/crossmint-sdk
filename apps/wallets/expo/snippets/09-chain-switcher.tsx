@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
+import { type Chain, useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
 import { ChainSwitcher } from "@crossmint/wallets-playground-shared";
 
 export function ChainSwitcherSection() {
@@ -7,7 +7,7 @@ export function ChainSwitcherSection() {
     const { user } = useCrossmintAuth();
 
     const handleSwitchChain = useCallback(
-        async (chain: string) => {
+        async (chain: Chain) => {
             const result = await getWallet({ chain });
             if (result == null) {
                 // Wallet doesn't exist for this chain yet — create it with the same email recovery.

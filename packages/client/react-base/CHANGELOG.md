@@ -1,5 +1,31 @@
 # @crossmint/client-sdk-react-base
 
+## 2.4.1
+
+### Patch Changes
+
+- be45d5d: `getOrCreateWallet` no longer retries forever when `createOnLogin` fails. A failed attempt used to rewrite the error state, recreate the callback and refire the login effect, so status oscillated between `in-progress` and `error` for as long as the page was open. It now settles on `error` for the args that failed, and retries only when `createOnLogin` or the JWT changes.
+- Updated dependencies [4ab8408]
+- Updated dependencies [924a0b6]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/wallets-sdk@1.20.1
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/client-sdk-auth@1.3.26
+  - @crossmint/common-sdk-auth@1.1.24
+
+## 2.4.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- dc31134: An existing wallet keeps the phone signer's OTP `channel` from `createOnLogin`. The API never returns `channel`, so after a reload a WhatsApp phone signer sent its OTP by SMS. `getOrCreateWallet` now passes the recovery and signer config to `getWallet`, which merges it in. If the signers no longer match the existing wallet, it loads with the recovery config only; if that does not match either, it loads without config, as before.
+- Updated dependencies [2aaeabe]
+  - @crossmint/wallets-sdk@1.20.0
+
 ## 2.3.2
 
 ### Patch Changes

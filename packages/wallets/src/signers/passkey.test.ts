@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { PasskeyInternalSignerConfig, PasskeySignResult } from "./types";
 import { PasskeySigner } from "./passkey";
 
@@ -27,6 +27,20 @@ function signerWithCallback(result: PasskeySignResult): PasskeySigner {
 }
 
 describe("PasskeySigner", () => {
+    it("passes its credential id to onSignWithPasskey, so a native passkey API can select the passkey", async () => {
+        const onSignWithPasskey = vi.fn().mockResolvedValue(signResult("1d"));
+        const signer = new PasskeySigner({
+            type: "passkey",
+            id: "credential-id",
+            locator: "passkey:credential-id",
+            onSignWithPasskey,
+        } as PasskeyInternalSignerConfig);
+
+        await signer.signMessage("0xdeadbeef");
+
+        expect(onSignWithPasskey).toHaveBeenCalledWith("0xdeadbeef", "credential-id");
+    });
+
     describe("when the onSignWithPasskey callback returns a user-verified assertion", () => {
         it("returns it unchanged", async () => {
             const result = signResult("1d");

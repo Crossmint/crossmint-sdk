@@ -103,6 +103,7 @@ export class SignerManager<C extends Chain> {
             resetSignerFrame: this.#options?.resetSignerFrame,
             onAuthRequired: this.#options?.callbacks?.onAuthRequired,
             deviceSignerKeyStorage: this.#options?.deviceSignerKeyStorage,
+            passkeyProvider: this.#options?.passkeyProvider,
             serverSigners: this.#serverSignerResolver,
         };
     }

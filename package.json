@@ -18,6 +18,8 @@
         "lint": "biome check --diagnostic-level=error --max-diagnostics=200",
         "lint:fix": "biome check --write",
         "test:vitest": "pnpm turbo test:vitest",
+        "test:integration": "pnpm turbo test:integration",
+        "typecheck": "pnpm turbo typecheck",
         "playground:react": "pnpm --filter @crossmint/wallets-playground-react dev",
         "playground:expo:ios": "pnpm --filter @crossmint/wallets-playground-expo ios",
         "playground:expo:android": "pnpm --filter @crossmint/wallets-playground-expo android"
@@ -41,7 +43,7 @@
     },
     "packageManager": "pnpm@9.3.0",
     "engines": {
-        "node": ">=20.19.4",
+        "node": ">=22.13.0",
         "npm": "please-use-pnpm",
         "pnpm": ">=9",
         "yarn": "please-use-pnpm"

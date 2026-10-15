@@ -34,7 +34,7 @@ export class PasskeySigner implements SignerAdapter {
 
     async signMessage(message: string): Promise<PasskeySignResult> {
         if (this.config.onSignWithPasskey) {
-            const result = await this.config.onSignWithPasskey(message);
+            const result = await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id);
             if (!isUserVerified(result.metadata.authenticatorData)) {
                 throw new SigningFailedError(
                     'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'

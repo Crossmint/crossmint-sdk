@@ -19,6 +19,7 @@ import {
 } from "@crossmint/client-sdk-react-base";
 import { type DeviceSignerKeyStorage, recoveryMethodsFromCreateArgs } from "@crossmint/wallets-sdk";
 import { createDeviceSignerKeyStorage } from "@/native/createDeviceSignerKeyStorage";
+import { type NativePasskeyConfig, createNativePasskeyProvider } from "@/native/passkey/createNativePasskeyProvider";
 
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
@@ -44,6 +45,13 @@ export interface CrossmintWalletProviderProps {
      * (Secure Enclave on iOS, Android Keystore on Android). Override for testing or custom storage.
      */
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /**
+     * Enables passkey signers through the platform passkey APIs, on every chain: the relying party (`rpId`) and
+     * `Passkey` from the `react-native-passkey` package. Requires an app associated with `rpId` (iOS
+     * `webcredentials:` associated domain, Android Digital Asset Links) and a development build (Expo Go cannot run
+     * native modules). Without it, passkey signers are rejected.
+     */
+    passkeys?: NativePasskeyConfig;
     /** @internal */
     children: ReactNode;
 }
@@ -58,7 +66,7 @@ const DEVICE_STORAGE_QUERY_PARAM = "deviceStorage";
 const DEVICE_STORAGE_MEMORY = "memory";
 
 const PASSKEY_RN_ERROR =
-    "Passkey signers are not supported in React Native. Use a different signer type such as 'device', or 'external-wallet'.";
+    "Passkey signers in React Native need the `passkeys` prop on CrossmintWalletProvider: `passkeys={{ rpId, passkey: Passkey }}`, with `Passkey` from the `react-native-passkey` package. Otherwise use a different signer type such as 'device' or 'external-wallet'.";
 
 function hasPasskeySigner(config?: CreateOnLogin): boolean {
     if (config == null) {
@@ -117,11 +125,22 @@ function CrossmintWalletProviderInternal({
     showOtpSignerPrompt = true,
     callbacks,
     deviceSignerKeyStorage: deviceSignerKeyStorageProp,
+    passkeys,
 }: CrossmintWalletProviderProps) {
     // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally captures the initial value once to stabilize the reference
     const deviceSignerKeyStorage = useMemo(
         () => deviceSignerKeyStorageProp ?? createDeviceSignerKeyStorage(), // eslint-disable-line react-hooks/exhaustive-deps
         []
+    );
+    const passkeyRpId = passkeys?.rpId;
+    const passkeyRpName = passkeys?.rpName;
+    const passkeyModule = passkeys?.passkey;
+    const passkeyProvider = useMemo(
+        () =>
+            passkeyRpId != null && passkeyModule != null
+                ? createNativePasskeyProvider({ rpId: passkeyRpId, rpName: passkeyRpName, passkey: passkeyModule })
+                : undefined,
+        [passkeyRpId, passkeyRpName, passkeyModule]
     );
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
@@ -457,10 +476,10 @@ function CrossmintWalletProviderInternal({
     };
 
     useEffect(() => {
-        if (hasPasskeySigner(createOnLogin)) {
+        if (passkeyProvider == null && hasPasskeySigner(createOnLogin)) {
             throw new Error(PASSKEY_RN_ERROR);
         }
-    }, [createOnLogin]);
+    }, [createOnLogin, passkeyProvider]);
 
     return (
         <CrossmintWalletBaseProvider
@@ -473,8 +492,9 @@ function CrossmintWalletProviderInternal({
             clientTEEConnection={getClientTEEConnection}
             resetSignerFrame={USES_EPHEMERAL_SIGNER_STORAGE ? resetSignerFrame : undefined}
             deviceSignerKeyStorage={deviceSignerKeyStorage}
+            passkeyProvider={passkeyProvider}
         >
-            <PasskeyGuard>{children}</PasskeyGuard>
+            {passkeyProvider != null ? children : <PasskeyGuard>{children}</PasskeyGuard>}
 
             {needsWebView && (
                 <View
