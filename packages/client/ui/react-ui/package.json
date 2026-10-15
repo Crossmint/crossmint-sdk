@@ -22,7 +22,6 @@
     },
     "dependencies": {
         "@basis-theory/web-agentic": "1.2.2",
-        "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
@@ -36,7 +35,6 @@
         "@dynamic-labs/sui": "4.100.4",
         "@emotion/react": "^11.11.0",
         "@emotion/styled": "11.14.1",
-        "@ethersproject/transactions": "5.7.0",
         "@mysten/sui": "1.45.2",
         "@solana/web3.js": "1.98.1",
         "bs58": "5.0.0",
@@ -45,7 +43,6 @@
         "input-otp": "1.4.2",
         "lodash.isequal": "4.5.0",
         "ox": "0.6.9",
-        "react-jss": "10.10.0",
         "react-transition-group": "4.4.5",
         "viem": "2.57.7",
         "zod": "3.22.4"
