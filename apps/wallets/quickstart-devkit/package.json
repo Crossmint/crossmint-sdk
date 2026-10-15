@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/wallets-quickstart-devkit",
-    "version": "0.2.73",
+    "version": "0.2.74",
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
