@@ -8,8 +8,8 @@ import { createJWKSClient } from "./jwksClient";
 export type JWKSInput = string | JSONWebKeySet;
 
 export type VerifyCrossmintJwtOptions = {
-    /** Expected `aud` claim: the project ID the JWT must be issued for. */
-    audience?: string;
+    /** Required Crossmint project ID the JWT must be issued for. */
+    audience: string;
 };
 
 export class JwksUnavailableError extends Error {
@@ -24,15 +24,17 @@ export class JwksUnavailableError extends Error {
 
 /**
  * Verify a Crossmint-issued JWT against the given JWKS (endpoint URI or key set) and return its decoded payload.
- * When `options.audience` is provided, the JWT's `aud` claim must match it.
+ * The JWT's `aud` claim must match `options.audience`.
  */
-export async function verifyCrossmintJwt(token: string, jwks: JWKSInput, options: VerifyCrossmintJwtOptions = {}) {
-    try {
-        const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);
-        return await verifyJWT(signingKey, token, options);
-    } catch (error) {
-        throw error;
+export async function verifyCrossmintJwt(token: string, jwks: JWKSInput, options: VerifyCrossmintJwtOptions) {
+    if (typeof options?.audience !== "string" || options.audience.length === 0) {
+        throw new Error(
+            "verifyCrossmintJwt requires options.audience: the Crossmint project ID the JWT must be issued for"
+        );
     }
+
+    const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);
+    return await verifyJWT(signingKey, token, options.audience);
 }
 
 /**
@@ -55,16 +57,14 @@ export function assertJwtAudience(jwt: string, expectedAudience: string): void {
 async function verifyJWT(
     signingKey: ReturnType<typeof createRemoteJWKSet> | ReturnType<typeof createLocalJWKSet>,
     token: string,
-    options: VerifyCrossmintJwtOptions = {}
+    audience: string
 ) {
     try {
-        const { payload } =
-            options.audience != null
-                ? await jwtVerify(token, signingKey, {
-                      audience: options.audience,
-                      requiredClaims: ["exp", "sub", "aud"],
-                  })
-                : await jwtVerify(token, signingKey);
+        const { payload } = await jwtVerify(token, signingKey, {
+            audience,
+            algorithms: ["RS256"],
+            requiredClaims: ["exp", "sub", "aud"],
+        });
         return payload;
     } catch (err: unknown) {
         if (err instanceof errors.JWTExpired) {
