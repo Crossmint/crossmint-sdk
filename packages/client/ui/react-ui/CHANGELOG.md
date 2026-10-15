@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.10.1
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+- 773ce20: Remove unused dependencies on ethers transactions and react-jss, reducing installed packages and removing an unnecessary legacy ethers dependency tree. Remove the redundant direct auth dependency; authentication remains available through the existing React base dependency.
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/wallets-sdk@1.20.2
+  - @crossmint/client-sdk-base@4.4.0
+  - @crossmint/client-sdk-react-base@2.4.2
+  - @crossmint/common-sdk-auth@1.1.25
+
 ## 4.10.0
 
 ### Minor Changes
