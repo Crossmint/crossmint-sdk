@@ -3,6 +3,7 @@ import {
     type CrossmintAuthOptions,
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
+    type AuthMaterialWithUser,
     type AuthSession,
     type AuthMaterial,
     CROSSMINT_API_VERSION,
@@ -20,8 +21,8 @@ import {
     type GenericResponse,
 } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
-import { assertJwtAudience, verifyCrossmintJwt } from "./utils/jwt";
-import type { JSONWebKeySet } from "jose";
+import { JwksUnavailableError, verifyCrossmintJwt } from "./utils/jwt";
+import type { JSONWebKeySet, JWTPayload } from "jose";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
     /** Options applied to the auth cookies set by the SDK (e.g. `domain`). */
@@ -129,7 +130,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
             }
 
             const refreshedAuthMaterial = await this.refresh(refreshToken);
-            assertJwtAudience(refreshedAuthMaterial.jwt, this.projectId);
+            await this.verifyRefreshedAuthMaterial(refreshedAuthMaterial);
 
             const responseWithBody = responseAdapter.setAuthMaterial(refreshedAuthMaterial);
 
@@ -141,6 +142,9 @@ export class CrossmintAuthServer extends CrossmintAuth {
 
             return responseWithBody;
         } catch (error) {
+            if (error instanceof JwksUnavailableError) {
+                return responseAdapter.setError(503, { error: "Service Unavailable", message: error.message });
+            }
             const errorResponseBody = { error: "Unauthorized", message: (error as Error).message };
             const errorResponse = isNodeResponse(response)
                 ? response
@@ -222,7 +226,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
 
         const refreshedAuthMaterial = await this.refreshAuthMaterial(refreshToken);
-        assertJwtAudience(refreshedAuthMaterial.jwt, this.projectId);
+        const userId = await this.verifyRefreshedAuthMaterial(refreshedAuthMaterial);
 
         if (response != null) {
             this.storeAuthMaterial(response, refreshedAuthMaterial);
@@ -231,7 +235,28 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return {
             jwt: refreshedAuthMaterial.jwt,
             refreshToken: refreshedAuthMaterial.refreshToken,
-            userId: refreshedAuthMaterial.user.id,
+            userId,
         };
+    }
+
+    private async verifyRefreshedAuthMaterial(authMaterial: AuthMaterialWithUser): Promise<string> {
+        if (typeof authMaterial?.jwt !== "string" || authMaterial.jwt === "") {
+            throw new CrossmintAuthenticationError("Refreshed JWT is missing or malformed");
+        }
+
+        let payload: JWTPayload;
+        try {
+            payload = await this.verifyCrossmintJwt(authMaterial.jwt);
+        } catch (error) {
+            if (error instanceof JwksUnavailableError) {
+                throw error;
+            }
+            throw new CrossmintAuthenticationError(`Refreshed JWT failed verification: ${(error as Error).message}`);
+        }
+        const userId = payload.sub;
+        if (userId == null || authMaterial.user?.id !== userId) {
+            throw new CrossmintAuthenticationError("Refreshed session user does not match the JWT subject");
+        }
+        return userId;
     }
 }
