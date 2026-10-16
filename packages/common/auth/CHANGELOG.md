@@ -1,5 +1,29 @@
 # @crossmint/common-sdk-auth
 
+## 1.1.26
+
+### Patch Changes
+
+- 6dc366a: `CrossmintAuth.getSession` and `handleCustomRefresh` now verify refreshed session JWTs against Crossmint's JWKS and take the user ID from the verified JWT `sub` claim. `refreshRoute` should be a static absolute URL.
+
+## 1.1.25
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/client-sdk-base@4.4.0
+
+## 1.1.24
+
+### Patch Changes
+
+- Updated dependencies [4ab8408]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/common-sdk-base@0.12.4
+
 ## 1.1.23
 
 ### Patch Changes

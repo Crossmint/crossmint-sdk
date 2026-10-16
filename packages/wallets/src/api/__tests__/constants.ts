@@ -78,8 +78,10 @@ export const TEST_VALUES = {
 } as const;
 
 /**
- * Mock API key for unit tests.
- * This is a valid development API key format used for testing purposes only.
+ * Mock API key for unit tests. A valid development API key, read from a repo secret rather
+ * than hardcoded so it isn't a literal string to grep for in the SDK's public git history.
  */
-export const MOCK_API_KEY =
-    "ck_development_A61UZQnvjSQcM5qVBaBactgqebxafWAVsNdD2xLkgBxoYuH5q2guM8r9DUmZQzE1WYyoByGVYpEG2o9gVSzAZFsrLbfKGERUJ6D5CW6S9AsJGAc3ctgrsD4n2ioekzGj7KPbLwT3SysDjMamYXLxEroUbQSdwf6aLF4zeEpECq2crkTUQeLFzxzmjWNxFDHFYefDrfrFPCURvBXJLf5pCxCQ";
+if (process.env.PREVIEW_CK_KEY == null) {
+    throw new Error("PREVIEW_CK_KEY must be set to run this test suite.");
+}
+export const MOCK_API_KEY = process.env.PREVIEW_CK_KEY;

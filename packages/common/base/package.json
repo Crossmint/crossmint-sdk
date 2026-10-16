@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/common-sdk-base",
-    "version": "0.12.3",
+    "version": "0.12.5",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -23,7 +23,7 @@
         "@solana/web3.js": "1.98.1",
         "bs58": "5.0.0",
         "tweetnacl": "1.0.3",
-        "viem": "2.33.1"
+        "viem": "2.57.7"
     },
     "devDependencies": {
         "@types/bs58": "^4.0.4"
