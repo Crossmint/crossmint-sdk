@@ -1,5 +1,17 @@
 # @crossmint/common-sdk-base
 
+## 0.13.0
+
+### Minor Changes
+
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+### Patch Changes
+
+- 0ee57ff: Verify API key signatures with `@noble/ed25519` instead of `tweetnacl`. This cuts about 20 KB (minified) from every app that validates an API key, such as the protected input and payment method management components. `@noble/ed25519` is inlined into the build so the CommonJS output still works on older Node versions.
+
 ## 0.12.5
 
 ### Patch Changes
