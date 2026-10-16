@@ -6,7 +6,10 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"]
-        }
+        },
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "skipLibCheck": true
     },
     "include": ["src/**/*"]
 }
