@@ -1,8 +1,8 @@
 import { type ReactNode, useCallback, useRef, useMemo, useEffect, useState, useContext, type RefObject } from "react";
 import { Platform, View } from "react-native";
-import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import type { WebViewMessageEvent } from "react-native-webview";
 
-import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView, WebViewParent, type WebViewInstance } from "@crossmint/client-sdk-rn-window";
 import {
     environmentUrlConfig,
     signerInboundEvents,
@@ -164,7 +164,7 @@ function CrossmintWalletProviderInternal({
         return baseUrl;
     }, [parsedAPIKey.environment]);
 
-    const webviewRef = useRef<WebView>(null);
+    const webviewRef = useRef<WebViewInstance>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
@@ -284,7 +284,7 @@ function CrossmintWalletProviderInternal({
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
             logger.info("react-native.wallet.webview.initializing");
-            webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebView>, {
+            webViewParentRef.current = new WebViewParent(webviewRef as RefObject<WebViewInstance>, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
                 handshakeOptions: {
