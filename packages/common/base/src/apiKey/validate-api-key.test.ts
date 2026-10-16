@@ -36,6 +36,39 @@ describe("validateAPIKey", () => {
         expect(result.message).toBe("Invalid API key. Failed to validate signature");
     });
 
+    describe("when the signature of a valid key is tampered with", () => {
+        const PREFIX = "ck_development_";
+        const [keyData, signature] = new TextDecoder()
+            .decode(base58.decode(VALID_API_KEY.slice(PREFIX.length)))
+            .split(":");
+
+        function keyWithSignature(signatureBytes: Uint8Array) {
+            const decoded = `${keyData}:${base58.encode(signatureBytes)}`;
+            return `${PREFIX}${base58.encode(new TextEncoder().encode(decoded))}`;
+        }
+
+        test("rejects a signature with one flipped bit", () => {
+            const tampered = base58.decode(signature);
+            tampered[10] ^= 0x01;
+
+            const result = validateAPIKey(keyWithSignature(tampered));
+
+            expect(result.isValid).toBe(false);
+        });
+
+        test("rejects a truncated signature", () => {
+            const result = validateAPIKey(keyWithSignature(base58.decode(signature).slice(0, 63)));
+
+            expect(result.isValid).toBe(false);
+        });
+
+        test("rejects an all-zero signature", () => {
+            const result = validateAPIKey(keyWithSignature(new Uint8Array(64)));
+
+            expect(result.isValid).toBe(false);
+        });
+    });
+
     test("allows when API key is valid", () => {
         const result = validateAPIKey(VALID_API_KEY);
         if (!result.isValid) {
