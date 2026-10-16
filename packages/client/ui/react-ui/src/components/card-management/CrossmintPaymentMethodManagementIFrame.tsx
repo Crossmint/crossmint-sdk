@@ -68,6 +68,11 @@ const PaymentMethodConnection = forwardRef<
     // new client.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
+    const clientRef = useRef<{
+        reloads: number;
+        client: PaymentMethodManagementIFrameEmitter;
+        ready: () => Promise<void>;
+    } | null>(null);
     const latestProps = useRef(props);
     const connection = useRef<{ client: PaymentMethodManagementIFrameEmitter; ready: () => Promise<void> } | null>(
         null
@@ -86,29 +91,31 @@ const PaymentMethodConnection = forwardRef<
         if (iframe.current == null) {
             return;
         }
-        const client = iframeService.iframe.createClient(iframe.current);
-        // Keep successful readiness, but discard a failed handshake so a later
-        // submit can retry without reloading the iframe.
-        let ready: Promise<void> | undefined;
-        const active = {
-            client,
-            ready: () => {
-                ready ??= client.handshakeWithChild().catch((error) => {
-                    ready = undefined;
-                    throw error;
-                });
-                return ready;
-            },
-        };
-        // StrictMode double-runs this effect: a retired client that has already sent its
-        // handshakeRequest wins the child's single handshake and leaves the current client
-        // unanswered forever. Deferring past the cleanup means only the surviving client
-        // ever starts the handshake; submit() still calls ready() on its own.
-        const handshakeTimer = setTimeout(() => {
-            active.ready().catch(() => {
-                /* submit() reports a blocked channel. */
-            });
-        }, 0);
+        // StrictMode re-runs this effect for the same iframe document, but the child
+        // answers only one handshake per document: share one client (and its single
+        // handshake) per document, while each run still gets a fresh `active`.
+        if (clientRef.current?.reloads !== reloads) {
+            const client = iframeService.iframe.createClient(iframe.current);
+            // Keep successful readiness, but discard a failed handshake so a later
+            // submit can retry without reloading the iframe.
+            let ready: Promise<void> | undefined;
+            clientRef.current = {
+                reloads,
+                client,
+                ready: () => {
+                    ready ??= client.handshakeWithChild().catch((error) => {
+                        ready = undefined;
+                        throw error;
+                    });
+                    return ready;
+                },
+            };
+        }
+        const { client, ready } = clientRef.current;
+        const active = { client, ready };
+        active.ready().catch(() => {
+            /* submit() reports a blocked channel. */
+        });
         connection.current = active;
         const heightListener = client.on("ui:height.changed", ({ height }) => {
             if (connection.current === active) {
@@ -121,7 +128,6 @@ const PaymentMethodConnection = forwardRef<
             }
         });
         return () => {
-            clearTimeout(handshakeTimer);
             client.off(heightListener);
             client.off(selectedListener);
             if (pending.current?.client === client) {

@@ -141,20 +141,15 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         });
     });
 
-    test("under StrictMode only the surviving client starts the handshake", async () => {
-        const retired = { ...mocks, handshakeWithChild: vi.fn().mockResolvedValue(undefined) };
-        mocks.createClient.mockReturnValueOnce(retired);
+    test("under StrictMode the iframe document gets one client and one handshake", async () => {
         const ref = createRef<CrossmintPaymentMethodManagementRef>();
         render(
             <StrictMode>
                 <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />
             </StrictMode>
         );
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
 
-        expect(retired.handshakeWithChild).not.toHaveBeenCalled();
+        expect(mocks.createClient).toHaveBeenCalledTimes(1);
         expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
 
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
@@ -218,10 +213,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
             secondReply.resolve({ result: SAVED });
             await secondReply.promise;
         });
-        // The reconnect's eager handshake is deferred past the effect cleanup; let the timer run.
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
+        expect(mocks.createClient).toHaveBeenCalledTimes(2);
         expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
         await expect(component.submit()).resolves.toEqual(SAVED);
