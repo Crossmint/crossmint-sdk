@@ -11,6 +11,7 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     const [iframeClient, setIframeClient] = useState<EmbeddedOfframpIFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
     const ref = useRef<HTMLIFrameElement>(null);
+    const sendPending = useRef(false);
     const latestProps = useRef(props);
     useEffect(() => {
         latestProps.current = props;
@@ -40,15 +41,30 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
             iframeClient.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
             iframeClient.on("offramp:error", (data) => latestProps.current.onError?.(data)),
             iframeClient.on("crypto:send-transaction", async (tx) => {
+                if (sendPending.current) {
+                    return;
+                }
+                sendPending.current = true;
+                let reply: "crypto:send-transaction:success" | "crypto:send-transaction:failed";
+                let payload: { txId: string } | { error: string; rejected: boolean };
                 try {
-                    const txId = await latestProps.current.payer.signAndSendTransaction(tx);
-                    iframeClient.send("crypto:send-transaction:success", { txId });
+                    const txId: unknown = await latestProps.current.payer.signAndSendTransaction(tx);
+                    if (typeof txId === "string" && txId !== "") {
+                        reply = "crypto:send-transaction:success";
+                        payload = { txId };
+                    } else {
+                        reply = "crypto:send-transaction:failed";
+                        payload = { error: "The wallet returned no transaction id", rejected: false };
+                    }
                 } catch (error) {
-                    iframeClient.send("crypto:send-transaction:failed", {
+                    reply = "crypto:send-transaction:failed";
+                    payload = {
                         error: (error as Error)?.message ?? "The wallet failed",
                         rejected: (error as { rejected?: boolean })?.rejected === true,
-                    });
+                    };
                 }
+                sendPending.current = false;
+                iframeClient.send(reply as never, payload as never);
             }),
         ];
         return () => {

@@ -30,6 +30,12 @@ vi.mock("@/utils/createCrossmintApiClient", () => ({ createCrossmintApiClient: (
 const credentials = { sessionId: "ofs_1", clientSecret: "jwt" };
 const emit = (event: string, data: unknown) => act(() => listeners.get(event)?.(data));
 
+const tx = { serializedTransaction: "0x", chain: "base", payerAddress: "0xabc" };
+const sendTx = () =>
+    act(async () => {
+        void listeners.get("crypto:send-transaction")?.(tx);
+    });
+
 describe("<CrossmintEmbeddedOfframp />", () => {
     afterEach(() => {
         cleanup();
@@ -42,45 +48,6 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         const iframe = screen.getByTitle("Withdraw");
         expect(iframe.getAttribute("src")).toContain("/sdk/unstable/embedded-offramp");
         expect(iframe.getAttribute("allow")).toBe("camera");
-    });
-
-    test("signs and replies with the txId", async () => {
-        const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
-        render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction }} />);
-        await act(async () =>
-            listeners.get("crypto:send-transaction")?.({
-                serializedTransaction: "0x",
-                chain: "base",
-                payerAddress: "0xabc",
-            })
-        );
-        expect(signAndSendTransaction).toHaveBeenCalledWith({
-            serializedTransaction: "0x",
-            chain: "base",
-            payerAddress: "0xabc",
-        });
-        expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:success", { txId: "0xtx" });
-    });
-
-    test("reports a rejection only when the payer says so", async () => {
-        const rejected = Object.assign(new Error("declined"), { rejected: true });
-        render(
-            <CrossmintEmbeddedOfframp
-                credentials={credentials}
-                payer={{ signAndSendTransaction: vi.fn().mockRejectedValue(rejected) }}
-            />
-        );
-        await act(async () =>
-            listeners.get("crypto:send-transaction")?.({
-                serializedTransaction: "0x",
-                chain: "base",
-                payerAddress: "0xabc",
-            })
-        );
-        expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:failed", {
-            error: "declined",
-            rejected: true,
-        });
     });
 
     test("forwards completion and errors to the callbacks", () => {
@@ -98,5 +65,79 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         emit("offramp:error", { reason: "session-spent", retriable: false, message: "spent" });
         expect(onComplete).toHaveBeenCalledWith({ orderId: "o1", txId: "0xtx" });
         expect(onError).toHaveBeenCalledWith({ reason: "session-spent", retriable: false, message: "spent" });
+    });
+
+    describe("when the iframe requests a transaction", () => {
+        test("signs and replies once with the txId", async () => {
+            const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
+            render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction }} />);
+            await sendTx();
+            expect(signAndSendTransaction).toHaveBeenCalledWith(tx);
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+            expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:success", { txId: "0xtx" });
+        });
+
+        test("reports a rejection when the payer says so", async () => {
+            const rejected = Object.assign(new Error("declined"), { rejected: true });
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={credentials}
+                    payer={{ signAndSendTransaction: vi.fn().mockRejectedValue(rejected) }}
+                />
+            );
+            await sendTx();
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+            expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:failed", {
+                error: "declined",
+                rejected: true,
+            });
+        });
+
+        test.each([
+            ["a plain error", new Error("boom")],
+            ["a confirmation timeout", new Error("Transaction confirmation timeout")],
+        ])("reports %s as not rejected", async (_name, error) => {
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={credentials}
+                    payer={{ signAndSendTransaction: vi.fn().mockRejectedValue(error) }}
+                />
+            );
+            await sendTx();
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+            expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:failed", {
+                error: error.message,
+                rejected: false,
+            });
+        });
+
+        test.each([[undefined], [""], [42]])("reports a non-string txId (%s) as not rejected", async (txId) => {
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={credentials}
+                    payer={{ signAndSendTransaction: vi.fn().mockResolvedValue(txId) }}
+                />
+            );
+            await sendTx();
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+            expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:failed", {
+                error: expect.any(String),
+                rejected: false,
+            });
+        });
+
+        test("ignores a second request while one is pending", async () => {
+            let resolveSend: (txId: string) => void = () => {};
+            const signAndSendTransaction = vi
+                .fn()
+                .mockReturnValue(new Promise<string>((resolve) => (resolveSend = resolve)));
+            render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction }} />);
+            await sendTx();
+            await sendTx();
+            expect(signAndSendTransaction).toHaveBeenCalledTimes(1);
+            await act(async () => resolveSend("0xtx"));
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+            expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:success", { txId: "0xtx" });
+        });
     });
 });

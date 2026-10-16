@@ -3,7 +3,10 @@ import { type Chain, EVMWallet, SolanaWallet, TransactionNotCreatedError, type W
 
 export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOfframpPayer {
     return {
-        async signAndSendTransaction({ serializedTransaction, payerAddress }) {
+        async signAndSendTransaction({ serializedTransaction, payerAddress, chain }) {
+            if (chain !== wallet.chain) {
+                throw new Error("This withdrawal was prepared for a different chain");
+            }
             const isSolana = wallet.chain === "solana";
             const sameWallet = isSolana
                 ? wallet.address === payerAddress
@@ -15,7 +18,7 @@ export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOffr
                 const result = isSolana
                     ? await SolanaWallet.from(wallet).sendTransaction({ serializedTransaction })
                     : await EVMWallet.from(wallet).sendTransaction({ transaction: serializedTransaction });
-                return result.hash as string;
+                return result.hash;
             } catch (error) {
                 if (error instanceof TransactionNotCreatedError) {
                     throw new OfframpSignatureRejected(error.message);
