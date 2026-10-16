@@ -5,12 +5,20 @@ export type SendTransactionReplyEmitter = {
 
 export type SendTransactionOutcome = { txId: unknown } | { error: unknown };
 
+function describe(message: unknown) {
+    try {
+        return message == null ? "The wallet failed" : String(message);
+    } catch {
+        return "The wallet failed";
+    }
+}
+
 /** Sends exactly one reply: success for a non-empty string txId, otherwise failed (rejected only when error.rejected === true). */
 export function sendTransactionReply(emitter: SendTransactionReplyEmitter, outcome: SendTransactionOutcome) {
     if ("error" in outcome) {
         const { message, rejected } = (outcome.error ?? {}) as { message?: unknown; rejected?: unknown };
         emitter.send("crypto:send-transaction:failed", {
-            error: message == null ? "The wallet failed" : String(message),
+            error: describe(message),
             rejected: rejected === true,
         });
     } else if (typeof outcome.txId === "string" && outcome.txId !== "") {

@@ -81,10 +81,12 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     const url = service.iframe.getUrl(props);
     const routeUrl = url.split("?")[0] ?? url;
     // Any other page the WebView ends up showing also receives the bridge, so only the offramp route may talk to it.
+    // iOS reports the sender's full URL, Android only its origin.
+    const routeOrigin = /^[a-z][a-z0-9+.-]*:\/\/[^/?#]+/i.exec(routeUrl)?.[0] ?? routeUrl;
     const isOfframpPage = (pageUrl: unknown) =>
         typeof pageUrl === "string" &&
-        pageUrl.startsWith(routeUrl) &&
-        /^[?#/]?$/.test(pageUrl.slice(routeUrl.length, routeUrl.length + 1));
+        (pageUrl === routeOrigin ||
+            (pageUrl.startsWith(routeUrl) && /^[?#/]?$/.test(pageUrl.slice(routeUrl.length, routeUrl.length + 1))));
 
     const reportLoadFailure = (message: string) =>
         latestProps.current.onError?.({ reason: "invalid-configuration", retriable: false, message });
@@ -100,12 +102,13 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
             }}
             onOpenWindow={({ nativeEvent }) => {
                 if (/^https?:/i.test(nativeEvent.targetUrl)) {
-                    void Linking.openURL(nativeEvent.targetUrl);
+                    Linking.openURL(nativeEvent.targetUrl).catch(() => undefined);
                 }
             }}
             onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description)}
             onHttpError={({ nativeEvent }) => reportLoadFailure(`HTTP ${nativeEvent.statusCode}`)}
             style={{ width: "100%", height, backgroundColor: "transparent" }}
+            scrollEnabled={false}
             domStorageEnabled={true}
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}

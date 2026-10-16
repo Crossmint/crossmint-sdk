@@ -35,4 +35,12 @@ describe("sendTransactionReply", () => {
     ])("always sends a string error for %s", (error, expected) => {
         expect(reply({ error }).mock.calls[0]?.[1]).toEqual({ error: expected, rejected: false });
     });
+
+    test("falls back when the message cannot be stringified", () => {
+        const message = Object.create(null);
+        expect(reply({ error: { message } }).mock.calls[0]?.[1]).toEqual({
+            error: "The wallet failed",
+            rejected: false,
+        });
+    });
 });

@@ -5,7 +5,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { CrossmintEmbeddedOfframp } from "./CrossmintEmbeddedOfframp";
 
-const { injectJavaScript, openURL } = vi.hoisted(() => ({ injectJavaScript: vi.fn(), openURL: vi.fn() }));
+const { injectJavaScript, openURL } = vi.hoisted(() => ({
+    injectJavaScript: vi.fn(),
+    openURL: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("react-native-webview", () => ({
     WebView: vi.fn().mockImplementation(({ ref }) => {
@@ -103,6 +106,25 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         await emit("offramp:completed", { orderId: "o1", txId: "0xtx" });
         expect(first).not.toHaveBeenCalled();
         expect(second).toHaveBeenCalledWith({ orderId: "o1", txId: "0xtx" });
+    });
+
+    describe("when the sender is reported by origin only (Android)", () => {
+        test("accepts the route origin", async () => {
+            const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction }} />);
+            await emit("crypto:send-transaction", TX, "https://staging.crossmint.com");
+            expect(signAndSendTransaction).toHaveBeenCalledTimes(1);
+        });
+
+        test.each([["https://evil.example"], ["https://staging.crossmint.com.evil.example"]])(
+            "ignores %s",
+            async (url) => {
+                const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
+                render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction }} />);
+                await emit("crypto:send-transaction", TX, url);
+                expect(signAndSendTransaction).not.toHaveBeenCalled();
+            }
+        );
     });
 
     describe("when another page is showing in the WebView", () => {
