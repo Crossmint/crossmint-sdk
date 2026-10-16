@@ -13,7 +13,13 @@ export class OfframpSignatureRejected extends Error {
 }
 
 export type EmbeddedOfframpPayer = {
-    /** Resolve with the txId once broadcast. Throw OfframpSignatureRejected only when the user declined. */
+    /**
+     * Sign and broadcast the transaction, then resolve with the txId.
+     * serializedTransaction is a serialized transaction for EVM chains, and a base58 legacy transaction
+     * with feePayer and recentBlockhash set for Solana.
+     * payerAddress is the wallet the offramp expects to pay, so refuse if your wallet does not match.
+     * Throw OfframpSignatureRejected only when the user declined.
+     */
     signAndSendTransaction(tx: { serializedTransaction: string; chain: string; payerAddress: string }): Promise<string>;
 };
 

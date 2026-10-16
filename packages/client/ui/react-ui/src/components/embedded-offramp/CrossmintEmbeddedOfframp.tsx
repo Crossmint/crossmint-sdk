@@ -3,6 +3,7 @@ import {
     type CrossmintEmbeddedOfframpProps,
     type EmbeddedOfframpIFrameEmitter,
     createEmbeddedOfframpService,
+    sendTransactionReply,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
@@ -45,26 +46,14 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
                     return;
                 }
                 sendPending.current = true;
-                let reply: "crypto:send-transaction:success" | "crypto:send-transaction:failed";
-                let payload: { txId: string } | { error: string; rejected: boolean };
+                let outcome: { txId: unknown } | { error: unknown };
                 try {
-                    const txId: unknown = await latestProps.current.payer.signAndSendTransaction(tx);
-                    if (typeof txId === "string" && txId !== "") {
-                        reply = "crypto:send-transaction:success";
-                        payload = { txId };
-                    } else {
-                        reply = "crypto:send-transaction:failed";
-                        payload = { error: "The wallet returned no transaction id", rejected: false };
-                    }
+                    outcome = { txId: await latestProps.current.payer.signAndSendTransaction(tx) };
                 } catch (error) {
-                    reply = "crypto:send-transaction:failed";
-                    payload = {
-                        error: (error as Error)?.message ?? "The wallet failed",
-                        rejected: (error as { rejected?: boolean })?.rejected === true,
-                    };
+                    outcome = { error };
                 }
                 sendPending.current = false;
-                iframeClient.send(reply as never, payload as never);
+                sendTransactionReply(iframeClient, outcome);
             }),
         ];
         return () => {

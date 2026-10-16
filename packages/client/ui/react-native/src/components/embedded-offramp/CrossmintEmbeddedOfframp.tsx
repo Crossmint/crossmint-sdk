@@ -1,12 +1,14 @@
 import {
     type CrossmintEmbeddedOfframpProps,
     createEmbeddedOfframpService,
+    sendTransactionReply,
     embeddedOfframpIncomingEvents,
     embeddedOfframpOutgoingEvents,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { useEffect, useRef, useState } from "react";
+import { Linking } from "react-native";
 import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
@@ -59,26 +61,14 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
                     return;
                 }
                 sendPending.current = true;
-                let reply: "crypto:send-transaction:success" | "crypto:send-transaction:failed";
-                let payload: { txId: string } | { error: string; rejected: boolean };
+                let outcome: { txId: unknown } | { error: unknown };
                 try {
-                    const txId: unknown = await latestProps.current.payer.signAndSendTransaction(tx);
-                    if (typeof txId === "string" && txId !== "") {
-                        reply = "crypto:send-transaction:success";
-                        payload = { txId };
-                    } else {
-                        reply = "crypto:send-transaction:failed";
-                        payload = { error: "The wallet returned no transaction id", rejected: false };
-                    }
+                    outcome = { txId: await latestProps.current.payer.signAndSendTransaction(tx) };
                 } catch (error) {
-                    reply = "crypto:send-transaction:failed";
-                    payload = {
-                        error: (error as Error)?.message ?? "The wallet failed",
-                        rejected: (error as { rejected?: boolean })?.rejected === true,
-                    };
+                    outcome = { error };
                 }
                 sendPending.current = false;
-                client.send(reply as never, payload as never);
+                sendTransactionReply(client, outcome);
             }),
         ];
         return () => {
@@ -88,14 +78,31 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
         };
     }, [client]);
 
+    const url = service.iframe.getUrl(props);
+    const routeUrl = url.split("?")[0] ?? url;
+    // Any other page the WebView ends up showing also receives the bridge, so only the offramp route may talk to it.
+    const isOfframpPage = (pageUrl: unknown) =>
+        typeof pageUrl === "string" &&
+        pageUrl.startsWith(routeUrl) &&
+        /^[?#/]?$/.test(pageUrl.slice(routeUrl.length, routeUrl.length + 1));
+
     const reportLoadFailure = (message: string) =>
         latestProps.current.onError?.({ reason: "invalid-configuration", retriable: false, message });
 
     return (
         <RNWebView
             ref={webViewRef}
-            source={{ uri: service.iframe.getUrl(props) }}
-            onMessage={(event) => client?.handleMessage(event)}
+            source={{ uri: url }}
+            onMessage={(event) => {
+                if (isOfframpPage(event.nativeEvent.url)) {
+                    client?.handleMessage(event);
+                }
+            }}
+            onOpenWindow={({ nativeEvent }) => {
+                if (/^https?:/i.test(nativeEvent.targetUrl)) {
+                    void Linking.openURL(nativeEvent.targetUrl);
+                }
+            }}
             onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description)}
             onHttpError={({ nativeEvent }) => reportLoadFailure(`HTTP ${nativeEvent.statusCode}`)}
             style={{ width: "100%", height, backgroundColor: "transparent" }}

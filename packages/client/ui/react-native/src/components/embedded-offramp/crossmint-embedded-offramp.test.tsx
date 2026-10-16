@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { CrossmintEmbeddedOfframp } from "./CrossmintEmbeddedOfframp";
 
-const { injectJavaScript } = vi.hoisted(() => ({ injectJavaScript: vi.fn() }));
+const { injectJavaScript, openURL } = vi.hoisted(() => ({ injectJavaScript: vi.fn(), openURL: vi.fn() }));
 
 vi.mock("react-native-webview", () => ({
     WebView: vi.fn().mockImplementation(({ ref }) => {
@@ -13,6 +13,8 @@ vi.mock("react-native-webview", () => ({
         return React.createElement("div", { "data-testid": "mock-webview" });
     }),
 }));
+
+vi.mock("react-native", () => ({ Linking: { openURL } }));
 
 vi.mock("@/utils/createCrossmintApiClient", () => ({
     createCrossmintApiClient: () => ({
@@ -37,10 +39,12 @@ function lastWebViewProps() {
     return props as Record<string, any>;
 }
 
-function emit(event: string, data: Record<string, unknown> = {}) {
+const ROUTE = "https://staging.crossmint.com/sdk/unstable/embedded-offramp";
+
+function emit(event: string, data: Record<string, unknown> = {}, url = `${ROUTE}?credentials=x`) {
     const { onMessage } = lastWebViewProps();
     return act(async () => {
-        onMessage({ nativeEvent: { data: JSON.stringify({ event, data }) } });
+        onMessage({ nativeEvent: { data: JSON.stringify({ event, data }), url } });
     });
 }
 
@@ -99,6 +103,35 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         await emit("offramp:completed", { orderId: "o1", txId: "0xtx" });
         expect(first).not.toHaveBeenCalled();
         expect(second).toHaveBeenCalledWith({ orderId: "o1", txId: "0xtx" });
+    });
+
+    describe("when another page is showing in the WebView", () => {
+        test.each([["https://evil.example/page"], [`${ROUTE}-evil`], [""]])(
+            "ignores a transaction request from %s",
+            async (url) => {
+                const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
+                render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction }} />);
+
+                await emit("crypto:send-transaction", TX, url);
+
+                expect(signAndSendTransaction).not.toHaveBeenCalled();
+                expect(injectJavaScript).not.toHaveBeenCalled();
+            }
+        );
+    });
+
+    describe("when the page opens a new window", () => {
+        test("opens http(s) links in the system browser", () => {
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+            act(() => lastWebViewProps().onOpenWindow({ nativeEvent: { targetUrl: "https://terms.example/x" } }));
+            expect(openURL).toHaveBeenCalledWith("https://terms.example/x");
+        });
+
+        test("ignores other schemes", () => {
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+            act(() => lastWebViewProps().onOpenWindow({ nativeEvent: { targetUrl: "javascript:alert(1)" } }));
+            expect(openURL).not.toHaveBeenCalled();
+        });
     });
 
     describe("when the page requests a transaction", () => {
