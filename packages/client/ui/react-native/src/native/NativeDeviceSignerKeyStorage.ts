@@ -1,4 +1,4 @@
-import { requireNativeModule } from "expo-modules-core";
+import { requireNativeModule } from "expo";
 import * as Device from "expo-device";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
 

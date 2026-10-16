@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { withDeviceSigner } from "./withDeviceSigner";
 
 const FIXTURES_DIR = path.resolve(__dirname, "../../test/fixtures");
-const SDK_VERSIONS = ["sdk-57"];
+const SDK_VERSIONS = ["sdk-58"];
 
 // Runs the plugin's ios.dangerous mod against a Podfile, the way `expo prebuild` does.
 async function runPodfileMod(podfile: string): Promise<string> {
