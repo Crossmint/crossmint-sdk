@@ -7,7 +7,7 @@ import { withGooglePay } from "./withGooglePay";
 type AndroidManifest = AndroidConfig.Manifest.AndroidManifest;
 
 const FIXTURES_DIR = path.resolve(__dirname, "../../test/fixtures");
-const SDK_VERSIONS = ["sdk-57"];
+const SDK_VERSIONS = ["sdk-58"];
 const PAYMENT_ACTIONS = [
     "org.chromium.intent.action.PAY",
     "org.chromium.intent.action.IS_READY_TO_PAY",
