@@ -33,20 +33,22 @@ export class PasskeySigner implements SignerAdapter {
     }
 
     async signMessage(message: string): Promise<PasskeySignResult> {
-        if (this.config.onSignWithPasskey) {
-            const result = await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id);
-            if (!isUserVerified(result.metadata.authenticatorData)) {
-                throw new SigningFailedError(
-                    'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'
-                );
-            }
-            return result;
+        const result = this.config.onSignWithPasskey
+            ? await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id)
+            : await this.signWithWebAuthn(message);
+        if (!isUserVerified(result.metadata.authenticatorData)) {
+            throw new SigningFailedError(
+                'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'
+            );
         }
+        return result;
+    }
+
+    private async signWithWebAuthn(message: string): Promise<PasskeySignResult> {
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
             challenge: message as `0x${string}`,
         });
-
         return {
             signature: {
                 r: `0x${signature.r.toString(16)}`,
