@@ -9,9 +9,9 @@ import { describe, expect, test } from "vitest";
 
 // The one Expo SDK line this package supports. npm and pnpm install a missing peer at the newest
 // version in its range, so a range that spans several SDKs installs modules from the wrong SDK.
-const SUPPORTED_EXPO_SDK = "sdk-57";
+const SUPPORTED_EXPO_SDK = "sdk-58";
 // An SDK the peer ranges must reject, so the ranges cannot widen back by accident.
-const UNSUPPORTED_EXPO_SDK = "sdk-54";
+const UNSUPPORTED_EXPO_SDK = "sdk-57";
 
 const FIXTURES_DIR = path.resolve(__dirname, "../test/fixtures/bundled-native-modules");
 const RN_UI_DIR = path.resolve(__dirname, "..");
@@ -34,6 +34,14 @@ const isSdkVersioned = (name: string) => name === "expo" || name.startsWith("exp
 
 function readJson(file: string): Record<string, any> {
     return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+// Expo SDK 58 stopped bundling react-native-get-random-values, so `npx expo install` picks its latest
+// release. The peer range must accept it.
+const UNBUNDLED_LATEST: Record<string, string> = { "react-native-get-random-values": "2.0.0" };
+
+function isBundled(sdk: string, name: string): boolean {
+    return readJson(path.join(FIXTURES_DIR, `${sdk}.json`))[name] != null;
 }
 
 function bundledVersion(sdk: string, name: string): string {
@@ -65,11 +73,24 @@ describe.each([
         expect(pkg.dependencies?.[name], `${name} must not be a dependency`).toBeUndefined();
     });
 
-    test.each(nativePeers)(`accept the Expo ${SUPPORTED_EXPO_SDK} version of %s`, (name) => {
-        const version = bundledVersion(SUPPORTED_EXPO_SDK, name);
+    test.each(nativePeers.filter((name) => isBundled(SUPPORTED_EXPO_SDK, name)))(
+        `accept the Expo ${SUPPORTED_EXPO_SDK} version of %s`,
+        (name) => {
+            const version = bundledVersion(SUPPORTED_EXPO_SDK, name);
 
-        expect(semver.satisfies(version, peers[name]), `${name}@${version} vs "${peers[name]}"`).toBe(true);
-    });
+            expect(semver.satisfies(version, peers[name]), `${name}@${version} vs "${peers[name]}"`).toBe(true);
+        }
+    );
+
+    test.each(nativePeers.filter((name) => !isBundled(SUPPORTED_EXPO_SDK, name)))(
+        `accept the latest release of %s, which Expo ${SUPPORTED_EXPO_SDK} does not bundle`,
+        (name) => {
+            const version = UNBUNDLED_LATEST[name];
+
+            expect(version, `add ${name} to UNBUNDLED_LATEST`).toBeDefined();
+            expect(semver.satisfies(version, peers[name]), `${name}@${version} vs "${peers[name]}"`).toBe(true);
+        }
+    );
 
     test.each(nativePeers.filter(isSdkVersioned))(`reject the Expo ${UNSUPPORTED_EXPO_SDK} version of %s`, (name) => {
         const version = bundledVersion(UNSUPPORTED_EXPO_SDK, name);
