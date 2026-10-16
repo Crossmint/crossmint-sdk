@@ -1,26 +1,70 @@
-import { jwtVerify, errors, type createRemoteJWKSet, createLocalJWKSet, type JSONWebKeySet } from "jose";
+import { decodeJwt, jwtVerify, errors, type createRemoteJWKSet, createLocalJWKSet, type JSONWebKeySet } from "jose";
+
+import { CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
 
 import { createJWKSClient } from "./jwksClient";
 
 /** A JWKS endpoint URI or an inline JSON Web Key Set. */
 export type JWKSInput = string | JSONWebKeySet;
 
-/** Verify a Crossmint-issued JWT against the given JWKS (endpoint URI or key set) and return its decoded payload. */
-export async function verifyCrossmintJwt(token: string, jwks: JWKSInput) {
+export type VerifyCrossmintJwtOptions = {
+    /** Required Crossmint project ID the JWT must be issued for. */
+    audience: string;
+};
+
+export class JwksUnavailableError extends Error {
+    cause: unknown;
+
+    constructor(message: string, cause?: unknown) {
+        super(message);
+        this.name = "JwksUnavailableError";
+        this.cause = cause;
+    }
+}
+
+/**
+ * Verify a Crossmint-issued JWT against the given JWKS (endpoint URI or key set) and return its decoded payload.
+ * The JWT's `aud` claim must match `options.audience`.
+ */
+export async function verifyCrossmintJwt(token: string, jwks: JWKSInput, options: VerifyCrossmintJwtOptions) {
+    if (typeof options?.audience !== "string" || options.audience.length === 0) {
+        throw new Error(
+            "verifyCrossmintJwt requires options.audience: the Crossmint project ID the JWT must be issued for"
+        );
+    }
+
+    const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);
+    return await verifyJWT(signingKey, token, options.audience);
+}
+
+/**
+ * @deprecated This does not verify the JWT signature and must not be used to authenticate a token.
+ * Use `verifyCrossmintJwt` instead.
+ */
+export function assertJwtAudience(jwt: string, expectedAudience: string): void {
     try {
-        const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);
-        return await verifyJWT(signingKey, token);
-    } catch (error) {
-        throw error;
+        const { aud } = decodeJwt(jwt);
+        const matches =
+            typeof aud === "string" ? aud === expectedAudience : Array.isArray(aud) && aud.includes(expectedAudience);
+        if (!matches) {
+            throw new Error("audience mismatch");
+        }
+    } catch {
+        throw new CrossmintAuthenticationError("JWT audience does not match the expected project");
     }
 }
 
 async function verifyJWT(
     signingKey: ReturnType<typeof createRemoteJWKSet> | ReturnType<typeof createLocalJWKSet>,
-    token: string
+    token: string,
+    audience: string
 ) {
     try {
-        const { payload } = await jwtVerify(token, signingKey);
+        const { payload } = await jwtVerify(token, signingKey, {
+            audience,
+            algorithms: ["RS256"],
+            requiredClaims: ["exp", "sub", "aud"],
+        });
         return payload;
     } catch (err: unknown) {
         if (err instanceof errors.JWTExpired) {
@@ -34,6 +78,13 @@ async function verifyJWT(
         }
         if (err instanceof Error && err.message.includes("invalid algorithm")) {
             throw new Error("invalid algorithm");
+        }
+        if (
+            err instanceof errors.JWKSTimeout ||
+            !(err instanceof errors.JOSEError) ||
+            err.code === errors.JOSEError.code
+        ) {
+            throw new JwksUnavailableError(err instanceof Error ? err.message : String(err), err);
         }
         throw err;
     }

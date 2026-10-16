@@ -1,5 +1,53 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.9.2
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+  - @crossmint/client-sdk-auth@1.3.28
+  - @crossmint/client-sdk-react-base@2.4.3
+  - @crossmint/wallets-sdk@1.20.3
+
+## 1.9.1
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/wallets-sdk@1.20.2
+  - @crossmint/client-sdk-base@4.4.0
+  - @crossmint/client-sdk-auth@1.3.27
+  - @crossmint/client-sdk-react-base@2.4.2
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.9.0
+
+### Minor Changes
+
+- 4ab8408: `CrossmintIdentityVerification` supports the Crossmint verification flow and takes an `appearance` prop.
+
+  - `IdentityVerificationCredentials` now also has the session shape `{ verificationId, clientSecret, deviceSessionKey? }`, which an order carries when it uses the Crossmint verification flow. Pass the credentials through as they come. TypeScript code that reads `credentials.inquiryId` must first check for `"provider" in credentials`.
+  - New `appearance` prop: embedded checkout's appearance object. The flow reads light or dark from `variables.colors.backgroundPrimary`.
+  - Keep the component mounted until `onComplete` or `onCancel`. The order leaves `requires-kyc`, and `useIdentityVerificationCredentials` returns undefined, before the flow shows its result. Handle `onCancel`: the Done button on blocked screens sends it.
+  - `@crossmint/client-sdk-react-ui` now exports `CrossmintIdentityVerificationProps`, `IdentityVerificationAppearance`, `IdentityVerificationCredentials`, `IdentityVerificationStatus` and `IdentityVerificationError`.
+
+### Patch Changes
+
+- 97d0ea4: The Google Pay config plugin no longer adds its payment queries to the Android manifest a second time when `expo prebuild` runs without `--clean`.
+- Updated dependencies [4ab8408]
+- Updated dependencies [be45d5d]
+- Updated dependencies [924a0b6]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/client-sdk-react-base@2.4.1
+  - @crossmint/wallets-sdk@1.20.1
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/client-sdk-auth@1.3.26
+  - @crossmint/common-sdk-auth@1.1.24
+
 ## 1.8.0
 
 ### Minor Changes

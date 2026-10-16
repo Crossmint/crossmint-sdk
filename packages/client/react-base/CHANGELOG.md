@@ -1,5 +1,40 @@
 # @crossmint/client-sdk-react-base
 
+## 2.4.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+  - @crossmint/client-sdk-auth@1.3.28
+  - @crossmint/wallets-sdk@1.20.3
+
+## 2.4.2
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/wallets-sdk@1.20.2
+  - @crossmint/client-sdk-base@4.4.0
+  - @crossmint/client-sdk-auth@1.3.27
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 2.4.1
+
+### Patch Changes
+
+- be45d5d: `getOrCreateWallet` no longer retries forever when `createOnLogin` fails. A failed attempt used to rewrite the error state, recreate the callback and refire the login effect, so status oscillated between `in-progress` and `error` for as long as the page was open. It now settles on `error` for the args that failed, and retries only when `createOnLogin` or the JWT changes.
+- Updated dependencies [4ab8408]
+- Updated dependencies [924a0b6]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/wallets-sdk@1.20.1
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/client-sdk-auth@1.3.26
+  - @crossmint/common-sdk-auth@1.1.24
+
 ## 2.4.0
 
 ### Minor Changes
