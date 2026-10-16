@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { createRef } from "react";
+import { StrictMode, createRef } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { CrossmintPaymentMethodManagementRef } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentMethodManagement } from "./CrossmintPaymentMethodManagement";
@@ -13,13 +13,14 @@ const mocks = vi.hoisted(() => ({
     handshakeWithChild: vi.fn().mockResolvedValue(undefined),
     on: vi.fn().mockReturnValue("subscription"),
     getUrl: vi.fn().mockReturnValue("https://staging.crossmint.com/sdk/unstable/payment-method-management"),
+    createClient: vi.fn(),
 }));
 vi.mock("@crossmint/client-sdk-base", async (original) => ({
     ...(await original<typeof import("@crossmint/client-sdk-base")>()),
     createPaymentMethodManagementService: () => ({
         iframe: {
             getUrl: mocks.getUrl,
-            createClient: () => ({ ...mocks }),
+            createClient: mocks.createClient,
         },
     }),
 }));
@@ -54,6 +55,7 @@ beforeEach(() => {
     vi.resetAllMocks();
     mocks.handshakeWithChild.mockResolvedValue(undefined);
     mocks.on.mockReturnValue("subscription");
+    mocks.createClient.mockImplementation(() => ({ ...mocks }));
     mocks.getUrl.mockImplementation(
         (props) =>
             `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=${props.hideSubmitButton ?? false}`
@@ -139,6 +141,26 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         });
     });
 
+    test("under StrictMode only the surviving client starts the handshake", async () => {
+        const retired = { ...mocks, handshakeWithChild: vi.fn().mockResolvedValue(undefined) };
+        mocks.createClient.mockReturnValueOnce(retired);
+        const ref = createRef<CrossmintPaymentMethodManagementRef>();
+        render(
+            <StrictMode>
+                <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />
+            </StrictMode>
+        );
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(retired.handshakeWithChild).not.toHaveBeenCalled();
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
+
+        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
+        await expect(ref.current?.submit()).resolves.toEqual(SAVED);
+    });
+
     test("attaches the height listener on mount, without waiting for the iframe load event", () => {
         mount({ load: false });
         const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
@@ -195,6 +217,10 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         await act(async () => {
             secondReply.resolve({ result: SAVED });
             await secondReply.promise;
+        });
+        // The reconnect's eager handshake is deferred past the effect cleanup; let the timer run.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
         });
         expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });

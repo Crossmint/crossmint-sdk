@@ -100,9 +100,15 @@ const PaymentMethodConnection = forwardRef<
                 return ready;
             },
         };
-        active.ready().catch(() => {
-            /* submit() reports a blocked channel. */
-        });
+        // StrictMode double-runs this effect: a retired client that has already sent its
+        // handshakeRequest wins the child's single handshake and leaves the current client
+        // unanswered forever. Deferring past the cleanup means only the surviving client
+        // ever starts the handshake; submit() still calls ready() on its own.
+        const handshakeTimer = setTimeout(() => {
+            active.ready().catch(() => {
+                /* submit() reports a blocked channel. */
+            });
+        }, 0);
         connection.current = active;
         const heightListener = client.on("ui:height.changed", ({ height }) => {
             if (connection.current === active) {
@@ -115,6 +121,7 @@ const PaymentMethodConnection = forwardRef<
             }
         });
         return () => {
+            clearTimeout(handshakeTimer);
             client.off(heightListener);
             client.off(selectedListener);
             if (pending.current?.client === client) {
