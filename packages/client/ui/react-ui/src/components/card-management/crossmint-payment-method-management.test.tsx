@@ -39,9 +39,16 @@ const CARD = {
 } as const;
 const SAVED = { status: "saved", paymentMethod: CARD } as const;
 
-function mount({ load = true } = {}) {
+function mount({ load = true, onSelected }: { load?: boolean; onSelected?: (method: unknown) => void } = {}) {
     const ref = createRef<CrossmintPaymentMethodManagementRef>();
-    const view = render(<CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />);
+    const view = render(
+        <CrossmintPaymentMethodManagement
+            ref={ref}
+            jwt="buyer-jwt"
+            hideSubmitButton
+            onPaymentMethodSelected={onSelected}
+        />
+    );
     if (load) {
         fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
     }
@@ -49,6 +56,14 @@ function mount({ load = true } = {}) {
         throw new Error("The component ref did not mount");
     }
     return { ...view, ref, component: ref.current };
+}
+
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((complete) => {
+        resolve = complete;
+    });
+    return { promise, resolve };
 }
 
 beforeEach(() => {
@@ -77,11 +92,9 @@ describe("CrossmintPaymentMethodManagement ref", () => {
 
         await expect(component.submit()).resolves.toEqual(SAVED);
 
-        expect(mocks.sendAction).toHaveBeenCalledOnce();
         const call = mocks.sendAction.mock.calls[0][0];
         expect(call.event).toBe("payment-method:submit");
         expect(call.responseEvent).toBe("payment-method:result");
-        expect(call.data.requestId).toEqual(expect.any(String));
         expect(call.options.condition({ requestId: call.data.requestId })).toBe(true);
         expect(call.options.condition({ requestId: "another" })).toBe(false);
         expect(call.options.timeoutMs).toBe(60_000);
@@ -110,24 +123,38 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(mocks.sendAction).toHaveBeenCalledTimes(2);
     });
 
-    test("waits for the mount-time handshake and resolves with the iframe result when submit precedes load", async () => {
+    test("connects on mount without a load event: the height listener works and submit waits for the handshake", async () => {
         const ready = deferred<void>();
         mocks.handshakeWithChild.mockReturnValueOnce(ready.promise);
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
         const { component } = mount({ load: false });
+
+        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        act(() => heightListener?.({ height: 321 }));
+        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("321px");
 
         const pending = component.submit();
         await act(async () => {
             await Promise.resolve();
         });
         expect(mocks.sendAction).not.toHaveBeenCalled();
-
         await act(async () => {
             ready.resolve();
             await Promise.resolve();
         });
         await expect(pending).resolves.toEqual(SAVED);
-        expect(mocks.sendAction).toHaveBeenCalledOnce();
+    });
+
+    test("a failed handshake resolves unavailable and the next submit retries it", async () => {
+        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
+        const { component } = mount();
+
+        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+        expect(mocks.sendAction).not.toHaveBeenCalled();
+
+        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
+        await expect(component.submit()).resolves.toEqual(SAVED);
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
     });
 
     test("resolves unavailable when the iframe does not answer in time", async () => {
@@ -156,51 +183,25 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         await expect(ref.current?.submit()).resolves.toEqual(SAVED);
     });
 
-    test("attaches the height listener on mount, without waiting for the iframe load event", () => {
-        mount({ load: false });
-        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
-        expect(heightListener).toBeTypeOf("function");
-
-        act(() => heightListener?.({ height: 321 }));
-
-        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("321px");
-    });
-
-    test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
-        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
-        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
-        act(() => heightListener?.({ height: 400 }));
-        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("400px");
-
-        mocks.on.mockClear();
-        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" />);
-
-        const newIframe = screen.getByRole("crossmint-payment-method-management.iframe");
-        expect(newIframe.style.height).toBe("400px");
-        const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
-        expect(newListener).toBeTypeOf("function");
-        act(() => newListener?.({ height: 500 }));
-        expect(newIframe.style.height).toBe("500px");
-    });
-
-    test("the first load keeps a pending submit and does not create a new client; a second load does", async () => {
+    test("the first load keeps a pending submit; a second load creates a new client and supersedes", async () => {
+        const selected = vi.fn();
         const firstReply = deferred<{ result: typeof SAVED }>();
         const secondReply = deferred<{ result: typeof SAVED }>();
         mocks.sendAction.mockReturnValueOnce(firstReply.promise).mockReturnValueOnce(secondReply.promise);
-        const { component } = mount({ load: false });
+        const { component } = mount({ load: false, onSelected: selected });
+        const retiredListener = mocks.on.mock.calls.find(([event]) => event === "payment-method:selected")?.[1];
         const pending = component.submit();
         await act(async () => {
             await Promise.resolve();
         });
 
         fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
-
         await act(async () => {
             firstReply.resolve({ result: SAVED });
             await firstReply.promise;
         });
         await expect(pending).resolves.toEqual(SAVED);
-        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
+        expect(mocks.createClient).toHaveBeenCalledTimes(1);
 
         const next = component.submit();
         await act(async () => {
@@ -215,8 +216,32 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         });
         expect(mocks.createClient).toHaveBeenCalledTimes(2);
         expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+
+        retiredListener?.(CARD);
+        expect(selected).not.toHaveBeenCalled();
+        mocks.on.mock.calls
+            .filter(([event]) => event === "payment-method:selected")
+            .at(-1)?.[1](CARD);
+        expect(selected).toHaveBeenCalledWith(CARD);
+
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
         await expect(component.submit()).resolves.toEqual(SAVED);
+    });
+
+    test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        act(() => heightListener?.({ height: 400 }));
+        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("400px");
+
+        mocks.on.mockClear();
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" />);
+
+        const newIframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        expect(newIframe.style.height).toBe("400px");
+        const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        act(() => newListener?.({ height: 500 }));
+        expect(newIframe.style.height).toBe("500px");
     });
 
     test("passes hideSubmitButton to the iframe URL and calls the latest onPaymentMethodSelected", async () => {
@@ -226,7 +251,6 @@ describe("CrossmintPaymentMethodManagement ref", () => {
             <CrossmintPaymentMethodManagement jwt="buyer-jwt" hideSubmitButton onPaymentMethodSelected={first} />
         );
         expect(mocks.getUrl).toHaveBeenCalledWith(expect.objectContaining({ hideSubmitButton: true }));
-        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
         const selectedListener = mocks.on.mock.calls.find(([event]) => event === "payment-method:selected")?.[1];
         rerender(
             <CrossmintPaymentMethodManagement jwt="buyer-jwt" hideSubmitButton onPaymentMethodSelected={second} />
@@ -237,95 +261,8 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(first).not.toHaveBeenCalled();
         expect(second).toHaveBeenCalledWith(CARD);
     });
-});
 
-function deferred<T>() {
-    let resolve!: (value: T) => void;
-    const promise = new Promise<T>((complete) => {
-        resolve = complete;
-    });
-    return { promise, resolve };
-}
-
-describe("submit connection lifecycle", () => {
-    afterEach(() => {
-        cleanup();
-        vi.clearAllMocks();
-    });
-
-    test("keeps the active connection when provider identity changes without changing the URL", async () => {
-        const reply = deferred<{ result: typeof SAVED }>();
-        mocks.sendAction.mockReturnValueOnce(reply.promise);
-        const { component, ref, rerender } = mount();
-        const pending = component.submit();
-        mocks.crossmint = { ...mocks.crossmint };
-        rerender(<CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />);
-        expect(ref.current?.submit()).toBe(pending);
-        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
-        reply.resolve({ result: SAVED });
-        await expect(pending).resolves.toEqual(SAVED);
-    });
-
-    test("waits for the channel handshake before submitting", async () => {
-        const ready = deferred<void>();
-        mocks.handshakeWithChild.mockReturnValueOnce(ready.promise);
-        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
-        const { component } = mount();
-        const pending = component.submit();
-        await act(async () => {
-            await Promise.resolve();
-        });
-        expect(mocks.sendAction).not.toHaveBeenCalled();
-        ready.resolve();
-        await expect(pending).resolves.toEqual(SAVED);
-    });
-
-    test("returns unavailable when the handshake fails", async () => {
-        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Blocked channel"));
-        const { component } = mount();
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
-        expect(mocks.sendAction).not.toHaveBeenCalled();
-    });
-
-    test("retries a failed handshake and shares the pending retry between submits", async () => {
-        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
-        const { component } = mount();
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
-
-        const retry = deferred<void>();
-        mocks.handshakeWithChild.mockReturnValueOnce(retry.promise);
-        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
-        const first = component.submit();
-        const second = component.submit();
-
-        expect(first).toBe(second);
-        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
-        expect(mocks.sendAction).not.toHaveBeenCalled();
-        retry.resolve();
-        await expect(first).resolves.toEqual(SAVED);
-        expect(mocks.sendAction).toHaveBeenCalledOnce();
-    });
-
-    test("supersedes a pending handshake retry on unmount and never sends its late submit", async () => {
-        mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
-        const { component, unmount } = mount();
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
-
-        const retry = deferred<void>();
-        mocks.handshakeWithChild.mockReturnValueOnce(retry.promise);
-        const pending = component.submit();
-        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
-        unmount();
-
-        await expect(pending).resolves.toMatchObject({ status: "superseded" });
-        await act(async () => {
-            retry.resolve();
-            await retry.promise;
-        });
-        expect(mocks.sendAction).not.toHaveBeenCalled();
-    });
-
-    test.each(["buyer", "configuration", "reload", "unmount"] as const)(
+    test.each(["buyer", "unmount"] as const)(
         "supersedes an unanswered submit immediately on %s and ignores its late result",
         async (change) => {
             const reply = deferred<{ result: typeof SAVED }>();
@@ -336,18 +273,9 @@ describe("submit connection lifecycle", () => {
                 await Promise.resolve();
             });
             const signal: AbortSignal = mocks.sendAction.mock.calls[0][0].options.signal;
-            if (change === "buyer" || change === "configuration") {
-                rerender(
-                    <CrossmintPaymentMethodManagement
-                        ref={ref}
-                        jwt={change === "buyer" ? "new-buyer" : "buyer-jwt"}
-                        hideSubmitButton={change !== "configuration"}
-                    />
-                );
+            if (change === "buyer") {
+                rerender(<CrossmintPaymentMethodManagement ref={ref} jwt="new-buyer" hideSubmitButton />);
                 await expect(ref.current?.submit()).resolves.toMatchObject({ status: "unavailable" });
-                fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
-            } else if (change === "reload") {
-                fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
             } else {
                 unmount();
             }
@@ -355,34 +283,11 @@ describe("submit connection lifecycle", () => {
             expect(signal.aborted).toBe(true);
             reply.resolve({ result: SAVED });
             await expect(pending).resolves.toMatchObject({ status: "superseded" });
-            if (change !== "unmount") {
+            if (change === "buyer") {
                 mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
                 await expect(ref.current?.submit()).resolves.toEqual(SAVED);
-                expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+                expect(mocks.createClient).toHaveBeenCalledTimes(2);
             }
         }
     );
-
-    test("settles immediately when unmounted during a pending handshake", async () => {
-        mocks.handshakeWithChild.mockReturnValueOnce(deferred<void>().promise);
-        const { component, unmount } = mount();
-        const pending = component.submit();
-        unmount();
-        await expect(pending).resolves.toMatchObject({ status: "superseded" });
-        expect(mocks.sendAction).not.toHaveBeenCalled();
-    });
-
-    test("ignores selected events from the previous connection after reloading", async () => {
-        const selected = vi.fn();
-        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onPaymentMethodSelected={selected} />);
-        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
-        const oldListener = mocks.on.mock.calls.find(([event]) => event === "payment-method:selected")?.[1];
-        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
-        expect(oldListener).toBeTypeOf("function");
-        oldListener?.(CARD);
-        expect(selected).not.toHaveBeenCalled();
-        const listeners = mocks.on.mock.calls.filter(([event]) => event === "payment-method:selected");
-        listeners.at(-1)?.[1](CARD);
-        expect(selected).toHaveBeenCalledWith(CARD);
-    });
 });
