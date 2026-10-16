@@ -16,24 +16,11 @@ The SDK requires Expo SDK 58 (React Native 0.88, iOS 16.4 or later). The native 
 
 ### Xcode 27 and iOS 27
 
-Apps built with Xcode 27 (the iOS 27 SDK) must use the UIKit scene lifecycle. If they do not, they stop at launch with "UIScene life cycle is required for apps built with this SDK". On Expo SDK 57, use `expo` 57.0.23 or later and turn on scene support:
+Apps built with Xcode 27 (the iOS 27 SDK) must use the UIKit scene lifecycle. If they do not, they stop at launch with "UIScene life cycle is required for apps built with this SDK". Expo SDK 58 generates it: `npx expo prebuild` adds a `SceneDelegate.swift` and a scene manifest to `Info.plist`. No configuration is needed, and the Crossmint config plugin works with it.
 
-```bash
-npx expo install expo-build-properties
-```
+After you upgrade to Expo SDK 58, regenerate the native project. If your app generates `ios/` and `android/` (continuous native generation), run `npx expo prebuild --clean`. If you maintain those folders by hand, `--clean` deletes your changes; apply the scene lifecycle changes to your own AppDelegate and Info.plist instead, as described in [Expo's iOS scene lifecycle guide](https://expo.fyi/ios-scene-lifecycle).
 
-```json
-{
-    "expo": {
-        "plugins": [
-            "@crossmint/client-sdk-react-native-ui",
-            ["expo-build-properties", { "ios": { "enableSceneSupport": true } }]
-        ]
-    }
-}
-```
-
-Then regenerate the native project. If your app generates `ios/` and `android/` (continuous native generation), run `npx expo prebuild --clean`. If you maintain those folders by hand, `--clean` deletes your changes; apply the scene lifecycle changes to your own AppDelegate and Info.plist instead, as described in [Expo's iOS scene lifecycle guide](https://expo.fyi/ios-scene-lifecycle). The Crossmint config plugin works with scene support in either plugin order.
+If your app config still sets `ios.enableSceneSupport` in `expo-build-properties`, you can remove it. It has no effect on Expo SDK 58.
 
 ## Quick Start
 
