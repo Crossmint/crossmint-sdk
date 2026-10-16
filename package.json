@@ -51,7 +51,7 @@
     "pnpm": {
         "overrides": {
             "axios@0": "0.30.0",
-            "axios@1": "1.18.0",
+            "axios@1": "1.20.0",
             "elliptic@6": "6.6.1",
             "form-data@3": "3.0.4",
             "form-data@4": "4.0.6",
@@ -89,8 +89,8 @@
             "picomatch@3": "3.0.2",
             "picomatch@4": "4.0.4",
             "defu": "6.1.5",
-            "next@15": "15.5.21",
-            "next@16": "16.2.11",
+            "next@15": "15.5.27",
+            "next@16": "16.3.8",
             "js-cookie": "3.0.7",
             "fast-uri": "3.1.5",
             "@xmldom/xmldom": "0.8.13",
