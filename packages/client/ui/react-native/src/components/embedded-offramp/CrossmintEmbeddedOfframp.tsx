@@ -108,7 +108,7 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
             onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description)}
             onHttpError={({ nativeEvent }) => reportLoadFailure(`HTTP ${nativeEvent.statusCode}`)}
             style={{ width: "100%", height, backgroundColor: "transparent" }}
-            scrollEnabled={false}
+            scrollEnabled={true}
             domStorageEnabled={true}
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}

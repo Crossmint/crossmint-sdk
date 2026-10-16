@@ -73,6 +73,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         expect(url.searchParams.has("payer")).toBe(false);
         expect(props).toMatchObject({
             domStorageEnabled: true,
+            scrollEnabled: true,
             allowsInlineMediaPlayback: true,
             mediaPlaybackRequiresUserAction: false,
         });
