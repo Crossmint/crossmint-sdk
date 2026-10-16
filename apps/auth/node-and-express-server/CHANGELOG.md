@@ -1,5 +1,26 @@
 # crossmint-auth-node
 
+## 1.1.101
+
+### Patch Changes
+
+- Updated dependencies [74b5507]
+- Updated dependencies [6dc366a]
+  - @crossmint/server-sdk@1.2.90
+
+## 1.1.100
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.89
+
+## 1.1.99
+
+### Patch Changes
+
+- Updated dependencies [3ef10b3]
+  - @crossmint/server-sdk@1.2.88
+
 ## 1.1.98
 
 ### Patch Changes

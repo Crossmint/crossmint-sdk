@@ -23,7 +23,42 @@ export interface CrossmintPaymentMethodManagementProps {
      * than one type does not yet render a type picker.
      */
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
+    /**
+     * Render no Save/Continue button inside the component (default `false`). Pair it with a
+     * `ref` and call `ref.current.submit()` from your own button.
+     */
+    hideSubmitButton?: boolean;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
+}
+
+/**
+ * What `ref.submit()` resolves to. It never rejects.
+ * - `selected`: the user had a saved method selected; it is the one to use.
+ * - `saved`: the method in the form was saved; `onPaymentMethodSelected` also fired.
+ * - `invalid`: the form shows a field error the user has to fix.
+ * - `failed`: the save failed with a message the user can read; they can try again.
+ * - `unavailable`: the component is not ready (not loaded, still loading saved methods, or it
+ *   did not answer in time). After a timeout the save may still have completed:
+ *   `onPaymentMethodSelected` fires if it did, and submitting again returns the same method.
+ * - `superseded`: the component changed or unmounted while submitting. Discard the result;
+ *   this does not cancel a save already started on the server.
+ */
+export type PaymentMethodSubmitResult =
+    | { status: "selected"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "saved"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "invalid"; message: string }
+    | { status: "failed"; message: string }
+    | { status: "unavailable"; message: string }
+    | { status: "superseded"; message: string };
+
+export interface CrossmintPaymentMethodManagementRef {
+    /**
+     * Submits what the component shows: the selected saved method, or the add-new form. A call
+     * while one is in flight returns the same promise. Calling it again on an unchanged saved
+     * form returns that method again; nothing is saved twice. A change of buyer, configuration,
+     * or iframe connection supersedes any pending submit.
+     */
+    submit(): Promise<PaymentMethodSubmitResult>;
 }
 
 /**
