@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.104
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/client-sdk-base@4.4.0
+
+## 3.4.103
+
+### Patch Changes
+
+- 0ca92de: Stop logging request headers and Lit `AuthSig` values to the console. The `x-api-key` header, wallet signatures, and the `AuthSig` no longer appear in browser or server logs.
+- Updated dependencies [4ab8408]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/common-sdk-base@0.12.4
+
 ## 3.4.102
 
 ### Patch Changes

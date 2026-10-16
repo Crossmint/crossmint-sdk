@@ -57,6 +57,11 @@ type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams
  */
 type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recoveryMethods: ResolvedRecoverySigner[] };
 
+/** Mirrors `RecoverySignerConfigFor`: a device key lives on one device, so it can never recover a wallet. */
+function canBeRecoveryMethod(type: string): boolean {
+    return type !== "device";
+}
+
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
 
@@ -107,6 +112,10 @@ export class WalletFactory {
         }
 
         const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        const createArgs = validatedArgs as WalletCreateArgs<C>;
+        if (createArgs.recovery != null || createArgs.recoveryMethods != null) {
+            this.validatedRecoverySignerList(recoveryMethodsFromCreateArgs(createArgs), validatedArgs.chain);
+        }
 
         walletsLogger.info("walletFactory.getWallet.start");
 
@@ -143,6 +152,7 @@ export class WalletFactory {
                     : "A recovery method is required"
             );
         }
+        const recoverySigners = this.validatedRecoverySignerList(recoveryMethods, validatedArgs.chain);
         await validatedArgs.options?.callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
@@ -170,7 +180,6 @@ export class WalletFactory {
             validatedArgs.options?.passkeyProvider
         );
 
-        const recoverySigners = this.validatedRecoverySignerList(recoveryMethods, validatedArgs.chain);
         const resolvedRecoverySigners: ResolvedRecoverySigner[] = [];
         // Sequential: resolving a passkey signer prompts the user, and browsers reject concurrent WebAuthn calls.
         for (const recoverySigner of recoverySigners) {
@@ -265,6 +274,13 @@ export class WalletFactory {
             throw new RecoveryNotSupportedOnChainError(
                 `Multiple recovery methods are not supported on ${chain} yet. Pass a single recovery method.`
             );
+        }
+        for (const method of recoveryMethods) {
+            if (!canBeRecoveryMethod(method.type)) {
+                throw new InvalidRecoveryConfigError(
+                    `A "${method.type}" signer cannot be a recovery method on ${chain}. Register it under \`signers\` instead.`
+                );
+            }
         }
         return recoveryMethods;
     }
