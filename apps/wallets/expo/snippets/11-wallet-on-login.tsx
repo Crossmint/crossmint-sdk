@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmint, useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
 import { DEFAULT_CHAIN, useLoadWallet } from "./09-chain-switcher";
 
 export function useWalletOnLogin() {
     const { user, jwt, getUser } = useCrossmintAuth();
+    const { crossmint } = useCrossmint();
     const { status } = useWallet();
     const loadWallet = useLoadWallet();
     const [session, setSession] = useState<string | null>(null);
@@ -23,10 +24,10 @@ export function useWalletOnLogin() {
             loadedFor.current = null;
             return;
         }
-        if (status !== "not-loaded" || loadedFor.current === session) {
+        if (status !== "not-loaded" || loadedFor.current === session || crossmint.jwt !== session) {
             return;
         }
         loadedFor.current = session;
         loadWallet(DEFAULT_CHAIN);
-    }, [session, status, loadWallet]);
+    }, [session, status, loadWallet, crossmint]);
 }
