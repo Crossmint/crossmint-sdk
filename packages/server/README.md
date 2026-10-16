@@ -105,11 +105,11 @@ You can also provide a custom refresh route:
 
 ```typescript
 const crossmintAuth = CrossmintAuth.from(crossmint, {
-    refreshRoute: "/api/refresh",
+    refreshRoute: `${process.env.APP_URL || "http://localhost:3000"}/api/refresh`,
 });
 ```
 
-This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.
+The SDK will use the provided route instead of Crossmint's refresh endpoint. On the server, configure this as a static, trusted absolute URL; never derive it from the incoming request or its `Host` header. Use HTTPS in production. The server SDK verifies the refreshed JWT's signature, expiry, and project audience against Crossmint's JWKS, and takes the user ID from its verified `sub` claim.
 
 ## Set up a custom logout route
 

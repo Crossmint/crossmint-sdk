@@ -181,6 +181,8 @@ declare const orderSchema: z.ZodObject<
                                                             readonly KRW: "krw";
                                                             readonly INR: "inr";
                                                             readonly VND: "vnd";
+                                                            readonly MXN: "mxn";
+                                                            readonly XCD: "xcd";
                                                         }>,
                                                     ]
                                                 >;
@@ -211,7 +213,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             },
                                             {
@@ -238,7 +242,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                         >;
@@ -274,6 +280,8 @@ declare const orderSchema: z.ZodObject<
                                                                 readonly KRW: "krw";
                                                                 readonly INR: "inr";
                                                                 readonly VND: "vnd";
+                                                                readonly MXN: "mxn";
+                                                                readonly XCD: "xcd";
                                                             }>,
                                                         ]
                                                     >;
@@ -304,7 +312,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 },
                                                 {
@@ -331,7 +341,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 }
                                             >
@@ -364,7 +376,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -392,7 +406,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -422,7 +438,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -450,7 +468,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -489,6 +509,8 @@ declare const orderSchema: z.ZodObject<
                                                     readonly KRW: "krw";
                                                     readonly INR: "inr";
                                                     readonly VND: "vnd";
+                                                    readonly MXN: "mxn";
+                                                    readonly XCD: "xcd";
                                                 }>,
                                             ]
                                         >;
@@ -519,7 +541,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     },
                                     {
@@ -546,7 +570,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     }
                                 >
@@ -588,7 +614,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -616,7 +644,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -647,7 +677,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -686,7 +718,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -714,7 +748,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -745,7 +781,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -1455,7 +1493,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1483,7 +1523,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1514,7 +1556,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1697,7 +1741,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1725,7 +1771,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1756,7 +1804,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1897,6 +1947,8 @@ declare const orderSchema: z.ZodObject<
                                         readonly KRW: "krw";
                                         readonly INR: "inr";
                                         readonly VND: "vnd";
+                                        readonly MXN: "mxn";
+                                        readonly XCD: "xcd";
                                     }>,
                                 ]
                             >;
@@ -1927,7 +1979,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         },
                         {
@@ -1954,7 +2008,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         }
                     >
@@ -1996,7 +2052,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2035,7 +2093,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2166,6 +2226,8 @@ declare const orderSchema: z.ZodObject<
                             readonly KRW: "krw";
                             readonly INR: "inr";
                             readonly VND: "vnd";
+                            readonly MXN: "mxn";
+                            readonly XCD: "xcd";
                         }>,
                     ]
                 >;
@@ -2377,6 +2439,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2452,7 +2516,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2522,7 +2588,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2600,6 +2668,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2630,7 +2700,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -2657,7 +2729,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -2697,6 +2771,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2772,7 +2848,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2842,7 +2920,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2920,6 +3000,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2950,7 +3032,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -2977,7 +3061,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -3061,7 +3147,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3152,7 +3240,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3179,7 +3269,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3251,7 +3343,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3278,7 +3372,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3400,7 +3496,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3491,7 +3589,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3518,7 +3618,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3590,7 +3692,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3617,7 +3721,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3705,7 +3811,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -3783,7 +3891,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -3874,7 +3984,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -3901,7 +4013,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -3973,7 +4087,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4000,7 +4116,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4158,7 +4276,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -4186,7 +4306,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -4217,7 +4339,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -4346,7 +4470,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -4424,7 +4550,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -4515,7 +4643,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4542,7 +4672,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4614,7 +4746,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4641,7 +4775,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4799,7 +4935,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -4827,7 +4965,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -4858,7 +4998,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;

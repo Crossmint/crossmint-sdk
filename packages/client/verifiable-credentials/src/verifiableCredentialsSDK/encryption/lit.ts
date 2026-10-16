@@ -13,7 +13,6 @@ const authNeededCallback = async (params: any) => {
         resources: params.resources,
         uri: params.uri,
     });
-    console.debug("AuthSig:", authSig);
     return authSig;
 };
 

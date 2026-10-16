@@ -1,5 +1,43 @@
 # @crossmint/wallets-sdk
 
+## 1.20.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
+## 1.20.2
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.20.1
+
+### Patch Changes
+
+- 924a0b6: Reject a `device` signer passed as a recovery method before calling the API, and apply the same recovery-list rules on `getWallet` that `createWallet` already enforces (non-empty list, one method on EVM). Recovery configuration is now validated before `onWalletCreationStart` and before any signer or passkey is created.
+- 523fa26: Remove the Abstract chain (`abstract`, `abstract-testnet`) from the SDK.
+
+  The Abstract network shuts down on December 15, 2026, and Crossmint no longer supports it.
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain, and move assets off Abstract before December 15, 2026.
+  Code that passes one of these names no longer compiles. At runtime, wallet-chain validation
+  throws an `InvalidChainError`, and common display-name and chain-ID lookups return `undefined`.
+
+- Updated dependencies [523fa26]
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/common-sdk-auth@1.1.24
+
 ## 1.20.0
 
 ### Minor Changes
