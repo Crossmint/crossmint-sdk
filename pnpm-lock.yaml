@@ -1022,6 +1022,9 @@ importers:
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
+      '@noble/curves':
+        specifier: 1.9.1
+        version: 1.9.1
       '@noble/hashes':
         specifier: 1.8.0
         version: 1.8.0
@@ -1040,9 +1043,6 @@ importers:
       ox:
         specifier: 0.6.9
         version: 0.6.9(typescript@5.5.3)(zod@3.25.76)
-      tweetnacl:
-        specifier: 1.0.3
-        version: 1.0.3
       viem:
         specifier: 2.57.7
         version: 2.57.7(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -1050,6 +1050,9 @@ importers:
       '@hey-api/openapi-ts':
         specifier: 0.69.2
         version: 0.69.2(typescript@5.5.3)
+      tweetnacl:
+        specifier: 1.0.3
+        version: 1.0.3
       typedoc:
         specifier: 0.28.17
         version: 0.28.17(typescript@5.5.3)
