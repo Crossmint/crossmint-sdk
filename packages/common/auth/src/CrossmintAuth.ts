@@ -3,6 +3,11 @@ import { AUTH_SDK_ROOT_ENDPOINT, SDK_NAME, SDK_VERSION } from "./utils/constants
 import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
 
 export type CrossmintAuthOptions = {
+    /**
+     * URL of your refresh endpoint, which the SDK calls instead of Crossmint's.
+     * On the server, this must be a static, trusted absolute URL (for example, from config or an
+     * environment variable); never build it from request data such as the `Host` header or `request.url`.
+     */
     refreshRoute?: string;
 };
 

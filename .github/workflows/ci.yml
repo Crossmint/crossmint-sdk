@@ -2,6 +2,8 @@ name: CI
 
 env:
     NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    PREVIEW_CK_KEY: ${{ secrets.PREVIEW_CK_KEY }}
+    PREVIEW_SK_KEY: ${{ secrets.PREVIEW_SK_KEY }}
     TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 

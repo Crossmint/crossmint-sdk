@@ -36,7 +36,6 @@ import { tempo } from "./definitions/tempo";
 import { tempoTestnet } from "./definitions/tempoTestnet";
 
 const TESTNET_AA_CHAINS = [
-    Blockchain.ABSTRACT_TESTNET,
     Blockchain.ARBITRUM_SEPOLIA,
     Blockchain.AVALANCHE_FUJI,
     Blockchain.BASE_SEPOLIA,
@@ -57,7 +56,6 @@ const TESTNET_AA_CHAINS = [
 ] as const;
 
 const PRODUCTION_AA_CHAINS = [
-    Blockchain.ABSTRACT,
     Blockchain.APECHAIN,
     Blockchain.ARBITRUM,
     Blockchain.ARBITRUMNOVA,
@@ -144,8 +142,6 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return tempo;
         case Blockchain.TEMPO_TESTNET:
             return tempoTestnet;
-        case Blockchain.ABSTRACT:
-        case Blockchain.ABSTRACT_TESTNET:
         case Blockchain.APECHAIN:
         case Blockchain.MANTLE:
         case Blockchain.MANTLE_SEPOLIA:
@@ -177,7 +173,6 @@ export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWal
 }
 
 const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWalletTestnet>> = {
-    [Blockchain.ABSTRACT]: Blockchain.ABSTRACT_TESTNET,
     [Blockchain.APECHAIN]: Blockchain.CURTIS,
     [Blockchain.ARBITRUM]: Blockchain.ARBITRUM_SEPOLIA,
     [Blockchain.AVALANCHE]: Blockchain.AVALANCHE_FUJI,
