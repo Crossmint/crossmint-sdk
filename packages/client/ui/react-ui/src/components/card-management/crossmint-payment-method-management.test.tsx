@@ -108,19 +108,97 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(mocks.sendAction).toHaveBeenCalledTimes(2);
     });
 
-    test("resolves unavailable before the iframe has loaded, without asking it", async () => {
+    test("waits for the mount-time handshake and resolves with the iframe result when submit precedes load", async () => {
+        const ready = deferred<void>();
+        mocks.handshakeWithChild.mockReturnValueOnce(ready.promise);
+        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
         const { component } = mount({ load: false });
 
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
-
+        const pending = component.submit();
+        await act(async () => {
+            await Promise.resolve();
+        });
         expect(mocks.sendAction).not.toHaveBeenCalled();
+
+        await act(async () => {
+            ready.resolve();
+            await Promise.resolve();
+        });
+        await expect(pending).resolves.toEqual(SAVED);
+        expect(mocks.sendAction).toHaveBeenCalledOnce();
     });
 
     test("resolves unavailable when the iframe does not answer in time", async () => {
         mocks.sendAction.mockRejectedValueOnce("Timed out waiting for payment-method:result event");
         const { component } = mount();
 
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+        await expect(component.submit()).resolves.toMatchObject({
+            status: "unavailable",
+            message:
+                "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it.",
+        });
+    });
+
+    test("attaches the height listener on mount, without waiting for the iframe load event", () => {
+        mount({ load: false });
+        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        expect(heightListener).toBeTypeOf("function");
+
+        act(() => heightListener?.({ height: 321 }));
+
+        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("321px");
+    });
+
+    test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+        const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        act(() => heightListener?.({ height: 400 }));
+        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.height).toBe("400px");
+
+        mocks.on.mockClear();
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" />);
+
+        const newIframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        expect(newIframe.style.height).toBe("400px");
+        const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
+        expect(newListener).toBeTypeOf("function");
+        act(() => newListener?.({ height: 500 }));
+        expect(newIframe.style.height).toBe("500px");
+    });
+
+    test("the first load keeps a pending submit and does not create a new client; a second load does", async () => {
+        const firstReply = deferred<{ result: typeof SAVED }>();
+        const secondReply = deferred<{ result: typeof SAVED }>();
+        mocks.sendAction.mockReturnValueOnce(firstReply.promise).mockReturnValueOnce(secondReply.promise);
+        const { component } = mount({ load: false });
+        const pending = component.submit();
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
+
+        await act(async () => {
+            firstReply.resolve({ result: SAVED });
+            await firstReply.promise;
+        });
+        await expect(pending).resolves.toEqual(SAVED);
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
+
+        const next = component.submit();
+        await act(async () => {
+            await Promise.resolve();
+        });
+        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
+
+        await expect(next).resolves.toMatchObject({ status: "superseded" });
+        await act(async () => {
+            secondReply.resolve({ result: SAVED });
+            await secondReply.promise;
+        });
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
+        mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
+        await expect(component.submit()).resolves.toEqual(SAVED);
     });
 
     test("passes hideSubmitButton to the iframe URL and calls the latest onPaymentMethodSelected", async () => {

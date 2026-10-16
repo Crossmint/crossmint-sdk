@@ -7,6 +7,7 @@ import {
     createPaymentMethodManagementService,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
+import { generateRandomString } from "@crossmint/client-sdk-window";
 import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -32,9 +33,22 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
         [crossmint]
     );
     const url = service.iframe.getUrl(props);
+    // The height survives a `key={url}` remount: the last reported height applies to the
+    // new iframe until it reports its own.
+    const [height, setHeight] = useState(0);
     // Authentication and form configuration live in the URL. A committed change must
     // retire the old window too, so its events cannot reach the next buyer's callbacks.
-    return <PaymentMethodConnection key={url} ref={ref} url={url} service={service} props={props} />;
+    return (
+        <PaymentMethodConnection
+            key={url}
+            ref={ref}
+            url={url}
+            service={service}
+            props={props}
+            height={height}
+            onHeightChange={setHeight}
+        />
+    );
 });
 
 const PaymentMethodConnection = forwardRef<
@@ -43,12 +57,17 @@ const PaymentMethodConnection = forwardRef<
         url: string;
         service: ReturnType<typeof createPaymentMethodManagementService>;
         props: CrossmintPaymentMethodManagementProps;
+        height: number;
+        onHeightChange: (height: number) => void;
     }
->(function PaymentMethodConnection({ url, service, props }, ref) {
+>(function PaymentMethodConnection({ url, service, props, height, onHeightChange }, ref) {
     const [iframeService] = useState(service);
     const iframe = useRef<HTMLIFrameElement>(null);
-    const [height, setHeight] = useState(0);
-    const [loaded, setLoaded] = useState<object | null>(null);
+    // The first `load` only confirms the mount-time connection; SSR hydration can miss it,
+    // so connecting must not wait for it. Later loads mean the iframe navigated and need a
+    // new client.
+    const [reloads, setReloads] = useState(0);
+    const sawFirstLoad = useRef(false);
     const latestProps = useRef(props);
     const connection = useRef<{ client: PaymentMethodManagementIFrameEmitter; ready: () => Promise<void> } | null>(
         null
@@ -64,7 +83,7 @@ const PaymentMethodConnection = forwardRef<
     });
 
     useCommittedLayoutEffect(() => {
-        if (iframe.current == null || loaded == null) {
+        if (iframe.current == null) {
             return;
         }
         const client = iframeService.iframe.createClient(iframe.current);
@@ -87,7 +106,7 @@ const PaymentMethodConnection = forwardRef<
         connection.current = active;
         const heightListener = client.on("ui:height.changed", ({ height }) => {
             if (connection.current === active) {
-                setHeight(height);
+                onHeightChange(height);
             }
         });
         const selectedListener = client.on("payment-method:selected", (method) => {
@@ -106,7 +125,7 @@ const PaymentMethodConnection = forwardRef<
                 connection.current = null;
             }
         };
-    }, [iframeService, loaded]);
+    }, [iframeService, reloads]);
 
     useImperativeHandle(ref, () => ({
         submit() {
@@ -128,10 +147,16 @@ const PaymentMethodConnection = forwardRef<
             const operation = (async (): Promise<PaymentMethodSubmitResult> => {
                 try {
                     await active.ready();
-                    if (connection.current !== active) {
-                        return superseded();
-                    }
-                    const requestId = crypto.randomUUID();
+                } catch {
+                    return connection.current === active
+                        ? unavailable("The payment method component did not answer. Please try again.")
+                        : superseded();
+                }
+                if (connection.current !== active) {
+                    return superseded();
+                }
+                try {
+                    const requestId = generateRandomString();
                     const { result } = await active.client.sendAction({
                         event: "payment-method:submit",
                         data: { requestId },
@@ -144,8 +169,11 @@ const PaymentMethodConnection = forwardRef<
                     });
                     return connection.current === active ? (result as PaymentMethodSubmitResult) : superseded();
                 } catch {
+                    // The request was already sent; the save may still have completed.
                     return connection.current === active
-                        ? unavailable("The payment method component did not answer. Please try again.")
+                        ? unavailable(
+                              "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it."
+                          )
                         : superseded();
                 }
             })();
@@ -163,7 +191,13 @@ const PaymentMethodConnection = forwardRef<
         <iframe
             ref={iframe}
             src={url}
-            onLoad={() => setLoaded({})}
+            onLoad={() => {
+                if (!sawFirstLoad.current) {
+                    sawFirstLoad.current = true;
+                    return;
+                }
+                setReloads((n) => n + 1);
+            }}
             id="crossmint-payment-method-management.iframe"
             role="crossmint-payment-method-management.iframe"
             allow="payment *; microphone; camera"

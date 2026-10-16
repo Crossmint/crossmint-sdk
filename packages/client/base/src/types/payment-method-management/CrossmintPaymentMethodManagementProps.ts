@@ -38,7 +38,8 @@ export interface CrossmintPaymentMethodManagementProps {
  * - `invalid`: the form shows a field error the user has to fix.
  * - `failed`: the save failed with a message the user can read; they can try again.
  * - `unavailable`: the component is not ready (not loaded, still loading saved methods, or it
- *   did not answer in time).
+ *   did not answer in time). After a timeout the save may still have completed:
+ *   `onPaymentMethodSelected` fires if it did, and submitting again returns the same method.
  * - `superseded`: the component changed or unmounted while submitting. Discard the result;
  *   this does not cancel a save already started on the server.
  */
