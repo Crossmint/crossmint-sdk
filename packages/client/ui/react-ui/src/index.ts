@@ -30,6 +30,14 @@ export {
     type AgentCardAuthorizationErrorCode,
     type AgentCardPaymentMethodSummary,
     type AgentCardRail,
+    type CrossmintEmbeddedOfframpProps,
+    type EmbeddedOfframpCredentials,
+    type EmbeddedOfframpPayer,
+    type OfframpStatus,
+    type OfframpErrorReason,
+    OfframpSignatureRejected,
 } from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";
