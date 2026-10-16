@@ -258,6 +258,28 @@ describe("createOrderIntentsApi", () => {
         });
     });
 
+    describe("cancelOrderIntent", () => {
+        test("sends DELETE /api/unstable/order-intents/{id} and resolves on 204", async () => {
+            fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+            await expect(api().cancelOrderIntent("oi_1")).resolves.toBeUndefined();
+
+            const { url, init } = lastRequest();
+            expect(url).toBe("https://staging.crossmint.com/api/unstable/order-intents/oi_1");
+            expect(init.method).toBe("DELETE");
+        });
+
+        test("surfaces a JSON 4xx as OrderIntentsApiError with the server message", async () => {
+            fetchMock.mockResolvedValueOnce(jsonResponse(409, { message: "order intent is not active" }));
+
+            await expect(api().cancelOrderIntent("oi_1")).rejects.toMatchObject({
+                name: "OrderIntentsApiError",
+                status: 409,
+                message: "order intent is not active",
+            });
+        });
+    });
+
     describe("getOrderIntent", () => {
         test("reads GET /api/unstable/order-intents/{id}", async () => {
             fetchMock.mockResolvedValueOnce(jsonResponse(200, ORDER_INTENT));
@@ -277,6 +299,17 @@ describe("createOrderIntentsApi", () => {
                 name: "OrderIntentsApiError",
                 status: 502,
                 path: "/api/unstable/order-intents/oi_1",
+            });
+        });
+
+        test("wraps a rejected fetch (offline) as OrderIntentsApiError with no status", async () => {
+            fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+            await expect(api().getOrderIntent("oi_1")).rejects.toMatchObject({
+                name: "OrderIntentsApiError",
+                status: undefined,
+                path: "/api/unstable/order-intents/oi_1",
+                message: "Failed to fetch",
             });
         });
 
