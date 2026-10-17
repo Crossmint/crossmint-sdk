@@ -14,6 +14,17 @@ export type {
     IdentityVerificationError,
 } from "@crossmint/client-sdk-base";
 
+export { OfframpSignatureRejected } from "@crossmint/client-sdk-base";
+export type {
+    CrossmintEmbeddedOfframpProps,
+    EmbeddedOfframpCredentials,
+    EmbeddedOfframpPayer,
+    OfframpStatus,
+    OfframpErrorReason,
+} from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
+
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
 export type { CrossmintWalletBaseContext, OtpSignerFunctions } from "@crossmint/client-sdk-react-base";
