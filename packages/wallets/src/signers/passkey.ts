@@ -33,15 +33,16 @@ export class PasskeySigner implements SignerAdapter {
     }
 
     async signMessage(message: string): Promise<PasskeySignResult> {
-        const result = this.config.onSignWithPasskey
-            ? await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id)
-            : await this.signWithWebAuthn(message);
-        if (!isUserVerified(result.metadata.authenticatorData)) {
-            throw new SigningFailedError(
-                'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'
-            );
+        if (this.config.onSignWithPasskey) {
+            const result = await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id);
+            if (!isUserVerified(result.metadata.authenticatorData)) {
+                throw new SigningFailedError(
+                    'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'
+                );
+            }
+            return result;
         }
-        return result;
+        return await this.signWithWebAuthn(message);
     }
 
     private async signWithWebAuthn(message: string): Promise<PasskeySignResult> {
@@ -49,6 +50,11 @@ export class PasskeySigner implements SignerAdapter {
             credentialId: this.id,
             challenge: message as `0x${string}`,
         });
+        if (!isUserVerified(metadata.authenticatorData)) {
+            throw new SigningFailedError(
+                "The passkey provider skipped the biometrics or PIN check, so the assertion was created without user verification and the on-chain verifier will reject it. Ask the user to sign again, or to use a passkey provider that verifies the user."
+            );
+        }
         return {
             signature: {
                 r: `0x${signature.r.toString(16)}`,

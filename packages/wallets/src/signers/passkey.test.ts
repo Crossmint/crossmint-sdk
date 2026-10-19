@@ -76,7 +76,7 @@ describe("PasskeySigner", () => {
     describe("when the onSignWithPasskey callback returns an assertion without user verification", () => {
         it("throws so the caller does not submit a signature the on-chain verifier rejects", async () => {
             await expect(signerWithCallback(signResult("19")).signMessage("0xdeadbeef")).rejects.toThrow(
-                "without user verification"
+                'Request the assertion with `userVerification: "required"`'
             );
         });
     });
@@ -98,7 +98,7 @@ describe("PasskeySigner", () => {
             vi.mocked(WebAuthnP256.sign).mockResolvedValue(webAuthnAssertion("19"));
 
             await expect(signerWithoutCallback().signMessage("0xdeadbeef")).rejects.toThrow(
-                "without user verification"
+                "The passkey provider skipped the biometrics or PIN check"
             );
         });
     });
