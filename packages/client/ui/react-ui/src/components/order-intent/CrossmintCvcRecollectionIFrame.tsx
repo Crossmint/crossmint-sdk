@@ -63,14 +63,16 @@ const CvcConnection = forwardRef<
     const [iframeService] = useState(service);
     const iframe = useRef<HTMLIFrameElement>(null);
     // The first `load` only confirms the mount-time connection; SSR hydration can miss it,
-    // so connecting must not wait for it. Later loads mean the iframe navigated and need a
-    // new client.
+    // so connecting must not wait for it. Later loads mean the iframe navigated: each bumps
+    // the document epoch that decides whether the client's handshake is still bound.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
+    const loadEpoch = useRef(0);
     const clientRef = useRef<{
-        reloads: number;
         client: CvcRecollectionIFrameEmitter;
         ready: () => Promise<void>;
+        // Document epoch the handshake resolved against; null while pending or failed.
+        readyEpoch: number | null;
     } | null>(null);
     const latestProps = useRef(props);
     const connection = useRef<{ client: CvcRecollectionIFrameEmitter; ready: () => Promise<void> } | null>(null);
@@ -88,27 +90,42 @@ const CvcConnection = forwardRef<
         if (iframe.current == null) {
             return;
         }
-        // StrictMode re-runs this effect for the same iframe document, but the child
-        // answers only one handshake per document: share one client (and its single
-        // handshake) per document, while each run still gets a fresh `active`.
-        if (clientRef.current?.reloads !== reloads) {
+        // Hydration can miss the iframe's own `load`: a cross-origin document is already
+        // in place (about:blank is same-origin and exposes a document), so every later
+        // `load` is a real navigation and must count it.
+        if (iframe.current.contentDocument == null) {
+            sawFirstLoad.current = true;
+        }
+        // A client belongs to the document that answered its handshake. A reload during a
+        // pending handshake can still land it on the new document, so only a handshake
+        // that already resolved against an earlier document forces a fresh client —
+        // StrictMode re-runs and reloads keep one handshake per document either way.
+        let entry = clientRef.current;
+        if (entry == null || (entry.readyEpoch != null && entry.readyEpoch < loadEpoch.current)) {
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
             // submit can retry without reloading the iframe.
             let ready: Promise<void> | undefined;
-            clientRef.current = {
-                reloads,
+            const created = {
                 client,
+                readyEpoch: null as number | null,
                 ready: () => {
-                    ready ??= client.handshakeWithChild().catch((error) => {
-                        ready = undefined;
-                        throw error;
-                    });
+                    ready ??= client
+                        .handshakeWithChild()
+                        .then(() => {
+                            created.readyEpoch = loadEpoch.current;
+                        })
+                        .catch((error) => {
+                            ready = undefined;
+                            throw error;
+                        });
                     return ready;
                 },
             };
+            entry = created;
+            clientRef.current = created;
         }
-        const { client, ready } = clientRef.current;
+        const { client, ready } = entry;
         const active = { client, ready };
         active.ready().catch(() => {
             /* submit() reports a blocked channel. */
@@ -213,6 +230,7 @@ const CvcConnection = forwardRef<
                     sawFirstLoad.current = true;
                     return;
                 }
+                loadEpoch.current += 1;
                 setReloads((n) => n + 1);
             }}
             id="crossmint-cvc-recollection.iframe"

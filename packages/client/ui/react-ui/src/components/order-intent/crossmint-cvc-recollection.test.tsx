@@ -259,6 +259,31 @@ describe("CrossmintCvcRecollection ref", () => {
         await expect(ref.current?.submit()).resolves.toEqual(COMPLETE);
     });
 
+    test("a reload during a pending handshake keeps the client: its answer lands on the new document", async () => {
+        const handshake = deferred<void>();
+        mocks.handshakeWithChild.mockReturnValueOnce(handshake.promise);
+        mocks.sendAction.mockResolvedValueOnce({ result: COMPLETE });
+        const ref = createRef<CrossmintCvcRecollectionRef>();
+        render(<CrossmintCvcRecollection ref={ref} {...PROPS} hideSubmitButton />);
+
+        fireEvent.load(screen.getByTitle("CVC recollection"));
+        fireEvent.load(screen.getByTitle("CVC recollection"));
+
+        expect(mocks.createClient).toHaveBeenCalledTimes(1);
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
+
+        const component = ref.current;
+        if (component == null) {
+            throw new Error("The component ref did not mount");
+        }
+        const submit = component.submit();
+        await act(async () => {
+            handshake.resolve();
+            await Promise.resolve();
+        });
+        await expect(submit).resolves.toEqual(COMPLETE);
+    });
+
     test("the first load keeps a pending submit; a second load creates a new client and supersedes", async () => {
         const onError = vi.fn();
         const firstReply = deferred<{ result: typeof COMPLETE }>();
