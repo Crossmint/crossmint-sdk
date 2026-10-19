@@ -256,7 +256,7 @@ const result = await wallet.approve({
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
 | `email` | OTP-based recovery method. | All |
 | `phone` | OTP-based recovery method. | All |
-| `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
+| `passkey` | WebAuthn/FIDO2 biometric signer. EVM, Solana and Stellar. | Browser, React Native |
 | `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
 
 ## React / React Native
