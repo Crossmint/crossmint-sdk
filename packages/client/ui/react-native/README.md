@@ -119,6 +119,7 @@ function WalletActions() {
 | `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` or `recoveryMethods` + optional `signers`. |
 | `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
+| `passkeys` | `NativePasskeyConfig` | — | Enables passkey signers on every chain: `{ rpId, rpName?, passkey: Passkey }`, with `Passkey` from `react-native-passkey`. Requires an app associated with `rpId` (iOS `webcredentials:` associated domain, Android Digital Asset Links) and a development build, since Expo Go cannot run native modules. Keep `rpId` fixed once users have created passkeys. Without this prop, passkey signers are rejected. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
 
 ## Hooks
