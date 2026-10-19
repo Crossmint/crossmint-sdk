@@ -42,11 +42,19 @@ export class PasskeySigner implements SignerAdapter {
             }
             return result;
         }
+        return await this.signWithWebAuthn(message);
+    }
+
+    private async signWithWebAuthn(message: string): Promise<PasskeySignResult> {
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
             challenge: message as `0x${string}`,
         });
-
+        if (!isUserVerified(metadata.authenticatorData)) {
+            throw new SigningFailedError(
+                "The passkey provider skipped the biometrics or PIN check, so the assertion was created without user verification and the on-chain verifier will reject it. Ask the user to sign again, or to use a passkey provider that verifies the user."
+            );
+        }
         return {
             signature: {
                 r: `0x${signature.r.toString(16)}`,

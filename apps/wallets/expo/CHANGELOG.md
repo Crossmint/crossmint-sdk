@@ -1,5 +1,13 @@
 # @crossmint/wallets-playground-expo
 
+## 0.0.41
+
+### Patch Changes
+
+- f450d2f: Load the default chain's wallet explicitly after login instead of through `createOnLogin`, so switching chains at runtime keeps the switched wallet active.
+- Updated dependencies [b1bc81a]
+  - @crossmint/client-sdk-react-native-ui@1.9.3
+
 ## 0.0.40
 
 ### Patch Changes

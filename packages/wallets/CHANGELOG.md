@@ -1,5 +1,19 @@
 # @crossmint/wallets-sdk
 
+## 1.20.4
+
+### Patch Changes
+
+- 0ee57ff: Sign with `@noble/curves` (ed25519) instead of `tweetnacl` in the Solana and Stellar server signers and Solana additional-signer signing. Signatures are byte-for-byte identical. `@noble/curves` is already part of every wallet install through viem and Solana, so this removes `tweetnacl` (about 57 KB minified) from wallet app bundles.
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/common-sdk-auth@1.1.27
+
 ## 1.20.3
 
 ### Patch Changes

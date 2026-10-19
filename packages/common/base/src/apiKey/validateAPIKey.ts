@@ -1,5 +1,6 @@
+import * as ed25519 from "@noble/ed25519";
+import { sha512 } from "@noble/hashes/sha2";
 import base58 from "bs58";
-import nacl from "tweetnacl";
 
 import { CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD, CROSSMINT_API_KEY_SIGNER_PUBLICKEY_STAGING } from "./consts";
 import type { APIKeyPrefix } from "./types";
@@ -10,6 +11,9 @@ import {
     type ValidateAPIKeyPrefixSuccessData,
     validateAPIKeyPrefix,
 } from "./validateAPIKeyPrefix";
+
+// Enables @noble/ed25519's synchronous verify. The library is bundled into this package, so this does not affect other copies.
+ed25519.etc.sha512Sync = (...messages) => sha512(ed25519.etc.concatBytes(...messages));
 
 export type ValidateAPIKeyResult = ValidateApiKeySuccessResult | ValidateAPIKeyFailResult;
 
@@ -76,7 +80,7 @@ function validateAPIKeySignature(
             const keyDataBytes = new TextEncoder().encode(keyData);
             const publicKeyBytes = base58.decode(expectedPublicKey);
 
-            return nacl.sign.detached.verify(keyDataBytes, signatureBytes, publicKeyBytes);
+            return ed25519.verify(signatureBytes, keyDataBytes, publicKeyBytes, { zip215: false });
         } catch (e) {
             console.error("Failed to validate API key signature");
             return false;
