@@ -71,8 +71,12 @@ const CvcConnection = forwardRef<
     const clientRef = useRef<{
         client: CvcRecollectionIFrameEmitter;
         ready: () => Promise<void>;
+        // Document epoch this client was created in.
+        createdEpoch: number;
         // Document epoch the handshake resolved against; null while pending or failed.
         readyEpoch: number | null;
+        // Drops a pending handshake so the next ready() starts over with a fresh deadline.
+        resetReady: () => void;
     } | null>(null);
     const latestProps = useRef(props);
     const connection = useRef<{ client: CvcRecollectionIFrameEmitter; ready: () => Promise<void> } | null>(null);
@@ -90,16 +94,12 @@ const CvcConnection = forwardRef<
         if (iframe.current == null) {
             return;
         }
-        // Hydration can miss the iframe's own `load`: a cross-origin document is already
-        // in place (about:blank is same-origin and exposes a document), so every later
-        // `load` is a real navigation and must count it.
-        if (iframe.current.contentDocument == null) {
-            sawFirstLoad.current = true;
-        }
-        // A client belongs to the document that answered its handshake. A reload during a
-        // pending handshake can still land it on the new document, so only a handshake
-        // that already resolved against an earlier document forces a fresh client —
-        // StrictMode re-runs and reloads keep one handshake per document either way.
+        // A cross-origin iframe exposes no contentDocument while loading or once loaded,
+        // so the first observed `load` cannot be told apart from the document's own first
+        // load: it never counts. Every later `load` is a real navigation and bumps the
+        // document epoch, and a client belongs to the document that answered its handshake.
+        // A resolved-against-an-old-document handshake forces a fresh client; a pending one
+        // can only be answered by the new document, so it restarts for a fresh deadline.
         let entry = clientRef.current;
         if (entry == null || (entry.readyEpoch != null && entry.readyEpoch < loadEpoch.current)) {
             const client = iframeService.iframe.createClient(iframe.current);
@@ -108,7 +108,11 @@ const CvcConnection = forwardRef<
             let ready: Promise<void> | undefined;
             const created = {
                 client,
+                createdEpoch: loadEpoch.current,
                 readyEpoch: null as number | null,
+                resetReady: () => {
+                    ready = undefined;
+                },
                 ready: () => {
                     ready ??= client
                         .handshakeWithChild()
@@ -124,6 +128,8 @@ const CvcConnection = forwardRef<
             };
             entry = created;
             clientRef.current = created;
+        } else if (entry.readyEpoch == null && entry.createdEpoch < loadEpoch.current) {
+            entry.resetReady();
         }
         const { client, ready } = entry;
         const active = { client, ready };

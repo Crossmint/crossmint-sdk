@@ -259,7 +259,7 @@ describe("CrossmintCvcRecollection ref", () => {
         await expect(ref.current?.submit()).resolves.toEqual(COMPLETE);
     });
 
-    test("a reload during a pending handshake keeps the client: its answer lands on the new document", async () => {
+    test("a reload during a pending handshake restarts it for the new document, keeping the client", async () => {
         const handshake = deferred<void>();
         mocks.handshakeWithChild.mockReturnValueOnce(handshake.promise);
         mocks.sendAction.mockResolvedValueOnce({ result: COMPLETE });
@@ -270,7 +270,7 @@ describe("CrossmintCvcRecollection ref", () => {
         fireEvent.load(screen.getByTitle("CVC recollection"));
 
         expect(mocks.createClient).toHaveBeenCalledTimes(1);
-        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(1);
+        expect(mocks.handshakeWithChild).toHaveBeenCalledTimes(2);
 
         const component = ref.current;
         if (component == null) {
