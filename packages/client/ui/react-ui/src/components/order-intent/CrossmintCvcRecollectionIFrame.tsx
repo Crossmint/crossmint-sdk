@@ -71,12 +71,8 @@ const CvcConnection = forwardRef<
     const clientRef = useRef<{
         client: CvcRecollectionIFrameEmitter;
         ready: () => Promise<void>;
-        // Document epoch this client was created in.
-        createdEpoch: number;
         // Document epoch the handshake resolved against; null while pending or failed.
         readyEpoch: number | null;
-        // Drops a pending handshake so the next ready() starts over with a fresh deadline.
-        resetReady: () => void;
     } | null>(null);
     const latestProps = useRef(props);
     const connection = useRef<{ client: CvcRecollectionIFrameEmitter; ready: () => Promise<void> } | null>(null);
@@ -98,8 +94,11 @@ const CvcConnection = forwardRef<
         // so the first observed `load` cannot be told apart from the document's own first
         // load: it never counts. Every later `load` is a real navigation and bumps the
         // document epoch, and a client belongs to the document that answered its handshake.
-        // A resolved-against-an-old-document handshake forces a fresh client; a pending one
-        // can only be answered by the new document, so it restarts for a fresh deadline.
+        // A pending handshake keeps the client as well: a child document answers only one
+        // handshake, and the outstanding one's retries are what the new document can answer
+        // — replacing the client would race two handshakes for a document that replies to
+        // one. It keeps its original deadline; once it expires a later submit handshakes
+        // again, which the still-unanswered new document then answers.
         let entry = clientRef.current;
         if (entry == null || (entry.readyEpoch != null && entry.readyEpoch < loadEpoch.current)) {
             const client = iframeService.iframe.createClient(iframe.current);
@@ -108,11 +107,7 @@ const CvcConnection = forwardRef<
             let ready: Promise<void> | undefined;
             const created = {
                 client,
-                createdEpoch: loadEpoch.current,
                 readyEpoch: null as number | null,
-                resetReady: () => {
-                    ready = undefined;
-                },
                 ready: () => {
                     ready ??= client
                         .handshakeWithChild()
@@ -128,8 +123,6 @@ const CvcConnection = forwardRef<
             };
             entry = created;
             clientRef.current = created;
-        } else if (entry.readyEpoch == null && entry.createdEpoch < loadEpoch.current) {
-            entry.resetReady();
         }
         const { client, ready } = entry;
         const active = { client, ready };
