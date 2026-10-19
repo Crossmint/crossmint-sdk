@@ -1,4 +1,5 @@
 import type { WebAuthnP256 } from "ox";
+import type { VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type {
     exportSignerInboundEvents,
@@ -6,21 +7,36 @@ import type {
     signerInboundEvents,
     signerOutboundEvents,
 } from "@crossmint/client-signers";
-import type {
-    Crossmint,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, SignerStatus } from "@/wallets/types";
 
-export type {
-    ExternalWalletSignerConfig,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+export type ExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign:
+        | ((transaction: VersionedTransaction) => Promise<VersionedTransaction>)
+        | ((payload: string) => Promise<string>);
+};
+
+export type SolanaExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    onSignBytes?: (payload: string) => Promise<string>;
+};
+
+export type EvmExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
+
+export type StellarExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
 
 export type ExternalWalletRegistrationConfig = {
     type: "external-wallet";

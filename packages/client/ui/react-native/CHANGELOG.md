@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 1.9.3
+
+### Patch Changes
+
+- b1bc81a: Log the signer page load state when the WebView handshake fails. The provider now tracks the signer page load (`not-started`, `loading`, `loaded` or `failed`) from `onLoadStart`, `onLoad`, `onError` and `onHttpError`. It sends `onLoadStart`, `onError` and `onHttpError` to the SDK logs, and it adds `pageLoadState` to the handshake retry, handshake error, `onLoadEnd` and frame reset timeout logs and to the handshake error console message. Reload and retry behavior does not change.
+- Updated dependencies [0ee57ff]
+- Updated dependencies [0ee57ff]
+- Updated dependencies [8441595]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/wallets-sdk@1.20.4
+  - @crossmint/client-sdk-base@4.5.0
+  - @crossmint/client-sdk-auth@1.3.29
+  - @crossmint/client-sdk-react-base@2.4.4
+  - @crossmint/common-sdk-auth@1.1.27
+
 ## 1.9.2
 
 ### Patch Changes
