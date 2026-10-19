@@ -36,7 +36,6 @@
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.0.1",
         "@types/react": "19.2.18",
-        "@types/semver": "7.7.1",
         "expo": "~57.0.25",
         "expo-constants": "~57.0.19",
         "expo-device": "~57.0.2",
@@ -48,7 +47,6 @@
         "react-native-get-random-values": "1.11.0",
         "react-native-svg": "15.15.4",
         "react-native-webview": "13.16.1",
-        "semver": "7.7.3",
         "typedoc": "0.28.20",
         "vitest": "3.2.6"
     },
