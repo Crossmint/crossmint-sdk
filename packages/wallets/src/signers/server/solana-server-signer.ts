@@ -1,6 +1,6 @@
 import { Keypair } from "@solana/web3.js";
 import base58 from "bs58";
-import nacl from "tweetnacl";
+import { ed25519Sign } from "../../utils/ed25519";
 import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
 import { secureWipe } from "../../utils/secure-wipe";
 
@@ -28,7 +28,7 @@ export class SolanaServerSigner implements SignerAdapter<"server"> {
 
     async signMessage(message: string) {
         const messageBytes = base58.decode(message);
-        const signatureBytes = nacl.sign.detached(messageBytes, this.keypair.secretKey);
+        const signatureBytes = ed25519Sign(messageBytes, this.keypair.secretKey);
         return { signature: base58.encode(signatureBytes) };
     }
 

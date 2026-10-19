@@ -2,20 +2,26 @@ import { useCallback } from "react";
 import { type Chain, useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
 import { ChainSwitcher } from "@crossmint/wallets-playground-shared";
 
-export function ChainSwitcherSection() {
-    const { wallet, getWallet, createWallet } = useWallet();
+export const DEFAULT_CHAIN = (process.env.EXPO_PUBLIC_CHAIN as Chain) || "base-sepolia";
+
+export function useLoadWallet() {
+    const { getWallet, createWallet } = useWallet();
     const { user } = useCrossmintAuth();
 
-    const handleSwitchChain = useCallback(
+    return useCallback(
         async (chain: Chain) => {
-            const result = await getWallet({ chain });
-            if (result == null) {
-                // Wallet doesn't exist for this chain yet — create it with the same email recovery.
+            const existing = await getWallet({ chain });
+            if (existing == null) {
                 await createWallet({ chain, recovery: { type: "email", email: user?.email ?? "" } } as any);
             }
         },
         [getWallet, createWallet, user?.email]
     );
+}
 
-    return <ChainSwitcher wallet={wallet} onSwitchChain={handleSwitchChain} />;
+export function ChainSwitcherSection() {
+    const { wallet } = useWallet();
+    const loadWallet = useLoadWallet();
+
+    return <ChainSwitcher wallet={wallet} onSwitchChain={loadWallet} />;
 }

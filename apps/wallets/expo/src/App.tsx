@@ -11,10 +11,12 @@ import { Permissions } from "../snippets/07-permissions";
 import { ApprovalTest } from "../snippets/08-approval-test";
 import { ChainSwitcherSection } from "../snippets/09-chain-switcher";
 import { RecoveryMethods } from "../snippets/10-recovery-methods";
+import { useWalletOnLogin } from "../snippets/11-wallet-on-login";
 
 function AppContent() {
     const { user, logout, status: authStatus } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
+    useWalletOnLogin();
 
     if (authStatus === "initializing") {
         return (
