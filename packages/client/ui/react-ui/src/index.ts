@@ -8,6 +8,8 @@ export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {
     type CrossmintCvcRecollectionProps,
+    type CrossmintCvcRecollectionRef,
+    type CvcRecollectionSubmitResult,
     type CrossmintEvent,
     type CrossmintEventMap,
     CrossmintEvents,
