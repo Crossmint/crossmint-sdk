@@ -256,7 +256,7 @@ const result = await wallet.approve({
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
 | `email` | OTP-based recovery method. | All |
 | `phone` | OTP-based recovery method. | All |
-| `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
+| `passkey` | WebAuthn/FIDO2 biometric signer on EVM, Solana and Stellar. On Solana it can be a signer but not a recovery method. | Browser, React Native (set the `passkeys` prop on `CrossmintWalletProvider`) |
 | `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
 
 ## React / React Native
