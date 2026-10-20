@@ -1,4 +1,4 @@
-import { beforeAll, describe, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import type { WalletLocator, WalletsApiClient } from "@crossmint/wallets-sdk";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { createIntegrationApiClient } from "../shared/client";

@@ -17,9 +17,9 @@ export function solanaExternalWalletSigner(): SolanaTestSigner {
     return {
         signer: { type: "external-wallet", address },
         locator,
-        async approval(message) {
+        approval(message) {
             const signature = sign(null, Buffer.from(base58.decode(message)), privateKey);
-            return { signer: locator, signature: base58.encode(new Uint8Array(signature)) };
+            return Promise.resolve({ signer: locator, signature: base58.encode(new Uint8Array(signature)) });
         },
     };
 }
