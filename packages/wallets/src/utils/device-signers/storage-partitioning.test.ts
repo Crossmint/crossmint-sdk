@@ -108,7 +108,7 @@ describe("hasEphemeralThirdPartyStorage", () => {
             true,
         ],
         [
-            "iPadOS Safari in desktop mode",
+            "macOS Safari",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.7 Safari/605.1.15",
             true,
         ],
@@ -123,7 +123,7 @@ describe("hasEphemeralThirdPartyStorage", () => {
             false,
         ],
         ["desktop Firefox", "Mozilla/5.0 (Windows NT 10.0; rv:121.0) Gecko/20100101 Firefox/121.0", false],
-    ])("returns %s → %s", (_name, ua, expected) => {
+    ])("%s returns %s", (_name, ua, expected) => {
         setUserAgent(ua);
         expect(hasEphemeralThirdPartyStorage()).toBe(expected);
     });

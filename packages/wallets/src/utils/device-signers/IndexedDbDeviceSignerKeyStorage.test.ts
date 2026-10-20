@@ -24,17 +24,17 @@ describe("IndexedDbDeviceSignerKeyStorage", () => {
         globalThis.indexedDB = new IDBFactory();
     });
 
-    it("keeps the key for a new storage instance, as after a browser restart", async () => {
+    it("reads and signs with a key that an earlier storage instance created", async () => {
         const first = new IndexedDbDeviceSignerKeyStorage(API_KEY);
         const publicKeyBase64 = await first.generateKey({ address: ADDRESS });
         first.destroy();
 
-        const afterRestart = new IndexedDbDeviceSignerKeyStorage(API_KEY);
+        const second = new IndexedDbDeviceSignerKeyStorage(API_KEY);
         const message = new TextEncoder().encode("hello");
-        const signature = await afterRestart.signMessage(ADDRESS, Buffer.from(message).toString("base64"));
+        const signature = await second.signMessage(ADDRESS, Buffer.from(message).toString("base64"));
 
-        expect(await afterRestart.getKey(ADDRESS)).toBe(publicKeyBase64);
-        expect(await afterRestart.hasKey(publicKeyBase64)).toBe(true);
+        expect(await second.getKey(ADDRESS)).toBe(publicKeyBase64);
+        expect(await second.hasKey(publicKeyBase64)).toBe(true);
         expect(await verifies(publicKeyBase64, message, signature)).toBe(true);
     });
 
