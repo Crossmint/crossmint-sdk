@@ -10,14 +10,12 @@ const KEYS_STORE = "keys";
 const ADDRESS_MAP_STORE = "address-map";
 
 /**
- * DeviceSignerKeyStorage backed by the IndexedDB of the page's own origin.
+ * Device signer key storage that keeps keys in the IndexedDB of your app's origin.
  *
- * Use it in browsers that delete the storage of iframes from another origin when the browser
- * closes (Safari, every iOS browser, and Brave), where {@link IframeDeviceSignerKeyStorage}
- * loses the key after a restart. Keys are non-extractable Web Crypto keys: page scripts can
- * sign with them, but cannot read or export the private key.
+ * Keys stay available after the browser restarts.
+ * Your app can sign with a key, but it cannot read or export the private key.
  *
- * Supports only the `"none"` biometric policy.
+ * Supports only the `"none"` biometric policy. Other policies throw an error.
  */
 export class IndexedDbDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private dbPromise: Promise<IDBDatabase> | null = null;
@@ -142,7 +140,7 @@ export class IndexedDbDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         return getDeviceName();
     }
 
-    /** Close the database connection. A later call opens a new one. */
+    /** Closes the storage. The next call to a method opens it again. */
     destroy(): void {
         const dbPromise = this.dbPromise;
         this.dbPromise = null;

@@ -53,14 +53,8 @@ export function hasPartitionedStorage(): boolean {
 }
 
 /**
- * Detects browsers that delete the storage of iframes from another origin when the browser closes.
- * In these browsers a key kept by an iframe does not survive a browser restart.
- *
- * - WebKit (Safari, and every iOS browser, which must use WebKit): makes third-party
- *   IndexedDB ephemeral by design, also for iframes on a subdomain of the page.
- *   See https://webkit.org/tracking-prevention/
- * - Brave: makes third-party storage ephemeral.
- *   See https://brave.com/privacy-updates/7-ephemeral-storage
+ * Returns `true` in browsers that delete iframe storage when the browser closes.
+ * These browsers include Safari and all browsers on iOS.
  */
 export function hasEphemeralThirdPartyStorage(): boolean {
     if (typeof navigator === "undefined") {

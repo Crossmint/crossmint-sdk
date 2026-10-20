@@ -1,7 +1,3 @@
-/**
- * Human-readable name for the current browser and device (e.g. "Safari on iPhone").
- * Used to label device signers in the API.
- */
 export function getDeviceName(): string {
     if (typeof navigator === "undefined") {
         return "Unknown Device";
