@@ -4,7 +4,7 @@ import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { createIntegrationApiClient } from "../shared/client";
 import { externalWalletSigner, pendingMessage, type TestSigner } from "../shared/signer";
 import { TEST_ADDRESSES } from "../wallets/constants";
-import { fundWalletAndWait } from "../wallets/test-utils";
+import { approveTransaction, fundWalletAndWait } from "../wallets/test-utils";
 import { expectArray, expectContract, expectErrorShape } from "./contract-assertions";
 import { solanaExternalWalletSigner } from "./solana-signer";
 
@@ -213,19 +213,27 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(body.tx, { id: "string" });
     });
 
+    // A method is removable only once installed, so this one approves its registration first, as the SDK does.
     it("removeRecoveryMethod", async () => {
         const second = solanaExternalWalletSigner();
         const registered = await apiClient.registerRecoveryMethod(solanaWallet, {
             recoveryMethods: second.signer,
             approver: solanaAdmin.locator,
         } as Parameters<typeof apiClient.registerRecoveryMethod>[1]);
-        expectContract(registered, { tx: "object" });
+        const { tx } = expectContract<{ tx: { id: string } }>(registered, { tx: "object" });
+        const installed = await approveTransaction(
+            apiClient,
+            solanaWallet,
+            tx.id,
+            solanaAdmin as unknown as TestSigner
+        );
+        expect(installed.status).toBe("success");
 
         const result = await apiClient.removeRecoveryMethod(solanaWallet, second.locator, {
             approver: solanaAdmin.locator,
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
         expectContract(result, { id: "string" });
-    });
+    }, 120_000);
 
     // The client requests /api/2025-06-09/wallets/{chain:address}/nfts, a route the API does not serve
     // ("Cannot GET ..."). Marked `fails` so the day the route exists this test turns red and gets unmarked.
