@@ -203,10 +203,10 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
     });
 
     // Recovery methods can change only on Solana and Stellar today; EVM rejects every mutation.
-    // The SDK sends no chain for these calls and reads the transaction id to approve, so that is what is pinned.
+    // The SDK sends one method (not a list) and no chain, and reads the transaction id to approve; that is what is pinned.
     it("registerRecoveryMethod", async () => {
         const result = await apiClient.registerRecoveryMethod(solanaWallet, {
-            recoveryMethods: [solanaExternalWalletSigner().signer],
+            recoveryMethods: solanaExternalWalletSigner().signer,
             approver: solanaAdmin.locator,
         } as Parameters<typeof apiClient.registerRecoveryMethod>[1]);
         const body = expectContract<{ tx: unknown }>(result, { tx: "object" });
@@ -216,7 +216,7 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
     it("removeRecoveryMethod", async () => {
         const second = solanaExternalWalletSigner();
         const registered = await apiClient.registerRecoveryMethod(solanaWallet, {
-            recoveryMethods: [second.signer],
+            recoveryMethods: second.signer,
             approver: solanaAdmin.locator,
         } as Parameters<typeof apiClient.registerRecoveryMethod>[1]);
         expectContract(registered, { tx: "object" });
