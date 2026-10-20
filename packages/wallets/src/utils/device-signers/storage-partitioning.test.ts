@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { hasPartitionedStorage } from "./storage-partitioning";
+import { hasEphemeralThirdPartyStorage, hasPartitionedStorage } from "./storage-partitioning";
 
 function setUserAgent(ua: string): void {
     vi.stubGlobal("navigator", { userAgent: ua });
@@ -88,5 +88,52 @@ describe("hasPartitionedStorage", () => {
             vi.stubGlobal("navigator", undefined);
             expect(hasPartitionedStorage()).toBe(false);
         });
+    });
+});
+
+describe("hasEphemeralThirdPartyStorage", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it.each([
+        [
+            "iOS Safari",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.7 Mobile/15E148 Safari/604.1",
+            true,
+        ],
+        [
+            "iOS Chrome",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/130.0.6723.90 Mobile/15E148 Safari/604.1",
+            true,
+        ],
+        [
+            "iPadOS Safari in desktop mode",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.7 Safari/605.1.15",
+            true,
+        ],
+        [
+            "macOS Chrome",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+            false,
+        ],
+        [
+            "Android Chrome",
+            "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+            false,
+        ],
+        ["desktop Firefox", "Mozilla/5.0 (Windows NT 10.0; rv:121.0) Gecko/20100101 Firefox/121.0", false],
+    ])("returns %s → %s", (_name, ua, expected) => {
+        setUserAgent(ua);
+        expect(hasEphemeralThirdPartyStorage()).toBe(expected);
+    });
+
+    it("returns true for Brave, which reports a Chrome user agent", () => {
+        vi.stubGlobal("navigator", {
+            userAgent:
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+            brave: {},
+        });
+        expect(hasEphemeralThirdPartyStorage()).toBe(true);
     });
 });
