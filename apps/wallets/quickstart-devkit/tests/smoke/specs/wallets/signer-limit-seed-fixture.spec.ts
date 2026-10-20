@@ -16,6 +16,7 @@ const FIXTURE_TEST_CONFIG = {
 } as const;
 
 test.describe("One-time setup — seed the QA-91 cap-fixture wallet to 16 signers", { tag: "@manual-only" }, () => {
+    test.skip(!process.env.SEED_CAP_FIXTURE, "set SEED_CAP_FIXTURE=1 to seed the cap-fixture wallet");
     test.use({ testConfig: FIXTURE_TEST_CONFIG });
 
     test("adds delegated signers until the wallet holds 1 admin + 15 delegated", async ({ authenticatedPage }) => {
