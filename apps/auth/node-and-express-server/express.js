@@ -31,14 +31,23 @@ app.post("/refresh", authLimiter, async (req, res) => {
     res.end();
 });
 
-app.post("/logout", authLimiter, async (req, res) => {
-    try {
-        await crossmintAuth.logout(req, res);
-    } catch (error) {
-        console.error("Error logging out", error);
+// Clear auth cookies before the limiter so a 429 can't leave a stale session
+app.post(
+    "/logout",
+    async (_req, res, next) => {
+        await crossmintAuth.logout(undefined, res);
+        next();
+    },
+    authLimiter,
+    async (req, res) => {
+        try {
+            await crossmintAuth.logout(req, res);
+        } catch (error) {
+            console.error("Error logging out", error);
+        }
+        res.end();
     }
-    res.end();
-});
+);
 
 const authMiddleware = async (req, res, next) => {
     if (req.method !== "GET") {
