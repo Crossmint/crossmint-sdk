@@ -114,12 +114,37 @@ describe("<CrossmintCvcRecollection />", () => {
             });
         });
 
+        test("calls the callback from the latest render, not the one captured at subscribe time", () => {
+            const stale = vi.fn();
+            const fresh = vi.fn();
+            const { rerender } = render(<CrossmintCvcRecollection {...PROPS} onComplete={stale} />);
+
+            rerender(<CrossmintCvcRecollection {...PROPS} onComplete={fresh} />);
+            emit("cvc:complete", {});
+
+            expect(fresh).toHaveBeenCalledTimes(1);
+            expect(stale).not.toHaveBeenCalled();
+        });
+
         test("applies the relayed height to the iframe", () => {
             render(<CrossmintCvcRecollection {...PROPS} />);
 
             emit("ui:height.changed", { height: 220 });
 
             expect(screen.getByTitle("CVC recollection")).toHaveStyle({ height: "220px" });
+        });
+    });
+
+    describe("when unmounted", () => {
+        test("removes every listener by its returned id, not by event name", () => {
+            const { unmount } = render(<CrossmintCvcRecollection {...PROPS} />);
+
+            unmount();
+
+            for (const event of ["ui:height.changed", "cvc:complete", "cvc:error"]) {
+                expect(mocks.off).toHaveBeenCalledWith(`listener-id:${event}`);
+            }
+            expect(mocks.off).toHaveBeenCalledTimes(3);
         });
     });
 });
