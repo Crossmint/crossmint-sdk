@@ -124,7 +124,7 @@ importers:
         version: 5.5.3
       vitest:
         specifier: 3.2.6
-        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
       vitest-mock-extended:
         specifier: 2.0.2
         version: 2.0.2(typescript@5.5.3)(vitest@3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))
@@ -177,6 +177,9 @@ importers:
       express:
         specifier: 4.21.1
         version: 4.21.1
+      express-rate-limit:
+        specifier: ^7.5.0
+        version: 7.5.1(express@4.21.1)
 
   apps/auth/remix-ssr:
     dependencies:
@@ -633,7 +636,7 @@ importers:
         version: 19.1.1(react@19.1.1)
       vitest:
         specifier: 3.2.6
-        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
   packages/client/signers:
     dependencies:
@@ -755,7 +758,7 @@ importers:
         version: 0.28.16(typescript@5.5.3)
       vitest:
         specifier: 3.2.6
-        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+        version: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
   packages/client/ui/react-ui:
     dependencies:
@@ -7892,6 +7895,12 @@ packages:
 
   exponential-backoff@3.1.1:
     resolution: {integrity: sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==}
+
+  express-rate-limit@7.5.1:
+    resolution: {integrity: sha512-7iN8iPMDzOMHPUYllBEsQdWVB6fPDMPqwjBaFrgr4Jgr/+okjvzAy+UHlYYL/Vs0OsOrMkwS6PJDkFlJwoxUnw==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      express: '>= 4.11'
 
   express@4.21.1:
     resolution: {integrity: sha512-YSFlK1Ee0/GC8QaO91tHcDxJiE/X4FbpAyQWkxAvG6AXCuR65YzK8ua6D9hvi/TzUfZMpc+BwuM1IPw8fmQBiQ==}
@@ -20608,7 +20617,7 @@ snapshots:
       '@jest/globals': 29.7.0
       '@types/jest': 29.5.4
       jest: 29.6.4(@types/node@20.14.8)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.14.8)(typescript@5.5.3))
-      vitest: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+      vitest: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
   '@testing-library/react@14.0.0(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -25361,6 +25370,10 @@ snapshots:
       - utf-8-validate
 
   exponential-backoff@3.1.1: {}
+
+  express-rate-limit@7.5.1(express@4.21.1):
+    dependencies:
+      express: 4.21.1
 
   express@4.21.1:
     dependencies:
@@ -30670,9 +30683,9 @@ snapshots:
     dependencies:
       ts-essentials: 10.1.1(typescript@5.5.3)
       typescript: 5.5.3
-      vitest: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+      vitest: 3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
-  vitest@3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2):
+  vitest@3.2.6(@types/debug@4.1.12)(@types/node@20.14.8)(jiti@2.6.1)(jsdom@23.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.6

@@ -1,9 +1,18 @@
 import { createCrossmint, CrossmintAuth } from "@crossmint/server-sdk";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+
+// Rate limit auth endpoints that call the Crossmint API
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Create instances once
 const crossmint = createCrossmint({
@@ -13,7 +22,7 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 
 app.use(express.json());
 
-app.post("/refresh", async (req, res) => {
+app.post("/refresh", authLimiter, async (req, res) => {
     try {
         await crossmintAuth.handleCustomRefresh(req, res);
     } catch (error) {
@@ -22,7 +31,7 @@ app.post("/refresh", async (req, res) => {
     res.end();
 });
 
-app.post("/logout", async (req, res) => {
+app.post("/logout", authLimiter, async (req, res) => {
     try {
         await crossmintAuth.logout(req, res);
     } catch (error) {
