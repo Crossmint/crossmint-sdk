@@ -49,10 +49,13 @@ test.describe("Signer Limit Regression — wallet already over the default cap (
         try {
             const walletAddress = await getWalletAddress(authenticatedPage);
             const delegatedSigners = authenticatedPage.locator('[data-testid="delegated-signers-list"] li');
-            expectAuth(
-                await delegatedSigners.count(),
-                "the cap-fixture wallet is no longer over the default cap; re-run signer-limit-seed-fixture.spec.ts"
-            ).toBeGreaterThanOrEqual(DEFAULT_COMBINED_SIGNER_CAP);
+            await expectAuth
+                .poll(() => delegatedSigners.count(), {
+                    message:
+                        "the cap-fixture wallet is no longer over the default cap; re-run signer-limit-seed-fixture.spec.ts",
+                    timeout: 30000,
+                })
+                .toBeGreaterThanOrEqual(DEFAULT_COMBINED_SIGNER_CAP);
             const transferAmount = "0.001";
 
             const balance = await getWalletBalance(authenticatedPage);
