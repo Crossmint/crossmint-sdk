@@ -1044,6 +1044,9 @@ importers:
       '@hey-api/openapi-ts':
         specifier: 0.69.2
         version: 0.69.2(typescript@5.5.3)
+      fake-indexeddb:
+        specifier: 6.2.5
+        version: 6.2.5
       tweetnacl:
         specifier: 1.0.3
         version: 1.0.3
@@ -7913,6 +7916,10 @@ packages:
   eyes@0.1.8:
     resolution: {integrity: sha512-GipyPsXO1anza0AOZdy69Im7hGFCNB7Y/NGjDlZGJ3GJJLtwNSb2vrzYrTYJRrRloVx7pl+bhUaTB8yiccPvFQ==}
     engines: {node: '> 0.1.90'}
+
+  fake-indexeddb@6.2.5:
+    resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
+    engines: {node: '>=18'}
 
   fast-base64-decode@1.0.0:
     resolution: {integrity: sha512-qwaScUgUGBYeDNRnbc/KyllVU88Jk1pRHPStuF/lO7B0/RTRLj7U0lkdTAutlBblY08rwZDff6tNU9cjv6j//Q==}
@@ -25410,6 +25417,8 @@ snapshots:
       webextension-polyfill: 0.10.0
 
   eyes@0.1.8: {}
+
+  fake-indexeddb@6.2.5: {}
 
   fast-base64-decode@1.0.0: {}
 
