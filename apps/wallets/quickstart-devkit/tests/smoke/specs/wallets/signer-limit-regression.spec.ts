@@ -28,6 +28,12 @@ test.describe("Signer Limit Regression — wallet already over the default cap (
         let addedSignerLocator: string | undefined;
         authenticatedPage.on("response", async (response) => {
             const url = response.url();
+            if (/\/(signers|approvals|signatures|transactions)(\/|\?|$)/.test(url)) {
+                const body = await response.text().catch(() => "");
+                console.log(
+                    `API ${response.request().method()} ${response.status()} ${url.replace(/^https?:\/\/[^/]+/, "")} ${body.slice(0, 500)}`
+                );
+            }
             if (!/\/signers(\?|$)/.test(url)) {
                 return;
             }
