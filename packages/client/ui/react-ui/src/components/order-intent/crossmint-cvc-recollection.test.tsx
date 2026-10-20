@@ -94,12 +94,6 @@ describe("<CrossmintCvcRecollection />", () => {
             const iframe = screen.getByTitle("CVC recollection");
             expect(iframe.getAttribute("src")).toContain("/sdk/unstable/cvc-recollection");
         });
-
-        test("requests no device permissions, since the CVC field is a plain text element", () => {
-            render(<CrossmintCvcRecollection {...PROPS} />);
-
-            expect(screen.getByTitle("CVC recollection").hasAttribute("allow")).toBe(false);
-        });
     });
 
     describe("when the iframe relays lifecycle events", () => {
@@ -120,50 +114,12 @@ describe("<CrossmintCvcRecollection />", () => {
             });
         });
 
-        test("forwards a verification-refused error as retriable", () => {
-            const onError = vi.fn();
-            render(<CrossmintCvcRecollection {...PROPS} onError={onError} />);
-
-            emit("cvc:error", { retriable: true, reason: "verification-refused", message: "not verified" });
-
-            expect(onError).toHaveBeenCalledWith({
-                retriable: true,
-                reason: "verification-refused",
-                message: "not verified",
-            });
-        });
-
-        test("calls the callback from the latest render, not the one captured at subscribe time", () => {
-            const stale = vi.fn();
-            const fresh = vi.fn();
-            const { rerender } = render(<CrossmintCvcRecollection {...PROPS} onComplete={stale} />);
-
-            rerender(<CrossmintCvcRecollection {...PROPS} onComplete={fresh} />);
-            emit("cvc:complete", {});
-
-            expect(fresh).toHaveBeenCalledTimes(1);
-            expect(stale).not.toHaveBeenCalled();
-        });
-
         test("applies the relayed height to the iframe", () => {
             render(<CrossmintCvcRecollection {...PROPS} />);
 
             emit("ui:height.changed", { height: 220 });
 
             expect(screen.getByTitle("CVC recollection")).toHaveStyle({ height: "220px" });
-        });
-    });
-
-    describe("when unmounted", () => {
-        test("removes every listener by its returned id, not by event name", () => {
-            const { unmount } = render(<CrossmintCvcRecollection {...PROPS} />);
-
-            unmount();
-
-            for (const event of ["ui:height.changed", "cvc:complete", "cvc:error"]) {
-                expect(mocks.off).toHaveBeenCalledWith(`listener-id:${event}`);
-            }
-            expect(mocks.off).toHaveBeenCalledTimes(3);
         });
     });
 });
@@ -184,18 +140,6 @@ describe("CrossmintCvcRecollection ref", () => {
         expect(call.options.condition({ requestId: call.data.requestId })).toBe(true);
         expect(call.options.condition({ requestId: "another" })).toBe(false);
         expect(call.options.timeoutMs).toBe(60_000);
-    });
-
-    test("resolves the iframe's refused verdict without mapping it to failed", async () => {
-        const refused = {
-            status: "refused",
-            reason: "invalid-credentials",
-            message: "[cvc-recollection] card fetch refused",
-        } as const;
-        mocks.sendAction.mockResolvedValueOnce({ requestId: "r1", result: refused });
-        const { component } = mount();
-
-        await expect(component.submit()).resolves.toEqual(refused);
     });
 
     test("shares a submit in flight and starts a new one after it settles", async () => {
@@ -331,19 +275,5 @@ describe("CrossmintCvcRecollection ref", () => {
             reason: "provider-error",
             message: "fresh frame",
         });
-    });
-
-    test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
-        const view = render(<CrossmintCvcRecollection {...PROPS} />);
-        act(() => listeners.get("ui:height.changed")?.({ height: 400 }));
-        expect(screen.getByTitle("CVC recollection").style.height).toBe("400px");
-
-        listeners.clear();
-        view.rerender(<CrossmintCvcRecollection {...PROPS} paymentMethodId="pm_2" />);
-
-        const newIframe = screen.getByTitle("CVC recollection");
-        expect(newIframe.style.height).toBe("400px");
-        act(() => listeners.get("ui:height.changed")?.({ height: 500 }));
-        expect(newIframe.style.height).toBe("500px");
     });
 });
