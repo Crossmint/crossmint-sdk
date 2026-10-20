@@ -1,18 +1,9 @@
 import { createCrossmint, CrossmintAuth } from "@crossmint/server-sdk";
 import express from "express";
-import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-
-// Rate limit auth endpoints that call the Crossmint API
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-});
 
 // Create instances once
 const crossmint = createCrossmint({
@@ -22,7 +13,7 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 
 app.use(express.json());
 
-app.post("/refresh", authLimiter, async (req, res) => {
+app.post("/refresh", async (req, res) => {
     try {
         await crossmintAuth.handleCustomRefresh(req, res);
     } catch (error) {
@@ -31,23 +22,14 @@ app.post("/refresh", authLimiter, async (req, res) => {
     res.end();
 });
 
-// Clear auth cookies before the limiter so a 429 can't leave a stale session
-app.post(
-    "/logout",
-    async (_req, res, next) => {
-        await crossmintAuth.logout(undefined, res);
-        next();
-    },
-    authLimiter,
-    async (req, res) => {
-        try {
-            await crossmintAuth.logout(req, res);
-        } catch (error) {
-            console.error("Error logging out", error);
-        }
-        res.end();
+app.post("/logout", async (req, res) => {
+    try {
+        await crossmintAuth.logout(req, res);
+    } catch (error) {
+        console.error("Error logging out", error);
     }
-);
+    res.end();
+});
 
 const authMiddleware = async (req, res, next) => {
     if (req.method !== "GET") {
