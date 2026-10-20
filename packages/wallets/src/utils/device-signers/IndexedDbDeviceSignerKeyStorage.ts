@@ -175,9 +175,6 @@ export class IndexedDbDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
                 };
                 request.onsuccess = () => {
                     const db = request.result;
-                    navigator.storage?.persist?.().catch(() => {
-                        /* noop */
-                    });
                     db.onclose = () => {
                         this.dbPromise = null;
                     };
