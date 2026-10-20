@@ -36,7 +36,6 @@ jobs:
                   TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
               run: pnpm test:heartbeat
 
-            # One transient failure on preview must not page anyone; two in a row is a contract change or an outage.
             - name: Retry once before alerting
               id: retry
               if: steps.first.outcome == 'failure'

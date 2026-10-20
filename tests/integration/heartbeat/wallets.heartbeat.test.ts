@@ -12,8 +12,6 @@ type Locator = WalletLocator;
 const EVM_CHAIN = "base-sepolia";
 const TOKEN = "usdxm";
 
-// Every test drives a call that succeeds on preview and pins the fields the SDK reads from the response.
-// A rejection is a failure here, except in the one test whose contract is the rejection itself.
 describe("Heartbeat — wallets API contract (Real HTTP)", () => {
     let apiClient: WalletsApiClient;
     let evmAdmin: TestSigner;
@@ -88,7 +86,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
     });
 
-    // The SDK branches on the error envelope alone ("error" in response), never on a code.
     it("getWallet (not found) returns the error envelope", async () => {
         expectErrorShape(await apiClient.getWallet(TEST_ADDRESSES.EVM_NON_EXISTENT as Locator));
     });
@@ -146,7 +143,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
             token: TOKEN,
             chain: EVM_CHAIN,
         } as Parameters<typeof apiClient.fundWallet>[1]);
-        // Funding is on-chain: the endpoint answers {txId}, not the balance array the OpenAPI spec claims.
         expectContract(result, { txId: "string" });
     });
 
@@ -173,7 +169,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
     });
 
     it("getTransfers", async () => {
-        // Wallet.transfers() always sends chain and status; the API also requires tokens, which the SDK types as optional.
         const result = expectContract<{ data: unknown }>(
             await apiClient.getTransfers(evmWallet, {
                 chain: EVM_CHAIN as Parameters<typeof apiClient.getTransfers>[1]["chain"],
@@ -202,8 +197,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(result, { id: "string", status: "string" });
     });
 
-    // Recovery methods can change only on Solana and Stellar today; EVM rejects every mutation.
-    // The SDK sends one method (not a list) and no chain, and reads the transaction id to approve; that is what is pinned.
     it("registerRecoveryMethod", async () => {
         const result = await apiClient.registerRecoveryMethod(solanaWallet, {
             recoveryMethods: solanaExternalWalletSigner().signer,
@@ -213,7 +206,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(body.tx, { id: "string" });
     });
 
-    // A method is removable only once installed, so this one approves its registration first, as the SDK does.
     it("removeRecoveryMethod", async () => {
         const second = solanaExternalWalletSigner();
         const registered = await apiClient.registerRecoveryMethod(solanaWallet, {
@@ -235,8 +227,6 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(result, { id: "string" });
     }, 120_000);
 
-    // The client requests /api/2025-06-09/wallets/{chain:address}/nfts, a route the API does not serve
-    // ("Cannot GET ..."). Marked `fails` so the day the route exists this test turns red and gets unmarked.
     it.fails("getNfts (known broken: the SDK calls a route the API does not serve)", async () => {
         expectContract(await apiClient.getNfts({ address: evmWallet, chain: EVM_CHAIN, page: 1, perPage: 1 }), {});
     });

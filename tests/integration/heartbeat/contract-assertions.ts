@@ -1,6 +1,5 @@
 import { expect } from "vitest";
 
-// The API's uniform error shape: { error: true, message: string, code?: string }.
 export function expectErrorShape(response: unknown) {
     expect(typeof response).toBe("object");
     expect(response).not.toBeNull();
@@ -9,7 +8,6 @@ export function expectErrorShape(response: unknown) {
     expect(typeof body.message).toBe("string");
 }
 
-// Pins a success response: not the error envelope, and every field the SDK reads is present with its type.
 export function expectContract<T>(response: unknown, requiredFields: Record<string, string>): T {
     expect(typeof response).toBe("object");
     expect(response).not.toBeNull();
