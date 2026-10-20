@@ -45,6 +45,23 @@ export function Permissions() {
         }
     };
 
+    const removeSigner = async (signer: Signer) => {
+        if (wallet == null) {
+            throw new Error("No wallet connected");
+        }
+        try {
+            setIsLoading(true);
+            await wallet.removeSigner(signer as Parameters<typeof wallet.removeSigner>[0]);
+            const signers = await wallet.signers();
+            setPermissions(signers);
+        } catch (err) {
+            console.error("Permissions: ", err);
+            alert(`Permissions: ${err}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5">
             <div>
@@ -92,9 +109,17 @@ export function Permissions() {
                                 <li
                                     key={index}
                                     data-testid={`delegated-signer-item-${index}`}
-                                    className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
+                                    className="flex items-center justify-between gap-2 whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
                                 >
                                     {delegatedSigner.locator}
+                                    <button
+                                        data-testid={`remove-delegated-signer-button-${delegatedSigner.locator}`}
+                                        className="text-red-600 hover:text-red-800 disabled:text-gray-400"
+                                        onClick={() => removeSigner(delegatedSigner)}
+                                        disabled={isLoading}
+                                    >
+                                        Remove
+                                    </button>
                                 </li>
                             ))}
                         </ul>
