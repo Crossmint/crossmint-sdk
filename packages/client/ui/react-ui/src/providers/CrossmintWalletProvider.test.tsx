@@ -3,7 +3,13 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage, mockLogger } = vi.hoisted(() => {
+const {
+    MockUnsupportedBrowserError,
+    mockIframeDeviceSignerKeyStorage,
+    mockIndexedDbDeviceSignerKeyStorage,
+    mockHasEphemeralThirdPartyStorage,
+    mockLogger,
+} = vi.hoisted(() => {
     class MockUnsupportedBrowserError extends Error {
         code = "wallet:environment-invalid";
         constructor(message: string) {
@@ -14,6 +20,8 @@ const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage, mockLogge
     return {
         MockUnsupportedBrowserError,
         mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+        mockIndexedDbDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+        mockHasEphemeralThirdPartyStorage: vi.fn(() => false),
         mockLogger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     };
 });
@@ -34,6 +42,8 @@ vi.mock("./CrossmintProvider", () => ({
 
 vi.mock("@crossmint/wallets-sdk", () => ({
     IframeDeviceSignerKeyStorage: mockIframeDeviceSignerKeyStorage,
+    IndexedDbDeviceSignerKeyStorage: mockIndexedDbDeviceSignerKeyStorage,
+    hasEphemeralThirdPartyStorage: mockHasEphemeralThirdPartyStorage,
     UnsupportedBrowserError: MockUnsupportedBrowserError,
 }));
 
@@ -162,5 +172,18 @@ describe("CrossmintWalletProvider", () => {
             expect.stringContaining("Unsupported browser"),
             expect.objectContaining({ error: expect.any(MockUnsupportedBrowserError) })
         );
+    });
+
+    it("uses page storage for device keys in browsers that delete iframe storage on close", () => {
+        mockHasEphemeralThirdPartyStorage.mockReturnValueOnce(true);
+
+        render(
+            <CrossmintWalletProvider>
+                <div>Test</div>
+            </CrossmintWalletProvider>
+        );
+
+        expect(mockIndexedDbDeviceSignerKeyStorage).toHaveBeenCalledWith("test-api-key");
+        expect(mockIframeDeviceSignerKeyStorage).not.toHaveBeenCalled();
     });
 });
