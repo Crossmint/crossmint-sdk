@@ -22,22 +22,19 @@ const PoweredByCrossmintLink = styled.a`
 // same two appearance variables the iframe reads, so it looks identical.
 export function PoweredByCrossmint({ appearance }: { appearance?: PaymentMethodManagementAppearance }) {
     const color = appearance?.variables?.colors?.textSecondary ?? theme["cm-text-secondary"];
+    // appearance.fonts cssSrc is deliberately not loaded here: it is arbitrary
+    // CSS, and in the host document it could restyle the host's own controls.
+    // `fontFamily` still resolves when the host already loads that font itself.
     const fontFamily = appearance?.variables?.fontFamily;
     return (
-        <>
-            {/* Custom font stylesheets only load inside the iframe; load them here too so `fontFamily` can resolve to the same typeface. */}
-            {appearance?.fonts?.map(({ cssSrc }) => (
-                <link key={cssSrc} rel="stylesheet" href={cssSrc} />
-            ))}
-            <PoweredByCrossmintLink
-                href="https://www.crossmint.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color, fontFamily }}
-            >
-                <CrossmintLeaf color={color} />
-                <span>Powered by Crossmint</span>
-            </PoweredByCrossmintLink>
-        </>
+        <PoweredByCrossmintLink
+            href="https://www.crossmint.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color, fontFamily }}
+        >
+            <CrossmintLeaf color={color} />
+            <span>Powered by Crossmint</span>
+        </PoweredByCrossmintLink>
     );
 }
