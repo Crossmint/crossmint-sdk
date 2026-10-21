@@ -24,14 +24,20 @@ export function PoweredByCrossmint({ appearance }: { appearance?: PaymentMethodM
     const color = appearance?.variables?.colors?.textSecondary ?? theme["cm-text-secondary"];
     const fontFamily = appearance?.variables?.fontFamily;
     return (
-        <PoweredByCrossmintLink
-            href="https://www.crossmint.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color, fontFamily }}
-        >
-            <CrossmintLeaf color={color} />
-            <span>Powered by Crossmint</span>
-        </PoweredByCrossmintLink>
+        <>
+            {/* Custom font stylesheets only load inside the iframe; load them here too so `fontFamily` can resolve to the same typeface. */}
+            {appearance?.fonts?.map(({ cssSrc }) => (
+                <link key={cssSrc} rel="stylesheet" href={cssSrc} />
+            ))}
+            <PoweredByCrossmintLink
+                href="https://www.crossmint.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color, fontFamily }}
+            >
+                <CrossmintLeaf color={color} />
+                <span>Powered by Crossmint</span>
+            </PoweredByCrossmintLink>
+        </>
     );
 }

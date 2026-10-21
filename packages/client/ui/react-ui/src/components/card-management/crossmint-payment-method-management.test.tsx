@@ -242,6 +242,39 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
     });
 
+    test("drops the footer when the iframe reloads until the new document delegates again", () => {
+        mount();
+        const delegated = () => mocks.on.mock.calls.filter(([event]) => event === "ui:poweredBy.delegated").at(-1)?.[1];
+
+        act(() => delegated()?.({}));
+        expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
+
+        // A reload is a new document that re-decides delegation; a rolled-back
+        // iframe would draw its own footer again next to ours.
+        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
+        expect(screen.queryByText("Powered by Crossmint")).not.toBeInTheDocument();
+
+        act(() => delegated()?.({}));
+        expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
+    });
+
+    test("loads appearance font stylesheets alongside the footer", () => {
+        render(
+            <CrossmintPaymentMethodManagement
+                jwt="buyer-jwt"
+                hideSubmitButton
+                appearance={{ fonts: [{ cssSrc: "https://fonts.example.com/brand.css" }] }}
+            />
+        );
+        const delegated = mocks.on.mock.calls.find(([event]) => event === "ui:poweredBy.delegated")?.[1];
+
+        act(() => delegated?.({}));
+
+        expect(
+            document.querySelector('link[rel="stylesheet"][href="https://fonts.example.com/brand.css"]')
+        ).not.toBeNull();
+    });
+
     test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
         const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
         const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];

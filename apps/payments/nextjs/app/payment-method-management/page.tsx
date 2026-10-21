@@ -52,17 +52,18 @@ function PaymentMethodManagementWrapper() {
                 allowedModes={["new", "existing"]}
                 hideSubmitButton={ownButton}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
-            />
-            {ownButton && (
-                <button
-                    type="button"
-                    style={{ marginTop: 16, padding: "12px 20px" }}
-                    onClick={submitPaymentMethod}
-                    disabled={submitting}
-                >
-                    {submitting ? "Saving…" : "My own submit button"}
-                </button>
-            )}
+            >
+                {ownButton && (
+                    <button
+                        type="button"
+                        style={{ marginTop: 16, padding: "12px 20px" }}
+                        onClick={submitPaymentMethod}
+                        disabled={submitting}
+                    >
+                        {submitting ? "Saving…" : "My own submit button"}
+                    </button>
+                )}
+            </CrossmintPaymentMethodManagement>
             {result != null && <pre style={{ marginTop: 16 }}>{JSON.stringify(result, null, 2)}</pre>}
         </div>
     );

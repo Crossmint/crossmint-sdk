@@ -1,5 +1,5 @@
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it, test } from "vitest";
 import type {
     CrossmintPaymentMethod,
     CrossmintPaymentMethodManagementProps,
@@ -71,7 +71,7 @@ describe("paymentMethodManagementService.getUrl", () => {
         ).toBe("true");
     });
 
-    it("sends footer=host only when the host hides the submit button", () => {
+    test("sends footer=host only when the host hides the submit button", () => {
         const service = makeService();
 
         expect(new URL(service.iframe.getUrl({ jwt: "jwt-token" })).searchParams.has("footer")).toBe(false);
@@ -83,7 +83,7 @@ describe("paymentMethodManagementService.getUrl", () => {
         ).toBe("host");
     });
 
-    it("never serializes children into the iframe URL", () => {
+    test("never serializes children into the iframe URL", () => {
         const service = makeService();
 
         const url = service.iframe.getUrl({

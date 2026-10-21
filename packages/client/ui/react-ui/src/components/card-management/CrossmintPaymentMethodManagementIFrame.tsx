@@ -116,6 +116,9 @@ const PaymentMethodConnection = forwardRef<
         // handshake) per document, while each run still gets a fresh `active`.
         if (clientRef.current?.reloads !== reloads) {
             const client = iframeService.iframe.createClient(iframe.current);
+            // The new document re-decides delegation: a reloaded old-version
+            // iframe draws its own footer again, so ours must not survive.
+            setFooterDelegated(false);
             // Keep successful readiness, but discard a failed handshake so a later
             // submit can retry without reloading the iframe.
             let ready: Promise<void> | undefined;
