@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 1.20.5
+
+### Patch Changes
+
+- 7401d02: README: passkey signers work on EVM, Solana and Stellar, in the browser and React Native. The React Native README documents the `passkeys` prop on `CrossmintWalletProvider`.
+- 25e5591: Reject a passkey assertion that lacks the user-verification flag on the browser WebAuthn path too, not only when a custom `onSignWithPasskey` is supplied. `WebAuthnP256.sign` requests user verification but does not check that the authenticator honoured it; a UV-less assertion used to be forwarded and fail later as a bundler AA24 "Invalid signature".
+  - @crossmint/common-sdk-auth@1.1.28
+
 ## 1.20.4
 
 ### Patch Changes
