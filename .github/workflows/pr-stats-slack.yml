@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Send pull request stats to slack
-              uses: flowwer-dev/pull-request-stats@master
+              uses: flowwer-dev/pull-request-stats@0dde6edf8b7db75684533021212c6e85fb987dbb # v2.15.2
               with:
                   period: 14
                   charts: true
