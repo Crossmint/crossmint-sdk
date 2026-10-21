@@ -23,11 +23,16 @@ runs:
     steps:
         - name: Log inputs
           shell: bash
+          env:
+              NODE_VERSION: ${{ inputs.node-version }}
+              PNPM_VERSION: ${{ inputs.pnpm-version }}
+              SKIP_INSTALL: ${{ inputs.skip-install }}
+              INSTALL_ARGS: ${{ inputs.install-args }}
           run: |
-              echo "Node.js version: ${{ inputs.node-version }}"
-              echo "PNPM version: ${{ inputs.pnpm-version }}"
-              echo "Skip install: ${{ inputs.skip-install }}"
-              echo "Install args: ${{ inputs.install-args }}"
+              echo "Node.js version: $NODE_VERSION"
+              echo "PNPM version: $PNPM_VERSION"
+              echo "Skip install: $SKIP_INSTALL"
+              echo "Install args: $INSTALL_ARGS"
 
         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -63,4 +68,7 @@ runs:
         - name: Install dependencies
           shell: bash
           if: inputs.skip-install == 'false'
-          run: pnpm install --frozen-lockfile --prefer-offline ${{ inputs.install-args }}
+          env:
+              INSTALL_ARGS: ${{ inputs.install-args }}
+          # INSTALL_ARGS is unquoted on purpose so it splits into separate pnpm arguments.
+          run: pnpm install --frozen-lockfile --prefer-offline $INSTALL_ARGS
