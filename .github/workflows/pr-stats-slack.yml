@@ -4,9 +4,14 @@ on:
     schedule:
         - cron: "0 11 * * 1-5"
 
+permissions: {}
+
 jobs:
     stats:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
         steps:
             - name: Send pull request stats to slack
               uses: flowwer-dev/pull-request-stats@0dde6edf8b7db75684533021212c6e85fb987dbb # v2.15.2
