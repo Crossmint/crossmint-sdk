@@ -8,7 +8,26 @@ import {
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { generateRandomString } from "@crossmint/client-sdk-window";
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+    type ReactNode,
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
+
+export type CrossmintPaymentMethodManagementElementProps = CrossmintPaymentMethodManagementProps & {
+    /**
+     * The host's own submit button (use with `hideSubmitButton`), rendered after the
+     * form and before the "Powered by Crossmint" footer. Anything else is also
+     * accepted, but `hideSubmitButton` without children still works as before.
+     */
+    children?: ReactNode;
+};
 
 const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
@@ -22,7 +41,7 @@ const superseded = (): PaymentMethodSubmitResult => ({
 
 export const CrossmintPaymentMethodManagementIFrame = forwardRef<
     CrossmintPaymentMethodManagementRef,
-    CrossmintPaymentMethodManagementProps
+    CrossmintPaymentMethodManagementElementProps
 >(function CrossmintPaymentMethodManagementIFrame(props, ref) {
     const { crossmint } = useCrossmint();
     const service = useMemo(
@@ -56,7 +75,7 @@ const PaymentMethodConnection = forwardRef<
     {
         url: string;
         service: ReturnType<typeof createPaymentMethodManagementService>;
-        props: CrossmintPaymentMethodManagementProps;
+        props: CrossmintPaymentMethodManagementElementProps;
         height: number;
         onHeightChange: (height: number) => void;
     }
@@ -82,6 +101,7 @@ const PaymentMethodConnection = forwardRef<
         promise: Promise<PaymentMethodSubmitResult>;
         cancel: () => void;
     } | null>(null);
+    const [footerDelegated, setFooterDelegated] = useState(false);
 
     useCommittedLayoutEffect(() => {
         latestProps.current = props;
@@ -127,9 +147,17 @@ const PaymentMethodConnection = forwardRef<
                 return latestProps.current.onPaymentMethodSelected?.(method);
             }
         });
+        const poweredByListener = client.on("ui:poweredBy.delegated", () => {
+            // The iframe confirmed it hid its own footer, so drawing ours can't
+            // produce two. Old iframes never send this and keep theirs.
+            if (connection.current === active) {
+                setFooterDelegated(true);
+            }
+        });
         return () => {
             client.off(heightListener);
             client.off(selectedListener);
+            client.off(poweredByListener);
             if (pending.current?.client === client) {
                 pending.current.cancel();
                 pending.current = null;
@@ -201,34 +229,38 @@ const PaymentMethodConnection = forwardRef<
     }));
 
     return (
-        <iframe
-            ref={iframe}
-            src={url}
-            onLoad={() => {
-                if (!sawFirstLoad.current) {
-                    sawFirstLoad.current = true;
-                    return;
-                }
-                setReloads((n) => n + 1);
-            }}
-            id="crossmint-payment-method-management.iframe"
-            role="crossmint-payment-method-management.iframe"
-            allow="payment *; microphone; camera"
-            style={{
-                boxShadow: "none",
-                border: "none",
-                padding: "0px",
-                width: "100%",
-                minWidth: "100%",
-                overflow: "hidden",
-                display: "block",
-                userSelect: "none",
-                transform: "translate(0px)",
-                opacity: "1",
-                transition: "ease 0s, opacity 0.4s ease 0.1s",
-                height: `${height}px`,
-                backgroundColor: "transparent",
-            }}
-        />
+        <div>
+            <iframe
+                ref={iframe}
+                src={url}
+                onLoad={() => {
+                    if (!sawFirstLoad.current) {
+                        sawFirstLoad.current = true;
+                        return;
+                    }
+                    setReloads((n) => n + 1);
+                }}
+                id="crossmint-payment-method-management.iframe"
+                role="crossmint-payment-method-management.iframe"
+                allow="payment *; microphone; camera"
+                style={{
+                    boxShadow: "none",
+                    border: "none",
+                    padding: "0px",
+                    width: "100%",
+                    minWidth: "100%",
+                    overflow: "hidden",
+                    display: "block",
+                    userSelect: "none",
+                    transform: "translate(0px)",
+                    opacity: "1",
+                    transition: "ease 0s, opacity 0.4s ease 0.1s",
+                    height: `${height}px`,
+                    backgroundColor: "transparent",
+                }}
+            />
+            {props.children}
+            {footerDelegated && <PoweredByCrossmint appearance={props.appearance} />}
+        </div>
     );
 });

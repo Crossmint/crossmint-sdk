@@ -71,6 +71,32 @@ describe("paymentMethodManagementService.getUrl", () => {
         ).toBe("true");
     });
 
+    it("sends footer=host only when the host hides the submit button", () => {
+        const service = makeService();
+
+        expect(new URL(service.iframe.getUrl({ jwt: "jwt-token" })).searchParams.has("footer")).toBe(false);
+        expect(
+            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: false })).searchParams.has("footer")
+        ).toBe(false);
+        expect(
+            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: true })).searchParams.get("footer")
+        ).toBe("host");
+    });
+
+    it("never serializes children into the iframe URL", () => {
+        const service = makeService();
+
+        const url = service.iframe.getUrl({
+            jwt: "jwt-token",
+            hideSubmitButton: true,
+            children: { button: true },
+        } as CrossmintPaymentMethodManagementProps);
+
+        const params = new URL(url).searchParams;
+        expect(params.has("children")).toBe(false);
+        expect(params.get("footer")).toBe("host");
+    });
+
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
         const service = makeService();
 
