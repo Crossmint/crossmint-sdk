@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { cvcRecollectionIncomingEvents } from "./incoming";
 
 const resultSchema = cvcRecollectionIncomingEvents["cvc:result"];
+const errorSchema = cvcRecollectionIncomingEvents["cvc:error"];
 const FALLBACK_MESSAGE = "The CVC recollection component returned an unexpected result. Please try again.";
 
 describe("cvc:result schema", () => {
@@ -27,6 +28,15 @@ describe("cvc:result schema", () => {
         expect(resultSchema.safeParse({ requestId: "", result: { status: "complete" } }).success).toBe(false);
     });
 
+    it("keeps a refused result terminal when the reason is newer than this SDK", () => {
+        expect(
+            resultSchema.parse({
+                requestId: "r1",
+                result: { status: "refused", reason: "card-expired", message: "x" },
+            }).result
+        ).toEqual({ status: "refused", reason: "unknown", message: "x" });
+    });
+
     it.each([
         [
             { status: "requires_action", message: "x" },
@@ -34,11 +44,17 @@ describe("cvc:result schema", () => {
         ],
         [{ status: "requires_action" }, { status: "failed", message: FALLBACK_MESSAGE }],
         [{ status: "invalid" }, { status: "failed", message: FALLBACK_MESSAGE }],
-        [
-            { status: "refused", reason: "not-a-reason", message: "x" },
-            { status: "failed", message: "x" },
-        ],
     ])("maps %j to %j instead of dropping it", (result, expected) => {
         expect(resultSchema.parse({ requestId: "r1", result }).result).toEqual(expected);
+    });
+});
+
+describe("cvc:error schema", () => {
+    it("maps a reason newer than this SDK to unknown so onError still fires", () => {
+        expect(errorSchema.parse({ retriable: false, reason: "card-expired", message: "Expired" })).toEqual({
+            retriable: false,
+            reason: "unknown",
+            message: "Expired",
+        });
     });
 });

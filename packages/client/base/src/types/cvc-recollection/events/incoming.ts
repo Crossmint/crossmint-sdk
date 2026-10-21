@@ -1,14 +1,19 @@
 import { z } from "zod";
 
-const cvcRecollectionErrorReasonSchema = z.enum([
-    "widget-unavailable",
-    "invalid-configuration",
-    "invalid-credentials",
-    "provider-error",
-    // The CVC was submitted but Crossmint could not confirm it; retriable.
-    "verification-refused",
-    "unknown",
-]);
+const cvcRecollectionErrorReasonSchema = z
+    .enum([
+        "widget-unavailable",
+        "invalid-configuration",
+        "invalid-credentials",
+        "provider-error",
+        // The CVC was submitted but Crossmint could not confirm it; retriable.
+        "verification-refused",
+        "unknown",
+    ])
+    // A reason a newer iframe added before this SDK knows it maps to "unknown" instead of
+    // failing the whole event: `cvc:error` must still reach onError, and a `refused` result
+    // must stay terminal rather than falling into the retryable fallback below.
+    .catch("unknown");
 
 // What a `cvc:submit` resolves to. `invalid` and `failed` keep the form alive; `complete` and
 // `refused` end it; `unavailable` means the form was not ready to confirm yet. Must match the
