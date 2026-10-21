@@ -7,7 +7,8 @@ const config: Options = {
     external: [
         "react",
         "react-native",
-        "expo-modules-core",
+        "expo",
+        "expo/config-plugins",
         "expo-secure-store",
         "expo-device",
         "@noble/curves",
