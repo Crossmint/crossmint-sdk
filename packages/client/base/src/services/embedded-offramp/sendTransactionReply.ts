@@ -13,7 +13,7 @@ function describe(message: unknown) {
     }
 }
 
-/** Sends exactly one reply: success for a non-empty string txId, otherwise failed (rejected only when error.rejected === true). */
+/** Sends exactly one reply event for the transaction request. */
 export function sendTransactionReply(emitter: SendTransactionReplyEmitter, outcome: SendTransactionOutcome) {
     if ("error" in outcome) {
         const { message, rejected } = (outcome.error ?? {}) as { message?: unknown; rejected?: unknown };
