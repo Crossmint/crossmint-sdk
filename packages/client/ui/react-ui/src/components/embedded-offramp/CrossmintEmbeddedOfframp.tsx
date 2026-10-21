@@ -9,18 +9,32 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 
 export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
-    const [iframeClient, setIframeClient] = useState<EmbeddedOfframpIFrameEmitter | null>(null);
-    const [height, setHeight] = useState(0);
-    const ref = useRef<HTMLIFrameElement>(null);
-    const sendPending = useRef(false);
-    const latestProps = useRef(props);
-    useEffect(() => {
-        latestProps.current = props;
-    });
-
     const { crossmint } = useCrossmint();
     const service = createEmbeddedOfframpService({
         apiClient: createCrossmintApiClient(crossmint, { usageOrigin: "client" }),
+    });
+    const url = service.iframe.getUrl(props);
+    // A different document must never inherit a pending wallet request or its transport.
+    return <EmbeddedOfframpDocument key={url} props={props} url={url} service={service} />;
+}
+
+function EmbeddedOfframpDocument({
+    props,
+    url,
+    service,
+}: {
+    props: CrossmintEmbeddedOfframpProps;
+    url: string;
+    service: ReturnType<typeof createEmbeddedOfframpService>;
+}) {
+    const [iframeClient, setIframeClient] = useState<EmbeddedOfframpIFrameEmitter | null>(null);
+    const [height, setHeight] = useState(0);
+    const ref = useRef<HTMLIFrameElement>(null);
+    const sendPending = useRef<object | null>(null);
+    const hasLoaded = useRef(false);
+    const latestProps = useRef(props);
+    useEffect(() => {
+        latestProps.current = props;
     });
 
     useEffect(() => {
@@ -28,7 +42,7 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
             return;
         }
         setIframeClient(service.iframe.createClient(ref.current));
-    }, [iframeClient]);
+    }, [iframeClient, service.iframe.createClient]);
 
     useEffect(() => {
         if (iframeClient == null) {
@@ -45,18 +59,24 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
                 if (sendPending.current) {
                     return;
                 }
-                sendPending.current = true;
+                const request = {};
+                sendPending.current = request;
                 let outcome: { txId: unknown } | { error: unknown };
                 try {
                     outcome = { txId: await latestProps.current.payer.signAndSendTransaction(tx) };
                 } catch (error) {
                     outcome = { error };
                 }
-                sendPending.current = false;
+                // A reload, unmount, or replacement session invalidates this request.
+                if (sendPending.current !== request) {
+                    return;
+                }
+                sendPending.current = null;
                 sendTransactionReply(iframeClient, outcome);
             }),
         ];
         return () => {
+            sendPending.current = null;
             for (const id of ids) {
                 iframeClient.off(id);
             }
@@ -66,7 +86,14 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     return (
         <iframe
             ref={ref}
-            src={service.iframe.getUrl(props)}
+            src={url}
+            onLoad={() => {
+                // The first load may finish after the document has already requested signing.
+                if (hasLoaded.current) {
+                    sendPending.current = null;
+                }
+                hasLoaded.current = true;
+            }}
             id="crossmint-embedded-offramp.iframe"
             title="Withdraw"
             allow="camera"

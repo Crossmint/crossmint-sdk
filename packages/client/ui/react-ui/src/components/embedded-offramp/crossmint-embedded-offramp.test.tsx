@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { CrossmintEmbeddedOfframp } from "./CrossmintEmbeddedOfframp";
 
@@ -17,7 +17,8 @@ vi.mock("@crossmint/client-sdk-base", async (importOriginal) => ({
     ...(await importOriginal<typeof import("@crossmint/client-sdk-base")>()),
     createEmbeddedOfframpService: () => ({
         iframe: {
-            getUrl: () => "https://staging.crossmint.com/sdk/unstable/embedded-offramp?credentials=%7B%7D",
+            getUrl: (props: { credentials: unknown }) =>
+                `https://staging.crossmint.com/sdk/unstable/embedded-offramp?credentials=${JSON.stringify(props.credentials)}`,
             createClient: () => iframeClient,
         },
     }),
@@ -36,13 +37,13 @@ const sendTx = () =>
         void listeners.get("crypto:send-transaction")?.(tx);
     });
 
-describe("<CrossmintEmbeddedOfframp />", () => {
-    afterEach(() => {
-        cleanup();
-        listeners.clear();
-        vi.clearAllMocks();
-    });
+afterEach(() => {
+    cleanup();
+    listeners.clear();
+    vi.clearAllMocks();
+});
 
+describe("<CrossmintEmbeddedOfframp />", () => {
     test("renders the offramp iframe with camera access for KYC", () => {
         render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: vi.fn() }} />);
         const iframe = screen.getByTitle("Withdraw");
@@ -139,5 +140,99 @@ describe("<CrossmintEmbeddedOfframp />", () => {
             expect(iframeClient.send).toHaveBeenCalledTimes(1);
             expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:success", { txId: "0xtx" });
         });
+    });
+});
+
+function deferredTransaction() {
+    let resolve!: (txId: string) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<string>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
+
+describe("signing session isolation", () => {
+    test.each(["success", "rejection"])("ignores old session %s without unlocking the new session", async (outcome) => {
+        const oldTransaction = deferredTransaction();
+        const newTransaction = deferredTransaction();
+        const oldSigner = vi.fn().mockReturnValue(oldTransaction.promise);
+        const newSigner = vi.fn().mockReturnValue(newTransaction.promise);
+        const { rerender } = render(
+            <CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: oldSigner }} />
+        );
+        await sendTx();
+        rerender(
+            <CrossmintEmbeddedOfframp
+                credentials={{ sessionId: "ofs_2", clientSecret: "jwt_2" }}
+                payer={{ signAndSendTransaction: newSigner }}
+            />
+        );
+        await sendTx();
+        expect(newSigner).toHaveBeenCalledTimes(1);
+        await act(async () => {
+            if (outcome === "success") {
+                oldTransaction.resolve("old-tx");
+            } else {
+                oldTransaction.reject(new Error("old rejection"));
+            }
+            await Promise.resolve();
+        });
+        expect(iframeClient.send).not.toHaveBeenCalled();
+        await sendTx();
+        expect(newSigner).toHaveBeenCalledTimes(1);
+        await act(async () => newTransaction.resolve("new-tx"));
+        expect(iframeClient.send).toHaveBeenCalledTimes(1);
+    });
+
+    test("ignores a pending reply after the document reloads", async () => {
+        const oldTransaction = deferredTransaction();
+        const newTransaction = deferredTransaction();
+        const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
+        render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: signer }} />);
+        fireEvent.load(screen.getByTitle("Withdraw"));
+        await sendTx();
+        fireEvent.load(screen.getByTitle("Withdraw"));
+        await sendTx();
+        expect(signer).toHaveBeenCalledTimes(2);
+        await act(async () => oldTransaction.resolve("old-tx"));
+        expect(iframeClient.send).not.toHaveBeenCalled();
+        await sendTx();
+        expect(signer).toHaveBeenCalledTimes(2);
+        await act(async () => newTransaction.resolve("new-tx"));
+        expect(iframeClient.send).toHaveBeenCalledTimes(1);
+    });
+
+    test("does not reply after unmount", async () => {
+        const transaction = deferredTransaction();
+        const { unmount } = render(
+            <CrossmintEmbeddedOfframp
+                credentials={credentials}
+                payer={{ signAndSendTransaction: () => transaction.promise }}
+            />
+        );
+        await sendTx();
+        unmount();
+        await act(async () => transaction.resolve("old-tx"));
+        expect(iframeClient.send).not.toHaveBeenCalled();
+    });
+
+    test("keeps a delayed reply for the same session across callback updates", async () => {
+        vi.useFakeTimers();
+        try {
+            const transaction = deferredTransaction();
+            const payer = { signAndSendTransaction: vi.fn().mockReturnValue(transaction.promise) };
+            const { rerender } = render(<CrossmintEmbeddedOfframp credentials={credentials} payer={payer} />);
+            await sendTx();
+            rerender(<CrossmintEmbeddedOfframp credentials={{ ...credentials }} payer={payer} onReady={vi.fn()} />);
+            await act(async () => vi.advanceTimersByTime(121_000));
+            await sendTx();
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            await act(async () => transaction.resolve("late-tx"));
+            expect(iframeClient.send).toHaveBeenCalledTimes(1);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

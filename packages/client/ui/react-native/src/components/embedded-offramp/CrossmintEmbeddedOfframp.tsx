@@ -19,18 +19,29 @@ type EmbeddedOfframpWebViewParent = WebViewParent<
 >;
 
 export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
-    const [client, setClient] = useState<EmbeddedOfframpWebViewParent | null>(null);
-    const [height, setHeight] = useState(0);
-    const webViewRef = useRef<WebView>(null);
-    const sendPending = useRef(false);
-    const latestProps = useRef(props);
-    useEffect(() => {
-        latestProps.current = props;
-    });
-
     const { crossmint } = useCrossmint();
     const service = createEmbeddedOfframpService({
         apiClient: createCrossmintApiClient(crossmint, { usageOrigin: "client" }),
+    });
+    const url = service.iframe.getUrl(props);
+    // A different document must never inherit a pending wallet request or its transport.
+    return <EmbeddedOfframpDocument key={url} props={props} url={url} />;
+}
+
+function EmbeddedOfframpDocument({
+    props,
+    url,
+}: {
+    props: CrossmintEmbeddedOfframpProps;
+    url: string;
+}) {
+    const [client, setClient] = useState<EmbeddedOfframpWebViewParent | null>(null);
+    const [height, setHeight] = useState(0);
+    const webViewRef = useRef<WebView>(null);
+    const sendPending = useRef<object | null>(null);
+    const latestProps = useRef(props);
+    useEffect(() => {
+        latestProps.current = props;
     });
 
     useEffect(() => {
@@ -60,25 +71,30 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
                 if (sendPending.current) {
                     return;
                 }
-                sendPending.current = true;
+                const request = {};
+                sendPending.current = request;
                 let outcome: { txId: unknown } | { error: unknown };
                 try {
                     outcome = { txId: await latestProps.current.payer.signAndSendTransaction(tx) };
                 } catch (error) {
                     outcome = { error };
                 }
-                sendPending.current = false;
+                // A reload, unmount, or replacement session invalidates this request.
+                if (sendPending.current !== request) {
+                    return;
+                }
+                sendPending.current = null;
                 sendTransactionReply(client, outcome);
             }),
         ];
         return () => {
+            sendPending.current = null;
             for (const id of ids) {
                 client.off(id);
             }
         };
     }, [client]);
 
-    const url = service.iframe.getUrl(props);
     const routeUrl = url.split("?")[0] ?? url;
     // Any other page the WebView ends up showing also receives the bridge, so only the offramp route may talk to it.
     // iOS reports the sender's full URL, Android only its origin.
@@ -95,6 +111,9 @@ export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
         <RNWebView
             ref={webViewRef}
             source={{ uri: url }}
+            onLoadStart={() => {
+                sendPending.current = null;
+            }}
             onMessage={(event) => {
                 if (isOfframpPage(event.nativeEvent.url)) {
                     client?.handleMessage(event);

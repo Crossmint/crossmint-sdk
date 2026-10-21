@@ -236,3 +236,97 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         });
     });
 });
+
+function deferredTransaction() {
+    let resolve!: (txId: string) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<string>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
+
+describe("signing session isolation", () => {
+    test.each(["success", "rejection"])("ignores old session %s without unlocking the new session", async (outcome) => {
+        const oldTransaction = deferredTransaction();
+        const newTransaction = deferredTransaction();
+        const oldSigner = vi.fn().mockReturnValue(oldTransaction.promise);
+        const newSigner = vi.fn().mockReturnValue(newTransaction.promise);
+        const { rerender } = render(
+            <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: oldSigner }} />
+        );
+        await emit("crypto:send-transaction", TX);
+        rerender(
+            <CrossmintEmbeddedOfframp
+                credentials={{ sessionId: "ofs_2", clientSecret: "jwt_2" }}
+                payer={{ signAndSendTransaction: newSigner }}
+            />
+        );
+        await emit("crypto:send-transaction", TX);
+        expect(newSigner).toHaveBeenCalledTimes(1);
+        await act(async () => {
+            if (outcome === "success") {
+                oldTransaction.resolve("old-tx");
+            } else {
+                oldTransaction.reject(new Error("old rejection"));
+            }
+            await Promise.resolve();
+        });
+        expect(injectJavaScript).not.toHaveBeenCalled();
+        await emit("crypto:send-transaction", TX);
+        expect(newSigner).toHaveBeenCalledTimes(1);
+        await act(async () => newTransaction.resolve("new-tx"));
+        expect(injectJavaScript).toHaveBeenCalledTimes(1);
+    });
+
+    test("ignores a pending reply after the document reloads", async () => {
+        const oldTransaction = deferredTransaction();
+        const newTransaction = deferredTransaction();
+        const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
+        act(() => lastWebViewProps().onLoadStart());
+        await emit("crypto:send-transaction", TX);
+        act(() => lastWebViewProps().onLoadStart());
+        await emit("crypto:send-transaction", TX);
+        expect(signer).toHaveBeenCalledTimes(2);
+        await act(async () => oldTransaction.resolve("old-tx"));
+        expect(injectJavaScript).not.toHaveBeenCalled();
+        await emit("crypto:send-transaction", TX);
+        expect(signer).toHaveBeenCalledTimes(2);
+        await act(async () => newTransaction.resolve("new-tx"));
+        expect(injectJavaScript).toHaveBeenCalledTimes(1);
+    });
+
+    test("does not reply after unmount", async () => {
+        const transaction = deferredTransaction();
+        const { unmount } = render(
+            <CrossmintEmbeddedOfframp
+                credentials={CREDENTIALS}
+                payer={{ signAndSendTransaction: () => transaction.promise }}
+            />
+        );
+        await emit("crypto:send-transaction", TX);
+        unmount();
+        await act(async () => transaction.resolve("old-tx"));
+        expect(injectJavaScript).not.toHaveBeenCalled();
+    });
+
+    test("keeps a delayed reply for the same session across callback updates", async () => {
+        vi.useFakeTimers();
+        try {
+            const transaction = deferredTransaction();
+            const payer = { signAndSendTransaction: vi.fn().mockReturnValue(transaction.promise) };
+            const { rerender } = render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+            await emit("crypto:send-transaction", TX);
+            rerender(<CrossmintEmbeddedOfframp credentials={{ ...CREDENTIALS }} payer={payer} onReady={vi.fn()} />);
+            await act(async () => vi.advanceTimersByTime(121_000));
+            await emit("crypto:send-transaction", TX);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            await act(async () => transaction.resolve("late-tx"));
+            expect(injectJavaScript).toHaveBeenCalledTimes(1);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+});
