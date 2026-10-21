@@ -1,6 +1,7 @@
 import * as React from "react";
 import { WebView, type WebViewProps } from "react-native-webview";
 import { z } from "zod";
+import type { WebViewInstance } from "./WebViewInstance";
 
 const INJECTED_BRIDGE_JS = `
 (function() {
@@ -139,7 +140,7 @@ export interface RNWebViewProps extends WebViewProps {
     globals?: SafeInjectableGlobals;
 }
 
-export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, ...props }, ref) => {
+export const RNWebView = React.forwardRef<WebViewInstance, RNWebViewProps>(({ globals, ...props }, ref) => {
     const safeGlobalsScript = globals ? createSafeGlobalsScript(globals) : "";
 
     const combinedInjectedJs = `
@@ -147,7 +148,7 @@ export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, .
         ${safeGlobalsScript}
     `;
 
-    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
+    return <WebView<object> ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
 });
 
 RNWebView.displayName = "RNWebView";

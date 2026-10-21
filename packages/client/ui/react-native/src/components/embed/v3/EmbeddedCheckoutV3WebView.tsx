@@ -1,10 +1,10 @@
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import type { WebViewMessageEvent } from "react-native-webview";
 
 import { type CrossmintEmbeddedCheckoutV3Props, crossmintEmbeddedCheckoutV3Service } from "@crossmint/client-sdk-base";
-import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView, WebViewParent, type WebViewInstance } from "@crossmint/client-sdk-rn-window";
 import { embeddedCheckoutV3IncomingEvents, embeddedCheckoutV3OutgoingEvents } from "@crossmint/client-sdk-base";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
@@ -38,7 +38,7 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
     });
     const embeddedCheckoutService = crossmintEmbeddedCheckoutV3Service({ apiClient });
 
-    const webViewRef = useRef<WebView>(null);
+    const webViewRef = useRef<WebViewInstance>(null);
 
     useEffect(() => {
         const webView = webViewRef.current;
