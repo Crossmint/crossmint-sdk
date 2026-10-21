@@ -8,7 +8,12 @@ import {
     useLogger,
 } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
-import { IframeDeviceSignerKeyStorage, UnsupportedBrowserError } from "@crossmint/wallets-sdk";
+import {
+    IframeDeviceSignerKeyStorage,
+    IndexedDbDeviceSignerKeyStorage,
+    UnsupportedBrowserError,
+    hasEphemeralThirdPartyStorage,
+} from "@crossmint/wallets-sdk";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -54,6 +59,9 @@ export function CrossmintWalletProvider({
     const logger = useLogger(LoggerContext);
 
     const deviceSignerKeyStorage = useMemo(() => {
+        if (hasEphemeralThirdPartyStorage()) {
+            return new IndexedDbDeviceSignerKeyStorage(crossmint.apiKey);
+        }
         try {
             return new IframeDeviceSignerKeyStorage(crossmint.apiKey);
         } catch (error) {

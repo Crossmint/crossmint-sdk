@@ -51,3 +51,25 @@ export function hasPartitionedStorage(): boolean {
     // Unknown browser — fail-safe: refuse to operate.
     return false;
 }
+
+/**
+ * Returns `true` in browsers that delete iframe storage when the browser closes.
+ * These browsers include Safari and all browsers on iOS.
+ */
+export function hasEphemeralThirdPartyStorage(): boolean {
+    if (typeof navigator === "undefined") {
+        return false;
+    }
+
+    if ("brave" in navigator) {
+        return true;
+    }
+
+    const ua = navigator.userAgent ?? "";
+
+    if (/iPhone|iPad|iPod/.test(ua) || /CriOS\/|FxiOS\/|EdgiOS\//.test(ua)) {
+        return true;
+    }
+
+    return /Safari\/\d+/.test(ua) && !/Chrome\/|Chromium\/|Firefox\//.test(ua);
+}
