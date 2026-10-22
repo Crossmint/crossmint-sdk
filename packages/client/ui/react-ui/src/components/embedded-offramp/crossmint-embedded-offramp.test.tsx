@@ -28,13 +28,13 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
 }));
 vi.mock("@/utils/createCrossmintApiClient", () => ({ createCrossmintApiClient: () => ({}) }));
 
-const credentials = { sessionId: "ofs_1", clientSecret: "jwt" };
+const CREDENTIALS = { sessionId: "ofs_1", clientSecret: "jwt" };
 const emit = (event: string, data: unknown) => act(() => listeners.get(event)?.(data));
 
-const tx = { serializedTransaction: "0x", chain: "base", payerAddress: "0xabc" };
+const TX = { serializedTransaction: "0x", chain: "base", payerAddress: "0xabc" };
 const sendTx = () =>
     act(async () => {
-        void listeners.get("crypto:send-transaction")?.(tx);
+        void listeners.get("crypto:send-transaction")?.(TX);
     });
 
 afterEach(() => {
@@ -45,7 +45,7 @@ afterEach(() => {
 
 describe("<CrossmintEmbeddedOfframp />", () => {
     test("renders the offramp iframe with camera access for KYC", () => {
-        render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: vi.fn() }} />);
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
         const iframe = screen.getByTitle("Withdraw");
         expect(iframe.getAttribute("src")).toContain("/sdk/unstable/embedded-offramp");
         expect(iframe.getAttribute("allow")).toBe("camera");
@@ -56,7 +56,7 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         const onError = vi.fn();
         render(
             <CrossmintEmbeddedOfframp
-                credentials={credentials}
+                credentials={CREDENTIALS}
                 payer={{ signAndSendTransaction: vi.fn() }}
                 onComplete={onComplete}
                 onError={onError}
@@ -71,9 +71,9 @@ describe("<CrossmintEmbeddedOfframp />", () => {
     describe("when the iframe requests a transaction", () => {
         test("signs and replies once with the txId", async () => {
             const signAndSendTransaction = vi.fn().mockResolvedValue("0xtx");
-            render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction }} />);
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction }} />);
             await sendTx();
-            expect(signAndSendTransaction).toHaveBeenCalledWith(tx);
+            expect(signAndSendTransaction).toHaveBeenCalledWith(TX);
             expect(iframeClient.send).toHaveBeenCalledTimes(1);
             expect(iframeClient.send).toHaveBeenCalledWith("crypto:send-transaction:success", { txId: "0xtx" });
         });
@@ -82,7 +82,7 @@ describe("<CrossmintEmbeddedOfframp />", () => {
             const rejected = Object.assign(new Error("declined"), { rejected: true });
             render(
                 <CrossmintEmbeddedOfframp
-                    credentials={credentials}
+                    credentials={CREDENTIALS}
                     payer={{ signAndSendTransaction: vi.fn().mockRejectedValue(rejected) }}
                 />
             );
@@ -100,7 +100,7 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         ])("reports %s as not rejected", async (_name, error) => {
             render(
                 <CrossmintEmbeddedOfframp
-                    credentials={credentials}
+                    credentials={CREDENTIALS}
                     payer={{ signAndSendTransaction: vi.fn().mockRejectedValue(error) }}
                 />
             );
@@ -115,7 +115,7 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         test.each([[undefined], [""], [42]])("reports a non-string txId (%s) as not rejected", async (txId) => {
             render(
                 <CrossmintEmbeddedOfframp
-                    credentials={credentials}
+                    credentials={CREDENTIALS}
                     payer={{ signAndSendTransaction: vi.fn().mockResolvedValue(txId) }}
                 />
             );
@@ -132,7 +132,7 @@ describe("<CrossmintEmbeddedOfframp />", () => {
             const signAndSendTransaction = vi
                 .fn()
                 .mockReturnValue(new Promise<string>((resolve) => (resolveSend = resolve)));
-            render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction }} />);
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction }} />);
             await sendTx();
             await sendTx();
             expect(signAndSendTransaction).toHaveBeenCalledTimes(1);
@@ -160,7 +160,7 @@ describe("signing session isolation", () => {
         const oldSigner = vi.fn().mockReturnValue(oldTransaction.promise);
         const newSigner = vi.fn().mockReturnValue(newTransaction.promise);
         const { rerender } = render(
-            <CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: oldSigner }} />
+            <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: oldSigner }} />
         );
         await sendTx();
         rerender(
@@ -190,7 +190,7 @@ describe("signing session isolation", () => {
         const oldTransaction = deferredTransaction();
         const newTransaction = deferredTransaction();
         const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
-        render(<CrossmintEmbeddedOfframp credentials={credentials} payer={{ signAndSendTransaction: signer }} />);
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
         fireEvent.load(screen.getByTitle("Withdraw"));
         await sendTx();
         fireEvent.load(screen.getByTitle("Withdraw"));
@@ -208,7 +208,7 @@ describe("signing session isolation", () => {
         const transaction = deferredTransaction();
         const { unmount } = render(
             <CrossmintEmbeddedOfframp
-                credentials={credentials}
+                credentials={CREDENTIALS}
                 payer={{ signAndSendTransaction: () => transaction.promise }}
             />
         );
@@ -223,9 +223,9 @@ describe("signing session isolation", () => {
         try {
             const transaction = deferredTransaction();
             const payer = { signAndSendTransaction: vi.fn().mockReturnValue(transaction.promise) };
-            const { rerender } = render(<CrossmintEmbeddedOfframp credentials={credentials} payer={payer} />);
+            const { rerender } = render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
             await sendTx();
-            rerender(<CrossmintEmbeddedOfframp credentials={{ ...credentials }} payer={payer} onReady={vi.fn()} />);
+            rerender(<CrossmintEmbeddedOfframp credentials={{ ...CREDENTIALS }} payer={payer} onReady={vi.fn()} />);
             await act(async () => vi.advanceTimersByTime(121_000));
             await sendTx();
             expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);

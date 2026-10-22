@@ -11,12 +11,12 @@ function makeApiClient(sdkMetadata = { name: "@crossmint/client-sdk-react-ui", v
     } as never;
 }
 
-const credentials = { sessionId: "ofs_1", clientSecret: "jwt" };
+const CREDENTIALS = { sessionId: "ofs_1", clientSecret: "jwt" };
 
 function iframeUrl(props: Record<string, unknown>, apiClient = makeApiClient()) {
     return new URL(
         createEmbeddedOfframpService({ apiClient }).iframe.getUrl({
-            credentials,
+            credentials: CREDENTIALS,
             payer: { signAndSendTransaction: vi.fn() },
             ...props,
         } as CrossmintEmbeddedOfframpProps)
@@ -34,7 +34,7 @@ describe("embeddedOfframpService", () => {
 
             const url = iframeUrl({ appearance, locale: "es-ES" });
 
-            expect(JSON.parse(url.searchParams.get("credentials") ?? "")).toEqual(credentials);
+            expect(JSON.parse(url.searchParams.get("credentials") ?? "")).toEqual(CREDENTIALS);
             expect(JSON.parse(url.searchParams.get("appearance") ?? "")).toEqual(appearance);
             expect(url.searchParams.get("locale")).toBe("es-ES");
             expect(url.searchParams.get("apiKey")).toBe("ck_staging_1");

@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import React from "react";
 import { WebView } from "react-native-webview";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -60,6 +60,7 @@ function replies(name: string) {
 }
 
 afterEach(() => {
+    cleanup();
     vi.clearAllMocks();
 });
 

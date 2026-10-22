@@ -15,8 +15,8 @@ vi.mock("@crossmint/wallets-sdk", () => {
 import { TransactionNotCreatedError } from "@crossmint/wallets-sdk";
 import { createCrossmintWalletSigner } from "./createCrossmintWalletSigner";
 
-const tx = { serializedTransaction: "0x", chain: "base", payerAddress: "0xabc" };
-const solanaTx = { serializedTransaction: "base58tx", chain: "solana", payerAddress: "9Wz" };
+const TX = { serializedTransaction: "0x", chain: "base", payerAddress: "0xabc" };
+const SOLANA_TX = { serializedTransaction: "base58tx", chain: "solana", payerAddress: "9Wz" };
 
 describe("createCrossmintWalletSigner", () => {
     beforeEach(() => {
@@ -31,13 +31,13 @@ describe("createCrossmintWalletSigner", () => {
                 address: "0xABC",
                 sendTransaction: vi.fn().mockResolvedValue({ hash: "0xtx" }),
             };
-            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(tx)).resolves.toBe("0xtx");
+            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(TX)).resolves.toBe("0xtx");
             expect(wallet.sendTransaction).toHaveBeenCalledWith({ transaction: "0x" });
         });
 
         test("refuses a payload for another wallet", async () => {
             const wallet = { chain: "base", address: "0xother", sendTransaction: vi.fn() };
-            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(tx)).rejects.toThrow(
+            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(TX)).rejects.toThrow(
                 /different wallet/
             );
             expect(wallet.sendTransaction).not.toHaveBeenCalled();
@@ -46,7 +46,7 @@ describe("createCrossmintWalletSigner", () => {
         test("refuses a payload for another chain without sending", async () => {
             const wallet = { chain: "polygon", address: "0xabc", sendTransaction: vi.fn() };
             const error = await createCrossmintWalletSigner(wallet as never)
-                .signAndSendTransaction(tx)
+                .signAndSendTransaction(TX)
                 .catch((e: unknown) => e);
             expect(error).toMatchObject({ message: expect.stringMatching(/different chain/) });
             expect(error).not.toHaveProperty("rejected", true);
@@ -60,7 +60,7 @@ describe("createCrossmintWalletSigner", () => {
                 address: "0xabc",
                 sendTransaction: vi.fn().mockRejectedValue(new TransactionNotCreatedError("nope")),
             };
-            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(tx)).rejects.toMatchObject(
+            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(TX)).rejects.toMatchObject(
                 { rejected: true }
             );
         });
@@ -72,7 +72,7 @@ describe("createCrossmintWalletSigner", () => {
                 sendTransaction: vi.fn().mockRejectedValue(new Error("Transaction confirmation timeout")),
             };
             await expect(
-                createCrossmintWalletSigner(wallet as never).signAndSendTransaction(tx)
+                createCrossmintWalletSigner(wallet as never).signAndSendTransaction(TX)
             ).rejects.not.toHaveProperty("rejected", true);
         });
 
@@ -82,7 +82,7 @@ describe("createCrossmintWalletSigner", () => {
             });
             const wallet = { chain: "base", address: "0xabc", sendTransaction: vi.fn() };
             const error = await createCrossmintWalletSigner(wallet as never)
-                .signAndSendTransaction(tx)
+                .signAndSendTransaction(TX)
                 .catch((e: unknown) => e);
             expect(error).toMatchObject({ message: "not an evm wallet" });
             expect(error).not.toHaveProperty("rejected", true);
@@ -109,13 +109,13 @@ describe("createCrossmintWalletSigner", () => {
                 address: "9Wz",
                 sendTransaction: vi.fn().mockResolvedValue({ hash: "sig" }),
             };
-            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(solanaTx)).resolves.toBe(
+            await expect(createCrossmintWalletSigner(wallet as never).signAndSendTransaction(SOLANA_TX)).resolves.toBe(
                 "sig"
             );
             expect(wallet.sendTransaction).toHaveBeenCalledWith({ serializedTransaction: "base58tx" });
             await expect(
                 createCrossmintWalletSigner(wallet as never).signAndSendTransaction({
-                    ...solanaTx,
+                    ...SOLANA_TX,
                     payerAddress: "9wz",
                 })
             ).rejects.toThrow(/different wallet/);
@@ -128,7 +128,7 @@ describe("createCrossmintWalletSigner", () => {
                 sendTransaction: vi.fn().mockRejectedValue(new TransactionNotCreatedError("nope")),
             };
             await expect(
-                createCrossmintWalletSigner(wallet as never).signAndSendTransaction(solanaTx)
+                createCrossmintWalletSigner(wallet as never).signAndSendTransaction(SOLANA_TX)
             ).rejects.toMatchObject({ rejected: true });
         });
 
@@ -138,7 +138,7 @@ describe("createCrossmintWalletSigner", () => {
             });
             const wallet = { chain: "solana", address: "9Wz", sendTransaction: vi.fn() };
             const error = await createCrossmintWalletSigner(wallet as never)
-                .signAndSendTransaction(solanaTx)
+                .signAndSendTransaction(SOLANA_TX)
                 .catch((e: unknown) => e);
             expect(error).toMatchObject({ message: "not a solana wallet" });
             expect(error).not.toHaveProperty("rejected", true);
