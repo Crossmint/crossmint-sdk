@@ -35,7 +35,7 @@ export {
     type EmbeddedOfframpPayer,
     type OfframpStatus,
     type OfframpErrorReason,
-    OfframpSignatureRejected,
+    OfframpSignatureRejectedError,
 } from "@crossmint/client-sdk-base";
 
 export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";

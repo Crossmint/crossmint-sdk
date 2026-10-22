@@ -14,7 +14,7 @@ export type {
     IdentityVerificationError,
 } from "@crossmint/client-sdk-base";
 
-export { OfframpSignatureRejected } from "@crossmint/client-sdk-base";
+export { OfframpSignatureRejectedError } from "@crossmint/client-sdk-base";
 export type {
     CrossmintEmbeddedOfframpProps,
     EmbeddedOfframpCredentials,

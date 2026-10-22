@@ -8,7 +8,7 @@ export type OfframpErrorReason = (typeof OFFRAMP_ERROR_REASONS)[number];
 
 export type EmbeddedOfframpCredentials = { sessionId: string; clientSecret: string };
 
-export class OfframpSignatureRejected extends Error {
+export class OfframpSignatureRejectedError extends Error {
     readonly rejected = true;
 }
 
@@ -18,7 +18,7 @@ export type EmbeddedOfframpPayer = {
      * serializedTransaction is a serialized transaction for EVM chains, and a base58 legacy transaction
      * with feePayer and recentBlockhash set for Solana.
      * payerAddress is the wallet the offramp expects to pay, so refuse if your wallet does not match.
-     * Throw OfframpSignatureRejected only when the user declined.
+     * Throw OfframpSignatureRejectedError only when the user declined.
      */
     signAndSendTransaction(tx: { serializedTransaction: string; chain: string; payerAddress: string }): Promise<string>;
 };

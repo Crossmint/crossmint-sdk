@@ -1,4 +1,4 @@
-import { type EmbeddedOfframpPayer, OfframpSignatureRejected } from "@crossmint/client-sdk-base";
+import { type EmbeddedOfframpPayer, OfframpSignatureRejectedError } from "@crossmint/client-sdk-base";
 import { type Chain, EVMWallet, SolanaWallet, TransactionNotCreatedError, type Wallet } from "@crossmint/wallets-sdk";
 
 export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOfframpPayer {
@@ -24,7 +24,7 @@ export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOffr
                 return result.hash;
             } catch (error) {
                 if (error instanceof TransactionNotCreatedError) {
-                    throw new OfframpSignatureRejected(error.message);
+                    throw new OfframpSignatureRejectedError(error.message);
                 }
                 throw error;
             }
