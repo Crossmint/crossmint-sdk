@@ -1,7 +1,4 @@
-export type SendTransactionReplyEmitter = {
-    send(event: "crypto:send-transaction:success", data: { txId: string }): void;
-    send(event: "crypto:send-transaction:failed", data: { error: string; rejected: boolean }): void;
-};
+import type { EmbeddedOfframpIFrameEmitter } from "@/types/embedded-offramp/events";
 
 export type SendTransactionOutcome = { txId: unknown } | { error: unknown };
 
@@ -14,7 +11,10 @@ function describe(message: unknown) {
 }
 
 /** Sends exactly one reply event for the transaction request. */
-export function sendTransactionReply(emitter: SendTransactionReplyEmitter, outcome: SendTransactionOutcome) {
+export function sendTransactionReply(
+    emitter: Pick<EmbeddedOfframpIFrameEmitter, "send">,
+    outcome: SendTransactionOutcome
+) {
     if ("error" in outcome) {
         const { message, rejected } = (outcome.error ?? {}) as { message?: unknown; rejected?: unknown };
         emitter.send("crypto:send-transaction:failed", {
