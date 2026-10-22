@@ -89,6 +89,19 @@ describe("createCrossmintWalletSigner", () => {
         });
     });
 
+    describe("when the wallet is Stellar", () => {
+        test("refuses before building any wallet, even for a matching payload", async () => {
+            const wallet = { chain: "stellar", address: "GABC", sendTransaction: vi.fn() };
+            const error = await createCrossmintWalletSigner(wallet as never)
+                .signAndSendTransaction({ serializedTransaction: "xdr", chain: "stellar", payerAddress: "GABC" })
+                .catch((e: unknown) => e);
+            expect(error).toMatchObject({ message: expect.stringMatching(/EVM and Solana wallets only/) });
+            expect(error).not.toHaveProperty("rejected", true);
+            expect(fromEvm).not.toHaveBeenCalled();
+            expect(fromSolana).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when the wallet is Solana", () => {
         test("sends the transaction and compares the address exactly", async () => {
             const wallet = {

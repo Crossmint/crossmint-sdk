@@ -4,6 +4,9 @@ import { type Chain, EVMWallet, SolanaWallet, TransactionNotCreatedError, type W
 export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOfframpPayer {
     return {
         async signAndSendTransaction({ serializedTransaction, payerAddress, chain }) {
+            if (wallet.chain === "stellar") {
+                throw new Error("Offramp withdrawals support EVM and Solana wallets only");
+            }
             if (chain !== wallet.chain) {
                 throw new Error("This withdrawal was prepared for a different chain");
             }
