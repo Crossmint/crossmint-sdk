@@ -28,6 +28,8 @@ export interface CrossmintEmbeddedOfframpProps {
     payer: EmbeddedOfframpPayer;
     appearance?: EmbeddedCheckoutV3Appearance;
     locale?: Locale;
+    /** Fill the container's height instead of sizing to the content. Give the container a definite height (web) or flex/height (React Native); content taller than it scrolls inside the offramp. */
+    fill?: boolean;
     onReady?: () => void;
     onStatusChange?: (event: { status: OfframpStatus; orderId?: string }) => void;
     /** Can fire again when a completed withdrawal is reopened; dedupe by orderId. */
