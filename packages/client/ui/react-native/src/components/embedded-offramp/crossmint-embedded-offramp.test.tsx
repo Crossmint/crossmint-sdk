@@ -79,20 +79,51 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         });
     });
 
-    test("reports a load failure through onError", () => {
-        const onError = vi.fn();
-        render(
-            <CrossmintEmbeddedOfframp
-                credentials={CREDENTIALS}
-                payer={{ signAndSendTransaction: vi.fn() }}
-                onError={onError}
-            />
-        );
-        act(() => lastWebViewProps().onHttpError({ nativeEvent: { statusCode: 500 } }));
-        expect(onError).toHaveBeenCalledWith({
-            reason: "invalid-configuration",
-            retriable: false,
-            message: "HTTP 500",
+    describe("when the page fails to load", () => {
+        function renderWithOnError() {
+            const onError = vi.fn();
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    onError={onError}
+                />
+            );
+            return onError;
+        }
+
+        test.each([[400], [404]])("reports HTTP %s as a non-retriable configuration error", (statusCode) => {
+            const onError = renderWithOnError();
+            act(() => lastWebViewProps().onHttpError({ nativeEvent: { statusCode } }));
+            expect(onError).toHaveBeenCalledWith({
+                reason: "invalid-configuration",
+                retriable: false,
+                message: `HTTP ${statusCode}`,
+            });
+        });
+
+        test.each([[500], [503]])("reports HTTP %s as a retriable provider error", (statusCode) => {
+            const onError = renderWithOnError();
+            act(() => lastWebViewProps().onHttpError({ nativeEvent: { statusCode } }));
+            expect(onError).toHaveBeenCalledWith({
+                reason: "provider-error",
+                retriable: true,
+                message: `HTTP ${statusCode}`,
+            });
+        });
+
+        test("reports a connection failure as a retriable provider error", () => {
+            const onError = renderWithOnError();
+            act(() =>
+                lastWebViewProps().onError({
+                    nativeEvent: { description: "The Internet connection appears to be offline." },
+                })
+            );
+            expect(onError).toHaveBeenCalledWith({
+                reason: "provider-error",
+                retriable: true,
+                message: "The Internet connection appears to be offline.",
+            });
         });
     });
 

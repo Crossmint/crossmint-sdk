@@ -104,8 +104,13 @@ function EmbeddedOfframpDocument({
         (pageUrl === routeOrigin ||
             (pageUrl.startsWith(routeUrl) && /^[?#/]?$/.test(pageUrl.slice(routeUrl.length, routeUrl.length + 1))));
 
-    const reportLoadFailure = (message: string) =>
-        latestProps.current.onError?.({ reason: "invalid-configuration", retriable: false, message });
+    // A 4xx means the embed itself is wrong; a 5xx or a connection failure may pass on retry.
+    const reportLoadFailure = (message: string, retriable: boolean) =>
+        latestProps.current.onError?.({
+            reason: retriable ? "provider-error" : "invalid-configuration",
+            retriable,
+            message,
+        });
 
     return (
         <RNWebView
@@ -124,8 +129,10 @@ function EmbeddedOfframpDocument({
                     Linking.openURL(nativeEvent.targetUrl).catch(() => undefined);
                 }
             }}
-            onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description)}
-            onHttpError={({ nativeEvent }) => reportLoadFailure(`HTTP ${nativeEvent.statusCode}`)}
+            onError={({ nativeEvent }) => reportLoadFailure(nativeEvent.description, true)}
+            onHttpError={({ nativeEvent }) =>
+                reportLoadFailure(`HTTP ${nativeEvent.statusCode}`, nativeEvent.statusCode >= 500)
+            }
             style={{ width: "100%", height, backgroundColor: "transparent" }}
             scrollEnabled={true}
             domStorageEnabled={true}
