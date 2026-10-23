@@ -34,7 +34,7 @@ export interface CrossmintEmbeddedOfframpProps {
     onStatusChange?: (event: { status: OfframpStatus; orderId?: string }) => void;
     /** Can fire again when a completed withdrawal is reopened; dedupe by orderId. */
     onComplete?: (event: { orderId: string; txId: string }) => void;
-    /** Fires when the user closes the flow. It does not cancel a wallet request that was already sent; keep the payer mounted until it settles. */
+    /** The user closed the flow: Cancel mid-flow, Continue on Withdrawal sent, or Close on a failure screen (for a sent withdrawal onComplete has already fired). It does not cancel a wallet request that was already sent; keep the payer mounted until it settles. Without it, those buttons do nothing. */
     onCancel?: () => void;
     onError?: (error: { reason: OfframpErrorReason; retriable: boolean; message: string }) => void;
 }
