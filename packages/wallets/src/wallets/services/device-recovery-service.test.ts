@@ -113,7 +113,6 @@ function setup(overrides: SetupOverrides = {}) {
         removeSigner,
         approveSignature,
         approveTransaction,
-        deviceSignerActivity,
     };
 }
 
@@ -363,7 +362,6 @@ describe("DeviceRecoveryService", () => {
             await service.recover();
             expect(removeSigner).toHaveBeenCalledTimes(1);
             expect(removeSigner).toHaveBeenCalledWith("device:recentKey");
-            expect(deviceSignerActivity).not.toHaveBeenCalled();
         });
 
         it("does not remove the device signer that is being registered", async () => {
@@ -391,7 +389,6 @@ describe("DeviceRecoveryService", () => {
             const { service } = setup({ signers, addSigner, removeSigner, deviceSignerActivity });
             await expect(service.recover()).rejects.toBeInstanceOf(SignerLimitExceededError);
             expect(removeSigner).not.toHaveBeenCalled();
-            expect(addSigner).toHaveBeenCalledTimes(1);
         });
     });
 

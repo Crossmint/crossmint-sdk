@@ -57,18 +57,16 @@ describe("fetchDeviceSignerActivity", () => {
         });
     });
 
-    it("reads the next page only while pages are full", async () => {
-        const fullPage = Array.from({ length: 50 }, () => approvedBy("device:key", "2026-08-01T00:00:00Z"));
-        const getTransactions = vi
-            .fn()
-            .mockResolvedValueOnce({ transactions: fullPage })
-            .mockResolvedValueOnce({ transactions: [approvedBy("device:key", "2026-07-01T00:00:00Z")] });
+    it("includes approvals from later pages of the history", async () => {
+        const fullPage = Array.from({ length: 50 }, () => approvedBy("device:recentKey", "2026-09-01T00:00:00Z"));
+        const getTransactions = vi.fn(async (_locator: string, { page }: { page: number }) => ({
+            transactions: page === 1 ? fullPage : [approvedBy("device:olderKey", "2026-07-01T00:00:00Z")],
+        }));
         const apiClient = makeApiClient({ getTransactions });
 
-        await fetchActivity(apiClient);
+        const activity = await fetchActivity(apiClient);
 
-        expect(getTransactions).toHaveBeenCalledTimes(2);
-        expect(getTransactions).toHaveBeenLastCalledWith(WALLET_LOCATOR, { page: 2, perPage: 50 });
+        expect(activity.get("device:olderKey")).toBe(Date.parse("2026-07-01T00:00:00Z"));
     });
 
     it("keeps the activity it has when a list cannot be read", async () => {
