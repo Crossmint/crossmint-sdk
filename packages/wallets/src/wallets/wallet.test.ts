@@ -1193,9 +1193,10 @@ describe("Wallet - addSigner()", () => {
                 code: "SIGNER_LIMIT_EXCEEDED",
             } as any);
 
-            await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toBeInstanceOf(
-                SignerLimitExceededError
-            );
+            const addSigner = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            await expect(addSigner).rejects.toBeInstanceOf(SignerLimitExceededError);
+            await expect(addSigner).rejects.toBeInstanceOf(InvalidSignerError);
         });
 
         it("throws error when Solana response missing transaction", async () => {

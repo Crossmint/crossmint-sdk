@@ -99,12 +99,8 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
 
 export const SIGNER_LIMIT_EXCEEDED_ERROR_CODE = "SIGNER_LIMIT_EXCEEDED";
 
-/** Thrown when adding a signer would take the wallet over its signer limit. */
-export class SignerLimitExceededError extends CrossmintSDKError {
-    constructor(message: string, details?: string) {
-        super(message, WalletErrorCode.SIGNER_INVALID, details);
-    }
-}
+/** The SDK throws this error when a new signer would put the wallet over its signer limit. */
+export class SignerLimitExceededError extends InvalidSignerError {}
 
 export class QuorumSignerNotSupportedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
