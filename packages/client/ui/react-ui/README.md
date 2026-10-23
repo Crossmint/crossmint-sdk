@@ -16,6 +16,22 @@ pnpm add @crossmint/client-sdk-react-ui
 yarn add @crossmint/client-sdk-react-ui
 ```
 
+## Checkout-only integrations
+
+Import from `@crossmint/client-sdk-react-ui/checkout` to keep the wallet stack out of your build graph:
+
+```tsx
+import {
+  CrossmintProvider,
+  CrossmintCheckoutProvider,
+  CrossmintEmbeddedCheckout,
+  useCrossmintCheckout,
+} from "@crossmint/client-sdk-react-ui/checkout";
+```
+
+The root entrypoint stays unchanged. Note that the built-in crypto wallet connector (`@dynamic-labs/*`) is still
+loaded on demand when a shopper pays with crypto and no `payment.crypto.payer` is supplied.
+
 ## Quick Start
 
 ### 1. Setup Providers

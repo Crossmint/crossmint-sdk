@@ -1,4 +1,4 @@
-import { useCrossmint } from "@crossmint/client-sdk-react-base";
+import { useCrossmint } from "@crossmint/client-sdk-react-base/core";
 import { lazy, useEffect, useRef, useState } from "react";
 
 import {
