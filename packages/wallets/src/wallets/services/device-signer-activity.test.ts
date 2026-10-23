@@ -17,8 +17,8 @@ function makeApiClient(overrides: Record<string, unknown> = {}) {
     };
 }
 
-async function fetchActivity(apiClient: ReturnType<typeof makeApiClient>) {
-    return await fetchDeviceSignerActivity(apiClient as unknown as ApiClient, WALLET_LOCATOR);
+async function fetchActivity(apiClient: ReturnType<typeof makeApiClient>, includeSignatures = true) {
+    return await fetchDeviceSignerActivity(apiClient as unknown as ApiClient, WALLET_LOCATOR, { includeSignatures });
 }
 
 describe("fetchDeviceSignerActivity", () => {
@@ -69,7 +69,15 @@ describe("fetchDeviceSignerActivity", () => {
         expect(activity.get("device:olderKey")).toBe(Date.parse("2026-07-01T00:00:00Z"));
     });
 
-    it("keeps the activity it has when a list cannot be read", async () => {
+    it("fails when a page of the history cannot be read", async () => {
+        const apiClient = makeApiClient({
+            getSignatures: vi.fn().mockResolvedValue({ error: true, message: "unavailable" }),
+        });
+
+        await expect(fetchActivity(apiClient)).rejects.toThrow(/signatures/);
+    });
+
+    it("reads only transactions when the chain has no signatures", async () => {
         const apiClient = makeApiClient({
             getTransactions: vi.fn().mockResolvedValue({
                 transactions: [approvedBy("device:key", "2026-08-01T00:00:00Z")],
@@ -77,7 +85,7 @@ describe("fetchDeviceSignerActivity", () => {
             getSignatures: vi.fn().mockResolvedValue({ error: true, message: "not supported" }),
         });
 
-        const activity = await fetchActivity(apiClient);
+        const activity = await fetchActivity(apiClient, false);
 
         expect(activity.get("device:key")).toBe(Date.parse("2026-08-01T00:00:00Z"));
     });

@@ -1,5 +1,4 @@
 import type { ApiClient, WalletLocator } from "../../api";
-import { walletsLogger } from "../../logger";
 
 const PAGE_SIZE = 50;
 const MAX_PAGES = 4;
@@ -15,7 +14,8 @@ type DelegatedSignerRecord = {
 
 export async function fetchDeviceSignerActivity(
     apiClient: ApiClient,
-    walletLocator: WalletLocator
+    walletLocator: WalletLocator,
+    options: { includeSignatures: boolean }
 ): Promise<Map<string, number>> {
     const activity = new Map<string, number>();
     const record = (locator: string | undefined, time: number | string | undefined) => {
@@ -57,14 +57,16 @@ export async function fetchDeviceSignerActivity(
         },
         recordApprovals
     );
-    await forEachPage(
-        "signatures",
-        async (page) => {
-            const response = await apiClient.getSignatures(walletLocator, { page, perPage: PAGE_SIZE });
-            return "signatures" in response ? (response.signatures as ApprovalRecord[]) : null;
-        },
-        recordApprovals
-    );
+    if (options.includeSignatures) {
+        await forEachPage(
+            "signatures",
+            async (page) => {
+                const response = await apiClient.getSignatures(walletLocator, { page, perPage: PAGE_SIZE });
+                return "signatures" in response ? (response.signatures as ApprovalRecord[]) : null;
+            },
+            recordApprovals
+        );
+    }
 
     return activity;
 }
@@ -75,16 +77,9 @@ async function forEachPage(
     onPage: (items: ApprovalRecord[]) => void
 ): Promise<void> {
     for (let page = 1; page <= MAX_PAGES; page++) {
-        let items: ApprovalRecord[] | null;
-        try {
-            items = await fetchPage(page);
-        } catch (error) {
-            walletsLogger.warn("wallet.deviceSignerActivity.pageFailed", { kind, page, error });
-            return;
-        }
+        const items = await fetchPage(page);
         if (items == null) {
-            walletsLogger.warn("wallet.deviceSignerActivity.pageFailed", { kind, page });
-            return;
+            throw new Error(`Failed to fetch ${kind} page ${page}`);
         }
         onPage(items);
         if (items.length < PAGE_SIZE) {

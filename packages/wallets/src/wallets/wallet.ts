@@ -198,7 +198,10 @@ export class Wallet<C extends Chain> {
                 this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
-            deviceSignerActivity: () => fetchDeviceSignerActivity(this.#apiClient, this.walletLocator),
+            deviceSignerActivity: () =>
+                fetchDeviceSignerActivity(this.#apiClient, this.walletLocator, {
+                    includeSignatures: this.chainAdapter.supportsSignatures,
+                }),
         });
         this.#signerInitialization = this.initDefaultSigner();
     }
