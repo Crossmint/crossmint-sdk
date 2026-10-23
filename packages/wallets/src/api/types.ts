@@ -19,12 +19,14 @@ import type {
     WalletV1Alpha2TransactionErrorDto,
     WalletV2025ResponseDtoClass,
     WalletsActivityResponseUnstableDto,
+    WalletsMultipleSignatureV2025ResponseDto,
     WalletsMultipleTransactionV2025ResponseDto,
     WalletsSendTokenControllerSendToken2Response,
     WalletsSignatureV2025ResponseDto,
     WalletsTransactionV2025ResponseDtoClass,
     WalletsV2025ControllerCreateDelegatedSigner2Error,
     WalletsV2025ControllerCreateSignatureRequest2Error,
+    WalletsV2025ControllerGetAllSignatures2Error,
     WalletsV2025ControllerGetDelegatedSigner2Error,
     WalletsV2025ControllerGetSignature2Error,
     WalletsV2025ControllerGetTransaction2Error,
@@ -66,6 +68,9 @@ export type ApproveSignatureResponse =
     | WalletsV2025ControllerSubmitSignatureApprovals2Error;
 export type GetSignatureResponse = WalletsSignatureV2025ResponseDto | WalletsV2025ControllerGetSignature2Error;
 
+export type GetSignaturesResponse =
+    | WalletsMultipleSignatureV2025ResponseDto
+    | WalletsV2025ControllerGetAllSignatures2Error;
 export type GetTransactionsResponse =
     | WalletsMultipleTransactionV2025ResponseDto
     | WalletsV2025ControllerGetTransactionsWithoutChain2Error;
