@@ -74,3 +74,8 @@ jobs:
               env:
                   TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
               run: pnpm test:integration
+
+            - name: Run heartbeat suite
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:heartbeat
