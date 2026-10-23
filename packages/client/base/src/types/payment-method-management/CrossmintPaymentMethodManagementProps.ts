@@ -8,6 +8,10 @@ import type { EmbeddedCheckoutV3Appearance } from "../embed";
 export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 
 export interface CrossmintPaymentMethodManagementProps {
+    /**
+     * Pass a user JWT from your own auth provider or a custom JWT.
+     * Crossmint Auth JWTs are not supported.
+     */
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     /**
