@@ -206,6 +206,58 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         await expect(component.submit()).resolves.toEqual(SAVED);
     });
 
+    test("renders children after the iframe and the footer once the iframe delegates it", () => {
+        render(
+            <CrossmintPaymentMethodManagement jwt="buyer-jwt" hideSubmitButton>
+                <button type="button">Save card</button>
+            </CrossmintPaymentMethodManagement>
+        );
+
+        const delegated = mocks.on.mock.calls.find(([event]) => event === "ui:poweredBy.delegated")?.[1];
+        expect(delegated).toBeDefined();
+        expect(screen.getByText("Save card")).toBeInTheDocument();
+        // Until the iframe confirms it hid its own footer, drawing one here could double it.
+        expect(screen.queryByText("Powered by Crossmint")).not.toBeInTheDocument();
+
+        act(() => delegated?.({}));
+
+        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        const button = screen.getByText("Save card");
+        const footer = screen.getByText("Powered by Crossmint");
+        expect(iframe.compareDocumentPosition(button)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+        expect(button.compareDocumentPosition(footer)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    test("ignores a delegated footer event from a stale iframe", () => {
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" hideSubmitButton />);
+        const stale = mocks.on.mock.calls.find(([event]) => event === "ui:poweredBy.delegated")?.[1];
+
+        mocks.on.mockClear();
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" hideSubmitButton />);
+        act(() => stale?.({}));
+        expect(screen.queryByText("Powered by Crossmint")).not.toBeInTheDocument();
+
+        const fresh = mocks.on.mock.calls.find(([event]) => event === "ui:poweredBy.delegated")?.[1];
+        act(() => fresh?.({}));
+        expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
+    });
+
+    test("drops the footer when the iframe reloads until the new document delegates again", () => {
+        mount();
+        const delegated = () => mocks.on.mock.calls.filter(([event]) => event === "ui:poweredBy.delegated").at(-1)?.[1];
+
+        act(() => delegated()?.({}));
+        expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
+
+        // A reload is a new document that re-decides delegation; a rolled-back
+        // iframe would draw its own footer again next to ours.
+        fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
+        expect(screen.queryByText("Powered by Crossmint")).not.toBeInTheDocument();
+
+        act(() => delegated()?.({}));
+        expect(screen.getByText("Powered by Crossmint")).toBeInTheDocument();
+    });
+
     test("keeps the last reported height when the iframe URL changes until the new iframe reports", () => {
         const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
         const heightListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
