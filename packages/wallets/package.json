@@ -34,11 +34,11 @@
         "@noble/curves": "1.9.1",
         "@noble/hashes": "1.8.0",
         "@solana/web3.js": "1.98.1",
-        "abitype": "1.0.8",
+        "abitype": "^1.0.8",
         "base32.js": "0.1.0",
         "bs58": "5.0.0",
-        "ox": "0.6.9",
-        "viem": "2.57.7"
+        "ox": "^0.6.9",
+        "viem": "^2.57.7"
     },
     "devDependencies": {
         "@hey-api/openapi-ts": "0.69.2",
