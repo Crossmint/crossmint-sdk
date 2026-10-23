@@ -15,6 +15,8 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 
 const INDEXEDDB_FATAL_CODE = "indexeddb-fatal";
 
+const SIGNER_LOCATOR_STORAGE_PREFIX = "crossmint:device-signer-locator:";
+
 type IframeRpcResponse =
     | { type: "response"; id: string; result: unknown }
     | { type: "error"; id: string; error: string; code?: string };
@@ -323,6 +325,23 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             iframe.onerror = () => reject(new Error("Failed to load device signer iframe"));
             document.body.appendChild(iframe);
         });
+    }
+
+    async saveSignerLocator(address: string, signerLocator: string): Promise<void> {
+        try {
+            window.localStorage.setItem(`${SIGNER_LOCATOR_STORAGE_PREFIX}${address}`, signerLocator);
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.saveSignerLocator.failed", { error });
+        }
+    }
+
+    async getSavedSignerLocator(address: string): Promise<string | null> {
+        try {
+            return window.localStorage.getItem(`${SIGNER_LOCATOR_STORAGE_PREFIX}${address}`);
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.getSavedSignerLocator.failed", { error });
+            return null;
+        }
     }
 
     getDeviceName(): string {
