@@ -116,7 +116,9 @@ export class DeviceRecoveryService<C extends Chain> {
                 status: deviceSigner.status,
             });
             this.#status = "needs-recovery";
+            return;
         }
+        await this.#saveSignerLocator(deviceSignerKeyStorage, deviceSigner.locator());
     }
 
     async recover(): Promise<void> {
@@ -137,6 +139,7 @@ export class DeviceRecoveryService<C extends Chain> {
         if (activeSigner?.type === "device") {
             if (await this.#checkAndResumeDeviceSigner(activeSigner)) {
                 this.#status = "resolved";
+                await this.#replaceSavedSignerLocator(activeSigner.locator());
                 return;
             }
         }
@@ -161,7 +164,7 @@ export class DeviceRecoveryService<C extends Chain> {
             if (await this.#checkAndResumeDeviceSigner(matchedSigner)) {
                 this.#signerManager.setActiveSigner(matchedSigner);
                 this.#status = "resolved";
-                await this.#saveSignerLocator(deviceSignerKeyStorage, matchedSigner.locator());
+                await this.#replaceSavedSignerLocator(matchedSigner.locator());
                 const publicKeyBase64 = matchedSigner.locator().replace("device:", "");
                 try {
                     await deviceSignerKeyStorage.mapAddressToKey(this.#walletAddress, publicKeyBase64);
@@ -247,15 +250,7 @@ export class DeviceRecoveryService<C extends Chain> {
         await this.#saveSignerLocator(deviceSignerKeyStorage, newDeviceSigner.locator as SignerLocator);
 
         if (staleDeviceSignerLocator != null) {
-            try {
-                await this.#removeSigner(staleDeviceSignerLocator);
-                walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: staleDeviceSignerLocator });
-            } catch (error) {
-                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", {
-                    signerLocator: staleDeviceSignerLocator,
-                    error,
-                });
-            }
+            await this.#removeStaleSigner(staleDeviceSignerLocator);
         }
     }
 
@@ -290,13 +285,7 @@ export class DeviceRecoveryService<C extends Chain> {
         existingDeviceSigners: DeviceWalletSigner[],
         newDeviceSignerLocator: string | undefined
     ): Promise<string | undefined> {
-        let savedLocator: string | null;
-        try {
-            savedLocator = await deviceSignerKeyStorage.getSavedSignerLocator(this.#walletAddress);
-        } catch (error) {
-            walletsLogger.warn("wallet.recover.getSavedSignerLocator.error", { error });
-            return undefined;
-        }
+        const savedLocator = await this.#getSavedSignerLocator(deviceSignerKeyStorage);
         if (savedLocator == null || savedLocator === newDeviceSignerLocator) {
             return undefined;
         }
@@ -323,6 +312,39 @@ export class DeviceRecoveryService<C extends Chain> {
             .locator;
     }
 
+    async #replaceSavedSignerLocator(signerLocator: string): Promise<void> {
+        const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
+        if (deviceSignerKeyStorage == null) {
+            return;
+        }
+        const savedLocator = await this.#getSavedSignerLocator(deviceSignerKeyStorage);
+        if (savedLocator != null && savedLocator !== signerLocator) {
+            const existingSigners = await this.#signers();
+            if (existingSigners.some((s) => s.type === "device" && s.locator === savedLocator)) {
+                await this.#removeStaleSigner(savedLocator);
+            }
+        }
+        await this.#saveSignerLocator(deviceSignerKeyStorage, signerLocator);
+    }
+
+    async #removeStaleSigner(signerLocator: string): Promise<void> {
+        try {
+            await this.#removeSigner(signerLocator);
+            walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator });
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", { signerLocator, error });
+        }
+    }
+
+    async #getSavedSignerLocator(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<string | null> {
+        try {
+            return await deviceSignerKeyStorage.getSavedSignerLocator(this.#walletAddress);
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.getSavedSignerLocator.error", { error });
+            return null;
+        }
+    }
+
     async #saveSignerLocator(deviceSignerKeyStorage: DeviceSignerKeyStorage, signerLocator: string): Promise<void> {
         try {
             await deviceSignerKeyStorage.saveSignerLocator(this.#walletAddress, signerLocator);
@@ -341,7 +363,6 @@ export class DeviceRecoveryService<C extends Chain> {
         if (existingKey != null) {
             config.locator = `device:${existingKey}`;
             this.#status = "unknown";
-            await this.#saveSignerLocator(deviceSignerKeyStorage, config.locator);
             return;
         }
 
@@ -354,7 +375,6 @@ export class DeviceRecoveryService<C extends Chain> {
                 await deviceSignerKeyStorage.mapAddressToKey(this.#walletAddress, publicKeyBase64);
                 config.locator = walletSigner.locator;
                 this.#status = "unknown";
-                await this.#saveSignerLocator(deviceSignerKeyStorage, walletSigner.locator);
                 return;
             }
         }

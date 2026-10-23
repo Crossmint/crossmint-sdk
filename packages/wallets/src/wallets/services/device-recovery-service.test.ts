@@ -184,17 +184,6 @@ describe("DeviceRecoveryService", () => {
             expect(service.needsRecovery).toBe(false);
         });
 
-        it.each([
-            ["the wallet address maps to a local key", { getKey: vi.fn().mockResolvedValue("localKey") }],
-            ["a registered signer's key is on this device", { hasKey: vi.fn().mockResolvedValue(true) }],
-        ])("saves this device's signer locator when %s", async (_name, storageOverrides) => {
-            const signers = vi.fn().mockResolvedValue([{ type: "device", locator: "device:localKey" }]);
-            const storage = makeStorage(storageOverrides);
-            const { service } = setup({ storage, signers });
-            await service.resolveAvailability({ type: "device" } as never);
-            expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:localKey");
-        });
-
         it("clears a stale recovery need once a local key is adopted (WAL-10668)", async () => {
             const storage = makeStorage();
             const { service } = setup({ storage });
@@ -298,13 +287,34 @@ describe("DeviceRecoveryService", () => {
             expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:newkey");
         });
 
-        it("does not fail recovery when removing the saved signer fails", async () => {
+        it("keeps recovery successful when removing the saved signer fails", async () => {
             const signers = vi.fn().mockResolvedValue([{ type: "device", locator: "device:oldkey" }]);
             const storage = makeStorage({ getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldkey") });
             const removeSigner = vi.fn().mockRejectedValue(new Error("backend unavailable"));
             const { service } = setup({ storage, signers, removeSigner });
             await expect(service.recover()).resolves.toBeUndefined();
             expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+        });
+
+        it("removes the saved signer after a pending replacement is approved", async () => {
+            const signers = vi.fn().mockResolvedValue([
+                { type: "device", locator: "device:oldkey" },
+                { type: "device", locator: "device:newkey" },
+            ]);
+            const storage = makeStorage({ getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldkey") });
+            const removeSigner = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({
+                storage,
+                signers,
+                removeSigner,
+                signerManager: {
+                    activeSigner: makeSigner("device", "device:newkey", "awaiting-approval"),
+                    getSignerState: vi.fn().mockResolvedValue(pendingState("transaction", "tx-1")),
+                },
+            });
+            await service.recover();
+            expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+            expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:newkey");
         });
 
         it.each([
@@ -364,7 +374,7 @@ describe("DeviceRecoveryService", () => {
             expect(removeSigner).toHaveBeenCalledWith("device:recentKey");
         });
 
-        it("does not remove the device signer that is being registered", async () => {
+        it("keeps the device signer that is being registered", async () => {
             mockedCreateDeviceSigner.mockResolvedValue({
                 type: "device",
                 locator: "device:idleKey",
@@ -448,6 +458,7 @@ describe("DeviceRecoveryService", () => {
             const { service } = setup({ storage, signerManager });
             await service.initDeviceSigner();
             expect(service.needsRecovery).toBe(true);
+            expect(storage.saveSignerLocator).not.toHaveBeenCalled();
         });
 
         it("assembles and activates an approved device signer without flagging recovery", async () => {
@@ -459,6 +470,7 @@ describe("DeviceRecoveryService", () => {
             await service.initDeviceSigner();
             expect(sm.setActiveSigner).toHaveBeenCalled();
             expect(service.needsRecovery).toBe(false);
+            expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:localKey");
         });
     });
 });
