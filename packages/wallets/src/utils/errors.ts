@@ -97,6 +97,15 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
+export const SIGNER_LIMIT_EXCEEDED_ERROR_CODE = "SIGNER_LIMIT_EXCEEDED";
+
+/** Thrown when adding a signer would take the wallet over its signer limit. */
+export class SignerLimitExceededError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
 export class QuorumSignerNotSupportedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNER_INVALID, details);
@@ -336,7 +345,7 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     const details = JSON.stringify(response);
     const message = response.message;
     switch (response.code) {
-        case "SIGNER_LIMIT_EXCEEDED":
+        case SIGNER_LIMIT_EXCEEDED_ERROR_CODE:
             throw new RecoverySignerLimitExceededError(
                 message ?? "The wallet exceeds the maximum number of recovery signers",
                 details
@@ -389,6 +398,7 @@ export type WalletError =
     | InvalidSignerError
     | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | SignerLimitExceededError
     | InvalidRecoveryConfigError
     | RecoverySignerLimitExceededError
     | DuplicateRecoverySignerError
