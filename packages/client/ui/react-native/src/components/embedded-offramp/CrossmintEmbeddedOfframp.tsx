@@ -133,7 +133,7 @@ function EmbeddedOfframpDocument({
             onHttpError={({ nativeEvent }) =>
                 reportLoadFailure(`HTTP ${nativeEvent.statusCode}`, nativeEvent.statusCode >= 500)
             }
-            style={{ width: "100%", height, backgroundColor: "transparent" }}
+            style={{ width: "100%", backgroundColor: "transparent", ...(props.fill ? { flex: 1 } : { height }) }}
             scrollEnabled={true}
             domStorageEnabled={true}
             allowsInlineMediaPlayback={true}
