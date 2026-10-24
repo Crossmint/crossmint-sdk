@@ -97,7 +97,13 @@ function EmbeddedOfframpDocument({
             id="crossmint-embedded-offramp.iframe"
             title="Withdraw"
             allow="camera"
-            style={{ border: "none", width: "100%", overflow: "hidden", display: "block", height: `${height}px` }}
+            style={{
+                border: "none",
+                width: "100%",
+                overflow: "hidden",
+                display: "block",
+                height: props.fill ? "100%" : `${height}px`,
+            }}
         />
     );
 }

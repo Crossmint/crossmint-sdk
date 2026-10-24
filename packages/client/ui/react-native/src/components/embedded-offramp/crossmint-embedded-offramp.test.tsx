@@ -80,6 +80,28 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         });
     });
 
+    test("sizes the WebView to the reported content height", async () => {
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+        await emit("ui:height.changed", { height: 720 });
+        expect(lastWebViewProps().style).toEqual({ width: "100%", height: 720, backgroundColor: "transparent" });
+    });
+
+    describe("when fill is on", () => {
+        test("fills the parent and ignores content height changes", async () => {
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    fill={true}
+                />
+            );
+            await emit("ui:height.changed", { height: 720 });
+            const props = lastWebViewProps();
+            expect(new URL(props.source.uri as string).searchParams.get("fill")).toBe("true");
+            expect(props.style).toEqual({ width: "100%", flex: 1, backgroundColor: "transparent" });
+        });
+    });
+
     describe("when the page fails to load", () => {
         function renderWithOnError() {
             const onError = vi.fn();

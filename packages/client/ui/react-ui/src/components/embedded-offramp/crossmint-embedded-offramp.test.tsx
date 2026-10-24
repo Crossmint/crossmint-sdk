@@ -51,6 +51,29 @@ describe("<CrossmintEmbeddedOfframp />", () => {
         expect(iframe.getAttribute("allow")).toBe("camera");
     });
 
+    test("sizes the iframe to the reported content height", () => {
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+        emit("ui:height.changed", { height: 720 });
+        expect(screen.getByTitle("Withdraw").style.height).toBe("720px");
+    });
+
+    describe("when fill is on", () => {
+        test("fills the container and ignores content height changes", () => {
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    fill={true}
+                />
+            );
+            emit("ui:height.changed", { height: 720 });
+            const { style } = screen.getByTitle("Withdraw");
+            expect(style.height).toBe("100%");
+            expect(style.width).toBe("100%");
+            expect(style.display).toBe("block");
+        });
+    });
+
     test("forwards completion and errors to the callbacks", () => {
         const onComplete = vi.fn();
         const onError = vi.fn();
