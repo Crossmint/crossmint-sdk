@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.12.1
+
+### Patch Changes
+
+- 9705007: Document the JWT sources supported by payment-method management. Crossmint Auth JWTs are not supported.
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-react-base@2.4.6
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 4.12.0
 
 ### Minor Changes
