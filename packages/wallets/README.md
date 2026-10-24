@@ -159,6 +159,20 @@ console.log(balances.nativeToken.amount);
 console.log(balances.usdc.amount);
 ```
 
+For wallets with a card, each token also reports how its balance splits:
+
+-   `available`: what can be spent now
+-   `locked`: pending card charges
+-   `inTransit`: funds moving between the wallet and the card that the card provider has not reflected yet
+-   `accounts`: the same split for the wallet and for each card
+
+`available + inTransit` is the total the user holds while funds move.
+
+```ts
+const { usdc } = await wallet.balances();
+console.log(usdc.available?.amount, usdc.inTransit?.amount);
+```
+
 ### Send Tokens
 
 ```ts
