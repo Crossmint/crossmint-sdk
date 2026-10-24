@@ -42,7 +42,9 @@ import {
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
     RecoveryNotSupportedOnChainError,
+    SIGNER_LIMIT_EXCEEDED_ERROR_CODE,
     SignatureFailedError,
+    SignerLimitExceededError,
     SignatureNotAvailableError,
     TransactionFailedError,
     TransactionNotAvailableError,
@@ -79,6 +81,7 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
+import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
     type PollingOptions,
     waitForSignatureCompletion,
@@ -195,6 +198,10 @@ export class Wallet<C extends Chain> {
                 this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
+            deviceSignerActivity: () =>
+                fetchDeviceSignerActivity(this.#apiClient, this.walletLocator, {
+                    includeSignatures: this.chainAdapter.supportsSignatures,
+                }),
         });
         this.#signerInitialization = this.initDefaultSigner();
     }
@@ -722,6 +729,9 @@ export class Wallet<C extends Chain> {
                 });
                 if (response.code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE) {
                     throw new DeviceSignerNotSupportedError(response.message);
+                }
+                if (response.code === SIGNER_LIMIT_EXCEEDED_ERROR_CODE) {
+                    throw new SignerLimitExceededError(response.message, JSON.stringify(response));
                 }
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
