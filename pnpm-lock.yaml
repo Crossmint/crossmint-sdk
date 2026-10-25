@@ -826,13 +826,13 @@ importers:
         specifier: 4.5.0
         version: 4.5.0
       ox:
-        specifier: 0.6.9
+        specifier: ^0.6.9
         version: 0.6.9(typescript@6.0.3)(zod@3.22.4)
       react-transition-group:
         specifier: 4.4.5
         version: 4.4.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       viem:
-        specifier: 2.57.7
+        specifier: ^2.57.7
         version: 2.57.7(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       zod:
         specifier: 3.22.4
@@ -930,10 +930,10 @@ importers:
         specifier: workspace:*
         version: link:../../../common/base
       ox:
-        specifier: 0.6.9
+        specifier: ^0.6.9
         version: 0.6.9(typescript@6.0.3)(zod@3.25.76)
       viem:
-        specifier: 2.57.7
+        specifier: ^2.57.7
         version: 2.57.7(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     devDependencies:
       typedoc:
@@ -1029,7 +1029,7 @@ importers:
         specifier: 1.98.1
         version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@6.0.3)(utf-8-validate@5.0.10)
       abitype:
-        specifier: 1.0.8
+        specifier: ^1.0.8
         version: 1.0.8(typescript@6.0.3)(zod@3.25.76)
       base32.js:
         specifier: 0.1.0
@@ -1038,10 +1038,10 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       ox:
-        specifier: 0.6.9
+        specifier: ^0.6.9
         version: 0.6.9(typescript@6.0.3)(zod@3.25.76)
       viem:
-        specifier: 2.57.7
+        specifier: ^2.57.7
         version: 2.57.7(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     devDependencies:
       '@hey-api/openapi-ts':

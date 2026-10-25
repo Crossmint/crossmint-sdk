@@ -42,9 +42,9 @@
         "color": "4.2.3",
         "input-otp": "1.4.2",
         "lodash.isequal": "4.5.0",
-        "ox": "0.6.9",
+        "ox": "^0.6.9",
         "react-transition-group": "4.4.5",
-        "viem": "2.57.7",
+        "viem": "^2.57.7",
         "zod": "3.22.4"
     },
     "devDependencies": {

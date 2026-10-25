@@ -22,8 +22,8 @@
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
-        "ox": "0.6.9",
-        "viem": "2.57.7"
+        "ox": "^0.6.9",
+        "viem": "^2.57.7"
     },
     "devDependencies": {
         "typedoc": "0.28.20",
