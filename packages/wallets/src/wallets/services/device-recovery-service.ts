@@ -7,13 +7,14 @@ import {
     type DeviceSignerConfig,
     type InternalSignerConfig,
     isApiSourcedServerSignerConfig,
+    isQuorumSigner,
     OtpValidationError,
     SignerAuthenticationError,
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, quorumAuthorizerNotSupported } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -321,6 +322,9 @@ export class DeviceRecoveryService<C extends Chain> {
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
+        if (isQuorumSigner(recovery)) {
+            throw quorumAuthorizerNotSupported(recovery.locator);
+        }
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
@@ -408,6 +412,10 @@ export class DeviceRecoveryService<C extends Chain> {
 
     async #assembleRecoverySignerFallback(): Promise<void> {
         const recovery = this.#signerManager.recovery;
+        // A quorum cannot be assembled into a signer, like any recovery method the SDK cannot auto-assemble.
+        if (isQuorumSigner(recovery)) {
+            return;
+        }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {

@@ -68,7 +68,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
-import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } from "../signers/types";
+import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig, isQuorumSigner } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
@@ -238,12 +238,13 @@ export class Wallet<C extends Chain> {
 
         const signerToAssemble =
             this.#initialSigners.length === 0
-                ? this.#signerManager.recovery
+                ? this.#signerManager.defaultRecovery
                 : this.#initialSigners.length === 1
                   ? this.#initialSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        if (signerToAssemble == null) {
+        // A quorum signs through its members, so it is never the default signer.
+        if (signerToAssemble == null || isQuorumSigner(signerToAssemble)) {
             return;
         }
 
@@ -253,7 +254,7 @@ export class Wallet<C extends Chain> {
             return;
         }
 
-        const isAdminSigner = signerToAssemble === this.#signerManager.recovery;
+        const isAdminSigner = signerToAssemble === this.#signerManager.defaultRecovery;
         try {
             const internalConfig = signerDescriptor.buildInternalConfig(
                 signerToAssemble as SignerConfigForChain<C>,
@@ -319,7 +320,7 @@ export class Wallet<C extends Chain> {
      * @returns The recovery signer config
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): SignerConfigForChain<C> {
+    public get recovery(): RecoverySignerConfigForChain<C> {
         return this.#signerManager.recovery;
     }
 
