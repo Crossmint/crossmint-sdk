@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 4.6.1
+
+### Patch Changes
+
+- 9705007: Document the JWT sources supported by payment-method management. Crossmint Auth JWTs are not supported.
+
 ## 4.6.0
 
 ### Minor Changes

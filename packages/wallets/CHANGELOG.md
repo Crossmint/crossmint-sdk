@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 1.20.6
+
+### Patch Changes
+
+- 46666e3: Preserve the optional `inTransit` field in `wallet.balances()` results. For wallets with a card, it holds funds moving between the wallet and the card's collateral that the card provider has not reflected yet; `available + inTransit` is the total the user holds while funds move.
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 1.20.5
 
 ### Patch Changes
