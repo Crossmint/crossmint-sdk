@@ -31,6 +31,7 @@ export interface CrossmintEmbeddedOfframpProps {
     /** Fill the container's height instead of sizing to the content. Give the container a definite height (web) or flex/height (React Native); content taller than it scrolls inside the offramp. Changing it reloads the offramp. */
     fill?: boolean;
     onReady?: () => void;
+    /** orderId can change within one withdrawal: after identity verification, a rejected signature or a new rate, the offramp creates a new order. Track the latest one; onComplete carries the order that completed. */
     onStatusChange?: (event: { status: OfframpStatus; orderId?: string }) => void;
     /** Can fire again when a completed withdrawal is reopened; dedupe by orderId. */
     onComplete?: (event: { orderId: string; txId: string }) => void;
