@@ -31573,6 +31573,142 @@
                                         "required": ["type", "publicKey", "locator"],
                                         "title": "Device Signer",
                                         "description": "Configuration for a device signer"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["quorum"]
+                                            },
+                                            "threshold": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                            },
+                                            "members": {
+                                                "type": "array",
+                                                "items": {
+                                                    "oneOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for external wallet signer type",
+                                                                    "enum": ["external-wallet"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the external wallet"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "External Wallet Signer",
+                                                            "description": "Configuration for an external wallet signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for server signer type",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the server signer"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "Server Signer",
+                                                            "description": "Configuration for a server signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for email signer type",
+                                                                    "enum": ["email"]
+                                                                },
+                                                                "email": {
+                                                                    "description": "The email address for the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "email", "locator", "address"],
+                                                            "title": "Email Signer",
+                                                            "description": "Configuration for an email signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for phone signer type",
+                                                                    "enum": ["phone"]
+                                                                },
+                                                                "phone": {
+                                                                    "type": "string",
+                                                                    "description": "The phone number for the signer in E164 format"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "phone", "locator", "address"],
+                                                            "title": "Phone Signer",
+                                                            "description": "Configuration for a phone signer"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "required": ["type", "threshold", "locator", "members"],
+                                        "description": "Quorum (m-of-n multisig) admin signer"
                                     }
                                 ],
                                 "description": "Response schema for a registered signer"
@@ -33543,6 +33679,142 @@
                                         "required": ["type", "publicKey", "locator"],
                                         "title": "Device Signer",
                                         "description": "Configuration for a device signer"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["quorum"]
+                                            },
+                                            "threshold": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                            },
+                                            "members": {
+                                                "type": "array",
+                                                "items": {
+                                                    "oneOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for external wallet signer type",
+                                                                    "enum": ["external-wallet"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the external wallet"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "External Wallet Signer",
+                                                            "description": "Configuration for an external wallet signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for server signer type",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the server signer"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "Server Signer",
+                                                            "description": "Configuration for a server signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for email signer type",
+                                                                    "enum": ["email"]
+                                                                },
+                                                                "email": {
+                                                                    "description": "The email address for the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "email", "locator", "address"],
+                                                            "title": "Email Signer",
+                                                            "description": "Configuration for an email signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for phone signer type",
+                                                                    "enum": ["phone"]
+                                                                },
+                                                                "phone": {
+                                                                    "type": "string",
+                                                                    "description": "The phone number for the signer in E164 format"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "phone", "locator", "address"],
+                                                            "title": "Phone Signer",
+                                                            "description": "Configuration for a phone signer"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "required": ["type", "threshold", "locator", "members"],
+                                        "description": "Quorum (m-of-n multisig) admin signer"
                                     }
                                 ],
                                 "description": "Response schema for a registered signer"
@@ -37120,6 +37392,142 @@
                                         "required": ["type", "publicKey", "locator"],
                                         "title": "Device Signer",
                                         "description": "Configuration for a device signer"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["quorum"]
+                                            },
+                                            "threshold": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "locator": {
+                                                "type": "string",
+                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                            },
+                                            "members": {
+                                                "type": "array",
+                                                "items": {
+                                                    "oneOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for external wallet signer type",
+                                                                    "enum": ["external-wallet"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the external wallet"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "External Wallet Signer",
+                                                            "description": "Configuration for an external wallet signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for server signer type",
+                                                                    "enum": ["server"]
+                                                                },
+                                                                "address": {
+                                                                    "type": "string",
+                                                                    "description": "The blockchain address of the server signer"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": ["type", "address", "locator"],
+                                                            "title": "Server Signer",
+                                                            "description": "Configuration for a server signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for email signer type",
+                                                                    "enum": ["email"]
+                                                                },
+                                                                "email": {
+                                                                    "description": "The email address for the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "email", "locator", "address"],
+                                                            "title": "Email Signer",
+                                                            "description": "Configuration for an email signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for phone signer type",
+                                                                    "enum": ["phone"]
+                                                                },
+                                                                "phone": {
+                                                                    "type": "string",
+                                                                    "description": "The phone number for the signer in E164 format"
+                                                                },
+                                                                "locator": {
+                                                                    "description": "The locator of the signer",
+                                                                    "type": "string"
+                                                                },
+                                                                "address": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "description": "The recipient address for this transaction call"
+                                                                        },
+                                                                        {
+                                                                            "type": "string"
+                                                                        }
+                                                                    ],
+                                                                    "description": "The address of the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "phone", "locator", "address"],
+                                                            "title": "Phone Signer",
+                                                            "description": "Configuration for a phone signer"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "required": ["type", "threshold", "locator", "members"],
+                                        "description": "Quorum (m-of-n multisig) admin signer"
                                     }
                                 ],
                                 "description": "Response schema for a registered signer"
@@ -77572,6 +77980,142 @@
                                                 "required": ["type", "phone", "locator", "address"],
                                                 "title": "Phone Signer",
                                                 "description": "Configuration for a phone signer"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["quorum"]
+                                                    },
+                                                    "threshold": {
+                                                        "type": "integer",
+                                                        "minimum": 1,
+                                                        "maximum": 9007199254740991
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                        "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                                    },
+                                                    "members": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "description": "Identifier for external wallet signer type",
+                                                                            "enum": ["external-wallet"]
+                                                                        },
+                                                                        "address": {
+                                                                            "type": "string",
+                                                                            "description": "The blockchain address of the external wallet"
+                                                                        },
+                                                                        "locator": {
+                                                                            "description": "The locator of the signer",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "address", "locator"],
+                                                                    "title": "External Wallet Signer",
+                                                                    "description": "Configuration for an external wallet signer"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "description": "Identifier for server signer type",
+                                                                            "enum": ["server"]
+                                                                        },
+                                                                        "address": {
+                                                                            "type": "string",
+                                                                            "description": "The blockchain address of the server signer"
+                                                                        },
+                                                                        "locator": {
+                                                                            "description": "The locator of the signer",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "address", "locator"],
+                                                                    "title": "Server Signer",
+                                                                    "description": "Configuration for a server signer"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "description": "Identifier for email signer type",
+                                                                            "enum": ["email"]
+                                                                        },
+                                                                        "email": {
+                                                                            "description": "The email address for the signer",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "locator": {
+                                                                            "description": "The locator of the signer",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "address": {
+                                                                            "anyOf": [
+                                                                                {
+                                                                                    "type": "string",
+                                                                                    "description": "The recipient address for this transaction call"
+                                                                                },
+                                                                                {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            ],
+                                                                            "description": "The address of the signer"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "email", "locator", "address"],
+                                                                    "title": "Email Signer",
+                                                                    "description": "Configuration for an email signer"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "description": "Identifier for phone signer type",
+                                                                            "enum": ["phone"]
+                                                                        },
+                                                                        "phone": {
+                                                                            "type": "string",
+                                                                            "description": "The phone number for the signer in E164 format"
+                                                                        },
+                                                                        "locator": {
+                                                                            "description": "The locator of the signer",
+                                                                            "type": "string"
+                                                                        },
+                                                                        "address": {
+                                                                            "anyOf": [
+                                                                                {
+                                                                                    "type": "string",
+                                                                                    "description": "The recipient address for this transaction call"
+                                                                                },
+                                                                                {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            ],
+                                                                            "description": "The address of the signer"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "phone", "locator", "address"],
+                                                                    "title": "Phone Signer",
+                                                                    "description": "Configuration for a phone signer"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["type", "threshold", "locator", "members"],
+                                                "description": "Quorum (m-of-n multisig) admin signer"
                                             }
                                         ]
                                     },
@@ -77905,6 +78449,152 @@
                                                     "required": ["type", "publicKey", "locator"],
                                                     "title": "Device Signer",
                                                     "description": "Configuration for a device signer"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["quorum"]
+                                                        },
+                                                        "threshold": {
+                                                            "type": "integer",
+                                                            "minimum": 1,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "locator": {
+                                                            "type": "string",
+                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                            "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                                        },
+                                                        "members": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "oneOf": [
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for external wallet signer type",
+                                                                                "enum": ["external-wallet"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string",
+                                                                                "description": "The blockchain address of the external wallet"
+                                                                            },
+                                                                            "locator": {
+                                                                                "description": "The locator of the signer",
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"],
+                                                                        "title": "External Wallet Signer",
+                                                                        "description": "Configuration for an external wallet signer"
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for server signer type",
+                                                                                "enum": ["server"]
+                                                                            },
+                                                                            "address": {
+                                                                                "type": "string",
+                                                                                "description": "The blockchain address of the server signer"
+                                                                            },
+                                                                            "locator": {
+                                                                                "description": "The locator of the signer",
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "address", "locator"],
+                                                                        "title": "Server Signer",
+                                                                        "description": "Configuration for a server signer"
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for email signer type",
+                                                                                "enum": ["email"]
+                                                                            },
+                                                                            "email": {
+                                                                                "description": "The email address for the signer",
+                                                                                "type": "string"
+                                                                            },
+                                                                            "locator": {
+                                                                                "description": "The locator of the signer",
+                                                                                "type": "string"
+                                                                            },
+                                                                            "address": {
+                                                                                "anyOf": [
+                                                                                    {
+                                                                                        "type": "string",
+                                                                                        "description": "The recipient address for this transaction call"
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                ],
+                                                                                "description": "The address of the signer"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "type",
+                                                                            "email",
+                                                                            "locator",
+                                                                            "address"
+                                                                        ],
+                                                                        "title": "Email Signer",
+                                                                        "description": "Configuration for an email signer"
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for phone signer type",
+                                                                                "enum": ["phone"]
+                                                                            },
+                                                                            "phone": {
+                                                                                "type": "string",
+                                                                                "description": "The phone number for the signer in E164 format"
+                                                                            },
+                                                                            "locator": {
+                                                                                "description": "The locator of the signer",
+                                                                                "type": "string"
+                                                                            },
+                                                                            "address": {
+                                                                                "anyOf": [
+                                                                                    {
+                                                                                        "type": "string",
+                                                                                        "description": "The recipient address for this transaction call"
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                ],
+                                                                                "description": "The address of the signer"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "type",
+                                                                            "phone",
+                                                                            "locator",
+                                                                            "address"
+                                                                        ],
+                                                                        "title": "Phone Signer",
+                                                                        "description": "Configuration for a phone signer"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        }
+                                                    },
+                                                    "required": ["type", "threshold", "locator", "members"],
+                                                    "description": "Quorum (m-of-n multisig) admin signer"
                                                 }
                                             ]
                                         }
@@ -78121,7 +78811,7 @@
                                                         "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                         "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -78237,7 +78927,7 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["type", "threshold", "locator", "signers"],
+                                                "required": ["type", "threshold", "locator", "members"],
                                                 "description": "Quorum (m-of-n multisig) admin signer"
                                             }
                                         ],
@@ -78405,7 +79095,7 @@
                                                             "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
-                                                        "signers": {
+                                                        "members": {
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
@@ -78531,7 +79221,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "required": ["type", "threshold", "locator", "signers"],
+                                                    "required": ["type", "threshold", "locator", "members"],
                                                     "description": "Quorum (m-of-n multisig) admin signer"
                                                 }
                                             ]
@@ -78783,6 +79473,160 @@
                                                             "required": ["type", "publicKey", "locator"],
                                                             "title": "Device Signer",
                                                             "description": "Configuration for a device signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["quorum"]
+                                                                },
+                                                                "threshold": {
+                                                                    "type": "integer",
+                                                                    "minimum": 1,
+                                                                    "maximum": 9007199254740991
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                                    "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                                                },
+                                                                "members": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "oneOf": [
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for external wallet signer type",
+                                                                                        "enum": ["external-wallet"]
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "type": "string",
+                                                                                        "description": "The blockchain address of the external wallet"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "address",
+                                                                                    "locator"
+                                                                                ],
+                                                                                "title": "External Wallet Signer",
+                                                                                "description": "Configuration for an external wallet signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for server signer type",
+                                                                                        "enum": ["server"]
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "type": "string",
+                                                                                        "description": "The blockchain address of the server signer"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "address",
+                                                                                    "locator"
+                                                                                ],
+                                                                                "title": "Server Signer",
+                                                                                "description": "Configuration for a server signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for email signer type",
+                                                                                        "enum": ["email"]
+                                                                                    },
+                                                                                    "email": {
+                                                                                        "description": "The email address for the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "anyOf": [
+                                                                                            {
+                                                                                                "type": "string",
+                                                                                                "description": "The recipient address for this transaction call"
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        ],
+                                                                                        "description": "The address of the signer"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "email",
+                                                                                    "locator",
+                                                                                    "address"
+                                                                                ],
+                                                                                "title": "Email Signer",
+                                                                                "description": "Configuration for an email signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for phone signer type",
+                                                                                        "enum": ["phone"]
+                                                                                    },
+                                                                                    "phone": {
+                                                                                        "type": "string",
+                                                                                        "description": "The phone number for the signer in E164 format"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "anyOf": [
+                                                                                            {
+                                                                                                "type": "string",
+                                                                                                "description": "The recipient address for this transaction call"
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        ],
+                                                                                        "description": "The address of the signer"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "phone",
+                                                                                    "locator",
+                                                                                    "address"
+                                                                                ],
+                                                                                "title": "Phone Signer",
+                                                                                "description": "Configuration for a phone signer"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            },
+                                                            "required": ["type", "threshold", "locator", "members"],
+                                                            "description": "Quorum (m-of-n multisig) admin signer"
                                                         }
                                                     ],
                                                     "description": "Response schema for a registered signer"
@@ -80906,7 +81750,7 @@
                                                         "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                         "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -81022,7 +81866,7 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["type", "threshold", "locator", "signers"],
+                                                "required": ["type", "threshold", "locator", "members"],
                                                 "description": "Quorum (m-of-n multisig) admin signer"
                                             }
                                         ],
@@ -81190,7 +82034,7 @@
                                                             "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
-                                                        "signers": {
+                                                        "members": {
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
@@ -81316,7 +82160,7 @@
                                                             }
                                                         }
                                                     },
-                                                    "required": ["type", "threshold", "locator", "signers"],
+                                                    "required": ["type", "threshold", "locator", "members"],
                                                     "description": "Quorum (m-of-n multisig) admin signer"
                                                 }
                                             ]
@@ -81568,6 +82412,160 @@
                                                             "required": ["type", "publicKey", "locator"],
                                                             "title": "Device Signer",
                                                             "description": "Configuration for a device signer"
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["quorum"]
+                                                                },
+                                                                "threshold": {
+                                                                    "type": "integer",
+                                                                    "minimum": 1,
+                                                                    "maximum": 9007199254740991
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                                    "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
+                                                                },
+                                                                "members": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "oneOf": [
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for external wallet signer type",
+                                                                                        "enum": ["external-wallet"]
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "type": "string",
+                                                                                        "description": "The blockchain address of the external wallet"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "address",
+                                                                                    "locator"
+                                                                                ],
+                                                                                "title": "External Wallet Signer",
+                                                                                "description": "Configuration for an external wallet signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for server signer type",
+                                                                                        "enum": ["server"]
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "type": "string",
+                                                                                        "description": "The blockchain address of the server signer"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "address",
+                                                                                    "locator"
+                                                                                ],
+                                                                                "title": "Server Signer",
+                                                                                "description": "Configuration for a server signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for email signer type",
+                                                                                        "enum": ["email"]
+                                                                                    },
+                                                                                    "email": {
+                                                                                        "description": "The email address for the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "anyOf": [
+                                                                                            {
+                                                                                                "type": "string",
+                                                                                                "description": "The recipient address for this transaction call"
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        ],
+                                                                                        "description": "The address of the signer"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "email",
+                                                                                    "locator",
+                                                                                    "address"
+                                                                                ],
+                                                                                "title": "Email Signer",
+                                                                                "description": "Configuration for an email signer"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for phone signer type",
+                                                                                        "enum": ["phone"]
+                                                                                    },
+                                                                                    "phone": {
+                                                                                        "type": "string",
+                                                                                        "description": "The phone number for the signer in E164 format"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "description": "The locator of the signer",
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "address": {
+                                                                                        "anyOf": [
+                                                                                            {
+                                                                                                "type": "string",
+                                                                                                "description": "The recipient address for this transaction call"
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        ],
+                                                                                        "description": "The address of the signer"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "phone",
+                                                                                    "locator",
+                                                                                    "address"
+                                                                                ],
+                                                                                "title": "Phone Signer",
+                                                                                "description": "Configuration for a phone signer"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            },
+                                                            "required": ["type", "threshold", "locator", "members"],
+                                                            "description": "Quorum (m-of-n multisig) admin signer"
                                                         }
                                                     ],
                                                     "description": "Response schema for a registered signer"
