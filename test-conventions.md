@@ -367,13 +367,15 @@ Decided by **what the test asserts**, not by what it touches. A test that sends 
 | The test asserts… | Tier | Where | Network |
 | --- | --- | --- | --- |
 | **SDK logic** — orchestration, signer resolution, configuration validation, what `ApiClient` puts on the wire (headers, URL, method, error parsing) | Sandbox | `packages/<pkg>/src/**/*.test.ts` | `fetch` mocked, no key |
-| **The API's response shape as the SDK reads it** — the fields it reads, the error codes it branches on | Heartbeat | `tests/integration/heartbeat/` | Real; scheduled twice daily by `.github/workflows/heartbeat.yml`, and on every branch push inside the advisory integration job (both land with #2126) |
+| **The sandbox's assumptions about the API still hold** — the real response still matches the OpenAPI schema (`packages/<pkg>/src/openapi.json`) that the SDK's types and the sandbox mocks are built from, and the error envelope the SDK parses | Heartbeat | `tests/integration/heartbeat/` | Real; scheduled twice daily by `.github/workflows/heartbeat.yml`, and on every branch push inside the advisory integration job (both land with #2126) |
 | **A flow across the real API** — create → send → approve → poll, register → sign → remove | Integration | `tests/integration/<area>/` | Real, on every branch push (not on `main`), advisory |
 | **The API's own validation, sanitisation, rate limiting, response-shape rules** | — | crossbit-main, not here | — |
 
 Rules of thumb:
 
--   One test per endpoint in the heartbeat; it asserts only what the SDK reads, nothing else.
+-   The heartbeat does not test the API. Every `fetch` mock in the sandbox is a claim about what Crossmint returns, and the heartbeat proves those claims against the real response. One `it` per endpoint, so a red run names the endpoint that drifted; each one checks the response against the schema the mocks derive from, not a hand-written list of fields. Mocks and heartbeat share that one source (the committed OpenAPI spec and the types generated from it), so a drift fails in one place and nobody maintains a second copy.
+-   A functional assumption ("the API rejects X", "the API fills Y in") is the backend's to test. Before writing it anywhere in this repo, check whether crossbit-main covers it; if not, open a ticket there rather than adding an SDK test.
+-   Non-functional assumptions (latency, rate limits, availability) belong in neither tier here. They need their own home and are out of scope for this document.
 -   One file per flow family in the integration tier, and **at most one negative per flow**, chosen to prove that an API rejection reaches the caller — not to enumerate the API's validation rules.
 -   If a test can pass with `fetch` mocked, it is a sandbox test. Move it there.
 -   If the only thing the SDK does with an input is forward it, the test for that input is the backend's.
