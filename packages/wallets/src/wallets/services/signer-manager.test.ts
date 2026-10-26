@@ -9,11 +9,17 @@ import type {
     SignerLocator,
 } from "../../signers/types";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
-import { InvalidRecoveryConfigError, RecoveryMethodRequiredError, SignerRequiredError } from "../../utils/errors";
+import {
+    InvalidRecoveryConfigError,
+    QuorumSignerNotSupportedError,
+    RecoveryMethodRequiredError,
+    SignerRequiredError,
+} from "../../utils/errors";
 import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
 import { walletsLogger } from "../../logger";
+import { createQuorumApiEntry } from "../__tests__/test-helpers";
 
 vi.mock("../../signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../signers")>();
@@ -416,5 +422,44 @@ describe("SignerManager", () => {
         const result = await manager.assemble(internalConfig);
         expect(getSigner).toHaveBeenCalledTimes(1);
         expect(result.status).toBe("success");
+    });
+});
+
+describe("SignerManager - quorum recovery methods", () => {
+    const quorumRecovery = () => asRecoveryConfig(createQuorumApiEntry());
+
+    describe("when the only recovery method is a quorum", () => {
+        it("require() throws QuorumSignerNotSupportedError", () => {
+            expect(() => makeManager({ recoverySigners: [quorumRecovery()] }).require()).toThrow(
+                QuorumSignerNotSupportedError
+            );
+        });
+
+        it("withRecoverySigner() throws QuorumSignerNotSupportedError without running the operation", async () => {
+            const operation = vi.fn();
+
+            await expect(
+                makeManager({ recoverySigners: [quorumRecovery()] }).withRecoverySigner(operation)
+            ).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(operation).not.toHaveBeenCalled();
+        });
+    });
+
+    it("recoveryLocator() returns the quorum's own locator", () => {
+        const quorum = createQuorumApiEntry();
+
+        expect(makeManager().recoveryLocator(asRecoveryConfig(quorum))).toBe(quorum.locator);
+    });
+
+    describe("when a second quorum is added", () => {
+        it("keeps both as separate recovery methods", () => {
+            const first = quorumRecovery();
+            const second = quorumRecovery();
+            const manager = makeManager({ recoverySigners: [first] });
+
+            manager.addRecoverySigner(second);
+
+            expect(manager.recoverySigners).toEqual([first, second]);
+        });
     });
 });

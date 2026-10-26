@@ -114,6 +114,20 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     ...overrides,
 });
 
+// A quorum entry as the wallets API returns it. Member emails are random so no test depends on them.
+export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) => {
+    const members = Array.from({ length: memberCount }, () => {
+        const email = `member-${crypto.randomUUID()}@example.com`;
+        return { type: "email" as const, email, locator: `email:${email}` };
+    });
+    return {
+        type: "quorum" as const,
+        locator: `quorum:${crypto.randomUUID()}` as const,
+        threshold,
+        members,
+    };
+};
+
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };

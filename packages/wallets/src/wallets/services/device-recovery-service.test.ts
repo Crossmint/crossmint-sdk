@@ -9,8 +9,9 @@ import {
     type SignerAdapter,
 } from "../../signers/types";
 import { createDeviceSigner } from "@/utils/device-signers";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
 import { DeviceRecoveryService, type DeviceRecoveryServiceParams } from "./device-recovery-service";
+import { createQuorumApiEntry } from "../__tests__/test-helpers";
 
 vi.mock("../../signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../signers")>();
@@ -224,6 +225,18 @@ describe("DeviceRecoveryService", () => {
     });
 
     describe("recover() new-device registration", () => {
+        it("leaves no active signer when the provider rejects device signers and the recovery method is a quorum", async () => {
+            const addSigner = vi.fn().mockRejectedValue(new DeviceSignerNotSupportedError("unsupported"));
+            const { service, signerManager } = setup({
+                addSigner,
+                signerManager: { recovery: createQuorumApiEntry() },
+            });
+
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
+            expect(service.needsRecovery).toBe(false);
+        });
+
         it("falls back to the recovery signer when the provider rejects device signers", async () => {
             const addSigner = vi.fn().mockRejectedValue(new DeviceSignerNotSupportedError("unsupported"));
             const { service, storage, signerManager } = setup({ addSigner });
@@ -346,6 +359,20 @@ describe("DeviceRecoveryService", () => {
                 },
             });
             await expect(service.recover()).rejects.toThrow(expected);
+            expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
+        });
+
+        it("throws QuorumSignerNotSupportedError before swapping the signer when the recovery method is a quorum", async () => {
+            const activeSigner = makeSigner("device", "device:active");
+            const { service, signerManager } = setup({
+                signerManager: {
+                    activeSigner,
+                    recovery: createQuorumApiEntry(),
+                    getSignerState: vi.fn().mockResolvedValue(pendingState("transaction", "tx-1")),
+                },
+            });
+
+            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
             expect(signerManager.setActiveSigner).not.toHaveBeenCalled();
         });
     });
