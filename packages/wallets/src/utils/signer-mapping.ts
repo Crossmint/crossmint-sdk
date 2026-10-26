@@ -1,6 +1,7 @@
 import type { Signer as APISigner, Scope } from "../api";
 import type { PendingSignerOperation, Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
+import type { QuorumLocator } from "../signers/types";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
 type SignerBase = DistributiveOmit<Signer, "status">;
@@ -54,6 +55,14 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
                 type: "server",
                 address: apiSigner.address,
                 locator: apiSigner.locator,
+            };
+        case "quorum":
+            return {
+                type: "quorum",
+                // The API only issues `quorum:<uuid>` locators for quorums.
+                locator: apiSigner.locator as QuorumLocator,
+                threshold: apiSigner.threshold,
+                members: apiSigner.members,
             };
         default:
             throw new Error(`Unknown signer type: ${(apiSigner as { type: string }).type}`);

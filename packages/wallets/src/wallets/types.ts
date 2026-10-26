@@ -16,7 +16,10 @@ import type {
     DeviceSignerLocator,
     PasskeySignerConfig,
     PasskeyProvider,
+    QuorumLocator,
+    QuorumSigner,
     ServerSignerConfig,
+    SignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -200,7 +203,17 @@ export type Signer =
           locator: string;
           status: SignerStatus;
           scopes?: Scope[];
-      };
+      }
+    | (QuorumSigner & { status: SignerStatus; scopes?: Scope[] });
+
+/** Progress of one quorum entry on a request waiting for approvals. */
+export type QuorumApprovalProgress = {
+    quorum: QuorumLocator;
+    threshold: number;
+    remaining: number;
+    pending: SignerLocator[];
+    submitted: SignerLocator[];
+};
 
 // Approvals
 export type PendingApproval = NonNullable<

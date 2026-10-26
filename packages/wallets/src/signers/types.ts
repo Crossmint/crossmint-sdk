@@ -150,7 +150,26 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
     return config.type === "server" && !("secret" in config);
 }
 
-export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
+export type QuorumLocator = `quorum:${string}`;
+
+export type QuorumMemberType = "email" | "phone" | "external-wallet" | "server" | "passkey";
+
+/** A quorum as the wallets API returns it: Crossmint assigns `locator` when the quorum is added. */
+export type QuorumSigner = {
+    type: "quorum";
+    locator: QuorumLocator;
+    threshold: number;
+    members: Array<{ type: QuorumMemberType; locator: string }>;
+};
+
+export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {
+    return entry.type === "quorum";
+}
+
+export type RecoverySignerConfigForChain<C extends Chain> =
+    | SignerConfigForChain<C>
+    | ApiSourcedServerSignerConfig
+    | QuorumSigner;
 
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
@@ -273,6 +292,18 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
+// api-key and device are never quorum members; Solana also takes no passkey members.
+export type QuorumMemberConfig<C extends Chain> = C extends SolanaChain
+    ? Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig | PasskeySignerConfig>
+    : Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig>;
+
+/** A quorum to create or add: `threshold` of its `members` must sign. */
+export type QuorumSignerConfig<C extends Chain> = {
+    type: "quorum";
+    threshold: number;
+    members: Array<QuorumMemberConfig<C>>;
+};
+
 ////////////////////////////////////////////////////////////
 // Signer locator types
 ////////////////////////////////////////////////////////////
@@ -291,7 +322,8 @@ export type SignerLocator =
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
     | ApiKeySignerLocator
-    | ServerSignerLocator;
+    | ServerSignerLocator
+    | QuorumLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
