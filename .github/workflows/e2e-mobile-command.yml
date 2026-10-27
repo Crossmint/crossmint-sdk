@@ -4,6 +4,7 @@ name: Mobile E2E command
 # Runs from the default branch with secrets, so it never checks out PR code.
 
 on:
+    # zizmor: ignore[dangerous-triggers] the job checks the commenter has write access, never checks out PR code, and reads the comment body only through env.
     issue_comment:
         types: [created]
 
