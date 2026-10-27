@@ -38,9 +38,26 @@ if (section == null) {
     console.error("pnpm-lock.yaml has no packages section");
     process.exit(1);
 }
-const entries = [...section.matchAll(/^ {2}'?([^'\n]+?)'?:\n {4}resolution: \{([^}]*)\}/gm)];
+// pnpm writes every package as a key line followed by a one-line `resolution` mapping. A key
+// without one is reported, not skipped: an entry this check cannot read could point anywhere.
+const lines = section.split("\n");
+const entries = [];
 const problems = [];
-for (const [, key, resolution] of entries) {
+let unreadable = 0;
+for (let i = 0; i < lines.length; i++) {
+    const keyMatch = /^ {2}('?)(\S[^'\n]*?)\1:$/.exec(lines[i]);
+    if (keyMatch == null) {
+        continue;
+    }
+    const resolutionMatch = /^ {4}resolution: \{([^}]*)\}$/.exec(lines[i + 1] ?? "");
+    if (resolutionMatch == null) {
+        problems.push(`${keyMatch[2]}: cannot read its resolution (expected a one-line mapping on the next line)`);
+        unreadable++;
+        continue;
+    }
+    entries.push([keyMatch[2], resolutionMatch[1]]);
+}
+for (const [key, resolution] of entries) {
     const at = key.lastIndexOf("@");
     const name = key.slice(0, at);
     const version = key.slice(at + 1);
@@ -59,12 +76,12 @@ for (const [, key, resolution] of entries) {
         problems.push(`${key}: ${tarball} is not on ${expected}`);
     }
 }
-if (entries.length === 0) {
+if (entries.length === 0 && unreadable === 0) {
     problems.push("no registry entries found: the lockfile format may have changed");
 }
 if (problems.length > 0) {
     console.error(
-        `${problems.length} of ${entries.length} pnpm-lock.yaml entries do not resolve from their routed registry:`
+        `${problems.length} of ${entries.length + unreadable} pnpm-lock.yaml entries do not resolve from their routed registry:`
     );
     for (const problem of problems.slice(0, 20)) {
         console.error(`  ${problem}`);

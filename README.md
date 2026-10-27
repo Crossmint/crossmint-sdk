@@ -136,6 +136,7 @@ Dependencies resolve from [Chainguard Libraries](https://edu.chainguard.dev/chai
 1. Clone the repository:
 ```shell
 git clone https://github.com/Crossmint/crossmint-sdk.git
+cd crossmint-sdk
 ```
 
 2. Authenticate with Chainguard. The token expires after one hour; repeat this before `pnpm install` when it does:
@@ -148,7 +149,6 @@ export CHAINGUARD_TOKEN=$(chainctl auth token --audience=libraries.cgr.dev)
 
 3. Install dependencies:
 ```shell
-cd crossmint-sdk
 pnpm install
 ```
 
