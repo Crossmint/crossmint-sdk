@@ -19,6 +19,6 @@
         "dev": "tsup --watch"
     },
     "dependencies": {
-        "zod": "3.22.4"
+        "zod": "4.6.6"
     }
 }

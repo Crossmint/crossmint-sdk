@@ -30,7 +30,7 @@
         "lodash.clonedeep": "4.5.0",
         "lodash.isequal": "4.5.0",
         "mitt": "3.0.1",
-        "zod": "3.22.4"
+        "zod": "4.6.6"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.0",

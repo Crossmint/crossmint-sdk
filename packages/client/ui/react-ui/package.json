@@ -45,7 +45,7 @@
         "ox": "0.6.9",
         "react-transition-group": "4.4.5",
         "viem": "2.57.7",
-        "zod": "3.22.4"
+        "zod": "4.6.6"
     },
     "devDependencies": {
         "@testing-library/react": "^16.0.1",

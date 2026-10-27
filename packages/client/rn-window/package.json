@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
-        "zod": "3.22.4"
+        "zod": "4.6.6"
     },
     "peerDependencies": {
         "react": ">=18.0.0",
