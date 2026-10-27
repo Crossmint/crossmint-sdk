@@ -48968,18 +48968,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -48990,7 +48978,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49193,18 +49180,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49215,7 +49190,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49418,18 +49392,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49440,7 +49402,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49731,18 +49692,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49753,7 +49702,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49956,18 +49904,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49978,7 +49914,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -50181,18 +50116,6 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
-                                                                "inTransit": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "amount": {
-                                                                            "type": "string"
-                                                                        },
-                                                                        "rawAmount": {
-                                                                            "type": "string"
-                                                                        }
-                                                                    },
-                                                                    "required": ["amount", "rawAmount"]
-                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -50203,7 +50126,6 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
-                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },

@@ -111,7 +111,6 @@ describe("formatBalanceResponse", () => {
                             rawAmount: "2505000000",
                             available: { amount: "250.5", rawAmount: "2505000000" },
                             locked: { amount: "0", rawAmount: "0" },
-                            inTransit: { amount: "0", rawAmount: "0" },
                         },
                         {
                             type: "card",
@@ -143,11 +142,13 @@ describe("formatBalanceResponse", () => {
                 accounts: usdc.chains.stellar.accounts,
             });
             const card = balances.usdc.accounts?.find((account) => account.type === "card");
-            expect(card?.available.amount).toBe("960");
-            expect(card?.locked.rawAmount).toBe("400000000");
-            expect(card?.inTransit.amount).toBe("10");
+            expect(card).toMatchObject({
+                available: { amount: "960" },
+                locked: { rawAmount: "400000000" },
+                inTransit: { amount: "10" },
+            });
             const walletAccount = balances.usdc.accounts?.find((account) => account.type === "wallet");
-            expect(walletAccount?.inTransit.amount).toBe("0");
+            expect(walletAccount).not.toHaveProperty("inTransit");
         });
 
         it("keeps MGUSD without a card as a plain balance alongside enriched USDC", () => {
