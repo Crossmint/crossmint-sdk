@@ -1,0 +1,62 @@
+import { isQuorumLocator, type QuorumLocator, type QuorumSigner, type SignerLocator } from "../signers/types";
+import { QuorumSelectionAmbiguousError } from "../utils/errors";
+import { quorumsWithMember } from "./members";
+
+/**
+ * What the held key signs as. `self`: the single signer `locator`. `quorum`: a member of that quorum.
+ * `none`: signer changes only, the key can authorize none.
+ */
+export type ActingRole =
+    | { kind: "self"; locator: SignerLocator }
+    | { kind: "quorum"; locator: QuorumLocator }
+    | { kind: "none" };
+
+type RoleInputBase = {
+    heldLocator: SignerLocator;
+    /** The call's explicit signer, used as given: the API validates it. */
+    explicit?: SignerLocator;
+    /** Recovery methods that sign alone. */
+    recoveryLocators: SignerLocator[];
+    recoveryQuorums: QuorumSigner[];
+};
+
+// Signer changes take no delegated input: only recovery methods and recovery quorums can authorize them.
+export type RoleInput =
+    | (RoleInputBase & { scope: "transaction"; delegatedQuorums: QuorumSigner[]; isRegisteredSigner: boolean })
+    | (RoleInputBase & { scope: "signer-change" });
+
+/** Throws QuorumSelectionAmbiguousError when the held key is a member of several quorums in scope. */
+export function resolveActingRole(input: RoleInput): ActingRole {
+    const { heldLocator, explicit } = input;
+    if (explicit != null) {
+        return roleFromLocator(explicit);
+    }
+    if (input.recoveryLocators.some((locator) => locator === heldLocator)) {
+        return { kind: "self", locator: heldLocator };
+    }
+    if (input.scope === "signer-change") {
+        return singleQuorumRole(quorumsWithMember(input.recoveryQuorums, heldLocator)) ?? { kind: "none" };
+    }
+    if (input.isRegisteredSigner) {
+        return { kind: "self", locator: heldLocator };
+    }
+    const quorums = quorumsWithMember([...input.recoveryQuorums, ...input.delegatedQuorums], heldLocator);
+    return singleQuorumRole(quorums) ?? { kind: "self", locator: heldLocator };
+}
+
+function roleFromLocator(locator: SignerLocator): ActingRole {
+    if (isQuorumLocator(locator)) {
+        return { kind: "quorum", locator };
+    }
+    return { kind: "self", locator };
+}
+
+function singleQuorumRole(quorums: QuorumSigner[]): ActingRole | null {
+    if (quorums.length > 1) {
+        throw new QuorumSelectionAmbiguousError(quorums.map((quorum) => quorum.locator));
+    }
+    if (quorums.length === 0) {
+        return null;
+    }
+    return { kind: "quorum", locator: quorums[0].locator };
+}
