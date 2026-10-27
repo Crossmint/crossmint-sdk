@@ -14,8 +14,9 @@ on:
 permissions: {}
 
 concurrency:
-    group: security-scan-${{ github.ref }}
-    # Push runs scan only their own commit range, so cancelling one would leave commits unscanned.
+    # Push runs scan only their own commit range. A shared group would cancel or replace
+    # queued push runs and leave commits unscanned, so each push run gets its own group.
+    group: security-scan-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
     cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
