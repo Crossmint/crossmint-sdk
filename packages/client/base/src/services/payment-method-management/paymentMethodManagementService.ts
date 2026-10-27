@@ -12,7 +12,7 @@ export type PaymentMethodManagementServiceProps = {
 };
 
 export function createPaymentMethodManagementService({ apiClient }: PaymentMethodManagementServiceProps) {
-    function getIFrameUrl(props: CrossmintPaymentMethodManagementProps & { hideSubmitButton?: boolean }) {
+    function getIFrameUrl(props: CrossmintPaymentMethodManagementProps) {
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/payment-method-management");
         const queryParams = new URLSearchParams();
 
@@ -21,7 +21,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         // "render nothing" instead of applying the documented default. Drop these
         // keys when empty so the iframe defaults apply (`allowedPaymentMethodTypes`
         // → `["card"]`, `allowedModes` → `["new"]`).
-        const { allowedPaymentMethodTypes, allowedModes, hideSubmitButton = true, ...rest } = props;
+        const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
         const serializableProps = {
             ...rest,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
@@ -30,10 +30,8 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
         appendObjectToQueryParams(queryParams, serializableProps);
 
-        // The public component never renders its own submit button; the host submits via
-        // ref.submit(). Internal consumers (e.g. agent card authorization) may opt out so
-        // the iframe keeps rendering its own.
-        queryParams.append("hideSubmitButton", String(hideSubmitButton));
+        // The component never renders a submit button; the host submits via ref.submit().
+        queryParams.append("hideSubmitButton", "true");
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
 

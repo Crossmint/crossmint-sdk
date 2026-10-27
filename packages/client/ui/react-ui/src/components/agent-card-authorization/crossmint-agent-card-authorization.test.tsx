@@ -4,7 +4,7 @@ import { ApiClient } from "@crossmint/common-sdk-base";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 import { CrossmintAgentCardAuthorization } from "./CrossmintAgentCardAuthorization";
 import { RAIL_POLL_INTERVAL_MS, RAIL_POLL_TIMEOUT_MS } from "./useAgentCardAuthorization";
@@ -20,14 +20,17 @@ const stubs = vi.hoisted(() => ({
 // Like the real iframe wrapper, the stub keeps the props of its first render for the
 // callbacks (it subscribes once), so a stale closure in the hook would surface here. The
 // rendered jwt attribute follows the live prop, like the real iframe src would.
-vi.mock("../card-management/CrossmintPaymentMethodManagementIFrame", () => ({
-    CrossmintPaymentMethodManagementIFrame: (props: Record<string, unknown>) => {
+vi.mock("../card-management/CrossmintPaymentMethodManagement", () => ({
+    CrossmintPaymentMethodManagement: forwardRef((props: Record<string, unknown>, ref) => {
         const firstProps = useRef(props);
         useEffect(() => {
             stubs.pmm.props = firstProps.current as Record<string, (value: unknown) => void>;
         }, []);
+        useImperativeHandle(ref, () => ({
+            submit: () => Promise.resolve({ status: "unavailable", message: "stub" }),
+        }));
         return <div data-testid="pmm" data-jwt={String(props.jwt)} />;
-    },
+    }),
 }));
 
 vi.mock("../order-intent", () => ({

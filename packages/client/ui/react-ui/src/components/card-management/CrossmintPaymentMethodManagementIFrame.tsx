@@ -20,15 +20,9 @@ const superseded = (): PaymentMethodSubmitResult => ({
     message: "The payment method component changed. Please submit again.",
 });
 
-/** Internal props: the public component's props plus the iframe-only escape hatch. */
-export type CrossmintPaymentMethodManagementIFrameProps = CrossmintPaymentMethodManagementProps & {
-    /** Lets compositions that cannot submit via ref (e.g. agent card authorization) keep the iframe's own submit button. */
-    hideSubmitButton?: boolean;
-};
-
 export const CrossmintPaymentMethodManagementIFrame = forwardRef<
     CrossmintPaymentMethodManagementRef,
-    CrossmintPaymentMethodManagementIFrameProps
+    CrossmintPaymentMethodManagementProps
 >(function CrossmintPaymentMethodManagementIFrame(props, ref) {
     const { crossmint } = useCrossmint();
     const service = useMemo(
