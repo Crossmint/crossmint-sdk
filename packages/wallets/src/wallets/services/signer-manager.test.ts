@@ -587,6 +587,15 @@ describe("SignerManager.heldSigners", () => {
             expect(manager.heldSigners()).toEqual([active]);
         });
 
+        it("lists it once when the active signer's EVM address differs only in case", () => {
+            const active = makeSigner("external-wallet", "external-wallet:0xRECOVERY");
+            mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
+            manager.selectRecovery(1);
+
+            expect(manager.heldSigners()).toEqual([active]);
+        });
+
         it("throws withRecoverySigner's error when the selection cannot be assembled", () => {
             const manager = makeManager({
                 signer: makeSigner("external-wallet", ACTIVE_LOCATOR),

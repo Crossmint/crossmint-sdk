@@ -18,6 +18,7 @@ import {
     throwIfQuorumSigner,
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
+import { isSameSignerLocator } from "../../quorum/members";
 import { getSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
@@ -311,7 +312,8 @@ export class SignerManager<C extends Chain> {
             held.push(this.#assembleRecovery(selected));
         }
         return held.filter(
-            (signer, index) => held.findIndex((other) => other.locator() === signer.locator()) === index
+            (signer, index) =>
+                held.findIndex((other) => isSameSignerLocator(other.locator(), signer.locator())) === index
         );
     }
 
