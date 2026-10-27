@@ -9,7 +9,7 @@ import type {
 } from "@crossmint/client-signers";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import type { Callbacks, SignerStatus } from "@/wallets/types";
+import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
 
 export type ExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -152,14 +152,23 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type QuorumLocator = `quorum:${string}`;
 
+export function isQuorumLocator(locator: string): locator is QuorumLocator {
+    return locator.startsWith("quorum:");
+}
+
 export type QuorumMemberType = "email" | "phone" | "external-wallet" | "server" | "passkey";
+
+type WithoutStatus<T> = T extends unknown ? Omit<T, "status" | "scopes"> : never;
+
+/** A quorum member as the API returns it: the member's own signer fields, without a status. */
+export type QuorumMember = WithoutStatus<Extract<Signer, { type: QuorumMemberType }>>;
 
 /** A quorum as the wallets API returns it: Crossmint assigns `locator` when the quorum is added. */
 export type QuorumSigner = {
     type: "quorum";
     locator: QuorumLocator;
     threshold: number;
-    members: Array<{ type: QuorumMemberType; locator: string }>;
+    members: QuorumMember[];
 };
 
 export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {

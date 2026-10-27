@@ -109,6 +109,21 @@ describe("SignerManager", () => {
             /requires calling wallet\.useSigner\(\)/,
         ],
         ["a read-only wallet", { recoverySigners: [apiKeyConfig] }, /read-only/],
+        [
+            "a quorum before an external-wallet recovery signer",
+            {
+                recoverySigners: [
+                    createQuorumApiEntry(),
+                    asRecoveryConfig({ type: "external-wallet", address: "0xExt" }),
+                ],
+            },
+            /External wallet signers require/,
+        ],
+        [
+            "quorum-only recovery and one delegated signer",
+            { recoverySigners: [createQuorumApiEntry()], initialSigners: [apiKeyConfig] },
+            /requires calling wallet\.useSigner\(\)/,
+        ],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(() => makeManager(overrides as unknown as Overrides).require(), branchKeyword);
     });
@@ -425,36 +440,67 @@ describe("SignerManager", () => {
     });
 });
 
-describe("SignerManager - quorum recovery methods", () => {
-    const quorumRecovery = () => asRecoveryConfig(createQuorumApiEntry());
+describe("SignerManager with quorum recovery methods", () => {
+    const emailRecovery = asRecoveryConfig({ type: "email", email: "recovery@example.com" });
+    const phoneRecovery = asRecoveryConfig({ type: "phone", phone: "+15550000001" });
 
-    describe("when the only recovery method is a quorum", () => {
-        it("require() throws QuorumSignerNotSupportedError", () => {
-            expect(() => makeManager({ recoverySigners: [quorumRecovery()] }).require()).toThrow(
-                QuorumSignerNotSupportedError
-            );
+    describe("when every recovery method is a quorum", () => {
+        const QUORUM_ONLY_LISTS = [
+            ["one quorum", [createQuorumApiEntry()]],
+            ["two quorums", [createQuorumApiEntry(), createQuorumApiEntry()]],
+        ] as const;
+
+        it.each(QUORUM_ONLY_LISTS)(
+            "require() with %s throws QuorumSignerNotSupportedError",
+            (_name, recoverySigners) => {
+                expect(() => makeManager({ recoverySigners: [...recoverySigners] }).require()).toThrow(
+                    QuorumSignerNotSupportedError
+                );
+            }
+        );
+
+        it.each(QUORUM_ONLY_LISTS)(
+            "withRecoverySigner() with %s throws QuorumSignerNotSupportedError without running the operation",
+            async (_name, recoverySigners) => {
+                const operation = vi.fn();
+
+                await expect(
+                    makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(operation)
+                ).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+                expect(operation).not.toHaveBeenCalled();
+            }
+        );
+    });
+
+    describe("when a quorum comes before recovery methods that sign alone", () => {
+        it("defaultRecovery is the first of those methods", () => {
+            const manager = makeManager({ recoverySigners: [createQuorumApiEntry(), emailRecovery, phoneRecovery] });
+
+            expect(manager.defaultRecovery).toBe(emailRecovery);
         });
 
-        it("withRecoverySigner() throws QuorumSignerNotSupportedError without running the operation", async () => {
-            const operation = vi.fn();
+        it("asks to select a recovery method and offers only those methods", async () => {
+            const quorum = createQuorumApiEntry();
+            const manager = makeManager({ recoverySigners: [quorum, emailRecovery, phoneRecovery] });
 
-            await expect(
-                makeManager({ recoverySigners: [quorumRecovery()] }).withRecoverySigner(operation)
-            ).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
-            expect(operation).not.toHaveBeenCalled();
+            const error = await manager.withRecoverySigner(vi.fn()).catch((caught: unknown) => caught);
+
+            expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+            expect(String(error)).toContain("email:recovery@example.com");
+            expect(String(error)).not.toContain(quorum.locator);
         });
     });
 
     it("recoveryLocator() returns the quorum's own locator", () => {
         const quorum = createQuorumApiEntry();
 
-        expect(makeManager().recoveryLocator(asRecoveryConfig(quorum))).toBe(quorum.locator);
+        expect(makeManager().recoveryLocator(quorum)).toBe(quorum.locator);
     });
 
     describe("when a second quorum is added", () => {
         it("keeps both as separate recovery methods", () => {
-            const first = quorumRecovery();
-            const second = quorumRecovery();
+            const first = createQuorumApiEntry();
+            const second = createQuorumApiEntry();
             const manager = makeManager({ recoverySigners: [first] });
 
             manager.addRecoverySigner(second);

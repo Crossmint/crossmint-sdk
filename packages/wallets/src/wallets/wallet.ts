@@ -263,7 +263,7 @@ export class Wallet<C extends Chain> {
             this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
-                recoveryType: this.#signerManager.recovery.type,
+                recoveryType: this.#signerManager.defaultRecovery?.type,
                 signerCount: this.#initialSigners.length,
                 error,
             });

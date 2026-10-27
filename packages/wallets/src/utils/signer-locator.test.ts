@@ -71,6 +71,11 @@ describe("getSignerLocator", () => {
         const signer = { type: "device", locator: "device:0xPUBKEY" } as SignerConfigForChain<Chain>;
         expect(getSignerLocator(signer)).toBe("device:0xPUBKEY");
     });
+
+    it("returns a quorum's own locator", () => {
+        const quorum = createQuorumApiEntry();
+        expect(getSignerLocator(quorum)).toBe(quorum.locator);
+    });
 });
 
 describe("parseSignerLocator", () => {
@@ -86,13 +91,5 @@ describe("parseSignerLocator", () => {
             type: "api-key",
             value: "",
         });
-    });
-});
-
-describe("getSignerLocator with a quorum entry", () => {
-    it("returns the quorum's own locator", () => {
-        const quorum = createQuorumApiEntry();
-
-        expect(getSignerLocator(quorum as unknown as SignerConfigForChain<Chain>)).toBe(quorum.locator);
     });
 });

@@ -109,6 +109,7 @@ describe("mapApiSignerToSigner", () => {
             },
             { chain: "base-sepolia", statusFields: { chains: {} }, status: "success" },
             { chain: "stellar", statusFields: { transaction: { id: "tx-1", status: "pending" } }, status: "pending" },
+            { chain: "solana", statusFields: { transaction: { id: "tx-1", status: "pending" } }, status: "pending" },
             { chain: "solana", statusFields: {}, status: "success" },
         ] as const)("maps it on $chain with status $status", ({ chain, statusFields, status }) => {
             const quorum = createQuorumApiEntry();

@@ -1669,7 +1669,7 @@ describe("WalletFactory - recovery configuration rejected before any side effect
 
 describe("WalletFactory - quorum entries", () => {
     let walletFactory: WalletFactory;
-    let mockApiClient: MockedApiClient;
+    let mockApiClient: MockedApiClient & { getSigner: MockedFunction<ApiClient["getSigner"]> };
 
     const ADDRESSES = {
         evm: "0x1234567890123456789012345678901234567890",
@@ -1697,6 +1697,7 @@ describe("WalletFactory - quorum entries", () => {
             environment: APIKeyEnvironmentPrefix.STAGING,
             getWallet: vi.fn(),
             createWallet: vi.fn(),
+            getSigner: vi.fn(),
         };
         walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
     });
@@ -1723,16 +1724,23 @@ describe("WalletFactory - quorum entries", () => {
         });
     });
 
-    describe("when the response carries the quorum only in the deprecated adminSigner field", () => {
-        it("reads it as the wallet's only recovery method", async () => {
-            const quorum = createQuorumApiEntry();
-            mockApiClient.getWallet.mockResolvedValue(walletResponse("stellar", { adminSigner: quorum }));
+    describe.each([
+        { chain: "base-sepolia", chainType: "evm" },
+        { chain: "solana", chainType: "solana" },
+        { chain: "stellar", chainType: "stellar" },
+    ] as const)(
+        "when a $chain response carries the quorum only in the deprecated adminSigner field",
+        ({ chain, chainType }) => {
+            it("reads it as the wallet's only recovery method", async () => {
+                const quorum = createQuorumApiEntry();
+                mockApiClient.getWallet.mockResolvedValue(walletResponse(chainType, { adminSigner: quorum }));
 
-            const wallet = await walletFactory.getWallet({ chain: "stellar" });
+                const wallet = await walletFactory.getWallet({ chain });
 
-            expect(wallet.recoveryMethods).toEqual([quorum]);
-        });
-    });
+                expect(wallet.recoveryMethods).toEqual([quorum]);
+            });
+        }
+    );
 
     describe("when a quorum comes before an external-wallet recovery method the caller holds", () => {
         it("keeps the quorum as returned and makes the external wallet the default signer", async () => {
@@ -1754,6 +1762,9 @@ describe("WalletFactory - quorum entries", () => {
             expect(wallet.recoveryMethods[0]).toEqual(quorum);
             expect(wallet.recoveryMethods[1]).toEqual(expect.objectContaining({ onSign: expect.any(Function) }));
             expect(wallet.signer?.type).toBe("external-wallet");
+            // Assembled as a recovery (admin) signer: active without asking the API for its status.
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
     });
 

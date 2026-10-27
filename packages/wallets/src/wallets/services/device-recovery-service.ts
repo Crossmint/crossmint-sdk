@@ -7,14 +7,13 @@ import {
     type DeviceSignerConfig,
     type InternalSignerConfig,
     isApiSourcedServerSignerConfig,
-    isQuorumSigner,
     OtpValidationError,
     SignerAuthenticationError,
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError, quorumAuthorizerNotSupported } from "../../utils/errors";
+import { DeviceSignerNotSupportedError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -150,6 +149,9 @@ export class DeviceRecoveryService<C extends Chain> {
             }
             throw new Error("Device signer key storage is required to recover a device signer");
         }
+
+        // A recovery method that signs alone approves the device signer; check before creating a key.
+        this.#signerManager.requireDefaultRecovery();
 
         const existingSigners = await this.#signers();
         const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage, existingSigners);
@@ -321,10 +323,7 @@ export class DeviceRecoveryService<C extends Chain> {
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
-        const recovery = this.#signerManager.recovery;
-        if (isQuorumSigner(recovery)) {
-            throw quorumAuthorizerNotSupported(recovery.locator);
-        }
+        const recovery = this.#signerManager.requireDefaultRecovery();
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
@@ -411,9 +410,9 @@ export class DeviceRecoveryService<C extends Chain> {
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {
-        const recovery = this.#signerManager.recovery;
-        // A quorum cannot be assembled into a signer, like any recovery method the SDK cannot auto-assemble.
-        if (isQuorumSigner(recovery)) {
+        const recovery = this.#signerManager.defaultRecovery;
+        // Every recovery method is a quorum: none can be assembled into a signer.
+        if (recovery == null) {
             return;
         }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);

@@ -7,6 +7,7 @@ import type { ServerSignerResolver } from "../../signers/server/resolver";
 import { assembleSigner } from "../../signers";
 import {
     isApiSourcedServerSignerConfig,
+    isQuorumLocator,
     isQuorumSigner,
     type InternalSignerConfig,
     type QuorumSigner,
@@ -15,12 +16,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import {
-    InvalidRecoveryConfigError,
-    QuorumSignerNotSupportedError,
-    quorumAuthorizerNotSupported,
-    RecoveryMethodRequiredError,
-} from "../../utils/errors";
+import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
@@ -39,6 +35,9 @@ export type SignerManagerParams<C extends Chain> = {
     signers: () => Promise<WalletSigner[]>;
     signer?: SignerAdapter;
 };
+
+const USE_SIGNER_REQUIRED =
+    "No signer is set. This wallet requires calling wallet.useSigner() before signing operations.";
 
 /** A recovery method that signs on its own, as opposed to a quorum. */
 type SingleRecoverySigner<C extends Chain> = Exclude<RecoverySignerConfigForChain<C>, QuorumSigner>;
@@ -92,6 +91,17 @@ export class SignerManager<C extends Chain> {
     /** The first recovery method that signs on its own, or null when every recovery method is a quorum. */
     get defaultRecovery(): SingleRecoverySigner<C> | null {
         return this.#recoverySigners.find((entry): entry is SingleRecoverySigner<C> => !isQuorumSigner(entry)) ?? null;
+    }
+
+    /** The default recovery method; throws when every recovery method is a quorum, as none signs alone yet. */
+    requireDefaultRecovery(): SingleRecoverySigner<C> {
+        const recovery = this.defaultRecovery;
+        if (recovery == null) {
+            throw quorumSignerNotSupported(
+                this.#recoverySigners.filter(isQuorumSigner).map((quorum) => quorum.locator)
+            );
+        }
+        return recovery;
     }
 
     /** The recovery method explicitly selected via `useRecoveryMethod()`, if any. */
@@ -200,21 +210,17 @@ export class SignerManager<C extends Chain> {
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            const recovery = this.defaultRecovery;
-            if (recovery == null) {
-                throw new QuorumSignerNotSupportedError(
-                    "Every recovery method of this wallet is a quorum signer, and signing as a quorum is not yet supported by this SDK version"
-                );
+            if (this.defaultRecovery == null && this.#initialSigners.some((signer) => !isQuorumSigner(signer))) {
+                throw new Error(USE_SIGNER_REQUIRED);
             }
+            const recovery = this.requireDefaultRecovery();
             const descriptor = getSignerDescriptor<C>(recovery.type);
             const typeReason = descriptor.signerUnavailableReason();
             if (typeReason != null) {
                 throw new Error(typeReason);
             }
             if (!descriptor.canAutoAssemble(recovery, this.descriptorContext())) {
-                throw new Error(
-                    "No signer is set. This wallet requires calling wallet.useSigner() before signing operations."
-                );
+                throw new Error(USE_SIGNER_REQUIRED);
             }
             throw new Error(
                 "This wallet is read-only because no signer was provided. Operations that require signing (send, approve, addSigner, etc.) are not available."
@@ -237,6 +243,8 @@ export class SignerManager<C extends Chain> {
         if (selected != null) {
             return { recovery: selected, approver: this.recoveryLocator(selected) ?? undefined };
         }
+        // When every recovery method is a quorum, none of them can authorize the change.
+        this.requireDefaultRecovery();
         if (this.#recoverySigners.length === 1) {
             return { recovery: this.#recoverySigners[0], approver: undefined };
         }
@@ -244,7 +252,9 @@ export class SignerManager<C extends Chain> {
         const activeLocator = this.#activeSigner?.locator();
         const activeIndex = activeLocator == null ? -1 : recoveryLocators.indexOf(activeLocator);
         if (activeIndex === -1) {
-            const known = recoveryLocators.filter((locator): locator is SignerLocator => locator != null);
+            const known = recoveryLocators.filter(
+                (locator): locator is SignerLocator => locator != null && !isQuorumLocator(locator)
+            );
             const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
             throw new RecoveryMethodRequiredError(
                 activeLocator == null
@@ -271,7 +281,7 @@ export class SignerManager<C extends Chain> {
         const originalSigner = this.#activeSigner;
         const { recovery: authorizingRecovery, approver } = this.resolveAuthorizingRecovery();
         if (isQuorumSigner(authorizingRecovery)) {
-            throw quorumAuthorizerNotSupported(authorizingRecovery.locator);
+            throw quorumSignerNotSupported([authorizingRecovery.locator]);
         }
         const recovery = authorizingRecovery as SignerConfigForChain<C>;
         if (

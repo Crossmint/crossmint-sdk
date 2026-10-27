@@ -103,9 +103,9 @@ export class QuorumSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
-export function quorumAuthorizerNotSupported(quorumLocator: string): QuorumSignerNotSupportedError {
+export function quorumSignerNotSupported(quorumLocators: string[]): QuorumSignerNotSupportedError {
     return new QuorumSignerNotSupportedError(
-        `The recovery method ${quorumLocator} is a quorum signer, which cannot authorize this change in this SDK version`
+        `Signing as quorum signer ${quorumLocators.join(", ")} is not yet supported by this SDK version`
     );
 }
 
