@@ -11,7 +11,8 @@ permissions:
 jobs:
     e2e-regression-tests:
         name: Run E2E Tests (${{ matrix.browser }})
-        runs-on: ubuntu-latest
+        # Playwright 1.55 has no browser build for Ubuntu 26.04, which ubuntu-latest provisions since 2026-10-27.
+        runs-on: ubuntu-24.04
         timeout-minutes: 90
         permissions:
             contents: read

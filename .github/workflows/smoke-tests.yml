@@ -19,7 +19,8 @@ permissions:
 jobs:
     smoke-tests:
         name: Run Smoke Tests
-        runs-on: ubuntu-latest
+        # Playwright 1.55 has no browser build for Ubuntu 26.04, which ubuntu-latest provisions since 2026-10-27.
+        runs-on: ubuntu-24.04
         timeout-minutes: 10
 
         steps:
