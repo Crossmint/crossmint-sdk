@@ -1,4 +1,5 @@
 import {
+    isQuorumSigner,
     requireQuorumLocator,
     requireQuorumMemberLocator,
     type QuorumLocator,
@@ -21,7 +22,7 @@ export type PlannedMemberApproval = {
 };
 
 export function isQuorumPendingApproval(entry: PendingApproval): entry is QuorumPendingApproval {
-    return entry.signer.type === "quorum";
+    return isQuorumSigner(entry.signer);
 }
 
 export function splitPendingApprovals(pending: PendingApproval[]): {

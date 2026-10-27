@@ -42,7 +42,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    QuorumSignerNotSupportedError,
     RecoveryNotSupportedOnChainError,
     SignatureFailedError,
     SignatureNotAvailableError,
@@ -1452,11 +1451,7 @@ export class Wallet<C extends Chain> {
         pendingApprovals: P[]
     ): Extract<P, { message: string }>[] {
         return pendingApprovals.map((pendingApproval) => {
-            if (pendingApproval.signer.type === "quorum") {
-                throw new QuorumSignerNotSupportedError(
-                    `This wallet requires approval from a quorum signer (${pendingApproval.signer.locator}), which is not yet supported by this SDK version`
-                );
-            }
+            throwIfQuorumSigner(pendingApproval.signer);
             return pendingApproval as Extract<P, { message: string }>;
         });
     }

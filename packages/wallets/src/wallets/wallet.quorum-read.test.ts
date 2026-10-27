@@ -3,11 +3,14 @@ import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
 import type { RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
 import { QuorumSignerNotSupportedError } from "../utils/errors";
+import { getSignerLocator } from "../utils/signer-locator";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
     createMockWallet,
     createQuorumApiEntry,
+    createQuorumPendingApproval,
+    createMockSigner,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -140,6 +143,29 @@ describe("Wallet - quorum entries", () => {
             await expect(wallet.useRecoveryMethod({ type: "email", email: "outsider@example.com" })).rejects.toThrow(
                 quorum.locator
             );
+        });
+    });
+
+    describe("approve() when a quorum approval is pending", () => {
+        it("throws QuorumSignerNotSupportedError naming the quorum, before any approval is sent", async () => {
+            const wallet = await createMockWallet("base-sepolia", mockApiClient);
+            const signer = createMockSigner("external-wallet", "base-sepolia");
+            vi.spyOn(wallet, "signers").mockResolvedValue([
+                { ...signer, locator: getSignerLocator(signer), status: "success" } as never,
+            ]);
+            await wallet.useSigner(signer);
+            const quorum = createQuorumApiEntry();
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "txn-1",
+                status: "awaiting-approval",
+                approvals: { pending: [createQuorumPendingApproval({ quorum })], submitted: [] },
+            } as never);
+
+            const approval = wallet.approve({ transactionId: "txn-1" });
+
+            await expect(approval).rejects.toThrow(QuorumSignerNotSupportedError);
+            await expect(approval).rejects.toThrow(quorum.locator);
+            expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
         });
     });
 
