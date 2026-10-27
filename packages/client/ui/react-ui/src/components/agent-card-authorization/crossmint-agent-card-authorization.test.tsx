@@ -20,8 +20,8 @@ const stubs = vi.hoisted(() => ({
 // Like the real iframe wrapper, the stub keeps the props of its first render for the
 // callbacks (it subscribes once), so a stale closure in the hook would surface here. The
 // rendered jwt attribute follows the live prop, like the real iframe src would.
-vi.mock("../card-management", () => ({
-    CrossmintPaymentMethodManagement: (props: Record<string, unknown>) => {
+vi.mock("../card-management/CrossmintPaymentMethodManagementIFrame", () => ({
+    CrossmintPaymentMethodManagementIFrame: (props: Record<string, unknown>) => {
         const firstProps = useRef(props);
         useEffect(() => {
             stubs.pmm.props = firstProps.current as Record<string, (value: unknown) => void>;

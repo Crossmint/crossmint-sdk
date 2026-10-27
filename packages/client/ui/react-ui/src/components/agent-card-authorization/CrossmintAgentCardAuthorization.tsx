@@ -1,6 +1,6 @@
 import type { CrossmintAgentCardAuthorizationProps } from "@crossmint/client-sdk-base";
 
-import { CrossmintPaymentMethodManagement } from "../card-management";
+import { CrossmintPaymentMethodManagementIFrame } from "../card-management/CrossmintPaymentMethodManagementIFrame";
 import { CrossmintCvcRecollection, OrderIntentVerification } from "../order-intent";
 import { useAgentCardAuthorization } from "./useAgentCardAuthorization";
 
@@ -47,13 +47,15 @@ export function CrossmintAgentCardAuthorization(props: CrossmintAgentCardAuthori
         );
     }
 
+    // This step owns no button of its own: the iframe's built-in one submits the form.
     return (
-        <CrossmintPaymentMethodManagement
+        <CrossmintPaymentMethodManagementIFrame
             jwt={jwt}
             allowedModes={props.allowedModes ?? ["existing", "new"]}
             allowedPaymentMethodTypes={["card"]}
             appearance={props.appearance?.paymentMethodManagement}
             onPaymentMethodSelected={onPaymentMethodSelected}
+            hideSubmitButton={false}
         />
     );
 }

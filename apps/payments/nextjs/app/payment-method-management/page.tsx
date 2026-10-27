@@ -22,7 +22,6 @@ export default function PaymentMethodManagementPage() {
 function PaymentMethodManagementWrapper() {
     const { jwt } = useCrossmintAuth();
     const [submitting, setSubmitting] = useState(false);
-    const [ownButton, setOwnButton] = useState(false);
     const [result, setResult] = useState<PaymentMethodSubmitResult | null>(null);
     const pmm = useRef<CrossmintPaymentMethodManagementRef>(null);
 
@@ -42,27 +41,20 @@ function PaymentMethodManagementWrapper() {
 
     return (
         <div style={{ maxWidth: 480 }}>
-            <label style={{ display: "block", marginBottom: 16 }}>
-                <input type="checkbox" checked={ownButton} onChange={(e) => setOwnButton(e.target.checked)} /> Use my
-                own submit button
-            </label>
             <CrossmintPaymentMethodManagement
                 ref={pmm}
                 jwt={jwt}
                 allowedModes={["new", "existing"]}
-                hideSubmitButton={ownButton}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
             />
-            {ownButton && (
-                <button
-                    type="button"
-                    style={{ marginTop: 16, padding: "12px 20px" }}
-                    onClick={submitPaymentMethod}
-                    disabled={submitting}
-                >
-                    {submitting ? "Saving…" : "My own submit button"}
-                </button>
-            )}
+            <button
+                type="button"
+                style={{ marginTop: 16, padding: "12px 20px" }}
+                onClick={submitPaymentMethod}
+                disabled={submitting}
+            >
+                {submitting ? "Saving…" : "My own submit button"}
+            </button>
             {result != null && <pre style={{ marginTop: 16 }}>{JSON.stringify(result, null, 2)}</pre>}
         </div>
     );
