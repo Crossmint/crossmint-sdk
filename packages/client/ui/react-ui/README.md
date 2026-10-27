@@ -129,7 +129,7 @@ When `createOnLogin` is set on `CrossmintWalletProvider`, a wallet is automatica
 >
 ```
 
-`recoveryMethods` accepts a list of methods on every chain, each able to recover the wallet on its own:
+On Solana and Stellar, `recoveryMethods` accepts a list of methods, each able to recover the wallet on its own. EVM chains take a single recovery method with `recovery`:
 
 ```tsx
 <CrossmintWalletProvider
