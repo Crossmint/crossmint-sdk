@@ -13,6 +13,9 @@ on:
             - main
             - beta
 
+permissions:
+    contents: read
+
 jobs:
     build-and-test:
         name: build & test
