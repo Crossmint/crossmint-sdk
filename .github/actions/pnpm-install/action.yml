@@ -1,4 +1,8 @@
 name: "Setup Node.js, PNPM, and install dependencies"
+description: >
+    Logs in to Chainguard Libraries with the job's GitHub OIDC identity, writes the registry
+    credential to the user-level npmrc, installs pnpm and Node.js, then runs
+    `pnpm install --frozen-lockfile`. The calling job needs `id-token: write`.
 
 inputs:
     node-version:
@@ -16,6 +20,9 @@ inputs:
     install-args:
         description: "Additional args supplied to 'pnpm install'"
         required: false
+    chainguard-identity:
+        description: "Chainguard identity (org/id) whose trust policy accepts this repository's OIDC token"
+        required: true
 
 runs:
     using: "composite"
@@ -31,6 +38,43 @@ runs:
 
         - uses: actions/checkout@v4
 
+        # Installs chainctl only: without `identity` the action skips its own login, which fails
+        # now and then on Chainguard's side under CI fan-out. The login below retries.
+        - uses: chainguard-dev/setup-chainctl@2cddd35a2f120d9973e58094dc6878c93cf58c28 # v0.5.1
+
+        # The token leaves this step only inside the user-level npmrc, never through $GITHUB_ENV,
+        # so later steps and package scripts do not inherit it.
+        - name: Authenticate with Chainguard and write the registry credential
+          shell: bash
+          env:
+              CHAINGUARD_IDENTITY: ${{ inputs.chainguard-identity }}
+          run: |
+              set -euo pipefail
+              if [[ -z "$CHAINGUARD_IDENTITY" ]]; then
+                echo "::error::chainguard-identity is empty: set the CHAINGUARD_IDENTITY repository variable"
+                exit 1
+              fi
+              # The per-audience login is required: without it `chainctl auth token` re-federates
+              # with a context the trust policy rejects.
+              for attempt in 1 2 3 4; do
+                if chainctl auth login --identity "$CHAINGUARD_IDENTITY" \
+                  && chainctl auth login --identity "$CHAINGUARD_IDENTITY" --audience libraries.cgr.dev \
+                  && CHAINGUARD_TOKEN="$(chainctl auth token --audience=libraries.cgr.dev)"; then
+                  echo "::add-mask::$CHAINGUARD_TOKEN"
+                  CHAINGUARD_TOKEN="$CHAINGUARD_TOKEN" ./scripts/setup-pnpm-auth.sh
+                  exit 0
+                fi
+                if [[ "$attempt" -eq 4 ]]; then
+                  echo "::error::Chainguard authentication failed after ${attempt} attempts"
+                  exit 1
+                fi
+                delay=$(( attempt * 3 + RANDOM % 5 ))
+                echo "::warning::Chainguard auth attempt ${attempt} failed; retrying in ${delay}s"
+                sleep "$delay"
+              done
+
+        # After the credential: the self-installer copies the repo .npmrc and downloads pnpm
+        # from the registry it names.
         - uses: pnpm/action-setup@v4
           with:
               version: ${{ inputs.pnpm-version }}
@@ -60,7 +104,23 @@ runs:
               restore-keys: |
                   ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
 
+        - name: Check pnpm-lock.yaml resolves from Chainguard
+          shell: bash
+          if: inputs.skip-install == 'false'
+          run: node scripts/check-lockfile-registry.mjs
+
         - name: Install dependencies
           shell: bash
           if: inputs.skip-install == 'false'
           run: pnpm install --frozen-lockfile --prefer-offline ${{ inputs.install-args }}
+
+        # No later step installs, so the credential does not stay on the runner for them.
+        - name: Remove the registry credential
+          shell: bash
+          if: inputs.skip-install == 'false'
+          run: |
+              set -euo pipefail
+              NPMRC="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+              [[ -f "$NPMRC" ]] || exit 0
+              grep -v '^//libraries.cgr.dev/:_auth' "$NPMRC" > "$NPMRC.tmp" || true
+              mv "$NPMRC.tmp" "$NPMRC"

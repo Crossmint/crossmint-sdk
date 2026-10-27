@@ -1,0 +1,73 @@
+// Every pnpm-lock.yaml entry must name the tarball of its own key on the registry .npmrc
+// routes it to. Runs before each CI install, so a lockfile resolved against the wrong
+// registry, or rewritten by a tool that misassigned a URL, never reaches `pnpm install`.
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const NPMJS = "https://registry.npmjs.org/";
+
+// TODO(WAL-13249): Chainguard withheld these versions on 2026-10-27, so they pin npmjs.org.
+const NPMJS_PINNED = new Set([
+    "bitcoinjs-lib@6.1.10",
+    "@dynamic-labs/wallet-book@4.100.5",
+    "@noxcturnal/noxcturnal-linux-arm64-gnu@0.1.2",
+    "@noxcturnal/noxcturnal-win32-arm64-msvc@0.1.2",
+    "@noxcturnal/noxcturnal-win32-x64-msvc@0.1.2",
+]);
+
+const routing = { default: NPMJS, scopes: {} };
+for (const line of readFileSync(join(root, ".npmrc"), "utf8").split("\n")) {
+    const match = /^(@[^:]+:)?registry=(\S+)$/.exec(line.trim());
+    if (match == null) {
+        continue;
+    }
+    const registry = match[2].endsWith("/") ? match[2] : `${match[2]}/`;
+    if (match[1] == null) {
+        routing.default = registry;
+    } else {
+        routing.scopes[match[1].slice(0, -1)] = registry;
+    }
+}
+
+const lock = readFileSync(join(root, "pnpm-lock.yaml"), "utf8");
+const section = lock.split("\npackages:\n")[1]?.split("\nsnapshots:\n")[0];
+if (section == null) {
+    console.error("pnpm-lock.yaml has no packages section");
+    process.exit(1);
+}
+const entries = [...section.matchAll(/^ {2}'?([^'\n]+?)'?:\n {4}resolution: \{([^}]*)\}/gm)];
+const problems = [];
+for (const [, key, resolution] of entries) {
+    const at = key.lastIndexOf("@");
+    const name = key.slice(0, at);
+    const version = key.slice(at + 1);
+    const tarball = /tarball: '?([^',}]+)/.exec(resolution)?.[1];
+    if (tarball == null) {
+        problems.push(`${key}: no tarball URL`);
+        continue;
+    }
+    if (!tarball.endsWith(`/${name}/-/${name.split("/").pop()}-${version}.tgz`)) {
+        problems.push(`${key}: tarball is ${tarball}`);
+        continue;
+    }
+    const scope = name.startsWith("@") ? name.split("/")[0] : null;
+    const expected = NPMJS_PINNED.has(key) ? NPMJS : (scope && routing.scopes[scope]) || routing.default;
+    if (new URL(tarball).origin !== new URL(expected).origin) {
+        problems.push(`${key}: ${tarball} is not on ${expected}`);
+    }
+}
+if (entries.length === 0) {
+    problems.push("no registry entries found: the lockfile format may have changed");
+}
+if (problems.length > 0) {
+    console.error(
+        `${problems.length} of ${entries.length} pnpm-lock.yaml entries do not resolve from their routed registry:`
+    );
+    for (const problem of problems.slice(0, 20)) {
+        console.error(`  ${problem}`);
+    }
+    process.exit(1);
+}
+console.log(`All ${entries.length} pnpm-lock.yaml entries resolve from their routed registry`);

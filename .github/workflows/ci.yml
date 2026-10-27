@@ -17,12 +17,17 @@ jobs:
     build-and-test:
         name: build & test
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             # Serial build to avoid OOM on 7GB runner (Next.js apps are memory-heavy)
             - name: Build all
@@ -42,12 +47,17 @@ jobs:
     lint:
         name: lint
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Check for lint errors
               run: pnpm lint
@@ -56,6 +66,9 @@ jobs:
     integration-tests:
         name: integration tests (advisory)
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         continue-on-error: true
         steps:
             - name: Checkout
@@ -63,6 +76,8 @@ jobs:
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build all
               env:
