@@ -233,6 +233,13 @@ describe("SignerManager", () => {
             "email:second@example.com",
         ],
         [
+            "several recovery signers and the primary one active with its EVM address in another case",
+            multiRecovery,
+            makeSigner("external-wallet", "external-wallet:0xPRIMARY"),
+            primaryRecovery,
+            "external-wallet:0xPrimary",
+        ],
+        [
             "several recovery signers and the api-sourced server one active",
             multiRecovery,
             makeSigner("server", "server:0xServerRecovery"),
