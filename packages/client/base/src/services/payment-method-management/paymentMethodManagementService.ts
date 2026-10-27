@@ -22,10 +22,16 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         // keys when empty so the iframe defaults apply (`allowedPaymentMethodTypes`
         // → `["card"]`, `allowedModes` → `["new"]`).
         const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
+        // `children` is the host's own button, rendered outside the iframe; a React
+        // element in the URL would just stringify into it.
+        const { children: _children, ...serializableRest } = rest as typeof rest & { children?: unknown };
         const serializableProps = {
-            ...rest,
+            ...serializableRest,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
             ...(allowedModes?.length ? { allowedModes } : {}),
+            // `footer=host` asks new iframes to hide their "Powered by Crossmint" so the
+            // SDK draws it below `children`. Old iframes ignore it and keep theirs.
+            ...(rest.hideSubmitButton ? { footer: "host" } : {}),
         };
 
         appendObjectToQueryParams(queryParams, serializableProps);

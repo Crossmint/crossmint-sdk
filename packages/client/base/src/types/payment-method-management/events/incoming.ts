@@ -26,6 +26,9 @@ export const paymentMethodManagementIncomingEvents = {
     "ui:height.changed": z.object({
         height: z.number(),
     }),
+    // `footer=host`: the iframe hid its "Powered by Crossmint", so the host draws it
+    // below its own button. Only then is it safe to render one outside the iframe.
+    "ui:poweredBy.delegated": z.object({}),
     "payment-method:selected": z.any(),
     "payment-method:result": z.object({
         requestId: z.string().min(1),
