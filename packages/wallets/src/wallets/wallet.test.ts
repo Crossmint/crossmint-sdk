@@ -9,7 +9,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    RecoveryNotSupportedOnChainError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
     WalletNotAvailableError,
@@ -1635,11 +1634,19 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
-            );
-            expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+        it("registers the recovery method on EVM with the wallet's chain and reads the transaction id from tx", async () => {
+            const result = await evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: "external-wallet:0x456",
+                approver: "api-key",
+                chain: "base-sepolia",
+            });
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(evmWallet.recoveryMethods).toEqual([
+                { type: "api-key" },
+                { type: "external-wallet", address: "0x456" },
+            ]);
         });
 
         it("throws on API failure", async () => {
@@ -1693,11 +1700,15 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
+        it("removes the recovery method on EVM with the wallet's chain", async () => {
+            const result = await evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:0x456",
+                { approver: "api-key", chain: "base-sepolia" }
             );
-            expect(mockApiClient.removeRecoveryMethod).not.toHaveBeenCalled();
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
         });
 
         it("throws on API failure", async () => {
