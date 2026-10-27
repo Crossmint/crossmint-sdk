@@ -98,6 +98,7 @@ export type {
     RecoverySignerConfigForChain,
     QuorumLocator,
     QuorumMemberType,
+    QuorumMember,
     QuorumMemberConfig,
     QuorumSignerConfig,
     QuorumSigner,

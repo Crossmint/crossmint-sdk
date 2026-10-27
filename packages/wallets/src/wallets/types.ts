@@ -211,8 +211,8 @@ export type QuorumApprovalProgress = {
     quorum: QuorumLocator;
     threshold: number;
     remaining: number;
-    pending: SignerLocator[];
-    submitted: SignerLocator[];
+    pending: Array<Exclude<SignerLocator, QuorumLocator>>;
+    submitted: Array<Exclude<SignerLocator, QuorumLocator>>;
 };
 
 // Approvals

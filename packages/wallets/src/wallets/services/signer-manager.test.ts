@@ -124,6 +124,11 @@ describe("SignerManager", () => {
             { recoverySigners: [createQuorumApiEntry()], initialSigners: [apiKeyConfig] },
             /requires calling wallet\.useSigner\(\)/,
         ],
+        [
+            "quorum-only recovery and one delegated quorum",
+            { recoverySigners: [createQuorumApiEntry()], initialSigners: [createQuorumApiEntry()] },
+            /quorum signer/,
+        ],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(() => makeManager(overrides as unknown as Overrides).require(), branchKeyword);
     });
@@ -451,11 +456,20 @@ describe("SignerManager with quorum recovery methods", () => {
         ] as const;
 
         it.each(QUORUM_ONLY_LISTS)(
-            "require() with %s throws QuorumSignerNotSupportedError",
+            "require() with %s throws QuorumSignerNotSupportedError naming every quorum",
             (_name, recoverySigners) => {
-                expect(() => makeManager({ recoverySigners: [...recoverySigners] }).require()).toThrow(
-                    QuorumSignerNotSupportedError
-                );
+                const error = (() => {
+                    try {
+                        makeManager({ recoverySigners: [...recoverySigners] }).require();
+                    } catch (caught) {
+                        return caught;
+                    }
+                })();
+
+                expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
+                for (const quorum of recoverySigners) {
+                    expect(String(error)).toContain(quorum.locator);
+                }
             }
         );
 
@@ -477,6 +491,15 @@ describe("SignerManager with quorum recovery methods", () => {
             const manager = makeManager({ recoverySigners: [createQuorumApiEntry(), emailRecovery, phoneRecovery] });
 
             expect(manager.defaultRecovery).toBe(emailRecovery);
+        });
+
+        it("authorizes with the one method that signs alone, naming it as approver", async () => {
+            const operation = vi.fn().mockResolvedValue("done");
+            const manager = makeManager({ recoverySigners: [createQuorumApiEntry(), emailRecovery] });
+
+            await manager.withRecoverySigner(operation);
+
+            expect(operation).toHaveBeenCalledWith("email:recovery@example.com");
         });
 
         it("asks to select a recovery method and offers only those methods", async () => {

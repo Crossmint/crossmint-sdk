@@ -120,6 +120,12 @@ describe("mapApiSignerToSigner", () => {
             });
         });
 
+        it("rejects a quorum whose locator is not a quorum locator", () => {
+            const apiSigner = { ...createQuorumApiEntry(), locator: "quorum-x", chains: {} } as unknown as APISigner;
+
+            expect(() => mapApiSignerToSigner(apiSigner, "base-sepolia")).toThrow(/Malformed quorum locator/);
+        });
+
         it("returns null for an EVM quorum installed only on another chain", () => {
             const quorum = createQuorumApiEntry();
             const apiSigner = {

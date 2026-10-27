@@ -243,10 +243,13 @@ export class SignerManager<C extends Chain> {
         if (selected != null) {
             return { recovery: selected, approver: this.recoveryLocator(selected) ?? undefined };
         }
-        // When every recovery method is a quorum, none of them can authorize the change.
-        this.requireDefaultRecovery();
+        const defaultRecovery = this.requireDefaultRecovery();
         if (this.#recoverySigners.length === 1) {
-            return { recovery: this.#recoverySigners[0], approver: undefined };
+            return { recovery: defaultRecovery, approver: undefined };
+        }
+        // Quorums cannot authorize yet, so a lone recovery method that signs alone needs no selection.
+        if (this.#recoverySigners.filter((recovery) => !isQuorumSigner(recovery)).length === 1) {
+            return { recovery: defaultRecovery, approver: this.recoveryLocator(defaultRecovery) ?? undefined };
         }
         const recoveryLocators = this.#recoverySigners.map((recovery) => this.recoveryLocator(recovery));
         const activeLocator = this.#activeSigner?.locator();
