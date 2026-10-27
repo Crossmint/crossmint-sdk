@@ -13,10 +13,14 @@ on:
             - main
             - beta
 
+permissions: {}
+
 jobs:
     build-and-test:
         name: build & test
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -42,6 +46,8 @@ jobs:
     lint:
         name: lint
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -56,6 +62,8 @@ jobs:
     integration-tests:
         name: integration tests (advisory)
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         continue-on-error: true
         steps:
             - name: Checkout
