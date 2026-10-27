@@ -4,11 +4,13 @@ import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
 import type {
+    QuorumMember,
     QuorumSigner,
     RecoverySignerConfigForChain,
     SignerConfigForChain,
     SignerLocator,
 } from "../../signers/types";
+import type { PendingApproval } from "../types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -136,6 +138,35 @@ export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) =>
         members,
     } satisfies QuorumSigner;
 };
+
+// A quorum entry of `approvals.pending` as the wallets API returns it. Each member gets its own random message.
+export const createQuorumPendingApproval = ({
+    quorum,
+    pending = quorum.members,
+    submitted = [],
+    remaining = quorum.threshold - submitted.length,
+}: {
+    quorum: QuorumSigner;
+    pending?: QuorumMember[];
+    submitted?: QuorumMember[];
+    remaining?: number;
+}) =>
+    ({
+        signer: { type: "quorum", locator: quorum.locator },
+        quorumApprovals: {
+            threshold: quorum.threshold,
+            remaining,
+            pending: pending.map((member) => ({ member, message: randomHexMessage() })),
+            submitted: submitted.map((member) => ({
+                member,
+                message: randomHexMessage(),
+                signature: randomHexMessage(),
+                submittedAt: new Date().toISOString(),
+            })),
+        },
+    }) satisfies PendingApproval;
+
+const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
 
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
