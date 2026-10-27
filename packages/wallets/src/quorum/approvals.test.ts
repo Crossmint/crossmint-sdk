@@ -3,6 +3,17 @@ import type { PendingApproval } from "../wallets/types";
 import { createQuorumApiEntry, createQuorumPendingApproval } from "../wallets/__tests__/test-helpers";
 import { awaitsQuorumOnly, planMemberApprovals, splitPendingApprovals, toQuorumProgress } from "./approvals";
 
+const MALFORMED_QUORUM_LOCATOR = "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21";
+
+// A quorum entry whose locator lacks the `quorum:` prefix.
+const malformedQuorumEntry = (
+    quorum: ReturnType<typeof createQuorumApiEntry>,
+    options: { remaining?: number } = {}
+) => ({
+    ...createQuorumPendingApproval({ quorum, ...options }),
+    signer: { type: "quorum" as const, locator: MALFORMED_QUORUM_LOCATOR },
+});
+
 const flatApproval = (): PendingApproval => ({
     signer: { type: "api-key", address: "0x1234567890123456789012345678901234567890", locator: "api-key" },
     message: "0x01",
@@ -38,12 +49,9 @@ describe("toQuorumProgress", () => {
     });
 
     it("throws for a malformed quorum locator", () => {
-        const entry = {
-            ...createQuorumPendingApproval({ quorum: createQuorumApiEntry() }),
-            signer: { type: "quorum" as const, locator: "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21" },
-        };
+        const entry = malformedQuorumEntry(createQuorumApiEntry());
 
-        expect(() => toQuorumProgress(entry)).toThrow("Malformed quorum locator: 3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21");
+        expect(() => toQuorumProgress(entry)).toThrow(`Malformed quorum locator: ${MALFORMED_QUORUM_LOCATOR}`);
     });
 
     it.each(["pending", "submitted"] as const)(
@@ -205,13 +213,8 @@ describe("planMemberApprovals", () => {
     });
 
     describe("when the quorum locator is malformed", () => {
-        const malformedEntry = (quorum: ReturnType<typeof createQuorumApiEntry>) => ({
-            ...createQuorumPendingApproval({ quorum }),
-            signer: { type: "quorum" as const, locator: "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21" },
-        });
-
         it("skips the quorum when this client holds none of its members", () => {
-            const entry = malformedEntry(createQuorumApiEntry());
+            const entry = malformedQuorumEntry(createQuorumApiEntry());
 
             expect(planMemberApprovals([entry], ["email:outsider@example.com"], "remaining")).toEqual([]);
         });
@@ -220,8 +223,15 @@ describe("planMemberApprovals", () => {
             const quorum = createQuorumApiEntry();
 
             expect(() =>
-                planMemberApprovals([malformedEntry(quorum)], [quorum.members[0].locator], "remaining")
-            ).toThrow("Malformed quorum locator: 3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21");
+                planMemberApprovals([malformedQuorumEntry(quorum)], [quorum.members[0].locator], "remaining")
+            ).toThrow(`Malformed quorum locator: ${MALFORMED_QUORUM_LOCATOR}`);
+        });
+
+        it("skips a satisfied quorum without reading its locator, even when a member is held", () => {
+            const quorum = createQuorumApiEntry();
+            const entry = malformedQuorumEntry(quorum, { remaining: 0 });
+
+            expect(planMemberApprovals([entry], [quorum.members[0].locator], "remaining")).toEqual([]);
         });
     });
 
