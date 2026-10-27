@@ -4,8 +4,6 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-pnpmfileChecksum: rsgab7l54uhmfefhksvzzqhkb4
-
 overrides:
   axios@0: 0.30.0
   axios@1: 1.20.0
