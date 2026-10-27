@@ -25,7 +25,7 @@ jobs:
         name: Build & Test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
@@ -45,13 +45,13 @@ jobs:
             pull-requests: write
             id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
 
             - name: Setup Node.js 24 for OIDC trusted publishing
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
                   node-version: "24"
                   registry-url: "https://registry.npmjs.org"
@@ -60,7 +60,7 @@ jobs:
               run: npm install -g npm@11.6.2
 
             - name: Create Release Pull Request or Publish
-              uses: changesets/action@v1.5.3
+              uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
               with:
                   commit: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
                   title: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
