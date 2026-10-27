@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const NPMJS = "https://registry.npmjs.org/";
 
-// TODO(WAL-13249): Chainguard withheld these versions on 2026-10-27, so they pin npmjs.org.
+// TODO(WAL-13249): Chainguard withheld these versions on 2026-10-27, so they pin npmjs.org. The
+// follow-up should first evaluate whether these packages are needed at all.
 const NPMJS_PINNED = new Set([
     "bitcoinjs-lib@6.1.10",
     "@dynamic-labs/wallet-book@4.100.5",
