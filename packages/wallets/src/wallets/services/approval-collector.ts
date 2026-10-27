@@ -33,7 +33,9 @@ export async function collectApprovals(pending: PendingApproval[], signing: Appr
 }
 
 async function signFlatEntry({ signer: { locator }, message }: FlatPendingApproval, signing: ApprovalSigning) {
-    const signer = signing.held.find((held) => held.locator() === locator) ?? (await signing.resolveMissing(locator));
+    const signer =
+        signing.held.find((held) => isSameSignerLocator(held.locator(), locator)) ??
+        (await signing.resolveMissing(locator));
     return await signAs(signer, locator, message, signing);
 }
 

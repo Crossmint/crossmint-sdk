@@ -51,6 +51,20 @@ describe("collectApprovals", () => {
             });
         });
 
+        describe("when a held EVM key's address differs only in case", () => {
+            it("signs with that key and approves as the pending spelling", async () => {
+                const pendingLocator = "external-wallet:0xabcdef0123456789abcdef0123456789abcdef01";
+                const heldKey = heldSigner("external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
+                const signing = createSigning({ held: [heldKey] });
+
+                const approvals = await collectApprovals([flatApproval(pendingLocator)], signing);
+
+                expect(signing.sign).toHaveBeenCalledWith(heldKey, "0xflat");
+                expect(approvals.map(({ signer }) => signer)).toEqual([pendingLocator]);
+                expect(signing.resolveMissing).not.toHaveBeenCalled();
+            });
+        });
+
         describe("when no held signer has the entry's locator", () => {
             it("signs with the signer the device key store resolves", async () => {
                 const signing = createSigning({ resolveMissing: vi.fn(async () => heldSigner(DEVICE_LOCATOR)) });
