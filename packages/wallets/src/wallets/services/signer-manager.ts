@@ -205,7 +205,10 @@ export class SignerManager<C extends Chain> {
 
     require(): SignerAdapter {
         if (this.#activeSigner == null) {
-            if (this.#initialSigners.length > 1) {
+            if (
+                this.#initialSigners.length > 1 &&
+                (this.defaultRecovery != null || this.#initialSigners.some((signer) => !isQuorumSigner(signer)))
+            ) {
                 throw new Error(
                     "No signer is set. This wallet has multiple signers configured. " +
                         "Call wallet.useSigner() to select which signer to use before signing operations."

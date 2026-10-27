@@ -129,6 +129,22 @@ describe("SignerManager", () => {
             { recoverySigners: [createQuorumApiEntry()], initialSigners: [createQuorumApiEntry()] },
             /quorum signer/,
         ],
+        [
+            "two delegated quorums and quorum-only recovery",
+            {
+                recoverySigners: [createQuorumApiEntry()],
+                initialSigners: [createQuorumApiEntry(), createQuorumApiEntry()],
+            },
+            /quorum signer/,
+        ],
+        [
+            "two delegated quorums and a recovery signer that signs alone",
+            {
+                recoverySigners: [asRecoveryConfig({ type: "email", email: "recovery@example.com" })],
+                initialSigners: [createQuorumApiEntry(), createQuorumApiEntry()],
+            },
+            /multiple signers configured/,
+        ],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(() => makeManager(overrides as unknown as Overrides).require(), branchKeyword);
     });
