@@ -1,20 +1,9 @@
 #!/usr/bin/env bash
-# Store the Chainguard registry credential in the user-level npmrc, which pnpm reads.
-#
-# The repo's .npmrc only routes scopes to registries, so no token ever sits in the repo.
-# The entry covers the whole libraries.cgr.dev host because packages Chainguard has not
-# rebuilt yet are served from /javascript-upstream/.
-#
-# Usage: scripts/setup-pnpm-auth.sh, with one of:
-#   CHAINGUARD_TOKEN                      chainctl auth token --audience=libraries.cgr.dev
-#   CHAINGUARD_JAVASCRIPT_IDENTITY_ID and CHAINGUARD_JAVASCRIPT_TOKEN
-#                                         a pull token, where chainctl cannot log in
 set -euo pipefail
 
 NPMRC="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
 mkdir -p "$(dirname "$NPMRC")"
 
-# Plain shell rather than `npm config set`, so this works where npm itself is unavailable.
 drop_auth() {
     local key=$1 tmp="$NPMRC.tmp.$$"
     touch "$NPMRC"
@@ -28,8 +17,6 @@ set_auth() {
     printf '%s=%s\n' "$1" "$2" >>"$NPMRC"
 }
 
-# Only one credential shape may be left in the file: pnpm prefers _authToken, so a stale
-# one would silently shadow a valid _auth.
 if [ -n "${CHAINGUARD_TOKEN:-}" ]; then
     drop_auth '//libraries.cgr.dev/:_auth'
     set_auth '//libraries.cgr.dev/:_authToken' "$CHAINGUARD_TOKEN"
@@ -46,8 +33,6 @@ else
     exit 1
 fi
 
-# A rejected credential would otherwise surface as one 401 per package once pnpm runs.
-# Only a definite rejection fails here; a network error is left for pnpm to report.
 [ "${SKIP_CHAINGUARD_TOKEN_CHECK:-}" = 1 ] && exit 0
 status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 -H "Authorization: $header" \
     https://libraries.cgr.dev/javascript/lodash 2>/dev/null || echo 000)"

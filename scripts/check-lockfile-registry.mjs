@@ -1,6 +1,3 @@
-// Every pnpm-lock.yaml entry must name the tarball of its own key on the registry .npmrc
-// routes it to. Runs before each CI install, so a lockfile resolved against the wrong
-// registry, or rewritten by a tool that misassigned a URL, never reaches `pnpm install`.
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,8 +35,6 @@ if (section == null) {
     console.error("pnpm-lock.yaml has no packages section");
     process.exit(1);
 }
-// pnpm writes every package as a key line followed by a one-line `resolution` mapping. A key
-// without one is reported, not skipped: an entry this check cannot read could point anywhere.
 const lines = section.split("\n");
 const entries = [];
 const problems = [];
