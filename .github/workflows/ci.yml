@@ -13,6 +13,8 @@ on:
             - main
             - beta
 
+permissions: {}
+
 jobs:
     build-and-test:
         name: build & test
