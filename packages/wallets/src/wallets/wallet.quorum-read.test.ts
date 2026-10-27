@@ -146,26 +146,49 @@ describe("Wallet - quorum entries", () => {
         });
     });
 
-    describe("approve() when a quorum approval is pending", () => {
+    // The active signer is a member, so without the guard the approval would be signed and sent.
+    describe.each([
+        {
+            request: "transaction",
+            arrange: (api: MockedApiClient, approvals: object) =>
+                api.getTransaction.mockResolvedValue({
+                    id: "txn-1",
+                    status: "awaiting-approval",
+                    chainType: "evm",
+                    approvals,
+                } as never),
+            approve: (wallet: Wallet<Chain>) => wallet.approve({ transactionId: "txn-1" }),
+            submit: (api: MockedApiClient) => api.approveTransaction,
+        },
+        {
+            request: "signature",
+            arrange: (api: MockedApiClient, approvals: object) =>
+                api.getSignature.mockResolvedValue({ id: "sig-1", status: "awaiting-approval", approvals } as never),
+            approve: (wallet: Wallet<Chain>) => wallet.approve({ signatureId: "sig-1" }),
+            submit: (api: MockedApiClient) => api.approveSignature,
+        },
+    ])("approve() when a quorum approval is pending on a $request", ({ arrange, approve, submit }) => {
         it("throws QuorumSignerNotSupportedError naming the quorum, before any approval is sent", async () => {
             const wallet = await createMockWallet("base-sepolia", mockApiClient);
             const signer = createMockSigner("external-wallet", "base-sepolia");
+            const signerLocator = getSignerLocator(signer);
             vi.spyOn(wallet, "signers").mockResolvedValue([
-                { ...signer, locator: getSignerLocator(signer), status: "success" } as never,
+                { ...signer, locator: signerLocator, status: "success" } as never,
             ]);
             await wallet.useSigner(signer);
             const quorum = createQuorumApiEntry();
-            mockApiClient.getTransaction.mockResolvedValue({
-                id: "txn-1",
-                status: "awaiting-approval",
-                approvals: { pending: [createQuorumPendingApproval({ quorum })], submitted: [] },
-            } as never);
+            const member = { type: "external-wallet" as const, address: signer.address, locator: signerLocator };
+            const memberQuorum = { ...quorum, members: [member, ...quorum.members.slice(1)] };
+            arrange(mockApiClient, {
+                pending: [createQuorumPendingApproval({ quorum: memberQuorum })],
+                submitted: [],
+            });
 
-            const approval = wallet.approve({ transactionId: "txn-1" });
+            const approval = approve(wallet);
 
             await expect(approval).rejects.toThrow(QuorumSignerNotSupportedError);
             await expect(approval).rejects.toThrow(quorum.locator);
-            expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
+            expect(submit(mockApiClient)).not.toHaveBeenCalled();
         });
     });
 

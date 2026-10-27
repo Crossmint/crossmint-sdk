@@ -289,6 +289,23 @@ describe("quorum API errors at wallet call sites", () => {
         });
     });
 
+    describe("approve, when the signature expires while the approval is submitted", () => {
+        it("throws TransactionExpiredError with the signature id", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getSignature.mockResolvedValue(AWAITING_SIGNATURE as never);
+            // ApiClient answers the API's 422 expiry by reading the signature request again.
+            api.approveSignature.mockResolvedValue(createExpiredRequest("sig-1") as never);
+
+            const error = await wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionExpiredError);
+            expect((error as TransactionExpiredError).signatureId).toBe("sig-1");
+        });
+    });
+
     describe("Stellar upgrade, when the wallet is already locked", () => {
         it("skips the upgrade phase and prepares the migration, as before", async () => {
             const stellarWallet = StellarWallet.from(await createMockWallet("stellar", api, "api-key"));

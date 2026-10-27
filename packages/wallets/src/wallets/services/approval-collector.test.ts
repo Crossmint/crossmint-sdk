@@ -119,7 +119,7 @@ describe("collectApprovals", () => {
             expect(approvals).toEqual([]);
         });
 
-        it("does not sign again for a member that already submitted", async () => {
+        it("skips a member that already submitted", async () => {
             const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
             const [signed, ...waiting] = quorum.members;
             const entry = createQuorumPendingApproval({ quorum, pending: waiting, submitted: [signed] });
@@ -211,6 +211,32 @@ describe("collectApprovals", () => {
             const approvals = await collectApprovals([entry, flatApproval()], createSigning({ held }));
 
             expect(approvals).toEqual(approvalsSignedBy([{ locator: FLAT_LOCATOR, message: "0xflat" }, first, second]));
+        });
+
+        it("signs the flat entries together, and the members only once every flat entry is signed", async () => {
+            const secondFlatLocator = "external-wallet:0x2222222222222222222222222222222222222222";
+            const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry({ threshold: 1 }) });
+            const [member] = memberMessages(entry);
+            let finishFirstFlatSignature = () => {};
+            const sign = vi.fn(signWithHeldKey).mockImplementationOnce(
+                (signer, message) =>
+                    new Promise((resolve) => {
+                        finishFirstFlatSignature = () => resolve({ signature: signatureOf(signer.locator(), message) });
+                    })
+            );
+            const held = [heldSigner(FLAT_LOCATOR), heldSigner(secondFlatLocator), heldSigner(member.locator)];
+            const signedMessages = () => sign.mock.calls.map(([, message]) => message);
+
+            const collecting = collectApprovals(
+                [flatApproval(), flatApproval(secondFlatLocator, "0xsecond"), entry],
+                createSigning({ held, sign })
+            );
+            await new Promise((resolve) => setTimeout(resolve, 0));
+
+            expect(signedMessages()).toEqual(["0xflat", "0xsecond"]);
+            finishFirstFlatSignature();
+            await collecting;
+            expect(signedMessages()).toEqual(["0xflat", "0xsecond", member.message]);
         });
     });
 });

@@ -369,7 +369,8 @@ type CrossmintApiErrorBody = {
     identifierKey?: string;
 };
 
-function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErrorBody {
+// Every field the readers use is optional, so any object can be read as a response body.
+function isResponseBody<T extends object>(response: unknown): response is T {
     return typeof response === "object" && response != null;
 }
 
@@ -380,7 +381,7 @@ function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErr
  * response is not a recognized auth error, letting callers throw their own contextual error.
  */
 export function throwIfCrossmintApiAuthError(response: unknown): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
@@ -405,7 +406,7 @@ export function throwIfCrossmintApiAuthError(response: unknown): void {
  * response so callers can fall back to their own contextual error.
  */
 export function throwIfRecoverySignerApiError(response: unknown): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
@@ -453,7 +454,7 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
 
 /** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
 export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
@@ -474,13 +475,9 @@ export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest
 /** The fields of a stored transaction or signature request that the expiry check reads. */
 type StoredRequestBody = { status?: unknown; error?: { revert?: { reason?: unknown } } | null };
 
-function isStoredRequestBody(response: unknown): response is StoredRequestBody {
-    return typeof response === "object" && response != null;
-}
-
 /** Throws `TransactionExpiredError` for a stored request that failed because its approval window closed. */
 export function throwIfRequestExpired(response: unknown, request: ExpiredRequest): void {
-    if (!isStoredRequestBody(response) || response.status !== "failed") {
+    if (!isResponseBody<StoredRequestBody>(response) || response.status !== "failed") {
         return;
     }
     if (response.error?.revert?.reason !== TRANSACTION_EXPIRED_MESSAGE) {

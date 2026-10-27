@@ -1563,6 +1563,8 @@ export class Wallet<C extends Chain> {
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
             throwIfQuorumApiError(approvedSignature, { signatureId });
+            // The client answers the API's 422 expiry with the stored request, which has no code.
+            throwIfRequestExpired(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
         }
 

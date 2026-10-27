@@ -239,6 +239,9 @@ describe("operation-poller", () => {
 
                 expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
                 expect(error.transactionId).toBe("txn-quorum");
+                expect(error.message).toBe(
+                    "Transaction is awaiting approval. Please submit required approvals before waiting for completion."
+                );
             });
         });
 
