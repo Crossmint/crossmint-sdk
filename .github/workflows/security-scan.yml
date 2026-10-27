@@ -1,0 +1,100 @@
+name: 🛡️ Security Scan
+run-name: 🛡️ Security Scan
+
+# Non-blocking security scanning: findings surface as check annotations on every PR,
+# but these checks are NOT required status checks, so a red result never gates a merge.
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+    workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+    # Push runs scan only their own commit range. A shared group would cancel or replace
+    # queued push runs and leave commits unscanned, so each push run gets its own group.
+    group: security-scan-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    changes:
+        name: Detect Changes
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+            pull-requests: read
+        outputs:
+            workflows: ${{ steps.filter.outputs.workflows }}
+        steps:
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # zizmor: ignore[artipacked] v6.1.0 (paths-filter needs git credentials to diff the base commit on push events)
+
+            - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+              id: filter
+              with:
+                  filters: |
+                      workflows:
+                          - '.github/workflows/**'
+
+    zizmor:
+        name: Workflow Analysis
+        runs-on: ubuntu-latest
+        needs: changes
+        if: needs.changes.outputs.workflows == 'true'
+        continue-on-error: true # non-blocking
+        timeout-minutes: 10
+        permissions:
+            contents: read
+            security-events: write # zizmor-action SARIF upload (harmless if advanced-security=false)
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              with:
+                  persist-credentials: false
+
+            - name: Run zizmor
+              uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0
+              with:
+                  advanced-security: "false"
+                  annotations: "true"
+                  # TODO(SECUR-153): the repo still carries a long tail of medium/low findings this
+                  # scan wasn't scoped to fix. Drop this once they're triaged so the check goes
+                  # red on any finding, not just high-severity ones.
+                  min-severity: high
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    trufflehog:
+        name: Secret Scanning
+        runs-on: ubuntu-latest
+        continue-on-error: true # non-blocking
+        timeout-minutes: 10
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Run TruffleHog
+              uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+              with:
+                  extra_args: --results=verified,unknown
+
+            # Custom detectors for Crossmint server API keys. They have no verifier, so they
+            # need --results=unverified, which would be too noisy for the built-in detectors.
+            # Runs even if the step above found something. Exceptions: see .github/trufflehog/crossmint-detectors.yaml
+            - name: Run TruffleHog (Crossmint API keys)
+              if: ${{ !cancelled() }}
+              uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+              with:
+                  extra_args: >-
+                      --config=.github/trufflehog/crossmint-detectors.yaml
+                      --include-detectors=CustomRegex
+                      --results=verified,unknown,unverified
+                      --exclude-paths=.github/trufflehog/exclude-paths.txt
