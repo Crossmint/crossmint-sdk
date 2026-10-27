@@ -1,5 +1,6 @@
-import type { ApiClient, GetSignatureResponse, WalletLocator } from "../../api";
-import type { Signature, Transaction } from "../types";
+import type { ApiClient, GetSignatureResponse, GetTransactionSuccessResponse, WalletLocator } from "../../api";
+import { awaitsQuorumOnly, splitPendingApprovals, toQuorumProgress } from "../../quorum/approvals";
+import type { QuorumApprovalProgress, Signature, Transaction } from "../types";
 import {
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
@@ -10,6 +11,7 @@ import {
     TransactionNotAvailableError,
     TransactionSendingFailedError,
     throwIfCrossmintApiAuthError,
+    throwIfRequestExpired,
 } from "../../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
 import { walletsLogger } from "../../logger";
@@ -22,12 +24,39 @@ export type PollingOptions = {
     fastWindowMs?: number;
 };
 
+const AWAITING_APPROVAL_MESSAGE =
+    "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
+
+/** Only quorum members can still approve the transaction; `quorums` is each quorum's progress. */
+export type AwaitingApproval = {
+    status: "awaiting-approval";
+    transactionId: string;
+    quorums: QuorumApprovalProgress[];
+};
+
+export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | AwaitingApproval;
+
+/** Waits for the transaction to land; throws `TransactionAwaitingApprovalError` while it still needs approvals. */
 export async function waitForTransactionCompletion(
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     transactionId: string,
     options?: PollingOptions
 ): Promise<Transaction<false>> {
+    const outcome = await waitForTransactionOutcome(apiClient, walletLocator, transactionId, options);
+    if (outcome.status === "awaiting-approval") {
+        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
+    }
+    return outcome.transaction;
+}
+
+/** Waits for the transaction to land, or until only quorum members can still approve it. */
+export async function waitForTransactionOutcome(
+    apiClient: ApiClient,
+    walletLocator: WalletLocator,
+    transactionId: string,
+    options?: PollingOptions
+): Promise<TransactionOutcome> {
     const {
         timeoutMs = 60_000,
         initialBackoffMs = 500,
@@ -51,6 +80,7 @@ export async function waitForTransactionCompletion(
         transactionResponse = await apiClient.getTransaction(walletLocator, transactionId);
         if (transactionResponse.error) {
             throwIfCrossmintApiAuthError(transactionResponse);
+            throwIfRequestExpired(transactionResponse, { transactionId });
             throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
         }
         if (transactionResponse.status !== "pending") {
@@ -76,10 +106,7 @@ export async function waitForTransactionCompletion(
     }
 
     if (transactionResponse.status === "awaiting-approval") {
-        const error = new TransactionAwaitingApprovalError(
-            `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
-        );
-        throw error;
+        return awaitingApprovalOf(transactionResponse, transactionId);
     }
 
     const stellarTransactionHash =
@@ -93,10 +120,21 @@ export async function waitForTransactionCompletion(
     }
 
     return {
-        hash: transactionHash,
-        explorerLink: transactionResponse.onChain.explorerLink ?? "",
-        transactionId: transactionResponse.id,
+        status: "success",
+        transaction: {
+            hash: transactionHash,
+            explorerLink: transactionResponse.onChain.explorerLink ?? "",
+            transactionId: transactionResponse.id,
+        },
     };
+}
+
+function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transactionId: string): AwaitingApproval {
+    if (transaction.approvals == null || !awaitsQuorumOnly(transaction)) {
+        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
+    }
+    const { quorums } = splitPendingApprovals(transaction.approvals.pending);
+    return { status: "awaiting-approval", transactionId, quorums: quorums.map(toQuorumProgress) };
 }
 
 export async function waitForSignatureCompletion(
@@ -117,6 +155,7 @@ export async function waitForSignatureCompletion(
         signatureResponse = await apiClient.getSignature(walletLocator, signatureId);
         if ("error" in signatureResponse) {
             throwIfCrossmintApiAuthError(signatureResponse);
+            throwIfRequestExpired(signatureResponse, { signatureId });
             throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
         }
     } while (signatureResponse === null || signatureResponse.status === "pending");
