@@ -49039,6 +49039,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49054,6 +49067,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49264,6 +49278,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49279,6 +49306,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49489,6 +49517,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49504,6 +49545,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49802,6 +49844,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49817,6 +49872,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -50027,6 +50083,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -50042,6 +50111,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -50252,6 +50322,19 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -50267,6 +50350,7 @@
                                                                 "available",
                                                                 "locked",
                                                                 "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
