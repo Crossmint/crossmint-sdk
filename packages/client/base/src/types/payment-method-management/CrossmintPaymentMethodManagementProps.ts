@@ -33,13 +33,13 @@ export interface CrossmintPaymentMethodManagementProps {
      */
     hideSubmitButton?: boolean;
     /**
-     * Also collect the card's billing address when adding a new card (default `false`).
-     * When enabled, the card form requires a valid billing address before it saves —
-     * for built-in and `ref.submit()` submissions alike. The collected address is saved
-     * with the card and comes back on `card.billing.address` of the emitted method.
-     * Applies to cards only; other method types ignore it.
+     * Optional fields of the add-card form, in Stripe's `billingDetails` shape so new
+     * fields need no new prop. `billingDetails.address: true` collects a required
+     * billing address: the card form validates it before saving — for built-in and
+     * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
+     * of the emitted method. Applies to cards only; other method types ignore it.
      */
-    collectBillingAddress?: boolean;
+    fields?: { billingDetails?: { address?: boolean } };
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 
@@ -97,7 +97,7 @@ export type CrossmintCardPaymentMethod = {
         };
         /**
          * Billing details the card was saved with. `address` is present when the card
-         * was saved with `collectBillingAddress` (or the account has one on file).
+         * was saved with `fields.billingDetails.address` (or the account has one on file).
          */
         billing?: CrossmintPaymentMethodBillingDetails;
     };

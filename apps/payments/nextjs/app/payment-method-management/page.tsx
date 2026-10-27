@@ -60,7 +60,7 @@ function PaymentMethodManagementWrapper() {
                 jwt={jwt}
                 allowedModes={["new", "existing"]}
                 hideSubmitButton={ownButton}
-                collectBillingAddress={collectBillingAddress}
+                fields={collectBillingAddress ? { billingDetails: { address: true } } : undefined}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
             />
             {ownButton && (
