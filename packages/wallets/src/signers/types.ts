@@ -153,8 +153,11 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type QuorumLocator = `quorum:${string}`;
 
+// Crossmint assigns quorum ids as version-8 UUIDs (the API spec's locator pattern).
+const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 export function isQuorumLocator(locator: string): locator is QuorumLocator {
-    return locator.startsWith("quorum:");
+    return QUORUM_LOCATOR_PATTERN.test(locator);
 }
 
 export type QuorumMemberType = "email" | "phone" | "external-wallet" | "server" | "passkey";
