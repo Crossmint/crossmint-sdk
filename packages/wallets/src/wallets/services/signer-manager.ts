@@ -287,9 +287,38 @@ export class SignerManager<C extends Chain> {
      */
     async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {
         const originalSigner = this.#activeSigner;
-        const { recovery: authorizingRecovery, approver } = this.resolveAuthorizingRecovery();
-        throwIfQuorumSigner(authorizingRecovery);
-        const recovery = authorizingRecovery as SignerConfigForChain<C>;
+        const { recovery, approver } = this.resolveAuthorizingRecovery();
+        this.#activeSigner = this.#assembleRecovery(recovery);
+
+        try {
+            return await operation(approver);
+        } finally {
+            this.#activeSigner = originalSigner;
+        }
+    }
+
+    /**
+     * The keys an approval may sign with: `additionalSigners`, the active signer, then the recovery method
+     * selected with `useRecoveryMethod()`. Deduped by locator; the first one listed wins.
+     */
+    heldSigners(additionalSigners: SignerAdapter[] = []): SignerAdapter[] {
+        const held = [...additionalSigners];
+        if (this.#activeSigner != null) {
+            held.push(this.#activeSigner);
+        }
+        const selected = this.selectedRecovery;
+        if (selected != null) {
+            held.push(this.#assembleRecovery(selected));
+        }
+        return held.filter(
+            (signer, index) => held.findIndex((other) => other.locator() === signer.locator()) === index
+        );
+    }
+
+    /** Builds a signer from a recovery method; throws when its config lacks what signing needs. */
+    #assembleRecovery(config: RecoverySignerConfigForChain<C>): SignerAdapter {
+        throwIfQuorumSigner(config);
+        const recovery = config as SignerConfigForChain<C>;
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
@@ -311,13 +340,7 @@ export class SignerManager<C extends Chain> {
             );
         }
         const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
-        this.#activeSigner = assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
-
-        try {
-            return await operation(approver);
-        } finally {
-            this.#activeSigner = originalSigner;
-        }
+        return assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage);
     }
 
     async getSignerState(signerLocator: SignerLocator): Promise<{
