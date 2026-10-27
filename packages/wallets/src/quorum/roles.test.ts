@@ -47,6 +47,12 @@ describe("resolveActingRole", () => {
                 });
             });
 
+            it("rejects an explicit quorum locator with a malformed id", () => {
+                expect(() => resolveActingRole(input({ explicit: "quorum:garbage" }))).toThrow(
+                    /Malformed quorum locator: quorum:garbage/
+                );
+            });
+
             it("acts as an explicit single signer as given", () => {
                 const role = resolveActingRole(
                     input({ explicit: SINGLE_SIGNER, recoveryQuorums: [quorumWithHeldMember()] })

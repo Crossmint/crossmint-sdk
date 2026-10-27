@@ -1,4 +1,10 @@
-import { isQuorumLocator, type QuorumLocator, type QuorumSigner, type SignerLocator } from "../signers/types";
+import {
+    hasQuorumLocatorPrefix,
+    requireQuorumLocator,
+    type QuorumLocator,
+    type QuorumSigner,
+    type SignerLocator,
+} from "../signers/types";
 import { QuorumSelectionAmbiguousError } from "../utils/errors";
 import { isSameSignerLocator, quorumsWithMember } from "./members";
 
@@ -13,7 +19,7 @@ export type ActingRole =
 
 type RoleInputBase = {
     heldLocator: SignerLocator;
-    /** The call's explicit signer, used as given: the API validates it. */
+    /** The call's explicit signer, used as given; a `quorum:` locator must have a valid id. */
     explicit?: SignerLocator;
     /** Recovery methods that sign alone. */
     recoveryLocators: SignerLocator[];
@@ -47,8 +53,8 @@ export function resolveActingRole(input: RoleInput): ActingRole {
 }
 
 function roleFromLocator(locator: SignerLocator): ActingRole {
-    if (isQuorumLocator(locator)) {
-        return { kind: "quorum", locator };
+    if (hasQuorumLocatorPrefix(locator)) {
+        return { kind: "quorum", locator: requireQuorumLocator(locator) };
     }
     return { kind: "self", locator };
 }
