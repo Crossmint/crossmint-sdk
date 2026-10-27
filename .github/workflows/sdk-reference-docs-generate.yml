@@ -53,7 +53,7 @@ jobs:
             contents: read
             id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
@@ -232,7 +232,7 @@ jobs:
                   fi
 
             - name: Upload generated docs artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
                   name: sdk-reference-docs
                   path: sdk-reference/
@@ -240,7 +240,7 @@ jobs:
 
             - name: Generate App Token
               id: generate_app_token
-              uses: actions/create-github-app-token@v2
+              uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
               with:
                   app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
                   private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
