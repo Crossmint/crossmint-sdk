@@ -60,13 +60,13 @@ describe("quorumsWithComposition", () => {
         expect(quorumsWithComposition([quorum], 2, reversed)).toEqual([quorum]);
     });
 
-    it("does not match a quorum with the same members and another threshold", () => {
+    it("excludes a quorum with the same members and another threshold", () => {
         const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
 
         expect(quorumsWithComposition([quorum], 3, memberLocators(quorum))).toEqual([]);
     });
 
-    it("does not match when the requested members are a subset or a superset", () => {
+    it("excludes the quorum when the requested members are a subset or a superset", () => {
         const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
         const locators = memberLocators(quorum);
 
@@ -75,14 +75,14 @@ describe("quorumsWithComposition", () => {
     });
 
     describe("when the requested members repeat a locator", () => {
-        it("does not match a quorum with as many members as the request", () => {
+        it("excludes a quorum with as many members as the request", () => {
             const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
             const [first, second] = memberLocators(quorum);
 
             expect(quorumsWithComposition([quorum], 2, [first, second, first])).toEqual([]);
         });
 
-        it("does not match a quorum whose members are the request without the repeat", () => {
+        it("excludes a quorum whose members are the request without the repeat", () => {
             const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 2 });
             const [first, second] = memberLocators(quorum);
 
