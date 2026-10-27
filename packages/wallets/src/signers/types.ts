@@ -10,6 +10,7 @@ import type {
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
+import { quorumSignerNotSupported } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -173,6 +174,13 @@ export type QuorumSigner = {
 
 export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {
     return entry.type === "quorum";
+}
+
+/** Throws `QuorumSignerNotSupportedError` for a quorum, as the SDK cannot sign as one yet. */
+export function throwIfQuorumSigner(entry: { type: string }): void {
+    if (isQuorumSigner(entry)) {
+        throw quorumSignerNotSupported([entry.locator]);
+    }
 }
 
 export type RecoverySignerConfigForChain<C extends Chain> =

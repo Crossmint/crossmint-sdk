@@ -68,7 +68,12 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../signers/types";
-import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig, isQuorumSigner } from "../signers/types";
+import {
+    type ApiSourcedServerSignerConfig,
+    isApiSourcedServerSignerConfig,
+    isQuorumSigner,
+    throwIfQuorumSigner,
+} from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
@@ -1001,6 +1006,7 @@ export class Wallet<C extends Chain> {
     })
     public async useSigner(signer: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useSigner.start");
+        throwIfQuorumSigner(signer);
         // Reset the delegated signer cache when processing a fresh server signer.
         // The recovery resolution is intentionally preserved — it's set once during
         // recovery resolution and must survive across useSigner calls.
@@ -1045,6 +1051,7 @@ export class Wallet<C extends Chain> {
     })
     public async useRecoveryMethod(recoveryMethod: SignerConfigForChain<C>): Promise<void> {
         walletsLogger.info("wallet.useRecoveryMethod.start");
+        throwIfQuorumSigner(recoveryMethod);
         getSignerDescriptor<C>(recoveryMethod.type).validateConfig(recoveryMethod);
 
         const index = this.matchRecoverySigner(recoveryMethod);

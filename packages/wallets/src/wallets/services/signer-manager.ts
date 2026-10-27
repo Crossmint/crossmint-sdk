@@ -15,6 +15,7 @@ import {
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
+    throwIfQuorumSigner,
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator } from "../../utils/signer-locator";
@@ -284,9 +285,7 @@ export class SignerManager<C extends Chain> {
     async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {
         const originalSigner = this.#activeSigner;
         const { recovery: authorizingRecovery, approver } = this.resolveAuthorizingRecovery();
-        if (isQuorumSigner(authorizingRecovery)) {
-            throw quorumSignerNotSupported([authorizingRecovery.locator]);
-        }
+        throwIfQuorumSigner(authorizingRecovery);
         const recovery = authorizingRecovery as SignerConfigForChain<C>;
         if (
             isApiSourcedServerSignerConfig(recovery) &&

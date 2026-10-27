@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
 import type { RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
+import { QuorumSignerNotSupportedError } from "../utils/errors";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
@@ -139,6 +140,31 @@ describe("Wallet - quorum entries", () => {
             await expect(wallet.useRecoveryMethod({ type: "email", email: "outsider@example.com" })).rejects.toThrow(
                 quorum.locator
             );
+        });
+    });
+
+    describe.each(["useSigner", "useRecoveryMethod"] as const)("%s() with a quorum", (method) => {
+        it("throws QuorumSignerNotSupportedError and keeps the active signer", async () => {
+            const quorum = createQuorumApiEntry();
+            const wallet = new Wallet(
+                {
+                    chain: "solana",
+                    address: SOLANA_ADDRESS,
+                    recovery: [
+                        quorum,
+                        { type: "external-wallet", address: EXTERNAL_WALLET_ADDRESS },
+                    ] as unknown as RecoverySignerConfigForChain<"solana">[],
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            await wallet.waitForInit();
+            const signerBefore = wallet.signer;
+
+            await expect(wallet[method](quorum as unknown as SignerConfigForChain<"solana">)).rejects.toThrow(
+                QuorumSignerNotSupportedError
+            );
+            expect(wallet.signer).toBe(signerBefore);
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
     });
 });
