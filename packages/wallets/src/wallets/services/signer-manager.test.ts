@@ -552,7 +552,7 @@ describe("SignerManager with quorum recovery methods", () => {
 describe("SignerManager.heldSigners", () => {
     const ACTIVE_LOCATOR: SignerLocator = "external-wallet:0xActive";
     const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0xRecovery";
-    const recoveryWithOnSign = asRecoveryConfig({ type: "external-wallet", address: "0xRecovery", onSign: vi.fn() });
+    const RECOVERY_WITH_ON_SIGN = asRecoveryConfig({ type: "external-wallet", address: "0xRecovery", onSign: vi.fn() });
 
     describe("when only an active signer is set", () => {
         it("returns the active signer", () => {
@@ -567,7 +567,7 @@ describe("SignerManager.heldSigners", () => {
             const active = makeSigner("external-wallet", ACTIVE_LOCATOR);
             const assembled = makeSigner("external-wallet", RECOVERY_LOCATOR);
             mockedAssembleSigner.mockReturnValue(assembled);
-            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, recoveryWithOnSign] });
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
             manager.selectRecovery(1);
 
             expect(manager.heldSigners()).toEqual([active, assembled]);
@@ -581,7 +581,7 @@ describe("SignerManager.heldSigners", () => {
         it("lists it once when it is also the active signer", () => {
             const active = makeSigner("external-wallet", RECOVERY_LOCATOR);
             mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
-            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, recoveryWithOnSign] });
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
             manager.selectRecovery(1);
 
             expect(manager.heldSigners()).toEqual([active]);
@@ -627,7 +627,7 @@ describe("SignerManager.heldSigners", () => {
             const additional = makeSigner("external-wallet", "external-wallet:0xAdditional");
             const assembled = makeSigner("external-wallet", RECOVERY_LOCATOR);
             mockedAssembleSigner.mockReturnValue(assembled);
-            const manager = makeManager({ recoverySigners: [apiKeyConfig, recoveryWithOnSign] });
+            const manager = makeManager({ recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
             manager.selectRecovery(1);
 
             expect(manager.heldSigners([additional])).toEqual([additional, assembled]);

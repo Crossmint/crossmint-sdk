@@ -148,7 +148,7 @@ describe("acting signer sent with a new transaction", () => {
             );
             await wallet.waitForInit();
 
-            await expect(create(wallet, EXPLICIT_LOCATOR)).rejects.toThrow();
+            await expect(create(wallet, EXPLICIT_LOCATOR)).rejects.toThrow(/No signer is set/);
             expect(api.send).not.toHaveBeenCalled();
             expect(api.createTransaction).not.toHaveBeenCalled();
         });
