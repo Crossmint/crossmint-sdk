@@ -6,6 +6,7 @@ import {
     type SignerLocator,
 } from "../signers/types";
 import type { PendingApproval, QuorumApprovalProgress } from "../wallets/types";
+import { isSameSignerLocator } from "./members";
 
 export type QuorumPendingApproval = Extract<PendingApproval, { signer: { type: "quorum" } }>;
 export type FlatPendingApproval = Exclude<PendingApproval, QuorumPendingApproval>;
@@ -65,7 +66,7 @@ export function planMemberApprovals(
     heldLocators: SignerLocator[],
     limit: MemberApprovalLimit
 ): PlannedMemberApproval[] {
-    const held = new Set<string>(heldLocators);
+    const isHeld = (locator: string) => heldLocators.some((held) => isSameSignerLocator(held, locator));
     const planned: PlannedMemberApproval[] = [];
     for (const entry of quorums) {
         const { remaining, pending } = entry.quorumApprovals;
@@ -74,13 +75,14 @@ export function planMemberApprovals(
             continue;
         }
         const quorum = requireQuorumLocator(entry.signer.locator);
+        // Only held members are read, so a malformed member this client does not hold is skipped.
         const heldPending = pending
+            .filter(({ member }) => isHeld(member.locator))
             .map(({ member, message }) => ({
                 quorum,
                 memberLocator: requireQuorumMemberLocator(member.locator),
                 message,
-            }))
-            .filter(({ memberLocator }) => held.has(memberLocator));
+            }));
         const count = limit === "remaining" ? remaining : heldPending.length;
         planned.push(...heldPending.slice(0, count));
     }

@@ -5,6 +5,7 @@ import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
 import { resolveActingRole } from "./roles";
 
 const HELD: SignerLocator = "email:held@example.com";
+const SINGLE_SIGNER: SignerLocator = "external-wallet:0x1234567890123456789012345678901234567890";
 
 // A quorum that lists the held key as its first member.
 const quorumWithHeldMember = () => {
@@ -13,175 +14,186 @@ const quorumWithHeldMember = () => {
     return quorum;
 };
 
+const transactionInput = (overrides: Partial<Parameters<typeof resolveActingRole>[0]> = {}) => ({
+    scope: "transaction" as const,
+    heldLocator: HELD,
+    recoveryLocators: [],
+    recoveryQuorums: [],
+    delegatedQuorums: [],
+    isRegisteredSigner: false,
+    ...overrides,
+});
+
+const signerChangeInput = (overrides: Partial<Parameters<typeof resolveActingRole>[0]> = {}) => ({
+    scope: "signer-change" as const,
+    heldLocator: HELD,
+    recoveryLocators: [],
+    recoveryQuorums: [],
+    ...overrides,
+});
+
 describe("resolveActingRole", () => {
-    describe("with an explicit signer", () => {
-        it.each(["transaction", "signer-change"] as const)(
-            "uses an explicit quorum locator as given, without checking membership (%s)",
-            (scope) => {
+    describe.each([
+        { scope: "transaction", input: transactionInput },
+        { scope: "signer-change", input: signerChangeInput },
+    ])("for $scope", ({ input }) => {
+        describe("when the call passes an explicit signer", () => {
+            it("acts as an explicit quorum as given, without checking membership", () => {
                 const unrelated = createQuorumApiEntry();
-                const base = {
-                    heldLocator: HELD,
-                    explicit: unrelated.locator,
-                    recoveryLocators: [],
-                    recoveryQuorums: [],
-                };
-                const input =
-                    scope === "transaction"
-                        ? { ...base, scope, delegatedQuorums: [], isRegisteredSigner: false }
-                        : { ...base, scope };
 
-                expect(resolveActingRole(input)).toEqual({ kind: "quorum", locator: unrelated.locator });
-            }
-        );
-
-        it("uses an explicit single-signer locator as given", () => {
-            const explicit: SignerLocator = "external-wallet:0x1234567890123456789012345678901234567890";
-
-            expect(
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    explicit,
-                    recoveryLocators: [],
-                    recoveryQuorums: [quorumWithHeldMember()],
-                    delegatedQuorums: [],
-                    isRegisteredSigner: false,
-                })
-            ).toEqual({ kind: "self", locator: explicit });
-        });
-    });
-
-    describe("for transactions", () => {
-        it("acts as itself when the key is a recovery method, even if it is also a quorum member", () => {
-            expect(
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    recoveryLocators: [HELD],
-                    recoveryQuorums: [quorumWithHeldMember()],
-                    delegatedQuorums: [],
-                    isRegisteredSigner: false,
-                })
-            ).toEqual({ kind: "self", locator: HELD });
-        });
-
-        it("acts as itself when the key is a registered delegated signer, even if it is also a quorum member", () => {
-            expect(
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: [],
-                    delegatedQuorums: [quorumWithHeldMember()],
-                    isRegisteredSigner: true,
-                })
-            ).toEqual({ kind: "self", locator: HELD });
-        });
-
-        it.each([
-            { quorumKind: "recovery", recovery: true },
-            { quorumKind: "delegated", recovery: false },
-        ])("acts as the one $quorumKind quorum the key is a member of", ({ recovery }) => {
-            const quorum = quorumWithHeldMember();
-
-            expect(
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: recovery ? [quorum] : [],
-                    delegatedQuorums: recovery ? [] : [quorum],
-                    isRegisteredSigner: false,
-                })
-            ).toEqual({ kind: "quorum", locator: quorum.locator });
-        });
-
-        it("throws QuorumSelectionAmbiguousError with both locators for a member of a recovery and a delegated quorum", () => {
-            const recoveryQuorum = quorumWithHeldMember();
-            const delegatedQuorum = quorumWithHeldMember();
-
-            try {
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: [recoveryQuorum],
-                    delegatedQuorums: [delegatedQuorum],
-                    isRegisteredSigner: false,
+                expect(resolveActingRole(input({ explicit: unrelated.locator }))).toEqual({
+                    kind: "quorum",
+                    locator: unrelated.locator,
                 });
-                expect.fail("Expected resolveActingRole to throw");
-            } catch (error) {
-                expect(error).toBeInstanceOf(QuorumSelectionAmbiguousError);
-                expect((error as QuorumSelectionAmbiguousError).quorumLocators).toEqual([
-                    recoveryQuorum.locator,
-                    delegatedQuorum.locator,
-                ]);
-            }
+            });
+
+            it("acts as an explicit single signer as given", () => {
+                const role = resolveActingRole(
+                    input({ explicit: SINGLE_SIGNER, recoveryQuorums: [quorumWithHeldMember()] })
+                );
+
+                expect(role).toEqual({ kind: "self", locator: SINGLE_SIGNER });
+            });
         });
 
-        it("acts as itself when the key is neither a signer nor a member (the API rejects it)", () => {
-            expect(
-                resolveActingRole({
-                    scope: "transaction",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: [createQuorumApiEntry()],
-                    delegatedQuorums: [createQuorumApiEntry()],
-                    isRegisteredSigner: false,
-                })
-            ).toEqual({ kind: "self", locator: HELD });
+        describe("when the key is a recovery method that signs alone", () => {
+            it("acts as itself, even though it is also a quorum member", () => {
+                const role = resolveActingRole(
+                    input({ recoveryLocators: [HELD], recoveryQuorums: [quorumWithHeldMember()] })
+                );
+
+                expect(role).toEqual({ kind: "self", locator: HELD });
+            });
+        });
+
+        describe("when the key is a member of one recovery quorum only", () => {
+            it("acts as that quorum", () => {
+                const quorum = quorumWithHeldMember();
+
+                expect(resolveActingRole(input({ recoveryQuorums: [quorum] }))).toEqual({
+                    kind: "quorum",
+                    locator: quorum.locator,
+                });
+            });
+        });
+
+        describe("when the key is a member of two recovery quorums", () => {
+            it("throws QuorumSelectionAmbiguousError with both locators", () => {
+                const first = quorumWithHeldMember();
+                const second = quorumWithHeldMember();
+
+                try {
+                    resolveActingRole(input({ recoveryQuorums: [first, second] }));
+                    expect.fail("Expected resolveActingRole to throw");
+                } catch (error) {
+                    expect(error).toBeInstanceOf(QuorumSelectionAmbiguousError);
+                    expect((error as QuorumSelectionAmbiguousError).quorumLocators).toEqual([
+                        first.locator,
+                        second.locator,
+                    ]);
+                }
+            });
         });
     });
 
-    describe("for signer changes", () => {
-        it("acts as itself when the key is a recovery method, even if it is also a quorum member", () => {
-            expect(
-                resolveActingRole({
-                    scope: "signer-change",
-                    heldLocator: HELD,
-                    recoveryLocators: [HELD],
-                    recoveryQuorums: [quorumWithHeldMember()],
-                })
-            ).toEqual({ kind: "self", locator: HELD });
+    describe("for transaction", () => {
+        describe("when the key is a registered delegated signer", () => {
+            it("acts as itself, even though it is also a quorum member", () => {
+                const role = resolveActingRole(
+                    transactionInput({ delegatedQuorums: [quorumWithHeldMember()], isRegisteredSigner: true })
+                );
+
+                expect(role).toEqual({ kind: "self", locator: HELD });
+            });
         });
 
-        // Delegated signers and delegated quorums are not inputs for signer changes, so neither can change this.
-        it("acts as the one recovery quorum the key is a member of", () => {
-            const quorum = quorumWithHeldMember();
+        describe("when the key is a member of one delegated quorum only", () => {
+            it("acts as that quorum", () => {
+                const quorum = quorumWithHeldMember();
 
-            expect(
-                resolveActingRole({
-                    scope: "signer-change",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: [quorum],
-                })
-            ).toEqual({ kind: "quorum", locator: quorum.locator });
+                expect(resolveActingRole(transactionInput({ delegatedQuorums: [quorum] }))).toEqual({
+                    kind: "quorum",
+                    locator: quorum.locator,
+                });
+            });
         });
 
-        it("throws QuorumSelectionAmbiguousError for a member of two recovery quorums", () => {
-            const first = quorumWithHeldMember();
-            const second = quorumWithHeldMember();
+        describe("when the key is a member of a recovery quorum and a delegated quorum", () => {
+            it("throws QuorumSelectionAmbiguousError with both locators", () => {
+                const recoveryQuorum = quorumWithHeldMember();
+                const delegatedQuorum = quorumWithHeldMember();
 
-            expect(() =>
-                resolveActingRole({
-                    scope: "signer-change",
-                    heldLocator: HELD,
-                    recoveryLocators: [],
-                    recoveryQuorums: [first, second],
-                })
-            ).toThrow(QuorumSelectionAmbiguousError);
+                try {
+                    resolveActingRole(
+                        transactionInput({ recoveryQuorums: [recoveryQuorum], delegatedQuorums: [delegatedQuorum] })
+                    );
+                    expect.fail("Expected resolveActingRole to throw");
+                } catch (error) {
+                    expect(error).toBeInstanceOf(QuorumSelectionAmbiguousError);
+                    expect((error as QuorumSelectionAmbiguousError).quorumLocators).toEqual([
+                        recoveryQuorum.locator,
+                        delegatedQuorum.locator,
+                    ]);
+                }
+            });
         });
 
-        it("returns none when the key is not a recovery method and not in a recovery quorum", () => {
-            expect(
-                resolveActingRole({
-                    scope: "signer-change",
-                    heldLocator: HELD,
-                    recoveryLocators: ["email:recovery@example.com"],
-                    recoveryQuorums: [createQuorumApiEntry()],
-                })
-            ).toEqual({ kind: "none" });
+        describe("when the key is neither a signer nor a member", () => {
+            it("acts as itself, so the API rejects it as today", () => {
+                const role = resolveActingRole(
+                    transactionInput({
+                        recoveryQuorums: [createQuorumApiEntry()],
+                        delegatedQuorums: [createQuorumApiEntry()],
+                    })
+                );
+
+                expect(role).toEqual({ kind: "self", locator: HELD });
+            });
+        });
+    });
+
+    describe("for signer-change", () => {
+        // Delegated fields are not part of the signer-change input; extra fields must not change the result.
+        const withDelegatedFields = (delegatedQuorum: ReturnType<typeof quorumWithHeldMember>) => ({
+            delegatedQuorums: [delegatedQuorum],
+            isRegisteredSigner: true,
+        });
+
+        describe("when the key is a registered delegated signer and a member of a recovery quorum", () => {
+            it("acts as the recovery quorum", () => {
+                const recoveryQuorum = quorumWithHeldMember();
+                const input = {
+                    ...signerChangeInput({ recoveryQuorums: [recoveryQuorum] }),
+                    ...withDelegatedFields(createQuorumApiEntry()),
+                };
+
+                expect(resolveActingRole(input)).toEqual({ kind: "quorum", locator: recoveryQuorum.locator });
+            });
+        });
+
+        describe("when the key is a member of a recovery quorum and a delegated quorum", () => {
+            it("acts as the recovery quorum without searching delegated quorums", () => {
+                const recoveryQuorum = quorumWithHeldMember();
+                const input = {
+                    ...signerChangeInput({ recoveryQuorums: [recoveryQuorum] }),
+                    ...withDelegatedFields(quorumWithHeldMember()),
+                };
+
+                expect(resolveActingRole(input)).toEqual({ kind: "quorum", locator: recoveryQuorum.locator });
+            });
+        });
+
+        describe("when the key is not a recovery method and not in a recovery quorum", () => {
+            it("returns none", () => {
+                const role = resolveActingRole(
+                    signerChangeInput({
+                        recoveryLocators: ["email:recovery@example.com"],
+                        recoveryQuorums: [createQuorumApiEntry()],
+                    })
+                );
+
+                expect(role).toEqual({ kind: "none" });
+            });
         });
     });
 });

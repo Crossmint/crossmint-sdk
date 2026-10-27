@@ -1,10 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { isQuorumMemberLocator } from "../signers/types";
 import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
-import { quorumsWithComposition, quorumsWithMember } from "./members";
+import { isSameSignerLocator, quorumsWithComposition, quorumsWithMember } from "./members";
 
 const memberLocators = (quorum: ReturnType<typeof createQuorumApiEntry>) =>
     quorum.members.map((member) => member.locator);
+
+const EVM_CHECKSUMMED = "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01";
+const SOLANA_ADDRESS = "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+
+describe("isSameSignerLocator", () => {
+    it("ignores case for EVM external-wallet locators", () => {
+        expect(isSameSignerLocator(EVM_CHECKSUMMED, EVM_CHECKSUMMED.toLowerCase())).toBe(true);
+    });
+
+    it.each([
+        { kind: "Solana external-wallet", locator: SOLANA_ADDRESS },
+        { kind: "email", locator: "email:Member@example.com" },
+        { kind: "server", locator: "server:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01" },
+    ])("compares $kind locators exactly", ({ locator }) => {
+        expect(isSameSignerLocator(locator, locator)).toBe(true);
+        expect(isSameSignerLocator(locator, locator.toLowerCase())).toBe(false);
+    });
+});
 
 describe("quorumsWithMember", () => {
     it("returns every quorum that lists the locator as a member", () => {
@@ -22,12 +40,15 @@ describe("quorumsWithMember", () => {
         expect(quorumsWithMember([quorum], "email:outsider@example.com")).toEqual([]);
     });
 
-    it("compares locators exactly, so a member with different case does not match", () => {
+    it("matches an EVM external-wallet member written in another case", () => {
         const quorum = createQuorumApiEntry();
-        const member = quorum.members[0];
-        member.locator = "email:member@example.com";
+        quorum.members[0] = {
+            type: "external-wallet",
+            address: EVM_CHECKSUMMED.slice("external-wallet:".length).toLowerCase(),
+            locator: EVM_CHECKSUMMED.toLowerCase(),
+        };
 
-        expect(quorumsWithMember([quorum], "email:MEMBER@example.com")).toEqual([]);
+        expect(quorumsWithMember([quorum], EVM_CHECKSUMMED)).toEqual([quorum]);
     });
 });
 
@@ -53,11 +74,31 @@ describe("quorumsWithComposition", () => {
         expect(quorumsWithComposition([quorum], 2, [...locators, "email:extra@example.com"])).toEqual([]);
     });
 
-    it("never matches when the requested members repeat a locator", () => {
-        const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
-        const [first, second] = memberLocators(quorum);
+    describe("when the requested members repeat a locator", () => {
+        it("does not match a quorum with as many members as the request", () => {
+            const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
+            const [first, second] = memberLocators(quorum);
 
-        expect(quorumsWithComposition([quorum], 2, [first, second, first])).toEqual([]);
+            expect(quorumsWithComposition([quorum], 2, [first, second, first])).toEqual([]);
+        });
+
+        it("does not match a quorum whose members are the request without the repeat", () => {
+            const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 2 });
+            const [first, second] = memberLocators(quorum);
+
+            expect(quorumsWithComposition([quorum], 2, [first, second, first])).toEqual([]);
+        });
+    });
+
+    it("matches EVM external-wallet members written in another case", () => {
+        const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 2 });
+        quorum.members[0] = {
+            type: "external-wallet",
+            address: EVM_CHECKSUMMED.slice("external-wallet:".length).toLowerCase(),
+            locator: EVM_CHECKSUMMED.toLowerCase(),
+        };
+
+        expect(quorumsWithComposition([quorum], 2, [EVM_CHECKSUMMED, quorum.members[1].locator])).toEqual([quorum]);
     });
 
     it("returns both quorums when two have the same composition", () => {

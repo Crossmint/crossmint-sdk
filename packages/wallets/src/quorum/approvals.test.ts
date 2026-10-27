@@ -173,13 +173,38 @@ describe("planMemberApprovals", () => {
         });
     });
 
-    it("throws for a malformed member locator in the entry", () => {
-        const quorum = createQuorumApiEntry();
-        const entry = createQuorumPendingApproval({ quorum });
-        entry.quorumApprovals.pending[1].member.locator = "api-key";
+    describe("when a pending member's locator is malformed", () => {
+        it("skips it when this client does not hold it", () => {
+            const quorum = createQuorumApiEntry();
+            const entry = createQuorumPendingApproval({ quorum });
+            entry.quorumApprovals.pending[1].member.locator = "api-key";
+            const held = entry.quorumApprovals.pending[0];
 
-        expect(() => planMemberApprovals([entry], [quorum.members[0].locator], "remaining")).toThrow(
-            "Malformed quorum member locator: api-key"
-        );
+            expect(planMemberApprovals([entry], [held.member.locator], "remaining")).toEqual([
+                { quorum: quorum.locator, memberLocator: held.member.locator, message: held.message },
+            ]);
+        });
+
+        it("throws when this client holds it", () => {
+            const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+            entry.quorumApprovals.pending[1].member.locator = "api-key";
+
+            expect(() => planMemberApprovals([entry], ["api-key"], "remaining")).toThrow(
+                "Malformed quorum member locator: api-key"
+            );
+        });
+    });
+
+    it("plans a held EVM external wallet the API lists in another case, with the API's locator", () => {
+        const quorum = createQuorumApiEntry();
+        const apiLocator = "external-wallet:0xabcdef0123456789abcdef0123456789abcdef01";
+        quorum.members[0] = { type: "external-wallet", address: apiLocator.slice(16), locator: apiLocator };
+        const entry = createQuorumPendingApproval({ quorum });
+
+        expect(
+            planMemberApprovals([entry], ["external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01"], "remaining")
+        ).toEqual([
+            { quorum: quorum.locator, memberLocator: apiLocator, message: entry.quorumApprovals.pending[0].message },
+        ]);
     });
 });

@@ -138,6 +138,7 @@ const QUORUM_REQUEST_ERROR_REASONS = [
     "QUORUM_APPROVING_MEMBERS_COUNT_MISMATCH",
     "QUORUM_APPROVING_MEMBER_INVALID",
     "APPROVING_MEMBERS_NOT_APPLICABLE",
+    "SCOPED_QUORUM_CANNOT_SIGN",
 ] as const;
 
 export type QuorumRequestErrorReason = (typeof QUORUM_REQUEST_ERROR_REASONS)[number];
@@ -321,15 +322,20 @@ export class TransactionFailedError extends CrossmintSDKError {
     }
 }
 
-/** The transaction's approval window closed before it was submitted; create a new transaction. */
+/** The approval window of a transaction or signature request closed; create a new request. */
 export class TransactionExpiredError extends TransactionFailedError {
     readonly transactionId?: string;
+    readonly signatureId?: string;
 
-    constructor(message: string, transactionId?: string, details?: string) {
+    constructor(message: string, request: ExpiredRequest, details?: string) {
         super(message, details);
-        this.transactionId = transactionId;
+        this.transactionId = request.transactionId;
+        this.signatureId = request.signatureId;
     }
 }
+
+/** The request a call site was acting on; the API error body does not carry its id. */
+export type ExpiredRequest = { transactionId?: string; signatureId?: string };
 
 export class PendingApprovalsError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -438,12 +444,8 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     }
 }
 
-/**
- * Inspects a Crossmint wallets API error response and, when it carries a quorum error code or
- * `TRANSACTION_EXPIRED`, throws the corresponding typed error. Returns without throwing for every other
- * response so callers can fall back to their own contextual error.
- */
-export function throwIfQuorumApiError(response: unknown, context: { transactionId?: string } = {}): void {
+/** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
+export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
     if (!isCrossmintApiErrorBody(response) || response.code == null) {
         return;
     }
@@ -453,7 +455,7 @@ export function throwIfQuorumApiError(response: unknown, context: { transactionI
     if (code === "TRANSACTION_EXPIRED") {
         throw new TransactionExpiredError(
             response.message ?? "The transaction expired before it could be submitted. Create a new transaction.",
-            context.transactionId,
+            request,
             details
         );
     }

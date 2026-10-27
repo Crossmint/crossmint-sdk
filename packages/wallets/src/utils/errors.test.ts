@@ -137,8 +137,8 @@ describe("throwIfRecoverySignerApiError", () => {
 });
 
 describe("throwIfQuorumApiError", () => {
-    // The quorum codes the wallets API defines (crossbit-main `constants/error.ts`).
-    const quorumCodes = [
+    // The quorum codes the wallets API defines (crossbit-main `constants/error.ts` and `quorum-errors.ts`).
+    const QUORUM_ERROR_CODES = [
         "QUORUM_SIGNER_UNSUPPORTED",
         "QUORUM_SIZE_INVALID",
         "QUORUM_MEMBER_DUPLICATED",
@@ -151,62 +151,78 @@ describe("throwIfQuorumApiError", () => {
         "QUORUM_APPROVING_MEMBERS_COUNT_MISMATCH",
         "QUORUM_APPROVING_MEMBER_INVALID",
         "APPROVING_MEMBERS_NOT_APPLICABLE",
+        "SCOPED_QUORUM_CANNOT_SIGN",
     ];
 
-    test.each(quorumCodes)("throws QuorumRequestError with reason %s, the API message and the body", (code) => {
-        const body = { error: true, code, message: `rejected: ${code}` };
+    describe("when the code is a quorum error code", () => {
+        test.each(QUORUM_ERROR_CODES)(
+            "throws QuorumRequestError with reason %s, the API message and the body",
+            (code) => {
+                const body = { error: true, code, message: `rejected: ${code}` };
 
-        try {
-            throwIfQuorumApiError(body);
-            expect.fail("Expected throwIfQuorumApiError to throw");
-        } catch (error) {
-            expect(error).toBeInstanceOf(QuorumRequestError);
-            const quorumError = error as QuorumRequestError;
-            expect(quorumError.reason).toBe(code);
-            expect(quorumError.code).toBe(CrossmintErrors.SIGNER_INVALID);
-            expect(quorumError.message).toBe(`rejected: ${code}`);
-            expect(quorumError.details).toBe(JSON.stringify(body));
-        }
+                try {
+                    throwIfQuorumApiError(body);
+                    expect.fail("Expected throwIfQuorumApiError to throw");
+                } catch (error) {
+                    expect(error).toBeInstanceOf(QuorumRequestError);
+                    const quorumError = error as QuorumRequestError;
+                    expect(quorumError.reason).toBe(code);
+                    expect(quorumError.code).toBe(CrossmintErrors.SIGNER_INVALID);
+                    expect(quorumError.message).toBe(`rejected: ${code}`);
+                    expect(quorumError.details).toBe(JSON.stringify(body));
+                }
+            }
+        );
+
+        test("falls back to a message naming the code when the API sends none", () => {
+            expect(() => throwIfQuorumApiError({ code: "QUORUM_TOO_FEW_MEMBERS" })).toThrow(
+                "The wallets API rejected the quorum request: QUORUM_TOO_FEW_MEMBERS"
+            );
+        });
     });
 
-    test("throws TransactionExpiredError, a TransactionFailedError, with the transaction id from the call site", () => {
+    describe("when the code is TRANSACTION_EXPIRED", () => {
         const body = { code: "TRANSACTION_EXPIRED", message: "The transaction expired before it could be submitted." };
 
-        try {
-            throwIfQuorumApiError(body, { transactionId: "tx-1" });
-            expect.fail("Expected throwIfQuorumApiError to throw");
-        } catch (error) {
-            expect(error).toBeInstanceOf(TransactionExpiredError);
-            expect(error).toBeInstanceOf(TransactionFailedError);
-            const expiredError = error as TransactionExpiredError;
-            expect(expiredError.transactionId).toBe("tx-1");
-            expect(expiredError.code).toBe(CrossmintErrors.TRANSACTION_FAILED);
-            expect(expiredError.message).toBe(body.message);
-            expect(expiredError.details).toBe(JSON.stringify(body));
-        }
+        test("throws TransactionExpiredError, a TransactionFailedError, with the API message and the body", () => {
+            try {
+                throwIfQuorumApiError(body, { transactionId: "tx-1" });
+                expect.fail("Expected throwIfQuorumApiError to throw");
+            } catch (error) {
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                expect(error).toBeInstanceOf(TransactionFailedError);
+                const expiredError = error as TransactionExpiredError;
+                expect(expiredError.code).toBe(CrossmintErrors.TRANSACTION_FAILED);
+                expect(expiredError.message).toBe(body.message);
+                expect(expiredError.details).toBe(JSON.stringify(body));
+            }
+        });
+
+        test.each([
+            { request: { transactionId: "tx-1" }, kind: "transaction" },
+            { request: { signatureId: "sig-1" }, kind: "signature" },
+            { request: {}, kind: "unknown" },
+        ])("carries the $kind request id the call site passed", ({ request }) => {
+            try {
+                throwIfQuorumApiError(body, request);
+                expect.fail("Expected throwIfQuorumApiError to throw");
+            } catch (error) {
+                const expiredError = error as TransactionExpiredError;
+                expect({
+                    transactionId: expiredError.transactionId,
+                    signatureId: expiredError.signatureId,
+                }).toEqual({ transactionId: undefined, signatureId: undefined, ...request });
+            }
+        });
     });
 
-    test("throws TransactionExpiredError without a transaction id when the call site has none", () => {
-        try {
-            throwIfQuorumApiError({ code: "TRANSACTION_EXPIRED" });
-            expect.fail("Expected throwIfQuorumApiError to throw");
-        } catch (error) {
-            expect(error).toBeInstanceOf(TransactionExpiredError);
-            expect((error as TransactionExpiredError).transactionId).toBeUndefined();
-        }
-    });
-
-    test("falls back to a descriptive message when the API sends none", () => {
-        expect(() => throwIfQuorumApiError({ code: "QUORUM_TOO_FEW_MEMBERS" })).toThrow(
-            "The wallets API rejected the quorum request: QUORUM_TOO_FEW_MEMBERS"
-        );
-    });
-
-    test("does not throw for bodies without a code or with an unrelated code", () => {
-        expect(() => throwIfQuorumApiError({ error: true, message: "Wallet not found" })).not.toThrow();
-        expect(() => throwIfQuorumApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).not.toThrow();
-        expect(() => throwIfQuorumApiError({ code: "QUORUM_MEMBER_NOT_DESIGNATED" })).not.toThrow();
-        expect(() => throwIfQuorumApiError(null)).not.toThrow();
+    describe("when the body has no code or an unrelated code", () => {
+        test("returns without throwing", () => {
+            expect(() => throwIfQuorumApiError({ error: true, message: "Wallet not found" })).not.toThrow();
+            expect(() => throwIfQuorumApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).not.toThrow();
+            expect(() => throwIfQuorumApiError({ code: "QUORUM_MEMBER_NOT_DESIGNATED" })).not.toThrow();
+            expect(() => throwIfQuorumApiError(null)).not.toThrow();
+        });
     });
 });
 

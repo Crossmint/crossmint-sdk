@@ -1,6 +1,6 @@
 import { isQuorumLocator, type QuorumLocator, type QuorumSigner, type SignerLocator } from "../signers/types";
 import { QuorumSelectionAmbiguousError } from "../utils/errors";
-import { quorumsWithMember } from "./members";
+import { isSameSignerLocator, quorumsWithMember } from "./members";
 
 /**
  * What the held key signs as. `self`: the single signer `locator`. `quorum`: a member of that quorum.
@@ -31,7 +31,7 @@ export function resolveActingRole(input: RoleInput): ActingRole {
     if (explicit != null) {
         return roleFromLocator(explicit);
     }
-    if (input.recoveryLocators.some((locator) => locator === heldLocator)) {
+    if (input.recoveryLocators.some((locator) => isSameSignerLocator(locator, heldLocator))) {
         return { kind: "self", locator: heldLocator };
     }
     if (input.scope === "signer-change") {
