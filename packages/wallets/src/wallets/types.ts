@@ -13,6 +13,7 @@ import type {
     PasskeySignResult,
     DeviceSignResult,
     DeviceSignerConfig,
+    ApiKeySignerLocator,
     DeviceSignerLocator,
     PasskeySignerConfig,
     PasskeyProvider,
@@ -206,13 +207,16 @@ export type Signer =
       }
     | (QuorumSigner & { status: SignerStatus; scopes?: Scope[] });
 
+// api-key and device signers are never quorum members (007 §7, "Config").
+type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
+
 /** Progress of one quorum entry on a request waiting for approvals. */
 export type QuorumApprovalProgress = {
     quorum: QuorumLocator;
     threshold: number;
     remaining: number;
-    pending: Array<Exclude<SignerLocator, QuorumLocator>>;
-    submitted: Array<Exclude<SignerLocator, QuorumLocator>>;
+    pending: QuorumMemberLocator[];
+    submitted: QuorumMemberLocator[];
 };
 
 // Approvals

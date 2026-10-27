@@ -440,6 +440,26 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
             expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
         });
 
+        it("does not approve a pending device registration and keeps the active signer", async () => {
+            const storage = makeStorage();
+            const pendingDevice = makeSigner("device", "device:pendingKey");
+            const manager = makeRealSignerManager([createQuorumApiEntry()], storage, {
+                signer: pendingDevice,
+                getSigner: vi.fn().mockResolvedValue({
+                    type: "device",
+                    locator: "device:pendingKey",
+                    publicKey: { x: "0x01", y: "0x02" },
+                    chains: { "base-sepolia": { id: "sig-1", status: "awaiting-approval" } },
+                }),
+            });
+            const approveSignature = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({ storage, manager, approveSignature });
+
+            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(manager.activeSigner).toBe(pendingDevice);
+            expect(approveSignature).not.toHaveBeenCalled();
+        });
+
         it("keeps a device signer that is already approved", async () => {
             const deviceLocator = "device:approvedKey";
             const storage = makeStorage({ hasKey: vi.fn().mockResolvedValue(true) });

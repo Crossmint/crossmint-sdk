@@ -234,9 +234,10 @@ export class SignerManager<C extends Chain> {
      * `approver` locator to send to the API when the wallet has several recovery methods.
      *
      * A recovery method selected via `useRecoveryMethod()` always wins. Otherwise, a wallet with a single
-     * recovery method authorizes with it whatever the active signer is, and a wallet with several needs
-     * `useSigner()` to have selected one of them: the API has to know which key will approve, and an
-     * operational signer cannot authorize these changes.
+     * recovery method authorizes with it whatever the active signer is, and so does a wallet whose other
+     * recovery methods are all quorums, which cannot authorize yet. A wallet with several recovery methods
+     * that sign alone needs `useSigner()` to have selected one of them: the API has to know which key will
+     * approve, and an operational signer cannot authorize these changes.
      */
     resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
         const selected = this.selectedRecovery;
