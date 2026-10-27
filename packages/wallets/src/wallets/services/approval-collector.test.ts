@@ -130,7 +130,11 @@ describe("collectApprovals", () => {
         });
 
         describe.each([
-            { limit: "remaining" as const, signedCount: 2, behaviour: "signs at most the approvals the quorum still needs" },
+            {
+                limit: "remaining" as const,
+                signedCount: 2,
+                behaviour: "signs at most the approvals the quorum still needs",
+            },
             { limit: "all" as const, signedCount: 3, behaviour: "signs every held pending member" },
         ])("when the limit is $limit", ({ limit, signedCount, behaviour }) => {
             it(`${behaviour}, in pending order`, async () => {
@@ -167,14 +171,12 @@ describe("collectApprovals", () => {
             const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry({ threshold: 2 }) });
             const [first, second] = memberMessages(entry);
             let finishFirstSignature = () => {};
-            const sign = vi
-                .fn(signWithHeldKey)
-                .mockImplementationOnce(
-                    (signer, message) =>
-                        new Promise((resolve) => {
-                            finishFirstSignature = () => resolve({ signature: signatureOf(signer.locator(), message) });
-                        })
-                );
+            const sign = vi.fn(signWithHeldKey).mockImplementationOnce(
+                (signer, message) =>
+                    new Promise((resolve) => {
+                        finishFirstSignature = () => resolve({ signature: signatureOf(signer.locator(), message) });
+                    })
+            );
             const held = [heldSigner(first.locator), heldSigner(second.locator)];
 
             const collecting = collectApprovals([entry], createSigning({ held, sign }));
@@ -208,9 +210,7 @@ describe("collectApprovals", () => {
 
             const approvals = await collectApprovals([entry, flatApproval()], createSigning({ held }));
 
-            expect(approvals).toEqual(
-                approvalsSignedBy([{ locator: FLAT_LOCATOR, message: "0xflat" }, first, second])
-            );
+            expect(approvals).toEqual(approvalsSignedBy([{ locator: FLAT_LOCATOR, message: "0xflat" }, first, second]));
         });
     });
 });

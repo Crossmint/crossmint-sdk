@@ -14,7 +14,11 @@ import {
 import { walletsLogger } from "../../logger";
 import type { PendingApproval } from "../types";
 import { createExpiredRequest, createQuorumApiEntry, createQuorumPendingApproval } from "../__tests__/test-helpers";
-import { waitForSignatureCompletion, waitForTransactionCompletion, waitForTransactionOutcome } from "./operation-poller";
+import {
+    waitForSignatureCompletion,
+    waitForTransactionCompletion,
+    waitForTransactionOutcome,
+} from "./operation-poller";
 
 const WALLET_LOCATOR = "me:evm:smart" as WalletLocator;
 const EXPIRY_MESSAGE = "The transaction expired before it could be submitted. Create a new transaction.";
