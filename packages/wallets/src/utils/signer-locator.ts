@@ -10,6 +10,25 @@ import type { RegisterSignerPasskeyParams } from "../api";
 import { normalizeEmail } from "./signer-validation";
 
 const PASSKEY_LOCATOR_PREFIX = "passkey:";
+const QUORUM_LOCATOR_PREFIX = "quorum:";
+
+/** True for any `quorum:` locator, valid or not; `isQuorumLocator` also checks the id. */
+export function hasQuorumLocatorPrefix(locator: string): boolean {
+    return locator.startsWith(QUORUM_LOCATOR_PREFIX);
+}
+
+// EVM addresses ignore case, so `external-wallet:0x…` locators compare in lowercase (Kotlin `isSameLocator`).
+// Every other locator compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
+export function comparableLocator(locator: string): string {
+    if (locator.startsWith("external-wallet:0x")) {
+        return locator.toLowerCase();
+    }
+    return locator;
+}
+
+export function isSameSignerLocator(left: string, right: string): boolean {
+    return comparableLocator(left) === comparableLocator(right);
+}
 
 /** The credential id from `id` or a `passkey:{id}` locator, or null when the config carries neither. */
 export function passkeyCredentialId(config: Pick<PasskeySignerConfig, "id" | "locator">): string | null {

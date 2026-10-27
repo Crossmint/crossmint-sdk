@@ -18,8 +18,7 @@ import {
     throwIfQuorumSigner,
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
-import { isSameSignerLocator } from "../../quorum/members";
-import { getSignerLocator } from "../../utils/signer-locator";
+import { getSignerLocator, isSameSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";

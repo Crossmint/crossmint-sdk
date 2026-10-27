@@ -6,7 +6,7 @@ import {
     type SignerLocator,
 } from "../signers/types";
 import type { PendingApproval, QuorumApprovalProgress } from "../wallets/types";
-import { isSameSignerLocator } from "./members";
+import { isSameSignerLocator } from "../utils/signer-locator";
 
 export type QuorumPendingApproval = Extract<PendingApproval, { signer: { type: "quorum" } }>;
 export type FlatPendingApproval = Exclude<PendingApproval, QuorumPendingApproval>;

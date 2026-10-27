@@ -1,17 +1,5 @@
 import type { QuorumSigner, SignerLocator } from "../signers/types";
-
-// EVM addresses ignore case, so `external-wallet:0x…` locators compare in lowercase (Kotlin `isSameLocator`).
-// Every other locator compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
-function comparableLocator(locator: string): string {
-    if (locator.startsWith("external-wallet:0x")) {
-        return locator.toLowerCase();
-    }
-    return locator;
-}
-
-export function isSameSignerLocator(left: string, right: string): boolean {
-    return comparableLocator(left) === comparableLocator(right);
-}
+import { comparableLocator, isSameSignerLocator } from "../utils/signer-locator";
 
 /** Every quorum that lists `memberLocator` as a member. */
 export function quorumsWithMember(quorums: QuorumSigner[], memberLocator: SignerLocator): QuorumSigner[] {

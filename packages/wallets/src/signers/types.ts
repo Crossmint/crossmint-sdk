@@ -153,13 +153,6 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type QuorumLocator = `quorum:${string}`;
 
-const QUORUM_LOCATOR_PREFIX = "quorum:";
-
-/** True for any `quorum:` locator, valid or not; `isQuorumLocator` also checks the id. */
-export function hasQuorumLocatorPrefix(locator: string): boolean {
-    return locator.startsWith(QUORUM_LOCATOR_PREFIX);
-}
-
 // Crossmint assigns quorum ids as version-8 UUIDs (the API spec's locator pattern).
 const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
