@@ -26,75 +26,51 @@ async function runPodfileMod(podfile: string): Promise<string> {
     }
 }
 
+function readFixture(sdk: string, name: string): string {
+    return fs.readFileSync(path.join(FIXTURES_DIR, sdk, name), "utf8");
+}
+
 describe("withDeviceSigner", () => {
     describe.each(SDK_VERSIONS)("with the Expo %s Podfile template", (sdk) => {
         let templatePodfile: string;
 
         beforeEach(() => {
-            templatePodfile = fs.readFileSync(path.join(FIXTURES_DIR, sdk, "Podfile"), "utf8");
+            templatePodfile = readFixture(sdk, "Podfile");
         });
 
-        test("injects the CrossmintDeviceSigner hooks into post_install", async () => {
-            const podfile = await runPodfileMod(templatePodfile);
-
-            expect(podfile).toContain("# @crossmint/expo-device-signer: CrossmintDeviceSigner autolinking exclusion");
-            expect(podfile).toMatch(/post_install do \|installer\|\n {4}# @crossmint\/expo-device-signer/);
-            expect(podfile).toContain("if target.name == 'CrossmintDeviceSigner'");
-            expect(podfile).toContain("config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''");
+        test("leaves the Podfile unchanged", async () => {
+            expect(await runPodfileMod(templatePodfile)).toBe(templatePodfile);
         });
 
-        test("leaves the prebuilt React Native core settings to Expo", async () => {
-            const podfile = await runPodfileMod(templatePodfile);
+        describe("when the Podfile was written by plugin version 2.0.x", () => {
+            test("removes the CrossmintDeviceSigner simulator fix", async () => {
+                const previous = readFixture(sdk, "Podfile.previous-plugin");
 
-            expect(podfile).not.toContain("ENV.delete('RCT_USE_RN_DEP')");
-            expect(podfile).not.toContain("ENV.delete('RCT_USE_PREBUILT_RNCORE')");
-            expect(podfile).not.toContain("GCC_PREFIX_HEADER");
+                const podfile = await runPodfileMod(previous);
+
+                expect(previous).toContain("if target.name == 'CrossmintDeviceSigner'");
+                expect(podfile).toBe(templatePodfile);
+            });
         });
 
-        test("keeps a single post_install block", async () => {
-            const podfile = await runPodfileMod(templatePodfile);
+        describe("when the Podfile was written by plugin version 1.7.x or earlier", () => {
+            test("removes the old post_install block and the build from source lines", async () => {
+                const legacy = readFixture(sdk, "Podfile.legacy-plugin");
 
-            expect(podfile.match(/post_install do \|installer\|/g)).toHaveLength(1);
-        });
+                const podfile = await runPodfileMod(legacy);
 
-        test("produces the same Podfile when it runs twice", async () => {
-            const once = await runPodfileMod(templatePodfile);
-            const twice = await runPodfileMod(once);
-
-            expect(twice).toBe(once);
-        });
-
-        test("keeps every line of the template, in order", async () => {
-            const podfileLines = (await runPodfileMod(templatePodfile)).split("\n");
-            let position = 0;
-
-            for (const line of templatePodfile.split("\n")) {
-                position = podfileLines.indexOf(line, position);
-                expect(position, `template line missing: ${line}`).toBeGreaterThanOrEqual(0);
-                position += 1;
-            }
-        });
-    });
-
-    describe("when the Podfile was written by the previous plugin version", () => {
-        test("replaces the old injection with the current one", async () => {
-            const legacy = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-58", "Podfile.legacy-plugin"), "utf8");
-            const template = fs.readFileSync(path.join(FIXTURES_DIR, "sdk-58", "Podfile"), "utf8");
-
-            const podfile = await runPodfileMod(legacy);
-
-            expect(legacy).toContain("CROSSMINT_RN_PREBUILT_FIX");
-            expect(podfile).not.toContain("CROSSMINT_RN_PREBUILT_FIX");
-            expect(podfile).not.toContain("CrossmintExpoFixes.pch");
-            expect(podfile).toBe(await runPodfileMod(template));
+                expect(legacy).toContain("CROSSMINT_RN_PREBUILT_FIX");
+                expect(legacy).toContain("CrossmintExpoFixes.pch");
+                expect(podfile).toBe(templatePodfile);
+            });
         });
     });
 
     describe("when the Podfile has no post_install block", () => {
-        test("throws a descriptive error", async () => {
-            await expect(runPodfileMod("platform :ios, '15.1'\ntarget 'App' do\nend\n")).rejects.toThrow(
-                "Could not inject post_install hook: expected 'post_install do |installer|' in Podfile"
-            );
+        test("leaves the Podfile unchanged", async () => {
+            const podfile = "platform :ios, '15.1'\ntarget 'App' do\nend\n";
+
+            expect(await runPodfileMod(podfile)).toBe(podfile);
         });
     });
 });
