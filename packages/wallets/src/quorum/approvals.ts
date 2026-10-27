@@ -1,4 +1,5 @@
 import {
+    isQuorumSigner,
     requireQuorumLocator,
     requireQuorumMemberLocator,
     type QuorumLocator,
@@ -6,7 +7,7 @@ import {
     type SignerLocator,
 } from "../signers/types";
 import type { PendingApproval, QuorumApprovalProgress } from "../wallets/types";
-import { isSameSignerLocator } from "./members";
+import { isSameSignerLocator } from "../utils/signer-locator";
 
 export type QuorumPendingApproval = Extract<PendingApproval, { signer: { type: "quorum" } }>;
 export type FlatPendingApproval = Exclude<PendingApproval, QuorumPendingApproval>;
@@ -21,7 +22,7 @@ export type PlannedMemberApproval = {
 };
 
 export function isQuorumPendingApproval(entry: PendingApproval): entry is QuorumPendingApproval {
-    return entry.signer.type === "quorum";
+    return isQuorumSigner(entry.signer);
 }
 
 export function splitPendingApprovals(pending: PendingApproval[]): {

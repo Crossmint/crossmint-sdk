@@ -1,28 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { isQuorumMemberLocator } from "../signers/types";
 import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
-import { isSameSignerLocator, quorumsWithComposition, quorumsWithMember } from "./members";
+import { quorumsWithComposition, quorumsWithMember } from "./members";
 
 const memberLocators = (quorum: ReturnType<typeof createQuorumApiEntry>) =>
     quorum.members.map((member) => member.locator);
 
 const EVM_CHECKSUMMED = "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01";
-const SOLANA_ADDRESS = "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
-
-describe("isSameSignerLocator", () => {
-    it("ignores case for EVM external-wallet locators", () => {
-        expect(isSameSignerLocator(EVM_CHECKSUMMED, EVM_CHECKSUMMED.toLowerCase())).toBe(true);
-    });
-
-    it.each([
-        { kind: "Solana external-wallet", locator: SOLANA_ADDRESS },
-        { kind: "email", locator: "email:Member@example.com" },
-        { kind: "server", locator: "server:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01" },
-    ])("compares $kind locators exactly", ({ locator }) => {
-        expect(isSameSignerLocator(locator, locator)).toBe(true);
-        expect(isSameSignerLocator(locator, locator.toLowerCase())).toBe(false);
-    });
-});
 
 describe("quorumsWithMember", () => {
     it("returns every quorum that lists the locator as a member", () => {
@@ -120,10 +104,14 @@ describe("isQuorumMemberLocator", () => {
         expect(isQuorumMemberLocator(locator)).toBe(true);
     });
 
-    it.each(["api-key", "api-key:0x1234", "device:public-key", "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21", "email"])(
-        "rejects %s",
-        (locator) => {
-            expect(isQuorumMemberLocator(locator)).toBe(false);
-        }
-    );
+    it.each([
+        "api-key",
+        "api-key:0x1234",
+        "device:public-key",
+        "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21",
+        "email",
+        "email:",
+    ])("rejects %s", (locator) => {
+        expect(isQuorumMemberLocator(locator)).toBe(false);
+    });
 });

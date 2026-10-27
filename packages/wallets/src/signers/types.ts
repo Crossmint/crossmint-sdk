@@ -10,6 +10,7 @@ import type {
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
+import { parseSignerLocator } from "../utils/signer-locator";
 import { quorumSignerNotSupported } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
@@ -153,13 +154,6 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type QuorumLocator = `quorum:${string}`;
 
-const QUORUM_LOCATOR_PREFIX = "quorum:";
-
-/** True for any `quorum:` locator, valid or not; `isQuorumLocator` also checks the id. */
-export function hasQuorumLocatorPrefix(locator: string): boolean {
-    return locator.startsWith(QUORUM_LOCATOR_PREFIX);
-}
-
 // Crossmint assigns quorum ids as version-8 UUIDs (the API spec's locator pattern).
 const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -182,7 +176,8 @@ export type QuorumMemberType = (typeof QUORUM_MEMBER_TYPES)[number];
 export type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
 
 export function isQuorumMemberLocator(locator: string): locator is QuorumMemberLocator {
-    return QUORUM_MEMBER_TYPES.some((type) => locator.startsWith(`${type}:`));
+    const { type, value } = parseSignerLocator(locator);
+    return value !== "" && QUORUM_MEMBER_TYPES.some((memberType) => memberType === type);
 }
 
 export function requireQuorumMemberLocator(locator: string): QuorumMemberLocator {
