@@ -10,7 +10,7 @@ import type {
     TransactionInputOptions,
 } from "./types";
 import { Wallet } from "./wallet";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
@@ -119,6 +119,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         });
 
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 

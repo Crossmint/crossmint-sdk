@@ -52,6 +52,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
+    throwIfQuorumApiError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import {
@@ -552,6 +553,7 @@ export class Wallet<C extends Chain> {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
@@ -737,6 +739,7 @@ export class Wallet<C extends Chain> {
                 if (response.code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE) {
                     throw new DeviceSignerNotSupportedError(response.message);
                 }
+                throwIfQuorumApiError(response);
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
 
@@ -839,6 +842,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeSigner.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
             }
 
@@ -902,6 +906,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.addRecoveryMethod.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new InvalidSignerError(`Failed to add recovery method: ${JSON.stringify(response.message)}`);
             }
 
@@ -956,6 +961,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeRecoveryMethod.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new Error(`Failed to remove recovery method: ${JSON.stringify(response)}`);
             }
 
@@ -1569,6 +1575,7 @@ export class Wallet<C extends Chain> {
 
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
+            throwIfQuorumApiError(approvedTransaction, { transactionId });
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 
@@ -1582,6 +1589,7 @@ export class Wallet<C extends Chain> {
 
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
+            throwIfQuorumApiError(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
         }
 

@@ -11,7 +11,7 @@ import type {
     UpgradeOptions,
 } from "./types";
 import { Wallet } from "./wallet";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
 
@@ -229,6 +229,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         });
 
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
@@ -256,6 +257,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             if (type === "upgrade-wallet" && isWalletLockedError(response)) {
                 return null;
             }
+            throwIfQuorumApiError(response);
             throw new TransactionNotCreatedError(JSON.stringify(response));
         }
 

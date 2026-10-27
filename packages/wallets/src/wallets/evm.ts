@@ -13,7 +13,12 @@ import type {
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
-import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
+import {
+    InvalidTypedDataError,
+    SignatureNotCreatedError,
+    throwIfQuorumApiError,
+    TransactionNotCreatedError,
+} from "../utils/errors";
 import type { CreateTransactionParams, CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
 
@@ -113,6 +118,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
         if ("error" in signatureCreationResponse) {
             walletsLogger.error("evmWallet.signMessage.error", { error: signatureCreationResponse });
+            throwIfQuorumApiError(signatureCreationResponse);
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
@@ -183,6 +189,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
         if ("error" in signatureCreationResponse) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: signatureCreationResponse });
+            throwIfQuorumApiError(signatureCreationResponse);
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
@@ -225,6 +232,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             },
         } as CreateTransactionParams);
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
