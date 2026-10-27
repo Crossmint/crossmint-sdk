@@ -48,7 +48,7 @@ jobs:
         timeout-minutes: 10
         permissions:
             contents: read
-            security-events: write # zizmor-action SARIF upload (harmless if advanced-security=false)
+            security-events: write # needed for the zizmor-action SARIF upload
         steps:
             - name: Checkout repository
               uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -58,8 +58,7 @@ jobs:
             - name: Run zizmor
               uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0
               with:
-                  advanced-security: "false"
-                  annotations: "true"
+                  advanced-security: "true"
                   # TODO(SECUR-153): the repo still carries a long tail of medium/low findings this
                   # scan wasn't scoped to fix. Drop this once they're triaged so the check goes
                   # red on any finding, not just high-severity ones.
