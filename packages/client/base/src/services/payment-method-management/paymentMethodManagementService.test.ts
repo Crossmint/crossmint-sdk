@@ -71,6 +71,24 @@ describe("paymentMethodManagementService.getUrl", () => {
         ).toBe("true");
     });
 
+    it("carries collectBillingAddress only when the host sets it, so the iframe default applies otherwise", () => {
+        const service = makeService();
+
+        expect(new URL(service.iframe.getUrl({ jwt: "jwt-token" })).searchParams.has("collectBillingAddress")).toBe(
+            false
+        );
+        expect(
+            new URL(service.iframe.getUrl({ jwt: "jwt-token", collectBillingAddress: false })).searchParams.has(
+                "collectBillingAddress"
+            )
+        ).toBe(false);
+        expect(
+            new URL(service.iframe.getUrl({ jwt: "jwt-token", collectBillingAddress: true })).searchParams.get(
+                "collectBillingAddress"
+            )
+        ).toBe("true");
+    });
+
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
         const service = makeService();
 

@@ -32,6 +32,14 @@ export interface CrossmintPaymentMethodManagementProps {
      * `ref` and call `ref.current.submit()` from your own button.
      */
     hideSubmitButton?: boolean;
+    /**
+     * Also collect the card's billing address when adding a new card (default `false`).
+     * When enabled, the card form requires a valid billing address before it saves —
+     * for built-in and `ref.submit()` submissions alike. The collected address is saved
+     * with the card and comes back on `card.billing.address` of the emitted method.
+     * Applies to cards only; other method types ignore it.
+     */
+    collectBillingAddress?: boolean;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 
@@ -87,11 +95,33 @@ export type CrossmintCardPaymentMethod = {
             // 4 digit year
             year: string;
         };
+        /**
+         * Billing details the card was saved with. `address` is present when the card
+         * was saved with `collectBillingAddress` (or the account has one on file).
+         */
+        billing?: CrossmintPaymentMethodBillingDetails;
     };
     default?: boolean;
     display?: {
         imageUrl?: string;
     };
+};
+
+export type CrossmintPaymentMethodBillingDetails = {
+    name: string;
+    address?: CrossmintPaymentMethodBillingAddress;
+    phone?: string;
+};
+
+export type CrossmintPaymentMethodBillingAddress = {
+    /** 2-letter ISO country code. */
+    country: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    stateOrRegion?: string;
+    /** May be empty for countries whose address format has no postal code. */
+    postalCode: string;
 };
 
 /**

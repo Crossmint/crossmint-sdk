@@ -23,6 +23,7 @@ function PaymentMethodManagementWrapper() {
     const { jwt } = useCrossmintAuth();
     const [submitting, setSubmitting] = useState(false);
     const [ownButton, setOwnButton] = useState(false);
+    const [collectBillingAddress, setCollectBillingAddress] = useState(false);
     const [result, setResult] = useState<PaymentMethodSubmitResult | null>(null);
     const pmm = useRef<CrossmintPaymentMethodManagementRef>(null);
 
@@ -46,11 +47,20 @@ function PaymentMethodManagementWrapper() {
                 <input type="checkbox" checked={ownButton} onChange={(e) => setOwnButton(e.target.checked)} /> Use my
                 own submit button
             </label>
+            <label style={{ display: "block", marginBottom: 16 }}>
+                <input
+                    type="checkbox"
+                    checked={collectBillingAddress}
+                    onChange={(e) => setCollectBillingAddress(e.target.checked)}
+                />{" "}
+                Collect billing address
+            </label>
             <CrossmintPaymentMethodManagement
                 ref={pmm}
                 jwt={jwt}
                 allowedModes={["new", "existing"]}
                 hideSubmitButton={ownButton}
+                collectBillingAddress={collectBillingAddress}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
             />
             {ownButton && (
