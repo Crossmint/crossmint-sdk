@@ -10,6 +10,7 @@ import type {
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
+import { parseSignerLocator } from "../utils/signer-locator";
 import { quorumSignerNotSupported } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
@@ -175,7 +176,8 @@ export type QuorumMemberType = (typeof QUORUM_MEMBER_TYPES)[number];
 export type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
 
 export function isQuorumMemberLocator(locator: string): locator is QuorumMemberLocator {
-    return QUORUM_MEMBER_TYPES.some((type) => locator.startsWith(`${type}:`));
+    const { type, value } = parseSignerLocator(locator);
+    return value !== "" && QUORUM_MEMBER_TYPES.some((memberType) => memberType === type);
 }
 
 export function requireQuorumMemberLocator(locator: string): QuorumMemberLocator {

@@ -104,10 +104,14 @@ describe("isQuorumMemberLocator", () => {
         expect(isQuorumMemberLocator(locator)).toBe(true);
     });
 
-    it.each(["api-key", "api-key:0x1234", "device:public-key", "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21", "email"])(
-        "rejects %s",
-        (locator) => {
-            expect(isQuorumMemberLocator(locator)).toBe(false);
-        }
-    );
+    it.each([
+        "api-key",
+        "api-key:0x1234",
+        "device:public-key",
+        "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21",
+        "email",
+        "email:",
+    ])("rejects %s", (locator) => {
+        expect(isQuorumMemberLocator(locator)).toBe(false);
+    });
 });

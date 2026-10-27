@@ -85,7 +85,7 @@ export function getSignerLocator<C extends Chain>(
 /**
  * Parses a signer locator string into its type and value components.
  */
-export function parseSignerLocator(locator: SignerLocator): { type: string; value: string } {
+export function parseSignerLocator(locator: string): { type: string; value: string } {
     const colonIndex = locator.indexOf(":");
     if (colonIndex === -1) {
         return { type: locator, value: "" };
