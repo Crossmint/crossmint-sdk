@@ -70,19 +70,17 @@ export function planMemberApprovals(
     const planned: PlannedMemberApproval[] = [];
     for (const entry of quorums) {
         const { remaining, pending } = entry.quorumApprovals;
-        // A satisfied quorum needs no member, whatever the limit.
-        if (remaining <= 0) {
+        const heldEntries = pending.filter(({ member }) => isHeld(member.locator));
+        // A satisfied quorum needs no member, whatever the limit. Unheld quorums and members are never validated.
+        if (remaining <= 0 || heldEntries.length === 0) {
             continue;
         }
         const quorum = requireQuorumLocator(entry.signer.locator);
-        // Only held members are read, so a malformed member this client does not hold is skipped.
-        const heldPending = pending
-            .filter(({ member }) => isHeld(member.locator))
-            .map(({ member, message }) => ({
-                quorum,
-                memberLocator: requireQuorumMemberLocator(member.locator),
-                message,
-            }));
+        const heldPending = heldEntries.map(({ member, message }) => ({
+            quorum,
+            memberLocator: requireQuorumMemberLocator(member.locator),
+            message,
+        }));
         const count = limit === "remaining" ? remaining : heldPending.length;
         planned.push(...heldPending.slice(0, count));
     }

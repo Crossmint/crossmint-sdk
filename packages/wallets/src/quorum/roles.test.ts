@@ -64,6 +64,16 @@ describe("resolveActingRole", () => {
 
                 expect(role).toEqual({ kind: "self", locator: HELD });
             });
+
+            it("acts as the stored recovery locator when an EVM address differs only in case", () => {
+                const stored: SignerLocator = "external-wallet:0xabcdef0123456789abcdef0123456789abcdef01";
+                const held: SignerLocator = "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01";
+
+                expect(resolveActingRole(input({ heldLocator: held, recoveryLocators: [stored] }))).toEqual({
+                    kind: "self",
+                    locator: stored,
+                });
+            });
         });
 
         describe("when the key is a member of one recovery quorum only", () => {

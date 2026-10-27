@@ -46,12 +46,21 @@ describe("toQuorumProgress", () => {
         expect(() => toQuorumProgress(entry)).toThrow("Malformed quorum locator: 3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21");
     });
 
-    it("throws for a member locator that cannot belong to a quorum", () => {
-        const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
-        entry.quorumApprovals.pending[0].member.locator = "device:public-key";
+    it.each(["pending", "submitted"] as const)(
+        "throws for a %s member locator that cannot belong to a quorum",
+        (list) => {
+            const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
+            const [submittedMember, ...pendingMembers] = quorum.members;
+            const entry = createQuorumPendingApproval({
+                quorum,
+                pending: pendingMembers,
+                submitted: [submittedMember],
+            });
+            entry.quorumApprovals[list][0].member.locator = "device:public-key";
 
-        expect(() => toQuorumProgress(entry)).toThrow("Malformed quorum member locator: device:public-key");
-    });
+            expect(() => toQuorumProgress(entry)).toThrow("Malformed quorum member locator: device:public-key");
+        }
+    );
 });
 
 describe("awaitsQuorumOnly", () => {
@@ -192,6 +201,27 @@ describe("planMemberApprovals", () => {
             expect(() => planMemberApprovals([entry], ["api-key"], "remaining")).toThrow(
                 "Malformed quorum member locator: api-key"
             );
+        });
+    });
+
+    describe("when the quorum locator is malformed", () => {
+        const malformedEntry = (quorum: ReturnType<typeof createQuorumApiEntry>) => ({
+            ...createQuorumPendingApproval({ quorum }),
+            signer: { type: "quorum" as const, locator: "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21" },
+        });
+
+        it("skips the quorum when this client holds none of its members", () => {
+            const entry = malformedEntry(createQuorumApiEntry());
+
+            expect(planMemberApprovals([entry], ["email:outsider@example.com"], "remaining")).toEqual([]);
+        });
+
+        it("throws when this client holds one of its members", () => {
+            const quorum = createQuorumApiEntry();
+
+            expect(() =>
+                planMemberApprovals([malformedEntry(quorum)], [quorum.members[0].locator], "remaining")
+            ).toThrow("Malformed quorum locator: 3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21");
         });
     });
 

@@ -31,8 +31,10 @@ export function resolveActingRole(input: RoleInput): ActingRole {
     if (explicit != null) {
         return roleFromLocator(explicit);
     }
-    if (input.recoveryLocators.some((locator) => isSameSignerLocator(locator, heldLocator))) {
-        return { kind: "self", locator: heldLocator };
+    // Returns the stored spelling, which can differ in case for EVM addresses (Kotlin parity).
+    const recoveryLocator = input.recoveryLocators.find((locator) => isSameSignerLocator(locator, heldLocator));
+    if (recoveryLocator != null) {
+        return { kind: "self", locator: recoveryLocator };
     }
     if (input.scope === "signer-change") {
         return singleQuorumRole(quorumsWithMember(input.recoveryQuorums, heldLocator)) ?? { kind: "none" };
