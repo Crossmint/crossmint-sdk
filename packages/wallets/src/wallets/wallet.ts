@@ -32,7 +32,9 @@ import type {
     PrepareOnly,
     RecoverySignerConfigFor,
     SendTokenTransactionOptions,
+    SignerOption,
 } from "./types";
+import { isSignerLocatorOption } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
@@ -319,6 +321,22 @@ export class Wallet<C extends Chain> {
         return this.#serverSignerResolver.apiLocator(signer);
     }
 
+    /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
+    protected resolveSignerParams(options?: { signer?: SignerOption }): { signer: string } {
+        if (options?.signer == null) {
+            return { signer: this.#signerManager.require().locator() };
+        }
+        return { signer: this.resolveSignerOption(options.signer) };
+    }
+
+    /** The API locator of a call's `signer` option. */
+    protected resolveSignerOption(signer: SignerOption): string {
+        if (isSignerLocatorOption(signer)) {
+            return signer;
+        }
+        return this.resolveServerSignerApiLocator(signer);
+    }
+
     /**
      * Get the primary recovery signer config. Use {@link recoveryMethods} for the full list on wallets
      * created with several recovery signers.
@@ -521,21 +539,11 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const walletSigner = this.#signerManager.require();
-
-        let signer: string;
-        if (options?.signer == null) {
-            signer = walletSigner.locator();
-        } else if (typeof options.signer === "string") {
-            signer = options.signer;
-        } else {
-            signer = this.resolveServerSignerApiLocator(options.signer);
-        }
 
         const sendParams = {
             recipient,
             amount,
-            signer,
+            ...this.resolveSignerParams(options),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);

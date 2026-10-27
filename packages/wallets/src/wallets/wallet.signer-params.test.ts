@@ -129,22 +129,28 @@ describe("acting signer sent with a new transaction", () => {
         });
     });
 
-    describe("send with no active signer", () => {
+    // An external-wallet recovery method without onSign cannot become the active signer on its own.
+    const WALLET_ADDRESSES: Record<string, string> = {
+        "base-sepolia": RECIPIENT,
+        solana: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+        stellar: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
+    };
+
+    describe.each(SIGNER_PATHS)("$name with no active signer", ({ chain, create }) => {
         it("throws before calling the API, even with an explicit signer", async () => {
             const wallet = new Wallet(
                 {
-                    chain: "base-sepolia",
-                    address: RECIPIENT,
-                    recovery: { type: "external-wallet", address: "0x2222222222222222222222222222222222222222" },
+                    chain,
+                    address: WALLET_ADDRESSES[chain],
+                    recovery: { type: "external-wallet", address: "RecoveryAddress123" },
                 },
                 api as unknown as ApiClient
             );
             await wallet.waitForInit();
 
-            await expect(
-                wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true, signer: EXPLICIT_LOCATOR })
-            ).rejects.toThrow();
+            await expect(create(wallet, EXPLICIT_LOCATOR)).rejects.toThrow();
             expect(api.send).not.toHaveBeenCalled();
+            expect(api.createTransaction).not.toHaveBeenCalled();
         });
     });
 });

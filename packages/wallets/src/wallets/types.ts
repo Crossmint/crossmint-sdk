@@ -31,8 +31,15 @@ export type PrepareOnly<T extends boolean = boolean> = {
 
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
+/** The signer a call acts as: its locator, or a server signer config the SDK derives the locator from. */
+export type SignerOption = string | ServerSignerConfig;
+
+export function isSignerLocatorOption(signer: SignerOption): signer is string {
+    return typeof signer === "string";
+}
+
 export type TransactionInputOptions = PrepareOnly & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
@@ -49,11 +56,11 @@ export type AddSignerOptions = PrepareOnly & {
 export type RemoveSignerOptions = PrepareOnly;
 
 export type UpgradeOptions = Partial<PrepareOnly> & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type MigrateOptions = Partial<PrepareOnly> & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
