@@ -24,9 +24,7 @@ import {
     throwIfRecoverySignerApiError,
     throwIfRequestExpired,
 } from "./errors";
-import { createExpiredRequest } from "../wallets/__tests__/test-helpers";
-
-const EXPIRY_MESSAGE = "The transaction expired before it could be submitted. Create a new transaction.";
+import { createExpiredRequest, TRANSACTION_EXPIRED_API_MESSAGE } from "../wallets/__tests__/test-helpers";
 
 describe("throwIfCrossmintApiAuthError", () => {
     test("throws JWTExpiredError with the reported expiry when the code is ERROR_JWT_EXPIRED", () => {
@@ -203,7 +201,9 @@ describe("throwIfQuorumApiError", () => {
         });
 
         test("falls back to the API's expiry message when the API sends none", () => {
-            expect(() => throwIfQuorumApiError({ code: "TRANSACTION_EXPIRED" })).toThrow(EXPIRY_MESSAGE);
+            expect(() => throwIfQuorumApiError({ code: "TRANSACTION_EXPIRED" })).toThrow(
+                TRANSACTION_EXPIRED_API_MESSAGE
+            );
         });
 
         test.each([
@@ -248,7 +248,7 @@ describe("throwIfRequestExpired", () => {
             } catch (error) {
                 expect(error).toBeInstanceOf(TransactionExpiredError);
                 const expiredError = error as TransactionExpiredError;
-                expect(expiredError.message).toBe(EXPIRY_MESSAGE);
+                expect(expiredError.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
                 expect(expiredError.details).toBe(JSON.stringify(response));
                 expect({
                     transactionId: expiredError.transactionId,

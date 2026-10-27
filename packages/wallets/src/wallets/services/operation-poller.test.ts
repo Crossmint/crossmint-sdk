@@ -13,7 +13,12 @@ import {
 } from "../../utils/errors";
 import { walletsLogger } from "../../logger";
 import type { PendingApproval } from "../types";
-import { createExpiredRequest, createQuorumApiEntry, createQuorumPendingApproval } from "../__tests__/test-helpers";
+import {
+    createExpiredRequest,
+    createQuorumApiEntry,
+    createQuorumPendingApproval,
+    TRANSACTION_EXPIRED_API_MESSAGE,
+} from "../__tests__/test-helpers";
 import {
     waitForSignatureCompletion,
     waitForTransactionCompletion,
@@ -21,7 +26,8 @@ import {
 } from "./operation-poller";
 
 const WALLET_LOCATOR = "me:evm:smart" as WalletLocator;
-const EXPIRY_MESSAGE = "The transaction expired before it could be submitted. Create a new transaction.";
+const AWAITING_APPROVAL_MESSAGE =
+    "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
 
 const txSuccess = (id: string, onChain: Record<string, unknown>) => ({ id, status: "success", onChain }) as any;
 const txAwaiting = (id: string, approvals?: { pending: PendingApproval[] }) =>
@@ -118,8 +124,7 @@ describe("operation-poller", () => {
                 title: "throws TransactionAwaitingApprovalError when transaction is awaiting-approval",
                 response: { id: "txn-await", status: "awaiting-approval" } as any,
                 errorClass: TransactionAwaitingApprovalError,
-                message:
-                    "Transaction is awaiting approval. Please submit required approvals before waiting for completion.",
+                message: AWAITING_APPROVAL_MESSAGE,
             },
             {
                 title: "throws TransactionHashNotFoundError when success response has neither txId nor txHash",
@@ -239,9 +244,20 @@ describe("operation-poller", () => {
 
                 expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
                 expect(error.transactionId).toBe("txn-quorum");
-                expect(error.message).toBe(
-                    "Transaction is awaiting approval. Please submit required approvals before waiting for completion."
-                );
+                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
+            });
+        });
+
+        describe("when an awaiting quorum entry has a locator the SDK rejects", () => {
+            it("throws the malformed locator error, not TransactionAwaitingApprovalError", async () => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                const malformed = { ...entry, signer: { type: "quorum" as const, locator: "quorum:garbage" } };
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-malformed", { pending: [malformed] }));
+
+                const error = await settleError(pollTx("txn-malformed"));
+
+                expect(error).not.toBeInstanceOf(TransactionAwaitingApprovalError);
+                expect(error.message).toBe("Malformed quorum locator: quorum:garbage");
             });
         });
 
@@ -327,9 +343,7 @@ describe("operation-poller", () => {
 
                 expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
                 expect(error.transactionId).toBe("txn-awaiting");
-                expect(error.message).toBe(
-                    "Transaction is awaiting approval. Please submit required approvals before waiting for completion."
-                );
+                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
             });
         });
 
@@ -342,7 +356,7 @@ describe("operation-poller", () => {
 
                 expect(error).toBeInstanceOf(TransactionExpiredError);
                 expect(error.transactionId).toBe("txn-expired");
-                expect(error.message).toBe(EXPIRY_MESSAGE);
+                expect(error.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
                 expect(error.details).toBe(JSON.stringify(expired));
             });
         });
@@ -428,7 +442,7 @@ describe("operation-poller", () => {
                 expect(error).toBeInstanceOf(TransactionExpiredError);
                 expect(error.signatureId).toBe("sig-expired");
                 expect(error.transactionId).toBeUndefined();
-                expect(error.message).toBe(EXPIRY_MESSAGE);
+                expect(error.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
             });
         });
     });

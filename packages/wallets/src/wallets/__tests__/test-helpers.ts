@@ -168,8 +168,11 @@ export const createQuorumPendingApproval = ({
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
 
-// A transaction or signature request as the wallets API stores it once its approval window closed
-// (crossbit-main `constants/error.ts`, `WalletsTransactionExpiredError`).
+// The wallets API's expiry message (crossbit-main `constants/error.ts`, `TRANSACTION_EXPIRED_MESSAGE`).
+export const TRANSACTION_EXPIRED_API_MESSAGE =
+    "The transaction expired before it could be submitted. Create a new transaction.";
+
+// A transaction or signature request as the wallets API stores it once its approval window closed.
 export const createExpiredRequest = (id: string) => ({
     id,
     status: "failed" as const,
@@ -178,7 +181,7 @@ export const createExpiredRequest = (id: string) => ({
         message: "Execution reverted, see 'revert' for details",
         revert: {
             type: "wallet_authorization",
-            reason: "The transaction expired before it could be submitted. Create a new transaction.",
+            reason: TRANSACTION_EXPIRED_API_MESSAGE,
         },
     },
 });

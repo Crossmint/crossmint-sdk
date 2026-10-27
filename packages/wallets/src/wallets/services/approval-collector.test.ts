@@ -213,6 +213,21 @@ describe("collectApprovals", () => {
             expect(approvals).toEqual(approvalsSignedBy([{ locator: FLAT_LOCATOR, message: "0xflat" }, first, second]));
         });
 
+        describe("when a flat entry's signature fails", () => {
+            it("throws that error and asks no member", async () => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry({ threshold: 1 }) });
+                const [member] = memberMessages(entry);
+                const rejected = new Error("The wallet rejected the signature");
+                const sign = vi.fn(signWithHeldKey).mockRejectedValueOnce(rejected);
+                const held = [heldSigner(FLAT_LOCATOR), heldSigner(member.locator)];
+
+                await expect(collectApprovals([flatApproval(), entry], createSigning({ held, sign }))).rejects.toBe(
+                    rejected
+                );
+                expect(sign).toHaveBeenCalledTimes(1);
+            });
+        });
+
         it("signs the flat entries together, and the members only once every flat entry is signed", async () => {
             const secondFlatLocator = "external-wallet:0x2222222222222222222222222222222222222222";
             const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry({ threshold: 1 }) });
