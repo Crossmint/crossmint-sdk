@@ -1,15 +1,10 @@
 import { type ConfigPlugin, withDangerousMod } from "expo/config-plugins";
 import path from "path";
 import fs from "fs";
-import {
-    LEGACY_PODFILE_INJECTION,
-    LEGACY_PREBUILT_FIX_MARKER,
-    PREVIOUS_PODFILE_INJECTION,
-} from "./legacyPodfileInjection";
+import { LEGACY_PODFILE_INJECTION, LEGACY_PREBUILT_FIX_MARKER } from "./legacyPodfileInjection";
 
-// Removes the Podfile workarounds that earlier versions of this plugin wrote for the
-// CrossmintDeviceSigner pod. The device signer now comes from Swift Package Manager, so an app
-// that upgrades without `expo prebuild --clean` does not keep lines for a pod it no longer has.
+// Removes the Podfile workarounds that versions of this plugin up to 1.7.x wrote, if the app did
+// not regenerate its Podfile.
 export const withDeviceSigner: ConfigPlugin = (config) => {
     return withDangerousMod(config, [
         "ios",
@@ -20,8 +15,7 @@ export const withDeviceSigner: ConfigPlugin = (config) => {
                 .split("\n")
                 .filter((line) => !line.includes(LEGACY_PREBUILT_FIX_MARKER))
                 .join("\n")
-                .replace(LEGACY_PODFILE_INJECTION, "")
-                .replace(`\n${PREVIOUS_PODFILE_INJECTION}`, "");
+                .replace(LEGACY_PODFILE_INJECTION, "");
 
             fs.writeFileSync(podfilePath, podfile);
             return config;
