@@ -33570,6 +33570,68 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
+                                                                    "description": "Identifier for the Passkey signer type",
+                                                                    "enum": ["passkey"]
+                                                                },
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "description": "Credential ID from the WebAuthn registration response"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Human-readable name for the passkey"
+                                                                },
+                                                                "publicKey": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "x": {
+                                                                            "type": "string",
+                                                                            "description": "S component of the signature as a stringified bigint"
+                                                                        },
+                                                                        "y": {
+                                                                            "type": "string",
+                                                                            "description": "S component of the signature as a stringified bigint"
+                                                                        }
+                                                                    },
+                                                                    "required": ["x", "y"],
+                                                                    "description": "The public key coordinates from the WebAuthn credential"
+                                                                },
+                                                                "validatorContractVersion": {
+                                                                    "type": "string",
+                                                                    "description": "ERC-7579 webAuthn validator contract version"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "description": "Unique identifier for locating this passkey signer"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "type",
+                                                                "id",
+                                                                "name",
+                                                                "publicKey",
+                                                                "validatorContractVersion",
+                                                                "locator"
+                                                            ],
+                                                            "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                            "title": "Passkey Signer",
+                                                            "example": {
+                                                                "type": "passkey",
+                                                                "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                "name": "hgranger",
+                                                                "publicKey": {
+                                                                    "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                    "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                },
+                                                                "validatorContractVersion": "0.2.0",
+                                                                "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
                                                                     "description": "Identifier for external wallet signer type",
                                                                     "enum": ["external-wallet"]
                                                                 },
@@ -37278,6 +37340,68 @@
                                                 "type": "array",
                                                 "items": {
                                                     "oneOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Identifier for the Passkey signer type",
+                                                                    "enum": ["passkey"]
+                                                                },
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "description": "Credential ID from the WebAuthn registration response"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Human-readable name for the passkey"
+                                                                },
+                                                                "publicKey": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "x": {
+                                                                            "type": "string",
+                                                                            "description": "S component of the signature as a stringified bigint"
+                                                                        },
+                                                                        "y": {
+                                                                            "type": "string",
+                                                                            "description": "S component of the signature as a stringified bigint"
+                                                                        }
+                                                                    },
+                                                                    "required": ["x", "y"],
+                                                                    "description": "The public key coordinates from the WebAuthn credential"
+                                                                },
+                                                                "validatorContractVersion": {
+                                                                    "type": "string",
+                                                                    "description": "ERC-7579 webAuthn validator contract version"
+                                                                },
+                                                                "locator": {
+                                                                    "type": "string",
+                                                                    "description": "Unique identifier for locating this passkey signer"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "type",
+                                                                "id",
+                                                                "name",
+                                                                "publicKey",
+                                                                "validatorContractVersion",
+                                                                "locator"
+                                                            ],
+                                                            "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                            "title": "Passkey Signer",
+                                                            "example": {
+                                                                "type": "passkey",
+                                                                "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                "name": "hgranger",
+                                                                "publicKey": {
+                                                                    "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                    "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                },
+                                                                "validatorContractVersion": "0.2.0",
+                                                                "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                            }
+                                                        },
                                                         {
                                                             "type": "object",
                                                             "properties": {
@@ -77871,6 +77995,68 @@
                                                                     "properties": {
                                                                         "type": {
                                                                             "type": "string",
+                                                                            "description": "Identifier for the Passkey signer type",
+                                                                            "enum": ["passkey"]
+                                                                        },
+                                                                        "id": {
+                                                                            "type": "string",
+                                                                            "description": "Credential ID from the WebAuthn registration response"
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string",
+                                                                            "description": "Human-readable name for the passkey"
+                                                                        },
+                                                                        "publicKey": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "x": {
+                                                                                    "type": "string",
+                                                                                    "description": "S component of the signature as a stringified bigint"
+                                                                                },
+                                                                                "y": {
+                                                                                    "type": "string",
+                                                                                    "description": "S component of the signature as a stringified bigint"
+                                                                                }
+                                                                            },
+                                                                            "required": ["x", "y"],
+                                                                            "description": "The public key coordinates from the WebAuthn credential"
+                                                                        },
+                                                                        "validatorContractVersion": {
+                                                                            "type": "string",
+                                                                            "description": "ERC-7579 webAuthn validator contract version"
+                                                                        },
+                                                                        "locator": {
+                                                                            "type": "string",
+                                                                            "description": "Unique identifier for locating this passkey signer"
+                                                                        }
+                                                                    },
+                                                                    "required": [
+                                                                        "type",
+                                                                        "id",
+                                                                        "name",
+                                                                        "publicKey",
+                                                                        "validatorContractVersion",
+                                                                        "locator"
+                                                                    ],
+                                                                    "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                    "title": "Passkey Signer",
+                                                                    "example": {
+                                                                        "type": "passkey",
+                                                                        "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                        "name": "hgranger",
+                                                                        "publicKey": {
+                                                                            "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                            "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                        },
+                                                                        "validatorContractVersion": "0.2.0",
+                                                                        "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
                                                                             "description": "Identifier for external wallet signer type",
                                                                             "enum": ["external-wallet"]
                                                                         },
@@ -78211,6 +78397,68 @@
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for the Passkey signer type",
+                                                                                "enum": ["passkey"]
+                                                                            },
+                                                                            "id": {
+                                                                                "type": "string",
+                                                                                "description": "Credential ID from the WebAuthn registration response"
+                                                                            },
+                                                                            "name": {
+                                                                                "type": "string",
+                                                                                "description": "Human-readable name for the passkey"
+                                                                            },
+                                                                            "publicKey": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "x": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    },
+                                                                                    "y": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["x", "y"],
+                                                                                "description": "The public key coordinates from the WebAuthn credential"
+                                                                            },
+                                                                            "validatorContractVersion": {
+                                                                                "type": "string",
+                                                                                "description": "ERC-7579 webAuthn validator contract version"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string",
+                                                                                "description": "Unique identifier for locating this passkey signer"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "type",
+                                                                            "id",
+                                                                            "name",
+                                                                            "publicKey",
+                                                                            "validatorContractVersion",
+                                                                            "locator"
+                                                                        ],
+                                                                        "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                        "title": "Passkey Signer",
+                                                                        "example": {
+                                                                            "type": "passkey",
+                                                                            "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                            "name": "hgranger",
+                                                                            "publicKey": {
+                                                                                "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                                "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                            },
+                                                                            "validatorContractVersion": "0.2.0",
+                                                                            "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                                        }
+                                                                    },
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
@@ -78692,6 +78940,57 @@
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for the Passkey signer type",
+                                                                                "enum": ["passkey"]
+                                                                            },
+                                                                            "id": {
+                                                                                "type": "string",
+                                                                                "description": "Credential ID from the WebAuthn registration response"
+                                                                            },
+                                                                            "name": {
+                                                                                "type": "string",
+                                                                                "description": "Human-readable name for the passkey"
+                                                                            },
+                                                                            "publicKey": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "x": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    },
+                                                                                    "y": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["x", "y"],
+                                                                                "description": "The public key coordinates from the WebAuthn credential"
+                                                                            },
+                                                                            "validatorContractVersion": {
+                                                                                "type": "string",
+                                                                                "description": "ERC-7579 webAuthn validator contract version"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string",
+                                                                                "description": "Unique identifier for locating this passkey signer"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "type",
+                                                                            "id",
+                                                                            "name",
+                                                                            "publicKey",
+                                                                            "validatorContractVersion",
+                                                                            "locator"
+                                                                        ],
+                                                                        "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                        "title": "Passkey Signer"
+                                                                    },
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
@@ -81826,6 +82125,68 @@
                                                                     "properties": {
                                                                         "type": {
                                                                             "type": "string",
+                                                                            "description": "Identifier for the Passkey signer type",
+                                                                            "enum": ["passkey"]
+                                                                        },
+                                                                        "id": {
+                                                                            "type": "string",
+                                                                            "description": "Credential ID from the WebAuthn registration response"
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string",
+                                                                            "description": "Human-readable name for the passkey"
+                                                                        },
+                                                                        "publicKey": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "x": {
+                                                                                    "type": "string",
+                                                                                    "description": "S component of the signature as a stringified bigint"
+                                                                                },
+                                                                                "y": {
+                                                                                    "type": "string",
+                                                                                    "description": "S component of the signature as a stringified bigint"
+                                                                                }
+                                                                            },
+                                                                            "required": ["x", "y"],
+                                                                            "description": "The public key coordinates from the WebAuthn credential"
+                                                                        },
+                                                                        "validatorContractVersion": {
+                                                                            "type": "string",
+                                                                            "description": "ERC-7579 webAuthn validator contract version"
+                                                                        },
+                                                                        "locator": {
+                                                                            "type": "string",
+                                                                            "description": "Unique identifier for locating this passkey signer"
+                                                                        }
+                                                                    },
+                                                                    "required": [
+                                                                        "type",
+                                                                        "id",
+                                                                        "name",
+                                                                        "publicKey",
+                                                                        "validatorContractVersion",
+                                                                        "locator"
+                                                                    ],
+                                                                    "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                    "title": "Passkey Signer",
+                                                                    "example": {
+                                                                        "type": "passkey",
+                                                                        "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                        "name": "hgranger",
+                                                                        "publicKey": {
+                                                                            "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                            "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                        },
+                                                                        "validatorContractVersion": "0.2.0",
+                                                                        "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
                                                                             "description": "Identifier for external wallet signer type",
                                                                             "enum": ["external-wallet"]
                                                                         },
@@ -82105,6 +82466,68 @@
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string",
+                                                                                "description": "Identifier for the Passkey signer type",
+                                                                                "enum": ["passkey"]
+                                                                            },
+                                                                            "id": {
+                                                                                "type": "string",
+                                                                                "description": "Credential ID from the WebAuthn registration response"
+                                                                            },
+                                                                            "name": {
+                                                                                "type": "string",
+                                                                                "description": "Human-readable name for the passkey"
+                                                                            },
+                                                                            "publicKey": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "x": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    },
+                                                                                    "y": {
+                                                                                        "type": "string",
+                                                                                        "description": "S component of the signature as a stringified bigint"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["x", "y"],
+                                                                                "description": "The public key coordinates from the WebAuthn credential"
+                                                                            },
+                                                                            "validatorContractVersion": {
+                                                                                "type": "string",
+                                                                                "description": "ERC-7579 webAuthn validator contract version"
+                                                                            },
+                                                                            "locator": {
+                                                                                "type": "string",
+                                                                                "description": "Unique identifier for locating this passkey signer"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "type",
+                                                                            "id",
+                                                                            "name",
+                                                                            "publicKey",
+                                                                            "validatorContractVersion",
+                                                                            "locator"
+                                                                        ],
+                                                                        "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                        "title": "Passkey Signer",
+                                                                        "example": {
+                                                                            "type": "passkey",
+                                                                            "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                            "name": "hgranger",
+                                                                            "publicKey": {
+                                                                                "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                                "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                            },
+                                                                            "validatorContractVersion": "0.2.0",
+                                                                            "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                                        }
+                                                                    },
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
@@ -82501,6 +82924,68 @@
                                                                     "type": "array",
                                                                     "items": {
                                                                         "oneOf": [
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "type": {
+                                                                                        "type": "string",
+                                                                                        "description": "Identifier for the Passkey signer type",
+                                                                                        "enum": ["passkey"]
+                                                                                    },
+                                                                                    "id": {
+                                                                                        "type": "string",
+                                                                                        "description": "Credential ID from the WebAuthn registration response"
+                                                                                    },
+                                                                                    "name": {
+                                                                                        "type": "string",
+                                                                                        "description": "Human-readable name for the passkey"
+                                                                                    },
+                                                                                    "publicKey": {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "x": {
+                                                                                                "type": "string",
+                                                                                                "description": "S component of the signature as a stringified bigint"
+                                                                                            },
+                                                                                            "y": {
+                                                                                                "type": "string",
+                                                                                                "description": "S component of the signature as a stringified bigint"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": ["x", "y"],
+                                                                                        "description": "The public key coordinates from the WebAuthn credential"
+                                                                                    },
+                                                                                    "validatorContractVersion": {
+                                                                                        "type": "string",
+                                                                                        "description": "ERC-7579 webAuthn validator contract version"
+                                                                                    },
+                                                                                    "locator": {
+                                                                                        "type": "string",
+                                                                                        "description": "Unique identifier for locating this passkey signer"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "type",
+                                                                                    "id",
+                                                                                    "name",
+                                                                                    "publicKey",
+                                                                                    "validatorContractVersion",
+                                                                                    "locator"
+                                                                                ],
+                                                                                "description": "Response schema for a registered Passkey signer including validator contract details",
+                                                                                "title": "Passkey Signer",
+                                                                                "example": {
+                                                                                    "type": "passkey",
+                                                                                    "id": "cWtP7gmZbd98HbKUuGXx5Q",
+                                                                                    "name": "hgranger",
+                                                                                    "publicKey": {
+                                                                                        "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
+                                                                                        "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
+                                                                                    },
+                                                                                    "validatorContractVersion": "0.2.0",
+                                                                                    "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                                                }
+                                                                            },
                                                                             {
                                                                                 "type": "object",
                                                                                 "properties": {
