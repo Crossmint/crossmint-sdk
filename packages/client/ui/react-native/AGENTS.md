@@ -11,5 +11,15 @@ These rules apply to code in this package, on top of the repo root `AGENTS.md`.
 - All traffic uses HTTPS with TLS 1.2 or higher.
 - Secure by default. Lowering a protection needs an explicit option whose name says what it gives up.
 - Use the platform crypto frameworks. No custom crypto, no MD5 or SHA-1.
-- Treat all data as untrusted, even from Crossmint servers, and do not load or run code from outside the package.
+- Do not load or run code from outside the package.
 - Prefer platform and Expo packages over third-party ones. Every new or bumped dependency needs a reason in the PR, stays on its latest patched version, and is not kept by one person.
+- Do not commit secrets, keys or certificates, as files, values or comments. Test fixtures use fake values.
+- Treat all data as untrusted, even from Crossmint servers. Validate it before it reaches storage, a WebView, or any other sensitive operation.
+- Encrypt sensitive data at rest and in transit. Pin certificates or public keys for Crossmint hosts.
+- Every component runs with the least privilege it needs.
+- Log security-relevant events (for example failed authentication or a rejected origin) in a format that supports monitoring, without sensitive data.
+- Authentication features (biometrics, passkeys) give the host app callbacks for failures and fallbacks. Session and user flows follow OAuth 2.0 and OpenID Connect where the backend supports them.
+- Support privacy requests: the SDK can delete the user data it stores on the device.
+- Public docs explain how to configure the SDK securely and name the common mistakes.
+- Security changes come with tests that try to break the protection, not only tests of the happy path.
+- Assess a third-party package before adding it, not only when it breaks.
