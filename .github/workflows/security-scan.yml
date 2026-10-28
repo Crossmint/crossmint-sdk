@@ -30,7 +30,7 @@ jobs:
         outputs:
             workflows: ${{ steps.filter.outputs.workflows }}
         steps:
-            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # zizmor: ignore[artipacked] v6.1.0 (paths-filter needs git credentials to diff the base commit on push events)
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] v6.1.0 (paths-filter needs git credentials to diff the base commit on push events)
 
             - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
               id: filter
@@ -51,12 +51,12 @@ jobs:
             security-events: write # needed for the zizmor-action SARIF upload
         steps:
             - name: Checkout repository
-              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Run zizmor
-              uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0
+              uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
               with:
                   advanced-security: "true"
                   # TODO(SECUR-153): the repo still carries a long tail of medium/low findings this
@@ -75,13 +75,13 @@ jobs:
             contents: read
         steps:
             - name: Checkout repository
-              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   fetch-depth: 0
                   persist-credentials: false
 
             - name: Run TruffleHog
-              uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+              uses: trufflesecurity/trufflehog@e63326d6545de8f425d93ce24078c6e68d83f70e # v3.99.3
               with:
                   extra_args: --results=verified,unknown
 
@@ -90,7 +90,7 @@ jobs:
             # Runs even if the step above found something. Exceptions: see .github/trufflehog/crossmint-detectors.yaml
             - name: Run TruffleHog (Crossmint API keys)
               if: ${{ !cancelled() }}
-              uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+              uses: trufflesecurity/trufflehog@e63326d6545de8f425d93ce24078c6e68d83f70e # v3.99.3
               with:
                   extra_args: >-
                       --config=.github/trufflehog/crossmint-detectors.yaml
