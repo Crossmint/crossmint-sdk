@@ -32,7 +32,7 @@ overrides:
   valibot: 1.2.0
   protobufjs: 7.6.1
   handlebars: 4.7.9
-  playwright: 1.55.1
+  playwright: 1.64.1
   minimatch@3: 3.1.4
   minimatch@9: 9.0.7
   minimatch@10: 10.2.3
@@ -140,7 +140,7 @@ importers:
         version: link:../../../packages/server
       next:
         specifier: 15.5.27
-        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -274,7 +274,7 @@ importers:
         version: 4.8.3(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       next:
         specifier: 15.5.27
-        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -417,7 +417,7 @@ importers:
         version: 6.1.0(firebase@10.14.1)
       next:
         specifier: 15.5.27
-        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -438,8 +438,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/wallets
       '@playwright/test':
-        specifier: 1.54.2
-        version: 1.54.2
+        specifier: 1.64.1
+        version: 1.64.1
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
@@ -490,7 +490,7 @@ importers:
         version: 14.6.1
       next:
         specifier: 16.3.8
-        version: 16.3.8(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 16.3.8(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -4311,9 +4311,9 @@ packages:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/@pkgjs/parseargs/-/parseargs-0.11.0.tgz', integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@playwright/test@1.54.2':
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/@playwright/test/-/test-1.54.2.tgz', integrity: sha512-A+znathYxPf+72riFd1r1ovOLqsIIB0jKIoPjyK2kqEIe30/6jF6BC7QNluHuwUmsD2tv1XZVugN8GqfTMOxsA==}
-    engines: {node: '>=18'}
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==, tarball: https://libraries.cgr.dev/javascript-upstream/@playwright/test/-/test-1.64.1.tgz}
+    engines: {node: '>=20'}
     hasBin: true
 
   '@polka/url@1.0.0-next.29':
@@ -8231,11 +8231,6 @@ packages:
   fs.realpath@1.0.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/fs.realpath/-/fs.realpath-1.0.0.tgz', integrity: sha512-4rAIEwbYFmFvTQqGn5eQgeOdKDpCKrbt2q+VjTLVEcmrNjml9YkUj0kuk7pzKCW0IClddbDqc72Ly4bALiJQ9Q==}
 
-  fsevents@2.3.2:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/fsevents/-/fsevents-2.3.2.tgz', integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
-
   fsevents@2.3.3:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/fsevents/-/fsevents-2.3.3.tgz', integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -10337,14 +10332,14 @@ packages:
   pkg-types@2.3.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/pkg-types/-/pkg-types-2.3.0.tgz', integrity: sha512-MPLyJ5jkMIx+r1qBrJHk6kEZCFbvC+RXXEhiMv9HGwQNA8NR9A4Qb+GQj0SAEQ4rNtwMlXNOspohK/gsP/cPRg==}
 
-  playwright-core@1.55.1:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/playwright-core/-/playwright-core-1.55.1.tgz', integrity: sha512-Z6Mh9mkwX+zxSlHqdr5AOcJnfp+xUWLCt9uKV18fhzA8eyxUd8NUWzAjxUh55RZKSYwDGX0cfaySdhZJGMoJ+w==}
-    engines: {node: '>=18'}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==, tarball: https://libraries.cgr.dev/javascript-upstream/playwright-core/-/playwright-core-1.64.1.tgz}
+    engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.55.1:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/playwright/-/playwright-1.55.1.tgz', integrity: sha512-cJW4Xd/G3v5ovXtJJ52MAOclqeac9S/aGGgRzLabuF8TnIb6xHvMzKIa6JmrRzUkeXJgfL1MhukP0NK6l39h3A==}
-    engines: {node: '>=18'}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==, tarball: https://libraries.cgr.dev/javascript-upstream/playwright/-/playwright-1.64.1.tgz}
+    engines: {node: '>=20'}
     hasBin: true
 
   plist@3.1.0:
@@ -18616,9 +18611,9 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@playwright/test@1.54.2':
+  '@playwright/test@1.64.1':
     dependencies:
-      playwright: 1.55.1
+      playwright: 1.64.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -26030,9 +26025,6 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
-  fsevents@2.3.2:
-    optional: true
-
   fsevents@2.3.3:
     optional: true
 
@@ -28117,7 +28109,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next@15.5.27(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  next@15.5.27(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@next/env': 15.5.27
       '@swc/helpers': 0.5.15
@@ -28135,14 +28127,14 @@ snapshots:
       '@next/swc-linux-x64-musl': 15.5.27
       '@next/swc-win32-arm64-msvc': 15.5.27
       '@next/swc-win32-x64-msvc': 15.5.27
-      '@playwright/test': 1.54.2
+      '@playwright/test': 1.64.1
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.35.0
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@16.3.8(@babel/core@7.29.7)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  next@16.3.8(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@next/env': 16.3.8
       '@swc/helpers': 0.5.23
@@ -28161,7 +28153,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.3.8
       '@next/swc-win32-arm64-msvc': 16.3.8
       '@next/swc-win32-x64-msvc': 16.3.8
-      '@playwright/test': 1.54.2
+      '@playwright/test': 1.64.1
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.35.0
     transitivePeerDependencies:
@@ -28852,13 +28844,11 @@ snapshots:
       exsolve: 1.0.8
       pathe: 2.0.3
 
-  playwright-core@1.55.1: {}
+  playwright-core@1.64.1: {}
 
-  playwright@1.55.1:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.55.1
-    optionalDependencies:
-      fsevents: 2.3.2
+      playwright-core: 1.64.1
 
   plist@3.1.0:
     dependencies:
