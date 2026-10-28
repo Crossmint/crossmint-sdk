@@ -101,6 +101,20 @@ export const createMockWallet = async <C extends Chain>(
     return wallet;
 };
 
+// A wallet with no active signer: an external-wallet recovery method is never activated on its own.
+export const createMockWalletWithoutSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient
+): Promise<Wallet<C>> => {
+    const recovery = { type: "external-wallet", address: "RecoveryAddress123" } as RecoverySignerConfigForChain<C>;
+    const wallet = new Wallet(
+        { chain, address: getChainAddress(chain), recovery },
+        mockApiClient as unknown as ApiClient
+    );
+    await wallet.waitForInit();
+    return wallet;
+};
+
 export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): MockedApiClient => ({
     isServerSide: false,
     environment: APIKeyEnvironmentPrefix.STAGING,
@@ -189,3 +203,17 @@ export const createExpiredRequest = (id: string) => ({
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };
+
+// EIP-712 typed data for EVM `signTypedData` calls.
+export const EVM_TYPED_DATA = {
+    domain: {
+        name: "App",
+        version: "1",
+        chainId: 84532,
+        verifyingContract: "0x1111111111111111111111111111111111111111",
+    },
+    types: { Mail: [{ name: "contents", type: "string" }] },
+    primaryType: "Mail",
+    message: { contents: "hello" },
+    chain: "base-sepolia",
+} as const;

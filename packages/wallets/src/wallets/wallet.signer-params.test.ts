@@ -11,6 +11,7 @@ import {
     createMockSolanaSerializedTransaction,
     createMockWallet,
     type MockedApiClient,
+    EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
 import type { SignerOption } from "./types";
 
@@ -156,13 +157,6 @@ describe("acting signer sent with a new transaction", () => {
 });
 
 describe("signer sent with a new EVM signature request", () => {
-    const TYPED_DATA = {
-        domain: { name: "App", version: "1", chainId: 84532, verifyingContract: RECIPIENT },
-        types: { Mail: [{ name: "contents", type: "string" }] },
-        primaryType: "Mail",
-        message: { contents: "hello" },
-        chain: "base-sepolia",
-    } as const;
     let api: MockedApiClient;
     let evmWallet: EVMWallet;
 
@@ -180,7 +174,8 @@ describe("signer sent with a new EVM signature request", () => {
         },
         {
             name: "signTypedData",
-            sign: (options?: object) => evmWallet.signTypedData({ ...TYPED_DATA, options: options as never } as never),
+            sign: (options?: object) =>
+                evmWallet.signTypedData({ ...EVM_TYPED_DATA, options: options as never } as never),
         },
     ])("$name", ({ sign }) => {
         describe("when no option is passed", () => {

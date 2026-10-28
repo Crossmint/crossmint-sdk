@@ -10,9 +10,11 @@ import {
     createMockApiClient,
     createMockSolanaSerializedTransaction,
     createMockWallet,
+    createMockWalletWithoutSigner,
     createQuorumApiEntry,
     createQuorumPendingApproval,
     type MockedApiClient,
+    EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
 
 const QUORUM = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
@@ -21,13 +23,6 @@ const MALFORMED_MESSAGE = `Malformed quorum locator: ${MALFORMED_QUORUM}`;
 const BOTH_OPTIONS_MESSAGE = "Pass either signer or quorum, not both";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
 const STELLAR_CONTRACT = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
-const TYPED_DATA = {
-    domain: { name: "App", version: "1", chainId: 84532, verifyingContract: RECIPIENT },
-    types: { Mail: [{ name: "contents", type: "string" }] },
-    primaryType: "Mail",
-    message: { contents: "hello" },
-    chain: "base-sepolia",
-} as const;
 // A recovery method that cannot be assembled: if a call activated it, the call would throw.
 const UNASSEMBLABLE_RECOVERY = [{ type: "external-wallet", address: "RecoveryAddress123" }];
 
@@ -125,7 +120,7 @@ const CREATING_PATHS: CreatingPath[] = [
         chain: "base-sepolia",
         kind: "signature",
         create: (wallet, options) =>
-            EVMWallet.from(wallet).signTypedData({ ...TYPED_DATA, options: options as never } as never),
+            EVMWallet.from(wallet).signTypedData({ ...EVM_TYPED_DATA, options: options as never } as never),
         createCall: (api) => api.createSignature as never,
         sentSigner: (api) => api.createSignature.mock.calls[0][1].params.signer,
     },
@@ -224,6 +219,16 @@ describe("the quorum option on calls that create a request", () => {
         }
     );
 
+    describe.each(CREATING_PATHS)("$name with a quorum and no active signer", ({ chain, create, createCall }) => {
+        it("throws before creating the request, as with an explicit signer", async () => {
+            const wallet = await createMockWalletWithoutSigner(chain, api);
+
+            await expect(create(wallet, { quorum: QUORUM, prepareOnly: true })).rejects.toThrow(/No signer is set/);
+
+            expect(createCall(api)).not.toHaveBeenCalled();
+        });
+    });
+
     describe("Stellar upgrade with a quorum, when the wallet is already locked", () => {
         it("skips the upgrade phase and creates the migration as the quorum", async () => {
             const wallet = await createMockWallet("stellar", api, "external-wallet");
@@ -273,16 +278,21 @@ describe("the quorum option on approve", () => {
         api.getSignature.mockResolvedValue(awaitingQuorum("sig-1", "evm") as never);
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     describe.each([
         { kind: "transaction", params: { transactionId: "txn-1" }, read: (a: MockedApiClient) => a.getTransaction },
         { kind: "signature", params: { signatureId: "sig-1" }, read: (a: MockedApiClient) => a.getSignature },
     ])("for a $kind", ({ params, read }) => {
-        describe("with a malformed quorum", () => {
-            it("throws before reading the request", async () => {
-                await expect(wallet.approve({ ...params, quorum: MALFORMED_QUORUM } as never)).rejects.toThrow(
-                    MALFORMED_MESSAGE
-                );
+        describe.each(MALFORMED_QUORUMS)("with $form", ({ quorum, message }) => {
+            it("throws before authenticating or reading the request", async () => {
+                const preAuth = spyOnPreAuth();
 
+                await expect(wallet.approve({ ...params, quorum } as never)).rejects.toThrow(message);
+
+                expect(preAuth).not.toHaveBeenCalled();
                 expect(read(api)).not.toHaveBeenCalled();
             });
         });
