@@ -49041,7 +49041,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
@@ -49280,7 +49280,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
@@ -49519,7 +49519,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
@@ -49846,7 +49846,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
@@ -50085,7 +50085,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
@@ -50324,7 +50324,7 @@
                                                                 },
                                                                 "creditLimit": {
                                                                     "type": "object",
-                                                                    "description": "Collateral the card provider has credited to this card, which caps what the card can spend.",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
                                                                     "properties": {
                                                                         "amount": {
                                                                             "type": "string"
