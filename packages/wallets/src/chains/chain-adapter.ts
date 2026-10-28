@@ -11,10 +11,16 @@ export type AddSignerChain = RegisterSignerChain;
 
 export type AddSignerContext = { locator: string; type: string };
 
+/** How a chain signs one pending approval of a signature request, a member's or a single signer's. */
+export type SignatureSigning = {
+    signApproval(signer: SignerAdapter, message: string): ReturnType<SignerAdapter["signMessage"]>;
+};
+
 export interface ChainAdapter {
     readonly nativeToken: "eth" | "sol" | "xlm";
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
-    readonly supportsSignatures: boolean;
+    // Absent on chains without signature requests: Solana smart wallets have none.
+    readonly signatures?: SignatureSigning;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
     extractAddSignerOperation(
         response: RegisterSignerResponse,

@@ -1458,7 +1458,8 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
-        if (!this.chainAdapter.supportsSignatures) {
+        const { signatures } = this.chainAdapter;
+        if (signatures == null) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
@@ -1492,7 +1493,7 @@ export class Wallet<C extends Chain> {
 
         const approvals = await collectApprovals(
             this.#requireNonQuorumApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) => signer.signMessage(message))
+            this.#approvalSigning(walletSigner, options, (signer, message) => signatures.signApproval(signer, message))
         );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
