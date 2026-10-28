@@ -49,11 +49,16 @@ jobs:
         name: Generate SDK Reference Docs
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build libraries
               run: pnpm build:libs
