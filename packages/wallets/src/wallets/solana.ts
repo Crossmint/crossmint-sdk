@@ -2,13 +2,7 @@ import bs58 from "bs58";
 import { ed25519Sign } from "../utils/ed25519";
 import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type {
-    ApproveOptions,
-    PrepareOnly,
-    SolanaTransactionInput,
-    Transaction,
-    TransactionInputOptions,
-} from "./types";
+import type { ApproveOptions, SolanaTransactionInput, TransactionInputOptions, TransactionResult } from "./types";
 import { Wallet } from "./wallet";
 import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -56,7 +50,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput & { options?: T }
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    ): Promise<TransactionResult<T>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
@@ -70,7 +64,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            } as TransactionResult<T>;
         }
 
         const _additionalSigners = params.additionalSigners?.map(
@@ -97,7 +91,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result;
+        return result as TransactionResult<T>;
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {

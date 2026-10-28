@@ -3,11 +3,10 @@ import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
     MigrateOptions,
-    PrepareOnly,
-    SignerOption,
     StellarTransactionInput,
     Transaction,
     TransactionInputOptions,
+    TransactionResult,
     UpgradeOptions,
 } from "./types";
 import { Wallet } from "./wallet";
@@ -58,7 +57,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     })
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    ): Promise<TransactionResult<T>> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
@@ -72,7 +71,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            } as TransactionResult<T>;
         }
 
         const options: ApproveOptions = {};
@@ -82,7 +81,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result;
+        return result as TransactionResult<T>;
     }
 
     /**
@@ -113,9 +112,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async upgrade<T extends UpgradeOptions | undefined = undefined>(
-        options?: T
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    public async upgrade<T extends UpgradeOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
         walletsLogger.info("stellarWallet.upgrade.start");
 
         await this.preAuthIfNeeded();
@@ -129,7 +126,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                     hash: undefined,
                     explorerLink: undefined,
                     transactionId: upgradeTxId,
-                } as Transaction<T extends PrepareOnly<true> ? true : false>;
+                } as TransactionResult<T>;
             }
 
             await this.approveTransactionAndWait(upgradeTxId);
@@ -140,15 +137,12 @@ export class StellarWallet extends Wallet<StellarChain> {
             });
         }
 
-        const migrateResult = await this.migrateInternal({
-            signer: options?.signer,
-            prepareOnly: options?.prepareOnly,
-        });
+        const migrateResult = await this.migrateInternal(options);
         walletsLogger.info("stellarWallet.upgrade.success", {
             transactionId: migrateResult.transactionId,
             hash: migrateResult.hash,
         });
-        return migrateResult as Transaction<T extends PrepareOnly<true> ? true : false>;
+        return migrateResult as TransactionResult<T>;
     }
 
     /**
@@ -165,11 +159,9 @@ export class StellarWallet extends Wallet<StellarChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async migrate<T extends MigrateOptions | undefined = undefined>(
-        options?: T
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    public async migrate<T extends MigrateOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
         await this.preAuthIfNeeded();
-        return (await this.migrateInternal(options)) as Transaction<T extends PrepareOnly<true> ? true : false>;
+        return (await this.migrateInternal(options)) as TransactionResult<T>;
     }
 
     // Migration path without preAuth — used directly by upgrade() (which preAuths once
@@ -244,7 +236,7 @@ export class StellarWallet extends Wallet<StellarChain> {
      */
     private async createWalletLifecycleTransaction(
         type: "upgrade-wallet" | "migrate-wallet",
-        options: { signer?: SignerOption } | undefined
+        options: MigrateOptions | undefined
     ): Promise<string | null> {
         const response = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
@@ -266,11 +258,9 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     // Only an explicit signer is forwarded: without one, the server uses the admin signer, which wallet-lifecycle
     // ops need (the upgrade DTO rejects the unqualified "api-key" locator).
-    private lifecycleSignerParams(options: { signer?: SignerOption } | undefined): { signer?: string } {
-        if (options?.signer == null) {
-            return {};
-        }
-        return { signer: this.resolveSignerOption(options.signer) };
+    private lifecycleSignerParams(options: MigrateOptions | undefined): { signer?: string } {
+        const signer = this.resolveExplicitSigner(options);
+        return signer == null ? {} : { signer };
     }
 }
 

@@ -3,12 +3,11 @@ import { isValidEvmAddress, WithLoggerContext } from "@crossmint/common-sdk-base
 import type {
     EVMTransactionInput,
     FormattedEVMTransaction,
-    PrepareOnly,
-    Signature,
+    SignatureResult,
     SignMessageInput,
     SignTypedDataInput,
-    Transaction,
     TransactionInputOptions,
+    TransactionResult,
 } from "./types";
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
@@ -61,9 +60,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async sendTransaction<T extends EVMTransactionInput>(
-        params: T
-    ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>> {
+    public async sendTransaction<T extends EVMTransactionInput>(params: T): Promise<TransactionResult<T["options"]>> {
         walletsLogger.info("evmWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
@@ -78,7 +75,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as TransactionResult<T["options"]>;
         }
 
         const result = await this.approveTransactionAndWait(createdTransaction.id);
@@ -86,7 +83,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result;
+        return result as TransactionResult<T["options"]>;
     }
 
     /**
@@ -101,18 +98,15 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async signMessage<T extends SignMessageInput>(
-        params: T
-    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+    public async signMessage<T extends SignMessageInput>(params: T): Promise<SignatureResult<T["options"]>> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.signerManager.require();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                signer: signer.locator(),
+                ...this.resolveSignerParams(params.options),
                 chain: this.chain,
             },
         });
@@ -129,12 +123,12 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as SignatureResult<T["options"]>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);
         walletsLogger.info("evmWallet.signMessage.success", { signatureId: signatureCreationResponse.id });
-        return result;
+        return result as SignatureResult<T["options"]>;
     }
 
     /**
@@ -149,13 +143,10 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async signTypedData<T extends SignTypedDataInput>(
-        params: T
-    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+    public async signTypedData<T extends SignTypedDataInput>(params: T): Promise<SignatureResult<T["options"]>> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.signerManager.require();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: "Invalid typed data" });
@@ -183,7 +174,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: signer.locator(),
+                ...this.resolveSignerParams(params.options),
                 chain,
             },
         });
@@ -200,12 +191,12 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
+            } as SignatureResult<T["options"]>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);
         walletsLogger.info("evmWallet.signTypedData.success", { signatureId: signatureCreationResponse.id });
-        return result;
+        return result as SignatureResult<T["options"]>;
     }
 
     /**

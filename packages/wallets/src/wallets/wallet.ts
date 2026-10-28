@@ -29,12 +29,16 @@ import type {
     Approval,
     Signature,
     ApproveResult,
-    PrepareOnly,
     RecoverySignerConfigFor,
     SendTokenTransactionOptions,
     SignerOption,
+    QuorumOption,
+    SignerChangeOptions,
+    TransactionResult,
+    AddSignerResult,
+    SignerChangeResult,
 } from "./types";
-import { isSignerLocatorOption } from "./types";
+import { isSignerLocatorOption, resolveQuorumOption } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
@@ -108,6 +112,11 @@ type WalletContructorType<C extends Chain> = {
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
+
+const BOTH_SIGNER_AND_QUORUM_MESSAGE = "Pass either signer or quorum, not both";
+
+// The options a call may name its acting signer with; the public option types allow only one of the two.
+type ActingOptions = { signer?: SignerOption; quorum?: QuorumOption };
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -323,12 +332,23 @@ export class Wallet<C extends Chain> {
         return this.#serverSignerResolver.apiLocator(signer);
     }
 
-    /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
-    protected resolveSignerParams(options?: { signer?: SignerOption }): { signer: string } {
-        if (options?.signer == null) {
-            return { signer: this.#signerManager.require().locator() };
+    /** The `signer` field of a create call: the call's `signer` or `quorum` option, or else the active signer. */
+    protected resolveSignerParams(options?: ActingOptions): { signer: string } {
+        return { signer: this.resolveExplicitSigner(options) ?? this.#signerManager.require().locator() };
+    }
+
+    /** The locator a call names with its `signer` or `quorum` option; `undefined` when it names neither. */
+    protected resolveExplicitSigner(options?: ActingOptions): string | undefined {
+        if (options?.quorum != null && options.signer != null) {
+            throw new InvalidSignerError(BOTH_SIGNER_AND_QUORUM_MESSAGE);
         }
-        return { signer: this.resolveSignerOption(options.signer) };
+        if (options?.quorum != null) {
+            return resolveQuorumOption(options.quorum);
+        }
+        if (options?.signer != null) {
+            return this.resolveSignerOption(options.signer);
+        }
+        return undefined;
     }
 
     /** The API locator of a call's `signer` option. */
@@ -521,7 +541,7 @@ export class Wallet<C extends Chain> {
         token: string,
         amount: string,
         options?: T
-    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+    ): Promise<TransactionResult<T>> {
         const parsedAmount = Number(amount);
         if (Number.isNaN(parsedAmount) || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
             throw new InvalidTransferAmountError(
@@ -568,7 +588,7 @@ export class Wallet<C extends Chain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: transactionCreationResponse.id,
-            } as Transaction<T extends PrepareOnly<true> ? true : false>;
+            } as TransactionResult<T>;
         }
 
         const result = await this.approveTransactionAndWait(transactionCreationResponse.id);
@@ -576,7 +596,7 @@ export class Wallet<C extends Chain> {
             transactionId: transactionCreationResponse.id,
             hash: result.hash,
         });
-        return result;
+        return result as TransactionResult<T>;
     }
 
     /**
@@ -619,6 +639,10 @@ export class Wallet<C extends Chain> {
             transactionId: params.transactionId,
             signatureId: params.signatureId,
         });
+        // A malformed quorum fails here; m1 checks that the pending entry belongs to it.
+        if (params.quorum != null) {
+            resolveQuorumOption(params.quorum);
+        }
 
         await this.preAuthIfNeeded();
 
@@ -667,7 +691,7 @@ export class Wallet<C extends Chain> {
     public async addSigner<T extends AddSignerOptions | undefined = undefined>(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner> {
+    ): Promise<AddSignerResult<T, C>> {
         walletsLogger.info("wallet.addSigner.start");
 
         // Resolve server signer config to locator string
@@ -676,7 +700,7 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(signer) as `server:${string}`)
                 : signer;
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#withApprover(options, async (approver) => {
             // Check for an existing signer registration (e.g. from a previous interrupted attempt)
             const signerLocator =
                 typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
@@ -756,7 +780,7 @@ export class Wallet<C extends Chain> {
             });
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
-        }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
+        }) as Promise<AddSignerResult<T, C>>;
     }
 
     /**
@@ -829,11 +853,11 @@ export class Wallet<C extends Chain> {
     public async removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<RemoveSignerReturnType> {
+    ): Promise<SignerChangeResult<T, RemoveSignerReturnType>> {
         const signerLocator = this.resolveSignerLocator(signer);
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#withApprover(options, async (approver) => {
             const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
                 chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(approver != null && { approver }),
@@ -852,14 +876,14 @@ export class Wallet<C extends Chain> {
                 walletsLogger.info("wallet.removeSigner.prepared", {
                     transactionId,
                 });
-                return { transactionId, status: undefined };
+                return { transactionId, status: undefined } as SignerChangeResult<T, RemoveSignerReturnType>;
             }
 
             await this.approveTransactionAndWait(transactionId);
             walletsLogger.info("wallet.removeSigner.success", {
                 transactionId,
             });
-            return { transactionId, status: "success" } as RemoveSignerReturnType;
+            return { transactionId, status: "success" } as SignerChangeResult<T, RemoveSignerReturnType>;
         });
     }
 
@@ -880,7 +904,7 @@ export class Wallet<C extends Chain> {
     public async addRecoveryMethod<T extends AddRecoveryMethodOptions | undefined = undefined>(
         recoveryMethod: RecoverySignerConfigFor<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<AddRecoveryMethodReturnType> {
+    ): Promise<SignerChangeResult<T, AddRecoveryMethodReturnType>> {
         this.assertRecoveryMethodManagementSupported();
         walletsLogger.info("wallet.addRecoveryMethod.start");
 
@@ -889,7 +913,7 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(recoveryMethod) as `server:${string}`)
                 : recoveryMethod;
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#withApprover(options, async (approver) => {
             const recoveryMethodInput =
                 typeof resolvedMethod === "string"
                     ? resolvedMethod
@@ -914,7 +938,7 @@ export class Wallet<C extends Chain> {
             const transactionId = response.tx.id;
             if (options?.prepareOnly) {
                 walletsLogger.info("wallet.addRecoveryMethod.prepared", { transactionId });
-                return { transactionId, status: undefined };
+                return { transactionId, status: undefined } as SignerChangeResult<T, AddRecoveryMethodReturnType>;
             }
 
             await this.approveTransactionAndWait(transactionId);
@@ -927,7 +951,7 @@ export class Wallet<C extends Chain> {
                     : (resolvedMethod as RecoverySignerConfigForChain<C>)
             );
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
-            return { transactionId, status: "success" as const };
+            return { transactionId, status: "success" } as SignerChangeResult<T, AddRecoveryMethodReturnType>;
         });
     }
 
@@ -948,12 +972,12 @@ export class Wallet<C extends Chain> {
     public async removeRecoveryMethod<T extends RemoveRecoveryMethodOptions | undefined = undefined>(
         recoveryMethod: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
-    ): Promise<RemoveRecoveryMethodReturnType> {
+    ): Promise<SignerChangeResult<T, RemoveRecoveryMethodReturnType>> {
         this.assertRecoveryMethodManagementSupported();
         const recoveryMethodLocator = this.resolveSignerLocator(recoveryMethod);
         walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#withApprover(options, async (approver) => {
             const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
                 approver: this.resolveRecoveryApprover(approver),
             });
@@ -969,14 +993,25 @@ export class Wallet<C extends Chain> {
             const transactionId = response.id;
             if (options?.prepareOnly) {
                 walletsLogger.info("wallet.removeRecoveryMethod.prepared", { transactionId });
-                return { transactionId, status: undefined };
+                return { transactionId, status: undefined } as SignerChangeResult<T, RemoveRecoveryMethodReturnType>;
             }
 
             await this.approveTransactionAndWait(transactionId);
             this.#signerManager.removeRecoverySigner(recoveryMethodLocator);
             walletsLogger.info("wallet.removeRecoveryMethod.success", { transactionId });
-            return { transactionId, status: "success" as const };
+            return { transactionId, status: "success" } as SignerChangeResult<T, RemoveRecoveryMethodReturnType>;
         });
+    }
+
+    // A quorum approves its change through its members later, so no recovery signer is activated for it.
+    #withApprover<R>(
+        options: SignerChangeOptions | undefined,
+        operation: (approver: SignerLocator | undefined) => Promise<R>
+    ): Promise<R> {
+        if (options?.quorum != null) {
+            return operation(resolveQuorumOption(options.quorum));
+        }
+        return this.#signerManager.withRecoverySigner(operation);
     }
 
     private assertRecoveryMethodManagementSupported(): void {
