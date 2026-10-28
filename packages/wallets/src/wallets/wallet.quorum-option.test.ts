@@ -115,7 +115,8 @@ const CREATING_PATHS: CreatingPath[] = [
         name: "EVM signMessage",
         chain: "base-sepolia",
         kind: "signature",
-        create: (wallet, options) => EVMWallet.from(wallet).signMessage({ message: "hello", options: options as never }),
+        create: (wallet, options) =>
+            EVMWallet.from(wallet).signMessage({ message: "hello", options: options as never }),
         createCall: (api) => api.createSignature as never,
         sentSigner: (api) => api.createSignature.mock.calls[0][1].params.signer,
     },
