@@ -3,11 +3,16 @@ import { isValidEvmAddress, WithLoggerContext } from "@crossmint/common-sdk-base
 import type {
     EVMTransactionInput,
     FormattedEVMTransaction,
-    SignatureResult,
+    PrepareOnly,
+    QuorumAwareInput,
+    QuorumAwareOptions,
+    QuorumSignatureCallResult,
+    QuorumTransactionCallResult,
+    Signature,
     SignMessageInput,
     SignTypedDataInput,
-    TransactionInputOptions,
-    TransactionResult,
+    Transaction,
+    WithQuorumOptions,
 } from "./types";
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
@@ -48,11 +53,18 @@ export class EVMWallet extends Wallet<EVMChain> {
         return new EVMWallet(wallet as Wallet<EVMChain>);
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public sendTransaction<T extends WithQuorumOptions<EVMTransactionInput>>(
+        params: T
+    ): Promise<QuorumTransactionCallResult<T["options"]>>;
     /**
      * Send a raw EVM transaction.
      * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
      * @returns The transaction result
      */
+    public sendTransaction<T extends EVMTransactionInput>(
+        params: T
+    ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.sendTransaction",
@@ -60,7 +72,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async sendTransaction<T extends EVMTransactionInput>(params: T): Promise<TransactionResult<T["options"]>> {
+    public async sendTransaction(params: QuorumAwareInput<EVMTransactionInput>): Promise<Transaction<boolean>> {
         walletsLogger.info("evmWallet.sendTransaction.start");
 
         this.assertActingOptions(params.options);
@@ -76,7 +88,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as TransactionResult<T["options"]>;
+            } as Transaction<true>;
         }
 
         const result = await this.approveTransactionAndWait(createdTransaction.id);
@@ -84,14 +96,21 @@ export class EVMWallet extends Wallet<EVMChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result as TransactionResult<T["options"]>;
+        return result;
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public signMessage<T extends WithQuorumOptions<SignMessageInput>>(
+        params: T
+    ): Promise<QuorumSignatureCallResult<T["options"]>>;
     /**
      * Sign a message with the wallet's private key.
      * @param params - The message to sign
      * @returns The signature
      */
+    public signMessage<T extends SignMessageInput>(
+        params: T
+    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.signMessage",
@@ -99,7 +118,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async signMessage<T extends SignMessageInput>(params: T): Promise<SignatureResult<T["options"]>> {
+    public async signMessage(params: QuorumAwareInput<SignMessageInput>): Promise<Signature<boolean>> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         this.assertActingOptions({ quorum: params.options?.quorum });
@@ -125,19 +144,26 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as SignatureResult<T["options"]>;
+            } as Signature<true>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);
         walletsLogger.info("evmWallet.signMessage.success", { signatureId: signatureCreationResponse.id });
-        return result as SignatureResult<T["options"]>;
+        return result;
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public signTypedData<T extends WithQuorumOptions<SignTypedDataInput>>(
+        params: T
+    ): Promise<QuorumSignatureCallResult<T["options"]>>;
     /**
      * Sign EIP-712 typed data.
      * @param params - The typed data parameters (domain, types, message, primaryType, chain)
      * @returns The signature
      */
+    public signTypedData<T extends SignTypedDataInput>(
+        params: T
+    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "evmWallet.signTypedData",
@@ -145,7 +171,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async signTypedData<T extends SignTypedDataInput>(params: T): Promise<SignatureResult<T["options"]>> {
+    public async signTypedData(params: QuorumAwareInput<SignTypedDataInput>): Promise<Signature<boolean>> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         this.assertActingOptions({ quorum: params.options?.quorum });
@@ -194,12 +220,12 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as SignatureResult<T["options"]>;
+            } as Signature<true>;
         }
 
         const result = await this.approveSignatureAndWait(signatureCreationResponse.id);
         walletsLogger.info("evmWallet.signTypedData.success", { signatureId: signatureCreationResponse.id });
-        return result as SignatureResult<T["options"]>;
+        return result;
     }
 
     /**
@@ -216,7 +242,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     private async createTransaction(
         transaction: FormattedEVMTransaction,
-        options?: TransactionInputOptions
+        options?: QuorumAwareOptions
     ): Promise<CreateTransactionSuccessResponse> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
@@ -233,7 +259,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         return transactionCreationResponse;
     }
 
-    private buildTransaction(params: EVMTransactionInput): FormattedEVMTransaction {
+    private buildTransaction(params: QuorumAwareInput<EVMTransactionInput>): FormattedEVMTransaction {
         if ("transaction" in params) {
             return { transaction: params.transaction };
         }

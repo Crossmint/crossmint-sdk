@@ -3,11 +3,16 @@ import type { Chain, StellarChain } from "../chains/chains";
 import type {
     ApproveOptions,
     MigrateOptions,
+    PrepareOnly,
+    QuorumAwareInput,
+    QuorumAwareOptions,
+    QuorumOptions,
+    QuorumTransactionCallResult,
     StellarTransactionInput,
     Transaction,
     TransactionInputOptions,
-    TransactionResult,
     UpgradeOptions,
+    WithQuorumOptions,
 } from "./types";
 import { Wallet } from "./wallet";
 import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
@@ -43,11 +48,18 @@ export class StellarWallet extends Wallet<StellarChain> {
         return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public sendTransaction<T extends QuorumOptions>(
+        params: WithQuorumOptions<StellarTransactionInput> & { options: T }
+    ): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Send a raw Stellar transaction (serialized transaction or contract call).
      * @param params - The transaction parameters
      * @returns The transaction result
      */
+    public sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
+        params: StellarTransactionInput & { options?: T }
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "stellarWallet.sendTransaction",
@@ -55,9 +67,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: StellarTransactionInput & { options?: T }
-    ): Promise<TransactionResult<T>> {
+    public async sendTransaction(params: QuorumAwareInput<StellarTransactionInput>): Promise<Transaction<boolean>> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
         this.assertActingOptions(params.options);
@@ -72,7 +82,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as TransactionResult<T>;
+            } as Transaction<boolean>;
         }
 
         const options: ApproveOptions = {};
@@ -82,9 +92,11 @@ export class StellarWallet extends Wallet<StellarChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result as TransactionResult<T>;
+        return result as Transaction<boolean>;
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public upgrade<T extends QuorumOptions>(options: T): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Upgrade this Stellar smart wallet to the latest contract version.
      *
@@ -106,6 +118,9 @@ export class StellarWallet extends Wallet<StellarChain> {
      *     the prepared phase-2 `migrate-wallet` transaction.
      *   - Otherwise: the confirmed migrate transaction result.
      */
+    public upgrade<T extends UpgradeOptions | undefined = undefined>(
+        options?: T
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "stellarWallet.upgrade",
@@ -113,7 +128,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async upgrade<T extends UpgradeOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
+    public async upgrade(options?: QuorumAwareOptions): Promise<Transaction<boolean>> {
         walletsLogger.info("stellarWallet.upgrade.start");
 
         this.assertActingOptions(options);
@@ -128,7 +143,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                     hash: undefined,
                     explorerLink: undefined,
                     transactionId: upgradeTxId,
-                } as TransactionResult<T>;
+                } as Transaction<boolean>;
             }
 
             await this.approveTransactionAndWait(upgradeTxId);
@@ -144,9 +159,11 @@ export class StellarWallet extends Wallet<StellarChain> {
             transactionId: migrateResult.transactionId,
             hash: migrateResult.hash,
         });
-        return migrateResult as TransactionResult<T>;
+        return migrateResult as Transaction<boolean>;
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public migrate<T extends QuorumOptions>(options: T): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Run only the migration phase of a Stellar wallet upgrade. Use this when the
      * upgrade transaction has already confirmed on-chain (e.g. from a previous
@@ -154,6 +171,9 @@ export class StellarWallet extends Wallet<StellarChain> {
      *
      * @param options - Optional prepareOnly / signer override.
      */
+    public migrate<T extends MigrateOptions | undefined = undefined>(
+        options?: T
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "stellarWallet.migrate",
@@ -161,15 +181,15 @@ export class StellarWallet extends Wallet<StellarChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async migrate<T extends MigrateOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
+    public async migrate(options?: QuorumAwareOptions): Promise<Transaction<boolean>> {
         this.assertActingOptions(options);
         await this.preAuthIfNeeded();
-        return (await this.migrateInternal(options)) as TransactionResult<T>;
+        return (await this.migrateInternal(options)) as Transaction<boolean>;
     }
 
     // Migration path without preAuth — used directly by upgrade() (which preAuths once
     // up front) and by public migrate() (which preAuths and wraps this call).
-    private async migrateInternal(options: MigrateOptions | undefined): Promise<Transaction<boolean>> {
+    private async migrateInternal(options: QuorumAwareOptions | undefined): Promise<Transaction<boolean>> {
         walletsLogger.info("stellarWallet.migrate.start");
 
         const migrateTxId = await this.createWalletLifecycleTransaction("migrate-wallet", options);
@@ -194,7 +214,9 @@ export class StellarWallet extends Wallet<StellarChain> {
         return result;
     }
 
-    private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
+    private async createTransaction(
+        params: QuorumAwareInput<StellarTransactionInput>
+    ): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
         const signerParams = this.resolveSignerParams(options);
 
@@ -239,7 +261,7 @@ export class StellarWallet extends Wallet<StellarChain> {
      */
     private async createWalletLifecycleTransaction(
         type: "upgrade-wallet" | "migrate-wallet",
-        options: MigrateOptions | undefined
+        options: QuorumAwareOptions | undefined
     ): Promise<string | null> {
         const response = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
@@ -261,7 +283,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     // Only an explicit signer is forwarded: without one, the server uses the admin signer, which wallet-lifecycle
     // ops need (the upgrade DTO rejects the unqualified "api-key" locator).
-    private lifecycleSignerParams(options: MigrateOptions | undefined): { signer?: string } {
+    private lifecycleSignerParams(options: QuorumAwareOptions | undefined): { signer?: string } {
         const signer = this.resolveExplicitSigner(options);
         return signer == null ? {} : { signer };
     }

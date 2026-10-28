@@ -2,7 +2,17 @@ import bs58 from "bs58";
 import { ed25519Sign } from "../utils/ed25519";
 import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { ApproveOptions, SolanaTransactionInput, TransactionInputOptions, TransactionResult } from "./types";
+import type {
+    ApproveOptions,
+    PrepareOnly,
+    QuorumAwareInput,
+    QuorumOptions,
+    QuorumTransactionCallResult,
+    SolanaTransactionInput,
+    Transaction,
+    TransactionInputOptions,
+    WithQuorumOptions,
+} from "./types";
 import { Wallet } from "./wallet";
 import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -36,11 +46,18 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
+    /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
+    public sendTransaction<T extends QuorumOptions>(
+        params: WithQuorumOptions<SolanaTransactionInput> & { options: T }
+    ): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Send a raw Solana transaction.
      * @param params - The transaction parameters (serialized transaction or Transaction object)
      * @returns The transaction result
      */
+    public sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
+        params: SolanaTransactionInput & { options?: T }
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "solanaWallet.sendTransaction",
@@ -48,9 +65,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: SolanaTransactionInput & { options?: T }
-    ): Promise<TransactionResult<T>> {
+    public async sendTransaction(params: QuorumAwareInput<SolanaTransactionInput>): Promise<Transaction<boolean>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         this.assertActingOptions(params.options);
@@ -65,7 +80,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as TransactionResult<T>;
+            } as Transaction<true>;
         }
 
         const _additionalSigners = params.additionalSigners?.map(
@@ -92,10 +107,12 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             transactionId: createdTransaction.id,
             hash: result.hash,
         });
-        return result as TransactionResult<T>;
+        return result;
     }
 
-    private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
+    private async createTransaction(
+        params: QuorumAwareInput<SolanaTransactionInput>
+    ): Promise<CreateTransactionSuccessResponse> {
         const signerParams = this.resolveSignerParams(params.options);
 
         let serializedTransaction: string;
