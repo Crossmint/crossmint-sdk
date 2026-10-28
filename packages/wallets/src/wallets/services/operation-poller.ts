@@ -1,6 +1,6 @@
 import type { ApiClient, GetSignatureResponse, GetTransactionSuccessResponse, WalletLocator } from "../../api";
 import { awaitsQuorumOnly, splitPendingApprovals, toQuorumProgress } from "../../quorum/approvals";
-import type { QuorumApprovalProgress, Signature, Transaction } from "../types";
+import type { QuorumApprovalProgress, QuorumTransactionResult, Signature, Transaction } from "../types";
 import {
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
@@ -35,6 +35,19 @@ export type AwaitingApproval = {
 };
 
 export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | AwaitingApproval;
+
+/** A quorum call's public result; a request created by a quorum has exactly one quorum entry. */
+export function toQuorumTransactionResult(outcome: TransactionOutcome): QuorumTransactionResult {
+    if (outcome.status === "success") {
+        const { transactionId, hash, explorerLink } = outcome.transaction;
+        return { status: "success", transactionId, hash, explorerLink };
+    }
+    const [approvals, ...others] = outcome.quorums;
+    if (approvals == null || others.length > 0) {
+        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId: outcome.transactionId });
+    }
+    return { status: "awaiting-approval", transactionId: outcome.transactionId, approvals };
+}
 
 /** Waits for the transaction to land; throws `TransactionAwaitingApprovalError` while it still needs approvals. */
 export async function waitForTransactionCompletion(
