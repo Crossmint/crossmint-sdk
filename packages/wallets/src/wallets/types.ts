@@ -78,6 +78,10 @@ export type MigrateOptions = Partial<PrepareOnly> & {
 
 // Options of a call that acts as a quorum: a call never names a `signer` too, and `prepareOnly` may be left out.
 export type QuorumOptions = Partial<PrepareOnly> & { quorum: QuorumOption; signer?: never };
+/** `never` for `any`, so an `any` argument skips the quorum overload and keeps today's type. */
+export type NotAny<T> = 0 extends 1 & T ? never : unknown;
+/** Today's overloads take no `quorum`, so a call that passes one must match the quorum overload. */
+export type WithoutQuorum = { quorum?: never };
 
 export type QuorumSendOptions = QuorumOptions & { transactionType?: SendTokenTransactionType };
 

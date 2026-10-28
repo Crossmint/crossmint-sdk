@@ -12,6 +12,8 @@ import type {
     Transaction,
     TransactionInputOptions,
     WithQuorumOptions,
+    NotAny,
+    WithoutQuorum,
 } from "./types";
 import { Wallet } from "./wallet";
 import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
@@ -48,14 +50,14 @@ export class SolanaWallet extends Wallet<SolanaChain> {
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public sendTransaction<T extends QuorumOptions>(
-        params: WithQuorumOptions<SolanaTransactionInput> & { options: T }
+        params: WithQuorumOptions<SolanaTransactionInput> & { options: T & NoInfer<NotAny<T>> }
     ): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Send a raw Solana transaction.
      * @param params - The transaction parameters (serialized transaction or Transaction object)
      * @returns The transaction result
      */
-    public sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
+    public sendTransaction<T extends (TransactionInputOptions & WithoutQuorum) | undefined = undefined>(
         params: SolanaTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({

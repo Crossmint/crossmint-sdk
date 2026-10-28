@@ -48,6 +48,8 @@ import type {
     QuorumTransactionResult,
     QuorumSignatureResult,
     SendTokenTransactionType,
+    NotAny,
+    WithoutQuorum,
 } from "./types";
 import { isSignerLocatorOption, resolveQuorumOption } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
@@ -543,7 +545,7 @@ export class Wallet<C extends Chain> {
         to: string | UserLocator,
         token: string,
         amount: string,
-        options: T
+        options: T & NoInfer<NotAny<T>>
     ): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Send a token to a wallet or user locator
@@ -553,7 +555,7 @@ export class Wallet<C extends Chain> {
      * @param {TransactionInputOptions} options - The options for the transaction
      * @returns {Transaction} The transaction
      */
-    public send<T extends SendTokenTransactionOptions | undefined = undefined>(
+    public send<T extends (SendTokenTransactionOptions & WithoutQuorum) | undefined = undefined>(
         to: string | UserLocator,
         token: string,
         amount: string,
@@ -649,7 +651,7 @@ export class Wallet<C extends Chain> {
     }
 
     /** Approves as members of `quorum`: returns the quorum's result. */
-    public approve<T extends QuorumApproveParams>(params: T): Promise<QuorumApproveResult<T>>;
+    public approve<T extends QuorumApproveParams>(params: T & NoInfer<NotAny<T>>): Promise<QuorumApproveResult<T>>;
     /**
      * Approve a transaction or signature
      * @param params - The parameters
@@ -660,7 +662,7 @@ export class Wallet<C extends Chain> {
      * @param params.options.additionalSigners - Additional signers for the approval
      * @returns The transaction or signature
      */
-    public approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>>;
+    public approve<T extends ApproveParams & WithoutQuorum>(params: T): Promise<ApproveResult<T>>;
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "wallet.approve",
@@ -711,7 +713,7 @@ export class Wallet<C extends Chain> {
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public addSigner<T extends QuorumAddSignerOptions>(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
-        options: T
+        options: T & NoInfer<NotAny<T>>
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : QuorumAddSignerResult>;
     /**
      * Add a signer to the wallet.
@@ -725,7 +727,7 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the signer with approval ID without auto-approving
      */
-    public addSigner<T extends AddSignerOptions | undefined = undefined>(
+    public addSigner<T extends (AddSignerOptions & WithoutQuorum) | undefined = undefined>(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
@@ -887,7 +889,7 @@ export class Wallet<C extends Chain> {
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public removeSigner<T extends QuorumOptions>(
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
-        options: T
+        options: T & NoInfer<NotAny<T>>
     ): Promise<QuorumSignerChangeCallResult<T, RemoveSignerReturnType>>;
     /**
      * Remove a signer from the wallet.
@@ -896,7 +898,7 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the operation ID without auto-approving
      */
-    public removeSigner<T extends RemoveSignerOptions | undefined = undefined>(
+    public removeSigner<T extends (RemoveSignerOptions & WithoutQuorum) | undefined = undefined>(
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<RemoveSignerReturnType>;
@@ -947,7 +949,7 @@ export class Wallet<C extends Chain> {
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public addRecoveryMethod<T extends QuorumOptions>(
         recoveryMethod: RecoverySignerConfigFor<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
-        options: T
+        options: T & NoInfer<NotAny<T>>
     ): Promise<QuorumSignerChangeCallResult<T, AddRecoveryMethodReturnType>>;
     /**
      * Add a recovery method to the wallet. Supported on Solana and Stellar only.
@@ -956,7 +958,7 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
      */
-    public addRecoveryMethod<T extends AddRecoveryMethodOptions | undefined = undefined>(
+    public addRecoveryMethod<T extends (AddRecoveryMethodOptions & WithoutQuorum) | undefined = undefined>(
         recoveryMethod: RecoverySignerConfigFor<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<AddRecoveryMethodReturnType>;
@@ -1024,7 +1026,7 @@ export class Wallet<C extends Chain> {
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public removeRecoveryMethod<T extends QuorumOptions>(
         recoveryMethod: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
-        options: T
+        options: T & NoInfer<NotAny<T>>
     ): Promise<QuorumSignerChangeCallResult<T, RemoveRecoveryMethodReturnType>>;
     /**
      * Remove a recovery method from the wallet. Supported on Solana and Stellar only.
@@ -1033,7 +1035,7 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
      */
-    public removeRecoveryMethod<T extends RemoveRecoveryMethodOptions | undefined = undefined>(
+    public removeRecoveryMethod<T extends (RemoveRecoveryMethodOptions & WithoutQuorum) | undefined = undefined>(
         recoveryMethod: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<RemoveRecoveryMethodReturnType>;
@@ -1089,12 +1091,15 @@ export class Wallet<C extends Chain> {
     }
 
     // A quorum approves its change through its members later, so no recovery signer is activated for it.
+    // Like every quorum call, it still needs an active signer, checked before any request is made.
     #withApprover<R>(
         options: QuorumAwareOptions | undefined,
         operation: (approver: SignerLocator | undefined) => Promise<R>
     ): Promise<R> {
         if (options?.quorum != null) {
-            return operation(resolveQuorumOption(options.quorum));
+            const approver = resolveQuorumOption(options.quorum);
+            this.#signerManager.require();
+            return operation(approver);
         }
         return this.#signerManager.withRecoverySigner(operation);
     }

@@ -13,6 +13,8 @@ import type {
     SignTypedDataInput,
     Transaction,
     WithQuorumOptions,
+    NotAny,
+    WithoutQuorum,
 } from "./types";
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
@@ -55,14 +57,14 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public sendTransaction<T extends WithQuorumOptions<EVMTransactionInput>>(
-        params: T
+        params: T & NoInfer<NotAny<T>>
     ): Promise<QuorumTransactionCallResult<T["options"]>>;
     /**
      * Send a raw EVM transaction.
      * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
      * @returns The transaction result
      */
-    public sendTransaction<T extends EVMTransactionInput>(
+    public sendTransaction<T extends EVMTransactionInput & { options?: WithoutQuorum }>(
         params: T
     ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
@@ -101,14 +103,14 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public signMessage<T extends WithQuorumOptions<SignMessageInput>>(
-        params: T
+        params: T & NoInfer<NotAny<T>>
     ): Promise<QuorumSignatureCallResult<T["options"]>>;
     /**
      * Sign a message with the wallet's private key.
      * @param params - The message to sign
      * @returns The signature
      */
-    public signMessage<T extends SignMessageInput>(
+    public signMessage<T extends SignMessageInput & { options?: WithoutQuorum }>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
@@ -154,14 +156,14 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public signTypedData<T extends WithQuorumOptions<SignTypedDataInput>>(
-        params: T
+        params: T & NoInfer<NotAny<T>>
     ): Promise<QuorumSignatureCallResult<T["options"]>>;
     /**
      * Sign EIP-712 typed data.
      * @param params - The typed data parameters (domain, types, message, primaryType, chain)
      * @returns The signature
      */
-    public signTypedData<T extends SignTypedDataInput>(
+    public signTypedData<T extends SignTypedDataInput & { options?: WithoutQuorum }>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({

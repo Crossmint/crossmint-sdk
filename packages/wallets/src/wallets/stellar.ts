@@ -13,6 +13,8 @@ import type {
     TransactionInputOptions,
     UpgradeOptions,
     WithQuorumOptions,
+    NotAny,
+    WithoutQuorum,
 } from "./types";
 import { Wallet } from "./wallet";
 import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
@@ -50,14 +52,14 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
     public sendTransaction<T extends QuorumOptions>(
-        params: WithQuorumOptions<StellarTransactionInput> & { options: T }
+        params: WithQuorumOptions<StellarTransactionInput> & { options: T & NoInfer<NotAny<T>> }
     ): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Send a raw Stellar transaction (serialized transaction or contract call).
      * @param params - The transaction parameters
      * @returns The transaction result
      */
-    public sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
+    public sendTransaction<T extends (TransactionInputOptions & WithoutQuorum) | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
@@ -96,7 +98,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     }
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
-    public upgrade<T extends QuorumOptions>(options: T): Promise<QuorumTransactionCallResult<T>>;
+    public upgrade<T extends QuorumOptions>(options: T & NoInfer<NotAny<T>>): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Upgrade this Stellar smart wallet to the latest contract version.
      *
@@ -118,7 +120,7 @@ export class StellarWallet extends Wallet<StellarChain> {
      *     the prepared phase-2 `migrate-wallet` transaction.
      *   - Otherwise: the confirmed migrate transaction result.
      */
-    public upgrade<T extends UpgradeOptions | undefined = undefined>(
+    public upgrade<T extends (UpgradeOptions & WithoutQuorum) | undefined = undefined>(
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
@@ -163,7 +165,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     }
 
     /** Acts as `quorum`: returns the quorum's result, or the prepared request with `prepareOnly: true`. */
-    public migrate<T extends QuorumOptions>(options: T): Promise<QuorumTransactionCallResult<T>>;
+    public migrate<T extends QuorumOptions>(options: T & NoInfer<NotAny<T>>): Promise<QuorumTransactionCallResult<T>>;
     /**
      * Run only the migration phase of a Stellar wallet upgrade. Use this when the
      * upgrade transaction has already confirmed on-chain (e.g. from a previous
@@ -171,7 +173,7 @@ export class StellarWallet extends Wallet<StellarChain> {
      *
      * @param options - Optional prepareOnly / signer override.
      */
-    public migrate<T extends MigrateOptions | undefined = undefined>(
+    public migrate<T extends (MigrateOptions & WithoutQuorum) | undefined = undefined>(
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>>;
     @WithLoggerContext({
