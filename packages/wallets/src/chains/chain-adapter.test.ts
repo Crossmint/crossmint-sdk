@@ -27,13 +27,25 @@ describe("chain-adapter", () => {
         });
     });
 
-    describe("supportsSignatures", () => {
-        it.each([
-            ["base-sepolia", true],
-            ["solana", false],
-            ["stellar", false],
-        ] as const)("%s -> %s", (chain, supports) => {
-            expect(getChainAdapter(chain).supportsSignatures).toBe(supports);
+    describe("signatures", () => {
+        it("evm signs a signature approval with signMessage and returns its result", async () => {
+            const signer = {
+                signMessage: vi.fn(async () => ({ signature: "0xsigned" })),
+                signTransaction: vi.fn(async () => ({ signature: "0xwrong" })),
+            };
+
+            const result = await getChainAdapter("base-sepolia").signatures?.signApproval(
+                signer as unknown as SignerAdapter,
+                "0xhash"
+            );
+
+            expect(signer.signMessage).toHaveBeenCalledWith("0xhash");
+            expect(signer.signTransaction).not.toHaveBeenCalled();
+            expect(result).toEqual({ signature: "0xsigned" });
+        });
+
+        it.each(["solana", "stellar"] as const)("%s has no signature requests yet", (chain) => {
+            expect(getChainAdapter(chain).signatures).toBeUndefined();
         });
     });
 
