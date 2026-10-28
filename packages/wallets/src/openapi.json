@@ -27269,7 +27269,8 @@
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
                                     },
                                     "isSmartWalletSignature": {
-                                        "description": "Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.",
+                                        "const": true,
+                                        "description": "Must be true or omitted. The signature always corresponds to the smart wallet and is wrapped with ERC6492.",
                                         "type": "boolean"
                                     }
                                 },
