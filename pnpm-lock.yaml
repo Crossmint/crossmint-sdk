@@ -268,7 +268,7 @@ importers:
         version: 4.8.3(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       '@dynamic-labs/sdk-react-core':
         specifier: 4.8.3
-        version: 4.8.3(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
+        version: 4.8.3(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@dynamic-labs/solana':
         specifier: 4.8.3
         version: 4.8.3(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -351,9 +351,6 @@ importers:
       react-native-screens:
         specifier: ~4.30.0
         version: 4.30.0(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
-      react-native-svg:
-        specifier: 15.16.0
-        version: 15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
       react-native-web:
         specifier: ~0.21.4
         version: 0.21.4(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -387,7 +384,7 @@ importers:
         version: 4.25.6(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
       '@dynamic-labs/sdk-react-core':
         specifier: 4.25.6
-        version: 4.25.6(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
+        version: 4.25.6(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@dynamic-labs/solana':
         specifier: 4.25.6
         version: 4.25.6(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
@@ -748,9 +745,6 @@ importers:
       react-native-get-random-values:
         specifier: 1.11.0
         version: 1.11.0(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))
-      react-native-svg:
-        specifier: 15.16.0
-        version: 15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
       react-native-webview:
         specifier: 14.0.1
         version: 14.0.1(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)
@@ -6743,9 +6737,6 @@ packages:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/body-parser/-/body-parser-1.20.3.tgz', integrity: sha512-u0CLWqYvPqD3X1FoG3RmA3sXZRZJHq58m7PHyReec2OU1eTYOOxHsSmZyGZfFZ79hBvux/Iwj6Y6Dt3unIUeDA==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
-  boolbase@1.0.0:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/boolbase/-/boolbase-1.0.0.tgz', integrity: sha512-cbCBAhe5FwMRzL3J9mjmhX0KT0fYexbi3beLbcvFh0rbyCoCR84G7CUGbBXvPsJ9D9zIWZ5NLQWO4SxV/pBgBA==}
-
   bops@1.0.1:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/bops/-/bops-1.0.1.tgz', integrity: sha512-ZVEWXru4I3GQtKxdtwJVaW+r/dVfaLp5HyJe3SDTwv/bcr9C8pI7I4SN80ceWmzsKARGIFS08nV1BSnpUEbOBA==}
 
@@ -7204,15 +7195,8 @@ packages:
   css-in-js-utils@3.1.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/css-in-js-utils/-/css-in-js-utils-3.1.0.tgz', integrity: sha512-fJAcud6B3rRu+KHYk+Bwf+WFL2MDCJJ1XG9x137tJQ0xYxor7XziQtuGFbWNdqrvF4Tk26O3H73nfVqXt/fW1A==}
 
-  css-select@5.2.2:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/css-select/-/css-select-5.2.2.tgz', integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
-
   css-to-react-native@3.2.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/css-to-react-native/-/css-to-react-native-3.2.0.tgz', integrity: sha512-2dxBTtTvuwDqMRHpNjdxPzIdLFei4UpaWAwkvcGQ9Rpa5YHTgc0aoKDRPxmaNKRCabvwl4Ylfy930Xm0G1EL+g==}
-
-  css-tree@1.1.3:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/css-tree/-/css-tree-1.1.3.tgz', integrity: sha512-IEgYM/EY+rvOacr8QeQIHGNP7kykC4jS/VKGd60MJyjtfE3ojWx093KmiSiSwt1vKsxaekBKIMxk2MsdL7Rxlw==}
-    engines: {node: '>=8.0.0'}
 
   css-tree@2.3.1:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/css-tree/-/css-tree-2.3.1.tgz', integrity: sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==}
@@ -7477,19 +7461,6 @@ packages:
 
   dom-helpers@5.2.1:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/dom-helpers/-/dom-helpers-5.2.1.tgz', integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
-
-  dom-serializer@2.0.0:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/dom-serializer/-/dom-serializer-2.0.0.tgz', integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
-
-  domelementtype@2.3.0:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/domelementtype/-/domelementtype-2.3.0.tgz', integrity: sha512-Ux5dqdSBkbWVP/0LgGyTXIXscQNs9E8gSzA6N/2qOctxdksaqMlKHMknHwFHY3B51oYoDD+pejIU8ibVOsW5PA==}
-
-  domhandler@5.0.3:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/domhandler/-/domhandler-5.0.3.tgz', integrity: sha512-4wjB+0E5t0PuVTJvQdF6edvTtLQ4ulOlR47eDgwzFd60HH7vUK8JpMWZ3Di6QilIbSy6+SBeiw0xYAbnsizm4Q==}
-    engines: {node: '>= 4'}
-
-  domutils@3.2.2:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/domutils/-/domutils-3.2.2.tgz', integrity: sha512-Qt43lurWimY4WSMpHsKBiV0F+uT8iTKRF/ZyHz9FQRD72XqkzgxvBGk5pHZCUi8BabLAv/kfW/AyIUeZbm6rBg==}
 
   dotenv@16.4.5:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/dotenv/-/dotenv-16.4.5.tgz', integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
@@ -9455,9 +9426,6 @@ packages:
   mdast-util-to-string@3.2.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/mdast-util-to-string/-/mdast-util-to-string-3.2.0.tgz', integrity: sha512-V4Zn/ncyN1QNSqSBxTrMOLpjr+IKdHl2v3KVLoWmDPscP4r9GcCi71gjgvUV1SFSKh92AjAG4peFuBl2/YgCJg==}
 
-  mdn-data@2.0.14:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/mdn-data/-/mdn-data-2.0.14.tgz', integrity: sha512-uRCz7Q+Ji4CVe3Lxh4ZAkdRX/GsuVvSk0IJsuOHXJOe/Zj59bhRWIgyZVKmx+mlJyaDlyk1ZpL70RmnMl2yMVw==}
-
   mdn-data@2.0.30:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/mdn-data/-/mdn-data-2.0.30.tgz', integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
 
@@ -9942,9 +9910,6 @@ packages:
   npm-run-path@4.0.1:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/npm-run-path/-/npm-run-path-4.0.1.tgz', integrity: sha512-VFfWLxpVDrcRqgpvIgnsYa6zYUMWfqnKx67+Ysgr0VDaoC1bU5Woz2W+2AN3m1CNJyyaEgieJnDZ1IoyVPrdVg==}
     engines: {node: '>=8'}
-
-  nth-check@2.1.1:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/nth-check/-/nth-check-2.1.1.tgz', integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
   nullthrows@1.1.1:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/nullthrows/-/nullthrows-1.1.1.tgz', integrity: sha512-MvObJW4X5U5LCErCdgIw4UT8SHjQbxcIy9/K30QjY2Ug1vv6/CAPZDjRxDYTK0tnHOuxP7mmF1jx+2g9qwHWOw==}
@@ -10758,12 +10723,6 @@ packages:
 
   react-native-screens@4.30.0:
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/react-native-screens/-/react-native-screens-4.30.0.tgz', integrity: sha512-FrZG/Q5gqoDu0SgP4d2Ly0qdio5DR1KdGPEYImhkz7tmrhpML4C39m6RYLGd5TVLHZwcCh8NPvW9rylevjD0uQ==}
-    peerDependencies:
-      react: 19.3.0
-      react-native: 0.88.0
-
-  react-native-svg@15.16.0:
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/react-native-svg/-/react-native-svg-15.16.0.tgz', integrity: sha512-uh8yktufYeRU3W9Omi8+SPyLF9BVN4JmLflSgc9oOcKkSKk/S5JUmmTjKZq/L8GHfQUtCvcu/W6X4xhEfBBAjQ==}
     peerDependencies:
       react: 19.3.0
       react-native: 0.88.0
@@ -14592,7 +14551,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@dynamic-labs/sdk-react-core@4.25.6(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)':
+  '@dynamic-labs/sdk-react-core@4.25.6(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@dynamic-labs-sdk/client': 0.0.1-alpha.19
       '@dynamic-labs/assert-package-version': 4.25.6
@@ -14624,7 +14583,7 @@ snapshots:
       - '@types/react'
       - react-native
 
-  '@dynamic-labs/sdk-react-core@4.8.3(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0)':
+  '@dynamic-labs/sdk-react-core@4.8.3(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
       '@dynamic-labs/iconic': 4.8.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -24157,8 +24116,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  boolbase@1.0.0: {}
-
   bops@1.0.1:
     dependencies:
       base64-js: 1.0.2
@@ -24631,24 +24588,11 @@ snapshots:
     dependencies:
       hyphenate-style-name: 1.1.0
 
-  css-select@5.2.2:
-    dependencies:
-      boolbase: 1.0.0
-      css-what: 6.2.2
-      domhandler: 5.0.3
-      domutils: 3.2.2
-      nth-check: 2.1.1
-
   css-to-react-native@3.2.0:
     dependencies:
       camelize: 1.0.1
       css-color-keywords: 1.0.0
       postcss-value-parser: 4.2.0
-
-  css-tree@1.1.3:
-    dependencies:
-      mdn-data: 2.0.14
-      source-map: 0.6.1
 
   css-tree@2.3.1:
     dependencies:
@@ -24856,24 +24800,6 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.28.4
       csstype: 3.2.3
-
-  dom-serializer@2.0.0:
-    dependencies:
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
-      entities: 4.5.0
-
-  domelementtype@2.3.0: {}
-
-  domhandler@5.0.3:
-    dependencies:
-      domelementtype: 2.3.0
-
-  domutils@3.2.2:
-    dependencies:
-      dom-serializer: 2.0.0
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
 
   dotenv@16.4.5: {}
 
@@ -27549,8 +27475,6 @@ snapshots:
     dependencies:
       '@types/mdast': 3.0.15
 
-  mdn-data@2.0.14: {}
-
   mdn-data@2.0.30: {}
 
   mdurl@2.0.0: {}
@@ -28235,10 +28159,6 @@ snapshots:
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
-
-  nth-check@2.1.1:
-    dependencies:
-      boolbase: 1.0.0
 
   nullthrows@1.1.1: {}
 
@@ -29248,13 +29168,6 @@ snapshots:
       react-freeze: 1.0.4(react@19.3.0)
       react-native: 0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10)
       warn-once: 0.1.1
-
-  react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10))(react@19.3.0):
-    dependencies:
-      css-select: 5.2.2
-      css-tree: 1.1.3
-      react: 19.3.0
-      react-native: 0.88.0(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(react@19.3.0)(utf-8-validate@5.0.10)
 
   react-native-web@0.21.2(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:

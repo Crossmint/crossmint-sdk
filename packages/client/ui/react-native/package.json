@@ -45,7 +45,6 @@
         "react": "19.3.0",
         "react-dom": "19.3.0",
         "react-native-get-random-values": "1.11.0",
-        "react-native-svg": "15.16.0",
         "react-native-webview": "14.0.1",
         "typedoc": "0.28.20",
         "vitest": "3.2.6"
@@ -61,7 +60,6 @@
         "react-native": ">=0.74.3",
         "react-native-get-random-values": ">=1.11.0 <3",
         "react-native-passkey": ">=3.0.0",
-        "react-native-svg": "^15.16.0",
         "react-native-webview": "^14.0.1"
     },
     "peerDependenciesMeta": {

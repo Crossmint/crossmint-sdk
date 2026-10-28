@@ -28,7 +28,7 @@ PACKAGE_NAME="@crossmint/client-sdk-react-native-ui"
 APP_NAME="compat"
 APP_DIR="$WORK_DIR/$APP_NAME"
 TARBALL_DIR="$WORK_DIR/tarballs"
-PEERS=(expo-constants expo-device expo-secure-store expo-web-browser react-native-get-random-values react-native-svg react-native-webview)
+PEERS=(expo-constants expo-device expo-secure-store expo-web-browser react-native-get-random-values react-native-webview)
 
 log() { printf '\n\033[1m[verify-expo-compat sdk-%s] %s\033[0m\n' "$SDK" "$*"; }
 
