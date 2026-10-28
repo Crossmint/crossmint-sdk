@@ -7,6 +7,9 @@ import type { EmbeddedCheckoutV3Appearance } from "../embed";
  */
 export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 
+/** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
+export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
+
 export interface CrossmintPaymentMethodManagementProps {
     /**
      * Pass a user JWT from your own auth provider or a custom JWT.
@@ -38,8 +41,12 @@ export interface CrossmintPaymentMethodManagementProps {
      * billing address: the card form validates it before saving — for built-in and
      * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
      * of the emitted method. Applies to cards only; other method types ignore it.
+     *
+     * An object collects it too and configures the fields the payment-methods API
+     * leaves optional: `{ line2: "optional" | "required" | "hidden" }`.
+     * `true` equals `{ line2: "optional" }`.
      */
-    fields?: { billingDetails?: { address?: boolean } };
+    fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 

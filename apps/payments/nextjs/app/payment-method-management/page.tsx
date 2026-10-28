@@ -24,6 +24,7 @@ function PaymentMethodManagementWrapper() {
     const [submitting, setSubmitting] = useState(false);
     const [ownButton, setOwnButton] = useState(false);
     const [collectBillingAddress, setCollectBillingAddress] = useState(false);
+    const [billingLine2, setBillingLine2] = useState<"optional" | "required" | "hidden">("optional");
     const [result, setResult] = useState<PaymentMethodSubmitResult | null>(null);
     const pmm = useRef<CrossmintPaymentMethodManagementRef>(null);
 
@@ -55,12 +56,25 @@ function PaymentMethodManagementWrapper() {
                 />{" "}
                 Collect billing address
             </label>
+            {collectBillingAddress && (
+                <label style={{ display: "block", marginBottom: 16 }}>
+                    Address line 2:{" "}
+                    <select
+                        value={billingLine2}
+                        onChange={(e) => setBillingLine2(e.target.value as typeof billingLine2)}
+                    >
+                        <option value="optional">optional</option>
+                        <option value="required">required</option>
+                        <option value="hidden">hidden</option>
+                    </select>
+                </label>
+            )}
             <CrossmintPaymentMethodManagement
                 ref={pmm}
                 jwt={jwt}
                 allowedModes={["new", "existing"]}
                 hideSubmitButton={ownButton}
-                fields={collectBillingAddress ? { billingDetails: { address: true } } : undefined}
+                fields={collectBillingAddress ? { billingDetails: { address: { line2: billingLine2 } } } : undefined}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
             />
             {ownButton && (

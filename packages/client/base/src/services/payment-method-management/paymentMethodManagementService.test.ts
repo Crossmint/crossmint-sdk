@@ -80,6 +80,14 @@ describe("paymentMethodManagementService.getUrl", () => {
                 service.iframe.getUrl({ jwt: "jwt-token", fields: { billingDetails: { address: true } } })
             ).searchParams.get("fields")
         ).toBe('{"billingDetails":{"address":true}}');
+        expect(
+            new URL(
+                service.iframe.getUrl({
+                    jwt: "jwt-token",
+                    fields: { billingDetails: { address: { line2: "hidden" } } },
+                })
+            ).searchParams.get("fields")
+        ).toBe('{"billingDetails":{"address":{"line2":"hidden"}}}');
     });
 
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
