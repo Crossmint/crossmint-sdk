@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
 import type { Chain } from "../chains/chains";
 import type { RecoverySignerConfigForChain } from "../signers/types";
-import { QuorumRequestError, QuorumSignerNotSupportedError } from "../utils/errors";
+import {
+    QuorumRequestError,
+    QuorumSignerNotSupportedError,
+    SignatureNotAvailableError,
+    TransactionAwaitingApprovalError,
+} from "../utils/errors";
 import { EVMWallet } from "./evm";
 import { SolanaWallet } from "./solana";
 import { StellarWallet } from "./stellar";
@@ -229,6 +234,19 @@ describe("the quorum option on calls that create a request", () => {
         });
     });
 
+    // An api-key signer's approval shortcut runs before the quorum guard; m1 decides how such a wallet approves.
+    describe.each(CREATING_PATHS)("$name with a quorum and an api-key signer", ({ chain, kind, create }) => {
+        it("ends with today's error for a request still awaiting approval", async () => {
+            const wallet = await createMockWallet(chain, api, "api-key");
+            api.getTransaction.mockResolvedValue(awaitingQuorum("request-1", CHAIN_TYPES[chain]) as never);
+            api.getSignature.mockResolvedValue(awaitingQuorum("request-1", CHAIN_TYPES[chain]) as never);
+
+            await expect(create(wallet, { quorum: QUORUM })).rejects.toThrow(
+                kind === "transaction" ? TransactionAwaitingApprovalError : SignatureNotAvailableError
+            );
+        });
+    });
+
     describe("Stellar upgrade with a quorum, when the wallet is already locked", () => {
         it("skips the upgrade phase and creates the migration as the quorum", async () => {
             const wallet = await createMockWallet("stellar", api, "external-wallet");
@@ -421,6 +439,19 @@ describe.each(SIGNER_CHANGE_CHAINS)("the quorum option on signer changes on $cha
             });
         });
 
+        describe.each([
+            { form: "with prepareOnly", options: { quorum: QUORUM, prepareOnly: true } },
+            { form: "without prepareOnly", options: { quorum: QUORUM } },
+        ])("with a quorum and no active signer, $form", ({ options }) => {
+            it("throws before making the change request", async () => {
+                const signerless = await createMockWalletWithoutSigner(chain, api);
+
+                await expect(run(signerless, options)).rejects.toThrow(/No signer is set/);
+
+                expect(call(api)).not.toHaveBeenCalled();
+            });
+        });
+
         describe.each(MALFORMED_QUORUMS)("with $form", ({ quorum, message }) => {
             it("throws before making the change request", async () => {
                 await expect(run(wallet, { quorum, prepareOnly: true })).rejects.toThrow(message);
@@ -428,6 +459,32 @@ describe.each(SIGNER_CHANGE_CHAINS)("the quorum option on signer changes on $cha
                 expect(call(api)).not.toHaveBeenCalled();
             });
         });
+    });
+});
+
+describe("a signer change with a quorum, after useRecoveryMethod", () => {
+    it("keeps the selected recovery method as the approver of later changes", async () => {
+        const api = createMockApiClient();
+        api.removeSigner.mockResolvedValue({ id: "txn-change", status: "awaiting-approval" } as never);
+        const secondRecovery = {
+            type: "external-wallet",
+            address: "SecondRecovery222",
+            onSign: vi.fn().mockResolvedValue("signed"),
+        };
+        const wallet = await createMockWallet("solana", api, "external-wallet", [
+            { type: "api-key" },
+            secondRecovery,
+        ] as unknown as RecoverySignerConfigForChain<"solana">[]);
+        await wallet.useRecoveryMethod(secondRecovery as never);
+        const removed = { type: "external-wallet", address: "Delegated333" } as never;
+
+        await wallet.removeSigner(removed, { quorum: QUORUM, prepareOnly: true });
+        await wallet.removeSigner(removed, { prepareOnly: true });
+
+        expect(api.removeSigner.mock.calls.map((removal) => removal[2].approver)).toEqual([
+            QUORUM.locator,
+            "external-wallet:SecondRecovery222",
+        ]);
     });
 });
 
