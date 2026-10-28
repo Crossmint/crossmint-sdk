@@ -44,7 +44,7 @@ describe("chain-adapter", () => {
             expect(result).toEqual({ signature: "0xsigned" });
         });
 
-        it.each(["solana", "stellar"] as const)("%s has no signature requests yet", (chain) => {
+        it.each(["solana", "stellar"] as const)("%s cannot approve signature requests", (chain) => {
             expect(getChainAdapter(chain).signatures).toBeUndefined();
         });
     });
