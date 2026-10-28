@@ -53,6 +53,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     ): Promise<TransactionResult<T>> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
+        this.assertActingOptions(params.options);
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 

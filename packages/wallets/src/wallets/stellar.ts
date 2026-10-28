@@ -60,6 +60,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     ): Promise<TransactionResult<T>> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
+        this.assertActingOptions(params.options);
         await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
@@ -115,6 +116,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     public async upgrade<T extends UpgradeOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
         walletsLogger.info("stellarWallet.upgrade.start");
 
+        this.assertActingOptions(options);
         await this.preAuthIfNeeded();
 
         const upgradeTxId = await this.createWalletLifecycleTransaction("upgrade-wallet", options);
@@ -160,6 +162,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         },
     })
     public async migrate<T extends MigrateOptions | undefined = undefined>(options?: T): Promise<TransactionResult<T>> {
+        this.assertActingOptions(options);
         await this.preAuthIfNeeded();
         return (await this.migrateInternal(options)) as TransactionResult<T>;
     }

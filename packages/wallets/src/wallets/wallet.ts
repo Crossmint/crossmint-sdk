@@ -33,6 +33,7 @@ import type {
     SendTokenTransactionOptions,
     SignerOption,
     QuorumOption,
+    PendingSignerOperation,
     SignerChangeOptions,
     TransactionResult,
     AddSignerResult,
@@ -337,11 +338,20 @@ export class Wallet<C extends Chain> {
         return { signer: this.resolveExplicitSigner(options) ?? this.#signerManager.require().locator() };
     }
 
-    /** The locator a call names with its `signer` or `quorum` option; `undefined` when it names neither. */
-    protected resolveExplicitSigner(options?: ActingOptions): string | undefined {
-        if (options?.quorum != null && options.signer != null) {
+    /** Rejects `signer` together with `quorum`, or a malformed `quorum`, before the call does anything. */
+    protected assertActingOptions(options?: ActingOptions): void {
+        if (options?.quorum == null) {
+            return;
+        }
+        if (options.signer != null) {
             throw new InvalidSignerError(BOTH_SIGNER_AND_QUORUM_MESSAGE);
         }
+        resolveQuorumOption(options.quorum);
+    }
+
+    /** The locator a call names with its `signer` or `quorum` option; `undefined` when it names neither. */
+    protected resolveExplicitSigner(options?: ActingOptions): string | undefined {
+        this.assertActingOptions(options);
         if (options?.quorum != null) {
             return resolveQuorumOption(options.quorum);
         }
@@ -560,6 +570,7 @@ export class Wallet<C extends Chain> {
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         });
 
+        this.assertActingOptions(options);
         await this.preAuthIfNeeded();
 
         const sendParams = {
@@ -730,7 +741,7 @@ export class Wallet<C extends Chain> {
                         operationType: existingState.pendingOperation.type,
                         operationId: existingState.pendingOperation.id,
                     });
-                    return this.completeSignerRegistration(
+                    return this.#resumeSignerRegistration(
                         existingState.signer,
                         existingState.pendingOperation,
                         options
@@ -1001,6 +1012,16 @@ export class Wallet<C extends Chain> {
             walletsLogger.info("wallet.removeRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" } as SignerChangeResult<T, RemoveRecoveryMethodReturnType>;
         });
+    }
+
+    // A resumed registration keeps the approver it was created with, so it finishes as it would without `quorum`.
+    #resumeSignerRegistration(
+        signer: WalletSigner,
+        pendingOperation: PendingSignerOperation,
+        options?: AddSignerOptions
+    ) {
+        const complete = () => this.completeSignerRegistration(signer, pendingOperation, options);
+        return options?.quorum != null ? this.#signerManager.withRecoverySigner(complete) : complete();
     }
 
     // A quorum approves its change through its members later, so no recovery signer is activated for it.

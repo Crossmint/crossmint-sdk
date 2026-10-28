@@ -63,6 +63,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async sendTransaction<T extends EVMTransactionInput>(params: T): Promise<TransactionResult<T["options"]>> {
         walletsLogger.info("evmWallet.sendTransaction.start");
 
+        this.assertActingOptions(params.options);
         await this.preAuthIfNeeded();
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
@@ -101,12 +102,13 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signMessage<T extends SignMessageInput>(params: T): Promise<SignatureResult<T["options"]>> {
         walletsLogger.info("evmWallet.signMessage.start");
 
+        this.assertActingOptions({ quorum: params.options?.quorum });
         await this.preAuthIfNeeded();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                ...this.resolveSignerParams(params.options),
+                ...this.resolveSignerParams({ quorum: params.options?.quorum }),
                 chain: this.chain,
             },
         });
@@ -146,6 +148,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signTypedData<T extends SignTypedDataInput>(params: T): Promise<SignatureResult<T["options"]>> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
+        this.assertActingOptions({ quorum: params.options?.quorum });
         await this.preAuthIfNeeded();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
@@ -174,7 +177,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                ...this.resolveSignerParams(params.options),
+                ...this.resolveSignerParams({ quorum: params.options?.quorum }),
                 chain,
             },
         });
