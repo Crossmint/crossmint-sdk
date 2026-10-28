@@ -9,7 +9,7 @@ Get a **client** API key from the [Crossmint developer console](https://docs.cro
 ## Installation
 
 ```bash
-npx expo install @crossmint/client-sdk-react-native-ui expo-constants expo-device expo-secure-store expo-web-browser react-native-get-random-values react-native-svg react-native-webview
+npx expo install @crossmint/client-sdk-react-native-ui expo-constants expo-device expo-secure-store expo-web-browser react-native-get-random-values react-native-webview
 ```
 
 The SDK requires Expo SDK 58 (React Native 0.88, iOS 16.4 or later). The native modules are peer dependencies, and `npx expo install` picks the versions that match your Expo SDK.
