@@ -14,30 +14,23 @@ on:
 permissions:
     contents: read
     pull-requests: write
+    id-token: write
 
 jobs:
     smoke-tests:
         name: Run Smoke Tests
-        runs-on: ubuntu-latest
+        # Playwright 1.55 has no browser build for Ubuntu 26.04, which ubuntu-latest provisions since 2026-10-27.
+        runs-on: ubuntu-24.04
         timeout-minutes: 10
 
         steps:
             - name: Checkout code
               uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-            - name: Install pnpm
-              uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2.4.1
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
               with:
-                  version: 9
-
-            - name: Setup Node.js
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-              with:
-                  node-version: "22"
-                  cache: "pnpm"
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Install Playwright browsers
               run: pnpm exec playwright install chromium --with-deps

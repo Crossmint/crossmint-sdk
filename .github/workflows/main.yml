@@ -24,11 +24,14 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+            id-token: write
         steps:
             - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build all
               run: pnpm build
@@ -49,6 +52,8 @@ jobs:
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Setup Node.js 24 for OIDC trusted publishing
               uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -68,3 +73,6 @@ jobs:
                   version: pnpm change:version
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # @crossmint:registry in .npmrc already sends `pnpm publish` to npmjs.org; this
+                  # keeps it there even for a package outside that scope.
+                  NPM_CONFIG_REGISTRY: https://registry.npmjs.org
