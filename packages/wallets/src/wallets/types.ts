@@ -22,6 +22,7 @@ import type {
     ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
+import { requireQuorumLocator } from "../signers/types";
 
 export type { Transfers, Scope, TransferScope } from "../api/types";
 
@@ -38,30 +39,42 @@ export function isSignerLocatorOption(signer: SignerOption): signer is string {
     return typeof signer === "string";
 }
 
-export type TransactionInputOptions = PrepareOnly & {
-    signer?: SignerOption;
-};
+/** The quorum a call acts as: the quorum as `wallet.signers()` returns it, or its `quorum:<id>` locator. */
+export type QuorumOption = QuorumSigner | string;
+
+export function isQuorumLocatorOption(quorum: QuorumOption): quorum is string {
+    return typeof quorum === "string";
+}
+
+/** The quorum's locator; throws for a string that is not a quorum locator. */
+export function resolveQuorumOption(quorum: QuorumOption): QuorumLocator {
+    return requireQuorumLocator(isQuorumLocatorOption(quorum) ? quorum : quorum.locator);
+}
+
+// A call acts as one signer or as one quorum, never both.
+export type ActingAsOptions = { signer?: SignerOption; quorum?: never } | { quorum: QuorumOption; signer?: never };
+
+export type TransactionInputOptions = Partial<PrepareOnly> & ActingAsOptions;
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly;
+export type SignatureInputOptions = Partial<PrepareOnly> & { quorum?: QuorumOption };
 
-export type AddSignerOptions = PrepareOnly & {
+// A signer change names its approving quorum with `quorum`; it is sent as `approver`.
+export type SignerChangeOptions = Partial<PrepareOnly> & { quorum?: QuorumOption };
+
+export type AddSignerOptions = SignerChangeOptions & {
     scopes?: Scope[];
     deployImmediately?: boolean;
 };
 
-export type RemoveSignerOptions = PrepareOnly;
+export type RemoveSignerOptions = SignerChangeOptions;
 
-export type UpgradeOptions = Partial<PrepareOnly> & {
-    signer?: SignerOption;
-};
+export type UpgradeOptions = Partial<PrepareOnly> & ActingAsOptions;
 
-export type MigrateOptions = Partial<PrepareOnly> & {
-    signer?: SignerOption;
-};
+export type MigrateOptions = Partial<PrepareOnly> & ActingAsOptions;
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
     ? Signer & { transactionId: string }
@@ -69,9 +82,9 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
-export type AddRecoveryMethodOptions = PrepareOnly;
+export type AddRecoveryMethodOptions = SignerChangeOptions;
 
-export type RemoveRecoveryMethodOptions = PrepareOnly;
+export type RemoveRecoveryMethodOptions = SignerChangeOptions;
 
 export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
 
@@ -90,9 +103,13 @@ export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
 export type ApproveResult<T extends ApproveParams> = T extends {
     transactionId: string;
 }
-    ? Transaction<false>
+    ? T extends WithQuorum
+        ? QuorumTransactionResult
+        : Transaction<false>
     : T extends { signatureId: string }
-      ? Signature<false>
+      ? T extends WithQuorum
+          ? QuorumSignatureResult
+          : Signature<false>
       : Error;
 
 type EVMTransactionInputBase = {
@@ -346,6 +363,48 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           transactionId: string;
       };
 
+/** A quorum call's result: landed, or waiting for other members, with the quorum's progress. */
+export type QuorumTransactionResult =
+    | { status: "success"; transactionId: string; hash: string; explorerLink: string }
+    | { status: "awaiting-approval"; transactionId: string; approvals: QuorumApprovalProgress };
+
+export type QuorumSignatureResult =
+    | { status: "success"; signatureId: string; signature: string }
+    | { status: "awaiting-approval"; signatureId: string; approvals: QuorumApprovalProgress };
+
+export type QuorumSignerChangeResult =
+    | { status: "success"; transactionId: string }
+    | { status: "awaiting-approval"; transactionId: string; approvals: QuorumApprovalProgress };
+
+export type QuorumAddSignerResult = Signer & QuorumSignerChangeResult;
+
+type WithQuorum = { quorum: QuorumOption };
+
+// What a call returns: prepared with `prepareOnly: true`, a quorum result with `quorum`, otherwise today's result.
+export type TransactionResult<T> = T extends PrepareOnly<true>
+    ? Transaction<true>
+    : T extends WithQuorum
+      ? QuorumTransactionResult
+      : Transaction<false>;
+
+export type SignatureResult<T> = T extends PrepareOnly<true>
+    ? Signature<true>
+    : T extends WithQuorum
+      ? QuorumSignatureResult
+      : Signature<false>;
+
+export type SignerChangeResult<T, R> = T extends PrepareOnly<true>
+    ? R
+    : T extends WithQuorum
+      ? QuorumSignerChangeResult
+      : R;
+
+export type AddSignerResult<T, C extends Chain> = T extends PrepareOnly<true>
+    ? AddSignerReturnType<C>
+    : T extends WithQuorum
+      ? QuorumAddSignerResult
+      : Signer;
+
 export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
     ? {
           signature?: string;
@@ -365,6 +424,7 @@ export type ApproveParams = {
     transactionId?: string;
     signatureId?: string;
     options?: ApproveOptions;
+    quorum?: QuorumOption;
 };
 
 export type Approval = (BaseSignResult | PasskeySignResult | DeviceSignResult) & {
