@@ -1493,7 +1493,7 @@ export class Wallet<C extends Chain> {
 
         const approvals = await collectApprovals(
             this.#requireNonQuorumApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) => signatures.signApproval(signer, message))
+            this.#approvalSigning(walletSigner, options, signatures.signApproval)
         );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getChainAdapter, type SignatureSigning } from "../chains/chain-adapter";
 import { createMockApiClient, createMockWallet, type MockedApiClient } from "./__tests__/test-helpers";
 
 const PENDING_MESSAGE = "0x4a5c5d454721bbbb25540c3317521e71c373ae36458f960d2ad46ef088110e95";
@@ -49,6 +50,27 @@ describe("approve({ signatureId })", () => {
             const [[, , body]] = api.approveSignature.mock.calls;
             expect(body.approvals).toEqual([{ signature: "0xsigned", signer: locator }]);
             expect(result).toEqual({ signature: "0xoutput", signatureId: "sig-1" });
+        });
+
+        it("signs through the EVM chain adapter's signature contract", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            const locator = wallet.signer?.locator() ?? "";
+            api.getSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "awaiting-approval",
+                approvals: {
+                    pending: [{ signer: { type: "external-wallet", locator }, message: PENDING_MESSAGE }],
+                    submitted: [],
+                },
+            } as never);
+            api.approveSignature.mockResolvedValue({ id: "sig-1", status: "success", outputSignature: "0x" } as never);
+            const evmSignatures = getChainAdapter("base-sepolia").signatures as SignatureSigning;
+            const signApproval = vi.spyOn(evmSignatures, "signApproval");
+
+            await wallet.approve({ signatureId: "sig-1" });
+
+            expect(signApproval).toHaveBeenCalledWith(wallet.signer, PENDING_MESSAGE);
+            signApproval.mockRestore();
         });
     });
 });

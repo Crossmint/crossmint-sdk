@@ -347,7 +347,7 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
       };
 
 // What a chain wallet asks the wallets API to sign: the API's request without `signer`, which the core resolves.
-type WithoutSigner<R> = R extends { type: infer T; params: infer P } ? { type: T; params: Omit<P, "signer"> } : never;
+type WithoutSigner<R> = { [K in keyof R]: K extends "params" ? Omit<R[K], "signer"> : R[K] };
 export type SignatureRequest = WithoutSigner<CreateSignatureParams>;
 export type EvmSignatureRequest = Extract<SignatureRequest, { type: "message" | "typed-data" }>;
 export type StellarSignatureRequest = Extract<SignatureRequest, { type: "auth-entries" }>;

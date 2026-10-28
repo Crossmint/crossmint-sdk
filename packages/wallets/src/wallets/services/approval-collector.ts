@@ -5,7 +5,7 @@ import {
     type MemberApprovalLimit,
     type PlannedMemberApproval,
 } from "../../quorum/approvals";
-import type { SignerAdapter } from "../../signers/types";
+import type { SignApprovalMessage, SignerAdapter } from "../../signers/types";
 import { InvalidSignerError } from "../../utils/errors";
 import { isSameSignerLocator } from "../../utils/signer-locator";
 import type { Approval, PendingApproval } from "../types";
@@ -14,7 +14,7 @@ import type { Approval, PendingApproval } from "../types";
 export type ApprovalSigning = {
     held: SignerAdapter[];
     limit: MemberApprovalLimit;
-    sign: (signer: SignerAdapter, message: string) => ReturnType<SignerAdapter["signMessage"]>;
+    sign: SignApprovalMessage;
     resolveMissing: (locator: string) => Promise<SignerAdapter | null>;
 };
 

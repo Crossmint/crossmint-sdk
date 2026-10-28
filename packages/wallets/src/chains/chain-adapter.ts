@@ -1,6 +1,6 @@
 import type { Chain } from "./chains";
 import type { GetTransactionSuccessResponse, RegisterSignerChain, RegisterSignerResponse } from "../api";
-import type { SignerAdapter } from "../signers/types";
+import type { SignApprovalMessage, SignerAdapter } from "../signers/types";
 import type { TokenBalance, PendingSignerOperation } from "../wallets/types";
 import { getChainType } from "../signers/server/helpers/get-chain-type";
 import { evmChainAdapter } from "./adapters/evm";
@@ -13,13 +13,13 @@ export type AddSignerContext = { locator: string; type: string };
 
 /** How a chain signs one pending approval of a signature request, a member's or a single signer's. */
 export type SignatureSigning = {
-    signApproval(signer: SignerAdapter, message: string): ReturnType<SignerAdapter["signMessage"]>;
+    signApproval: SignApprovalMessage;
 };
 
 export interface ChainAdapter {
     readonly nativeToken: "eth" | "sol" | "xlm";
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
-    // Absent on chains without signature requests: Solana smart wallets have none.
+    // Absent where the SDK cannot approve signature requests: Stellar until its PR, Solana never (no requests).
     readonly signatures?: SignatureSigning;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
     extractAddSignerOperation(
