@@ -20,6 +20,7 @@ import {
     TRANSACTION_EXPIRED_API_MESSAGE,
 } from "../__tests__/test-helpers";
 import {
+    toQuorumTransactionResult,
     waitForSignatureCompletion,
     waitForTransactionCompletion,
     waitForTransactionOutcome,
@@ -444,6 +445,57 @@ describe("operation-poller", () => {
                 expect(error.transactionId).toBeUndefined();
                 expect(error.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
             });
+        });
+    });
+});
+
+describe("toQuorumTransactionResult", () => {
+    const quorumProgress = (remaining: number) => ({
+        quorum: "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21" as const,
+        threshold: 2,
+        remaining,
+        pending: ["email:bob@acme.com" as const],
+        submitted: ["email:alice@acme.com" as const],
+    });
+
+    describe("when the transaction landed", () => {
+        it("returns the success result with the hash and explorer link", () => {
+            const transaction = { hash: "0xhash", explorerLink: "https://explorer/tx/0xhash", transactionId: "txn-1" };
+
+            expect(toQuorumTransactionResult({ status: "success", transaction })).toEqual({
+                status: "success",
+                transactionId: "txn-1",
+                hash: "0xhash",
+                explorerLink: "https://explorer/tx/0xhash",
+            });
+        });
+    });
+
+    describe("when one quorum still waits for its members", () => {
+        it("returns the awaiting result with that quorum's progress as approvals", () => {
+            const progress = quorumProgress(1);
+
+            expect(
+                toQuorumTransactionResult({ status: "awaiting-approval", transactionId: "txn-1", quorums: [progress] })
+            ).toEqual({ status: "awaiting-approval", transactionId: "txn-1", approvals: progress });
+        });
+    });
+
+    describe.each([
+        { context: "no quorum entry", quorums: [] },
+        { context: "two quorum entries", quorums: [quorumProgress(1), quorumProgress(2)] },
+    ])("when the awaiting outcome has $context", ({ quorums }) => {
+        it("throws TransactionAwaitingApprovalError with the transaction id", () => {
+            const mapping = () =>
+                toQuorumTransactionResult({ status: "awaiting-approval", transactionId: "txn-1", quorums });
+
+            expect(mapping).toThrow(TransactionAwaitingApprovalError);
+            expect(mapping).toThrow(AWAITING_APPROVAL_MESSAGE);
+            try {
+                mapping();
+            } catch (error) {
+                expect((error as TransactionAwaitingApprovalError).transactionId).toBe("txn-1");
+            }
         });
     });
 });
