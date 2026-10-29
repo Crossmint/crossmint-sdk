@@ -239,7 +239,11 @@ describe("useSigner() with a key that is only a quorum member", () => {
                 type: "smart",
                 chainType: "evm",
                 address: EVM_ADDRESS,
-                config: { adminSigner: { type: "api-key", locator: "api-key" }, delegatedSigners: [] },
+                config: {
+                    adminSigner: { type: "api-key" },
+                    recoveryMethods: [{ type: "api-key" }, recoveryQuorum],
+                    delegatedSigners: [],
+                },
             } as never);
             api.send.mockResolvedValue({ id: "txn-1" } as never);
 
