@@ -10,6 +10,8 @@ export class ApiClientError extends Error {
     }
 }
 
+export const HTTP_STATUS_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
+
 export abstract class ApiClient {
     abstract get commonHeaders(): HeadersInit;
     abstract get baseUrl(): string;
@@ -24,9 +26,11 @@ export abstract class ApiClient {
         // (e.g. an HTML 502 from a load balancer, or a Cloudflare 403 geo-block). Calling
         // `.json()` on those bodies would otherwise raise an opaque SyntaxError. JSON 4xx
         // responses are still passed through so callers can inspect the structured error body.
+        // A 451 is a region block, so it always throws: its body may be labelled JSON without being valid JSON.
         const contentType = response.headers.get("content-type") ?? "";
         const isJsonResponse = contentType.includes("application/json");
-        if (response.status >= 500 || (!response.ok && !isJsonResponse)) {
+        const isRegionBlocked = response.status === HTTP_STATUS_UNAVAILABLE_FOR_LEGAL_REASONS;
+        if (response.status >= 500 || isRegionBlocked || (!response.ok && !isJsonResponse)) {
             let responseBody: string | null = null;
             try {
                 responseBody = await response.text();
