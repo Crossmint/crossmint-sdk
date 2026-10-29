@@ -527,10 +527,6 @@ importers:
       zod:
         specifier: 3.22.4
         version: 3.22.4
-    devDependencies:
-      '@types/uuid':
-        specifier: 11.0.0
-        version: 11.0.0
 
   packages/client/react-base:
     dependencies:
@@ -772,9 +768,6 @@ importers:
       input-otp:
         specifier: 1.4.2
         version: 1.4.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      lodash.isequal:
-        specifier: 4.5.0
-        version: 4.5.0
       ox:
         specifier: 0.6.9
         version: 0.6.9(typescript@6.0.3)(zod@3.22.4)
@@ -794,9 +787,6 @@ importers:
       '@types/color':
         specifier: 4.2.0
         version: 4.2.0
-      '@types/lodash.isequal':
-        specifier: 4.5.6
-        version: 4.5.6
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
@@ -5689,9 +5679,6 @@ packages:
   '@types/unist@3.0.3':
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/@types/unist/-/unist-3.0.3.tgz', integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
-  '@types/uuid@11.0.0':
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript/@types/uuid/-/uuid-11.0.0.tgz', integrity: sha512-+ryPflzspzbDJDW7O5d11fJxyOWWU8qNU4YptCb2h/3gptZO32UIlmx4l4zo4j63kARqi1NNL9rTgAWnwP8aug==}
-    deprecated: This is a stub types definition. uuid provides its own type definitions, so you do not need this installed.
 
   '@types/uuid@8.3.4':
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/@types/uuid/-/uuid-8.3.4.tgz', integrity: sha512-sBDi59eAuXp/wZ09Qnp3sIVxxkhP9bFWa0c6s3pXFWWhjAE49mT6Bw7tr5i6U+VJajXo8H+dAmwfJhc26sbmeA==}
@@ -21258,10 +21245,6 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
-
-  '@types/uuid@11.0.0':
-    dependencies:
-      uuid: 11.1.1
 
   '@types/uuid@8.3.4': {}
 
