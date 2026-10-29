@@ -192,6 +192,13 @@ export class SignerManager<C extends Chain> {
         }
     }
 
+    /** A key that is only a quorum member: the API has no signer entry for it, so it takes its quorum's status. */
+    assembleMember(internalConfig: InternalSignerConfig<C>, status: SignerStatus | undefined): SignerAdapter {
+        const signer = assembleSigner(this.#chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+        signer.status = status;
+        return signer;
+    }
+
     async assemble(
         internalConfig: InternalSignerConfig<C>,
         options?: { isAdminSigner?: boolean }

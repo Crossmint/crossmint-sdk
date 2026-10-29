@@ -55,7 +55,7 @@ const cacheRecovery = (r: ServerSignerResolver, rec: RecordedCandidates[], secre
     return rec[rec.length - 1];
 };
 const cacheDelegated = (r: ServerSignerResolver, rec: RecordedCandidates[], secret: string, loc: string) => {
-    expect(r.resolveForUseSigner(fullConfig(secret), [loc], () => false)).toEqual({ kind: "delegated" });
+    expect(r.resolveForUseSigner(fullConfig(secret), [loc], () => false)).toEqual({ kind: "delegated", locator: loc });
     return rec[rec.length - 1];
 };
 describe("ServerSignerResolver", () => {
@@ -171,7 +171,7 @@ describe("ServerSignerResolver", () => {
         ] as const)("returns delegated, wipes non-selected, keeps selected (%s)", (loc, w, s, f) => {
             const recorded = installDual();
             const r = makeResolver().resolveForUseSigner(fullConfig("s"), [loc], () => false);
-            expect(r).toEqual({ kind: "delegated" });
+            expect(r).toEqual({ kind: "delegated", locator: loc });
             expectWipedAndKept(recorded[0], w, s, f);
         });
         it("caches the selected delegated candidate so a later resolveDerivation cache-hit returns it", () => {

@@ -382,7 +382,9 @@ describe("send() with a quorum as signer", () => {
         api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [entry]) as never);
         api.getTransaction.mockResolvedValue(SUCCESS as never);
 
-        const { value } = await settle(wallet.send(RECIPIENT, "usdc", "1", { signer: quorum.locator }));
+        const { value } = await settle(
+            wallet.send(RECIPIENT, "usdc", "1", { signer: quorum.locator, prepareOnly: false })
+        );
 
         expect(api.send.mock.calls[0][2]).toMatchObject({ signer: quorum.locator });
         expect(sentApprovals(api)).toEqual([

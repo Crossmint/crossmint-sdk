@@ -268,7 +268,11 @@ export class SignatureAwaitingApprovalError extends SignatureNotAvailableError {
     readonly signatureId: string;
     readonly quorums: QuorumApprovalProgress[];
 
-    constructor(message: string, request: { signatureId: string; quorums: QuorumApprovalProgress[] }, details?: string) {
+    constructor(
+        message: string,
+        request: { signatureId: string; quorums: QuorumApprovalProgress[] },
+        details?: string
+    ) {
         super(message, details);
         this.signatureId = request.signatureId;
         this.quorums = request.quorums;

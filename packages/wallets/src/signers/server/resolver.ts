@@ -98,10 +98,14 @@ export class ServerSignerResolver {
         config: ServerSignerConfig,
         registeredLocators: string[],
         isRecovery: () => boolean
-    ): { kind: "delegated" } | { kind: "recovery"; address: string } | { kind: "unregistered"; message: string } {
+    ):
+        | { kind: "delegated"; locator: string }
+        | { kind: "recovery"; address: string }
+        | { kind: "unregistered"; message: string } {
         const { primary, legacy } = this.deriveCandidates(config);
-        if (this.#selectRegistered(primary, legacy, registeredLocators) != null) {
-            return { kind: "delegated" };
+        const registered = this.#selectRegistered(primary, legacy, registeredLocators);
+        if (registered != null) {
+            return { kind: "delegated", locator: `server:${registered.derivedAddress}` };
         }
         if (isRecovery()) {
             return { kind: "recovery", address: this.#selectRecovery(primary, legacy).derivedAddress };

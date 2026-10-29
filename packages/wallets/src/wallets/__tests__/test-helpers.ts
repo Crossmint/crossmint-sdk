@@ -103,11 +103,11 @@ export const activeSignerMember = (chain: Chain): QuorumMember => {
 };
 
 // A signer this client holds beyond the active one (`approve`'s `additionalSigners`), signing with `signatureOver`.
-export const createHeldSigner = (locator: SignerLocator): SignerAdapter => {
+export const createHeldSigner = (locator: string): SignerAdapter => {
     const sign = vi.fn(async (payload: string) => ({ signature: signatureOver(payload) }));
     return {
         type: locator.split(":")[0],
-        locator: () => locator,
+        locator: () => locator as SignerLocator,
         signMessage: sign,
         signTransaction: sign,
     } as unknown as SignerAdapter;

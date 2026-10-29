@@ -28,6 +28,7 @@ import type {
     ApproveOptions,
     Approval,
     PendingApproval,
+    SignerStatus,
     Signature,
     ApproveResult,
     PrepareOnly,
@@ -66,6 +67,7 @@ import {
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
+    QuorumSigner,
     RecoverySignerConfigForChain,
     ServerSignerConfig,
     SignerAdapter,
@@ -89,6 +91,7 @@ import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
+import { quorumsWithMember } from "../quorum/members";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import {
     type PollingOptions,
@@ -110,6 +113,15 @@ type WalletContructorType<C extends Chain> = {
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
+
+// How `useSigner` holds a key: as a recovery method, a registered signer, or a member of one of the wallet's quorums.
+type HeldKeyRole = { kind: "recovery" } | { kind: "registered" } | { kind: "member"; status: SignerStatus | undefined };
+const RECOVERY: HeldKeyRole = { kind: "recovery" };
+const REGISTERED: HeldKeyRole = { kind: "registered" };
+
+// A delegated quorum as `signers()` lists it, with its install status.
+type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
+const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -1032,11 +1044,11 @@ export class Wallet<C extends Chain> {
         }
         getSignerDescriptor<C>(signer.type).validateConfig(signer);
 
-        let isAdminSigner = false;
+        let role: HeldKeyRole = REGISTERED;
         if (signer.type === "device") {
             await this.#deviceRecovery.resolveAvailability(signer);
         } else {
-            isAdminSigner = await this.resolveNonDeviceSigner(signer);
+            role = await this.resolveNonDeviceSigner(signer);
         }
 
         const internalConfig = getSignerDescriptor<C>(signer.type).buildInternalConfig(
@@ -1044,7 +1056,11 @@ export class Wallet<C extends Chain> {
             this.#signerManager.descriptorContext()
         );
         const signerLocator = getSignerLocator(signer);
-        this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
+        const activeSigner =
+            role.kind === "member"
+                ? this.#signerManager.assembleMember(internalConfig, role.status)
+                : await this.#signerManager.assemble(internalConfig, { isAdminSigner: role.kind === "recovery" });
+        this.#signerManager.setActiveSigner(activeSigner);
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
 
@@ -1103,7 +1119,7 @@ export class Wallet<C extends Chain> {
      * For passkeys without an explicit credential id, auto-selects from registered signers.
      * Returns true if the signer is an admin (recovery) signer.
      */
-    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<boolean> {
+    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<HeldKeyRole> {
         // For non-passkey, non-server signers, check if this is the recovery (admin) signer first.
         // Admin signers are always approved — skip the registration check and getSigner API call
         // which only works for delegated signers (returns 404/400 for admin signers).
@@ -1113,7 +1129,7 @@ export class Wallet<C extends Chain> {
         // which resolves the correct (primary or legacy) derivation.
         if (signer.type !== "passkey" && signer.type !== "server" && this.isRecoverySigner(signer)) {
             this.#deviceRecovery.onSignerSelected();
-            return true;
+            return RECOVERY;
         }
 
         // Passkey without id: try to auto-select from registered signers
@@ -1123,7 +1139,7 @@ export class Wallet<C extends Chain> {
                 // No registered passkeys — use recovery if this is the recovery signer
                 if (this.isRecoverySigner(signer)) {
                     this.#deviceRecovery.onSignerSelected();
-                    return true;
+                    return RECOVERY;
                 }
                 throw new Error("No passkey signer is registered on this wallet.");
             }
@@ -1137,13 +1153,19 @@ export class Wallet<C extends Chain> {
         const locator = this.resolveSignerLocator(signer);
         if (await this.signerIsRegistered(locator)) {
             this.#deviceRecovery.onSignerSelected();
-            return false;
+            return REGISTERED;
         }
 
         // Not a registered signer — fall back to recovery
         if (this.isRecoverySigner(signer)) {
             this.#deviceRecovery.onSignerSelected();
-            return true;
+            return RECOVERY;
+        }
+
+        const member = await this.#memberRole(locator);
+        if (member != null) {
+            this.#deviceRecovery.onSignerSelected();
+            return member;
         }
 
         throw new Error(`Signer "${locator}" is not registered in this wallet.`);
@@ -1153,27 +1175,54 @@ export class Wallet<C extends Chain> {
      * Resolve a server signer: prefer a derivation already registered on-chain, else fall back
      * to the recovery (admin) signer. Returns true if the signer is the admin (recovery) signer.
      */
-    private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
+    private async resolveServerSigner(signer: ServerSignerConfig): Promise<HeldKeyRole> {
         const existingSigners = await this.signers();
         const registeredLocators = existingSigners.map((s) => s.locator);
+        const memberLocators = this.#quorums(existingSigners).flatMap((quorum) =>
+            quorum.members.map((member) => member.locator)
+        );
         const match: { recoveryIndex: number | null } = { recoveryIndex: null };
-        const resolution = this.#serverSignerResolver.resolveForUseSigner(signer, registeredLocators, () => {
-            match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
-            return match.recoveryIndex != null;
-        });
+        const resolution = this.#serverSignerResolver.resolveForUseSigner(
+            signer,
+            [...registeredLocators, ...memberLocators],
+            () => {
+                match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
+                return match.recoveryIndex != null;
+            }
+        );
         switch (resolution.kind) {
             case "delegated":
                 this.#deviceRecovery.onSignerSelected();
-                return false;
+                if (registeredLocators.includes(resolution.locator)) {
+                    return REGISTERED;
+                }
+                return (await this.#memberRole(resolution.locator, existingSigners)) ?? REGISTERED;
             case "recovery":
                 if (match.recoveryIndex != null) {
                     this.#signerManager.stripSecretFromRecovery(match.recoveryIndex, resolution.address);
                 }
                 this.#deviceRecovery.onSignerSelected();
-                return true;
+                return RECOVERY;
             case "unregistered":
                 throw new Error(resolution.message);
         }
+    }
+
+    // The wallet's recovery quorums (from its config), then its delegated quorums (from `signers`).
+    #quorums(signers: WalletSigner[]): QuorumSigner[] {
+        return [...this.recoveryMethods.filter(isQuorumSigner), ...signers.filter(isWalletQuorum)];
+    }
+
+    // A key that is only a quorum member acts as its quorum (EDD 007 §7 "Role"); a recovery quorum is always active.
+    async #memberRole(locator: string, signers?: WalletSigner[]): Promise<HeldKeyRole | null> {
+        if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), locator).length > 0) {
+            return { kind: "member", status: "active" };
+        }
+        const [delegated] = quorumsWithMember((signers ?? (await this.signers())).filter(isWalletQuorum), locator);
+        if (delegated == null) {
+            return null;
+        }
+        return { kind: "member", status: delegated.status };
     }
 
     /**
