@@ -3,7 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
-import type { CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
+import type { CreateSignatureParams, CreateTransactionSuccessResponse, GetBalanceSuccessResponse, Scope } from "../api";
 import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type {
     SignerConfigForChain,
@@ -345,6 +345,12 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           explorerLink: string;
           transactionId: string;
       };
+
+// What a chain wallet asks the wallets API to sign: the API's request without `signer`, which the core resolves.
+type WithoutSigner<R> = { [K in keyof R]: K extends "params" ? Omit<NonNullable<R[K]>, "signer"> : R[K] };
+export type SignatureRequest = WithoutSigner<CreateSignatureParams>;
+export type EvmSignatureRequest = Extract<SignatureRequest, { type: "message" | "typed-data" }>;
+export type StellarSignatureRequest = Extract<SignatureRequest, { type: "auth-entries" }>;
 
 export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
     ? {

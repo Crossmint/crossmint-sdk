@@ -392,6 +392,9 @@ export interface SignerAdapter<T extends keyof SignResultMap = keyof SignResultM
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }
 
+/** Signs one pending approval message with a key this client holds. */
+export type SignApprovalMessage = (signer: SignerAdapter, message: string) => ReturnType<SignerAdapter["signMessage"]>;
+
 export interface ExportableSignerAdapter extends SignerAdapter {
     _exportPrivateKey: (
         exportTEEConnection: ExportSignerTEEConnection,

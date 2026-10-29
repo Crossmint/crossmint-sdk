@@ -28,13 +28,22 @@ const AWAITING_APPROVAL_MESSAGE =
     "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
 
 /** Only quorum members can still approve the transaction; `quorums` is each quorum's progress. */
-export type AwaitingApproval = {
+export type TransactionAwaitingApproval = {
     status: "awaiting-approval";
     transactionId: string;
     quorums: QuorumApprovalProgress[];
 };
 
-export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | AwaitingApproval;
+export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | TransactionAwaitingApproval;
+
+/** Only quorum members can still approve the signature request; `quorums` is each quorum's progress. */
+export type SignatureAwaitingApproval = {
+    status: "awaiting-approval";
+    signatureId: string;
+    quorums: QuorumApprovalProgress[];
+};
+
+export type SignatureOutcome = { status: "success"; signature: Signature<false> } | SignatureAwaitingApproval;
 
 /** Waits for the transaction to land; throws `TransactionAwaitingApprovalError` while it still needs approvals. */
 export async function waitForTransactionCompletion(
@@ -129,7 +138,10 @@ export async function waitForTransactionOutcome(
     };
 }
 
-function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transactionId: string): AwaitingApproval {
+function awaitingApprovalOf(
+    transaction: GetTransactionSuccessResponse,
+    transactionId: string
+): TransactionAwaitingApproval {
     if (transaction.approvals == null || !awaitsQuorumOnly(transaction)) {
         throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
     }

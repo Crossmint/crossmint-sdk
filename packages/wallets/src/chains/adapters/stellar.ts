@@ -9,7 +9,6 @@ import { Base64, Hex } from "ox";
 export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
     walletLocatorPrefix: "me:stellar:smart",
-    supportsSignatures: false,
     supportsQuorumApprovals: false,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {

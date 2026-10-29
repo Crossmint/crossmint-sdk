@@ -1,6 +1,6 @@
 import type { Chain } from "./chains";
 import type { GetTransactionSuccessResponse, RegisterSignerChain, RegisterSignerResponse } from "../api";
-import type { SignerAdapter } from "../signers/types";
+import type { SignApprovalMessage, SignerAdapter } from "../signers/types";
 import type { TokenBalance, PendingSignerOperation } from "../wallets/types";
 import { getChainType } from "../signers/server/helpers/get-chain-type";
 import { evmChainAdapter } from "./adapters/evm";
@@ -11,10 +11,16 @@ export type AddSignerChain = RegisterSignerChain;
 
 export type AddSignerContext = { locator: string; type: string };
 
+/** How a chain signs one pending approval of a signature request, a member's or a single signer's. */
+export type SignatureSigning = {
+    signApproval: SignApprovalMessage;
+};
+
 export interface ChainAdapter {
     readonly nativeToken: "eth" | "sol" | "xlm";
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
-    readonly supportsSignatures: boolean;
+    // Absent where the SDK cannot approve signature requests: Stellar until its PR, Solana never (no requests).
+    readonly signatures?: SignatureSigning;
     /** Whether this client signs as a quorum member on the chain; each chain's quorum milestone turns it on. */
     readonly supportsQuorumApprovals: boolean;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
