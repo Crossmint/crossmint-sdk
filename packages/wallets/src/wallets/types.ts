@@ -46,7 +46,7 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly;
+export type SignatureInputOptions = PrepareOnly & { signer?: SignerOption };
 
 export type AddSignerOptions = PrepareOnly & {
     scopes?: Scope[];

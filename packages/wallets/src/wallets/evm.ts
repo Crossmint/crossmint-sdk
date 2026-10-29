@@ -36,6 +36,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
+                quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -107,12 +108,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.signerManager.require();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                signer: signer.locator(),
+                ...(await this.resolveSignerParams(params.options)),
                 chain: this.chain,
             },
         });
@@ -155,7 +155,6 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signTypedData.start");
 
         await this.preAuthIfNeeded();
-        const signer = this.signerManager.require();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: "Invalid typed data" });
@@ -183,7 +182,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: signer.locator(),
+                ...(await this.resolveSignerParams(params.options)),
                 chain,
             },
         });
@@ -226,7 +225,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     ): Promise<CreateTransactionSuccessResponse> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                ...this.resolveSignerParams(options),
+                ...(await this.resolveSignerParams(options)),
                 chain: this.chain,
                 calls: [transaction],
             },
