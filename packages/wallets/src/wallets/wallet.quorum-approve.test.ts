@@ -16,6 +16,7 @@ import {
     createMockApiClient,
     createMockWallet,
     createQuorumApiEntry,
+    createQuorumApiEntryWith,
     createQuorumPendingApproval,
     createSigningWallet,
     signatureOver,
@@ -30,11 +31,7 @@ const SUCCESS = {
     onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx/0xhash" },
 };
 
-// A quorum of `threshold` whose first members are `members`, the rest random email members.
-function quorumWith(members: QuorumMember[], { threshold = 2, memberCount = 3 } = {}) {
-    const quorum = createQuorumApiEntry({ threshold, memberCount });
-    return { ...quorum, members: [...members, ...quorum.members.slice(members.length)] };
-}
+const quorumWith = createQuorumApiEntryWith;
 
 const awaiting = (id: string, pending: object[], chainType = "evm") => ({
     id,

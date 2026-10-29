@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, QuorumSigner, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
-import { QuorumRequestError } from "../utils/errors";
 import { Wallet } from "./wallet";
-import { createMockApiClient, createQuorumApiEntry, type MockedApiClient } from "./__tests__/test-helpers";
+import {
+    createMockApiClient,
+    createQuorumApiEntry,
+    createQuorumApiEntryWith,
+    type MockedApiClient,
+} from "./__tests__/test-helpers";
 
 vi.mock("@/signers/server", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/signers/server")>();
@@ -83,10 +87,7 @@ const memberKey = (type: QuorumMember["type"]): MemberKey => {
     return key;
 };
 
-function quorumOf(member: QuorumMember): QuorumSigner {
-    const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
-    return { ...quorum, members: [member, ...quorum.members.slice(1)] } as QuorumSigner;
-}
+const quorumOf = (member: QuorumMember): QuorumSigner => createQuorumApiEntryWith([member]);
 
 async function walletWith(
     api: MockedApiClient,
@@ -229,20 +230,16 @@ describe("useSigner() with a key that is only a quorum member", () => {
     });
 
     describe("when a member key sends without naming the quorum", () => {
-        it("throws the API's SIGNER_IS_QUORUM_MEMBER as QuorumRequestError", async () => {
+        it("creates the transaction as the key's quorum", async () => {
             const [externalWallet] = MEMBER_KEYS;
-            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, quorumOf(externalWallet.member)] });
+            const recoveryQuorum = quorumOf(externalWallet.member);
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
             await wallet.useSigner(externalWallet.config);
-            api.send.mockResolvedValue({
-                error: true,
-                code: "SIGNER_IS_QUORUM_MEMBER",
-                message: "The signer is a quorum member; name the quorum as signer.",
-            } as never);
+            api.send.mockResolvedValue({ id: "txn-1" } as never);
 
-            const sending = wallet.send("0x1111111111111111111111111111111111111111", "usdc", "1");
+            await wallet.send("0x1111111111111111111111111111111111111111", "usdc", "1", { prepareOnly: true });
 
-            await expect(sending).rejects.toBeInstanceOf(QuorumRequestError);
-            await expect(sending).rejects.toMatchObject({ reason: "SIGNER_IS_QUORUM_MEMBER" });
+            expect(api.send.mock.calls[0][2].signer).toBe(recoveryQuorum.locator);
         });
     });
 });
