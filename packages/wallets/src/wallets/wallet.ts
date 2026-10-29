@@ -27,6 +27,7 @@ import type {
     ApproveParams,
     ApproveOptions,
     Approval,
+    PendingApproval,
     Signature,
     ApproveResult,
     PrepareOnly,
@@ -87,6 +88,7 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
+import { isQuorumPendingApproval } from "../quorum/approvals";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import {
     type PollingOptions,
@@ -1435,23 +1437,20 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
-    // Quorum entries carry per-member progress instead of a top-level message, so they
-    // cannot be signed through the flat approval flow. Supporting them is tracked by the
-    // quorum approval-loop work; until then, fail with an actionable error.
-    #requireNonQuorumApprovals<P extends { signer: { type: string; locator: string } }>(
-        pendingApprovals: P[]
-    ): Extract<P, { message: string }>[] {
-        return pendingApprovals.map((pendingApproval) => {
-            throwIfQuorumSigner(pendingApproval.signer);
-            return pendingApproval as Extract<P, { message: string }>;
-        });
-    }
-
-    // m1 passes heldSigners() and the D3 limit when it lifts the quorum guard on transactions.
-    #approvalSigning(walletSigner: SignerAdapter, options: ApproveOptions | undefined, sign: ApprovalSigning["sign"]) {
+    // A quorum member may be any key this client holds, the useRecoveryMethod key included (EDD 007 §7 "Approval").
+    // Flat-only approvals keep their keys, so wallets without quorums sign as before.
+    #approvalSigning(
+        walletSigner: SignerAdapter,
+        options: ApproveOptions | undefined,
+        pending: PendingApproval[],
+        sign: ApprovalSigning["sign"]
+    ) {
+        const additional = options?.additionalSigners ?? [];
         return {
-            held: [...(options?.additionalSigners ?? []), walletSigner],
-            limit: "remaining",
+            held: pending.some(isQuorumPendingApproval)
+                ? this.#signerManager.heldSigners(additional)
+                : [...additional, walletSigner],
+            limit: "all",
             sign,
             resolveMissing: (locator) => this.#resolveMissingDeviceSigner(locator),
         } satisfies ApprovalSigning;
@@ -1472,8 +1471,10 @@ export class Wallet<C extends Chain> {
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
 
-        // API key signers approve automatically
-        if (walletSigner.type === "api-key") {
+        const pendingApprovals = signature.approvals?.pending ?? [];
+
+        // API key signers approve automatically; quorum members still sign with the keys this client holds
+        if (walletSigner.type === "api-key" && !pendingApprovals.some(isQuorumPendingApproval)) {
             return signature;
         }
 
@@ -1484,16 +1485,17 @@ export class Wallet<C extends Chain> {
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
         }
 
-        const pendingApprovals = signature.approvals?.pending;
+        const approvals = await collectApprovals(
+            pendingApprovals,
+            this.#approvalSigning(walletSigner, options, pendingApprovals, (signer, message) =>
+                signer.signMessage(message)
+            )
+        );
 
-        if (pendingApprovals == null || pendingApprovals.length === 0) {
+        // Nothing this client holds is pending: the request waits for other members.
+        if (approvals.length === 0) {
             return signature;
         }
-
-        const approvals = await collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) => signer.signMessage(message))
-        );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
@@ -1510,9 +1512,10 @@ export class Wallet<C extends Chain> {
         await this.#options?.callbacks?.onTransactionStart?.();
 
         const walletSigner = this.#signerManager.require();
+        const pendingApprovals = transaction.approvals?.pending ?? [];
 
-        // API key signers approve automatically
-        if (walletSigner.type === "api-key") {
+        // API key signers approve automatically; quorum members still sign with the keys this client holds
+        if (walletSigner.type === "api-key" && !pendingApprovals.some(isQuorumPendingApproval)) {
             return transaction;
         }
 
@@ -1523,19 +1526,18 @@ export class Wallet<C extends Chain> {
             return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
         }
 
-        const pendingApprovals = transaction.approvals?.pending;
-
-        if (pendingApprovals == null || pendingApprovals.length === 0) {
-            return transaction;
-        }
-
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
         const approvals = await collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) =>
+            pendingApprovals,
+            this.#approvalSigning(walletSigner, options, pendingApprovals, (signer, message) =>
                 approvalAdapter.signApproval(signer, transaction, message)
             )
         );
+
+        // Nothing this client holds is pending: the transaction waits for other members.
+        if (approvals.length === 0) {
+            return transaction;
+        }
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
@@ -1549,6 +1551,8 @@ export class Wallet<C extends Chain> {
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
             throwIfQuorumApiError(approvedTransaction, { transactionId });
+            // The client answers the API's 422 expiry with the stored transaction, which has no code.
+            throwIfRequestExpired(approvedTransaction, { transactionId });
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 

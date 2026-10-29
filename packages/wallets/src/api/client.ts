@@ -122,6 +122,11 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: this.headers,
         });
+        // HTTP 422 means the approvals were already complete (another member signed first) or the transaction
+        // expired. Fetch and return the current transaction state instead of the error body, as for signatures.
+        if (response.status === 422) {
+            return this.getTransaction(walletLocator, transactionId);
+        }
         return response.json();
     }
 
