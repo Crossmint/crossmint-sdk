@@ -13,9 +13,13 @@ import type {
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
-import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
+import {
+    InvalidTypedDataError,
+    SignatureNotCreatedError,
+    throwIfQuorumApiError,
+    TransactionNotCreatedError,
+} from "../utils/errors";
 import type { CreateTransactionParams, CreateTransactionSuccessResponse } from "@/api";
-import type { ServerSignerConfig } from "../signers/types";
 import { walletsLogger } from "../logger";
 
 export class EVMWallet extends Wallet<EVMChain> {
@@ -114,6 +118,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
         if ("error" in signatureCreationResponse) {
             walletsLogger.error("evmWallet.signMessage.error", { error: signatureCreationResponse });
+            throwIfQuorumApiError(signatureCreationResponse);
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
@@ -184,6 +189,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
         if ("error" in signatureCreationResponse) {
             walletsLogger.error("evmWallet.signTypedData.error", { error: signatureCreationResponse });
+            throwIfQuorumApiError(signatureCreationResponse);
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
@@ -218,22 +224,15 @@ export class EVMWallet extends Wallet<EVMChain> {
         transaction: FormattedEVMTransaction,
         options?: TransactionInputOptions
     ): Promise<CreateTransactionSuccessResponse> {
-        let signer: string;
-        if (options?.signer == null) {
-            signer = this.signerManager.require().locator();
-        } else if (typeof options.signer === "string") {
-            signer = options.signer;
-        } else {
-            signer = this.resolveServerSignerApiLocator(options.signer as ServerSignerConfig);
-        }
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                signer,
+                ...this.resolveSignerParams(options),
                 chain: this.chain,
                 calls: [transaction],
             },
         } as CreateTransactionParams);
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 

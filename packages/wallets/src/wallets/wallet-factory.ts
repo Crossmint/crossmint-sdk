@@ -18,6 +18,7 @@ import {
     RecoveryNotSupportedOnChainError,
     WalletCreationError,
     WalletNotAvailableError,
+    throwIfQuorumApiError,
     throwIfRecoverySignerApiError,
 } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
@@ -205,6 +206,7 @@ export class WalletFactory {
                 error: walletResponse.error,
             });
             throwIfRecoverySignerApiError(walletResponse);
+            throwIfQuorumApiError(walletResponse);
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 

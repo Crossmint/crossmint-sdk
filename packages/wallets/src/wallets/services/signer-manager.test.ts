@@ -233,6 +233,13 @@ describe("SignerManager", () => {
             "email:second@example.com",
         ],
         [
+            "several recovery signers and the primary one active with its EVM address in another case",
+            multiRecovery,
+            makeSigner("external-wallet", "external-wallet:0xPRIMARY"),
+            primaryRecovery,
+            "external-wallet:0xPrimary",
+        ],
+        [
             "several recovery signers and the api-sourced server one active",
             multiRecovery,
             makeSigner("server", "server:0xServerRecovery"),
@@ -545,6 +552,101 @@ describe("SignerManager with quorum recovery methods", () => {
             manager.addRecoverySigner(second);
 
             expect(manager.recoverySigners).toEqual([first, second]);
+        });
+    });
+});
+
+describe("SignerManager.heldSigners", () => {
+    const ACTIVE_LOCATOR: SignerLocator = "external-wallet:0xActive";
+    const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0xRecovery";
+    const RECOVERY_WITH_ON_SIGN = asRecoveryConfig({ type: "external-wallet", address: "0xRecovery", onSign: vi.fn() });
+
+    describe("when only an active signer is set", () => {
+        it("returns the active signer", () => {
+            const active = makeSigner("external-wallet", ACTIVE_LOCATOR);
+
+            expect(makeManager({ signer: active }).heldSigners()).toEqual([active]);
+        });
+    });
+
+    describe("when a recovery method was selected with useRecoveryMethod()", () => {
+        it("adds it after the active signer, assembled from the selected config", () => {
+            const active = makeSigner("external-wallet", ACTIVE_LOCATOR);
+            const assembled = makeSigner("external-wallet", RECOVERY_LOCATOR);
+            mockedAssembleSigner.mockReturnValue(assembled);
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
+            manager.selectRecovery(1);
+
+            expect(manager.heldSigners()).toEqual([active, assembled]);
+            expect(mockedAssembleSigner).toHaveBeenCalledWith(
+                "base-sepolia",
+                expect.objectContaining({ type: "external-wallet", address: "0xRecovery" }),
+                undefined
+            );
+        });
+
+        it("lists it once when it is also the active signer", () => {
+            const active = makeSigner("external-wallet", RECOVERY_LOCATOR);
+            mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
+            manager.selectRecovery(1);
+
+            expect(manager.heldSigners()).toEqual([active]);
+        });
+
+        it("lists it once when the active signer's EVM address differs only in case", () => {
+            const active = makeSigner("external-wallet", "external-wallet:0xRECOVERY");
+            mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
+            const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
+            manager.selectRecovery(1);
+
+            expect(manager.heldSigners()).toEqual([active]);
+        });
+
+        it("throws withRecoverySigner's error when the selection cannot be assembled", () => {
+            const manager = makeManager({
+                signer: makeSigner("external-wallet", ACTIVE_LOCATOR),
+                recoverySigners: [apiKeyConfig, asRecoveryConfig({ type: "external-wallet", address: "0xRecovery" })],
+            });
+            manager.selectRecovery(1);
+
+            expect(() => manager.heldSigners()).toThrow(/Cannot assemble external wallet signer/);
+        });
+
+        it("throws QuorumSignerNotSupportedError when the selection is a quorum", () => {
+            const quorum = createQuorumApiEntry();
+            const manager = makeManager({ recoverySigners: [apiKeyConfig, quorum] });
+            manager.selectRecovery(1);
+
+            expect(() => manager.heldSigners()).toThrow(QuorumSignerNotSupportedError);
+        });
+    });
+
+    describe("when additional signers are passed", () => {
+        it("puts them first", () => {
+            const active = makeSigner("external-wallet", ACTIVE_LOCATOR);
+            const additional = makeSigner("external-wallet", "external-wallet:0xAdditional");
+
+            expect(makeManager({ signer: active }).heldSigners([additional])).toEqual([additional, active]);
+        });
+
+        it("keeps the additional signer when it has the active signer's locator", () => {
+            const active = makeSigner("external-wallet", ACTIVE_LOCATOR);
+            const additional = makeSigner("external-wallet", ACTIVE_LOCATOR);
+
+            expect(makeManager({ signer: active }).heldSigners([additional])).toEqual([additional]);
+        });
+    });
+
+    describe("when no active signer is set", () => {
+        it("returns the additional signers and the selected recovery method without throwing", () => {
+            const additional = makeSigner("external-wallet", "external-wallet:0xAdditional");
+            const assembled = makeSigner("external-wallet", RECOVERY_LOCATOR);
+            mockedAssembleSigner.mockReturnValue(assembled);
+            const manager = makeManager({ recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
+            manager.selectRecovery(1);
+
+            expect(manager.heldSigners([additional])).toEqual([additional, assembled]);
         });
     });
 });

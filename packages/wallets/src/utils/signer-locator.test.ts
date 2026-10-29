@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getSignerLocator, parseSignerLocator } from "./signer-locator";
+import { getSignerLocator, isSameSignerLocator, parseSignerLocator } from "./signer-locator";
 import type { Chain } from "../chains/chains";
 import type { SignerConfigForChain } from "../signers/types";
 import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
@@ -91,5 +91,23 @@ describe("parseSignerLocator", () => {
             type: "api-key",
             value: "",
         });
+    });
+});
+
+const EVM_CHECKSUMMED = "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01";
+const SOLANA_ADDRESS = "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+
+describe("isSameSignerLocator", () => {
+    it("ignores case for EVM external-wallet locators", () => {
+        expect(isSameSignerLocator(EVM_CHECKSUMMED, EVM_CHECKSUMMED.toLowerCase())).toBe(true);
+    });
+
+    it.each([
+        { kind: "Solana external-wallet", locator: SOLANA_ADDRESS },
+        { kind: "email", locator: "email:Member@example.com" },
+        { kind: "server", locator: "server:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01" },
+    ])("compares $kind locators exactly", ({ locator }) => {
+        expect(isSameSignerLocator(locator, locator)).toBe(true);
+        expect(isSameSignerLocator(locator, locator.toLowerCase())).toBe(false);
     });
 });
