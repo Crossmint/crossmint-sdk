@@ -68,12 +68,15 @@ async function walletWithBob(
         api as unknown as ApiClient
     );
     await wallet.waitForInit();
-    const signersSpy = vi.spyOn(wallet, "signers").mockResolvedValue(signers as never);
+    // Chain wallets are built with `from()`, a new object, so the spy goes on the shared prototype.
+    const signersSpy = vi.spyOn(Wallet.prototype, "signers").mockResolvedValue(signers as never);
     await wallet.useSigner(bobConfig(chain === "stellar" ? BOB_STELLAR : BOB_EVM));
     return { wallet, signersSpy };
 }
 
 const sentSendSigner = (api: MockedApiClient) => api.send.mock.calls[0][2].signer;
+const createdTransactionSigner = (api: MockedApiClient) =>
+    (api.createTransaction.mock.calls[0][1].params as { signer?: string }).signer;
 
 describe("a creating call with a key that is only a quorum member", () => {
     let api: MockedApiClient;
@@ -115,9 +118,13 @@ describe("a creating call with a key that is only a quorum member", () => {
             const treasury = createQuorumApiEntryWith([bob]);
             const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
 
-            await EVMWallet.from(wallet).sendTransaction({ to: RECIPIENT, value: 1n, options: { prepareOnly: true } });
+            await EVMWallet.from(wallet).sendTransaction({
+                to: RECIPIENT,
+                value: BigInt(1),
+                options: { prepareOnly: true },
+            });
 
-            expect(api.createTransaction.mock.calls[0][1].params.signer).toBe(treasury.locator);
+            expect(createdTransactionSigner(api)).toBe(treasury.locator);
         });
 
         it("creates the request as that quorum and signs nothing with prepareOnly", async () => {
@@ -381,7 +388,7 @@ describe("Stellar with a key that is only a quorum member", () => {
             options: { prepareOnly: true },
         });
 
-        expect(api.createTransaction.mock.calls[0][1].params.signer).toBe(treasury.locator);
+        expect(createdTransactionSigner(api)).toBe(treasury.locator);
     });
 
     it("sends no signer on upgrade, so the API uses the admin signer, as before", async () => {
@@ -403,8 +410,8 @@ describe("a creating call with a key that is not a quorum member", () => {
             api as unknown as ApiClient
         );
         await wallet.waitForInit();
-        const signersSpy = vi.spyOn(wallet, "signers").mockResolvedValue([] as never);
-        await wallet.useSigner({ type: "api-key" } as SignerConfigForChain<Chain>);
+        const signersSpy = vi.spyOn(Wallet.prototype, "signers").mockResolvedValue([] as never);
+        await wallet.useSigner({ type: "api-key" } as never);
         signersSpy.mockClear();
 
         await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });

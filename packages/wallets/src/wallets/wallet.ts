@@ -85,13 +85,14 @@ import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
+import { getSignerLocator, isSameSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
+import { resolveActingRole } from "../quorum/roles";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import {
     type PollingOptions,
@@ -112,6 +113,8 @@ type WalletContructorType<C extends Chain> = {
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
+    /** The active `signer`'s locator when it was selected as only a quorum member. */
+    quorumMemberLocator?: SignerLocator | null;
 };
 
 // How `useSigner` holds a key: as a recovery method, a registered signer, or a member of one of the wallet's quorums.
@@ -137,6 +140,8 @@ export class Wallet<C extends Chain> {
     #apiDelegatedServerSignerAddresses: string[] = [];
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
+    // The active key when useSigner selected it as only a quorum member: creating calls then act as its quorum.
+    #quorumMemberLocator: SignerLocator | null = null;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const {
@@ -150,6 +155,7 @@ export class Wallet<C extends Chain> {
             apiDelegatedServerSignerAddresses,
             signers,
             signer,
+            quorumMemberLocator,
         } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
@@ -168,6 +174,7 @@ export class Wallet<C extends Chain> {
                 .map((s) => s.address);
         this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
+        this.#quorumMemberLocator = quorumMemberLocator ?? null;
         this.#serverSignerResolver = new ServerSignerResolver({
             chain,
             projectId: this.#apiClient.projectId,
@@ -310,6 +317,10 @@ export class Wallet<C extends Chain> {
         return wallet.#initialSigners;
     }
 
+    protected static getQuorumMemberLocator<C extends Chain>(wallet: Wallet<C>): SignerLocator | null {
+        return wallet.#quorumMemberLocator;
+    }
+
     protected static getApiRecoveryServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
         return wallet.#serverSignerResolver.apiRecoveryAddresses;
     }
@@ -338,11 +349,32 @@ export class Wallet<C extends Chain> {
     }
 
     /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
-    protected resolveSignerParams(options?: { signer?: SignerOption }): { signer: string } {
-        if (options?.signer == null) {
-            return { signer: this.#signerManager.require().locator() };
+    protected async resolveSignerParams(options?: { signer?: SignerOption }): Promise<{ signer: string }> {
+        if (options?.signer != null) {
+            return { signer: this.resolveSignerOption(options.signer) };
         }
-        return { signer: this.resolveSignerOption(options.signer) };
+        const activeLocator = this.#signerManager.require().locator();
+        if (this.#quorumMemberLocator == null || !isSameSignerLocator(activeLocator, this.#quorumMemberLocator)) {
+            return { signer: activeLocator };
+        }
+        return { signer: await this.#actingRoleLocator(activeLocator) };
+    }
+
+    // A member-only key acts as its quorum, worked out from a fresh read of the wallet (EDD 007 §7 "Role").
+    async #actingRoleLocator(heldLocator: SignerLocator): Promise<string> {
+        const signers = await this.signers();
+        const role = resolveActingRole({
+            scope: "transaction",
+            heldLocator,
+            recoveryLocators: this.recoveryMethods
+                .filter((recovery) => !isQuorumSigner(recovery))
+                .map((recovery) => this.#signerManager.recoveryLocator(recovery))
+                .filter((locator) => locator != null),
+            recoveryQuorums: this.recoveryMethods.filter(isQuorumSigner),
+            delegatedQuorums: signers.filter(isWalletQuorum),
+            isRegisteredSigner: signers.some((signer) => isSameSignerLocator(signer.locator, heldLocator)),
+        });
+        return role.kind === "none" ? heldLocator : role.locator;
     }
 
     /** The API locator of a call's `signer` option. */
@@ -559,7 +591,7 @@ export class Wallet<C extends Chain> {
         const sendParams = {
             recipient,
             amount,
-            ...this.resolveSignerParams(options),
+            ...(await this.resolveSignerParams(options)),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -1061,6 +1093,10 @@ export class Wallet<C extends Chain> {
                 ? this.#signerManager.assembleMember(internalConfig, role.status)
                 : await this.#signerManager.assemble(internalConfig, { isAdminSigner: role.kind === "recovery" });
         this.#signerManager.setActiveSigner(activeSigner);
+        this.#quorumMemberLocator = null;
+        if (role.kind === "member") {
+            this.#quorumMemberLocator = activeSigner.locator();
+        }
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
 

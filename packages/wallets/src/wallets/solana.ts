@@ -29,6 +29,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
+                quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -101,7 +102,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signerParams = this.resolveSignerParams(params.options);
+        const signerParams = await this.resolveSignerParams(params.options);
 
         let serializedTransaction: string;
 

@@ -31,6 +31,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
+                quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -201,7 +202,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signerParams = this.resolveSignerParams(options);
+        const signerParams = await this.resolveSignerParams(options);
 
         // The `serialized-transaction` variant is accepted at runtime but not part of
         // the curated public OpenAPI spec, so its shape is not in the generated DTOs.
