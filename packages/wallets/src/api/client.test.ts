@@ -1426,7 +1426,7 @@ describe("ApiClient - approveTransaction()", () => {
         vi.restoreAllMocks();
     });
 
-    it("re-fetches the transaction on HTTP 422 instead of returning the error body", async () => {
+    it("re-fetches the transaction when the API answers 422 because its approvals are already complete", async () => {
         const errorBody = { error: true, message: "Already has the required number of approvals" };
         mockPost.mockResolvedValue(
             createMockResponse({ data: errorBody, status: 422, ok: false, statusText: "Unprocessable Entity" })
@@ -1440,6 +1440,36 @@ describe("ApiClient - approveTransaction()", () => {
 
         expect(result).toEqual(currentTransaction);
         expect(mockGet).toHaveBeenCalledTimes(1);
+        expect(mockGet.mock.calls[0][0]).toContain("/transactions/txn-1");
+    });
+
+    it.each([
+        {
+            reason: "a member shared by two quorum entries",
+            body: {
+                error: true,
+                message: "Signer 'email:a@x.com' belongs to multiple quorums, which is not supported",
+            },
+        },
+        {
+            reason: "an expired transaction",
+            body: {
+                error: true,
+                code: "TRANSACTION_EXPIRED",
+                message: "The transaction expired before it could be submitted.",
+            },
+        },
+    ])("returns the error body for a 422 about $reason", async ({ body }) => {
+        mockPost.mockResolvedValue(
+            createMockResponse({ data: body, status: 422, ok: false, statusText: "Unprocessable Entity" })
+        );
+
+        const result = await apiClient.approveTransaction(WALLET_LOCATORS.evmSmart, "txn-1", {
+            approvals: [],
+        } as unknown as ApproveTransactionParams);
+
+        expect(result).toEqual(body);
+        expect(mockGet).not.toHaveBeenCalled();
     });
 
     it("returns the error body for non-422 error responses", async () => {

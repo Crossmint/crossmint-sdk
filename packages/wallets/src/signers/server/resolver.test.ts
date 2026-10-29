@@ -55,7 +55,7 @@ const cacheRecovery = (r: ServerSignerResolver, rec: RecordedCandidates[], secre
     return rec[rec.length - 1];
 };
 const cacheDelegated = (r: ServerSignerResolver, rec: RecordedCandidates[], secret: string, loc: string) => {
-    expect(r.resolveForUseSigner(fullConfig(secret), [loc], () => false)).toEqual({ kind: "delegated", locator: loc });
+    expect(r.resolveForUseSigner(fullConfig(secret), [loc], () => false)).toEqual({ kind: "delegated" });
     return rec[rec.length - 1];
 };
 describe("ServerSignerResolver", () => {
@@ -171,7 +171,7 @@ describe("ServerSignerResolver", () => {
         ] as const)("returns delegated, wipes non-selected, keeps selected (%s)", (loc, w, s, f) => {
             const recorded = installDual();
             const r = makeResolver().resolveForUseSigner(fullConfig("s"), [loc], () => false);
-            expect(r).toEqual({ kind: "delegated", locator: loc });
+            expect(r).toEqual({ kind: "delegated" });
             expectWipedAndKept(recorded[0], w, s, f);
         });
         it("caches the selected delegated candidate so a later resolveDerivation cache-hit returns it", () => {
@@ -180,6 +180,29 @@ describe("ServerSignerResolver", () => {
             const cached = cacheDelegated(resolver, recorded, "s", "server:0xPrimary").primary;
             installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
             expect(resolver.resolveDerivation(fullConfig("s"))).toBe(cached);
+        });
+        describe("with quorum member locators", () => {
+            it("returns member with the matched locator when the key is neither registered nor recovery", () => {
+                installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+                const result = makeResolver().resolveForUseSigner(fullConfig("s"), [], () => false, [
+                    "server:0xPrimary",
+                ]);
+                expect(result).toEqual({ kind: "member", locator: "server:0xPrimary" });
+            });
+            it("returns delegated when the key is also registered", () => {
+                installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+                const result = makeResolver().resolveForUseSigner(fullConfig("s"), ["server:0xPrimary"], () => false, [
+                    "server:0xPrimary",
+                ]);
+                expect(result).toEqual({ kind: "delegated" });
+            });
+            it("returns recovery when the key is also a recovery method", () => {
+                installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
+                const result = makeResolver().resolveForUseSigner(fullConfig("s"), [], () => true, [
+                    "server:0xPrimary",
+                ]);
+                expect(result).toEqual({ kind: "recovery", address: "0xPrimary" });
+            });
         });
         it("returns recovery with the selected address and caches it when not registered but isRecovery is true", () => {
             installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });

@@ -1184,18 +1184,19 @@ export class Wallet<C extends Chain> {
         const match: { recoveryIndex: number | null } = { recoveryIndex: null };
         const resolution = this.#serverSignerResolver.resolveForUseSigner(
             signer,
-            [...registeredLocators, ...memberLocators],
+            registeredLocators,
             () => {
                 match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
                 return match.recoveryIndex != null;
-            }
+            },
+            memberLocators
         );
         switch (resolution.kind) {
             case "delegated":
                 this.#deviceRecovery.onSignerSelected();
-                if (registeredLocators.includes(resolution.locator)) {
-                    return REGISTERED;
-                }
+                return REGISTERED;
+            case "member":
+                this.#deviceRecovery.onSignerSelected();
                 return (await this.#memberRole(resolution.locator, existingSigners)) ?? REGISTERED;
             case "recovery":
                 if (match.recoveryIndex != null) {
@@ -1522,8 +1523,10 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = signature.approvals?.pending ?? [];
 
-        // API key signers approve automatically; quorum members still sign with the keys this client holds
-        if (walletSigner.type === "api-key" && !pendingApprovals.some(isQuorumPendingApproval)) {
+        // API key signers' flat entries are approved by the API; quorum members still sign with the held keys
+        const signable =
+            walletSigner.type === "api-key" ? pendingApprovals.filter(isQuorumPendingApproval) : pendingApprovals;
+        if (walletSigner.type === "api-key" && signable.length === 0) {
             return signature;
         }
 
@@ -1535,10 +1538,8 @@ export class Wallet<C extends Chain> {
         }
 
         const approvals = await collectApprovals(
-            pendingApprovals,
-            this.#approvalSigning(walletSigner, options, pendingApprovals, (signer, message) =>
-                signer.signMessage(message)
-            )
+            signable,
+            this.#approvalSigning(walletSigner, options, signable, (signer, message) => signer.signMessage(message))
         );
 
         // Nothing this client holds is pending: the request waits for other members.
@@ -1563,8 +1564,10 @@ export class Wallet<C extends Chain> {
         const walletSigner = this.#signerManager.require();
         const pendingApprovals = transaction.approvals?.pending ?? [];
 
-        // API key signers approve automatically; quorum members still sign with the keys this client holds
-        if (walletSigner.type === "api-key" && !pendingApprovals.some(isQuorumPendingApproval)) {
+        // API key signers' flat entries are approved by the API; quorum members still sign with the held keys
+        const signable =
+            walletSigner.type === "api-key" ? pendingApprovals.filter(isQuorumPendingApproval) : pendingApprovals;
+        if (walletSigner.type === "api-key" && signable.length === 0) {
             return transaction;
         }
 
@@ -1577,8 +1580,8 @@ export class Wallet<C extends Chain> {
 
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
         const approvals = await collectApprovals(
-            pendingApprovals,
-            this.#approvalSigning(walletSigner, options, pendingApprovals, (signer, message) =>
+            signable,
+            this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
                 approvalAdapter.signApproval(signer, transaction, message)
             )
         );
@@ -1600,8 +1603,6 @@ export class Wallet<C extends Chain> {
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
             throwIfQuorumApiError(approvedTransaction, { transactionId });
-            // The client answers the API's 422 expiry with the stored transaction, which has no code.
-            throwIfRequestExpired(approvedTransaction, { transactionId });
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 

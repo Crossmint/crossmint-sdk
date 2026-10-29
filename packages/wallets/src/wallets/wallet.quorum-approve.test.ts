@@ -12,7 +12,6 @@ import {
 import type { Wallet } from "./wallet";
 import {
     activeSignerMember,
-    createExpiredRequest,
     createHeldSigner,
     createMockApiClient,
     createMockWallet,
@@ -20,6 +19,7 @@ import {
     createQuorumPendingApproval,
     createSigningWallet,
     signatureOver,
+    TRANSACTION_EXPIRED_API_MESSAGE,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -194,20 +194,17 @@ describe("approve() on a transaction with a pending quorum entry", () => {
     });
 
     describe("when a held member is pending in two quorum entries", () => {
-        it("signs each entry's message", async () => {
+        it("throws the API's rejection, which the API returns for any member shared by two quorum entries", async () => {
             const first = createQuorumPendingApproval({ quorum: quorumWith([member]) });
             const second = createQuorumPendingApproval({ quorum: quorumWith([member]) });
-            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [first, second]) as never);
-            api.getTransaction.mockResolvedValue(SUCCESS as never);
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [first, second]) as never);
+            const rejection = `Signer '${member.locator}' belongs to multiple quorums, which is not supported`;
+            api.approveTransaction.mockResolvedValue({ error: true, statusCode: 422, message: rejection } as never);
 
-            await settle(wallet.approve({ transactionId: "txn-1" }));
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
-            expect(sentApprovals(api)).toEqual([
-                [
-                    { signer: member.locator, signature: signatureOver(first.quorumApprovals.pending[0].message) },
-                    { signer: member.locator, signature: signatureOver(second.quorumApprovals.pending[0].message) },
-                ],
-            ]);
+            expect(error).toBeInstanceOf(TransactionFailedError);
+            expect((error as Error).message).toContain("belongs to multiple quorums");
         });
     });
 
@@ -236,13 +233,17 @@ describe("approve() on a transaction with a pending quorum entry", () => {
         });
     });
 
-    describe("when the approval comes back as an expired transaction", () => {
+    describe("when the API answers the approval with TRANSACTION_EXPIRED", () => {
         it("throws TransactionExpiredError", async () => {
             api.getTransaction.mockResolvedValue(
                 awaiting("txn-1", [createQuorumPendingApproval({ quorum: quorumWith([member]) })]) as never
             );
-            // The client answers the API's 422 with the stored transaction, which records the expiry.
-            api.approveTransaction.mockResolvedValue(createExpiredRequest("txn-1") as never);
+            api.approveTransaction.mockResolvedValue({
+                error: true,
+                statusCode: 422,
+                code: "TRANSACTION_EXPIRED",
+                message: TRANSACTION_EXPIRED_API_MESSAGE,
+            } as never);
 
             const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
@@ -278,6 +279,31 @@ describe("approve() on a transaction with a pending quorum entry", () => {
             await settle(wallet.approve({ transactionId: "txn-1", options: { approval } }));
 
             expect(sentApprovals(api)).toEqual([[approval]]);
+        });
+    });
+
+    describe("when only a flat entry for the useRecoveryMethod key is pending", () => {
+        it("throws InvalidSignerError, as before: that key signs quorum members only", async () => {
+            const recoveryAddress = "0x3333333333333333333333333333333333333333";
+            wallet = await createSigningWallet("base-sepolia", api, [
+                { type: "api-key" },
+                { type: "external-wallet", address: recoveryAddress },
+            ] as unknown as RecoverySignerConfigForChain<Chain>[]);
+            await wallet.useRecoveryMethod({
+                type: "external-wallet",
+                address: recoveryAddress,
+                onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+            } as unknown as SignerConfigForChain<Chain>);
+            const flat = {
+                signer: { type: "external-wallet", locator: `external-wallet:${recoveryAddress}` },
+                message: "0xflat",
+            };
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat]) as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
         });
     });
 
@@ -341,6 +367,49 @@ describe("approve() with an api-key active signer", () => {
             expect(sentApprovals(api)).toEqual([
                 [{ signer: held.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
             ]);
+        });
+
+        it("signs only the quorum members when a flat entry is pending too, leaving the flat entry to the API", async () => {
+            const held = createQuorumApiEntry().members[0];
+            const flat = { signer: { type: "api-key", locator: "api-key" }, message: "0xflat" };
+            const entry = createQuorumPendingApproval({ quorum: quorumWith([held]) });
+            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [flat, entry]) as never);
+            api.getTransaction.mockResolvedValue(SUCCESS as never);
+
+            const { error } = await settle(
+                wallet.approve({
+                    transactionId: "txn-1",
+                    options: { additionalSigners: [createHeldSigner(held.locator)] },
+                })
+            );
+
+            expect(error).toBeUndefined();
+            expect(sentApprovals(api)).toEqual([
+                [{ signer: held.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+            ]);
+        });
+
+        it("signs the held members of a pending signature", async () => {
+            const held = createQuorumApiEntry().members[0];
+            const entry = createQuorumPendingApproval({ quorum: quorumWith([held]) });
+            api.getSignature.mockResolvedValue(awaiting("sig-1", [entry]) as never);
+            api.approveSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "success",
+                outputSignature: "0xerc1271",
+            } as never);
+
+            const { value } = await settle(
+                wallet.approve({
+                    signatureId: "sig-1",
+                    options: { additionalSigners: [createHeldSigner(held.locator)] },
+                })
+            );
+
+            expect(api.approveSignature.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: held.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+            ]);
+            expect(value).toEqual({ signature: "0xerc1271", signatureId: "sig-1" });
         });
 
         it("sends nothing and throws the awaiting error when no member is held", async () => {
