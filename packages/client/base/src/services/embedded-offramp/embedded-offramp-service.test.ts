@@ -54,6 +54,12 @@ describe("embeddedOfframpService", () => {
             }
         });
 
+        test("adds fill=true only when fill is on", () => {
+            expect(iframeUrl({ fill: true }).searchParams.get("fill")).toBe("true");
+            expect(iframeUrl({ fill: false }).searchParams.has("fill")).toBe(false);
+            expect(iframeUrl({}).searchParams.has("fill")).toBe(false);
+        });
+
         describe("when the sdk metadata exceeds the route's limits", () => {
             test("truncates name to 64 and version to 32 so the route does not drop it", () => {
                 const url = iframeUrl({}, makeApiClient({ name: "n".repeat(100), version: "1".repeat(50) }));

@@ -6,3 +6,4 @@
 ---
 
 Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+Set `fill` to make it fill its container's height instead of sizing to the content.
