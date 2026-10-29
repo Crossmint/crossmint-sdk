@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, QuorumSigner, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
@@ -8,6 +8,7 @@ import {
     createMockApiClient,
     createQuorumApiEntry,
     createQuorumApiEntryWith,
+    createQuorumPendingApproval,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -286,6 +287,71 @@ describe("useRecoveryMethod() with a key that is only a member of a recovery quo
             await expect(
                 wallet.useRecoveryMethod({ type: "passkey" } as SignerConfigForChain<Chain>)
             ).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
+        });
+    });
+});
+
+describe("signer changes with server keys", () => {
+    let api: MockedApiClient;
+    const SERVER_LOCATOR = "server:0xDerivedServerAddress";
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+        api.removeSigner.mockResolvedValue({ id: "txn-change", status: "awaiting-approval" } as never);
+        api.approveTransaction.mockResolvedValue({ id: "txn-change", status: "pending" } as never);
+    });
+
+    // No restoreAllMocks here: it would also reset the module-level server derivation mocks above.
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    describe("when the signer option is a server recovery method given by its secret", () => {
+        it("sends the recovery method as the approver, keeping its secret out of the stored recovery methods", async () => {
+            const wallet = await walletWith(api, {
+                recovery: [{ type: "api-key" }, { type: "server", address: "0xDerivedServerAddress" }],
+            });
+
+            await wallet.removeSigner({ type: "external-wallet", address: "Delegated333" } as never, {
+                prepareOnly: true,
+                signer: { type: "server", secret: "bob-secret" },
+            });
+
+            expect(api.removeSigner.mock.calls[0][2].approver).toBe(SERVER_LOCATOR);
+            expect(wallet.recoveryMethods.some((recovery) => "secret" in recovery)).toBe(false);
+        });
+    });
+
+    describe("when a server member of a recovery quorum is selected", () => {
+        it("signs the member's entry with the server key", async () => {
+            const server = memberKey("server");
+            const recoveryQuorum = quorumOf(server.member);
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+            await wallet.useRecoveryMethod(server.config);
+            const entry = createQuorumPendingApproval({ quorum: recoveryQuorum });
+            api.getTransaction.mockResolvedValueOnce({
+                id: "txn-change",
+                status: "awaiting-approval",
+                chainType: "evm",
+                approvals: { pending: [entry], submitted: [] },
+            } as never);
+            api.getTransaction.mockResolvedValue({
+                id: "txn-change",
+                status: "success",
+                onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx" },
+            } as never);
+
+            const removing = wallet
+                .removeSigner({ type: "external-wallet", address: "Delegated333" } as never)
+                .catch((error: unknown) => error);
+            await vi.runAllTimersAsync();
+            await removing;
+
+            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: SERVER_LOCATOR, signature: "0xmocksig" }],
+            ]);
         });
     });
 });

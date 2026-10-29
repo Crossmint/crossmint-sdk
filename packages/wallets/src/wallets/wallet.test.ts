@@ -3657,6 +3657,50 @@ describe("Wallet - recover()", () => {
             expect(wallet.needsRecovery()).toBe(false);
         });
 
+        it("registers the device signer with the recovery method as approver, even when a quorum member is selected", async () => {
+            const mockStorage = createMockDeviceKeyStorage();
+            const alice = { type: "external-wallet", address: "AliceMember1111111111111111111111111111111" };
+            const recoveryQuorum = {
+                type: "quorum",
+                locator: "quorum:0d3b3f6c-2c2a-8f43-9a2e-4b6a3c5d7e8f",
+                threshold: 2,
+                members: [
+                    { ...alice, locator: `external-wallet:${alice.address}` },
+                    { type: "email", email: "bob@acme.com", locator: "email:bob@acme.com" },
+                ],
+            };
+            const wallet = new Wallet(
+                {
+                    chain: "solana",
+                    address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                    recovery: [{ type: "api-key" }, recoveryQuorum] as any,
+                    options: { deviceSignerKeyStorage: mockStorage as any },
+                },
+                mockApiClient as unknown as ApiClient
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+            await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
+            mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                transaction: { id: "tx-1", status: "pending", onChain: { transaction: "serialized-tx" } },
+            } as any);
+            mockApiClient.getTransaction.mockResolvedValue({
+                id: "tx-1",
+                status: "success",
+                chainType: "solana",
+                onChain: { txId: "solana-hash", explorerLink: "https://explorer.solana.com/tx/solana-hash" },
+            } as any);
+            mockGetSignerApproved("solana", "device:mockNewKey");
+
+            await wallet.recover();
+
+            expect(mockApiClient.registerSigner.mock.calls[0][1].approver).toBe("api-key");
+            expect(mockStorage.deleteKey).not.toHaveBeenCalled();
+        });
+
         it("falls back to recovery signer when backend rejects device-signer with DEVICE_SIGNER_NOT_SUPPORTED", async () => {
             const mockStorage = createMockDeviceKeyStorage();
             const wallet = new Wallet(

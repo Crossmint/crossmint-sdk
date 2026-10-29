@@ -221,9 +221,12 @@ export class Wallet<C extends Chain> {
             signerManager: this.#signerManager,
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
-            addSigner: (deviceSigner) => this.addSigner(deviceSigner),
+            // Until device recovery supports recovery quorums, its signer changes ignore a selected member.
+            addSigner: (deviceSigner) => this.#signerManager.withoutMemberSelection(() => this.addSigner(deviceSigner)),
             removeSigner: (signerLocator) =>
-                this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
+                this.#signerManager.withoutMemberSelection(() =>
+                    this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>)
+                ),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
         });
@@ -1036,12 +1039,35 @@ export class Wallet<C extends Chain> {
         });
     }
 
-    // A signer change's explicit approver: the API locator of its `signer` option, or none.
+    // A signer change's explicit approver: the API locator of its `signer` option, or none. A server recovery method
+    // passed by its secret is resolved as useRecoveryMethod resolves it, so it can sign.
     #explicitApprover(options: { signer?: SignerOption } | undefined): string | undefined {
         if (options?.signer == null) {
             return undefined;
         }
+        if (!isSignerLocatorOption(options.signer)) {
+            const index = this.matchRecoverySigner(options.signer as SignerConfigForChain<C>);
+            if (index != null) {
+                this.#adoptServerRecoverySecret(index, options.signer);
+            }
+        }
         return this.resolveSignerOption(options.signer);
+    }
+
+    // Keep a server recovery method's derivation in the resolver and drop the secret from the stored config.
+    #adoptServerRecoverySecret(index: number, config: ServerSignerConfig): void {
+        this.#signerManager.stripSecretFromRecovery(index, this.#serverSignerResolver.resolveRecovery(config));
+    }
+
+    // A server key's secret only lives in the resolver: keep its derivation there and its address in the config.
+    #withoutServerSecret(config: SignerConfigForChain<C>): RecoverySignerConfigForChain<C> {
+        if (config.type !== "server" || isApiSourcedServerSignerConfig(config)) {
+            return config as RecoverySignerConfigForChain<C>;
+        }
+        return {
+            type: "server",
+            address: this.#serverSignerResolver.resolveRecovery(config),
+        } as RecoverySignerConfigForChain<C>;
     }
 
     private assertRecoveryMethodManagementSupported(): void {
@@ -1147,7 +1173,7 @@ export class Wallet<C extends Chain> {
             // A key that is only a member of a recovery quorum selects that quorum as the approver (EDD 007 §7 "Role").
             const memberLocator = this.resolveSignerLocator(recoveryMethod);
             if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0) {
-                this.#signerManager.selectRecoveryMember(recoveryMethod, memberLocator);
+                this.#signerManager.selectRecoveryMember(this.#withoutServerSecret(recoveryMethod), memberLocator);
                 walletsLogger.info("wallet.useRecoveryMethod.success", { recoveryMemberLocator: memberLocator });
                 return;
             }
@@ -1160,10 +1186,7 @@ export class Wallet<C extends Chain> {
             );
         }
         if (recoveryMethod.type === "server") {
-            this.#signerManager.stripSecretFromRecovery(
-                index,
-                this.#serverSignerResolver.resolveRecovery(recoveryMethod)
-            );
+            this.#adoptServerRecoverySecret(index, recoveryMethod);
         }
         const selected = getSignerDescriptor<C>(recoveryMethod.type).adoptsRecoveryConfigOnMatch
             ? this.recoveryMethods[index]

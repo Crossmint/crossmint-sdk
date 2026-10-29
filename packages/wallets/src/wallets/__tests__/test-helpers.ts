@@ -142,6 +142,20 @@ const walletWithSigner = async <C extends Chain>(
     return wallet;
 };
 
+// A wallet with no active signer: its recovery methods are never activated on their own (no api-key recovery).
+export const createMockWalletWithoutSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => {
+    const wallet = new Wallet(
+        { chain, address: getChainAddress(chain), recovery: recoverySigners },
+        mockApiClient as unknown as ApiClient
+    );
+    await wallet.waitForInit();
+    return wallet;
+};
+
 export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): MockedApiClient => ({
     isServerSide: false,
     environment: APIKeyEnvironmentPrefix.STAGING,
