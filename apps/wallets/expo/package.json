@@ -18,7 +18,6 @@
         "expo-clipboard": "~58.0.3",
         "expo-constants": "~58.0.12",
         "expo-device": "~58.0.5",
-        "expo-linking": "~58.0.13",
         "expo-secure-store": "~58.0.2",
         "expo-web-browser": "~58.0.6",
         "react": "19.3.0",
@@ -26,8 +25,6 @@
         "react-native": "0.88.0",
         "react-native-get-random-values": "~1.11.0",
         "react-native-passkey": "^3",
-        "react-native-safe-area-context": "~5.10.1",
-        "react-native-screens": "~4.30.0",
         "react-native-web": "~0.21.4",
         "react-native-webview": "14.0.1",
         "stream-browserify": "^3.0.0"
