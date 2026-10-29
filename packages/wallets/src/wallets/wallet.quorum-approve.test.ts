@@ -389,10 +389,11 @@ describe("approve() with an api-key active signer", () => {
             ]);
         });
 
-        it("signs the held members of a pending signature", async () => {
+        it("signs the held members of a pending signature, leaving a flat entry to the API", async () => {
             const held = createQuorumApiEntry().members[0];
+            const flat = { signer: { type: "api-key", locator: "api-key" }, message: "0xflat" };
             const entry = createQuorumPendingApproval({ quorum: quorumWith([held]) });
-            api.getSignature.mockResolvedValue(awaiting("sig-1", [entry]) as never);
+            api.getSignature.mockResolvedValue(awaiting("sig-1", [flat, entry]) as never);
             api.approveSignature.mockResolvedValue({
                 id: "sig-1",
                 status: "success",

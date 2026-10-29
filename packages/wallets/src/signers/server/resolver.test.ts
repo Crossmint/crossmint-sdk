@@ -189,6 +189,17 @@ describe("ServerSignerResolver", () => {
                 ]);
                 expect(result).toEqual({ kind: "member", locator: "server:0xPrimary" });
             });
+            it("signs a member matched on its legacy derivation with the legacy key, wiping the primary", () => {
+                const recorded = installDual();
+                const resolver = makeResolver();
+
+                const result = resolver.resolveForUseSigner(fullConfig("s"), [], () => false, ["server:0xLegacy"]);
+
+                expect(result).toEqual({ kind: "member", locator: "server:0xLegacy" });
+                expectWipedAndKept(recorded[0], "primary", "legacy", 9);
+                installDual();
+                expect(resolver.resolveDerivation(fullConfig("s"))).toBe(recorded[0].legacy);
+            });
             it("returns delegated when the key is also registered", () => {
                 installCandidates({ s: { primary: { address: "0xPrimary", fill: 7 }, legacy: null } });
                 const result = makeResolver().resolveForUseSigner(fullConfig("s"), ["server:0xPrimary"], () => false, [
