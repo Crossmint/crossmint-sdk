@@ -1435,16 +1435,13 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
-    // Quorum entries carry per-member progress instead of a top-level message, so they
-    // cannot be signed through the flat approval flow. Supporting them is tracked by the
-    // quorum approval-loop work; until then, fail with an actionable error.
-    #requireNonQuorumApprovals<P extends { signer: { type: string; locator: string } }>(
-        pendingApprovals: P[]
-    ): Extract<P, { message: string }>[] {
-        return pendingApprovals.map((pendingApproval) => {
-            throwIfQuorumSigner(pendingApproval.signer);
-            return pendingApproval as Extract<P, { message: string }>;
-        });
+    // Quorum approvals ship chain by chain: on a chain whose adapter does not support them yet,
+    // a pending quorum entry fails with an actionable error instead of being signed.
+    #requireSupportedApprovals<P extends { signer: { type: string; locator: string } }>(pendingApprovals: P[]): P[] {
+        if (!this.chainAdapter.supportsQuorumApprovals) {
+            pendingApprovals.forEach((pendingApproval) => throwIfQuorumSigner(pendingApproval.signer));
+        }
+        return pendingApprovals;
     }
 
     // m1 passes heldSigners() and the D3 limit when it lifts the quorum guard on transactions.
@@ -1491,7 +1488,7 @@ export class Wallet<C extends Chain> {
         }
 
         const approvals = await collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
+            this.#requireSupportedApprovals(pendingApprovals),
             this.#approvalSigning(walletSigner, options, (signer, message) => signer.signMessage(message))
         );
 
@@ -1531,7 +1528,7 @@ export class Wallet<C extends Chain> {
 
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
         const approvals = await collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
+            this.#requireSupportedApprovals(pendingApprovals),
             this.#approvalSigning(walletSigner, options, (signer, message) =>
                 approvalAdapter.signApproval(signer, transaction, message)
             )
