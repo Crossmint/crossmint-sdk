@@ -5679,7 +5679,6 @@ packages:
   '@types/unist@3.0.3':
     resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/@types/unist/-/unist-3.0.3.tgz', integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
-    deprecated: This is a stub types definition. uuid provides its own type definitions, so you do not need this installed.
 
   '@types/uuid@8.3.4':
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/@types/uuid/-/uuid-8.3.4.tgz', integrity: sha512-sBDi59eAuXp/wZ09Qnp3sIVxxkhP9bFWa0c6s3pXFWWhjAE49mT6Bw7tr5i6U+VJajXo8H+dAmwfJhc26sbmeA==}
