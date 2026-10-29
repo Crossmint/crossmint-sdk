@@ -153,6 +153,13 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
 
 export type QuorumLocator = `quorum:${string}`;
 
+const QUORUM_LOCATOR_PREFIX = "quorum:";
+
+/** True for any `quorum:` locator, valid or not; `isQuorumLocator` also checks the id. */
+export function hasQuorumLocatorPrefix(locator: string): boolean {
+    return locator.startsWith(QUORUM_LOCATOR_PREFIX);
+}
+
 // Crossmint assigns quorum ids as version-8 UUIDs (the API spec's locator pattern).
 const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -160,7 +167,30 @@ export function isQuorumLocator(locator: string): locator is QuorumLocator {
     return QUORUM_LOCATOR_PATTERN.test(locator);
 }
 
-export type QuorumMemberType = "email" | "phone" | "external-wallet" | "server" | "passkey";
+export function requireQuorumLocator(locator: string): QuorumLocator {
+    if (!isQuorumLocator(locator)) {
+        throw new Error(`Malformed quorum locator: ${locator}`);
+    }
+    return locator;
+}
+
+// api-key and device signers are never quorum members (007 §7, "Config").
+const QUORUM_MEMBER_TYPES = ["email", "phone", "external-wallet", "server", "passkey"] as const;
+
+export type QuorumMemberType = (typeof QUORUM_MEMBER_TYPES)[number];
+
+export type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
+
+export function isQuorumMemberLocator(locator: string): locator is QuorumMemberLocator {
+    return QUORUM_MEMBER_TYPES.some((type) => locator.startsWith(`${type}:`));
+}
+
+export function requireQuorumMemberLocator(locator: string): QuorumMemberLocator {
+    if (!isQuorumMemberLocator(locator)) {
+        throw new Error(`Malformed quorum member locator: ${locator}`);
+    }
+    return locator;
+}
 
 type WithoutStatus<T> = T extends unknown ? Omit<T, "status" | "scopes"> : never;
 

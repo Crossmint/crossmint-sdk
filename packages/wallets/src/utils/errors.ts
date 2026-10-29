@@ -7,6 +7,7 @@ import {
     NotAuthorizedError,
     WalletErrorCode,
 } from "@crossmint/common-sdk-base";
+import type { QuorumLocator } from "../signers/types";
 
 export {
     NotAuthorizedError,
@@ -107,6 +108,53 @@ export function quorumSignerNotSupported(quorumLocators: string[]): QuorumSigner
     return new QuorumSignerNotSupportedError(
         `Signing as quorum signer ${quorumLocators.join(", ")} is not yet supported by this SDK version`
     );
+}
+
+/** The held key is a member of several quorums, so the SDK cannot tell which one it acts as. */
+export class QuorumSelectionAmbiguousError extends CrossmintSDKError {
+    readonly quorumLocators: QuorumLocator[];
+
+    constructor(quorumLocators: QuorumLocator[], details?: string) {
+        super(
+            `This signer is a member of several quorums (${quorumLocators.join(", ")}); choose the quorum to act as`,
+            WalletErrorCode.SIGNER_INVALID,
+            details
+        );
+        this.quorumLocators = quorumLocators;
+    }
+}
+
+// The quorum error codes the wallets API defines; `QuorumRequestError.reason` is one of them.
+const QUORUM_REQUEST_ERROR_REASONS = [
+    "QUORUM_SIGNER_UNSUPPORTED",
+    "QUORUM_SIZE_INVALID",
+    "QUORUM_MEMBER_DUPLICATED",
+    "QUORUM_MEMBER_TYPE_UNSUPPORTED",
+    "QUORUM_MEMBER_TYPE_NOT_ALLOWED",
+    "NESTED_QUORUM_NOT_ALLOWED",
+    "QUORUM_TOO_FEW_MEMBERS",
+    "QUORUM_THRESHOLD_EXCEEDS_MEMBERS",
+    "SIGNER_IS_QUORUM_MEMBER",
+    "QUORUM_APPROVING_MEMBERS_COUNT_MISMATCH",
+    "QUORUM_APPROVING_MEMBER_INVALID",
+    "APPROVING_MEMBERS_NOT_APPLICABLE",
+    "SCOPED_QUORUM_CANNOT_SIGN",
+] as const;
+
+export type QuorumRequestErrorReason = (typeof QUORUM_REQUEST_ERROR_REASONS)[number];
+
+function isQuorumRequestErrorReason(code: string): code is QuorumRequestErrorReason {
+    return QUORUM_REQUEST_ERROR_REASONS.some((reason) => reason === code);
+}
+
+/** The wallets API rejected a quorum request; `reason` is the API error code. */
+export class QuorumRequestError extends CrossmintSDKError {
+    readonly reason: QuorumRequestErrorReason;
+
+    constructor(message: string, reason: QuorumRequestErrorReason, details?: string) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+        this.reason = reason;
+    }
 }
 
 /** Thrown for recovery configurations the SDK can reject before calling the API. */
@@ -274,6 +322,21 @@ export class TransactionFailedError extends CrossmintSDKError {
     }
 }
 
+/** The approval window of a transaction or signature request closed; create a new request. */
+export class TransactionExpiredError extends TransactionFailedError {
+    readonly transactionId?: string;
+    readonly signatureId?: string;
+
+    constructor(message: string, request: ExpiredRequest, details?: string) {
+        super(message, details);
+        this.transactionId = request.transactionId;
+        this.signatureId = request.signatureId;
+    }
+}
+
+/** The request a call site was acting on; the API error body does not carry its id. */
+export type ExpiredRequest = { transactionId?: string; signatureId?: string };
+
 export class PendingApprovalsError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
@@ -381,6 +444,30 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     }
 }
 
+/** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
+export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return;
+    }
+
+    const details = JSON.stringify(response);
+    const code = response.code;
+    if (code === "TRANSACTION_EXPIRED") {
+        throw new TransactionExpiredError(
+            response.message ?? "The transaction expired before it could be submitted. Create a new transaction.",
+            request,
+            details
+        );
+    }
+    if (isQuorumRequestErrorReason(code)) {
+        throw new QuorumRequestError(
+            response.message ?? `The wallets API rejected the quorum request: ${code}`,
+            code,
+            details
+        );
+    }
+}
+
 export type WalletError =
     | InvalidTransferAmountError
     | InvalidApiKeyError
@@ -395,6 +482,8 @@ export type WalletError =
     | InvalidSignerError
     | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | QuorumSelectionAmbiguousError
+    | QuorumRequestError
     | InvalidRecoveryConfigError
     | RecoverySignerLimitExceededError
     | DuplicateRecoverySignerError
@@ -419,6 +508,7 @@ export type WalletError =
     | TransactionAwaitingApprovalError
     | TransactionHashNotFoundError
     | TransactionFailedError
+    | TransactionExpiredError
     | PendingApprovalsError
     | InvalidAddressError
     | UnsupportedBrowserError
