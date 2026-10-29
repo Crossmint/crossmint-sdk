@@ -1534,6 +1534,24 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
+    // Quorum approvals ship chain by chain: on a chain whose adapter does not support them yet,
+    // a pending quorum entry fails with an actionable error instead of being signed.
+    #requireSupportedApprovals<P extends { signer: { type: string; locator: string } }>(pendingApprovals: P[]): P[] {
+        if (!this.chainAdapter.supportsQuorumApprovals) {
+            pendingApprovals.forEach((pendingApproval) => throwIfQuorumSigner(pendingApproval.signer));
+        }
+        return pendingApprovals;
+    }
+
+    // An api-key signer's flat entries are approved by the API; on a chain with quorum approvals, quorum members
+    // still sign with the held keys.
+    #apiKeySignable(pendingApprovals: PendingApproval[]): PendingApproval[] {
+        if (!this.chainAdapter.supportsQuorumApprovals) {
+            return [];
+        }
+        return pendingApprovals.filter(isQuorumPendingApproval);
+    }
+
     // A quorum member may be any key this client holds, the useRecoveryMethod key included (EDD 007 §7 "Approval").
     // Flat-only approvals keep their keys, so wallets without quorums sign as before.
     #approvalSigning(
@@ -1570,9 +1588,7 @@ export class Wallet<C extends Chain> {
 
         const pendingApprovals = signature.approvals?.pending ?? [];
 
-        // API key signers' flat entries are approved by the API; quorum members still sign with the held keys
-        const signable =
-            walletSigner.type === "api-key" ? pendingApprovals.filter(isQuorumPendingApproval) : pendingApprovals;
+        const signable = walletSigner.type === "api-key" ? this.#apiKeySignable(pendingApprovals) : pendingApprovals;
         if (walletSigner.type === "api-key" && signable.length === 0) {
             return signature;
         }
@@ -1585,7 +1601,7 @@ export class Wallet<C extends Chain> {
         }
 
         const approvals = await collectApprovals(
-            signable,
+            this.#requireSupportedApprovals(signable),
             this.#approvalSigning(walletSigner, options, signable, (signer, message) => signer.signMessage(message))
         );
 
@@ -1611,9 +1627,7 @@ export class Wallet<C extends Chain> {
         const walletSigner = this.#signerManager.require();
         const pendingApprovals = transaction.approvals?.pending ?? [];
 
-        // API key signers' flat entries are approved by the API; quorum members still sign with the held keys
-        const signable =
-            walletSigner.type === "api-key" ? pendingApprovals.filter(isQuorumPendingApproval) : pendingApprovals;
+        const signable = walletSigner.type === "api-key" ? this.#apiKeySignable(pendingApprovals) : pendingApprovals;
         if (walletSigner.type === "api-key" && signable.length === 0) {
             return transaction;
         }
@@ -1627,7 +1641,7 @@ export class Wallet<C extends Chain> {
 
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
         const approvals = await collectApprovals(
-            signable,
+            this.#requireSupportedApprovals(signable),
             this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
                 approvalAdapter.signApproval(signer, transaction, message)
             )
