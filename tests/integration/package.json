@@ -8,7 +8,6 @@
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
-        "bs58": "5.0.0",
         "viem": "2.33.1"
     }
 }

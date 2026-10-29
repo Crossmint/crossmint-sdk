@@ -263,15 +263,6 @@ importers:
       '@crossmint/client-sdk-react-ui':
         specifier: workspace:*
         version: link:../../../packages/client/ui/react-ui
-      '@dynamic-labs/ethereum':
-        specifier: 4.8.3
-        version: 4.8.3(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(utf-8-validate@5.0.10)(viem@2.57.7(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76))
-      '@dynamic-labs/sdk-react-core':
-        specifier: 4.8.3
-        version: 4.8.3(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@dynamic-labs/solana':
-        specifier: 4.8.3
-        version: 4.8.3(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       next:
         specifier: 15.5.27
         version: 15.5.27(@babel/core@7.29.7)(@playwright/test@1.64.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -303,9 +294,6 @@ importers:
       '@crossmint/wallets-playground-shared':
         specifier: workspace:*
         version: link:../shared
-      '@stellar/stellar-sdk':
-        specifier: ^14.6.1
-        version: 14.6.1
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -388,15 +376,9 @@ importers:
       '@dynamic-labs/solana':
         specifier: 4.25.6
         version: 4.25.6(@babel/core@7.29.7)(@types/react@19.3.0)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
-      '@firebase/auth':
-        specifier: 1.10.8
-        version: 1.10.8(@firebase/app@0.10.13)
       '@privy-io/react-auth':
         specifier: 2.13.0
         version: 2.13.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10))(@types/react@19.3.0)(bs58@6.0.0)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.5.3)(use-sync-external-store@1.6.0(react@19.3.0))(utf-8-validate@5.0.10)(ws@8.21.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
-      '@solana/spl-token':
-        specifier: 0.4.13
-        version: 0.4.13(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10)
       '@solana/web3.js':
         specifier: 1.98.1
         version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)
@@ -1063,9 +1045,6 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../packages/wallets
-      bs58:
-        specifier: 5.0.0
-        version: 5.0.0
       viem:
         specifier: 2.33.1
         version: 2.33.1(bufferutil@4.0.9)(typescript@6.0.3)(utf-8-validate@5.0.10)(zod@3.25.76)
