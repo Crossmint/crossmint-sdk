@@ -10,6 +10,7 @@ import { getPendingSignerOperation } from "../../utils/signer-mapping";
 export const evmChainAdapter: ChainAdapter = {
     nativeToken: "eth",
     walletLocatorPrefix: "me:evm:smart",
+    supportsQuorumApprovals: false,
     signatures: {
         signApproval: (signer: SignerAdapter, message: string) => signer.signMessage(message),
     },

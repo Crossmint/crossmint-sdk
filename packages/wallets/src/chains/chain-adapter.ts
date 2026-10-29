@@ -21,6 +21,8 @@ export interface ChainAdapter {
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
     // Absent where the SDK cannot approve signature requests: Stellar until its PR, Solana never (no requests).
     readonly signatures?: SignatureSigning;
+    /** Whether this client signs as a quorum member on the chain; each chain's quorum milestone turns it on. */
+    readonly supportsQuorumApprovals: boolean;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
     extractAddSignerOperation(
         response: RegisterSignerResponse,

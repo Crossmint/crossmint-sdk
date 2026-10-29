@@ -21,6 +21,7 @@ function serializedTransaction(transaction: GetTransactionSuccessResponse): stri
 export const solanaChainAdapter: ChainAdapter = {
     nativeToken: "sol",
     walletLocatorPrefix: "me:solana:smart",
+    supportsQuorumApprovals: false,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;
