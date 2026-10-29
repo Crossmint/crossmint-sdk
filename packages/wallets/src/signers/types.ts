@@ -9,7 +9,8 @@ import type {
 } from "@crossmint/client-signers";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import type { Callbacks, SignerStatus } from "@/wallets/types";
+import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
+import { quorumSignerNotSupported } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -150,7 +151,45 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
     return config.type === "server" && !("secret" in config);
 }
 
-export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
+export type QuorumLocator = `quorum:${string}`;
+
+// Crossmint assigns quorum ids as version-8 UUIDs (the API spec's locator pattern).
+const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+export function isQuorumLocator(locator: string): locator is QuorumLocator {
+    return QUORUM_LOCATOR_PATTERN.test(locator);
+}
+
+export type QuorumMemberType = "email" | "phone" | "external-wallet" | "server" | "passkey";
+
+type WithoutStatus<T> = T extends unknown ? Omit<T, "status" | "scopes"> : never;
+
+/** A quorum member as the API returns it: the member's own signer fields, without a status. */
+export type QuorumMember = WithoutStatus<Extract<Signer, { type: QuorumMemberType }>>;
+
+/** A quorum as the wallets API returns it: Crossmint assigns `locator` when the quorum is added. */
+export type QuorumSigner = {
+    type: "quorum";
+    locator: QuorumLocator;
+    threshold: number;
+    members: QuorumMember[];
+};
+
+export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {
+    return entry.type === "quorum";
+}
+
+/** Throws `QuorumSignerNotSupportedError` for a quorum, as the SDK cannot sign as one yet. */
+export function throwIfQuorumSigner(entry: { type: string }): void {
+    if (isQuorumSigner(entry)) {
+        throw quorumSignerNotSupported([entry.locator]);
+    }
+}
+
+export type RecoverySignerConfigForChain<C extends Chain> =
+    | SignerConfigForChain<C>
+    | ApiSourcedServerSignerConfig
+    | QuorumSigner;
 
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
@@ -273,6 +312,18 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
+// api-key and device are never quorum members; Solana also takes no passkey members.
+export type QuorumMemberConfig<C extends Chain> = C extends SolanaChain
+    ? Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig | PasskeySignerConfig>
+    : Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig>;
+
+/** A quorum to create or add: `threshold` of its `members` must sign. */
+export type QuorumSignerConfig<C extends Chain> = {
+    type: "quorum";
+    threshold: number;
+    members: Array<QuorumMemberConfig<C>>;
+};
+
 ////////////////////////////////////////////////////////////
 // Signer locator types
 ////////////////////////////////////////////////////////////
@@ -291,7 +342,8 @@ export type SignerLocator =
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
     | ApiKeySignerLocator
-    | ServerSignerLocator;
+    | ServerSignerLocator
+    | QuorumLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

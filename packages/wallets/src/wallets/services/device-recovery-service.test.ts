@@ -9,8 +9,14 @@ import {
     type SignerAdapter,
 } from "../../signers/types";
 import { createDeviceSigner } from "@/utils/device-signers";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
+import type { ApiClient } from "../../api";
+import type { RecoverySignerConfigForChain } from "../../signers/types";
+import type { ServerSignerResolver } from "../../signers/server/resolver";
+import type { Signer as WalletSigner } from "../types";
 import { DeviceRecoveryService, type DeviceRecoveryServiceParams } from "./device-recovery-service";
+import { SignerManager } from "./signer-manager";
+import { createQuorumApiEntry } from "../__tests__/test-helpers";
 
 vi.mock("../../signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../signers")>();
@@ -37,6 +43,7 @@ function pendingState(operationType: "signature" | "transaction", id: string) {
 
 function makeSignerManager(overrides: Record<string, unknown> = {}) {
     let active = overrides.activeSigner as SignerAdapter | undefined;
+    const recovery = overrides.recovery ?? { type: "api-key" };
     return {
         get activeSigner() {
             return active;
@@ -44,7 +51,8 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
         setActiveSigner: vi.fn((signer: SignerAdapter | undefined) => {
             active = signer;
         }),
-        recovery: overrides.recovery ?? { type: "api-key" },
+        recovery,
+        requireDefaultRecovery: overrides.requireDefaultRecovery ?? vi.fn(() => recovery),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -66,6 +74,7 @@ function makeStorage(overrides: Record<string, unknown> = {}) {
 type SetupOverrides = {
     storage?: ReturnType<typeof makeStorage> | null;
     signerManager?: Record<string, unknown>;
+    manager?: SignerManager<Chain>;
     hasRecoveryResolution?: boolean;
     signers?: ReturnType<typeof vi.fn>;
     addSigner?: ReturnType<typeof vi.fn>;
@@ -77,7 +86,7 @@ type SetupOverrides = {
 function setup(overrides: SetupOverrides = {}) {
     const storage = overrides.storage === null ? undefined : overrides.storage ?? makeStorage();
     const options = storage == null ? undefined : ({ deviceSignerKeyStorage: storage } as Record<string, unknown>);
-    const signerManager = makeSignerManager(overrides.signerManager);
+    const signerManager = overrides.manager ?? makeSignerManager(overrides.signerManager);
     const serverSignerResolver = {
         hasRecoveryResolutionFor: (_address: string) => overrides.hasRecoveryResolution ?? false,
     };
@@ -398,3 +407,126 @@ describe("DeviceRecoveryService", () => {
         });
     });
 });
+
+describe("DeviceRecoveryService with quorum recovery methods", () => {
+    const EXTERNAL_WALLET_RECOVERY = { type: "external-wallet", address: "0xExt", onSign: vi.fn() };
+
+    function makeRealSignerManager(
+        recoverySigners: Array<RecoverySignerConfigForChain<Chain>>,
+        storage: ReturnType<typeof makeStorage>,
+        overrides: { getSigner?: ReturnType<typeof vi.fn>; signer?: SignerAdapter } = {}
+    ) {
+        return new SignerManager<Chain>({
+            apiClient: { crossmint: {}, getSigner: overrides.getSigner ?? vi.fn() } as unknown as ApiClient,
+            options: { deviceSignerKeyStorage: storage } as never,
+            chain: "base-sepolia",
+            walletAddress: WALLET_ADDRESS,
+            walletLocator: () => WALLET_ADDRESS,
+            serverSignerResolver: { hasRecoveryResolutionFor: () => false } as unknown as ServerSignerResolver,
+            recoverySigners,
+            initialSigners: [],
+            signers: async () => [],
+            signer: overrides.signer,
+        });
+    }
+
+    describe("when every recovery method is a quorum", () => {
+        it("throws QuorumSignerNotSupportedError and creates no device key", async () => {
+            const storage = makeStorage();
+            const manager = makeRealSignerManager([createQuorumApiEntry()], storage);
+            const { service } = setup({ storage, manager });
+
+            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
+        });
+
+        it("does not approve a pending device registration and keeps the active signer", async () => {
+            const storage = makeStorage();
+            const pendingDevice = makeSigner("device", "device:pendingKey");
+            const manager = makeRealSignerManager([createQuorumApiEntry()], storage, {
+                signer: pendingDevice,
+                getSigner: vi.fn().mockResolvedValue({
+                    type: "device",
+                    locator: "device:pendingKey",
+                    publicKey: { x: "0x01", y: "0x02" },
+                    chains: { "base-sepolia": { id: "sig-1", status: "awaiting-approval" } },
+                }),
+            });
+            const approveSignature = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({ storage, manager, approveSignature });
+
+            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(manager.activeSigner).toBe(pendingDevice);
+            expect(approveSignature).not.toHaveBeenCalled();
+        });
+
+        it("keeps a device signer that is already approved", async () => {
+            const deviceLocator = "device:approvedKey";
+            const storage = makeStorage({ hasKey: vi.fn().mockResolvedValue(true) });
+            const approvedDevice = { type: "device", locator: deviceLocator, publicKey: { x: "0x01", y: "0x02" } };
+            const manager = makeRealSignerManager([createQuorumApiEntry()], storage, {
+                getSigner: vi.fn().mockResolvedValue({ ...approvedDevice, chains: {} }),
+            });
+            const signers = vi.fn().mockResolvedValue([{ ...approvedDevice, status: "success" } as WalletSigner]);
+            const { service } = setup({ storage, manager, signers });
+
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
+            expect(manager.activeSigner).toBeDefined();
+        });
+    });
+
+    describe("when a quorum comes before an external-wallet recovery method", () => {
+        it("falls back to the external wallet when the provider rejects device signers", async () => {
+            const storage = makeStorage();
+            const manager = makeRealSignerManager(
+                [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
+                storage
+            );
+            const addSigner = vi.fn().mockRejectedValue(new DeviceSignerNotSupportedError("unsupported"));
+            const { service } = setup({ storage, manager, addSigner });
+
+            await service.recover();
+
+            expect(mockedAssembleSigner).toHaveBeenLastCalledWith(
+                "base-sepolia",
+                expect.objectContaining({ type: "external-wallet" }),
+                storage
+            );
+            expect(manager.activeSigner).toBeDefined();
+        });
+
+        it("approves a pending device registration with the external wallet", async () => {
+            const storage = makeStorage();
+            const pendingDevice = makeSigner("device", "device:pendingKey");
+            const manager = makeRealSignerManager(
+                [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
+                storage,
+                {
+                    signer: pendingDevice,
+                    getSigner: vi.fn().mockResolvedValue({
+                        type: "device",
+                        locator: "device:pendingKey",
+                        publicKey: { x: "0x01", y: "0x02" },
+                        chains: { "base-sepolia": { id: "sig-1", status: "awaiting-approval" } },
+                    }),
+                }
+            );
+            const approveSignature = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({ storage, manager, approveSignature });
+
+            await service.recover();
+
+            expect(approveSignature).toHaveBeenCalledWith("sig-1");
+            expect(mockedAssembleSigner).toHaveBeenCalledWith(
+                "base-sepolia",
+                expect.objectContaining({ type: "external-wallet" }),
+                storage
+            );
+        });
+    });
+});
+
+function asRecovery(config: Record<string, unknown>): RecoverySignerConfigForChain<Chain> {
+    return config as unknown as RecoverySignerConfigForChain<Chain>;
+}

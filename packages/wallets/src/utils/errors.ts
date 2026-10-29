@@ -103,6 +103,12 @@ export class QuorumSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
+export function quorumSignerNotSupported(quorumLocators: string[]): QuorumSignerNotSupportedError {
+    return new QuorumSignerNotSupportedError(
+        `Signing as quorum signer ${quorumLocators.join(", ")} is not yet supported by this SDK version`
+    );
+}
+
 /** Thrown for recovery configurations the SDK can reject before calling the API. */
 export class InvalidRecoveryConfigError extends CrossmintSDKError {
     constructor(message: string, details?: string) {

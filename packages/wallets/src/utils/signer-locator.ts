@@ -4,6 +4,7 @@ import type {
     SignerConfigForChain,
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
+    QuorumSigner,
 } from "../signers/types";
 import type { RegisterSignerPasskeyParams } from "../api";
 import { normalizeEmail } from "./signer-validation";
@@ -27,8 +28,11 @@ export function passkeyCredentialId(config: Pick<PasskeySignerConfig, "id" | "lo
  * Shared utility used by both WalletFactory and Wallet.
  */
 export function getSignerLocator<C extends Chain>(
-    signer: SignerConfigForChain<C> | RegisterSignerPasskeyParams | ExternalWalletRegistrationConfig
+    signer: SignerConfigForChain<C> | RegisterSignerPasskeyParams | ExternalWalletRegistrationConfig | QuorumSigner
 ): SignerLocator {
+    if (signer.type === "quorum") {
+        return signer.locator;
+    }
     if (signer.type === "external-wallet") {
         return `external-wallet:${signer.address}`;
     }
