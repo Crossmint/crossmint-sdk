@@ -37,7 +37,7 @@ import type {
     SignerOption,
 } from "./types";
 import { isSignerLocatorOption } from "./types";
-import { mapApiSignerToSigner } from "../utils/signer-mapping";
+import { isSignerOnChain, mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
@@ -386,7 +386,10 @@ export class Wallet<C extends Chain> {
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
             delegatedQuorums: configSigners.filter(isQuorumSigner),
-            isRegisteredSigner: configSigners.some((signer) => isSameSignerLocator(signer.locator, heldLocator)),
+            // Registered on this chain: an EVM signer registered on other chains only is still just a member here.
+            isRegisteredSigner: configSigners.some(
+                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, this.chain)
+            ),
         });
         return role.kind === "none" ? heldLocator : role.locator;
     }

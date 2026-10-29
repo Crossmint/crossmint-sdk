@@ -226,6 +226,30 @@ describe("a creating call with a key that is only a quorum member", () => {
 
             expect(sentSendSigner(api)).toBe(bob.locator);
         });
+
+        it("acts as itself when its registration lists this chain", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            const registered = { ...bob, chains: { "base-sepolia": { id: "sig-9", status: "success" } } };
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, registered]) as never);
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(bob.locator);
+        });
+    });
+
+    describe("when the key is a registered signer on another chain only", () => {
+        it("creates the send as its quorum", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            const elsewhere = { ...bob, chains: { "polygon-amoy": { id: "sig-9", status: "success" } } };
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, elsewhere]) as never);
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
     });
 
     describe("when another client made the key a recovery method after it was selected", () => {
