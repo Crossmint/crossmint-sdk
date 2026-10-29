@@ -18,6 +18,7 @@ export {
     WalletNotAvailableError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
+    SignatureAwaitingApprovalError,
     QuorumSelectionAmbiguousError,
     QuorumRequestError,
     type QuorumRequestErrorReason,

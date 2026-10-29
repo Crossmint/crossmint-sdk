@@ -8,6 +8,7 @@ import {
     WalletErrorCode,
 } from "@crossmint/common-sdk-base";
 import type { QuorumLocator } from "../signers/types";
+import type { QuorumApprovalProgress } from "../wallets/types";
 
 export {
     NotAuthorizedError,
@@ -262,6 +263,18 @@ export class SignatureNotAvailableError extends CrossmintSDKError {
     }
 }
 
+/** Only quorum members can still approve the signature; `quorums` is each quorum's progress. */
+export class SignatureAwaitingApprovalError extends SignatureNotAvailableError {
+    readonly signatureId: string;
+    readonly quorums: QuorumApprovalProgress[];
+
+    constructor(message: string, request: { signatureId: string; quorums: QuorumApprovalProgress[] }, details?: string) {
+        super(message, details);
+        this.signatureId = request.signatureId;
+        this.quorums = request.quorums;
+    }
+}
+
 export class SignatureFailedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNING_FAILED, details);
@@ -306,10 +319,17 @@ export class TransactionSendingFailedError extends CrossmintSDKError {
 
 export class TransactionAwaitingApprovalError extends CrossmintSDKError {
     readonly transactionId: string;
+    /** Each quorum's progress, when only quorum members can still approve. */
+    readonly quorums?: QuorumApprovalProgress[];
 
-    constructor(message: string, request: { transactionId: string }, details?: string) {
+    constructor(
+        message: string,
+        request: { transactionId: string; quorums?: QuorumApprovalProgress[] },
+        details?: string
+    ) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
         this.transactionId = request.transactionId;
+        this.quorums = request.quorums;
     }
 }
 
