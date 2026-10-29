@@ -44,6 +44,9 @@ const USE_SIGNER_REQUIRED =
 /** A recovery method that signs on its own, as opposed to a quorum. */
 type SingleRecoverySigner<C extends Chain> = Exclude<RecoverySignerConfigForChain<C>, QuorumSigner>;
 
+// How a signer change picks its approver: an explicit `signer` option, and whether to skip the member selection.
+export type ApproverRequest = { explicit?: string; ignoreMember?: boolean };
+
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
     #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
@@ -323,12 +326,13 @@ export class SignerManager<C extends Chain> {
     /**
      * Run a signer change with its approver (EDD 007 §7 "Role"): an explicit approver as given (one of the wallet's
      * recovery methods also signs), else the recovery quorum of the member selected with `useRecoveryMethod()`,
-     * else the authorizing recovery method of {@link withRecoverySigner}.
+     * else the authorizing recovery method of {@link withRecoverySigner}. `ignoreMember` skips the member selection.
      */
     async withApprover<T>(
-        explicit: string | undefined,
+        { explicit, ignoreMember = false }: ApproverRequest,
         operation: (approver: string | undefined) => Promise<T>
     ): Promise<T> {
+        const member = ignoreMember ? null : this.#selectedMember;
         if (explicit != null) {
             const recovery = this.#singleRecoverySigners().find((entry) => {
                 const locator = this.recoveryLocator(entry);
@@ -337,9 +341,8 @@ export class SignerManager<C extends Chain> {
             if (recovery != null) {
                 return this.#withActiveSigner(this.#assembleRecovery(recovery), () => operation(explicit));
             }
-            return this.#withHeldKey(() => operation(explicit));
+            return this.#withHeldKey(member, () => operation(explicit));
         }
-        const member = this.#selectedMember;
         if (member == null) {
             return this.withRecoverySigner(operation);
         }
@@ -361,35 +364,22 @@ export class SignerManager<C extends Chain> {
             const memberSigner = this.#assembleRecovery(member.config);
             return this.#withActiveSigner(memberSigner, () => operation(role.locator));
         }
-        return this.#withHeldKey(() => operation(role.locator));
+        return this.#withHeldKey(member, () => operation(role.locator));
     }
 
-    /** Run `operation` as if no member were selected: device recovery keeps the recovery method as its approver. */
-    async withoutMemberSelection<T>(operation: () => Promise<T>): Promise<T> {
-        const member = this.#selectedMember;
-        this.#selectedMember = null;
-        try {
-            return await operation();
-        } finally {
-            if (this.#selectedRecovery == null && this.#selectedMember == null) {
-                this.#selectedMember = member;
-            }
-        }
-    }
-
-    // A quorum or explicit approver is signed by the held keys (heldSigners). With no active signer, the selected member
-    // signs as the active one; with neither, this client holds no key to approve with.
-    #withHeldKey<T>(run: () => Promise<T>): Promise<T> {
+    // A quorum or explicit approver is signed by the held keys (heldSigners). With no active signer, the selected
+    // recovery method, else the selected member, signs as the active one; with none, this client holds no key.
+    #withHeldKey<T>(member: { config: RecoverySignerConfigForChain<C> } | null, run: () => Promise<T>): Promise<T> {
         if (this.#activeSigner != null) {
             return run();
         }
-        const member = this.#selectedMember;
-        if (member == null) {
+        const standIn = this.selectedRecovery ?? member?.config;
+        if (standIn == null) {
             throw new RecoveryMethodRequiredError(
                 "This client holds no key to approve with. Call wallet.useRecoveryMethod() with a member of the approving quorum, or wallet.useSigner()."
             );
         }
-        return this.#withActiveSigner(this.#assembleRecovery(member.config), run);
+        return this.#withActiveSigner(this.#assembleRecovery(standIn), run);
     }
 
     async #withActiveSigner<T>(signer: SignerAdapter, run: () => Promise<T>): Promise<T> {

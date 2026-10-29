@@ -89,7 +89,7 @@ import { recoveryMethodsFromWalletConfig } from "../utils/recovery";
 import { getSignerLocator, isSameSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
-import { SignerManager } from "./services/signer-manager";
+import { type ApproverRequest, SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
@@ -222,11 +222,11 @@ export class Wallet<C extends Chain> {
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
             // Until device recovery supports recovery quorums, its signer changes ignore a selected member.
-            addSigner: (deviceSigner) => this.#signerManager.withoutMemberSelection(() => this.addSigner(deviceSigner)),
+            addSigner: (deviceSigner) => this.#addSigner(deviceSigner, undefined, { ignoreMember: true }),
             removeSigner: (signerLocator) =>
-                this.#signerManager.withoutMemberSelection(() =>
-                    this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>)
-                ),
+                this.#removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>, undefined, {
+                    ignoreMember: true,
+                }),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
         });
@@ -728,6 +728,17 @@ export class Wallet<C extends Chain> {
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner> {
+        return this.#addSigner(signer, options) as Promise<
+            T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner
+        >;
+    }
+
+    // addSigner's body; device recovery passes `ignoreMember` so its own signer changes keep the recovery method.
+    async #addSigner(
+        signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
+        options?: AddSignerOptions,
+        approverOptions: Omit<ApproverRequest, "explicit"> = {}
+    ): Promise<AddSignerReturnType<C> | WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
         // Resolve server signer config to locator string
@@ -736,7 +747,8 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(signer) as `server:${string}`)
                 : signer;
 
-        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
+        const explicit = this.#explicitApprover(options);
+        return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
             // Check for an existing signer registration (e.g. from a previous interrupted attempt)
             const signerLocator =
                 typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
@@ -816,7 +828,7 @@ export class Wallet<C extends Chain> {
             });
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
-        }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
+        });
     }
 
     /**
@@ -890,10 +902,20 @@ export class Wallet<C extends Chain> {
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<RemoveSignerReturnType> {
+        return this.#removeSigner(signer, options);
+    }
+
+    // removeSigner's body; device recovery passes `ignoreMember` so its own signer changes keep the recovery method.
+    async #removeSigner(
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        options?: RemoveSignerOptions,
+        approverOptions: Omit<ApproverRequest, "explicit"> = {}
+    ): Promise<RemoveSignerReturnType> {
         const signerLocator = this.resolveSignerLocator(signer);
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
-        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
+        const explicit = this.#explicitApprover(options);
+        return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
             const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
                 chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(approver != null && { approver }),
@@ -949,7 +971,7 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(recoveryMethod) as `server:${string}`)
                 : recoveryMethod;
 
-        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
+        return this.#signerManager.withApprover({ explicit: this.#explicitApprover(options) }, async (approver) => {
             const recoveryMethodInput =
                 typeof resolvedMethod === "string"
                     ? resolvedMethod
@@ -1013,7 +1035,7 @@ export class Wallet<C extends Chain> {
         const recoveryMethodLocator = this.resolveSignerLocator(recoveryMethod);
         walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
 
-        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
+        return this.#signerManager.withApprover({ explicit: this.#explicitApprover(options) }, async (approver) => {
             const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
                 approver: this.resolveRecoveryApprover(approver),
             });

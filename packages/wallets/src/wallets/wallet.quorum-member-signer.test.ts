@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, QuorumSigner, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
+import { deriveServerSignerCandidates, deriveServerSignerDetails } from "@/signers/server";
 import { InvalidRecoveryConfigError } from "../utils/errors";
 import { Wallet } from "./wallet";
 import {
@@ -325,33 +326,51 @@ describe("signer changes with server keys", () => {
     });
 
     describe("when a server member of a recovery quorum is selected", () => {
-        it("signs the member's entry with the server key", async () => {
-            const server = memberKey("server");
-            const recoveryQuorum = quorumOf(server.member);
-            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
-            await wallet.useRecoveryMethod(server.config);
-            const entry = createQuorumPendingApproval({ quorum: recoveryQuorum });
+        const server = memberKey("server");
+        const recoveryQuorum = quorumOf(server.member);
+
+        // A signer change the recovery quorum approves, landing once the member's entry is signed.
+        async function removeSignerSignedByMember(wallet: Wallet<Chain>) {
             api.getTransaction.mockResolvedValueOnce({
                 id: "txn-change",
                 status: "awaiting-approval",
                 chainType: "evm",
-                approvals: { pending: [entry], submitted: [] },
+                approvals: { pending: [createQuorumPendingApproval({ quorum: recoveryQuorum })], submitted: [] },
             } as never);
             api.getTransaction.mockResolvedValue({
                 id: "txn-change",
                 status: "success",
                 onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx" },
             } as never);
-
             const removing = wallet
                 .removeSigner({ type: "external-wallet", address: "Delegated333" } as never)
                 .catch((error: unknown) => error);
             await vi.runAllTimersAsync();
             await removing;
+        }
+
+        it("signs the member's entry with the server key", async () => {
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+            await wallet.useRecoveryMethod(server.config);
+
+            await removeSignerSignedByMember(wallet);
 
             expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
                 [{ signer: SERVER_LOCATOR, signature: "0xmocksig" }],
             ]);
+        });
+
+        it("derives the key from the secret once, on selection, and signs without the secret", async () => {
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+            await wallet.useRecoveryMethod(server.config);
+            vi.mocked(deriveServerSignerCandidates).mockClear();
+            vi.mocked(deriveServerSignerDetails).mockClear();
+
+            await removeSignerSignedByMember(wallet);
+
+            expect(api.approveTransaction).toHaveBeenCalledTimes(1);
+            expect(deriveServerSignerCandidates).not.toHaveBeenCalled();
+            expect(deriveServerSignerDetails).not.toHaveBeenCalled();
         });
     });
 });
