@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, QuorumSigner, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
+import { InvalidRecoveryConfigError } from "../utils/errors";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
@@ -250,6 +251,41 @@ describe("useSigner() with a key that is only a quorum member", () => {
             await wallet.send("0x1111111111111111111111111111111111111111", "usdc", "1", { prepareOnly: true });
 
             expect(api.send.mock.calls[0][2].signer).toBe(recoveryQuorum.locator);
+        });
+    });
+});
+
+describe("useRecoveryMethod() with a key that is only a member of a recovery quorum", () => {
+    let api: MockedApiClient;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        api = createMockApiClient();
+        api.removeSigner.mockResolvedValue({ id: "txn-change", status: "awaiting-approval" } as never);
+    });
+
+    describe.each(MEMBER_KEYS)("when the key is $name", ({ config, member }) => {
+        it("selects the key, so a signer change is approved by its recovery quorum", async () => {
+            const recoveryQuorum = quorumOf(member);
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+
+            await wallet.useRecoveryMethod(config);
+            await wallet.removeSigner({ type: "external-wallet", address: "Delegated333" } as never, {
+                prepareOnly: true,
+            });
+
+            expect(api.removeSigner.mock.calls[0][2].approver).toBe(recoveryQuorum.locator);
+        });
+    });
+
+    describe("when the key is a passkey member and no id is given", () => {
+        it("throws InvalidRecoveryConfigError, so a member passkey needs its id", async () => {
+            const passkey = memberKey("passkey");
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, quorumOf(passkey.member)] });
+
+            await expect(
+                wallet.useRecoveryMethod({ type: "passkey" } as SignerConfigForChain<Chain>)
+            ).rejects.toBeInstanceOf(InvalidRecoveryConfigError);
         });
     });
 });

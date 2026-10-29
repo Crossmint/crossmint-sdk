@@ -733,7 +733,7 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(signer) as `server:${string}`)
                 : signer;
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
             // Check for an existing signer registration (e.g. from a previous interrupted attempt)
             const signerLocator =
                 typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
@@ -890,7 +890,7 @@ export class Wallet<C extends Chain> {
         const signerLocator = this.resolveSignerLocator(signer);
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
             const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
                 chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(approver != null && { approver }),
@@ -946,7 +946,7 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(recoveryMethod) as `server:${string}`)
                 : recoveryMethod;
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
             const recoveryMethodInput =
                 typeof resolvedMethod === "string"
                     ? resolvedMethod
@@ -1010,7 +1010,7 @@ export class Wallet<C extends Chain> {
         const recoveryMethodLocator = this.resolveSignerLocator(recoveryMethod);
         walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
 
-        return this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withApprover(this.#explicitApprover(options), async (approver) => {
             const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
                 approver: this.resolveRecoveryApprover(approver),
             });
@@ -1036,6 +1036,14 @@ export class Wallet<C extends Chain> {
         });
     }
 
+    // A signer change's explicit approver: the API locator of its `signer` option, or none.
+    #explicitApprover(options: { signer?: SignerOption } | undefined): string | undefined {
+        if (options?.signer == null) {
+            return undefined;
+        }
+        return this.resolveSignerOption(options.signer);
+    }
+
     private assertRecoveryMethodManagementSupported(): void {
         if (this.chain !== "solana" && this.chain !== "stellar") {
             throw new RecoveryNotSupportedOnChainError(
@@ -1049,7 +1057,7 @@ export class Wallet<C extends Chain> {
      * names it when the wallet has several. On single-recovery wallets the assembled recovery method is the
      * active signer for the duration of the operation, so its locator is used.
      */
-    private resolveRecoveryApprover(approver: SignerLocator | undefined): SignerLocator {
+    private resolveRecoveryApprover(approver: string | undefined): string {
         return approver ?? this.#signerManager.require().locator();
     }
 
@@ -1136,6 +1144,13 @@ export class Wallet<C extends Chain> {
 
         const index = this.matchRecoverySigner(recoveryMethod);
         if (index == null) {
+            // A key that is only a member of a recovery quorum selects that quorum as the approver (EDD 007 §7 "Role").
+            const memberLocator = this.resolveSignerLocator(recoveryMethod);
+            if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0) {
+                this.#signerManager.selectRecoveryMember(recoveryMethod, memberLocator);
+                walletsLogger.info("wallet.useRecoveryMethod.success", { recoveryMemberLocator: memberLocator });
+                return;
+            }
             const known = this.recoveryMethods
                 .map((recovery) => this.#signerManager.recoveryLocator(recovery))
                 .filter((locator) => locator != null)

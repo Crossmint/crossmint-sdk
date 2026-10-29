@@ -51,9 +51,11 @@ export type SignatureInputOptions = PrepareOnly & { signer?: SignerOption };
 export type AddSignerOptions = PrepareOnly & {
     scopes?: Scope[];
     deployImmediately?: boolean;
+    /** The approver: a recovery method or recovery quorum (`quorum:<id>`); defaults as described on `addSigner`. */
+    signer?: SignerOption;
 };
 
-export type RemoveSignerOptions = PrepareOnly;
+export type RemoveSignerOptions = PrepareOnly & { signer?: SignerOption };
 
 export type UpgradeOptions = Partial<PrepareOnly> & {
     signer?: SignerOption;
@@ -69,9 +71,9 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
-export type AddRecoveryMethodOptions = PrepareOnly;
+export type AddRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
-export type RemoveRecoveryMethodOptions = PrepareOnly;
+export type RemoveRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
 export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
 

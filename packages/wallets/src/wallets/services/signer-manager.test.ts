@@ -497,13 +497,16 @@ describe("SignerManager with quorum recovery methods", () => {
         );
 
         it.each(QUORUM_ONLY_LISTS)(
-            "withRecoverySigner() with %s throws QuorumSignerNotSupportedError without running the operation",
+            "withRecoverySigner() with %s throws RecoveryMethodRequiredError, asking for a member or the signer option, without running the operation",
             async (_name, recoverySigners) => {
                 const operation = vi.fn();
 
-                await expect(
-                    makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(operation)
-                ).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+                const authorizing = makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(
+                    operation
+                );
+
+                await expect(authorizing).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+                await expect(authorizing).rejects.toThrow(/useRecoveryMethod\(\) with a key that is a member/);
                 expect(operation).not.toHaveBeenCalled();
             }
         );
