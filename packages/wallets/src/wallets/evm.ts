@@ -37,6 +37,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
                 quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
+                recoveryMember: Wallet.getRecoveryMember(wallet),
             },
             Wallet.getApiClient(wallet)
         );

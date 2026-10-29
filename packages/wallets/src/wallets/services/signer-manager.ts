@@ -20,6 +20,7 @@ import {
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator, isSameSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
+import { resolveActingRole } from "../../quorum/roles";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
 
@@ -43,10 +44,18 @@ const USE_SIGNER_REQUIRED =
 /** A recovery method that signs on its own, as opposed to a quorum. */
 type SingleRecoverySigner<C extends Chain> = Exclude<RecoverySignerConfigForChain<C>, QuorumSigner>;
 
+// How a signer change picks its approver: an explicit `signer` option, and whether to skip the member selection.
+export type ApproverRequest = { explicit?: string; ignoreMember?: boolean };
+
+/** A key selected with useRecoveryMethod() that is only a member of a recovery quorum, and its member locator. */
+export type RecoveryMember<C extends Chain> = { config: RecoverySignerConfigForChain<C>; locator: string };
+
 export class SignerManager<C extends Chain> {
     #activeSigner: SignerAdapter | undefined;
     #recoverySigners: Array<RecoverySignerConfigForChain<C>>;
     #selectedRecovery: { index: number; config: RecoverySignerConfigForChain<C> } | null = null;
+    // A key selected with useRecoveryMethod() that is only a member of a recovery quorum: that quorum approves.
+    #selectedMember: RecoveryMember<C> | null = null;
     #apiClient: ApiClient;
     #options: WalletOptions | undefined;
     #chain: C;
@@ -123,6 +132,18 @@ export class SignerManager<C extends Chain> {
     selectRecovery(index: number, config: RecoverySignerConfigForChain<C> = this.#recoverySigners[index]): void {
         this.#assertRecoveryIndex(index);
         this.#selectedRecovery = { index, config };
+        this.#selectedMember = null;
+    }
+
+    /** The member selected with {@link selectRecoveryMember}, if any. */
+    get selectedMember(): RecoveryMember<C> | null {
+        return this.#selectedMember;
+    }
+
+    /** Select a key that is only a member of a recovery quorum: signer changes are then approved by that quorum. */
+    selectRecoveryMember(config: RecoverySignerConfigForChain<C>, locator: string): void {
+        this.#selectedMember = { config, locator };
+        this.#selectedRecovery = null;
     }
 
     descriptorContext(): SignerDescriptorContext<C> {
@@ -249,20 +270,27 @@ export class SignerManager<C extends Chain> {
      *
      * A recovery method selected via `useRecoveryMethod()` always wins. Otherwise, a wallet with a single
      * recovery method authorizes with it whatever the active signer is, and so does a wallet whose other
-     * recovery methods are all quorums, which cannot authorize yet. A wallet with several recovery methods
-     * that sign alone needs `useSigner()` to have selected one of them: the API has to know which key will
-     * approve, and an operational signer cannot authorize these changes.
+     * recovery methods are all quorums, which approve only when chosen ({@link withApprover}). A wallet with
+     * several recovery methods that sign alone needs `useSigner()` to have selected one of them: the API has to
+     * know which key will approve, and an operational signer cannot authorize these changes.
      */
     resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
         const selected = this.selectedRecovery;
         if (selected != null) {
             return { recovery: selected, approver: this.recoveryLocator(selected) ?? undefined };
         }
+        if (this.defaultRecovery == null) {
+            const quorums = this.#recoverySigners.filter(isQuorumSigner).map((quorum) => quorum.locator);
+            throw new RecoveryMethodRequiredError(
+                `Every recovery method of this wallet is a quorum (${quorums.join(", ")}), so the approver must be chosen. ` +
+                    "Call wallet.useRecoveryMethod() with a key that is a member of one, or pass the quorum as the signer option."
+            );
+        }
         const defaultRecovery = this.requireDefaultRecovery();
         if (this.#recoverySigners.length === 1) {
             return { recovery: defaultRecovery, approver: undefined };
         }
-        // Quorums cannot authorize yet, so a lone recovery method that signs alone needs no selection.
+        // Quorums approve only when chosen, so a lone recovery method that signs alone needs no selection.
         if (this.#singleRecoverySigners().length === 1) {
             return { recovery: defaultRecovery, approver: this.recoveryLocator(defaultRecovery) ?? undefined };
         }
@@ -299,12 +327,82 @@ export class SignerManager<C extends Chain> {
      * The operation receives the `approver` locator to forward to the API (see {@link resolveAuthorizingRecovery}).
      */
     async withRecoverySigner<T>(operation: (approver: SignerLocator | undefined) => Promise<T>): Promise<T> {
-        const originalSigner = this.#activeSigner;
         const { recovery, approver } = this.resolveAuthorizingRecovery();
-        this.#activeSigner = this.#assembleRecovery(recovery);
+        return this.#withActiveSigner(this.#assembleRecovery(recovery), () => operation(approver));
+    }
 
+    /**
+     * Run a signer change with its approver (EDD 007 §7 "Role"): an explicit approver as given (one of the wallet's
+     * recovery methods also signs), else the recovery quorum of the member selected with `useRecoveryMethod()`,
+     * else the authorizing recovery method of {@link withRecoverySigner}. `ignoreMember` skips the member selection.
+     */
+    async withApprover<T>(
+        { explicit, ignoreMember = false }: ApproverRequest,
+        operation: (approver: string | undefined) => Promise<T>
+    ): Promise<T> {
+        const member = ignoreMember ? null : this.#selectedMember;
+        if (explicit != null) {
+            const recovery = this.#singleRecoverySigners().find((entry) => {
+                const locator = this.recoveryLocator(entry);
+                return locator != null && isSameSignerLocator(locator, explicit);
+            });
+            if (recovery != null) {
+                return this.#withActiveSigner(this.#assembleRecovery(recovery), () => operation(explicit));
+            }
+            return this.#withHeldKey(member, () => operation(explicit));
+        }
+        if (member == null) {
+            return this.withRecoverySigner(operation);
+        }
+        const role = resolveActingRole({
+            scope: "signer-change",
+            heldLocator: member.locator as SignerLocator,
+            recoveryLocators: this.#singleRecoverySigners()
+                .map((recovery) => this.recoveryLocator(recovery))
+                .filter((locator) => locator != null),
+            recoveryQuorums: this.#recoverySigners.filter(isQuorumSigner),
+        });
+        if (role.kind === "none") {
+            throw new RecoveryMethodRequiredError(
+                `Signer "${member.locator}" is no longer a member of this wallet's recovery quorums. Call wallet.useRecoveryMethod() again.`
+            );
+        }
+        // The member has since become a recovery method of its own: it approves as itself.
+        if (role.kind === "self") {
+            const memberSigner = this.#assembleRecovery(member.config);
+            return this.#withActiveSigner(memberSigner, () => operation(role.locator));
+        }
+        return this.#withHeldKey(member, () => operation(role.locator));
+    }
+
+    // A quorum or explicit approver is signed by the held keys (heldSigners). With no active signer, the selected
+    // recovery method, else the selected member, signs as the active one; with none, this client holds no key.
+    #withHeldKey<T>(member: RecoveryMember<C> | null, run: () => Promise<T>): Promise<T> {
+        if (this.#activeSigner != null) {
+            return run();
+        }
+        const standIn = this.selectedRecovery ?? member?.config;
+        if (standIn == null) {
+            throw new RecoveryMethodRequiredError(
+                "This client holds no key to sign the approval with. Call wallet.useRecoveryMethod() or wallet.useSigner() first."
+            );
+        }
+        return this.#withActiveSigner(this.#assembleRecovery(standIn), run);
+    }
+
+    /** Run `run` with the selected recovery method, else the selected member, active when no signer is (use case 6). */
+    async withStandInSigner<T>(run: () => Promise<T>): Promise<T> {
+        if (this.#activeSigner != null || (this.#selectedRecovery == null && this.#selectedMember == null)) {
+            return run();
+        }
+        return this.#withHeldKey(this.#selectedMember, run);
+    }
+
+    async #withActiveSigner<T>(signer: SignerAdapter, run: () => Promise<T>): Promise<T> {
+        const originalSigner = this.#activeSigner;
+        this.#activeSigner = signer;
         try {
-            return await operation(approver);
+            return await run();
         } finally {
             this.#activeSigner = originalSigner;
         }
@@ -322,6 +420,10 @@ export class SignerManager<C extends Chain> {
         const selected = this.selectedRecovery;
         if (selected != null) {
             held.push(this.#assembleRecovery(selected));
+        }
+        const member = this.#selectedMember;
+        if (member != null) {
+            held.push(this.#assembleRecovery(member.config));
         }
         return held.filter(
             (signer, index) =>
