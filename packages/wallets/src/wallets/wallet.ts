@@ -368,8 +368,9 @@ export class Wallet<C extends Chain> {
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
+        // A response the role cannot be read from counts as a failed read: guessing could name the wrong role.
         if (!isSupportedSmartWallet(walletResponse) || walletResponse.config == null) {
-            return heldLocator;
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
         const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletResponse.config);
         const configSigners = walletResponse.config.delegatedSigners ?? [];

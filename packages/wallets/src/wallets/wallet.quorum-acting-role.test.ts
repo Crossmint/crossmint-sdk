@@ -341,6 +341,19 @@ describe("a creating call with a key that is only a quorum member", () => {
         });
     });
 
+    describe("when the wallet read returns no config", () => {
+        it("throws WalletNotAvailableError and creates nothing", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+            api.getWallet.mockResolvedValue({ type: "smart", chainType: "evm", address: EVM_ADDRESS } as never);
+
+            await expect(wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true })).rejects.toBeInstanceOf(
+                WalletNotAvailableError
+            );
+            expect(api.send).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when a delegated quorum's own signer lookup fails", () => {
         it("still counts that quorum, so a key in two quorums gets the ambiguous error", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([bob]);

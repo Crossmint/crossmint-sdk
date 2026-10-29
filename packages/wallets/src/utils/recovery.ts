@@ -38,15 +38,16 @@ export function recoveryMethodsFromCreateArgs<C extends Chain>(
     return [args.recovery];
 }
 
-/** True when the caller supplied a list of recovery methods, through `recoveryMethods` or a list under the deprecated `recovery`. */
 /** The recovery methods the wallets API lists in a wallet's config: `recoveryMethods`, else the deprecated `adminSigner`. */
 export function recoveryMethodsFromWalletConfig<C extends Chain>(config: {
     adminSigner?: unknown;
     recoveryMethods?: unknown[];
 }): Array<RecoverySignerConfigForChain<C>> {
-    return (config.recoveryMethods ?? [config.adminSigner]) as Array<RecoverySignerConfigForChain<C>>;
+    const recoveryMethods = config.recoveryMethods ?? (config.adminSigner != null ? [config.adminSigner] : []);
+    return recoveryMethods as Array<RecoverySignerConfigForChain<C>>;
 }
 
+/** True when the caller supplied a list of recovery methods, through `recoveryMethods` or a list under the deprecated `recovery`. */
 export function hasRecoveryMethodList<C extends Chain>(
     args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods">
 ): boolean {
