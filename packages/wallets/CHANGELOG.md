@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
 ## 1.20.6
 
 ### Patch Changes
