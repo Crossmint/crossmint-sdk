@@ -3710,6 +3710,29 @@ describe("Wallet - recover()", () => {
                 expect(mockStorage.deleteKey).not.toHaveBeenCalled();
             });
 
+            it("removes the stale device signer with the recovery method as approver", async () => {
+                const mockStorage = createMockDeviceKeyStorage();
+                const wallet = await walletWithSelectedMember(mockStorage);
+                const staleDevice = {
+                    type: "device",
+                    locator: "device:oldKey",
+                    publicKey: { x: "0x03", y: "0x04" },
+                    name: "Test Device",
+                    status: "success",
+                };
+                vi.spyOn(wallet, "signers").mockResolvedValue([staleDevice] as any);
+                mockApiClient.getSigner.mockResolvedValueOnce({ error: { message: "not found" } } as any);
+                mockApiClient.registerSigner.mockResolvedValue(deviceRegistered as any);
+                mockApiClient.removeSigner.mockResolvedValue({ id: "tx-remove", status: "awaiting-approval" } as any);
+                mockGetSignerApproved("solana", "device:mockNewKey");
+
+                await wallet.recover();
+
+                expect(mockApiClient.removeSigner.mock.calls.map((call) => [call[1], call[2].approver])).toEqual([
+                    ["device:oldKey", "api-key"],
+                ]);
+            });
+
             it("keeps the member selection for a signer change made while the device signer registers", async () => {
                 const mockStorage = createMockDeviceKeyStorage();
                 const wallet = await walletWithSelectedMember(mockStorage);

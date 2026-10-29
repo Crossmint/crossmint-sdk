@@ -89,7 +89,7 @@ import { recoveryMethodsFromWalletConfig } from "../utils/recovery";
 import { getSignerLocator, isSameSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
-import { type ApproverRequest, SignerManager } from "./services/signer-manager";
+import { type ApproverRequest, type RecoveryMember, SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
@@ -116,6 +116,8 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
     /** The active `signer`'s locator when it was selected as only a quorum member. */
     quorumMemberLocator?: SignerLocator | null;
+    /** The key selected with `useRecoveryMethod()` as only a member of a recovery quorum. */
+    recoveryMember?: RecoveryMember<C> | null;
 };
 
 // How `useSigner` holds a key: as a recovery method, a registered signer, or a member of one of the wallet's quorums.
@@ -157,6 +159,7 @@ export class Wallet<C extends Chain> {
             signers,
             signer,
             quorumMemberLocator,
+            recoveryMember,
         } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
@@ -204,6 +207,9 @@ export class Wallet<C extends Chain> {
             signers: () => this.signers(),
             signer,
         });
+        if (recoveryMember != null) {
+            this.#signerManager.selectRecoveryMember(recoveryMember.config, recoveryMember.locator);
+        }
         // Recovery server secrets only ever live inside the resolver: the public recovery getters expose
         // the address-only form regardless of whether the wallet was created or fetched.
         recoverySigners.forEach((recoverySigner, index) => {
@@ -323,6 +329,10 @@ export class Wallet<C extends Chain> {
 
     protected static getQuorumMemberLocator<C extends Chain>(wallet: Wallet<C>): SignerLocator | null {
         return wallet.#quorumMemberLocator;
+    }
+
+    protected static getRecoveryMember<C extends Chain>(wallet: Wallet<C>): RecoveryMember<C> | null {
+        return wallet.#signerManager.selectedMember;
     }
 
     protected static getApiRecoveryServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
@@ -683,8 +693,15 @@ export class Wallet<C extends Chain> {
             signatureId: params.signatureId,
         });
 
-        await this.preAuthIfNeeded();
+        await this.#recoverIfNeeded();
+        // With no active key, the key selected with useRecoveryMethod() approves (EDD 007 §7 use case 6).
+        return this.#signerManager.withStandInSigner(async () => {
+            await this.#authenticateActiveSigner();
+            return this.#approveRequest(params);
+        });
+    }
 
+    async #approveRequest<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         if (params.transactionId != null) {
             const result = (await this.approveTransactionAndWait(
                 params.transactionId,
@@ -710,7 +727,9 @@ export class Wallet<C extends Chain> {
 
     /**
      * Add a signer to the wallet.
-     * Always uses a recovery method internally to approve the registration: the one selected via
+     * The registration is approved by `options.signer` when given: one of the recovery methods, or a recovery quorum
+     * (`quorum:<id>`) whose members this client holds sign their approvals. Otherwise by the recovery quorum of a
+     * member selected with {@link useRecoveryMethod}, else by a recovery method: the one selected via
      * {@link useRecoveryMethod}, else the active signer when it is one of the recovery methods, else the wallet's
      * single recovery method. Wallets with several recovery methods must select one first; an operational signer
      * cannot authorize this.
@@ -719,6 +738,7 @@ export class Wallet<C extends Chain> {
      * @param signer - The signer configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the signer with approval ID without auto-approving
+     * @param options.signer - The approver: a recovery method or a recovery quorum
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -889,7 +909,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Remove a signer from the wallet.
-     * Always uses a recovery method internally to approve the removal, selected as in {@link addSigner}.
+     * The removal is approved as in {@link addSigner}.
      * @param signer - The signer to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the operation ID without auto-approving
@@ -950,7 +970,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Add a recovery method to the wallet. Supported on Solana and Stellar only.
-     * Always uses one of the existing recovery methods to approve the change, selected as in {@link addSigner}.
+     * The change is approved as in {@link addSigner}, by a recovery method or a recovery quorum.
      * @param recoveryMethod - The recovery method configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
@@ -1018,7 +1038,7 @@ export class Wallet<C extends Chain> {
 
     /**
      * Remove a recovery method from the wallet. Supported on Solana and Stellar only.
-     * Always uses one of the remaining recovery methods to approve the change, selected as in {@link addSigner}.
+     * The change is approved as in {@link addSigner}, by a remaining recovery method or a recovery quorum.
      * @param recoveryMethod - The recovery method to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
@@ -1175,8 +1195,10 @@ export class Wallet<C extends Chain> {
      * {@link removeSigner}, {@link addRecoveryMethod}, {@link removeRecoveryMethod}). Unlike {@link useSigner},
      * this does not change the active signer used for transactions and signatures.
      *
-     * The config must refer to one of {@link recoveryMethods}; pass the fuller form when the method needs it to
-     * operate (an `onSign` callback for external wallets, the `secret` for server signers).
+     * The config must refer to one of {@link recoveryMethods}, or to a member of one of its recovery quorums: signer
+     * changes are then approved by that quorum. Pass the fuller form when the key needs it to operate (an `onSign`
+     * callback for external wallets, the `secret` for server signers). With no active signer, {@link approve} signs
+     * with the selected key.
      *
      * @param recoveryMethod - The recovery method config object to authorize with
      * @experimental This API is experimental and may change in the future
@@ -1511,6 +1533,11 @@ export class Wallet<C extends Chain> {
     }
 
     protected async preAuthIfNeeded(): Promise<void> {
+        await this.#recoverIfNeeded();
+        await this.#authenticateActiveSigner();
+    }
+
+    async #recoverIfNeeded(): Promise<void> {
         await this.#signerInitialization;
         if (this.#recovering == null) {
             this.#recovering = this.recover();
@@ -1520,6 +1547,9 @@ export class Wallet<C extends Chain> {
         } finally {
             this.#recovering = null;
         }
+    }
+
+    async #authenticateActiveSigner(): Promise<void> {
         const signer = this.#signerManager.require();
         if (signer instanceof NonCustodialSigner) {
             await signer.ensureAuthenticated();

@@ -8,6 +8,9 @@ import {
     RecoveryMethodRequiredError,
     TransactionAwaitingApprovalError,
 } from "../utils/errors";
+import { EVMWallet } from "./evm";
+import { SolanaWallet } from "./solana";
+import { StellarWallet } from "./stellar";
 import type { Wallet } from "./wallet";
 import {
     activeSignerMember,
@@ -274,6 +277,24 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
             });
         });
 
+        describe("when the signer option names a key that is neither a recovery method nor a quorum and this client holds no key", () => {
+            it("throws RecoveryMethodRequiredError telling how to hold a key, and sends nothing", async () => {
+                const wallet = await createMockWalletWithoutSigner(chain, api, [
+                    { type: "external-wallet", address: BOB[chain] },
+                    createQuorumApiEntryWith([alice.member]),
+                ] as unknown as RecoverySignerConfigForChain<Chain>[]);
+
+                const error = await run(wallet, { prepareOnly: true, signer: "external-wallet:Stranger999" }).catch(
+                    (thrown: unknown) => thrown
+                );
+
+                expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+                expect((error as Error).message).toContain("wallet.useSigner()");
+                expect((error as Error).message).not.toContain("quorum");
+                expect(called(api)).toBe(false);
+            });
+        });
+
         describe("when nothing is selected and no signer option is passed", () => {
             it("sends the default recovery method as before", async () => {
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, createQuorumApiEntry()]);
@@ -329,7 +350,7 @@ describe("signer changes approved by a recovery quorum on stellar, which keeps t
     });
 
     describe.each(PATHS)("$name", ({ run, approver }) => {
-        it("sends the quorum as the approver, then throws QuorumSignerNotSupportedError and leaves the recovery methods unchanged", async () => {
+        it("with only the member held, sends the quorum as the approver, then throws QuorumSignerNotSupportedError and leaves the recovery methods unchanged", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([alice.member]);
             const wallet = await createMockWalletWithoutSigner<Chain>("stellar", api, [
                 { type: "external-wallet", address: BOB.stellar },
@@ -345,6 +366,24 @@ describe("signer changes approved by a recovery quorum on stellar, which keeps t
 
             expect(approver(api)).toBe(recoveryQuorum.locator);
             expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(wallet.recoveryMethods).toEqual(recoveryBefore);
+        });
+
+        it("with an api-key active signer, sends the quorum as the approver and leaves its entry to the API: the awaiting error, nothing signed", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member]);
+            const wallet = await walletWithRecovery("stellar", api, [{ type: "api-key" }, recoveryQuorum]);
+            await wallet.useRecoveryMethod(alice.config);
+            const recoveryBefore = [...wallet.recoveryMethods];
+            api.getTransaction.mockResolvedValue(
+                awaiting([createQuorumPendingApproval({ quorum: recoveryQuorum })], "stellar") as never
+            );
+
+            const { error } = await settle(run(wallet, {}));
+
+            expect(approver(api)).toBe(recoveryQuorum.locator);
+            expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
+            expect((error as TransactionAwaitingApprovalError).quorums?.[0]?.quorum).toBe(recoveryQuorum.locator);
             expect(api.approveTransaction).not.toHaveBeenCalled();
             expect(wallet.recoveryMethods).toEqual(recoveryBefore);
         });
@@ -676,5 +715,133 @@ describe("addSigner resuming a registration that a recovery quorum approves", ()
         expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
             [{ signer: alice.member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
         ]);
+    });
+});
+
+// Use case 6 on Bob's device: this client has no active key, only the key selected with useRecoveryMethod.
+describe("approve() on a client with no active key", () => {
+    const chain = "base-sepolia" as const;
+    let api: MockedApiClient;
+    const alice = memberKey(ALICE[chain]);
+    const bob = memberKey(BOB[chain]);
+    const SUCCESS = { id: "txn-change", status: "success", onChain: { txId: "0xhash", explorerLink: "https://x" } };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+        api.approveTransaction.mockResolvedValue({ id: "txn-change", status: "pending" } as never);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    const quorumOnlyWallet = (recoveryQuorum: object) =>
+        createMockWalletWithoutSigner(chain, api, [recoveryQuorum] as unknown as RecoverySignerConfigForChain<Chain>[]);
+    const bobPending = (recoveryQuorum: ReturnType<typeof createQuorumApiEntryWith>) =>
+        createQuorumPendingApproval({
+            quorum: recoveryQuorum,
+            pending: [bob.member],
+            submitted: [alice.member],
+            remaining: 1,
+        });
+
+    describe("when a member of the recovery quorum is selected with useRecoveryMethod", () => {
+        it("signs the member's pending transaction entry, then leaves no active key", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await quorumOnlyWallet(recoveryQuorum);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            api.getTransaction.mockResolvedValueOnce(awaiting([entry], "evm") as never);
+            api.getTransaction.mockResolvedValue(SUCCESS as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-change" }));
+
+            expect(error).toBeUndefined();
+            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: bob.member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+            ]);
+            expect(wallet.signer).toBeUndefined();
+        });
+
+        it("signs the member's pending signature entry", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await quorumOnlyWallet(recoveryQuorum);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            api.getSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "awaiting-approval",
+                approvals: { pending: [entry], submitted: [] },
+            } as never);
+            api.approveSignature.mockResolvedValue({
+                id: "sig-1",
+                status: "success",
+                outputSignature: "0xerc1271",
+            } as never);
+
+            const { value } = await settle(wallet.approve({ signatureId: "sig-1" }));
+
+            expect(api.approveSignature.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: bob.member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+            ]);
+            expect(value).toEqual({ signature: "0xerc1271", signatureId: "sig-1" });
+        });
+    });
+
+    describe("when a recovery method is selected with useRecoveryMethod", () => {
+        it("signs its flat entry with that recovery method", async () => {
+            const wallet = await createMockWalletWithoutSigner(chain, api, [
+                { type: "external-wallet", address: BOB[chain] },
+                createQuorumApiEntryWith([alice.member]),
+            ] as unknown as RecoverySignerConfigForChain<Chain>[]);
+            await wallet.useRecoveryMethod(bob.config);
+            const flat = { signer: { type: "external-wallet", locator: bob.member.locator }, message: "0xflat" };
+            api.getTransaction.mockResolvedValueOnce(awaiting([flat], "evm") as never);
+            api.getTransaction.mockResolvedValue(SUCCESS as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-change" }));
+
+            expect(error).toBeUndefined();
+            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: bob.member.locator, signature: signatureOver("0xflat") }],
+            ]);
+        });
+    });
+
+    describe("when nothing is selected", () => {
+        it("throws as before and sends no approval", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await quorumOnlyWallet(recoveryQuorum);
+            api.getTransaction.mockResolvedValue(awaiting([bobPending(recoveryQuorum)], "evm") as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-change" }));
+
+            expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+        });
+    });
+});
+
+describe.each([
+    { chain: "base-sepolia" as const, from: (wallet: Wallet<Chain>) => EVMWallet.from(wallet) },
+    { chain: "solana" as const, from: (wallet: Wallet<Chain>) => SolanaWallet.from(wallet) },
+    { chain: "stellar" as const, from: (wallet: Wallet<Chain>) => StellarWallet.from(wallet) },
+])("a member selection on a $chain wallet passed to its chain wallet's from()", ({ chain, from }) => {
+    it("carries over, so the chain wallet's signer changes send the member's recovery quorum", async () => {
+        const api = createMockApiClient();
+        mockSignerChangeResponses(api, CHAINS.find((entry) => entry.chain === chain)?.registered ?? {});
+        const alice = memberKey(ALICE[chain]);
+        const recoveryQuorum = createQuorumApiEntryWith([alice.member]);
+        const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, recoveryQuorum]);
+        await wallet.useRecoveryMethod(alice.config);
+
+        await from(wallet).removeSigner({ type: "external-wallet", address: "Delegated333" } as never, {
+            prepareOnly: true,
+        });
+
+        expect(api.removeSigner.mock.calls[0][2].approver).toBe(recoveryQuorum.locator);
     });
 });
