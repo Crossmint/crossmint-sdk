@@ -360,9 +360,16 @@ export class Wallet<C extends Chain> {
         return { signer: await this.#actingRoleLocator(activeLocator) };
     }
 
-    // A member-only key acts as its quorum, worked out from a fresh read of the wallet (EDD 007 §7 "Role").
+    // A member-only key acts as its quorum (EDD 007 §7 "Role"). Membership comes from one fresh read of the wallet's
+    // config, so no per-signer lookup can silently drop a quorum from the decision.
     async #actingRoleLocator(heldLocator: SignerLocator): Promise<string> {
-        const signers = await this.signers();
+        const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
+        if ("error" in walletResponse) {
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        }
+        const configSigners = isSupportedSmartWallet(walletResponse)
+            ? walletResponse.config?.delegatedSigners ?? []
+            : [];
         const role = resolveActingRole({
             scope: "transaction",
             heldLocator,
@@ -371,8 +378,8 @@ export class Wallet<C extends Chain> {
                 .map((recovery) => this.#signerManager.recoveryLocator(recovery))
                 .filter((locator) => locator != null),
             recoveryQuorums: this.recoveryMethods.filter(isQuorumSigner),
-            delegatedQuorums: signers.filter(isWalletQuorum),
-            isRegisteredSigner: signers.some((signer) => isSameSignerLocator(signer.locator, heldLocator)),
+            delegatedQuorums: configSigners.filter(isQuorumSigner),
+            isRegisteredSigner: configSigners.some((signer) => isSameSignerLocator(signer.locator, heldLocator)),
         });
         return role.kind === "none" ? heldLocator : role.locator;
     }

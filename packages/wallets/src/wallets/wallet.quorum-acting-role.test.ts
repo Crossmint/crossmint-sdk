@@ -2,13 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
-import { QuorumSelectionAmbiguousError, SignatureAwaitingApprovalError } from "../utils/errors";
+import {
+    QuorumSelectionAmbiguousError,
+    SignatureAwaitingApprovalError,
+    WalletNotAvailableError,
+} from "../utils/errors";
 import { EVMWallet } from "./evm";
+import { SolanaWallet } from "./solana";
 import { StellarWallet } from "./stellar";
 import { Wallet } from "./wallet";
 import {
     EVM_TYPED_DATA,
     createMockApiClient,
+    createMockSolanaSerializedTransaction,
+    createMockWallet,
     createQuorumApiEntry,
     createQuorumApiEntryWith,
     createQuorumPendingApproval,
@@ -53,7 +60,15 @@ async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown
     return outcome;
 }
 
-// A wallet whose recovery methods and listed signers are given, with Bob's member key selected.
+// The wallet as `getWallet` returns it, listing `delegatedSigners` in its config.
+const walletConfigResponse = (chain: Chain, delegatedSigners: object[]) => ({
+    type: "smart",
+    chainType: chain === "stellar" ? "stellar" : "evm",
+    address: chain === "stellar" ? STELLAR_ADDRESS : EVM_ADDRESS,
+    config: { adminSigner: { type: "api-key", locator: "api-key" }, delegatedSigners },
+});
+
+// A wallet whose recovery methods and delegated signers are given, with Bob's member key selected.
 async function walletWithBob(
     api: MockedApiClient,
     { recovery = [{ type: "api-key" }], signers = [] }: { recovery?: object[]; signers?: object[] },
@@ -70,6 +85,7 @@ async function walletWithBob(
     await wallet.waitForInit();
     // Chain wallets are built with `from()`, a new object, so the spy goes on the shared prototype.
     const signersSpy = vi.spyOn(Wallet.prototype, "signers").mockResolvedValue(signers as never);
+    api.getWallet.mockResolvedValue(walletConfigResponse(chain, signers) as never);
     await wallet.useSigner(bobConfig(chain === "stellar" ? BOB_STELLAR : BOB_EVM));
     return { wallet, signersSpy };
 }
@@ -199,13 +215,8 @@ describe("a creating call with a key that is only a quorum member", () => {
     describe("when the key was registered as a signer after it was selected", () => {
         it("acts as itself", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
-            const { wallet, signersSpy } = await walletWithBob(api, {
-                signers: [{ ...treasury, status: "success" }],
-            });
-            signersSpy.mockResolvedValue([
-                { ...treasury, status: "success" },
-                { ...bob, status: "success" },
-            ] as never);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, bob]) as never);
 
             await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
 
@@ -216,10 +227,8 @@ describe("a creating call with a key that is only a quorum member", () => {
     describe("when the key is no longer in any quorum", () => {
         it("acts as itself", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
-            const { wallet, signersSpy } = await walletWithBob(api, {
-                signers: [{ ...treasury, status: "success" }],
-            });
-            signersSpy.mockResolvedValue([] as never);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", []) as never);
 
             await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
 
@@ -227,17 +236,39 @@ describe("a creating call with a key that is only a quorum member", () => {
         });
     });
 
-    describe("when reading the wallet's signers fails", () => {
-        it("throws that error and creates nothing", async () => {
+    describe("when reading the wallet fails", () => {
+        it("throws WalletNotAvailableError and creates nothing", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
-            const { wallet, signersSpy } = await walletWithBob(api, {
-                signers: [{ ...treasury, status: "success" }],
-            });
-            signersSpy.mockRejectedValue(new Error("signers unavailable"));
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            api.getWallet.mockResolvedValue({ error: true, message: "wallet unavailable" } as never);
 
-            await expect(wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true })).rejects.toThrow(
-                "signers unavailable"
+            await expect(wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true })).rejects.toBeInstanceOf(
+                WalletNotAvailableError
             );
+            expect(api.send).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("when a delegated quorum's own signer lookup fails", () => {
+        it("still counts that quorum, so a key in two quorums gets the ambiguous error", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([bob]);
+            const treasury = createQuorumApiEntryWith([bob]);
+            const wallet = new Wallet(
+                {
+                    chain: "base-sepolia",
+                    address: EVM_ADDRESS,
+                    recovery: [{ type: "api-key" }, recoveryQuorum] as unknown as RecoverySignerConfigForChain<Chain>[],
+                },
+                api as unknown as ApiClient
+            );
+            await wallet.waitForInit();
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury]) as never);
+            api.getSigner.mockRejectedValue(new Error("signer lookup failed"));
+            await wallet.useSigner(bobConfig(BOB_EVM));
+
+            const sending = wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            await expect(sending).rejects.toBeInstanceOf(QuorumSelectionAmbiguousError);
             expect(api.send).not.toHaveBeenCalled();
         });
     });
@@ -260,11 +291,36 @@ describe("a creating call with a key that is only a quorum member", () => {
             } as never);
             await wallet.useSigner({ ...alice, onSign: vi.fn() } as unknown as SignerConfigForChain<Chain>);
             signersSpy.mockClear();
+            api.getWallet.mockClear();
 
             await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
 
             expect(sentSendSigner(api)).toBe(aliceLocator);
             expect(signersSpy).not.toHaveBeenCalled();
+            expect(api.getWallet).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("when the member key is selected again after it was registered as a signer", () => {
+        it("sends it as itself, without reading the wallet", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet, signersSpy } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            signersSpy.mockResolvedValue([
+                { ...treasury, status: "success" },
+                { ...bob, status: "success" },
+            ] as never);
+            api.getSigner.mockResolvedValue({
+                type: "external-wallet",
+                locator: bob.locator,
+                chains: { "base-sepolia": { status: "success", id: "s-1" } },
+            } as never);
+            await wallet.useSigner(bobConfig(BOB_EVM));
+            api.getWallet.mockClear();
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(bob.locator);
+            expect(api.getWallet).not.toHaveBeenCalled();
         });
     });
 });
@@ -402,21 +458,50 @@ describe("Stellar with a key that is only a quorum member", () => {
 });
 
 describe("a creating call with a key that is not a quorum member", () => {
-    it("sends the active key without reading the wallet's signers", async () => {
-        const api = createMockApiClient();
-        api.send.mockResolvedValue({ id: "txn-1" } as never);
-        const wallet = new Wallet(
-            { chain: "base-sepolia", address: EVM_ADDRESS, recovery: { type: "api-key" } as never },
-            api as unknown as ApiClient
-        );
-        await wallet.waitForInit();
-        const signersSpy = vi.spyOn(Wallet.prototype, "signers").mockResolvedValue([] as never);
-        await wallet.useSigner({ type: "api-key" } as never);
-        signersSpy.mockClear();
+    describe.each([
+        {
+            name: "send",
+            chain: "base-sepolia" as const,
+            create: (wallet: Wallet<Chain>) => wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true }),
+        },
+        {
+            name: "EVM signMessage",
+            chain: "base-sepolia" as const,
+            create: (wallet: Wallet<Chain>) =>
+                EVMWallet.from(wallet).signMessage({ message: "hello", options: { prepareOnly: true } }),
+        },
+        {
+            name: "Solana sendTransaction",
+            chain: "solana" as const,
+            create: (wallet: Wallet<Chain>) =>
+                SolanaWallet.from(wallet).sendTransaction({
+                    serializedTransaction: createMockSolanaSerializedTransaction(),
+                    options: { prepareOnly: true },
+                }),
+        },
+        {
+            name: "Stellar sendTransaction",
+            chain: "stellar" as const,
+            create: (wallet: Wallet<Chain>) =>
+                StellarWallet.from(wallet).sendTransaction({
+                    contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+                    method: "transfer",
+                    args: {},
+                    options: { prepareOnly: true },
+                }),
+        },
+    ])("$name", ({ chain, create }) => {
+        it("sends the active key without reading the wallet", async () => {
+            const api = createMockApiClient();
+            api.send.mockResolvedValue({ id: "txn-1" } as never);
+            api.createTransaction.mockResolvedValue({ id: "txn-1" } as never);
+            api.createSignature.mockResolvedValue({ id: "sig-1" } as never);
+            const wallet = await createMockWallet(chain, api, "api-key");
+            api.getWallet.mockClear();
 
-        await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+            await create(wallet);
 
-        expect(sentSendSigner(api)).toBe("api-key");
-        expect(signersSpy).not.toHaveBeenCalled();
+            expect(api.getWallet).not.toHaveBeenCalled();
+        });
     });
 });
