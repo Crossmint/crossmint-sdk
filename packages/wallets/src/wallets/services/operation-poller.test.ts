@@ -6,16 +6,41 @@ import {
     SigningFailedError,
     TransactionAwaitingApprovalError,
     TransactionConfirmationTimeoutError,
+    TransactionExpiredError,
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
     TransactionSendingFailedError,
 } from "../../utils/errors";
 import { walletsLogger } from "../../logger";
-import { waitForSignatureCompletion, waitForTransactionCompletion } from "./operation-poller";
+import type { PendingApproval } from "../types";
+import {
+    createExpiredRequest,
+    createQuorumApiEntry,
+    createQuorumPendingApproval,
+    TRANSACTION_EXPIRED_API_MESSAGE,
+} from "../__tests__/test-helpers";
+import {
+    waitForSignatureCompletion,
+    waitForTransactionCompletion,
+    waitForTransactionOutcome,
+} from "./operation-poller";
 
 const WALLET_LOCATOR = "me:evm:smart" as WalletLocator;
+const AWAITING_APPROVAL_MESSAGE =
+    "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
 
 const txSuccess = (id: string, onChain: Record<string, unknown>) => ({ id, status: "success", onChain }) as any;
+const txAwaiting = (id: string, approvals?: { pending: PendingApproval[] }) =>
+    ({ id, status: "awaiting-approval", approvals: approvals && { ...approvals, submitted: [] } }) as any;
+
+const FLAT_APPROVAL = {
+    signer: {
+        type: "external-wallet",
+        address: "0x1111111111111111111111111111111111111111",
+        locator: "external-wallet:0x1111111111111111111111111111111111111111",
+    },
+    message: "0xflat",
+} as PendingApproval;
 
 // The rejection handler is attached before timers run so vitest never sees an unhandled rejection.
 async function settleWithTimers<T>(promise: Promise<T>): Promise<{ ok: true; value: T } | { ok: false; error: any }> {
@@ -99,8 +124,7 @@ describe("operation-poller", () => {
                 title: "throws TransactionAwaitingApprovalError when transaction is awaiting-approval",
                 response: { id: "txn-await", status: "awaiting-approval" } as any,
                 errorClass: TransactionAwaitingApprovalError,
-                message:
-                    "Transaction is awaiting approval. Please submit required approvals before waiting for completion.",
+                message: AWAITING_APPROVAL_MESSAGE,
             },
             {
                 title: "throws TransactionHashNotFoundError when success response has neither txId nor txHash",
@@ -210,6 +234,132 @@ describe("operation-poller", () => {
                 transactionId: "txn-nolink",
             });
         });
+
+        describe("when only quorum members must still approve", () => {
+            it("throws TransactionAwaitingApprovalError with the transaction id", async () => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
+
+                const error = await settleError(pollTx("txn-quorum"));
+
+                expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
+                expect(error.transactionId).toBe("txn-quorum");
+                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
+            });
+        });
+
+        describe("when an awaiting quorum entry has a locator the SDK rejects", () => {
+            it("throws the malformed locator error, not TransactionAwaitingApprovalError", async () => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                const malformed = { ...entry, signer: { type: "quorum" as const, locator: "quorum:garbage" } };
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-malformed", { pending: [malformed] }));
+
+                const error = await settleError(pollTx("txn-malformed"));
+
+                expect(error).not.toBeInstanceOf(TransactionAwaitingApprovalError);
+                expect(error.message).toBe("Malformed quorum locator: quorum:garbage");
+            });
+        });
+
+        describe("when the transaction expired while polling", () => {
+            it("throws TransactionExpiredError with the transaction id", async () => {
+                mockApiClient.getTransaction
+                    .mockResolvedValueOnce({ id: "txn-expired", status: "pending" } as any)
+                    .mockResolvedValue(createExpiredRequest("txn-expired"));
+
+                const error = await settleError(pollTx("txn-expired"));
+
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                expect(error.transactionId).toBe("txn-expired");
+            });
+        });
+    });
+
+    describe("waitForTransactionOutcome", () => {
+        const pollOutcome = (id: string) => waitForTransactionOutcome(apiClient(), WALLET_LOCATOR, id);
+
+        describe("when the transaction succeeds", () => {
+            it("returns the success outcome with the transaction", async () => {
+                mockApiClient.getTransaction.mockResolvedValue(
+                    txSuccess("txn-ok", { txId: "0xhash", explorerLink: "https://explorer.example.com/tx/0xhash" })
+                );
+
+                expect(await settleValue(pollOutcome("txn-ok"))).toEqual({
+                    status: "success",
+                    transaction: {
+                        hash: "0xhash",
+                        explorerLink: "https://explorer.example.com/tx/0xhash",
+                        transactionId: "txn-ok",
+                    },
+                });
+            });
+        });
+
+        describe("when only quorum members must still approve", () => {
+            it("returns the awaiting outcome with each quorum's progress at the first awaiting response", async () => {
+                const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
+                const [signed, ...waiting] = quorum.members;
+                const entry = createQuorumPendingApproval({ quorum, pending: waiting, submitted: [signed] });
+                mockApiClient.getTransaction
+                    .mockResolvedValueOnce({ id: "txn-quorum", status: "pending" } as any)
+                    .mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
+
+                expect(await settleValue(pollOutcome("txn-quorum"))).toEqual({
+                    status: "awaiting-approval",
+                    transactionId: "txn-quorum",
+                    quorums: [
+                        {
+                            quorum: quorum.locator,
+                            threshold: 2,
+                            remaining: 1,
+                            pending: waiting.map((member) => member.locator),
+                            submitted: [signed.locator],
+                        },
+                    ],
+                });
+                expect(mockApiClient.getTransaction).toHaveBeenCalledTimes(2);
+            });
+        });
+
+        describe.each([
+            {
+                context: "a flat signer must still approve",
+                approvals: () => ({
+                    pending: [FLAT_APPROVAL, createQuorumPendingApproval({ quorum: createQuorumApiEntry() })],
+                }),
+            },
+            {
+                context: "every quorum already has its approvals",
+                approvals: () => ({
+                    pending: [createQuorumPendingApproval({ quorum: createQuorumApiEntry(), remaining: 0 })],
+                }),
+            },
+            { context: "the awaiting transaction has no approvals", approvals: () => undefined },
+        ])("when $context", ({ approvals }) => {
+            it("throws TransactionAwaitingApprovalError with the transaction id", async () => {
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-awaiting", approvals()));
+
+                const error = await settleError(pollOutcome("txn-awaiting"));
+
+                expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
+                expect(error.transactionId).toBe("txn-awaiting");
+                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
+            });
+        });
+
+        describe("when the transaction expired", () => {
+            it("throws TransactionExpiredError with the transaction id and the response as details", async () => {
+                const expired = createExpiredRequest("txn-expired");
+                mockApiClient.getTransaction.mockResolvedValue(expired);
+
+                const error = await settleError(pollOutcome("txn-expired"));
+
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                expect(error.transactionId).toBe("txn-expired");
+                expect(error.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
+                expect(error.details).toBe(JSON.stringify(expired));
+            });
+        });
     });
 
     describe("waitForSignatureCompletion", () => {
@@ -279,6 +429,21 @@ describe("operation-poller", () => {
             expect(error).toBeInstanceOf(SignatureNotAvailableError);
             expect(error.message).toBe(JSON.stringify(errorResponse));
             expect(mockApiClient.getSignature).toHaveBeenCalledTimes(2);
+        });
+
+        describe("when the signature expired while polling", () => {
+            it("throws TransactionExpiredError with the signature id", async () => {
+                mockApiClient.getSignature
+                    .mockResolvedValueOnce({ id: "sig-expired", status: "pending" } as any)
+                    .mockResolvedValue(createExpiredRequest("sig-expired"));
+
+                const error = await settleError(pollSig("sig-expired"));
+
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                expect(error.signatureId).toBe("sig-expired");
+                expect(error.transactionId).toBeUndefined();
+                expect(error.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
+            });
         });
     });
 });

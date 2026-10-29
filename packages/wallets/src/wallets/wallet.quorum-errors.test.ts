@@ -19,6 +19,7 @@ import { StellarWallet } from "./stellar";
 import type { Wallet } from "./wallet";
 import { WalletFactory } from "./wallet-factory";
 import {
+    createExpiredRequest,
     createMockApiClient,
     createMockSolanaSerializedTransaction,
     createMockWallet,
@@ -255,6 +256,53 @@ describe("quorum API errors at wallet call sites", () => {
             expect(error).toBeInstanceOf(TransactionExpiredError);
             expect((error as TransactionExpiredError).signatureId).toBe("sig-1");
             expect((error as TransactionExpiredError).transactionId).toBeUndefined();
+        });
+    });
+
+    describe("approve, when the request expired before the approval", () => {
+        it("throws TransactionExpiredError with the transaction id and sends no approval", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getTransaction.mockResolvedValue(createExpiredRequest("txn-1") as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1" }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionExpiredError);
+            expect((error as TransactionExpiredError).transactionId).toBe("txn-1");
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+        });
+
+        it("throws TransactionExpiredError with the signature id and sends no approval", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getSignature.mockResolvedValue(createExpiredRequest("sig-1") as never);
+
+            const error = await wallet.approve({ signatureId: "sig-1" }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionExpiredError);
+            expect((error as TransactionExpiredError).signatureId).toBe("sig-1");
+            expect(api.approveSignature).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("approve, when the signature expires while the approval is submitted", () => {
+        it("throws TransactionExpiredError with the signature id", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getSignature.mockResolvedValue(AWAITING_SIGNATURE as never);
+            // ApiClient answers the API's 422 expiry by reading the signature request again.
+            api.approveSignature.mockResolvedValue(createExpiredRequest("sig-1") as never);
+
+            const error = await wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionExpiredError);
+            expect((error as TransactionExpiredError).signatureId).toBe("sig-1");
         });
     });
 

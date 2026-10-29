@@ -305,8 +305,11 @@ export class TransactionSendingFailedError extends CrossmintSDKError {
 }
 
 export class TransactionAwaitingApprovalError extends CrossmintSDKError {
-    constructor(message: string, details?: string) {
+    readonly transactionId: string;
+
+    constructor(message: string, request: { transactionId: string }, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
+        this.transactionId = request.transactionId;
     }
 }
 
@@ -337,6 +340,10 @@ export class TransactionExpiredError extends TransactionFailedError {
 /** The request a call site was acting on; the API error body does not carry its id. */
 export type ExpiredRequest = { transactionId?: string; signatureId?: string };
 
+/** The wallets API's message for an expired request; a stored expired request carries it as its revert reason. */
+export const TRANSACTION_EXPIRED_MESSAGE =
+    "The transaction expired before it could be submitted. Create a new transaction.";
+
 export class PendingApprovalsError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
@@ -362,7 +369,8 @@ type CrossmintApiErrorBody = {
     identifierKey?: string;
 };
 
-function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErrorBody {
+// Every field the readers use is optional, so any object can be read as a response body.
+function isResponseBody<T extends object>(response: unknown): response is T {
     return typeof response === "object" && response != null;
 }
 
@@ -373,7 +381,7 @@ function isCrossmintApiErrorBody(response: unknown): response is CrossmintApiErr
  * response is not a recognized auth error, letting callers throw their own contextual error.
  */
 export function throwIfCrossmintApiAuthError(response: unknown): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
@@ -398,7 +406,7 @@ export function throwIfCrossmintApiAuthError(response: unknown): void {
  * response so callers can fall back to their own contextual error.
  */
 export function throwIfRecoverySignerApiError(response: unknown): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
@@ -446,18 +454,14 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
 
 /** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
 export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
-    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
     }
 
     const details = JSON.stringify(response);
     const code = response.code;
     if (code === "TRANSACTION_EXPIRED") {
-        throw new TransactionExpiredError(
-            response.message ?? "The transaction expired before it could be submitted. Create a new transaction.",
-            request,
-            details
-        );
+        throw new TransactionExpiredError(response.message ?? TRANSACTION_EXPIRED_MESSAGE, request, details);
     }
     if (isQuorumRequestErrorReason(code)) {
         throw new QuorumRequestError(
@@ -466,6 +470,20 @@ export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest
             details
         );
     }
+}
+
+/** The fields of a stored transaction or signature request that the expiry check reads. */
+type StoredRequestBody = { status?: unknown; error?: { revert?: { reason?: unknown } } | null };
+
+/** Throws `TransactionExpiredError` for a stored request that failed because its approval window closed. */
+export function throwIfRequestExpired(response: unknown, request: ExpiredRequest): void {
+    if (!isResponseBody<StoredRequestBody>(response) || response.status !== "failed") {
+        return;
+    }
+    if (response.error?.revert?.reason !== TRANSACTION_EXPIRED_MESSAGE) {
+        return;
+    }
+    throw new TransactionExpiredError(TRANSACTION_EXPIRED_MESSAGE, request, JSON.stringify(response));
 }
 
 export type WalletError =

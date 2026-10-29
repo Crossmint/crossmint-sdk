@@ -52,6 +52,7 @@ import {
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
+    throwIfRequestExpired,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import {
@@ -86,6 +87,7 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
+import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import {
     type PollingOptions,
     waitForSignatureCompletion,
@@ -1433,44 +1435,23 @@ export class Wallet<C extends Chain> {
         return signer;
     }
 
-    async #resolveApprovalSigner(signers: SignerAdapter[], locator: string): Promise<SignerAdapter> {
-        let signer = signers.find((s) => s.locator() === locator);
-        if (signer == null) {
-            signer = (await this.#resolveMissingDeviceSigner(locator)) ?? undefined;
+    // Quorum approvals ship chain by chain: on a chain whose adapter does not support them yet,
+    // a pending quorum entry fails with an actionable error instead of being signed.
+    #requireSupportedApprovals<P extends { signer: { type: string; locator: string } }>(pendingApprovals: P[]): P[] {
+        if (!this.chainAdapter.supportsQuorumApprovals) {
+            pendingApprovals.forEach((pendingApproval) => throwIfQuorumSigner(pendingApproval.signer));
         }
-        if (signer == null) {
-            throw new InvalidSignerError(`Signer ${locator} not found in pending approvals`);
-        }
-        return signer;
+        return pendingApprovals;
     }
 
-    // Quorum entries carry per-member progress instead of a top-level message, so they
-    // cannot be signed through the flat approval flow. Supporting them is tracked by the
-    // quorum approval-loop work; until then, fail with an actionable error.
-    #requireNonQuorumApprovals<P extends { signer: { type: string; locator: string } }>(
-        pendingApprovals: P[]
-    ): Extract<P, { message: string }>[] {
-        return pendingApprovals.map((pendingApproval) => {
-            throwIfQuorumSigner(pendingApproval.signer);
-            return pendingApproval as Extract<P, { message: string }>;
-        });
-    }
-
-    async #collectApprovals<P extends { signer: { locator: string }; message: string }>(
-        pendingApprovals: P[],
-        signers: SignerAdapter[],
-        sign: (signer: SignerAdapter, pendingApproval: P) => ReturnType<SignerAdapter["signMessage"]>
-    ): Promise<Approval[]> {
-        return await Promise.all(
-            pendingApprovals.map(async (pendingApproval) => {
-                const signer = await this.#resolveApprovalSigner(signers, pendingApproval.signer.locator);
-                const signature = await sign(signer, pendingApproval);
-                return {
-                    ...signature,
-                    signer: signer.locator(),
-                };
-            })
-        );
+    // m1 passes heldSigners() and the D3 limit when it lifts the quorum guard on transactions.
+    #approvalSigning(walletSigner: SignerAdapter, options: ApproveOptions | undefined, sign: ApprovalSigning["sign"]) {
+        return {
+            held: [...(options?.additionalSigners ?? []), walletSigner],
+            limit: "remaining",
+            sign,
+            resolveMissing: (locator) => this.#resolveMissingDeviceSigner(locator),
+        } satisfies ApprovalSigning;
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
@@ -1484,6 +1465,7 @@ export class Wallet<C extends Chain> {
 
         if ("error" in signature) {
             throwIfCrossmintApiAuthError(signature);
+            throwIfRequestExpired(signature, { signatureId });
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
 
@@ -1505,12 +1487,9 @@ export class Wallet<C extends Chain> {
             return signature;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), walletSigner];
-
-        const approvals = await this.#collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            signers,
-            (signer, pendingApproval) => signer.signMessage(pendingApproval.message)
+        const approvals = await collectApprovals(
+            this.#requireSupportedApprovals(pendingApprovals),
+            this.#approvalSigning(walletSigner, options, (signer, message) => signer.signMessage(message))
         );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
@@ -1521,6 +1500,7 @@ export class Wallet<C extends Chain> {
 
         if ("error" in transaction) {
             throwIfCrossmintApiAuthError(transaction);
+            throwIfRequestExpired(transaction, { transactionId });
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
@@ -1546,17 +1526,12 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signers = [...(options?.additionalSigners ?? []), walletSigner];
-
-        const approvals = await this.#collectApprovals(
-            this.#requireNonQuorumApprovals(pendingApprovals),
-            signers,
-            (signer, pendingApproval) =>
-                getApprovalAdapter(transaction.chainType, this.chainAdapter).signApproval(
-                    signer,
-                    transaction,
-                    pendingApproval.message
-                )
+        const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
+        const approvals = await collectApprovals(
+            this.#requireSupportedApprovals(pendingApprovals),
+            this.#approvalSigning(walletSigner, options, (signer, message) =>
+                approvalAdapter.signApproval(signer, transaction, message)
+            )
         );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
@@ -1585,6 +1560,8 @@ export class Wallet<C extends Chain> {
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
             throwIfQuorumApiError(approvedSignature, { signatureId });
+            // The client answers the API's 422 expiry with the stored request, which has no code.
+            throwIfRequestExpired(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
         }
 

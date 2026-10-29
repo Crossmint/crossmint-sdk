@@ -11,6 +11,7 @@ export const evmChainAdapter: ChainAdapter = {
     nativeToken: "eth",
     walletLocatorPrefix: "me:evm:smart",
     supportsSignatures: true,
+    supportsQuorumApprovals: false,
     addSignerChain(chain: Chain): AddSignerChain | undefined {
         return chain as RegisterSignerChain;
     },

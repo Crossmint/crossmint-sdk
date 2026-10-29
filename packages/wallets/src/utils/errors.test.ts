@@ -22,7 +22,9 @@ import {
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
     throwIfRecoverySignerApiError,
+    throwIfRequestExpired,
 } from "./errors";
+import { createExpiredRequest, TRANSACTION_EXPIRED_API_MESSAGE } from "../wallets/__tests__/test-helpers";
 
 describe("throwIfCrossmintApiAuthError", () => {
     test("throws JWTExpiredError with the reported expiry when the code is ERROR_JWT_EXPIRED", () => {
@@ -198,6 +200,12 @@ describe("throwIfQuorumApiError", () => {
             }
         });
 
+        test("falls back to the API's expiry message when the API sends none", () => {
+            expect(() => throwIfQuorumApiError({ code: "TRANSACTION_EXPIRED" })).toThrow(
+                TRANSACTION_EXPIRED_API_MESSAGE
+            );
+        });
+
         test.each([
             { request: { transactionId: "tx-1" }, kind: "transaction" },
             { request: { signatureId: "sig-1" }, kind: "signature" },
@@ -222,6 +230,59 @@ describe("throwIfQuorumApiError", () => {
             expect(() => throwIfQuorumApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).not.toThrow();
             expect(() => throwIfQuorumApiError({ code: "QUORUM_MEMBER_NOT_DESIGNATED" })).not.toThrow();
             expect(() => throwIfQuorumApiError(null)).not.toThrow();
+        });
+    });
+});
+
+describe("throwIfRequestExpired", () => {
+    describe("when the request failed because its approval window closed", () => {
+        test.each([
+            { kind: "transaction", request: { transactionId: "tx-1" } },
+            { kind: "signature", request: { signatureId: "sig-1" } },
+        ])("throws TransactionExpiredError with the $kind id and the response as details", ({ request }) => {
+            const response = createExpiredRequest("request-1");
+
+            try {
+                throwIfRequestExpired(response, request);
+                expect.fail("Expected throwIfRequestExpired to throw");
+            } catch (error) {
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                const expiredError = error as TransactionExpiredError;
+                expect(expiredError.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
+                expect(expiredError.details).toBe(JSON.stringify(response));
+                expect({
+                    transactionId: expiredError.transactionId,
+                    signatureId: expiredError.signatureId,
+                }).toEqual({ transactionId: undefined, signatureId: undefined, ...request });
+            }
+        });
+    });
+
+    describe("when the request failed for another reason", () => {
+        test.each([
+            {
+                kind: "another revert reason",
+                error: { reason: "execution_reverted", revert: { type: "contract_call", reason: "out of gas" } },
+            },
+            { kind: "an error without a revert", error: { reason: "build_failed", message: "build failed" } },
+            { kind: "a string error", error: "boom" },
+            { kind: "no error", error: undefined },
+        ])("returns without throwing for $kind", ({ error }) => {
+            expect(() => throwIfRequestExpired({ id: "tx-1", status: "failed", error }, {})).not.toThrow();
+        });
+    });
+
+    describe("when the request has not failed", () => {
+        test.each(["awaiting-approval", "pending", "success"])(
+            "returns without throwing for status %s, even with the expiry reason",
+            (status) => {
+                expect(() => throwIfRequestExpired({ ...createExpiredRequest("tx-1"), status }, {})).not.toThrow();
+            }
+        );
+
+        test("returns without throwing for an API error body or null", () => {
+            expect(() => throwIfRequestExpired({ error: true, message: "Not found" }, {})).not.toThrow();
+            expect(() => throwIfRequestExpired(null, {})).not.toThrow();
         });
     });
 });
