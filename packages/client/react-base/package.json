@@ -23,7 +23,6 @@
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/client-sdk-auth": "workspace:*",
-        "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",

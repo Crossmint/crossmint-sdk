@@ -24,8 +24,5 @@
         "@crossmint/common-sdk-base": "workspace:*",
         "@datadog/browser-logs": "6.24.1",
         "zod": "3.22.4"
-    },
-    "devDependencies": {
-        "@types/uuid": "11.0.0"
     }
 }
