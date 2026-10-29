@@ -7,6 +7,7 @@ import type {
     QuorumMember,
     QuorumSigner,
     RecoverySignerConfigForChain,
+    SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
 } from "../../signers/types";
@@ -77,8 +78,48 @@ export const createMockWallet = async <C extends Chain>(
     mockApiClient: MockedApiClient,
     signerType: "api-key" | "external-wallet" = "api-key",
     recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => walletWithSigner(chain, mockApiClient, createMockSigner(signerType, chain), recoverySigners);
+
+// What a signing test signer returns for `payload`, so a test can tell which message each approval signed.
+export const signatureOver = (payload: string) => `0xsig:${payload}`;
+
+// A wallet whose active signer is a registered external wallet that signs with `signatureOver`.
+export const createSigningWallet = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => {
-    const signer = createMockSigner(signerType, chain);
+    const signer = {
+        ...createMockSigner("external-wallet", chain),
+        onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+    } as SignerConfigForChain<C>;
+    return walletWithSigner(chain, mockApiClient, signer, recoverySigners);
+};
+
+// The active signer of `createSigningWallet` and `createMockWallet(…, "external-wallet")`, as a quorum member.
+export const activeSignerMember = (chain: Chain): QuorumMember => {
+    const locator = getSignerLocator("external-wallet", chain);
+    return { type: "external-wallet", address: locator.split(":")[1], locator } as QuorumMember;
+};
+
+// A signer this client holds beyond the active one (`approve`'s `additionalSigners`), signing with `signatureOver`.
+export const createHeldSigner = (locator: string): SignerAdapter => {
+    const sign = vi.fn(async (payload: string) => ({ signature: signatureOver(payload) }));
+    return {
+        type: locator.split(":")[0],
+        locator: () => locator as SignerLocator,
+        signMessage: sign,
+        signTransaction: sign,
+    } as unknown as SignerAdapter;
+};
+
+const walletWithSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    signer: SignerConfigForChain<C>,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => {
+    const signerType = signer.type === "api-key" ? "api-key" : "external-wallet";
     const wallet = new Wallet(
         {
             chain,

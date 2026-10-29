@@ -2,6 +2,7 @@ import type { ApiClient, GetSignatureResponse, GetTransactionSuccessResponse, Wa
 import { awaitsQuorumOnly, splitPendingApprovals, toQuorumProgress } from "../../quorum/approvals";
 import type { QuorumApprovalProgress, Signature, Transaction } from "../types";
 import {
+    SignatureAwaitingApprovalError,
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
     SigningFailedError,
@@ -26,6 +27,8 @@ export type PollingOptions = {
 
 const AWAITING_APPROVAL_MESSAGE =
     "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
+const SIGNATURE_AWAITING_APPROVAL_MESSAGE =
+    "Signature is awaiting approval from quorum members. Other members must approve it before it is available.";
 
 /** Only quorum members can still approve the transaction; `quorums` is each quorum's progress. */
 export type AwaitingApproval = {
@@ -45,7 +48,10 @@ export async function waitForTransactionCompletion(
 ): Promise<Transaction<false>> {
     const outcome = await waitForTransactionOutcome(apiClient, walletLocator, transactionId, options);
     if (outcome.status === "awaiting-approval") {
-        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
+        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, {
+            transactionId,
+            quorums: outcome.quorums,
+        });
     }
     return outcome.transaction;
 }
@@ -137,12 +143,39 @@ function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transact
     return { status: "awaiting-approval", transactionId, quorums: quorums.map(toQuorumProgress) };
 }
 
+/** Only quorum members can still approve the signature; `quorums` is each quorum's progress. */
+export type SignatureAwaitingApproval = {
+    status: "awaiting-approval";
+    signatureId: string;
+    quorums: QuorumApprovalProgress[];
+};
+
+export type SignatureOutcome = { status: "success"; signature: Signature<false> } | SignatureAwaitingApproval;
+
+/** Waits for the signature; throws `SignatureAwaitingApprovalError` while only quorum members can approve it. */
 export async function waitForSignatureCompletion(
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     signatureId: string,
     options?: PollingOptions
 ): Promise<Signature<false>> {
+    const outcome = await waitForSignatureOutcome(apiClient, walletLocator, signatureId, options);
+    if (outcome.status === "awaiting-approval") {
+        throw new SignatureAwaitingApprovalError(SIGNATURE_AWAITING_APPROVAL_MESSAGE, {
+            signatureId,
+            quorums: outcome.quorums,
+        });
+    }
+    return outcome.signature;
+}
+
+/** Waits for the signature, or until only quorum members can still approve it. */
+export async function waitForSignatureOutcome(
+    apiClient: ApiClient,
+    walletLocator: WalletLocator,
+    signatureId: string,
+    options?: PollingOptions
+): Promise<SignatureOutcome> {
     const { timeoutMs = 60_000 } = options ?? {};
     const startTime = Date.now();
     let signatureResponse: GetSignatureResponse | null = null;
@@ -164,14 +197,18 @@ export async function waitForSignatureCompletion(
         throw new SigningFailedError("Signature signing failed");
     }
 
+    // Signature responses may omit `approvals.pending`; no list means no approver is pending.
+    const pending = signatureResponse.approvals?.pending ?? [];
+    if (awaitsQuorumOnly({ status: signatureResponse.status, approvals: { pending } })) {
+        const { quorums } = splitPendingApprovals(pending);
+        return { status: "awaiting-approval", signatureId, quorums: quorums.map(toQuorumProgress) };
+    }
+
     if (!signatureResponse.outputSignature) {
         throw new SignatureNotAvailableError("Signature not available");
     }
 
-    return {
-        signature: signatureResponse.outputSignature,
-        signatureId,
-    };
+    return { status: "success", signature: { signature: signatureResponse.outputSignature, signatureId } };
 }
 
 async function sleep(ms: number) {

@@ -2,7 +2,7 @@ import type { QuorumSigner, SignerLocator } from "../signers/types";
 import { comparableLocator, isSameSignerLocator } from "../utils/signer-locator";
 
 /** Every quorum that lists `memberLocator` as a member. */
-export function quorumsWithMember(quorums: QuorumSigner[], memberLocator: SignerLocator): QuorumSigner[] {
+export function quorumsWithMember<Q extends QuorumSigner>(quorums: Q[], memberLocator: SignerLocator | string): Q[] {
     return quorums.filter((quorum) =>
         quorum.members.some((member) => isSameSignerLocator(member.locator, memberLocator))
     );

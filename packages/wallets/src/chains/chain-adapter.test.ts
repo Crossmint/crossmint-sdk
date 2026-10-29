@@ -38,7 +38,11 @@ describe("chain-adapter", () => {
     });
 
     describe("supportsQuorumApprovals", () => {
-        it.each(["base-sepolia", "solana", "stellar"] as const)("%s -> false until its quorum milestone", (chain) => {
+        it("base-sepolia -> true: EVM signs as a quorum member", () => {
+            expect(getChainAdapter("base-sepolia").supportsQuorumApprovals).toBe(true);
+        });
+
+        it.each(["solana", "stellar"] as const)("%s -> false until its quorum milestone", (chain) => {
             expect(getChainAdapter(chain).supportsQuorumApprovals).toBe(false);
         });
     });

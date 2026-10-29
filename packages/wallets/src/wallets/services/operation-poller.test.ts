@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient, WalletLocator } from "../../api";
 import {
+    SignatureAwaitingApprovalError,
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
     SigningFailedError,
@@ -246,6 +247,41 @@ describe("operation-poller", () => {
                 expect(error.transactionId).toBe("txn-quorum");
                 expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
             });
+
+            it("carries each quorum's progress on the error", async () => {
+                const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
+                const [signed, ...others] = quorum.members;
+                const entry = createQuorumPendingApproval({
+                    quorum,
+                    pending: others,
+                    submitted: [signed],
+                    remaining: 1,
+                });
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
+
+                const error = await settleError(pollTx("txn-quorum"));
+
+                expect(error.quorums).toEqual([
+                    {
+                        quorum: quorum.locator,
+                        threshold: 2,
+                        remaining: 1,
+                        pending: others.map(({ locator }) => locator),
+                        submitted: [signed.locator],
+                    },
+                ]);
+            });
+        });
+
+        describe("when a flat signer must still approve", () => {
+            it("throws TransactionAwaitingApprovalError with no quorum progress", async () => {
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-flat", { pending: [FLAT_APPROVAL] }));
+
+                const error = await settleError(pollTx("txn-flat"));
+
+                expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
+                expect(error.quorums).toBeUndefined();
+            });
         });
 
         describe("when an awaiting quorum entry has a locator the SDK rejects", () => {
@@ -429,6 +465,47 @@ describe("operation-poller", () => {
             expect(error).toBeInstanceOf(SignatureNotAvailableError);
             expect(error.message).toBe(JSON.stringify(errorResponse));
             expect(mockApiClient.getSignature).toHaveBeenCalledTimes(2);
+        });
+
+        describe("when only quorum members must still approve", () => {
+            it("throws SignatureAwaitingApprovalError with the signature id and each quorum's progress", async () => {
+                const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
+                const [signed, ...others] = quorum.members;
+                const entry = createQuorumPendingApproval({
+                    quorum,
+                    pending: others,
+                    submitted: [signed],
+                    remaining: 1,
+                });
+                mockApiClient.getSignature.mockResolvedValue(txAwaiting("sig-quorum", { pending: [entry] }));
+
+                const error = await settleError(pollSig("sig-quorum"));
+
+                expect(error).toBeInstanceOf(SignatureAwaitingApprovalError);
+                expect(error).toBeInstanceOf(SignatureNotAvailableError);
+                expect(error.signatureId).toBe("sig-quorum");
+                expect(error.quorums).toEqual([
+                    {
+                        quorum: quorum.locator,
+                        threshold: 2,
+                        remaining: 1,
+                        pending: others.map(({ locator }) => locator),
+                        submitted: [signed.locator],
+                    },
+                ]);
+            });
+        });
+
+        describe("when a flat signer must still approve", () => {
+            it("throws SignatureNotAvailableError('Signature not available'), as before", async () => {
+                mockApiClient.getSignature.mockResolvedValue(txAwaiting("sig-flat", { pending: [FLAT_APPROVAL] }));
+
+                const error = await settleError(pollSig("sig-flat"));
+
+                expect(error).not.toBeInstanceOf(SignatureAwaitingApprovalError);
+                expect(error).toBeInstanceOf(SignatureNotAvailableError);
+                expect(error.message).toBe("Signature not available");
+            });
         });
 
         describe("when the signature expired while polling", () => {

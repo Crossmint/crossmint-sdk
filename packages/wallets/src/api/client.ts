@@ -44,6 +44,9 @@ import type {
 } from "./types";
 import type { Chain } from "../chains/chains";
 
+// The wallets API's 422 when a request already has every approval it needs (crossbit-main `approval-processor.ts`).
+const APPROVALS_ALREADY_COMPLETE_MESSAGE = "Already has the required number of approvals";
+
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2025-06-09/wallets";
     private unstableApiPrefix = "api/unstable/wallets";
@@ -122,7 +125,12 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        return response.json();
+        const body = await response.json();
+        // Another approver completed the transaction first: return its current state instead of the error.
+        if (response.status === 422 && body?.message === APPROVALS_ALREADY_COMPLETE_MESSAGE) {
+            return this.getTransaction(walletLocator, transactionId);
+        }
+        return body;
     }
 
     async getTransaction(walletLocator: WalletLocator, transactionId: string): Promise<GetTransactionResponse> {
