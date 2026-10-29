@@ -11,7 +11,7 @@ These rules apply to code in this package, on top of the repo root `AGENTS.md`.
 - All traffic uses HTTPS with TLS 1.2 or higher.
 - Secure by default. Lowering a protection needs an explicit option whose name says what it gives up.
 - Use the platform crypto frameworks. No custom crypto, no MD5 or SHA-1.
-- Do not load or run code from outside the package.
+- Do not load or run unapproved executable code from outside the package. Approved Crossmint-hosted pages and installed dependencies are allowed.
 - Prefer platform and Expo packages over third-party ones. Every new or bumped dependency needs a reason in the PR, stays on its latest patched version, and is not kept by one person.
 - Do not commit secrets, keys or certificates, as files, values or comments. Test fixtures use fake values.
 - Treat all data as untrusted, even from Crossmint servers. Validate it before it reaches storage, a WebView, or any other sensitive operation.
