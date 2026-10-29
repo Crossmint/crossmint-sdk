@@ -12,9 +12,9 @@ import { forwardRef } from "react";
  * `onPaymentMethodSelected` receives the chosen method. Your backend uses its `paymentMethodId` to pay.
  * It can use that ID to create order intents.
  *
- * To use your own button instead of the component's, pass `hideSubmitButton` and a `ref`, and
- * call `ref.current.submit()` from your button: it resolves with the selected or saved method,
- * or with why the submit could not complete.
+ * The component renders no submit button. Render your own and call `ref.current.submit()`
+ * from it: it resolves with the selected or saved method, or with why the submit could not
+ * complete.
  */
 export const CrossmintPaymentMethodManagement = forwardRef<
     CrossmintPaymentMethodManagementRef,

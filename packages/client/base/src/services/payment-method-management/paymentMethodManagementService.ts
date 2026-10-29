@@ -30,6 +30,8 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
         appendObjectToQueryParams(queryParams, serializableProps);
 
+        // The component never renders a submit button; the host submits via ref.submit().
+        queryParams.append("hideSubmitButton", "true");
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
 

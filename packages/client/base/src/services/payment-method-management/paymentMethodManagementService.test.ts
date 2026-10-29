@@ -55,20 +55,11 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(params.has("allowedPaymentMethodTypes")).toBe(false);
     });
 
-    it("carries hideSubmitButton only when the host sets it, so the iframe default applies otherwise", () => {
+    it("always hides the iframe submit button (the host submits via ref.submit())", () => {
         const service = makeService();
 
-        expect(new URL(service.iframe.getUrl({ jwt: "jwt-token" })).searchParams.has("hideSubmitButton")).toBe(false);
-        expect(
-            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: false })).searchParams.has(
-                "hideSubmitButton"
-            )
-        ).toBe(false);
-        expect(
-            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: true })).searchParams.get(
-                "hideSubmitButton"
-            )
-        ).toBe("true");
+        const url = service.iframe.getUrl({ jwt: "jwt-token" });
+        expect(new URL(url).searchParams.get("hideSubmitButton")).toBe("true");
     });
 
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {

@@ -27,11 +27,6 @@ export interface CrossmintPaymentMethodManagementProps {
      * than one type does not yet render a type picker.
      */
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
-    /**
-     * Render no Save/Continue button inside the component (default `false`). Pair it with a
-     * `ref` and call `ref.current.submit()` from your own button.
-     */
-    hideSubmitButton?: boolean;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 

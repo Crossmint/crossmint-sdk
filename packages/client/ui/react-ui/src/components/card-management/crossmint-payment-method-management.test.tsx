@@ -42,12 +42,7 @@ const SAVED = { status: "saved", paymentMethod: CARD } as const;
 function mount({ load = true, onSelected }: { load?: boolean; onSelected?: (method: unknown) => void } = {}) {
     const ref = createRef<CrossmintPaymentMethodManagementRef>();
     const view = render(
-        <CrossmintPaymentMethodManagement
-            ref={ref}
-            jwt="buyer-jwt"
-            hideSubmitButton
-            onPaymentMethodSelected={onSelected}
-        />
+        <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" onPaymentMethodSelected={onSelected} />
     );
     if (load) {
         fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
@@ -72,8 +67,7 @@ beforeEach(() => {
     mocks.on.mockReturnValue("subscription");
     mocks.createClient.mockImplementation(() => ({ ...mocks }));
     mocks.getUrl.mockImplementation(
-        (props) =>
-            `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=${props.hideSubmitButton ?? false}`
+        (props) => `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=true`
     );
 });
 
@@ -150,7 +144,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const ref = createRef<CrossmintPaymentMethodManagementRef>();
         render(
             <StrictMode>
-                <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />
+                <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" />
             </StrictMode>
         );
 
