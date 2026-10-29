@@ -24,6 +24,7 @@ export function CrossmintAgentCardAuthorization(props: CrossmintAgentCardAuthori
                 orderIntent={step.orderIntent}
                 displayName={props.displayName}
                 appearance={props.appearance?.verification}
+                openRedirect={props.openRedirect}
                 onVerificationComplete={() => onRailStepComplete(step)}
                 onVerificationError={onRailStepError}
             />

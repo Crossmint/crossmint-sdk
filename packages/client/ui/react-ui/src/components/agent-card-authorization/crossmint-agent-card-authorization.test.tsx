@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
+import type { CrossmintAgentCardAuthorizationProps } from "@crossmint/client-sdk-base";
 import { ApiClient } from "@crossmint/common-sdk-base";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -133,10 +134,12 @@ function selectCard(paymentMethod: unknown = CARD) {
     act(() => onSelected(paymentMethod));
 }
 
-function renderComponent() {
+function renderComponent(overrides: Partial<CrossmintAgentCardAuthorizationProps> = {}) {
     const onAuthorized = vi.fn();
     const onError = vi.fn();
-    const view = render(<CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} />);
+    const view = render(
+        <CrossmintAgentCardAuthorization {...PROPS} onAuthorized={onAuthorized} onError={onError} {...overrides} />
+    );
     return { ...view, onAuthorized, onError };
 }
 
@@ -318,6 +321,21 @@ describe("<CrossmintAgentCardAuthorization />", () => {
             await waitFor(() => expect(onAuthorized).toHaveBeenCalledTimes(1));
             expect(requests().at(-1)).toBe("GET /api/unstable/order-intents/oi_1");
             expect(onAuthorized.mock.calls[0][0].rail).toEqual({ rail: "agentic-token", provider: "vic" });
+        });
+
+        test("lets the host open the network page through openRedirect", async () => {
+            fetchMock
+                .mockResolvedValueOnce(json(200, REGISTERED))
+                .mockResolvedValueOnce(
+                    json(201, orderIntent([VIC_PENDING], { verificationConfig: VERIFICATION_CONFIG }))
+                );
+            const openRedirect = vi.fn();
+            renderComponent({ openRedirect });
+
+            selectCard();
+
+            await waitFor(() => expect(screen.getByTestId("verification")).toBeInTheDocument());
+            expect(stubs.verification.props?.openRedirect).toBe(openRedirect);
         });
 
         test("reports verification_failed when the verification UI fails", async () => {

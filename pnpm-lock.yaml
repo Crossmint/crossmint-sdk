@@ -709,8 +709,8 @@ importers:
   packages/client/ui/react-ui:
     dependencies:
       '@basis-theory/web-agentic':
-        specifier: 1.2.2
-        version: 1.2.2
+        specifier: 1.4.1
+        version: 1.4.1
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
@@ -1558,8 +1558,8 @@ packages:
   '@base-org/account@2.4.0':
     resolution: {tarball: 'https://libraries.cgr.dev/javascript/@base-org/account/-/account-2.4.0.tgz', integrity: sha512-kXAJhOTHa4ISCJRo2SJtuSvHSwDFaO+DZkFrtT9aF7o8Ku+QMETV6q/2wNSR8NEAomR3XOANQ9pxPI/u1Z+wxw==}
 
-  '@basis-theory/web-agentic@1.2.2':
-    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/@basis-theory/web-agentic/-/web-agentic-1.2.2.tgz', integrity: sha512-YipoQlOxPoU1gAUNr6ULs9Fngm9LGekNnD80yOyarfTVB55oIEYF/zCvdscNz0zCK43R0sIeGV9tarum8uiP7g==}
+  '@basis-theory/web-agentic@1.4.1':
+    resolution: {tarball: 'https://libraries.cgr.dev/javascript-upstream/@basis-theory/web-agentic/-/web-agentic-1.4.1.tgz', integrity: sha512-okqcdmZaSskGEhzugUUkrvJazTLteFi3Z0akcoimelS6o2MdGdtYfIuUa6uVUkv9pv4wCHGUC/A86TwYaH+A+Q==}
     engines: {node: '>=18'}
 
   '@bcoe/v8-coverage@0.2.3':
@@ -13327,7 +13327,7 @@ snapshots:
       - zod
     optional: true
 
-  '@basis-theory/web-agentic@1.2.2': {}
+  '@basis-theory/web-agentic@1.4.1': {}
 
   '@bcoe/v8-coverage@0.2.3': {}
 
