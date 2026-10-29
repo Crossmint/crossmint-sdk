@@ -1,5 +1,26 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.13.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/common-sdk-auth@1.1.30
+
 ## 4.12.1
 
 ### Patch Changes
