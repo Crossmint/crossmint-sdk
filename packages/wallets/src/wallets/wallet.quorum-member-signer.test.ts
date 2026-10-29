@@ -235,6 +235,12 @@ describe("useSigner() with a key that is only a quorum member", () => {
             const recoveryQuorum = quorumOf(externalWallet.member);
             const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
             await wallet.useSigner(externalWallet.config);
+            api.getWallet.mockResolvedValue({
+                type: "smart",
+                chainType: "evm",
+                address: EVM_ADDRESS,
+                config: { adminSigner: { type: "api-key", locator: "api-key" }, delegatedSigners: [] },
+            } as never);
             api.send.mockResolvedValue({ id: "txn-1" } as never);
 
             await wallet.send("0x1111111111111111111111111111111111111111", "usdc", "1", { prepareOnly: true });
