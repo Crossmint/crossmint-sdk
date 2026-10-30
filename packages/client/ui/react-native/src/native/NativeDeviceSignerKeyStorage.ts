@@ -1,6 +1,7 @@
 import { requireNativeModule } from "expo";
 import * as Device from "expo-device";
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import * as signerLocatorStore from "./signerLocatorStore";
 
 interface CrossmintDeviceSignerModule {
     isAvailable(): Promise<boolean>;
@@ -62,6 +63,14 @@ export class NativeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
 
     deletePendingKey(publicKeyBase64: string): Promise<void> {
         return getNativeModule().deletePendingKey(publicKeyBase64);
+    }
+
+    saveSignerLocator(address: string, signerLocator: string): Promise<void> {
+        return signerLocatorStore.saveSignerLocator(address, signerLocator);
+    }
+
+    getSavedSignerLocator(address: string): Promise<string | null> {
+        return signerLocatorStore.getSavedSignerLocator(address);
     }
 
     getDeviceName(): string {

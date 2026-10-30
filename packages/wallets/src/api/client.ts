@@ -24,6 +24,7 @@ import type {
     ApproveSignatureParams,
     ApproveSignatureResponse,
     GetSignatureResponse,
+    GetSignaturesResponse,
     GetTransactionsResponse,
     GetBalanceResponse,
     RegisterSignerParams,
@@ -167,10 +168,25 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getTransactions(walletLocator: WalletLocator): Promise<GetTransactionsResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions`, {
+    async getTransactions(
+        walletLocator: WalletLocator,
+        params?: { page: number; perPage: number }
+    ): Promise<GetTransactionsResponse> {
+        const query = params != null ? `?page=${params.page}&perPage=${params.perPage}` : "";
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions${query}`, {
             headers: this.headers,
         });
+        return response.json();
+    }
+
+    async getSignatures(
+        walletLocator: WalletLocator,
+        params: { page: number; perPage: number }
+    ): Promise<GetSignaturesResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/signatures?page=${params.page}&perPage=${params.perPage}`,
+            { headers: this.headers }
+        );
         return response.json();
     }
 
