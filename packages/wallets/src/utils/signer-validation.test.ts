@@ -358,7 +358,7 @@ describe("compareSignerConfigs - Secret handling", () => {
         expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
     });
 
-    it("does not echo the caller's secret or the existing value in the mismatch message", () => {
+    it("omits the caller's secret and the existing value from the mismatch message", () => {
         const newConfig = { type: "server", secret: masterSecret, locator: "server:0xcaller" };
         const existingConfig = { type: "server", secret: "forged", locator: "server:0xexisting" };
 

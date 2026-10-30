@@ -36,6 +36,12 @@ const SENSITIVE_KEYS = new Set([
 const MAX_REDACTION_DEPTH = 10;
 
 /**
+ * Keys whose string values are prose (a serialized Error, an API error response) and are
+ * scrubbed as free text, including bare 64-char hex secrets.
+ */
+const ERROR_TEXT_KEYS = new Set(["message", "stack"]);
+
+/**
  * Shapes of secret material that can end up inside free text (error messages, stack traces,
  * interpolated log messages), where key-based redaction cannot see them.
  * - Server signer master secrets: `xmsk1_` + 64 hex chars.
@@ -130,6 +136,8 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
         if (SENSITIVE_KEYS.has(key.toLowerCase())) {
             result[key] = redactValue(value);
+        } else if (typeof value === "string" && ERROR_TEXT_KEYS.has(key.toLowerCase())) {
+            result[key] = redactSensitiveText(value, true);
         } else {
             result[key] = redactSensitiveFields(value, depth + 1);
         }
@@ -172,12 +180,11 @@ export function serializeLogArgs(args: unknown[]): { message: string; context: L
         if (arg == null) {
             messageParts.push(String(arg));
         } else if (arg instanceof Error) {
-            // Error objects are serialized into context with their properties.
-            // Their text is scrubbed here: once it is a plain string it is no longer recognizable as free text.
+            // Error objects are serialized into context with their properties
             context.error = {
                 name: arg.name,
-                message: redactSensitiveText(arg.message, true),
-                stack: arg.stack == null ? arg.stack : redactSensitiveText(arg.stack, true),
+                message: arg.message,
+                stack: arg.stack,
             };
             // Also include error message in the log message
             messageParts.push(arg.message);

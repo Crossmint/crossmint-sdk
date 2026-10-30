@@ -35,7 +35,7 @@ describe("redactSensitiveFields", () => {
         expect(result.keypair).toBe("[REDACTED]");
     });
 
-    it("should redact secret shapes embedded in an Error's message and stack", () => {
+    it("redacts secret shapes embedded in an Error's message and stack", () => {
         const error = new Error(`mismatch: expected "xmsk1_${MASTER_SECRET_HEX}" but found "other"`);
         const result = redactSensitiveFields({ error }) as { error: { name: string; message: string; stack?: string } };
         expect(result.error.name).toBe("Error");
@@ -44,16 +44,25 @@ describe("redactSensitiveFields", () => {
         expect(result.error.stack).toContain("xmsk1_[REDACTED]");
     });
 
-    it("should redact prefixed secret shapes inside nested string values", () => {
+    it("redacts prefixed secret shapes inside nested string values", () => {
         const input = { details: { reason: `secret xmsk1_${MASTER_SECRET_HEX} rejected` } };
         const result = redactSensitiveFields(input) as { details: { reason: string } };
         expect(result.details.reason).toBe("secret xmsk1_[REDACTED] rejected");
     });
 
-    it("should keep bare 64-hex structured fields such as transaction hashes", () => {
+    it("keeps bare 64-hex structured fields such as transaction hashes", () => {
         const input = { hash: MASTER_SECRET_HEX };
         const result = redactSensitiveFields(input) as { hash: string };
         expect(result.hash).toBe(MASTER_SECRET_HEX);
+    });
+
+    it("redacts bare 64-hex secrets inside message and stack fields of a serialized error", () => {
+        const input = {
+            error: { name: "Error", message: `rejected ${MASTER_SECRET_HEX}`, stack: `at ${MASTER_SECRET_HEX}` },
+        };
+        const result = redactSensitiveFields(input) as { error: { message: string; stack: string } };
+        expect(result.error.message).toBe("rejected [REDACTED]");
+        expect(result.error.stack).toBe("at [REDACTED]");
     });
 });
 
@@ -95,9 +104,11 @@ describe("redactSensitiveText", () => {
     });
 
     it("scans adversarial look-alike text in linear time", () => {
+        // Linear scanning takes a few milliseconds; the quadratic pattern this guards against took
+        // tens of seconds, so the bound is loose enough for a loaded CI runner.
         const text = "-eyJ".repeat(200_000);
         const startedAt = performance.now();
         redactSensitiveText(text, true);
-        expect(performance.now() - startedAt).toBeLessThan(500);
+        expect(performance.now() - startedAt).toBeLessThan(5_000);
     });
 });
