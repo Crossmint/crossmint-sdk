@@ -1,5 +1,49 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 2.1.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+  - @crossmint/client-sdk-react-base@2.5.1
+
+## 2.1.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- 0e86e2b: The iOS device signer module now comes from the crossmint-swift-sdk Swift Package instead of the `CrossmintDeviceSigner` pod, since CocoaPods trunk becomes read-only on December 2nd. Apps still use CocoaPods, and `pod install` adds the Swift Package to the Pods project. The config plugin no longer adds the `CrossmintDeviceSigner` simulator fix to the Podfile, since that pod is no longer installed.
+- a77707b: `react-native-svg` is no longer a peer dependency. The SDK does not use it, so apps that do not use it themselves can uninstall it.
+- 754047d: Remove dependencies the packages do not import: `exponential-backoff` and `uuid` from `@crossmint/client-sdk-base`, `zod` from `@crossmint/client-signers-cryptography`, and `bs58`, `lodash.clonedeep`, `lodash.isequal` and `zod` from `@crossmint/client-sdk-react-native-ui`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/client-sdk-auth@1.3.32
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-auth@1.3.31
+  - @crossmint/client-sdk-react-base@2.4.6
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 2.0.0
 
 ### Major Changes

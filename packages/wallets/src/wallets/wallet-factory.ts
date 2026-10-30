@@ -15,7 +15,6 @@ import type {
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     InvalidRecoveryConfigError,
-    RecoveryNotSupportedOnChainError,
     WalletCreationError,
     WalletNotAvailableError,
     throwIfRecoverySignerApiError,
@@ -256,8 +255,7 @@ export class WalletFactory {
         args: WalletCreateArgs<C>,
         resolvedRecoverySigners: ResolvedRecoverySigner[]
     ): RecoveryRequestConfig {
-        // The API only accepts recoveryMethods on Solana and Stellar; EVM still requires adminSigner for one method.
-        if (hasRecoveryMethodList(args) && (args.chain === "solana" || args.chain === "stellar")) {
+        if (hasRecoveryMethodList(args)) {
             return { recoveryMethods: resolvedRecoverySigners };
         }
         return { adminSigner: resolvedRecoverySigners[0] };
@@ -269,11 +267,6 @@ export class WalletFactory {
     ): Array<RecoverySignerConfigFor<C>> {
         if (recoveryMethods.length === 0) {
             throw new InvalidRecoveryConfigError("At least one recovery method is required");
-        }
-        if (recoveryMethods.length > 1 && chain !== "solana" && chain !== "stellar") {
-            throw new RecoveryNotSupportedOnChainError(
-                `Multiple recovery methods are not supported on ${chain} yet. Pass a single recovery method.`
-            );
         }
         for (const method of recoveryMethods) {
             if (!canBeRecoveryMethod(method.type)) {

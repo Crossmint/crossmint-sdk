@@ -13,6 +13,9 @@ Before each step of a task, run `"$BP" list`: it prints every topic of the Paell
 ## Commands
 
 ```bash
+chainctl auth login                                                      # once per hour
+export CHAINGUARD_TOKEN=$(chainctl auth token --audience=libraries.cgr.dev)
+./scripts/setup-pnpm-auth.sh                                             # before installing: deps come from Chainguard Libraries
 pnpm install
 pnpm build:libs    # build all packages
 pnpm test:vitest   # run unit tests (packages with a test:vitest script)
@@ -20,6 +23,11 @@ pnpm --filter @crossmint/common-sdk-auth test   # this package only defines `tes
 pnpm lint          # biome check
 pnpm lint:fix
 ```
+
+## Dependencies
+
+- `.npmrc` routes every package to Chainguard Libraries except `@crossmint/*` (npmjs.org). `pnpm-lock.yaml` pins Chainguard tarball URLs and hashes, so it does not install from npmjs.org. CI runs `node scripts/check-lockfile-registry.mjs` before installing.
+- Without `chainctl` (Devin, other repos' CI), set the pull-token pair `CHAINGUARD_JAVASCRIPT_IDENTITY_ID` and `CHAINGUARD_JAVASCRIPT_TOKEN` and run the same script.
 
 ## Testing
 

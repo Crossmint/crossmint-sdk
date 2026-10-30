@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-nextjs-starter",
-    "version": "2.0.56",
+    "version": "2.0.59",
     "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
@@ -27,9 +27,6 @@
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-ui": "workspace:*",
-        "@dynamic-labs/ethereum": "4.8.3",
-        "@dynamic-labs/sdk-react-core": "4.8.3",
-        "@dynamic-labs/solana": "4.8.3",
         "next": "15.5.27",
         "react": "18.3.1",
         "react-dom": "18.3.1"

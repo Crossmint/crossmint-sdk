@@ -1,5 +1,28 @@
 # @crossmint/wallets-sdk
 
+## 1.21.0
+
+### Minor Changes
+
+- 507f354: Support recovery methods on EVM. `createWallet` sends `recoveryMethods` on EVM chains and accepts more than one. `addRecoveryMethod` and `removeRecoveryMethod` work on EVM wallets and send the wallet's chain, which the API requires on EVM. A single recovery method passed as `recovery` still goes under `adminSigner`.
+
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 1.20.6
+
+### Patch Changes
+
+- 46666e3: Preserve the optional `inTransit` field in `wallet.balances()` results. For wallets with a card, it holds funds moving between the wallet and the card's collateral that the card provider has not reflected yet; `available + inTransit` is the total the user holds while funds move.
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 1.20.5
 
 ### Patch Changes

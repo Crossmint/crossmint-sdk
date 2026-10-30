@@ -53,7 +53,7 @@ const WALLET_CREATE_ARGS_CHILDREN = [
             summary: [
                 {
                     kind: "text",
-                    text: "Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.",
+                    text: "Recovery methods, each able to authorize on its own.",
                 },
             ],
         },

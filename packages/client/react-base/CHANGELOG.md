@@ -1,5 +1,43 @@
 # @crossmint/client-sdk-react-base
 
+## 2.5.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+
+## 2.5.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/client-sdk-auth@1.3.32
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 2.4.6
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-auth@1.3.31
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 2.4.5
 
 ### Patch Changes
