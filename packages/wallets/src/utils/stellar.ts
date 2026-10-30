@@ -1,5 +1,3 @@
-import nacl from "tweetnacl";
-
 /**
  * Stellar StrKey encoding for ed25519 public keys.
  * Ported from open-signer's shared/cryptography/src/primitives/encoding/strkey.ts
@@ -95,23 +93,4 @@ export function encodeStellarPublicKey(publicKeyBytes: Uint8Array): string {
     unencoded.set(checksum, payload.length);
 
     return base32Encode(unencoded);
-}
-
-/**
- * Derive an ed25519 keypair from a 32-byte seed and return the public key bytes
- * and a signing function compatible with the Stellar server signer.
- */
-export function ed25519KeypairFromSeed(seed: Uint8Array): {
-    publicKey: Uint8Array;
-    secretKey: Uint8Array;
-} {
-    const keypair = nacl.sign.keyPair.fromSeed(seed);
-    return { publicKey: keypair.publicKey, secretKey: keypair.secretKey };
-}
-
-/**
- * Sign a message using ed25519 (detached signature).
- */
-export function ed25519Sign(message: Uint8Array, secretKey: Uint8Array): Uint8Array {
-    return nacl.sign.detached(message, secretKey);
 }

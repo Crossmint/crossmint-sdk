@@ -1,4 +1,3 @@
-import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
@@ -9,17 +8,21 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+    /**
+     * Produce a raw Ed25519 signature over an arbitrary payload.
+     * @param message - The payload to sign, base58 encoded
+     */
+    async signMessage(message: string): Promise<{ signature: string }> {
+        return await this.sign(base58.decode(message));
     }
 
-    async signTransaction(transaction: string): Promise<{ signature: string }> {
+    async signTransaction(message: string): Promise<{ signature: string }> {
+        return await this.signMessage(message);
+    }
+
+    private async sign(messageData: Uint8Array): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
-
-        const transactionBytes = base58.decode(transaction);
-        const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        const messageData = deserializedTransaction.message.serialize();
 
         walletsLogger.info("sign: sending request", { keyType: "ed25519" });
         const startTime = Date.now();
@@ -35,6 +38,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                     keyType: "ed25519",
                     bytes: base58.encode(new Uint8Array(messageData)),
                     encoding: "base58",
+                    authId: this.getAuthId(),
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -49,7 +53,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         }
 
         if (res?.signature == null) {
-            throw new Error("Failed to sign transaction");
+            throw new Error("Failed to sign payload");
         }
         SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };

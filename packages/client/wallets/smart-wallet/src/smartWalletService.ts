@@ -188,7 +188,6 @@ export class SmartWalletService {
                         },
                         signer: signerLocator,
                         chain,
-                        isSmartWalletSignature: false,
                     },
                 });
                 const signatureId = signatureCreationResponse.id;
@@ -199,7 +198,7 @@ export class SmartWalletService {
                     throw new TypedDataSigningError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
-                const signature = await this.approveSignature(user, adminSigner, signatureId, pendingApproval.message);
+                await this.approveSignature(user, adminSigner, signatureId, pendingApproval.message);
 
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
@@ -211,8 +210,11 @@ export class SmartWalletService {
                 if (signatureResponse.status === "failed") {
                     throw new TypedDataSigningError("Typed data signing failed");
                 }
+                if (signatureResponse.outputSignature == null) {
+                    throw new TypedDataSigningError("Typed data signing returned no output signature");
+                }
 
-                return signature;
+                return signatureResponse.outputSignature;
             },
 
             sendTransaction: async (parameters: {

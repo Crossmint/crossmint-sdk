@@ -40,7 +40,20 @@ const WALLET_CREATE_ARGS_CHILDREN = [
             summary: [
                 {
                     kind: "text",
-                    text: 'The recovery signer configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                    text: 'A single recovery method configuration (e.g. `{ type: "email" }`). Used for wallet recovery and adding new signers.',
+                },
+            ],
+        },
+    },
+    {
+        name: "recoveryMethods",
+        flags: { isOptional: true },
+        type: { type: "array", elementType: { type: "reference", name: "SignerConfigForChain" } },
+        comment: {
+            summary: [
+                {
+                    kind: "text",
+                    text: "Recovery methods, each able to authorize on its own.",
                 },
             ],
         },
@@ -516,9 +529,11 @@ export function generate(config) {
 
     function extractProps(node) {
         const sig = node?.signatures?.[0];
-        if (!sig?.parameters?.length) return [];
-        const param = sig.parameters[0];
-        const type = param.type;
+        // TypeDoc serializes forwardRef components as variables with their props in a type argument.
+        const type =
+            sig?.parameters?.[0]?.type ??
+            (node?.type?.name === "ForwardRefExoticComponent" ? node.type.typeArguments?.[0] : undefined);
+        if (!type) return [];
         let allProps = [];
         function collectProps(t) {
             if (!t) return;
@@ -678,12 +693,6 @@ export function generate(config) {
     // Page generators
     // =========================================================================
 
-    function emitBanner(emit, product, pageName) {
-        if (!product.versionBanner) return;
-        emit(product.versionBanner.replaceAll("{page}", pageName));
-        emit("");
-    }
-
     function buildGetStarted(product) {
         const L = [];
         const emit = (...a) => L.push(a.join(""));
@@ -693,7 +702,6 @@ export function generate(config) {
         emit(`description: Installation and setup for the ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "get-started");
 
         // Version shield badge
         if (product.npmUrl && product.packageName) {
@@ -732,9 +740,11 @@ export function generate(config) {
 
         emit("## Next Steps");
         emit("");
-        const { components: comps } = classifyExports(product.exports);
+        const { hooks, components: comps } = classifyExports(product.exports);
         emit(`- [Providers](/${product.navPrefix}/providers) — Configure providers and their options`);
-        emit(`- [Hooks](/${product.navPrefix}/hooks) — Access SDK state via React hooks`);
+        if (hooks.length || product.walletMethods?.enabled) {
+            emit(`- [Hooks](/${product.navPrefix}/hooks) — Access SDK state via React hooks`);
+        }
         if (comps.length) {
             emit(`- [Components](/${product.navPrefix}/components) — Drop-in UI components`);
         }
@@ -756,7 +766,6 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} context providers for ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "providers");
 
         const { providers } = classifyExports(product.exports);
 
@@ -814,7 +823,6 @@ export function generate(config) {
         emit(`description: ${product.title.replace(/ SDK$/, "")} hooks for ${product.description}`);
         emit("---");
         emit("");
-        emitBanner(emit, product, "hooks");
 
         const { hooks } = classifyExports(product.exports);
 
@@ -910,7 +918,14 @@ export function generate(config) {
 
         let componentIdx = 0;
         for (const name of components) {
-            const node = findByName(name, KIND.FUNCTION);
+            const node =
+                findByName(name, KIND.FUNCTION) ??
+                allExports.find(
+                    (entry) =>
+                        entry.name === name &&
+                        entry.kind === KIND.VARIABLE &&
+                        entry.type?.name === "ForwardRefExoticComponent"
+                );
             if (!node) continue;
 
             if (componentIdx++ > 0) {
@@ -966,11 +981,13 @@ export function generate(config) {
         const pages = [
             { file: "get-started.mdx", content: buildGetStarted(product) },
             { file: "providers.mdx", content: buildProviders(product) },
-            { file: "hooks.mdx", content: buildHooks(product) },
         ];
 
-        // Only add components page if there are components
-        const { components: productComponents } = classifyExports(product.exports);
+        // Only add hooks/components pages if the product exports any
+        const { hooks: productHooks, components: productComponents } = classifyExports(product.exports);
+        if (productHooks.length || product.walletMethods?.enabled) {
+            pages.push({ file: "hooks.mdx", content: buildHooks(product) });
+        }
         if (productComponents.length) {
             pages.push({ file: "components.mdx", content: buildComponents(product) });
         }

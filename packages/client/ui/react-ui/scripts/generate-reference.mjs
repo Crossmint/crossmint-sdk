@@ -18,10 +18,6 @@ const PRODUCTS = {
         npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
         installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
         intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides React components and hooks for integrating Crossmint wallets into your application.",
-        versionBanner: `<Note>
-**This page has been updated for Wallets SDK V1.** If you are using the previous version,
-see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) or the [V1 migration guide](/wallets/guides/migrate-to-v1).
-</Note>`,
         exports: ["CrossmintProvider", "CrossmintWalletProvider", "useWallet", "ExportPrivateKeyButton"],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
@@ -63,6 +59,33 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             quickExampleIntro: "Once providers are set up, use the `useCrossmintAuth` hook to access auth state:",
         },
     },
+    agents: {
+        outdir: "agents",
+        navPrefix: "sdk-reference/agents/react",
+        title: "React SDK",
+        description: "React SDK reference for Crossmint agent payments",
+        packageName: "@crossmint/client-sdk-react-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-ui",
+        installSnippet: "client-sdk-react-ui-installation-cmd.mdx",
+        intro: "The Crossmint React SDK (`@crossmint/client-sdk-react-ui`) provides the user-facing pieces of agent card payments: saving a card, verifying an order intent's allowance with the card network, re-collecting a saved card's CVC, and collecting protected text or numeric fields for an agent checkout without it ever reaching your app. Agent wallets use the same wallet providers and hooks as the [Wallets React SDK](/sdk-reference/wallets/react/get-started).",
+        exports: [
+            "CrossmintProvider",
+            "CrossmintPaymentMethodManagement",
+            "OrderIntentVerification",
+            "CrossmintCvcRecollection",
+            "CrossmintProtectedInput",
+        ],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+            CrossmintPaymentMethodManagement: "Saved payment method management UI",
+            CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
+        },
+        getStartedExamples: {
+            setup: "agentsProviderSetup",
+            quickExample: "agentsQuickExample",
+            quickExampleIntro: "Once the provider is set up, let the user save a card your agent can pay with:",
+        },
+    },
     checkout: {
         outdir: "checkout",
         navPrefix: "sdk-reference/checkout/react",
@@ -76,14 +99,22 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react/{page}) 
             "CrossmintProvider",
             "CrossmintCheckoutProvider",
             "useCrossmintCheckout",
+            "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
             "CrossmintHostedCheckout",
+            "CrossmintIdentityVerification",
             "CrossmintPaymentMethodManagement",
+            "CrossmintProtectedInput",
+            "CrossmintAgentCardAuthorization",
         ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
+            CrossmintIdentityVerification:
+                'Hosted identity verification step, for merchants taking it over with `identityVerificationHandling="external"`',
             CrossmintPaymentMethodManagement: "Saved payment method management UI",
+            CrossmintProtectedInput: "Protected text and numeric field collection for Agent Checkouts",
+            CrossmintAgentCardAuthorization: "Card spend authorization (order intent) for Agent Checkouts",
         },
         getStartedExamples: {
             setup: "checkoutProviderSetup",

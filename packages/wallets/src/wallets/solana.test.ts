@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import bs58 from "bs58";
+import nacl from "tweetnacl";
+import { Keypair } from "@solana/web3.js";
+import { VERSION_1_MESSAGE } from "../signers/solana-version-1.fixture";
 import { SolanaWallet } from "./solana";
+import type { SolanaChain } from "../chains/chains";
+import type { RecoverySignerConfigForChain } from "../signers/types";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
 import {
@@ -219,6 +225,47 @@ describe("SolanaWallet - sendTransaction()", () => {
                 })
             );
         });
+        it("approves a version-1 transaction with a Keypair passed in additionalSigners", async () => {
+            const keypair = Keypair.generate();
+            const locator = `external-wallet:${keypair.publicKey.toBase58()}`;
+            const awaitingApproval = {
+                id: "txn-sol-v1",
+                status: "awaiting-approval",
+                chainType: "solana",
+                walletType: "smart",
+                onChain: { transaction: "SERIALIZED_V1_TX" },
+                approvals: { pending: [{ message: VERSION_1_MESSAGE, signer: { locator } }], submitted: [] },
+            } as never;
+            mockApiClient.createTransaction.mockResolvedValue(awaitingApproval);
+            mockApiClient.getTransaction.mockResolvedValueOnce(awaitingApproval).mockResolvedValue({
+                id: "txn-sol-v1",
+                status: "success",
+                onChain: { txId: "v1-sig", explorerLink: "https://explorer.test/v1" },
+            } as never);
+            mockApiClient.approveTransaction.mockResolvedValue({ id: "txn-sol-v1", status: "pending" } as never);
+            // An api-key wallet signer approves on its own and never consults additional signers.
+            const externalWallet = SolanaWallet.from(
+                await createMockWallet("solana", mockApiClient, "external-wallet")
+            );
+
+            const sendPromise = externalWallet.sendTransaction({
+                serializedTransaction: createMockSolanaSerializedTransaction(),
+                additionalSigners: [keypair],
+            });
+            await vi.runAllTimersAsync();
+            const result = await sendPromise;
+
+            expect(result.hash).toBe("v1-sig");
+            const submitted = mockApiClient.approveTransaction.mock.calls[0][2].approvals[0];
+            expect(submitted.signer).toBe(locator);
+            expect(
+                nacl.sign.detached.verify(
+                    bs58.decode(VERSION_1_MESSAGE),
+                    bs58.decode(submitted.signature),
+                    keypair.publicKey.toBytes()
+                )
+            ).toBe(true);
+        });
     });
 
     describe("error cases", () => {
@@ -289,6 +336,19 @@ describe("SolanaWallet - from()", () => {
 
         expect(solanaWallet).toBeInstanceOf(SolanaWallet);
         expect(solanaWallet.chain).toBe("solana");
+    });
+
+    it("keeps every recovery signer of the source wallet", async () => {
+        const recoverySigners: Array<RecoverySignerConfigForChain<SolanaChain>> = [
+            { type: "email", email: "one@test.com" },
+            { type: "api-key" },
+        ];
+        const wallet = await createMockWallet("solana", mockApiClient, "api-key", recoverySigners);
+
+        const solanaWallet = SolanaWallet.from(wallet);
+
+        expect(solanaWallet.recoveryMethods).toEqual(recoverySigners);
+        expect(solanaWallet.recovery).toEqual(recoverySigners[0]);
     });
 
     it("throws error when wallet is not Solana", async () => {

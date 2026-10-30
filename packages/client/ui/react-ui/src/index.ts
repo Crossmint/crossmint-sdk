@@ -7,9 +7,43 @@ export type { CrossmintWalletBaseContext, LoginMethod } from "@crossmint/client-
 export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {
+    type CrossmintCvcRecollectionProps,
+    type CrossmintCvcRecollectionRef,
+    type CvcRecollectionSubmitResult,
     type CrossmintEvent,
     type CrossmintEventMap,
     CrossmintEvents,
+    type CvcRecollectionError,
+    getIdentityVerificationCredentials,
+    type CrossmintIdentityVerificationProps,
+    type IdentityVerificationAppearance,
+    type IdentityVerificationCredentials,
+    type IdentityVerificationStatus,
+    type IdentityVerificationError,
+    type PaymentMethodManagementAppearance,
+    type CrossmintPaymentMethodManagementProps,
+    type CrossmintPaymentMethodManagementRef,
+    type CrossmintPaymentMethod,
+    type PaymentMethodSubmitResult,
+    type CrossmintProtectedInputProps,
+    type ProtectedInputAppearance,
+    type ProtectedInputField,
+    type CrossmintProtectedInputRef,
+    type ProtectedInputCollectionResult,
+    type CrossmintAgentCardAuthorizationProps,
+    type AgentCardAuthorizationResult,
+    type AgentCardAuthorizationError,
+    type AgentCardAuthorizationErrorCode,
+    type AgentCardPaymentMethodSummary,
+    type AgentCardRail,
+    type CrossmintEmbeddedOfframpProps,
+    type EmbeddedOfframpCredentials,
+    type EmbeddedOfframpPayer,
+    type OfframpStatus,
+    type OfframpErrorReason,
+    OfframpSignatureRejectedError,
 } from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";

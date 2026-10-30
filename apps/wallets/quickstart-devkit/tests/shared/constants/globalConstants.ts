@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
@@ -81,24 +83,20 @@ const SIGNER_EMAIL_BASE: Record<SignerType, string> = {
     // "external-wallet": "external",
 };
 
-// Deterministic suffix so the same email (and therefore the same wallet) is reused
-// across test runs, retries, and browsers. Reusing wallets lets funding (USDXM and
-// devnet SOL) persist between runs instead of hammering faucets on every run.
-// Override via TESTS_WALLET_EMAIL_SUFFIX to rotate to a fresh identity if needed.
+// A suite that runs often must pass a unique value: each run leaks a device signer.
 const WALLET_EMAIL_SUFFIX = process.env.TESTS_WALLET_EMAIL_SUFFIX || "e2e";
 
-// Deterministic email address for a specific signer type.
-// Same email every run = same Crossmint user = same (already funded) wallets.
 export function getEmailForSigner(signerType: SignerType): string {
     const baseAlias = SIGNER_EMAIL_BASE[signerType];
     return `test-${baseAlias}-${WALLET_EMAIL_SUFFIX}@${AUTH_CONFIG.mailosaurServerId}.mailosaur.net`;
 }
 
-// Deterministic alias for Stellar wallets, derived from the same suffix as the email.
-// Same email + same alias = the same Stellar wallet is fetched on every run.
+// Hashed so the alias stays under the API's 36-character cap even though CI's
+// WALLET_EMAIL_SUFFIX (which includes github.run_id) can run well past it.
 export function getStellarAlias(signerType: SignerType): string {
     const sanitizedSuffix = WALLET_EMAIL_SUFFIX.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return `stellartestingwallet${signerType}${sanitizedSuffix}`;
+    const suffixHash = createHash("sha256").update(sanitizedSuffix).digest("hex").slice(0, 12);
+    return `e2e${signerType}${suffixHash}`;
 }
 
 // Build URL with query parameters for testing

@@ -25,6 +25,7 @@ export const phoneSignerDescriptor: SignerDescriptor = {
         return {
             type: "phone",
             phone: phoneConfig.phone,
+            channel: phoneConfig.channel,
             locator: `phone:${phoneConfig.phone}` as SignerLocator,
             address: ctx.walletAddress,
             crossmint: ctx.crossmint,

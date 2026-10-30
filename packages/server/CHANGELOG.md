@@ -1,5 +1,137 @@
 # @crossmint/server-sdk
 
+## 1.2.94
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.30
+
+## 1.2.93
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.29
+
+## 1.2.92
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.28
+
+## 1.2.91
+
+### Patch Changes
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/common-sdk-auth@1.1.27
+
+## 1.2.90
+
+### Patch Changes
+
+- 74b5507: `verifyCrossmintJwt` now requires an `audience` option.
+
+  Pass your project ID when you call the standalone function: `verifyCrossmintJwt(token, jwks, { audience: projectId })`. The function throws if `audience` is missing. It also requires the `exp`, `sub` and `aud` claims and accepts only RS256 signatures. `CrossmintAuth#verifyCrossmintJwt` and `getSession` already pass the project ID, so no change is needed there.
+
+- 6dc366a: `CrossmintAuth.getSession` and `handleCustomRefresh` now verify refreshed session JWTs against Crossmint's JWKS and take the user ID from the verified JWT `sub` claim. `refreshRoute` should be a static absolute URL.
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
+## 1.2.89
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.2.88
+
+### Patch Changes
+
+- 3ef10b3: Security fix: `CrossmintAuth.getSession`, `handleCustomRefresh` and `verifyCrossmintJwt` now reject Crossmint session JWTs that were issued for a different project.
+
+  Before this fix, any valid Crossmint session JWT was accepted no matter which project it was issued for, so a token from another Crossmint-auth app could authenticate its user in yours. The SDK now requires the JWT `aud` claim to match the project ID of your API key, on both the JWT and the token-refresh paths. Sessions from another project fail with `CrossmintAuthenticationError` and their auth cookies are cleared.
+
+  Upgrade to this version if you use `@crossmint/server-sdk` to authenticate users.
+
+- Updated dependencies [523fa26]
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/common-sdk-auth@1.1.24
+
+## 1.2.87
+
+### Patch Changes
+
+- Updated dependencies [bc9f0b4]
+  - @crossmint/common-sdk-base@0.12.3
+  - @crossmint/common-sdk-auth@1.1.23
+
+## 1.2.86
+
+### Patch Changes
+
+- Updated dependencies [07b7a8c]
+  - @crossmint/common-sdk-base@0.12.2
+  - @crossmint/common-sdk-auth@1.1.22
+
+## 1.2.85
+
+### Patch Changes
+
+- Updated dependencies [6f5e26e]
+  - @crossmint/common-sdk-base@0.12.1
+  - @crossmint/common-sdk-auth@1.1.21
+
+## 1.2.84
+
+### Patch Changes
+
+- Updated dependencies [0db7d3f]
+  - @crossmint/common-sdk-base@0.12.0
+  - @crossmint/common-sdk-auth@1.1.20
+
+## 1.2.83
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.19
+
+## 1.2.82
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.18
+
+## 1.2.81
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.17
+
+## 1.2.80
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.16
+
+## 1.2.79
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.15
+
+## 1.2.78
+
+### Patch Changes
+
+- Updated dependencies [e3f04e6]
+- Updated dependencies [9604fec]
+  - @crossmint/common-sdk-base@0.11.0
+  - @crossmint/common-sdk-auth@1.1.14
+
 ## 1.2.77
 
 ### Patch Changes

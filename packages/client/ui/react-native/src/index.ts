@@ -1,8 +1,29 @@
 export * from "./hooks";
 export * from "./providers";
 export * from "./components";
+export type { NativePasskeyConfig } from "./native/passkey/createNativePasskeyProvider";
 
 export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";
+
+export { getIdentityVerificationCredentials } from "@crossmint/client-sdk-base";
+export type {
+    CrossmintIdentityVerificationProps,
+    IdentityVerificationAppearance,
+    IdentityVerificationCredentials,
+    IdentityVerificationStatus,
+    IdentityVerificationError,
+} from "@crossmint/client-sdk-base";
+
+export { OfframpSignatureRejectedError } from "@crossmint/client-sdk-base";
+export type {
+    CrossmintEmbeddedOfframpProps,
+    EmbeddedOfframpCredentials,
+    EmbeddedOfframpPayer,
+    OfframpStatus,
+    OfframpErrorReason,
+} from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
 
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 

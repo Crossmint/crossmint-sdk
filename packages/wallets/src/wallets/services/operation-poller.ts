@@ -19,6 +19,7 @@ export type PollingOptions = {
     initialBackoffMs?: number;
     backoffMultiplier?: number;
     maxBackoffMs?: number;
+    fastWindowMs?: number;
 };
 
 export async function waitForTransactionCompletion(
@@ -27,11 +28,17 @@ export async function waitForTransactionCompletion(
     transactionId: string,
     options?: PollingOptions
 ): Promise<Transaction<false>> {
-    const { timeoutMs = 60_000, backoffMultiplier = 1.1, maxBackoffMs = 2_000 } = options ?? {};
-    let { initialBackoffMs = STATUS_POLLING_INTERVAL_MS } = options ?? {};
+    const {
+        timeoutMs = 60_000,
+        initialBackoffMs = 500,
+        backoffMultiplier = 1.5,
+        maxBackoffMs = 2_000,
+        fastWindowMs = 5_000,
+    } = options ?? {};
 
     walletsLogger.info("wallet.approve: waiting for transaction confirmation", { transactionId, timeoutMs });
     const startTime = Date.now();
+    let backoffMs = initialBackoffMs;
     let transactionResponse;
 
     do {
@@ -40,14 +47,26 @@ export async function waitForTransactionCompletion(
             throw error;
         }
 
+        const pollStartedAt = Date.now();
         transactionResponse = await apiClient.getTransaction(walletLocator, transactionId);
         if (transactionResponse.error) {
             throwIfCrossmintApiAuthError(transactionResponse);
             throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
         }
-        await sleep(initialBackoffMs);
-        initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
-    } while (transactionResponse.status === "pending");
+        if (transactionResponse.status !== "pending") {
+            break;
+        }
+
+        // Fixed cadence while confirmation is most likely, exponential backoff afterwards.
+        const elapsedMs = Date.now() - startTime;
+        if (elapsedMs > fastWindowMs) {
+            backoffMs = Math.min(Math.round(backoffMs * backoffMultiplier), maxBackoffMs);
+        }
+        // The poll's own duration counts toward the cadence, and the sleep never
+        // extends past the timeout deadline.
+        const pollDurationMs = Date.now() - pollStartedAt;
+        await sleep(Math.max(1, Math.min(backoffMs - pollDurationMs, timeoutMs - elapsedMs)));
+    } while (true);
 
     if (transactionResponse.status === "failed") {
         const error = new TransactionSendingFailedError(

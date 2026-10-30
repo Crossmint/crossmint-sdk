@@ -1,5 +1,6 @@
 import type { SignerAdapter, ServerInternalSignerConfig, ServerSignerLocator } from "../types";
-import { ed25519KeypairFromSeed, ed25519Sign, encodeStellarPublicKey } from "../../utils/stellar";
+import { ed25519KeypairFromSeed, ed25519Sign } from "../../utils/ed25519";
+import { encodeStellarPublicKey } from "../../utils/stellar";
 import { secureWipe } from "../../utils/secure-wipe";
 
 export class StellarServerSigner implements SignerAdapter<"server"> {

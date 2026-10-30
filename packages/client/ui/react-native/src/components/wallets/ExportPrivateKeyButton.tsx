@@ -1,12 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import type { WebViewMessageEvent } from "react-native-webview";
 import { useWallet, useCrossmint } from "@crossmint/client-sdk-react-base";
 import { environmentUrlConfig, exportSignerInboundEvents, exportSignerOutboundEvents } from "@crossmint/client-signers";
 import { isExportableSignerAdapter } from "@crossmint/wallets-sdk";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { WebViewParent, RNWebView } from "@crossmint/client-sdk-rn-window";
+import { WebViewParent, RNWebView, type WebViewInstance } from "@crossmint/client-sdk-rn-window";
 
 export interface ExportPrivateKeyButtonProps {
     /** Optional appearance configuration for styling the export button. */
@@ -22,7 +22,7 @@ export interface ExportPrivateKeyButtonProps {
 export function ExportPrivateKeyButton({ appearance, onExport }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
-    const webViewRef = useRef<WebView>(null);
+    const webViewRef = useRef<WebViewInstance>(null);
     const connectionRef = useRef<WebViewParent<
         typeof exportSignerOutboundEvents,
         typeof exportSignerInboundEvents

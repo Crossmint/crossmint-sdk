@@ -1,8 +1,9 @@
 {
     "name": "@crossmint/wallets-playground-react",
     "private": true,
-    "version": "0.0.21",
+    "version": "0.0.42",
     "scripts": {
+        "build": "next build",
         "dev": "next dev",
         "start": "next start"
     },
@@ -13,7 +14,7 @@
         "react-native-web": "~0.21.2",
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "^14.6.1",
-        "next": "^16.2.6",
+        "next": "^16.2.11",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "viem": "^2.33.1"

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/wallets-quickstart-devkit",
-    "version": "0.2.58",
+    "version": "0.2.79",
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
@@ -17,15 +17,13 @@
         "@dynamic-labs/ethereum": "4.25.6",
         "@dynamic-labs/sdk-react-core": "4.25.6",
         "@dynamic-labs/solana": "4.25.6",
-        "@firebase/auth": "1.10.8",
         "@privy-io/react-auth": "2.13.0",
-        "@solana/spl-token": "0.4.13",
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",
         "clsx": "2.1.1",
         "firebase": "^10.3.1",
         "firebaseui": "6.1.0",
-        "next": "15.5.18",
+        "next": "15.5.27",
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",
@@ -35,7 +33,7 @@
     "devDependencies": {
         "@crossmint/wallets-sdk": "workspace:*",
         "ox": "0.6.9",
-        "@playwright/test": "1.54.2",
+        "@playwright/test": "1.64.1",
         "@tailwindcss/postcss": "^4",
         "@types/node": "^20",
         "@types/react": "^18",

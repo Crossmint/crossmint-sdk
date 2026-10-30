@@ -10,10 +10,13 @@ import { Activity } from "../snippets/06-activity";
 import { Permissions } from "../snippets/07-permissions";
 import { ApprovalTest } from "../snippets/08-approval-test";
 import { ChainSwitcherSection } from "../snippets/09-chain-switcher";
+import { RecoveryMethods } from "../snippets/10-recovery-methods";
+import { useWalletOnLogin } from "../snippets/11-wallet-on-login";
 
 function AppContent() {
     const { user, logout, status: authStatus } = useCrossmintAuth();
     const { wallet, status: walletStatus } = useWallet();
+    useWalletOnLogin();
 
     if (authStatus === "initializing") {
         return (
@@ -55,6 +58,7 @@ function AppContent() {
                     <Activity />
                     <Permissions />
                     <ApprovalTest />
+                    <RecoveryMethods />
                     <View style={{ backgroundColor: "#F7F8FA", borderRadius: 12, padding: 16 }}>
                         <Text style={{ fontSize: 12, color: "#6B7280", textTransform: "uppercase", marginBottom: 8 }}>
                             Wallet Details

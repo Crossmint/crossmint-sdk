@@ -10,6 +10,7 @@ import { Activity } from "../../snippets/06-activity";
 import { Permissions } from "../../snippets/07-permissions";
 import { ApprovalTest } from "../../snippets/08-approval-test";
 import { ChainTest } from "../../snippets/09-chain-test";
+import { RecoveryMethods } from "../../snippets/10-recovery-methods";
 
 const isJwtMode = process.env.NEXT_PUBLIC_AUTH_MODE === "jwt";
 
@@ -35,6 +36,9 @@ function Dashboard() {
                     </div>
                     <div className="xm-mt-md">
                         <ChainTest />
+                    </div>
+                    <div className="xm-mt-md">
+                        <RecoveryMethods />
                     </div>
                     <div className="xm-card xm-card--nested xm-mt-md">
                         <div className="xm-card__body">

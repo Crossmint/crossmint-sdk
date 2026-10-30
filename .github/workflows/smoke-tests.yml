@@ -7,11 +7,14 @@ on:
             - "packages/client/ui/react-ui/**"
             - "packages/wallets/**"
             - "packages/client/react-base/**"
+            - "package.json"
+            - "pnpm-lock.yaml"
     workflow_dispatch:
 
 permissions:
     contents: read
     pull-requests: write
+    id-token: write
 
 jobs:
     smoke-tests:
@@ -21,21 +24,12 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-            - name: Install pnpm
-              uses: pnpm/action-setup@v2
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
               with:
-                  version: 9
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Install Playwright browsers
               run: pnpm exec playwright install chromium --with-deps
@@ -56,9 +50,9 @@ jobs:
                   MAILOSAUR_SERVER_ID: ${{ secrets.SERVER_ID_MAILOSAUR }}
                   MAILOSAUR_PHONE_NUMBER: ${{ secrets.PHONE_NUMBER_MAILOSAUR }}
                   PLAYWRIGHT_BASE_URL: "http://localhost:3000"
-                  # Dedicated persistent wallet identity so smoke runs never share
-                  # emails (and OTP requests) with concurrently running e2e jobs.
-                  TESTS_WALLET_EMAIL_SUFFIX: smoke
+                  # A new wallet per run; a reused one collects a device signer every run
+                  # until it reaches the backend signer cap and transfers start failing.
+                  TESTS_WALLET_EMAIL_SUFFIX: smoke-${{ github.run_id }}
               run: |
                   pnpm exec playwright test --project=smoke
 
@@ -98,7 +92,7 @@ jobs:
 
             - name: Comment with test results
               if: failure() && steps.run_tests.outcome == 'failure'
-              uses: actions/github-script@v7
+              uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
               with:
                   script: |
                       const fs = require('fs');

@@ -2,6 +2,8 @@ name: CI
 
 env:
     NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    PREVIEW_CK_KEY: ${{ secrets.PREVIEW_CK_KEY }}
+    PREVIEW_SK_KEY: ${{ secrets.PREVIEW_SK_KEY }}
     TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
@@ -14,19 +16,22 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-permissions:
-    contents: write
-    pull-requests: write
+permissions: {}
 
 jobs:
     build-and-test:
         name: Build & Test
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build all
               run: pnpm build
@@ -43,13 +48,15 @@ jobs:
             pull-requests: write
             id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Setup Node.js 24 for OIDC trusted publishing
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
                   node-version: "24"
                   registry-url: "https://registry.npmjs.org"
@@ -58,7 +65,7 @@ jobs:
               run: npm install -g npm@11.6.2
 
             - name: Create Release Pull Request or Publish
-              uses: changesets/action@v1.5.3
+              uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
               with:
                   commit: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
                   title: ${{ github.ref_name == 'beta' && 'Release beta packages' || 'Release packages' }}
@@ -66,3 +73,6 @@ jobs:
                   version: pnpm change:version
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # @crossmint:registry in .npmrc already sends `pnpm publish` to npmjs.org; this
+                  # keeps it there even for a package outside that scope.
+                  NPM_CONFIG_REGISTRY: https://registry.npmjs.org

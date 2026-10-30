@@ -1,4 +1,4 @@
-import { type ConfigPlugin, withAndroidManifest, AndroidConfig } from "@expo/config-plugins";
+import { type ConfigPlugin, withAndroidManifest, AndroidConfig } from "expo/config-plugins";
 import { addQueryToAndroidManifest } from "./mods/addQueryToAndroidManifest";
 
 const { addMetaDataItemToMainApplication, getMainApplicationOrThrow } = AndroidConfig.Manifest;

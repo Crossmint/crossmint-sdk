@@ -2,6 +2,8 @@ name: CI
 
 env:
     NEXT_PUBLIC_CROSSMINT_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    PREVIEW_CK_KEY: ${{ secrets.PREVIEW_CK_KEY }}
+    PREVIEW_SK_KEY: ${{ secrets.PREVIEW_SK_KEY }}
     TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
@@ -11,33 +13,81 @@ on:
             - main
             - beta
 
+permissions: {}
+
 jobs:
     build-and-test:
         name: build & test
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             # Serial build to avoid OOM on 7GB runner (Next.js apps are memory-heavy)
             - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
               run: pnpm turbo build --concurrency=1
 
             - name: Test all
               run: pnpm test:vitest
 
+            - name: Typecheck apps
+              run: pnpm typecheck
+
+            - name: Check the Expo playground shares native modules with the RN SDK
+              run: pnpm --filter @crossmint/wallets-playground-expo check:native-copies
+
     lint:
         name: lint
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Check for lint errors
               run: pnpm lint
+
+    # Advisory only — do not add to required checks; a failure here can be preview, not the SDK.
+    integration-tests:
+        name: integration tests (advisory)
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        continue-on-error: true
+        steps:
+            - name: Checkout
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
+
+            - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
+              run: pnpm turbo build --concurrency=1
+
+            # Scoped to this step only — a branch's own install/build scripts must not read it.
+            - name: Run integration tests
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:integration

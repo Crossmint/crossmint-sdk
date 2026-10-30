@@ -3,7 +3,6 @@ import {
     approveTransactionById,
     createPreparedTransaction,
     fundWalletWithCrossmintFaucet,
-    fundWalletWithSolAirdrop,
     getWalletAddress,
     getWalletBalance,
     getWalletBalances,
@@ -14,7 +13,6 @@ import { TEST_RECIPIENT_WALLET_ADDRESSES } from "../../../shared/constants/globa
 test.describe("Wallet E2E", { tag: "@critical" }, () => {
     for (const config of TEST_CONFIGURATIONS) {
         test.describe(`${config.provider} - ${config.chain} - ${config.signer}`, () => {
-            test.describe.configure({ mode: "serial" });
             test.use({ testConfig: config });
 
             test("authenticates and fetches wallet", async ({ authenticatedPage, testConfig }, testInfo) => {
@@ -61,18 +59,8 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                 const initialBalanceNum = parseFloat(initialBalance);
                 if (initialBalanceNum < parseFloat(transferAmount)) {
                     await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId);
-                    // Wait a moment for the funding to complete
-                    await authenticatedPage.waitForTimeout(2000);
                 } else {
                     console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
-                }
-
-                // Solana token transfers require native SOL for transaction fees.
-                // The Crossmint faucet only funds USDXM; without SOL the tx is
-                // submitted but never confirms (silent on-chain failure).
-                // Skips internally when the reused wallet already holds SOL.
-                if (testConfig.chain === "solana") {
-                    await fundWalletWithSolAirdrop(walletAddress);
                 }
 
                 let recipientAddress: string;
@@ -125,8 +113,6 @@ test.describe("Wallet E2E", { tag: "@critical" }, () => {
                 const initialBalanceNum = parseFloat(initialBalance);
                 if (initialBalanceNum < parseFloat(transferAmount)) {
                     await fundWalletWithCrossmintFaucet(walletAddress, testConfig.chainId, 10);
-                    // Wait a moment for the funding to complete
-                    await authenticatedPage.waitForTimeout(2000);
                 } else {
                     console.log(`✅ Wallet already holds ${initialBalanceNum} USDXM, skipping faucet`);
                 }

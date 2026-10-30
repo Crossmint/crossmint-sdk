@@ -47,6 +47,7 @@ export function extractSignerBase(apiSigner: APISigner): SignerBase {
                 type: "device",
                 publicKey: apiSigner.publicKey,
                 locator: apiSigner.locator,
+                name: apiSigner.name,
             };
         case "server":
             return {

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 
-import type { EmailInternalSignerConfig } from "../types";
-import { OnboardingSessionExpiredError, OtpValidationError } from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import { OnboardingSessionExpiredError, OtpValidationError, SignerAuthenticationError } from "../types";
 import { EVMNonCustodialSigner } from "./ncs-evm-signer";
+import { JWT_REQUIRED_ERROR_CODE } from "./ncs-signer";
 
 function makeReadyConnection(onSendAction?: () => void) {
     return {
@@ -27,6 +28,19 @@ function makeConfig(overrides: Partial<EmailInternalSignerConfig> = {}): EmailIn
     } as unknown as EmailInternalSignerConfig;
 }
 
+function makePhoneConfig(overrides: Partial<PhoneInternalSignerConfig> = {}): PhoneInternalSignerConfig {
+    return {
+        type: "phone",
+        phone: "+15551234",
+        locator: "phone:+15551234",
+        address: "0x0000000000000000000000000000000000000000",
+        crossmint: { apiKey: "ck_staging_test", jwt: "test-jwt" },
+        clientTEEConnection: makeReadyConnection(),
+        onAuthRequired: vi.fn(async () => {}),
+        ...overrides,
+    } as unknown as PhoneInternalSignerConfig;
+}
+
 describe("NonCustodialSigner.ensureAuthenticated", () => {
     it("resets the signer frame before checking signer status", async () => {
         const calls: string[] = [];
@@ -42,6 +56,49 @@ describe("NonCustodialSigner.ensureAuthenticated", () => {
         expect(clientTEEConnection.sendAction).toHaveBeenCalledTimes(1);
         // The reset must run before the status check so the OTP flow targets the fresh frame.
         expect(calls).toEqual(["reset", "get-status"]);
+    });
+
+    it("includes the channel in start-onboarding payload for phone signers", async () => {
+        const clientTEEConnection = {
+            connectionGeneration: 1,
+            sendAction: vi.fn(async (args: { event: string }) => {
+                if (args.event === "request:get-status") {
+                    return { status: "success", signerStatus: "new-device" };
+                }
+                return { status: "success" };
+            }),
+        };
+        let hasStarted = false;
+        const onAuthRequired = vi.fn(
+            async (
+                _type: string,
+                _locator: string,
+                _needsAuth: boolean,
+                send: () => Promise<void>,
+                verify: (otp: string) => Promise<void>
+            ) => {
+                if (hasStarted) {
+                    return;
+                }
+                hasStarted = true;
+                await send();
+                await verify("123456");
+            }
+        );
+        const signer = new EVMNonCustodialSigner(
+            makePhoneConfig({ clientTEEConnection, channel: "whatsapp", onAuthRequired })
+        );
+
+        await signer.ensureAuthenticated();
+
+        expect(clientTEEConnection.sendAction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                event: "request:start-onboarding",
+                data: expect.objectContaining({
+                    data: { authId: "phone:+15551234", channel: "whatsapp" },
+                }),
+            })
+        );
     });
 
     it("resets the signer frame on every signature", async () => {
@@ -83,6 +140,81 @@ describe("NonCustodialSigner._exportPrivateKey", () => {
         expect(resetSignerFrame).toHaveBeenCalledTimes(1);
         // The reset runs before authenticating and before the export request.
         expect(calls).toEqual(["reset", "get-status", "export"]);
+    });
+});
+
+describe("NonCustodialSigner JWT handling", () => {
+    it.each([undefined, "", "   "])("fails before contacting the frame when the JWT is %j", async (jwt) => {
+        const clientTEEConnection = makeReadyConnection();
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection, crossmint: { apiKey: "ck_staging_test", jwt } as never })
+        );
+
+        const error = await signer.ensureAuthenticated().catch((e) => e);
+
+        expect(error).toBeInstanceOf(SignerAuthenticationError);
+        expect(error.code).toBe(JWT_REQUIRED_ERROR_CODE);
+        expect(clientTEEConnection.sendAction).not.toHaveBeenCalled();
+    });
+
+    it("maps a rejected JWT on get-status to SignerAuthenticationError, not SignerStatusError", async () => {
+        const clientTEEConnection = {
+            sendAction: vi.fn(async () => ({ status: "error", error: "HTTP 401: " })),
+        };
+        const signer = new EVMNonCustodialSigner(makeConfig({ clientTEEConnection }));
+
+        await expect(signer.ensureAuthenticated()).rejects.toBeInstanceOf(SignerAuthenticationError);
+    });
+
+    it("maps a rejected JWT on start-onboarding to SignerAuthenticationError, not OtpValidationError", async () => {
+        let sendOtp: (() => Promise<void>) | undefined;
+        const clientTEEConnection = {
+            sendAction: vi.fn(async (args: { event: string }) =>
+                args.event === "request:get-status"
+                    ? { status: "success", signerStatus: "new-device" }
+                    : { status: "error", error: "HTTP 401: " }
+            ),
+        };
+        const onAuthRequired = vi.fn(async (_t: string, _l: string, needsAuth: boolean, send: () => Promise<void>) => {
+            if (needsAuth) {
+                sendOtp = send;
+            }
+        });
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: clientTEEConnection as never, onAuthRequired: onAuthRequired as never })
+        );
+        const authSettled = signer.ensureAuthenticated().catch((e) => e);
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        const error = await sendOtp?.().catch((e) => e);
+
+        expect(error).toBeInstanceOf(SignerAuthenticationError);
+        expect(error).not.toBeInstanceOf(OtpValidationError);
+        // The pending auth promise settles with the same error, even if the UI layer later calls `reject`.
+        await expect(authSettled).resolves.toBe(error);
+    });
+
+    it("still reports a wrong code on start-onboarding as OtpValidationError", async () => {
+        let sendOtp: (() => Promise<void>) | undefined;
+        const clientTEEConnection = {
+            sendAction: vi.fn(async (args: { event: string }) =>
+                args.event === "request:get-status"
+                    ? { status: "success", signerStatus: "new-device" }
+                    : { status: "error", error: "Too many attempts", code: "rate-limit" }
+            ),
+        };
+        const onAuthRequired = vi.fn(async (_t: string, _l: string, needsAuth: boolean, send: () => Promise<void>) => {
+            if (needsAuth) {
+                sendOtp = send;
+            }
+        });
+        const signer = new EVMNonCustodialSigner(
+            makeConfig({ clientTEEConnection: clientTEEConnection as never, onAuthRequired: onAuthRequired as never })
+        );
+        void signer.ensureAuthenticated().catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        await expect(sendOtp?.()).rejects.toBeInstanceOf(OtpValidationError);
     });
 });
 

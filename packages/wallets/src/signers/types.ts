@@ -1,4 +1,5 @@
 import type { WebAuthnP256 } from "ox";
+import type { VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type {
     exportSignerInboundEvents,
@@ -6,21 +7,36 @@ import type {
     signerInboundEvents,
     signerOutboundEvents,
 } from "@crossmint/client-signers";
-import type {
-    Crossmint,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, SignerStatus } from "@/wallets/types";
 
-export type {
-    ExternalWalletSignerConfig,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+export type ExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign:
+        | ((transaction: VersionedTransaction) => Promise<VersionedTransaction>)
+        | ((payload: string) => Promise<string>);
+};
+
+export type SolanaExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    onSignBytes?: (payload: string) => Promise<string>;
+};
+
+export type EvmExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
+
+export type StellarExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
 
 export type ExternalWalletRegistrationConfig = {
     type: "external-wallet";
@@ -43,6 +59,20 @@ export class OtpValidationError extends Error {
     constructor(message: string, code?: string) {
         super(message);
         this.name = "OtpValidationError";
+        this.code = code;
+    }
+}
+
+/**
+ * Thrown when the signer backend rejects the request's credentials (missing, empty or expired JWT).
+ * Distinct from `OtpValidationError`: the OTP flow never ran, the user must re-authenticate with the app first.
+ */
+export class SignerAuthenticationError extends Error {
+    public readonly code: string | undefined;
+
+    constructor(message: string, code?: string) {
+        super(message);
+        this.name = "SignerAuthenticationError";
         this.code = code;
     }
 }
@@ -88,6 +118,7 @@ export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
     locator?: string;
+    channel?: "sms" | "whatsapp";
 };
 
 export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
@@ -132,7 +163,19 @@ export type PasskeySignerConfig = {
     id?: string;
     locator?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
-    onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey's credential id when it is known. */
+    onSignWithPasskey?: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
+};
+
+/**
+ * Creates passkeys and signs with them where the browser WebAuthn API is not available (e.g. React Native).
+ * Passed as the `passkeyProvider` wallet option, it is used for every passkey signer that has no
+ * `onCreatePasskey` / `onSignWithPasskey` of its own.
+ */
+export type PasskeyProvider = {
+    createPasskey: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey to sign with, when it is known. */
+    signWithPasskey: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
 };
 
 ////////////////////////////////////////////////////////////
@@ -225,9 +268,9 @@ export type DeviceSignerConfig = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+    ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
     : C extends StellarChain
-      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
+      ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
 ////////////////////////////////////////////////////////////

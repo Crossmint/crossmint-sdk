@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StellarWallet } from "./stellar";
+import type { StellarChain } from "../chains/chains";
+import type { RecoverySignerConfigForChain } from "../signers/types";
 import type { CreateTransactionSuccessResponse } from "../api";
 import { TransactionNotCreatedError } from "../utils/errors";
 import {
@@ -610,6 +612,19 @@ describe("StellarWallet - from()", () => {
 
         expect(stellarWallet).toBeInstanceOf(StellarWallet);
         expect(stellarWallet.chain).toBe("stellar");
+    });
+
+    it("keeps every recovery signer of the source wallet", async () => {
+        const recoverySigners: Array<RecoverySignerConfigForChain<StellarChain>> = [
+            { type: "email", email: "one@test.com" },
+            { type: "api-key" },
+        ];
+        const wallet = await createMockWallet("stellar", mockApiClient, "api-key", recoverySigners);
+
+        const stellarWallet = StellarWallet.from(wallet);
+
+        expect(stellarWallet.recoveryMethods).toEqual(recoverySigners);
+        expect(stellarWallet.recovery).toEqual(recoverySigners[0]);
     });
 
     it("throws error when wallet is not Stellar", async () => {

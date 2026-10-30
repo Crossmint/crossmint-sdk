@@ -1,8 +1,22 @@
-import type { RegisterSignerResponse } from "../../api";
+import base58 from "bs58";
+import { Base64, Hex } from "ox";
+import type { GetTransactionSuccessResponse, RegisterSignerResponse } from "../../api";
+import type { SignerAdapter } from "../../signers/types";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, TokenBalance } from "../../wallets/types";
 import type { AddSignerChain, AddSignerContext, ChainAdapter } from "../chain-adapter";
 import type { Chain } from "../chains";
+
+function isVersion1Message(approvalMessage: string): boolean {
+    const prefix = base58.decode(approvalMessage)[0];
+    return prefix != null && (prefix & 0x80) !== 0 && (prefix & 0x7f) === 1;
+}
+
+function serializedTransaction(transaction: GetTransactionSuccessResponse): string | undefined {
+    return "transaction" in transaction.onChain && typeof transaction.onChain.transaction === "string"
+        ? transaction.onChain.transaction
+        : undefined;
+}
 
 export const solanaChainAdapter: ChainAdapter = {
     nativeToken: "sol",
@@ -41,5 +55,21 @@ export const solanaChainAdapter: ChainAdapter = {
 
     emptyBalanceTokenFields(): Partial<TokenBalance> {
         return { mintHash: undefined };
+    },
+
+    signApproval(signer: SignerAdapter, transaction: GetTransactionSuccessResponse, approvalMessage: string) {
+        // A passkey's approval message is the base64 of the transaction's 32-byte P-256 message, and the program
+        // checks that the WebAuthn challenge is exactly those bytes. WebAuthn signing takes the challenge as hex,
+        // so convert the bytes rather than hand over the base64 text.
+        if (signer.type === "passkey") {
+            return signer.signTransaction(Hex.fromBytes(Base64.toBytes(approvalMessage)));
+        }
+        if (signer.type !== "external-wallet") {
+            return signer.signTransaction(approvalMessage);
+        }
+        if (isVersion1Message(approvalMessage)) {
+            return signer.signMessage(approvalMessage);
+        }
+        return signer.signTransaction(serializedTransaction(transaction) ?? approvalMessage);
     },
 };

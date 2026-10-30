@@ -1,5 +1,110 @@
 # @crossmint/common-sdk-base
 
+## 0.13.0
+
+### Minor Changes
+
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+### Patch Changes
+
+- 0ee57ff: Verify API key signatures with `@noble/ed25519` instead of `tweetnacl`. This cuts about 20 KB (minified) from every app that validates an API key, such as the protected input and payment method management components. `@noble/ed25519` is inlined into the build so the CommonJS output still works on older Node versions.
+
+## 0.12.5
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+
+## 0.12.4
+
+### Patch Changes
+
+- 523fa26: Remove the Abstract chain (`abstract`, `abstract-testnet`) from the SDK.
+
+  The Abstract network shuts down on December 15, 2026, and Crossmint no longer supports it.
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain, and move assets off Abstract before December 15, 2026.
+  Code that passes one of these names no longer compiles. At runtime, wallet-chain validation
+  throws an `InvalidChainError`, and common display-name and chain-ID lookups return `undefined`.
+
+## 0.12.3
+
+### Patch Changes
+
+- bc9f0b4: ConsoleSink now emits a single self-contained string with the serialized context instead of passing the context object as a second console argument, so text-based console consumers (Playwright, Sentry breadcrumbs, log shippers) no longer see `JSHandle@object`.
+
+## 0.12.2
+
+### Patch Changes
+
+- 07b7a8c: Remove the deprecated chains from the SDK.
+
+  These chains are no longer supported. The SDK no longer accepts them:
+
+  - Mode (`mode`, `mode-sepolia`)
+  - Plume (`plume`, `plume-testnet`)
+  - World Chain (`world-chain`, `world-chain-sepolia`)
+  - Astar zkEVM (`astar-zkevm`)
+  - zKatana (`zkatana`) and zKyoto (`zkyoto`)
+  - The Goerli testnets (`ethereum-goerli`, `base-goerli`, `optimism-goerli`, `zora-goerli`)
+  - Polygon Mumbai (`polygon-mumbai`)
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain. Code that passes one of these names no longer compiles.
+  Runtime behavior depends on the package: wallet-chain validation throws an `InvalidChainError`,
+  NFT detail URL generation throws a generic `Error`, and common display-name and chain-ID
+  lookups return `undefined`.
+
+## 0.12.1
+
+### Patch Changes
+
+- 6f5e26e: Sign Solana approvals from `pendingApproval.message` instead of rebuilding the payload with `VersionedTransaction.deserialize(...).message.serialize()`, which throws `Reached end of buffer unexpectedly` on a version-1 transaction. The bytes signed are unchanged for version 0.
+
+  Solana delegated signers accept a new optional `onSignBytes` callback, base58 payload in and base58 signature out. Version-1 approvals route to it, because `@solana/web3.js` cannot serialize a version-1 message for `onSign`. Version 0 and legacy still use `onSign`.
+
+  Choosing the approval payload moves from `wallet.ts` to `ChainAdapter.signApproval`.
+
+## 0.12.0
+
+### Minor Changes
+
+- 0db7d3f: Add Arc, Avalanche, Avalanche Fuji, Celo, Celo Sepolia, Robinhood Chain and Robinhood Chain Testnet as supported smart wallet chains, matching the chains supported by the Wallets REST API.
+
+## 0.11.0
+
+### Minor Changes
+
+- 9604fec: Surface authentication failures (e.g. expired JWTs) from `wallet.approve` and transaction/signature polling instead of masking them behind generic `wallet:no-transaction` / `wallet:no-signature` errors. When the API responds with an auth error code, the SDK now throws a typed `JWTExpiredError` (carrying `expiredAt`), `JWTInvalidError`, `JWTDecryptionError`, `JWTIdentifierError`, or `NotAuthorizedError`.
+
+  The canonical auth error classes now live in `@crossmint/common-sdk-base` and are re-exported from `@crossmint/client-sdk-base` and `@crossmint/wallets-sdk`, so `instanceof` checks work across packages. `client-sdk-base`'s `APIErrorService` also now maps the correct backend identifier code (`ERROR_JWT_IDENTIFIER_ERROR`) and handles `ERROR_JWT_AUDIENCE_MISMATCH`.
+
+### Patch Changes
+
+- e3f04e6: Expose structured error details for failed wallet loads/creations so integrators can distinguish a permanent geo-block from a transient network failure.
+
+  `ApiClient.makeRequest` now throws a typed `ApiClientError` (carrying HTTP `status` and body) for any non-`ok` response whose body is not JSON — e.g. a Cloudflare 403 geo-block returning HTML — instead of letting callers hit an opaque `SyntaxError` from `.json()`. JSON 4xx responses are still passed through unchanged.
+
+  The wallet context now exposes an `error` field alongside `status`:
+
+  ```ts
+  error: { code: "region-blocked" | "network" | "unknown"; status?: number; message: string } | null
+  ```
+
+  A 403 whose body carries the Cloudflare country/region-ban signature (error 1009) maps to `region-blocked` (permanent, don't retry); fetch rejects/timeouts, 5xx, and 429 map to `network` (transient, retryable); everything else (including other 403s) is `unknown`. `getOrCreateWallet`'s auto-retry loop is gated on `region-blocked` so it no longer hammers a permanently region-blocked endpoint.
+
 ## 0.10.2
 
 ### Patch Changes

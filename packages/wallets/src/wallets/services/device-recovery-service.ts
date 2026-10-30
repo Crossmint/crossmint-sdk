@@ -1,5 +1,5 @@
 import type { Chain } from "../../chains/chains";
-import { assembleSigner } from "../../signers";
+import { assembleSigner, tryAssembleLocalDeviceSigner } from "../../signers";
 import { getSignerDescriptor } from "../../signers/descriptors";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
 import {
@@ -8,6 +8,7 @@ import {
     type InternalSignerConfig,
     isApiSourcedServerSignerConfig,
     OtpValidationError,
+    SignerAuthenticationError,
     type SignerAdapter,
     type SignerConfigForChain,
     type SignerLocator,
@@ -29,6 +30,7 @@ export type DeviceRecoveryServiceParams<C extends Chain> = {
     serverSignerResolver: ServerSignerResolver;
     signers: () => Promise<WalletSigner[]>;
     addSigner: (signer: SignerConfigForChain<C>) => Promise<unknown>;
+    removeSigner: (signerLocator: string) => Promise<unknown>;
     approveSignature: (signatureId: string) => Promise<unknown>;
     approveTransaction: (transactionId: string) => Promise<unknown>;
 };
@@ -47,6 +49,7 @@ export class DeviceRecoveryService<C extends Chain> {
     #serverSignerResolver: ServerSignerResolver;
     #signers: () => Promise<WalletSigner[]>;
     #addSigner: (signer: SignerConfigForChain<C>) => Promise<unknown>;
+    #removeSigner: (signerLocator: string) => Promise<unknown>;
     #approveSignature: (signatureId: string) => Promise<unknown>;
     #approveTransaction: (transactionId: string) => Promise<unknown>;
 
@@ -58,6 +61,7 @@ export class DeviceRecoveryService<C extends Chain> {
         this.#serverSignerResolver = params.serverSignerResolver;
         this.#signers = params.signers;
         this.#addSigner = params.addSigner;
+        this.#removeSigner = params.removeSigner;
         this.#approveSignature = params.approveSignature;
         this.#approveTransaction = params.approveTransaction;
     }
@@ -146,7 +150,8 @@ export class DeviceRecoveryService<C extends Chain> {
             throw new Error("Device signer key storage is required to recover a device signer");
         }
 
-        const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage);
+        const existingSigners = await this.#signers();
+        const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage, existingSigners);
         if (matchedSigner != null) {
             if (await this.#checkAndResumeDeviceSigner(matchedSigner)) {
                 this.#signerManager.setActiveSigner(matchedSigner);
@@ -160,6 +165,12 @@ export class DeviceRecoveryService<C extends Chain> {
                 return;
             }
         }
+
+        const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
+        const staleDeviceSignerLocator = this.#resolveStaleDeviceSignerLocator(
+            existingDeviceSigners,
+            deviceSignerKeyStorage
+        );
 
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
 
@@ -185,6 +196,15 @@ export class DeviceRecoveryService<C extends Chain> {
                 (error instanceof Error && error.name === "AuthRejectedError")
             ) {
                 walletsLogger.info("wallet.recover.device.authRejected", { signerLocator: newDeviceSigner.locator });
+                throw error;
+            } else if (
+                error instanceof SignerAuthenticationError ||
+                (error instanceof Error && error.name === "SignerAuthenticationError")
+            ) {
+                walletsLogger.warn("wallet.recover.device.authenticationFailed", {
+                    signerLocator: newDeviceSigner.locator,
+                    code: error instanceof SignerAuthenticationError ? error.code : undefined,
+                });
                 throw error;
             } else if (
                 error instanceof OtpValidationError ||
@@ -214,6 +234,34 @@ export class DeviceRecoveryService<C extends Chain> {
         walletsLogger.info("wallet.recover.device.success", { signerLocator: newDeviceSigner.locator });
 
         this.#status = "resolved";
+
+        if (staleDeviceSignerLocator != null) {
+            try {
+                await this.#removeSigner(staleDeviceSignerLocator);
+                walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: staleDeviceSignerLocator });
+            } catch (error) {
+                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", {
+                    signerLocator: staleDeviceSignerLocator,
+                    error,
+                });
+            }
+        }
+    }
+
+    #resolveStaleDeviceSignerLocator(
+        existingDeviceSigners: Extract<WalletSigner, { type: "device" }>[],
+        deviceSignerKeyStorage: DeviceSignerKeyStorage
+    ): string | undefined {
+        if (existingDeviceSigners.length === 0) {
+            return undefined;
+        }
+        if (existingDeviceSigners.length === 1) {
+            return existingDeviceSigners[0].locator;
+        }
+
+        const currentDeviceName = deviceSignerKeyStorage.getDeviceName();
+        const matchingSigners = existingDeviceSigners.filter((s) => s.name === currentDeviceName);
+        return matchingSigners.length === 1 ? matchingSigners[0].locator : undefined;
     }
 
     async resolveAvailability(config: DeviceSignerConfig): Promise<void> {
@@ -273,7 +321,10 @@ export class DeviceRecoveryService<C extends Chain> {
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
         const recovery = this.#signerManager.recovery;
-        if (isApiSourcedServerSignerConfig(recovery) && !this.#serverSignerResolver.hasRecoveryResolution) {
+        if (
+            isApiSourcedServerSignerConfig(recovery) &&
+            !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
+        ) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
                     'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
@@ -316,37 +367,43 @@ export class DeviceRecoveryService<C extends Chain> {
         });
     }
 
-    async #findLocalDeviceSigner(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<SignerAdapter | null> {
-        const existingSigners = await this.#signers();
+    async #findLocalDeviceSigner(
+        deviceSignerKeyStorage: DeviceSignerKeyStorage,
+        existingSigners: WalletSigner[]
+    ): Promise<SignerAdapter | null> {
         const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
 
         for (const walletSigner of deviceSigners) {
-            const publicKeyBase64 = walletSigner.locator.replace("device:", "");
-            try {
-                const hasKey = await deviceSignerKeyStorage.hasKey(publicKeyBase64);
-                if (hasKey) {
-                    const signer = assembleSigner(
-                        this.#chain,
-                        {
-                            type: "device",
-                            locator: walletSigner.locator as SignerLocator,
-                            address: this.#walletAddress,
-                        } as InternalSignerConfig<C>,
-                        deviceSignerKeyStorage
-                    );
-                    walletsLogger.info("wallet.recover.foundLocalDeviceSigner", {
-                        signerLocator: walletSigner.locator,
-                    });
-                    return signer;
-                }
-            } catch (error) {
-                walletsLogger.warn("wallet.recover.findLocalDeviceSigner.keyCheckError", {
-                    signerLocator: walletSigner.locator,
-                    error,
-                });
+            const signer = await this.tryResolveLocallyAvailableSigner(walletSigner.locator, deviceSignerKeyStorage);
+            if (signer != null) {
+                walletsLogger.info("wallet.recover.foundLocalDeviceSigner", { signerLocator: walletSigner.locator });
+                return signer;
             }
         }
         return null;
+    }
+
+    async tryResolveLocallyAvailableSigner(
+        locator: string,
+        deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage
+    ): Promise<SignerAdapter | null> {
+        if (deviceSignerKeyStorage == null) {
+            return null;
+        }
+        try {
+            return await tryAssembleLocalDeviceSigner(
+                this.#chain,
+                locator,
+                this.#walletAddress,
+                deviceSignerKeyStorage
+            );
+        } catch (error) {
+            walletsLogger.warn("wallet.deviceRecovery.tryResolveLocallyAvailableSigner.failed", {
+                signerLocator: locator,
+                error,
+            });
+            return null;
+        }
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-base",
-    "version": "2.1.1",
+    "version": "2.5.1",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -31,7 +31,7 @@
         "lodash.clonedeep": "4.5.0"
     },
     "devDependencies": {
-        "@types/react": "19.1.10",
+        "@types/react": "19.3.0",
         "@types/lodash.isequal": "4.5.6",
         "@types/lodash.clonedeep": "4.5.6"
     },

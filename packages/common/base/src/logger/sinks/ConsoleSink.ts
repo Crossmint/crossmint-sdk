@@ -6,6 +6,34 @@ import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from ".
  */
 const LOG_LEVEL_HIERARCHY: LogLevel[] = ["debug", "info", "warn", "error"];
 
+function serializeContext(context: LogContext): string {
+    // Objects currently being serialized, root first. Only a reference to one of these is a
+    // true cycle; the same object shared between sibling fields is serialized normally.
+    const ancestors: object[] = [];
+    try {
+        return JSON.stringify(context, function (this: unknown, _key, value: unknown) {
+            if (typeof value === "bigint") {
+                return value.toString();
+            }
+            if (value instanceof Error) {
+                return { name: value.name, message: value.message, stack: value.stack };
+            }
+            if (typeof value === "object" && value !== null) {
+                while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
+                    ancestors.pop();
+                }
+                if (ancestors.includes(value)) {
+                    return "[Circular]";
+                }
+                ancestors.push(value);
+            }
+            return value;
+        });
+    } catch (error) {
+        return `[unserializable context: ${error instanceof Error ? error.message : String(error)}]`;
+    }
+}
+
 /**
  * Console sink that writes logs to the console
  * Works in browser, React Native, and Node.js environments
@@ -21,17 +49,7 @@ export class ConsoleSink implements LogSink {
             return;
         }
         const { level, message, context } = entry;
-        const logMethod = this.getConsoleMethod(level);
-
-        // Format the log message with context
-        const formattedMessage = this.formatMessage(message, context);
-
-        // Use appropriate console method
-        if (Object.keys(context).length > 0) {
-            logMethod(formattedMessage, context);
-        } else {
-            logMethod(formattedMessage);
-        }
+        this.getConsoleMethod(level)(this.formatMessage(message, context));
     }
 
     private getConsoleMethod(level: LogEntry["level"]): typeof console.log {
@@ -57,12 +75,20 @@ export class ConsoleSink implements LogSink {
         return typeof process !== "undefined" && process.env != null && process.env.NODE_ENV === "production";
     }
 
+    /**
+     * Emits a single self-contained string: text-based console consumers (Playwright, Sentry
+     * breadcrumbs, log shippers) only see the first argument, so context passed as a separate
+     * argument would surface as "JSHandle@object" and the payload would be lost.
+     */
     private formatMessage(message: string, context: LogContext): string {
-        if (message === "" && Object.keys(context).length > 0) {
-            // If no message but has context, create a message from context
-            return `[SDK] ${JSON.stringify(context)}`;
+        const parts = ["[SDK]"];
+        if (message !== "") {
+            parts.push(message);
         }
-        return message !== "" ? `[SDK] ${message}` : "[SDK]";
+        if (Object.keys(context).length > 0) {
+            parts.push(serializeContext(context));
+        }
+        return parts.join(" ");
     }
 
     private shouldLog(level: LogLevel): boolean {

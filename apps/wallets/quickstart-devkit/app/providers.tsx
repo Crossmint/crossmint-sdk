@@ -299,6 +299,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     const signerType = searchParams.get("signer") || "email";
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
+    const phoneChannel = searchParams.get("channel"); // "sms" | "whatsapp" — only used when signer=phone
     const crossmintApiKey = searchParams.get("crossmintApiKey") || undefined;
     const alias = searchParams.get("alias") || undefined;
 
@@ -321,6 +322,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                     createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
+                        ...(phoneChannel != null ? { channel: phoneChannel } : {}),
                     };
                 }
                 return (
@@ -348,6 +350,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                     createOnLogin.recovery = {
                         type: signerType,
                         phone: decodeURIComponent(phoneNumber),
+                        ...(phoneChannel != null ? { channel: phoneChannel } : {}),
                     };
                 }
                 return (
@@ -366,6 +369,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
             createOnLogin.recovery = {
                 type: signerType,
                 phone: decodeURIComponent(phoneNumber),
+                ...(phoneChannel != null ? { channel: phoneChannel } : {}),
             };
         }
         return (

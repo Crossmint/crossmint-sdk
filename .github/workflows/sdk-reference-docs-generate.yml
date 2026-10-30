@@ -32,9 +32,9 @@ on:
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native, auth/typescript). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native, auth/typescript, agents/react). Defaults to all."
                 required: false
-                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript"
+                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react"
                 type: string
 
 permissions:
@@ -49,11 +49,16 @@ jobs:
         name: Generate SDK Reference Docs
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        permissions:
+            contents: read
+            id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build libraries
               run: pnpm build:libs
@@ -61,7 +66,7 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "wallets_react=false" >> $GITHUB_OUTPUT
@@ -72,6 +77,7 @@ jobs:
                   echo "auth_react=false" >> $GITHUB_OUTPUT
                   echo "auth_react_native=false" >> $GITHUB_OUTPUT
                   echo "auth_typescript=false" >> $GITHUB_OUTPUT
+                  echo "agents_react=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",wallets/react,"; then
                     echo "wallets_react=true" >> $GITHUB_OUTPUT
                   fi
@@ -96,6 +102,9 @@ jobs:
                   if echo ",$PACKAGES," | grep -q ",auth/typescript,"; then
                     echo "auth_typescript=true" >> $GITHUB_OUTPUT
                   fi
+                  if echo ",$PACKAGES," | grep -q ",agents/react,"; then
+                    echo "agents_react=true" >> $GITHUB_OUTPUT
+                  fi
 
             - name: Generate React UI docs (wallets)
               if: steps.packages.outputs.wallets_react == 'true'
@@ -111,6 +120,11 @@ jobs:
               if: steps.packages.outputs.auth_react == 'true'
               working-directory: packages/client/ui/react-ui
               run: pnpm generate:docs --product auth
+
+            - name: Generate React UI docs (agents)
+              if: steps.packages.outputs.agents_react == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs --product agents
 
             - name: Generate React Native docs (wallets)
               if: steps.packages.outputs.wallets_react_native == 'true'
@@ -161,6 +175,7 @@ jobs:
                   AUTH_REACT_ENABLED: ${{ steps.packages.outputs.auth_react }}
                   AUTH_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.auth_react_native }}
                   AUTH_TYPESCRIPT_ENABLED: ${{ steps.packages.outputs.auth_typescript }}
+                  AGENTS_REACT_ENABLED: ${{ steps.packages.outputs.agents_react }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
@@ -170,6 +185,7 @@ jobs:
                   mkdir -p sdk-reference/auth/react
                   mkdir -p sdk-reference/auth/react-native
                   mkdir -p sdk-reference/auth/typescript
+                  mkdir -p sdk-reference/agents/react
 
                   if [ "$WALLETS_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
                     cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
@@ -203,6 +219,10 @@ jobs:
                     cp -r packages/server/docs/auth/. sdk-reference/auth/typescript/
                   fi
 
+                  if [ "$AGENTS_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/agents ]; then
+                    cp -r packages/client/ui/react-ui/docs/agents/. sdk-reference/agents/react/
+                  fi
+
             - name: Verify at least one package was generated
               id: verify
               run: |
@@ -212,7 +232,7 @@ jobs:
                   fi
 
             - name: Upload generated docs artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
                   name: sdk-reference-docs
                   path: sdk-reference/
@@ -220,12 +240,13 @@ jobs:
 
             - name: Generate App Token
               id: generate_app_token
-              uses: actions/create-github-app-token@v2
+              uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
               with:
                   app-id: ${{ vars.CROSSMINT_DEPLOY_BOT_APP_ID }}
                   private-key: ${{ secrets.CROSSMINT_DEPLOY_BOT_PRIVATE_KEY }}
                   owner: Paella-Labs
                   repositories: crossbit-main
+                  permission-contents: write
 
             - name: Dispatch to crossbit-main
               uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697  # v4
@@ -233,4 +254,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'

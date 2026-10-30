@@ -9,11 +9,15 @@ Pod::Spec.new do |s|
   s.homepage       = 'https://github.com/Crossmint/crossmint-sdk'
   s.license        = { :type => 'Apache-2.0' }
   s.author         = 'Crossmint Inc'
-  s.platforms      = { :ios => '15.0' }
+  s.platforms      = { :ios => '16.4' }
   s.source         = { :git => 'https://github.com/Crossmint/crossmint-sdk.git', :tag => "client-sdk-react-native-ui@#{s.version}" }
   s.source_files   = 'DeviceSignerModule.swift'
   s.swift_version  = '6.0'
 
   s.dependency 'ExpoModulesCore'
-  s.dependency 'CrossmintDeviceSigner', '~> 0.12'
+  spm_dependency(s,
+    url: 'https://github.com/Crossmint/crossmint-swift-sdk',
+    requirement: { kind: 'upToNextMajorVersion', minimumVersion: '1.4.0' },
+    products: ['CrossmintDeviceSigner']
+  )
 end

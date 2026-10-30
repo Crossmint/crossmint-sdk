@@ -1,5 +1,169 @@
 # @crossmint/wallets-playground-expo
 
+## 0.0.45
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@2.1.1
+
+## 0.0.44
+
+### Patch Changes
+
+- Updated dependencies [0e86e2b]
+- Updated dependencies [7c5ece0]
+- Updated dependencies [a77707b]
+- Updated dependencies [754047d]
+  - @crossmint/client-sdk-react-native-ui@2.1.0
+
+## 0.0.43
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@2.0.1
+
+## 0.0.42
+
+### Patch Changes
+
+- Updated dependencies [7401d02]
+- Updated dependencies [5307672]
+- Updated dependencies [a75f22a]
+- Updated dependencies [a75f22a]
+- Updated dependencies [3e22f20]
+- Updated dependencies [a75f22a]
+  - @crossmint/client-sdk-react-native-ui@2.0.0
+
+## 0.0.41
+
+### Patch Changes
+
+- f450d2f: Load the default chain's wallet explicitly after login instead of through `createOnLogin`, so switching chains at runtime keeps the switched wallet active.
+- Updated dependencies [b1bc81a]
+  - @crossmint/client-sdk-react-native-ui@1.9.3
+
+## 0.0.40
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.9.2
+
+## 0.0.39
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.9.1
+
+## 0.0.38
+
+### Patch Changes
+
+- Updated dependencies [4ab8408]
+- Updated dependencies [97d0ea4]
+  - @crossmint/client-sdk-react-native-ui@1.9.0
+
+## 0.0.37
+
+### Patch Changes
+
+- Updated dependencies [2aaeabe]
+  - @crossmint/client-sdk-react-native-ui@1.8.0
+
+## 0.0.36
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.7.2
+
+## 0.0.35
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.7.1
+
+## 0.0.34
+
+### Patch Changes
+
+- Updated dependencies [1c54809]
+  - @crossmint/client-sdk-react-native-ui@1.7.0
+
+## 0.0.33
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.4
+
+## 0.0.32
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.3
+
+## 0.0.31
+
+### Patch Changes
+
+- Updated dependencies [0003592]
+- Updated dependencies [90507b0]
+  - @crossmint/client-sdk-react-native-ui@1.6.2
+
+## 0.0.30
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.6.1
+
+## 0.0.29
+
+### Patch Changes
+
+- Updated dependencies [13584ba]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [a8b6b60]
+- Updated dependencies [a8b6b60]
+  - @crossmint/client-sdk-react-native-ui@1.6.0
+
+## 0.0.28
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.5.2
+
+## 0.0.27
+
+### Patch Changes
+
+- Updated dependencies [305a238]
+- Updated dependencies [91eb56f]
+  - @crossmint/client-sdk-react-native-ui@1.5.1
+
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [d121b09]
+  - @crossmint/client-sdk-react-native-ui@1.5.0
+
+## 0.0.25
+
+### Patch Changes
+
+- Updated dependencies [97f0eb0]
+  - @crossmint/client-sdk-react-native-ui@1.4.4
+
+## 0.0.24
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.4.3
+
+## 0.0.23
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@1.4.2
+
 ## 0.0.22
 
 ### Patch Changes

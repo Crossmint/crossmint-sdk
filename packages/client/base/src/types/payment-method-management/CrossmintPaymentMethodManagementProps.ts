@@ -7,7 +7,14 @@ import type { EmbeddedCheckoutV3Appearance } from "../embed";
  */
 export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 
+/** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
+export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
+
 export interface CrossmintPaymentMethodManagementProps {
+    /**
+     * Pass a user JWT from your own auth provider or a custom JWT.
+     * Crossmint Auth JWTs are not supported.
+     */
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     /**
@@ -23,7 +30,54 @@ export interface CrossmintPaymentMethodManagementProps {
      * than one type does not yet render a type picker.
      */
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
+    /**
+     * Render no Save/Continue button inside the component (default `false`). Pair it with a
+     * `ref` and call `ref.current.submit()` from your own button.
+     */
+    hideSubmitButton?: boolean;
+    /**
+     * Optional fields of the add-card form, in Stripe's `billingDetails` shape so new
+     * fields need no new prop. `billingDetails.address: true` collects a required
+     * billing address: the card form validates it before saving — for built-in and
+     * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
+     * of the emitted method. Applies to cards only; other method types ignore it.
+     *
+     * An object collects it too and configures the fields the payment-methods API
+     * leaves optional: `{ line2: "optional" | "required" | "hidden" }`.
+     * `true` equals `{ line2: "optional" }`.
+     */
+    fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
+}
+
+/**
+ * What `ref.submit()` resolves to. It never rejects.
+ * - `selected`: the user had a saved method selected; it is the one to use.
+ * - `saved`: the method in the form was saved; `onPaymentMethodSelected` also fired.
+ * - `invalid`: the form shows a field error the user has to fix.
+ * - `failed`: the save failed with a message the user can read; they can try again.
+ * - `unavailable`: the component is not ready (not loaded, still loading saved methods, or it
+ *   did not answer in time). After a timeout the save may still have completed:
+ *   `onPaymentMethodSelected` fires if it did, and submitting again returns the same method.
+ * - `superseded`: the component changed or unmounted while submitting. Discard the result;
+ *   this does not cancel a save already started on the server.
+ */
+export type PaymentMethodSubmitResult =
+    | { status: "selected"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "saved"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "invalid"; message: string }
+    | { status: "failed"; message: string }
+    | { status: "unavailable"; message: string }
+    | { status: "superseded"; message: string };
+
+export interface CrossmintPaymentMethodManagementRef {
+    /**
+     * Submits what the component shows: the selected saved method, or the add-new form. A call
+     * while one is in flight returns the same promise. Calling it again on an unchanged saved
+     * form returns that method again; nothing is saved twice. A change of buyer, configuration,
+     * or iframe connection supersedes any pending submit.
+     */
+    submit(): Promise<PaymentMethodSubmitResult>;
 }
 
 /**
@@ -48,11 +102,33 @@ export type CrossmintCardPaymentMethod = {
             // 4 digit year
             year: string;
         };
+        /**
+         * Billing details the card was saved with. `address` is present when the card
+         * was saved with `fields.billingDetails.address` (or the account has one on file).
+         */
+        billing?: CrossmintPaymentMethodBillingDetails;
     };
     default?: boolean;
     display?: {
         imageUrl?: string;
     };
+};
+
+export type CrossmintPaymentMethodBillingDetails = {
+    name: string;
+    address?: CrossmintPaymentMethodBillingAddress;
+    phone?: string;
+};
+
+export type CrossmintPaymentMethodBillingAddress = {
+    /** 2-letter ISO country code. */
+    country: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    stateOrRegion?: string;
+    /** May be empty for countries whose address format has no postal code. */
+    postalCode: string;
 };
 
 /**

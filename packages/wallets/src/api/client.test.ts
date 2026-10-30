@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from "vitest";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import type { ApiClient } from "./client";
 import type { ApproveSignatureParams, CreateWalletParams, SendParams } from "./types";
 import { WALLET_LOCATORS, TOKEN_LOCATORS } from "./__tests__/constants";
@@ -1070,6 +1071,78 @@ describe("ApiClient - send()", () => {
                 expect(body.amount).toBe("1e-18");
             }
         });
+    });
+});
+
+describe("ApiClient - getSigner()", () => {
+    let apiClient: ApiClient;
+    let mockGet: MockedFunction<ApiClient["get"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockGet = vi.spyOn(apiClient, "get") as MockedFunction<ApiClient["get"]>;
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe("success cases", () => {
+        it("returns the signer body for an ok response", async () => {
+            const signerBody = {
+                type: "email",
+                locator: "email:user@example.com",
+                chains: { "base-sepolia": { status: "success" } },
+            };
+            mockGet.mockResolvedValue(createMockSuccessResponse(signerBody));
+
+            await expect(
+                apiClient.getSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "email:user@example.com")
+            ).resolves.toEqual(signerBody);
+        });
+    });
+
+    describe("error cases", () => {
+        it("throws an ApiClientError carrying the status for a non-ok response", async () => {
+            mockGet.mockResolvedValue(
+                createMockErrorResponse({ error: true, message: "Signer not found" }, 404, "Not Found")
+            );
+
+            const request = apiClient.getSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "email:missing@example.com");
+            await expect(request).rejects.toBeInstanceOf(ApiClientError);
+            await expect(request).rejects.toMatchObject({ status: 404 });
+        });
+    });
+});
+
+describe("ApiClient - removeSigner()", () => {
+    let apiClient: ApiClient;
+    let mockDelete: MockedFunction<ApiClient["delete"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockDelete = vi.spyOn(apiClient, "delete") as MockedFunction<ApiClient["delete"]>;
+        mockDelete.mockResolvedValue(createMockSuccessResponse({ id: "txn-1" }));
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([
+        ["no params", {}, ""],
+        ["a chain", { chain: "base-sepolia" as const }, "?chain=base-sepolia"],
+        ["an approver", { approver: "email:recovery@example.com" }, "?approver=email%3Arecovery%40example.com"],
+        [
+            "a chain and an approver",
+            { chain: "base-sepolia" as const, approver: "passkey:abc" },
+            "?chain=base-sepolia&approver=passkey%3Aabc",
+        ],
+    ])("encodes %s in the query string", async (_name, params, expectedQuery) => {
+        await apiClient.removeSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "external-wallet:0x456", params);
+
+        const [url] = mockDelete.mock.calls[0];
+        expect(url.endsWith(`/signers/external-wallet%3A0x456${expectedQuery}`)).toBe(true);
     });
 });
 

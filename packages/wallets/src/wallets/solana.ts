@@ -1,4 +1,5 @@
 import bs58 from "bs58";
+import { ed25519Sign } from "../utils/ed25519";
 import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
@@ -23,8 +24,8 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 owner: wallet.owner,
                 options: Wallet.getOptions(wallet),
                 alias: wallet.alias,
-                recovery: Wallet.getRecovery(wallet),
-                apiRecoveryServerSignerAddress: Wallet.getApiRecoveryServerSignerAddress(wallet),
+                recovery: Wallet.getRecoverySigners(wallet),
+                apiRecoveryServerSignerAddresses: Wallet.getApiRecoveryServerSignerAddresses(wallet),
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
@@ -82,6 +83,8 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },
+                    onSignBytes: (payload) =>
+                        Promise.resolve(bs58.encode(ed25519Sign(bs58.decode(payload), signer.secretKey))),
                 })
         );
 

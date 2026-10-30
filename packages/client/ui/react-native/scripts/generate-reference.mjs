@@ -18,10 +18,6 @@ const PRODUCTS = {
         npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui",
         installSnippet: "client-sdk-react-native-ui-installation-cmd.mdx",
         intro: "The Crossmint React Native SDK (`@crossmint/client-sdk-react-native-ui`) provides React Native components and hooks for integrating Crossmint wallets into your mobile application.",
-        versionBanner: `<Note>
-**This page has been updated for Wallets SDK V1.** If you are using the previous version,
-see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{page}) or the [V1 migration guide](/wallets/guides/migrate-to-v1).
-</Note>`,
         exports: [
             "CrossmintProvider",
             "CrossmintWalletProvider",
@@ -81,11 +77,15 @@ see the [previous version of this page](/sdk-reference/wallets/v0/react-native/{
             "CrossmintProvider",
             "CrossmintCheckoutProvider",
             "useCrossmintCheckout",
+            "useIdentityVerificationCredentials",
             "CrossmintEmbeddedCheckout",
+            "CrossmintIdentityVerification",
         ],
         descriptions: {
             CrossmintProvider: "SDK initialization (required for all Crossmint features)",
             CrossmintCheckoutProvider: "Checkout order state management",
+            CrossmintIdentityVerification:
+                'Hosted identity verification step, for merchants taking it over with `identityVerificationHandling="external"`',
         },
         getStartedExamples: {
             setup: "rnCheckoutProviderSetup",

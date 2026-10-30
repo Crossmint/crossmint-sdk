@@ -39,7 +39,7 @@ export const serverSignerDescriptor: SignerDescriptor = {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
         ctx: SignerDescriptorContext<C>
     ): boolean {
-        return !isApiSourcedServerSignerConfig(config) || ctx.serverSigners.hasRecoveryResolution;
+        return !isApiSourcedServerSignerConfig(config) || ctx.serverSigners.hasRecoveryResolutionFor(config.address);
     },
 
     addSignerPayload<C extends Chain>(

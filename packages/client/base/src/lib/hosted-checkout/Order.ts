@@ -35,57 +35,36 @@ declare const orderSchema: z.ZodObject<
                         readonly BASE: "base";
                         readonly ZORA: "zora";
                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                        readonly ASTAR_ZKEVM: "astar-zkevm";
                         readonly APECHAIN: "apechain";
                         readonly APEX: "apex";
-                        readonly BOSS: "boss";
-                        readonly LIGHTLINK: "lightlink";
                         readonly SKALE_NEBULA: "skale-nebula";
                         readonly SEI_PACIFIC_1: "sei-pacific-1";
                         readonly CHILIZ: "chiliz";
                         readonly AVALANCHE: "avalanche";
-                        readonly XAI: "xai";
                         readonly SHAPE: "shape";
-                        readonly RARI: "rari";
                         readonly SCROLL: "scroll";
-                        readonly VICTION: "viction";
-                        readonly MODE: "mode";
                         readonly SPACE: "space";
-                        readonly SONEIUM: "soneium";
                         readonly ARBITRUM_SEPOLIA: "arbitrum-sepolia";
                         readonly AVALANCHE_FUJI: "avalanche-fuji";
                         readonly CURTIS: "curtis";
                         readonly BARRET_TESTNET: "barret-testnet";
-                        readonly BASE_GOERLI: "base-goerli";
                         readonly BASE_SEPOLIA: "base-sepolia";
                         readonly BSC_TESTNET: "bsc-testnet";
                         readonly CHILIZ_SPICY_TESTNET: "chiliz-spicy-testnet";
-                        readonly ETHEREUM_GOERLI: "ethereum-goerli";
                         readonly ETHEREUM_SEPOLIA: "ethereum-sepolia";
                         readonly HYPERSONIC_TESTNET: "hypersonic-testnet";
-                        readonly LIGHTLINK_PEGASUS: "lightlink-pegasus";
-                        readonly OPTIMISM_GOERLI: "optimism-goerli";
                         readonly OPTIMISM_SEPOLIA: "optimism-sepolia";
                         readonly POLYGON_AMOY: "polygon-amoy";
-                        readonly POLYGON_MUMBAI: "polygon-mumbai";
                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
-                        readonly RARI_TESTNET: "rari-testnet";
                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
                         readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
-                        readonly SONEIUM_MINATO_TESTNET: "soneium-minato-testnet";
                         readonly SPACE_TESTNET: "space-testnet";
                         readonly STORY_TESTNET: "story-testnet";
                         readonly VERIFY_TESTNET: "verify-testnet";
-                        readonly VICTION_TESTNET: "viction-testnet";
-                        readonly XAI_SEPOLIA_TESTNET: "xai-sepolia-testnet";
-                        readonly ZKATANA: "zkatana";
-                        readonly ZKYOTO: "zkyoto";
-                        readonly ZORA_GOERLI: "zora-goerli";
                         readonly ZORA_SEPOLIA: "zora-sepolia";
-                        readonly MODE_SEPOLIA: "mode-sepolia";
                         readonly SOLANA: "solana";
                         readonly SUI: "sui";
                         readonly APTOS: "aptos";
@@ -202,6 +181,8 @@ declare const orderSchema: z.ZodObject<
                                                             readonly KRW: "krw";
                                                             readonly INR: "inr";
                                                             readonly VND: "vnd";
+                                                            readonly MXN: "mxn";
+                                                            readonly XCD: "xcd";
                                                         }>,
                                                     ]
                                                 >;
@@ -232,7 +213,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             },
                                             {
@@ -259,7 +242,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                         >;
@@ -295,6 +280,8 @@ declare const orderSchema: z.ZodObject<
                                                                 readonly KRW: "krw";
                                                                 readonly INR: "inr";
                                                                 readonly VND: "vnd";
+                                                                readonly MXN: "mxn";
+                                                                readonly XCD: "xcd";
                                                             }>,
                                                         ]
                                                     >;
@@ -325,7 +312,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 },
                                                 {
@@ -352,7 +341,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 }
                                             >
@@ -385,7 +376,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -413,7 +406,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -443,7 +438,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -471,7 +468,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -510,6 +509,8 @@ declare const orderSchema: z.ZodObject<
                                                     readonly KRW: "krw";
                                                     readonly INR: "inr";
                                                     readonly VND: "vnd";
+                                                    readonly MXN: "mxn";
+                                                    readonly XCD: "xcd";
                                                 }>,
                                             ]
                                         >;
@@ -540,7 +541,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     },
                                     {
@@ -567,7 +570,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     }
                                 >
@@ -609,7 +614,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -637,7 +644,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -668,7 +677,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -707,7 +718,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -735,7 +748,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -766,7 +781,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -1396,57 +1413,36 @@ declare const orderSchema: z.ZodObject<
                         | "base"
                         | "zora"
                         | "arbitrumnova"
-                        | "astar-zkevm"
                         | "apechain"
                         | "apex"
-                        | "boss"
-                        | "lightlink"
                         | "skale-nebula"
                         | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
-                        | "xai"
                         | "shape"
-                        | "rari"
                         | "scroll"
-                        | "viction"
-                        | "mode"
                         | "space"
-                        | "soneium"
                         | "arbitrum-sepolia"
                         | "avalanche-fuji"
                         | "curtis"
                         | "barret-testnet"
-                        | "base-goerli"
                         | "base-sepolia"
                         | "bsc-testnet"
                         | "chiliz-spicy-testnet"
-                        | "ethereum-goerli"
                         | "ethereum-sepolia"
                         | "hypersonic-testnet"
-                        | "lightlink-pegasus"
-                        | "optimism-goerli"
                         | "optimism-sepolia"
                         | "polygon-amoy"
-                        | "polygon-mumbai"
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
-                        | "rari-testnet"
                         | "scroll-sepolia"
                         | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
-                        | "soneium-minato-testnet"
                         | "space-testnet"
                         | "story-testnet"
                         | "verify-testnet"
-                        | "viction-testnet"
-                        | "xai-sepolia-testnet"
-                        | "zkatana"
-                        | "zkyoto"
-                        | "zora-goerli"
                         | "zora-sepolia"
-                        | "mode-sepolia"
                         | "solana"
                         | "sui"
                         | "aptos";
@@ -1497,7 +1493,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1525,7 +1523,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1556,7 +1556,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1659,57 +1661,36 @@ declare const orderSchema: z.ZodObject<
                         | "base"
                         | "zora"
                         | "arbitrumnova"
-                        | "astar-zkevm"
                         | "apechain"
                         | "apex"
-                        | "boss"
-                        | "lightlink"
                         | "skale-nebula"
                         | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
-                        | "xai"
                         | "shape"
-                        | "rari"
                         | "scroll"
-                        | "viction"
-                        | "mode"
                         | "space"
-                        | "soneium"
                         | "arbitrum-sepolia"
                         | "avalanche-fuji"
                         | "curtis"
                         | "barret-testnet"
-                        | "base-goerli"
                         | "base-sepolia"
                         | "bsc-testnet"
                         | "chiliz-spicy-testnet"
-                        | "ethereum-goerli"
                         | "ethereum-sepolia"
                         | "hypersonic-testnet"
-                        | "lightlink-pegasus"
-                        | "optimism-goerli"
                         | "optimism-sepolia"
                         | "polygon-amoy"
-                        | "polygon-mumbai"
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
-                        | "rari-testnet"
                         | "scroll-sepolia"
                         | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
-                        | "soneium-minato-testnet"
                         | "space-testnet"
                         | "story-testnet"
                         | "verify-testnet"
-                        | "viction-testnet"
-                        | "xai-sepolia-testnet"
-                        | "zkatana"
-                        | "zkyoto"
-                        | "zora-goerli"
                         | "zora-sepolia"
-                        | "mode-sepolia"
                         | "solana"
                         | "sui"
                         | "aptos";
@@ -1760,7 +1741,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1788,7 +1771,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1819,7 +1804,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1960,6 +1947,8 @@ declare const orderSchema: z.ZodObject<
                                         readonly KRW: "krw";
                                         readonly INR: "inr";
                                         readonly VND: "vnd";
+                                        readonly MXN: "mxn";
+                                        readonly XCD: "xcd";
                                     }>,
                                 ]
                             >;
@@ -1990,7 +1979,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         },
                         {
@@ -2017,7 +2008,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         }
                     >
@@ -2059,7 +2052,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2098,7 +2093,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2168,57 +2165,36 @@ declare const orderSchema: z.ZodObject<
                     readonly BASE: "base";
                     readonly ZORA: "zora";
                     readonly ARBITRUM_NOVA: "arbitrumnova";
-                    readonly ASTAR_ZKEVM: "astar-zkevm";
                     readonly APECHAIN: "apechain";
                     readonly APEX: "apex";
-                    readonly BOSS: "boss";
-                    readonly LIGHTLINK: "lightlink";
                     readonly SKALE_NEBULA: "skale-nebula";
                     readonly SEI_PACIFIC_1: "sei-pacific-1";
                     readonly CHILIZ: "chiliz";
                     readonly AVALANCHE: "avalanche";
-                    readonly XAI: "xai";
                     readonly SHAPE: "shape";
-                    readonly RARI: "rari";
                     readonly SCROLL: "scroll";
-                    readonly VICTION: "viction";
-                    readonly MODE: "mode";
                     readonly SPACE: "space";
-                    readonly SONEIUM: "soneium";
                     readonly ARBITRUM_SEPOLIA: "arbitrum-sepolia";
                     readonly AVALANCHE_FUJI: "avalanche-fuji";
                     readonly CURTIS: "curtis";
                     readonly BARRET_TESTNET: "barret-testnet";
-                    readonly BASE_GOERLI: "base-goerli";
                     readonly BASE_SEPOLIA: "base-sepolia";
                     readonly BSC_TESTNET: "bsc-testnet";
                     readonly CHILIZ_SPICY_TESTNET: "chiliz-spicy-testnet";
-                    readonly ETHEREUM_GOERLI: "ethereum-goerli";
                     readonly ETHEREUM_SEPOLIA: "ethereum-sepolia";
                     readonly HYPERSONIC_TESTNET: "hypersonic-testnet";
-                    readonly LIGHTLINK_PEGASUS: "lightlink-pegasus";
-                    readonly OPTIMISM_GOERLI: "optimism-goerli";
                     readonly OPTIMISM_SEPOLIA: "optimism-sepolia";
                     readonly POLYGON_AMOY: "polygon-amoy";
-                    readonly POLYGON_MUMBAI: "polygon-mumbai";
                     readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                     readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
-                    readonly RARI_TESTNET: "rari-testnet";
                     readonly SCROLL_SEPOLIA: "scroll-sepolia";
                     readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                     readonly SHAPE_SEPOLIA: "shape-sepolia";
                     readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
-                    readonly SONEIUM_MINATO_TESTNET: "soneium-minato-testnet";
                     readonly SPACE_TESTNET: "space-testnet";
                     readonly STORY_TESTNET: "story-testnet";
                     readonly VERIFY_TESTNET: "verify-testnet";
-                    readonly VICTION_TESTNET: "viction-testnet";
-                    readonly XAI_SEPOLIA_TESTNET: "xai-sepolia-testnet";
-                    readonly ZKATANA: "zkatana";
-                    readonly ZKYOTO: "zkyoto";
-                    readonly ZORA_GOERLI: "zora-goerli";
                     readonly ZORA_SEPOLIA: "zora-sepolia";
-                    readonly MODE_SEPOLIA: "mode-sepolia";
                     readonly SOLANA: "solana";
                     readonly "stripe-payment-element": "stripe-payment-element";
                 }>;
@@ -2250,6 +2226,8 @@ declare const orderSchema: z.ZodObject<
                             readonly KRW: "krw";
                             readonly INR: "inr";
                             readonly VND: "vnd";
+                            readonly MXN: "mxn";
+                            readonly XCD: "xcd";
                         }>,
                     ]
                 >;
@@ -2268,57 +2246,36 @@ declare const orderSchema: z.ZodObject<
                                             readonly BASE: "base";
                                             readonly ZORA: "zora";
                                             readonly ARBITRUM_NOVA: "arbitrumnova";
-                                            readonly ASTAR_ZKEVM: "astar-zkevm";
                                             readonly APECHAIN: "apechain";
                                             readonly APEX: "apex";
-                                            readonly BOSS: "boss";
-                                            readonly LIGHTLINK: "lightlink";
                                             readonly SKALE_NEBULA: "skale-nebula";
                                             readonly SEI_PACIFIC_1: "sei-pacific-1";
                                             readonly CHILIZ: "chiliz";
                                             readonly AVALANCHE: "avalanche";
-                                            readonly XAI: "xai";
                                             readonly SHAPE: "shape";
-                                            readonly RARI: "rari";
                                             readonly SCROLL: "scroll";
-                                            readonly VICTION: "viction";
-                                            readonly MODE: "mode";
                                             readonly SPACE: "space";
-                                            readonly SONEIUM: "soneium";
                                             readonly ARBITRUM_SEPOLIA: "arbitrum-sepolia";
                                             readonly AVALANCHE_FUJI: "avalanche-fuji";
                                             readonly CURTIS: "curtis";
                                             readonly BARRET_TESTNET: "barret-testnet";
-                                            readonly BASE_GOERLI: "base-goerli";
                                             readonly BASE_SEPOLIA: "base-sepolia";
                                             readonly BSC_TESTNET: "bsc-testnet";
                                             readonly CHILIZ_SPICY_TESTNET: "chiliz-spicy-testnet";
-                                            readonly ETHEREUM_GOERLI: "ethereum-goerli";
                                             readonly ETHEREUM_SEPOLIA: "ethereum-sepolia";
                                             readonly HYPERSONIC_TESTNET: "hypersonic-testnet";
-                                            readonly LIGHTLINK_PEGASUS: "lightlink-pegasus";
-                                            readonly OPTIMISM_GOERLI: "optimism-goerli";
                                             readonly OPTIMISM_SEPOLIA: "optimism-sepolia";
                                             readonly POLYGON_AMOY: "polygon-amoy";
-                                            readonly POLYGON_MUMBAI: "polygon-mumbai";
                                             readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                             readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
-                                            readonly RARI_TESTNET: "rari-testnet";
                                             readonly SCROLL_SEPOLIA: "scroll-sepolia";
                                             readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                             readonly SHAPE_SEPOLIA: "shape-sepolia";
                                             readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
-                                            readonly SONEIUM_MINATO_TESTNET: "soneium-minato-testnet";
                                             readonly SPACE_TESTNET: "space-testnet";
                                             readonly STORY_TESTNET: "story-testnet";
                                             readonly VERIFY_TESTNET: "verify-testnet";
-                                            readonly VICTION_TESTNET: "viction-testnet";
-                                            readonly XAI_SEPOLIA_TESTNET: "xai-sepolia-testnet";
-                                            readonly ZKATANA: "zkatana";
-                                            readonly ZKYOTO: "zkyoto";
-                                            readonly ZORA_GOERLI: "zora-goerli";
                                             readonly ZORA_SEPOLIA: "zora-sepolia";
-                                            readonly MODE_SEPOLIA: "mode-sepolia";
                                             readonly SOLANA: "solana";
                                             readonly SUI: "sui";
                                             readonly APTOS: "aptos";
@@ -2339,57 +2296,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos"
@@ -2407,57 +2343,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos"
@@ -2524,6 +2439,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2538,57 +2455,36 @@ declare const orderSchema: z.ZodObject<
                                         readonly BASE: "base";
                                         readonly ZORA: "zora";
                                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                                        readonly ASTAR_ZKEVM: "astar-zkevm";
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
-                                        readonly BOSS: "boss";
-                                        readonly LIGHTLINK: "lightlink";
                                         readonly SKALE_NEBULA: "skale-nebula";
                                         readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
-                                        readonly XAI: "xai";
                                         readonly SHAPE: "shape";
-                                        readonly RARI: "rari";
                                         readonly SCROLL: "scroll";
-                                        readonly VICTION: "viction";
-                                        readonly MODE: "mode";
                                         readonly SPACE: "space";
-                                        readonly SONEIUM: "soneium";
                                         readonly ARBITRUM_SEPOLIA: "arbitrum-sepolia";
                                         readonly AVALANCHE_FUJI: "avalanche-fuji";
                                         readonly CURTIS: "curtis";
                                         readonly BARRET_TESTNET: "barret-testnet";
-                                        readonly BASE_GOERLI: "base-goerli";
                                         readonly BASE_SEPOLIA: "base-sepolia";
                                         readonly BSC_TESTNET: "bsc-testnet";
                                         readonly CHILIZ_SPICY_TESTNET: "chiliz-spicy-testnet";
-                                        readonly ETHEREUM_GOERLI: "ethereum-goerli";
                                         readonly ETHEREUM_SEPOLIA: "ethereum-sepolia";
                                         readonly HYPERSONIC_TESTNET: "hypersonic-testnet";
-                                        readonly LIGHTLINK_PEGASUS: "lightlink-pegasus";
-                                        readonly OPTIMISM_GOERLI: "optimism-goerli";
                                         readonly OPTIMISM_SEPOLIA: "optimism-sepolia";
                                         readonly POLYGON_AMOY: "polygon-amoy";
-                                        readonly POLYGON_MUMBAI: "polygon-mumbai";
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
-                                        readonly RARI_TESTNET: "rari-testnet";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
                                         readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
-                                        readonly SONEIUM_MINATO_TESTNET: "soneium-minato-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
                                         readonly STORY_TESTNET: "story-testnet";
                                         readonly VERIFY_TESTNET: "verify-testnet";
-                                        readonly VICTION_TESTNET: "viction-testnet";
-                                        readonly XAI_SEPOLIA_TESTNET: "xai-sepolia-testnet";
-                                        readonly ZKATANA: "zkatana";
-                                        readonly ZKYOTO: "zkyoto";
-                                        readonly ZORA_GOERLI: "zora-goerli";
                                         readonly ZORA_SEPOLIA: "zora-sepolia";
-                                        readonly MODE_SEPOLIA: "mode-sepolia";
                                         readonly SOLANA: "solana";
                                         readonly SUI: "sui";
                                         readonly APTOS: "aptos";
@@ -2620,7 +2516,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2632,57 +2530,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos";
@@ -2711,7 +2588,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2723,57 +2602,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos";
@@ -2810,6 +2668,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2840,7 +2700,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -2867,7 +2729,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -2907,6 +2771,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2921,57 +2787,36 @@ declare const orderSchema: z.ZodObject<
                                         readonly BASE: "base";
                                         readonly ZORA: "zora";
                                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                                        readonly ASTAR_ZKEVM: "astar-zkevm";
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
-                                        readonly BOSS: "boss";
-                                        readonly LIGHTLINK: "lightlink";
                                         readonly SKALE_NEBULA: "skale-nebula";
                                         readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
-                                        readonly XAI: "xai";
                                         readonly SHAPE: "shape";
-                                        readonly RARI: "rari";
                                         readonly SCROLL: "scroll";
-                                        readonly VICTION: "viction";
-                                        readonly MODE: "mode";
                                         readonly SPACE: "space";
-                                        readonly SONEIUM: "soneium";
                                         readonly ARBITRUM_SEPOLIA: "arbitrum-sepolia";
                                         readonly AVALANCHE_FUJI: "avalanche-fuji";
                                         readonly CURTIS: "curtis";
                                         readonly BARRET_TESTNET: "barret-testnet";
-                                        readonly BASE_GOERLI: "base-goerli";
                                         readonly BASE_SEPOLIA: "base-sepolia";
                                         readonly BSC_TESTNET: "bsc-testnet";
                                         readonly CHILIZ_SPICY_TESTNET: "chiliz-spicy-testnet";
-                                        readonly ETHEREUM_GOERLI: "ethereum-goerli";
                                         readonly ETHEREUM_SEPOLIA: "ethereum-sepolia";
                                         readonly HYPERSONIC_TESTNET: "hypersonic-testnet";
-                                        readonly LIGHTLINK_PEGASUS: "lightlink-pegasus";
-                                        readonly OPTIMISM_GOERLI: "optimism-goerli";
                                         readonly OPTIMISM_SEPOLIA: "optimism-sepolia";
                                         readonly POLYGON_AMOY: "polygon-amoy";
-                                        readonly POLYGON_MUMBAI: "polygon-mumbai";
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
-                                        readonly RARI_TESTNET: "rari-testnet";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
                                         readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
-                                        readonly SONEIUM_MINATO_TESTNET: "soneium-minato-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
                                         readonly STORY_TESTNET: "story-testnet";
                                         readonly VERIFY_TESTNET: "verify-testnet";
-                                        readonly VICTION_TESTNET: "viction-testnet";
-                                        readonly XAI_SEPOLIA_TESTNET: "xai-sepolia-testnet";
-                                        readonly ZKATANA: "zkatana";
-                                        readonly ZKYOTO: "zkyoto";
-                                        readonly ZORA_GOERLI: "zora-goerli";
                                         readonly ZORA_SEPOLIA: "zora-sepolia";
-                                        readonly MODE_SEPOLIA: "mode-sepolia";
                                         readonly SOLANA: "solana";
                                         readonly SUI: "sui";
                                         readonly APTOS: "aptos";
@@ -3003,7 +2848,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -3015,57 +2862,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos";
@@ -3094,7 +2920,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -3106,57 +2934,36 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
-                                        | "boss"
-                                        | "lightlink"
                                         | "skale-nebula"
                                         | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
-                                        | "xai"
                                         | "shape"
-                                        | "rari"
                                         | "scroll"
-                                        | "viction"
-                                        | "mode"
                                         | "space"
-                                        | "soneium"
                                         | "arbitrum-sepolia"
                                         | "avalanche-fuji"
                                         | "curtis"
                                         | "barret-testnet"
-                                        | "base-goerli"
                                         | "base-sepolia"
                                         | "bsc-testnet"
                                         | "chiliz-spicy-testnet"
-                                        | "ethereum-goerli"
                                         | "ethereum-sepolia"
                                         | "hypersonic-testnet"
-                                        | "lightlink-pegasus"
-                                        | "optimism-goerli"
                                         | "optimism-sepolia"
                                         | "polygon-amoy"
-                                        | "polygon-mumbai"
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
-                                        | "rari-testnet"
                                         | "scroll-sepolia"
                                         | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
-                                        | "soneium-minato-testnet"
                                         | "space-testnet"
                                         | "story-testnet"
                                         | "verify-testnet"
-                                        | "viction-testnet"
-                                        | "xai-sepolia-testnet"
-                                        | "zkatana"
-                                        | "zkyoto"
-                                        | "zora-goerli"
                                         | "zora-sepolia"
-                                        | "mode-sepolia"
                                         | "solana"
                                         | "sui"
                                         | "aptos";
@@ -3193,6 +3000,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -3223,7 +3032,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -3250,7 +3061,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -3279,57 +3092,36 @@ declare const orderSchema: z.ZodObject<
                     | "base"
                     | "zora"
                     | "arbitrumnova"
-                    | "astar-zkevm"
                     | "apechain"
                     | "apex"
-                    | "boss"
-                    | "lightlink"
                     | "skale-nebula"
                     | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
-                    | "xai"
                     | "shape"
-                    | "rari"
                     | "scroll"
-                    | "viction"
-                    | "mode"
                     | "space"
-                    | "soneium"
                     | "arbitrum-sepolia"
                     | "avalanche-fuji"
                     | "curtis"
                     | "barret-testnet"
-                    | "base-goerli"
                     | "base-sepolia"
                     | "bsc-testnet"
                     | "chiliz-spicy-testnet"
-                    | "ethereum-goerli"
                     | "ethereum-sepolia"
                     | "hypersonic-testnet"
-                    | "lightlink-pegasus"
-                    | "optimism-goerli"
                     | "optimism-sepolia"
                     | "polygon-amoy"
-                    | "polygon-mumbai"
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
-                    | "rari-testnet"
                     | "scroll-sepolia"
                     | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
-                    | "soneium-minato-testnet"
                     | "space-testnet"
                     | "story-testnet"
                     | "verify-testnet"
-                    | "viction-testnet"
-                    | "xai-sepolia-testnet"
-                    | "zkatana"
-                    | "zkyoto"
-                    | "zora-goerli"
                     | "zora-sepolia"
-                    | "mode-sepolia"
                     | "solana"
                     | "stripe-payment-element";
                 currency:
@@ -3355,7 +3147,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3377,57 +3171,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos"
@@ -3467,7 +3240,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3494,7 +3269,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3506,57 +3283,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos";
@@ -3587,7 +3343,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3614,7 +3372,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3626,57 +3386,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos";
@@ -3702,57 +3441,36 @@ declare const orderSchema: z.ZodObject<
                     | "base"
                     | "zora"
                     | "arbitrumnova"
-                    | "astar-zkevm"
                     | "apechain"
                     | "apex"
-                    | "boss"
-                    | "lightlink"
                     | "skale-nebula"
                     | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
-                    | "xai"
                     | "shape"
-                    | "rari"
                     | "scroll"
-                    | "viction"
-                    | "mode"
                     | "space"
-                    | "soneium"
                     | "arbitrum-sepolia"
                     | "avalanche-fuji"
                     | "curtis"
                     | "barret-testnet"
-                    | "base-goerli"
                     | "base-sepolia"
                     | "bsc-testnet"
                     | "chiliz-spicy-testnet"
-                    | "ethereum-goerli"
                     | "ethereum-sepolia"
                     | "hypersonic-testnet"
-                    | "lightlink-pegasus"
-                    | "optimism-goerli"
                     | "optimism-sepolia"
                     | "polygon-amoy"
-                    | "polygon-mumbai"
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
-                    | "rari-testnet"
                     | "scroll-sepolia"
                     | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
-                    | "soneium-minato-testnet"
                     | "space-testnet"
                     | "story-testnet"
                     | "verify-testnet"
-                    | "viction-testnet"
-                    | "xai-sepolia-testnet"
-                    | "zkatana"
-                    | "zkyoto"
-                    | "zora-goerli"
                     | "zora-sepolia"
-                    | "mode-sepolia"
                     | "solana"
                     | "stripe-payment-element";
                 currency:
@@ -3778,7 +3496,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3800,57 +3520,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos"
@@ -3890,7 +3589,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3917,7 +3618,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3929,57 +3632,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos";
@@ -4010,7 +3692,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -4037,7 +3721,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -4049,57 +3735,36 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
-                              | "boss"
-                              | "lightlink"
                               | "skale-nebula"
                               | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
-                              | "xai"
                               | "shape"
-                              | "rari"
                               | "scroll"
-                              | "viction"
-                              | "mode"
                               | "space"
-                              | "soneium"
                               | "arbitrum-sepolia"
                               | "avalanche-fuji"
                               | "curtis"
                               | "barret-testnet"
-                              | "base-goerli"
                               | "base-sepolia"
                               | "bsc-testnet"
                               | "chiliz-spicy-testnet"
-                              | "ethereum-goerli"
                               | "ethereum-sepolia"
                               | "hypersonic-testnet"
-                              | "lightlink-pegasus"
-                              | "optimism-goerli"
                               | "optimism-sepolia"
                               | "polygon-amoy"
-                              | "polygon-mumbai"
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
-                              | "rari-testnet"
                               | "scroll-sepolia"
                               | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
-                              | "soneium-minato-testnet"
                               | "space-testnet"
                               | "story-testnet"
                               | "verify-testnet"
-                              | "viction-testnet"
-                              | "xai-sepolia-testnet"
-                              | "zkatana"
-                              | "zkyoto"
-                              | "zora-goerli"
                               | "zora-sepolia"
-                              | "mode-sepolia"
                               | "solana"
                               | "sui"
                               | "aptos";
@@ -4146,7 +3811,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -4169,57 +3836,36 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
-                | "boss"
-                | "lightlink"
                 | "skale-nebula"
                 | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
-                | "xai"
                 | "shape"
-                | "rari"
                 | "scroll"
-                | "viction"
-                | "mode"
                 | "space"
-                | "soneium"
                 | "arbitrum-sepolia"
                 | "avalanche-fuji"
                 | "curtis"
                 | "barret-testnet"
-                | "base-goerli"
                 | "base-sepolia"
                 | "bsc-testnet"
                 | "chiliz-spicy-testnet"
-                | "ethereum-goerli"
                 | "ethereum-sepolia"
                 | "hypersonic-testnet"
-                | "lightlink-pegasus"
-                | "optimism-goerli"
                 | "optimism-sepolia"
                 | "polygon-amoy"
-                | "polygon-mumbai"
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
-                | "rari-testnet"
                 | "scroll-sepolia"
                 | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
-                | "soneium-minato-testnet"
                 | "space-testnet"
                 | "story-testnet"
                 | "verify-testnet"
-                | "viction-testnet"
-                | "xai-sepolia-testnet"
-                | "zkatana"
-                | "zkyoto"
-                | "zora-goerli"
                 | "zora-sepolia"
-                | "mode-sepolia"
                 | "solana"
                 | "stripe-payment-element";
             currency:
@@ -4245,7 +3891,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -4267,57 +3915,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos"
@@ -4357,7 +3984,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4384,7 +4013,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4396,57 +4027,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos";
@@ -4477,7 +4087,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4504,7 +4116,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4516,57 +4130,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos";
@@ -4603,57 +4196,36 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
-                | "boss"
-                | "lightlink"
                 | "skale-nebula"
                 | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
-                | "xai"
                 | "shape"
-                | "rari"
                 | "scroll"
-                | "viction"
-                | "mode"
                 | "space"
-                | "soneium"
                 | "arbitrum-sepolia"
                 | "avalanche-fuji"
                 | "curtis"
                 | "barret-testnet"
-                | "base-goerli"
                 | "base-sepolia"
                 | "bsc-testnet"
                 | "chiliz-spicy-testnet"
-                | "ethereum-goerli"
                 | "ethereum-sepolia"
                 | "hypersonic-testnet"
-                | "lightlink-pegasus"
-                | "optimism-goerli"
                 | "optimism-sepolia"
                 | "polygon-amoy"
-                | "polygon-mumbai"
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
-                | "rari-testnet"
                 | "scroll-sepolia"
                 | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
-                | "soneium-minato-testnet"
                 | "space-testnet"
                 | "story-testnet"
                 | "verify-testnet"
-                | "viction-testnet"
-                | "xai-sepolia-testnet"
-                | "zkatana"
-                | "zkyoto"
-                | "zora-goerli"
                 | "zora-sepolia"
-                | "mode-sepolia"
                 | "solana"
                 | "sui"
                 | "aptos";
@@ -4704,7 +4276,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -4732,7 +4306,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -4763,7 +4339,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -4892,7 +4470,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -4915,57 +4495,36 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
-                | "boss"
-                | "lightlink"
                 | "skale-nebula"
                 | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
-                | "xai"
                 | "shape"
-                | "rari"
                 | "scroll"
-                | "viction"
-                | "mode"
                 | "space"
-                | "soneium"
                 | "arbitrum-sepolia"
                 | "avalanche-fuji"
                 | "curtis"
                 | "barret-testnet"
-                | "base-goerli"
                 | "base-sepolia"
                 | "bsc-testnet"
                 | "chiliz-spicy-testnet"
-                | "ethereum-goerli"
                 | "ethereum-sepolia"
                 | "hypersonic-testnet"
-                | "lightlink-pegasus"
-                | "optimism-goerli"
                 | "optimism-sepolia"
                 | "polygon-amoy"
-                | "polygon-mumbai"
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
-                | "rari-testnet"
                 | "scroll-sepolia"
                 | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
-                | "soneium-minato-testnet"
                 | "space-testnet"
                 | "story-testnet"
                 | "verify-testnet"
-                | "viction-testnet"
-                | "xai-sepolia-testnet"
-                | "zkatana"
-                | "zkyoto"
-                | "zora-goerli"
                 | "zora-sepolia"
-                | "mode-sepolia"
                 | "solana"
                 | "stripe-payment-element";
             currency:
@@ -4991,7 +4550,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -5013,57 +4574,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos"
@@ -5103,7 +4643,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -5130,7 +4672,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -5142,57 +4686,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos";
@@ -5223,7 +4746,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -5250,7 +4775,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -5262,57 +4789,36 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
-                          | "boss"
-                          | "lightlink"
                           | "skale-nebula"
                           | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
-                          | "xai"
                           | "shape"
-                          | "rari"
                           | "scroll"
-                          | "viction"
-                          | "mode"
                           | "space"
-                          | "soneium"
                           | "arbitrum-sepolia"
                           | "avalanche-fuji"
                           | "curtis"
                           | "barret-testnet"
-                          | "base-goerli"
                           | "base-sepolia"
                           | "bsc-testnet"
                           | "chiliz-spicy-testnet"
-                          | "ethereum-goerli"
                           | "ethereum-sepolia"
                           | "hypersonic-testnet"
-                          | "lightlink-pegasus"
-                          | "optimism-goerli"
                           | "optimism-sepolia"
                           | "polygon-amoy"
-                          | "polygon-mumbai"
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
-                          | "rari-testnet"
                           | "scroll-sepolia"
                           | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
-                          | "soneium-minato-testnet"
                           | "space-testnet"
                           | "story-testnet"
                           | "verify-testnet"
-                          | "viction-testnet"
-                          | "xai-sepolia-testnet"
-                          | "zkatana"
-                          | "zkyoto"
-                          | "zora-goerli"
                           | "zora-sepolia"
-                          | "mode-sepolia"
                           | "solana"
                           | "sui"
                           | "aptos";
@@ -5349,57 +4855,36 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
-                | "boss"
-                | "lightlink"
                 | "skale-nebula"
                 | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
-                | "xai"
                 | "shape"
-                | "rari"
                 | "scroll"
-                | "viction"
-                | "mode"
                 | "space"
-                | "soneium"
                 | "arbitrum-sepolia"
                 | "avalanche-fuji"
                 | "curtis"
                 | "barret-testnet"
-                | "base-goerli"
                 | "base-sepolia"
                 | "bsc-testnet"
                 | "chiliz-spicy-testnet"
-                | "ethereum-goerli"
                 | "ethereum-sepolia"
                 | "hypersonic-testnet"
-                | "lightlink-pegasus"
-                | "optimism-goerli"
                 | "optimism-sepolia"
                 | "polygon-amoy"
-                | "polygon-mumbai"
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
-                | "rari-testnet"
                 | "scroll-sepolia"
                 | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
-                | "soneium-minato-testnet"
                 | "space-testnet"
                 | "story-testnet"
                 | "verify-testnet"
-                | "viction-testnet"
-                | "xai-sepolia-testnet"
-                | "zkatana"
-                | "zkyoto"
-                | "zora-goerli"
                 | "zora-sepolia"
-                | "mode-sepolia"
                 | "solana"
                 | "sui"
                 | "aptos";
@@ -5450,7 +4935,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -5478,7 +4965,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -5509,7 +4998,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;

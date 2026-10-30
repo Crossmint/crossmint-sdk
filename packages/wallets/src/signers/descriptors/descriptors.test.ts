@@ -3,7 +3,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EVMChain } from "../../chains/chains";
 import type { DeviceSignerKeyStorage } from "../../utils/device-signers/DeviceSignerKeyStorage";
 import type { ServerSignerResolver } from "../server/resolver";
-import type { ApiSourcedServerSignerConfig, ServerSignerConfig, SignerConfigForChain } from "../types";
+import type { ApiSourcedServerSignerConfig, PasskeyProvider, ServerSignerConfig, SignerConfigForChain } from "../types";
 import { getSignerDescriptor } from "./index";
 import type { SignerDescriptorContext } from "./types";
 
@@ -20,6 +20,7 @@ const cfg = (c: object) => c as unknown as Config;
 function makeCtx(
     overrides: {
         deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+        passkeyProvider?: PasskeyProvider;
         hasRecoveryResolution?: boolean;
         apiLocator?: ServerSignerResolver["apiLocator"];
         candidateAddresses?: ServerSignerResolver["candidateAddresses"];
@@ -32,9 +33,10 @@ function makeCtx(
         clientTEEConnection,
         onAuthRequired,
         deviceSignerKeyStorage: overrides.deviceSignerKeyStorage,
+        passkeyProvider: overrides.passkeyProvider,
         serverSigners: {
             keyMaterialForAssembly: vi.fn(() => SERVER_KEY_MATERIAL),
-            hasRecoveryResolution: overrides.hasRecoveryResolution ?? false,
+            hasRecoveryResolutionFor: vi.fn(() => overrides.hasRecoveryResolution ?? false),
             apiLocator: overrides.apiLocator ?? vi.fn(() => "server:0xDerivedServer"),
             candidateAddresses: overrides.candidateAddresses ?? vi.fn(() => []),
         } as unknown as ServerSignerResolver,
@@ -81,6 +83,23 @@ it.each<[type: "email" | "phone", field: "email" | "phone", value: string]>([
         type,
         [field]: value,
         locator: `${type}:${value}`,
+        address: WALLET_ADDRESS,
+        crossmint,
+        clientTEEConnection,
+        onAuthRequired,
+    });
+});
+
+it("buildInternalConfig: phone threads channel from config", () => {
+    const result = getSignerDescriptor("phone").buildInternalConfig(
+        { type: "phone", phone: "+15551234", channel: "whatsapp" } as never,
+        makeCtx()
+    );
+    expect(result).toEqual({
+        type: "phone",
+        phone: "+15551234",
+        channel: "whatsapp",
+        locator: "phone:+15551234",
         address: WALLET_ADDRESS,
         crossmint,
         clientTEEConnection,
@@ -135,8 +154,39 @@ it.each<[name: string, config: Config, expected: object]>([
         cfg({ type: "passkey", id: "cred-1" }),
         { type: "passkey", id: "cred-1", locator: "passkey:cred-1" },
     ],
+    [
+        "missing id is taken from a passkey:{id} locator",
+        cfg({ type: "passkey", locator: "passkey:cred-2" }),
+        { type: "passkey", id: "cred-2", locator: "passkey:cred-2" },
+    ],
 ])("buildInternalConfig: passkey %s", (_name, config, expected) => {
     expect(getSignerDescriptor("passkey").buildInternalConfig(config as never, makeCtx())).toMatchObject(expected);
+});
+
+describe("buildInternalConfig: passkey with a passkeyProvider", () => {
+    const passkeyProvider: PasskeyProvider = { createPasskey: vi.fn(), signWithPasskey: vi.fn() };
+
+    it("uses the provider when the config has no callbacks of its own", () => {
+        const internal = getSignerDescriptor("passkey").buildInternalConfig(
+            cfg({ type: "passkey", id: "cred-1" }) as never,
+            makeCtx({ passkeyProvider })
+        );
+
+        expect(internal).toMatchObject({
+            onCreatePasskey: passkeyProvider.createPasskey,
+            onSignWithPasskey: passkeyProvider.signWithPasskey,
+        });
+    });
+
+    it("keeps the config's own callbacks over the provider", () => {
+        const onSignWithPasskey = vi.fn();
+        const internal = getSignerDescriptor("passkey").buildInternalConfig(
+            cfg({ type: "passkey", id: "cred-1", onSignWithPasskey }) as never,
+            makeCtx({ passkeyProvider })
+        );
+
+        expect(internal).toMatchObject({ onSignWithPasskey });
+    });
 });
 
 it.each<[type: string]>([["email"], ["phone"], ["passkey"], ["api-key"]])(
@@ -216,14 +266,33 @@ it("matchesRecovery: device is always false", () => {
     ).toBe(false);
 });
 
-it("matchesRecovery: passkey is true even with differing ids", () => {
-    expect(
-        getSignerDescriptor("passkey").matchesRecovery(
-            cfg({ type: "passkey", id: "cred-1" }) as never,
-            cfg({ type: "passkey" }) as never,
-            makeCtx()
-        )
-    ).toBe(true);
+it.each<[name: string, config: Config, recovery: Config, expected: boolean]>([
+    ["recovery has no credential id", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey" }), true],
+    ["config has no credential id", cfg({ type: "passkey" }), cfg({ type: "passkey", id: "cred-1" }), true],
+    ["both ids match", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey", id: "cred-1" }), true],
+    ["ids differ", cfg({ type: "passkey", id: "cred-1" }), cfg({ type: "passkey", id: "cred-2" }), false],
+    [
+        "id matches the recovery locator",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:cred-1" }),
+        true,
+    ],
+    [
+        "id differs from the recovery locator",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:cred-2" }),
+        false,
+    ],
+    [
+        "recovery locator has no id",
+        cfg({ type: "passkey", id: "cred-1" }),
+        cfg({ type: "passkey", locator: "passkey:" }),
+        true,
+    ],
+])("matchesRecovery: passkey when %s", (_name, config, recovery, expected) => {
+    expect(getSignerDescriptor("passkey").matchesRecovery(config as never, recovery as never, makeCtx())).toBe(
+        expected
+    );
 });
 
 it.each<[name: string, signerAddrs: string[], recoveryAddrs: string[], expected: boolean]>([
