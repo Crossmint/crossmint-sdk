@@ -484,6 +484,27 @@ describe("Wallet - send()", () => {
             );
         });
 
+        it("includes the API error object in the thrown error", async () => {
+            const errorResponse = {
+                message: "Transaction reverted during execution",
+                error: {
+                    reason: "execution_reverted",
+                    message: "Transaction reverted during execution",
+                    revert: {
+                        type: "contract_call",
+                        reason: "ERC20: transfer amount exceeds balance",
+                        simulationLink: "https://simulation.example.com/abc",
+                    },
+                },
+            };
+
+            mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
+
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
+                /simulation\.example\.com\/abc/
+            );
+        });
+
         it("throws InvalidAddressError for invalid recipient address", async () => {
             await expect(wallet.send("not-a-valid-address", "usdc", "10.0")).rejects.toThrow(InvalidAddressError);
             expect(mockApiClient.send).not.toHaveBeenCalled();

@@ -537,7 +537,7 @@ export class Wallet<C extends Chain> {
                 error: transactionCreationResponse,
             });
             throw new TransactionNotCreatedError(
-                `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
+                `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
             );
         }
 
