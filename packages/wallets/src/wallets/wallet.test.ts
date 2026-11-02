@@ -474,6 +474,10 @@ describe("Wallet - send()", () => {
     describe("error cases", () => {
         it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
+                error: {
+                    reason: "unknown",
+                    message: "Insufficient balance",
+                },
                 message: "Insufficient balance",
             };
 
