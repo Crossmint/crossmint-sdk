@@ -557,6 +557,18 @@ export class WalletFactory {
                 const matchIndex = unmatchedExistingSigners.findIndex((existingWalletSigner) =>
                     this.matchesRecoverySigner(inputRecoverySigner, existingWalletSigner, args.chain)
                 );
+                // A server signer is identified by the address its secret derives to. Falling back to a
+                // type-only match would let any secret pass, so an address miss is a mismatch.
+                if (
+                    matchIndex === -1 &&
+                    inputRecoverySigner.type === "server" &&
+                    "secret" in inputRecoverySigner &&
+                    unmatchedExistingSigners.some((s) => s.type === "server")
+                ) {
+                    throw new WalletCreationError(
+                        "The server recovery signer does not match the existing wallet's server recovery signer: its secret derives to a different address"
+                    );
+                }
                 const existingWalletSigner =
                     matchIndex === -1
                         ? unmatchedExistingSigners.find((s) => s.type === inputRecoverySigner.type)

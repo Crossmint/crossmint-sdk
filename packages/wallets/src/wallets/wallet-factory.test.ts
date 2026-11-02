@@ -1450,6 +1450,42 @@ describe("WalletFactory - recovery signer lists", () => {
                 expect.objectContaining({ type: "phone", channel: "whatsapp" })
             );
         });
+
+        it("accepts a server recovery secret that derives to the existing wallet's server signer address", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            await expect(
+                walletFactory.getWallet(SOLANA_ADDRESS, {
+                    chain: "solana",
+                    recovery: { type: "server", secret: FIRST_SERVER_SECRET },
+                } as WalletCreateArgs<"solana">)
+            ).resolves.toBeDefined();
+        });
+
+        it("rejects a server recovery secret that derives to a different address, without echoing it", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            const result = walletFactory.getWallet(SOLANA_ADDRESS, {
+                chain: "solana",
+                recovery: { type: "server", secret: SECOND_SERVER_SECRET },
+            } as WalletCreateArgs<"solana">);
+
+            await expect(result).rejects.toBeInstanceOf(WalletCreationError);
+            await expect(result).rejects.toThrow(/derives to a different address/);
+            const message = await result.catch((error: Error) => error.message);
+            expect(message).not.toContain(SECOND_SERVER_SECRET);
+            expect(message).not.toContain(FIRST_SERVER_SECRET);
+        });
     });
 
     describe("createWallet response", () => {
