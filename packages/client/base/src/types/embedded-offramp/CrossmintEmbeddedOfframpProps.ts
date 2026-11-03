@@ -97,24 +97,24 @@ export type EmbeddedOfframpPayer = {
 };
 
 export interface CrossmintEmbeddedOfframpProps {
-    /** The `sessionId` and `clientSecret` that [Create Offramp Session](https://docs.crossmint.com/offramp/api-reference/create-offramp-session) returns. Changing it reloads the offramp. */
+    /** The `sessionId` and `clientSecret` from [Create Offramp Session](https://docs.crossmint.com/offramp/api-reference/create-offramp-session). */
     credentials: EmbeddedOfframpCredentials;
-    /** Signs and sends the deposit. Pass `createCrossmintWalletSigner(wallet)` for a Crossmint wallet, or your own object for an external wallet. See `EmbeddedOfframpPayer`. It can change without a reload. */
+    /** Signs and sends the deposit. Use `createCrossmintWalletSigner(wallet)` or your own `EmbeddedOfframpPayer`. */
     payer: EmbeddedOfframpPayer;
-    /** Fonts, colors and component styles. It takes the same object as the embedded checkout's `appearance`, described in [UI Customization](https://docs.crossmint.com/onramp/guides/ui-customization). The identity verification step uses it too. Changing it reloads the offramp. */
+    /** Fonts, colors and styles, the same object as embedded checkout's `appearance`. */
     appearance?: EmbeddedCheckoutV3Appearance;
-    /** The language of the screens, such as `en-US` or `es-ES`. Defaults to the browser or device language when it is supported, otherwise `en-US`. Changing it reloads the offramp. */
+    /** The language of the screens. Defaults to the browser or device language, else `en-US`. */
     locale?: Locale;
-    /** Fill the container's height instead of sizing to the content. Defaults to `false`: the component is then at least 650px tall plus padding on every screen, and grows when a screen needs more (on React Native, put it in a `ScrollView` if the screen can be shorter). With `fill`, give the container a definite height (web, such as `100vh`) or `flex: 1` or a height (React Native); content taller than it scrolls inside the offramp. In both modes the component takes the container's full width. Changing it reloads the offramp. */
+    /** Fill the container's height instead of sizing to the content. The container needs a definite height. */
     fill?: boolean;
-    /** The offramp loaded the session and shows its first screen. It fires once per load, also when the session fails to load, in which case `onError` reports why. It does not fire when the offramp page cannot load or its props are invalid. */
+    /** The first screen is shown. Fires once per load. */
     onReady?: () => void;
     /** The flow moved to another step. See `OfframpStatus`. */
     onStatusChange?: (event: { status: OfframpStatus; orderId?: string }) => void;
-    /** The deposit for an order is confirmed and the payout to the bank account is in progress or complete. `txId` is the deposit's transaction ID. It fires once per order and load, so it fires again when the user reopens a completed withdrawal: dedupe by `orderId`. The payout can still fail afterwards: `onStatusChange` and `onError` then report `payout-failed` for the same `orderId`. Confirm the payout on your server with [Manage Orders](https://docs.crossmint.com/offramp/guides/manage-orders) or webhooks. */
+    /** The deposit is confirmed. Can fire again for a reopened withdrawal, so dedupe by `orderId`. */
     onComplete?: (event: { orderId: string; txId: string }) => void;
-    /** The user closed the flow. Only three buttons call it: **Continue** on Withdrawal sent (`onComplete` has already fired), **Close** on a failure screen, and **Cancel** when the order's bank account cannot be loaded. Without it, those buttons do nothing. No other screen has a **Cancel** button, so give users your own way to close. Closing the view while the deposit is confirming does not stop the deposit or the payout: keep the latest `orderId` from `onStatusChange` and follow it with [Manage Orders](https://docs.crossmint.com/offramp/guides/manage-orders) or webhooks. Unmounting the component does not cancel a wallet request that was already sent, so keep the payer's wallet available until it settles. */
+    /** The user closed the flow. Without it, the Continue, Close and Cancel buttons do nothing. */
     onCancel?: () => void;
-    /** Something went wrong. See `OfframpErrorReason`. `message` is for your logs, not for display. */
+    /** Something went wrong. See `OfframpErrorReason`. `message` is for logs, not for display. */
     onError?: (error: { reason: OfframpErrorReason; retriable: boolean; message: string }) => void;
 }
