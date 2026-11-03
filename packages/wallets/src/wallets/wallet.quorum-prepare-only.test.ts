@@ -1,13 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import type { CreateTransactionSuccessResponse, SendResponse } from "../api";
 import type { Chain } from "../chains/chains";
-import type { ServerSignerConfig } from "../signers/types";
+import type { QuorumSigner, ServerSignerConfig } from "../signers/types";
+import { TransactionNotCreatedError } from "../utils/errors";
+import { getSignerLocator } from "../utils/signer-locator";
 import { EVMWallet } from "./evm";
 import { SolanaWallet } from "./solana";
 import { StellarWallet } from "./stellar";
-import { Wallet } from "./wallet";
+import type { Wallet } from "./wallet";
 import {
     createMockApiClient,
+    createMockSigner,
     createMockSolanaSerializedTransaction,
     createMockWallet,
     createQuorumApiEntry,
@@ -17,13 +20,13 @@ import {
 import type { SendTokenTransactionOptions, SignerOption, TransactionInputOptions } from "./types";
 
 const QUORUM = createQuorumApiEntry();
-const SERVER_CONFIG = { type: "server", secret: "server-secret" } as ServerSignerConfig;
-const DERIVED_SERVER_LOCATOR = "server:0xDerivedServer";
+const SERVER_CONFIG: ServerSignerConfig = { type: "server", secret: `xmsk1_${"a".repeat(64)}` };
 const EXPLICIT_LOCATOR = "external-wallet:0xExplicit";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
 const STELLAR_CONTRACT = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
 const LANDED_HASH = "0xlanded";
 const LANDED_EXPLORER_LINK = "https://explorer.example.com/tx/0xlanded";
+const CREATION_ERROR = { error: true, statusCode: 400, message: "Invalid signer" };
 
 // `prepareOnly` may be omitted here: an untyped caller can leave it out.
 type CallOptions = { prepareOnly?: boolean; signer?: SignerOption };
@@ -109,10 +112,6 @@ describe("creating calls with a quorum as the acting signer", () => {
         api = createMockApiClient();
         api.send.mockResolvedValue({ id: "txn-1" } as unknown as SendResponse);
         api.createTransaction.mockResolvedValue({ id: "txn-1" } as unknown as CreateTransactionSuccessResponse);
-        vi.spyOn(
-            Wallet.prototype as unknown as { resolveServerSignerApiLocator: () => string },
-            "resolveServerSignerApiLocator"
-        ).mockReturnValue(DERIVED_SERVER_LOCATOR);
     });
 
     afterEach(() => {
@@ -122,12 +121,12 @@ describe("creating calls with a quorum as the acting signer", () => {
 
     describe.each(CREATING_CALLS)("$name", ({ chain, chainType, call, created }) => {
         // The request as the API would report it: only the quorum's members can approve it.
-        const arrangeQuorumAwaitingApproval = () =>
+        const arrangeQuorumAwaitingApproval = (quorum: QuorumSigner = QUORUM) =>
             api.getTransaction.mockResolvedValue({
                 id: "txn-1",
                 status: "awaiting-approval",
                 chainType,
-                approvals: { pending: [createQuorumPendingApproval({ quorum: QUORUM })], submitted: [] },
+                approvals: { pending: [createQuorumPendingApproval({ quorum })], submitted: [] },
             } as never);
 
         describe.each(["api-key", "external-wallet"] as const)("with an %s active signer", (activeSigner) => {
@@ -174,6 +173,40 @@ describe("creating calls with a quorum as the acting signer", () => {
                 expect(api.getTransaction).not.toHaveBeenCalled();
             });
         });
+
+        describe("when the active signer is one of the quorum's members", () => {
+            it("signs nothing and returns the created request", async () => {
+                const wallet = await createMockWallet(chain, api, "external-wallet");
+                const member = createMockSigner("external-wallet", chain) as unknown as {
+                    type: "external-wallet";
+                    address: string;
+                    onSign: Mock;
+                };
+                await wallet.useSigner(member as never);
+                const memberEntry = { type: member.type, address: member.address, locator: getSignerLocator(member) };
+                const memberQuorum: QuorumSigner = { ...QUORUM, members: [memberEntry, ...QUORUM.members.slice(1)] };
+                arrangeQuorumAwaitingApproval(memberQuorum);
+
+                const outcome = await settle(call(wallet, { prepareOnly: false, signer: memberQuorum.locator }));
+
+                expect(outcome).toStrictEqual({ value: createdRequest("txn-1") });
+                expect(member.onSign).not.toHaveBeenCalled();
+                expect(api.approveTransaction).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("when the API rejects the request at creation", () => {
+            it("throws the creation error, as with any other signer", async () => {
+                const wallet = await createMockWallet(chain, api, "api-key");
+                api.send.mockResolvedValue(CREATION_ERROR as never);
+                api.createTransaction.mockResolvedValue(CREATION_ERROR as never);
+
+                await expect(call(wallet, { prepareOnly: false, signer: QUORUM.locator })).rejects.toThrow(
+                    TransactionNotCreatedError
+                );
+                expect(api.getTransaction).not.toHaveBeenCalled();
+            });
+        });
     });
 });
 
@@ -191,10 +224,6 @@ describe("creating calls with a signer that is not a quorum", () => {
             status: "success",
             onChain: { txId: LANDED_HASH, explorerLink: LANDED_EXPLORER_LINK },
         } as never);
-        vi.spyOn(
-            Wallet.prototype as unknown as { resolveServerSignerApiLocator: () => string },
-            "resolveServerSignerApiLocator"
-        ).mockReturnValue(DERIVED_SERVER_LOCATOR);
     });
 
     afterEach(() => {
@@ -210,7 +239,11 @@ describe("creating calls with a signer that is not a quorum", () => {
                 sentSigner: (wallet: Wallet<Chain>) => wallet.signer?.locator(),
             },
             { kind: "an explicit locator", signer: EXPLICIT_LOCATOR, sentSigner: () => EXPLICIT_LOCATOR },
-            { kind: "a server signer config", signer: SERVER_CONFIG, sentSigner: () => DERIVED_SERVER_LOCATOR },
+            {
+                kind: "a server signer config",
+                signer: SERVER_CONFIG,
+                sentSigner: () => expect.stringMatching(/^server:/),
+            },
         ])("acting as $kind", ({ signer, sentSigner }) => {
             let wallet: Wallet<Chain>;
 
@@ -224,7 +257,7 @@ describe("creating calls with a signer that is not a quorum", () => {
                 expect(outcome).toStrictEqual({
                     value: { hash: LANDED_HASH, explorerLink: LANDED_EXPLORER_LINK, transactionId: "txn-1" },
                 });
-                expect(created(api).signer).toBe(sentSigner(wallet));
+                expect(created(api).signer).toEqual(sentSigner(wallet));
             });
 
             it("returns the created request without waiting when prepareOnly is true", async () => {
