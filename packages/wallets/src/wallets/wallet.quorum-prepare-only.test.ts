@@ -23,6 +23,7 @@ const QUORUM = createQuorumApiEntry();
 const SERVER_CONFIG: ServerSignerConfig = { type: "server", secret: `xmsk1_${"a".repeat(64)}` };
 const EXPLICIT_LOCATOR = "external-wallet:0xExplicit";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
+const STELLAR_RECIPIENT = "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY";
 const STELLAR_CONTRACT = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
 const LANDED_HASH = "0xlanded";
 const LANDED_EXPLORER_LINK = "https://explorer.example.com/tx/0xlanded";
@@ -51,6 +52,13 @@ const CREATING_CALLS: CreatingCall[] = [
         chain: "base-sepolia",
         chainType: "evm",
         call: (wallet, options) => wallet.send(RECIPIENT, "usdc", "1", options as SendTokenTransactionOptions),
+        created: (api) => ({ calls: api.send.mock.calls.length, signer: api.send.mock.calls[0]?.[2].signer }),
+    },
+    {
+        name: "send on a Stellar wallet",
+        chain: "stellar",
+        chainType: "stellar",
+        call: (wallet, options) => wallet.send(STELLAR_RECIPIENT, "usdc", "1", options as SendTokenTransactionOptions),
         created: (api) => ({ calls: api.send.mock.calls.length, signer: api.send.mock.calls[0]?.[2].signer }),
     },
     {
