@@ -18,6 +18,10 @@ type EmbeddedOfframpWebViewParent = WebViewParent<
     typeof embeddedOfframpOutgoingEvents
 >;
 
+/**
+ * Renders the Crossmint offramp in a WebView for one [offramp session](https://docs.crossmint.com/offramp/api-reference/create-offramp-session). Render it inside `CrossmintProvider`, which takes your client-side API key.
+ * The component reloads the offramp when the value of `credentials`, `appearance`, `locale` or `fill` changes. `payer` and the callbacks can change without a reload.
+ */
 export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     const { crossmint } = useCrossmint();
     const service = createEmbeddedOfframpService({
