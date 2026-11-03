@@ -509,6 +509,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base
+      '@noble/hashes':
+        specifier: 1.8.0
+        version: 1.8.0
       jwt-decode:
         specifier: 4.0.0
         version: 4.0.0

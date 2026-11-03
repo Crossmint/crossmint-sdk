@@ -23,6 +23,7 @@
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@noble/hashes": "1.8.0",
         "jwt-decode": "4.0.0"
     }
 }
