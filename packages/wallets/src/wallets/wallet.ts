@@ -320,13 +320,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the primary recovery signer config. Use {@link recoveryMethods} for the full list on wallets
-     * created with several recovery signers.
+     * Get the primary recovery signer config: the first recovery method that signs on its own. Use
+     * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
+     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): RecoverySignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#signerManager.requireDefaultRecovery() as SignerConfigForChain<C>;
     }
 
     /**

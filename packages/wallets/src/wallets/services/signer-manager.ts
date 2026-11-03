@@ -7,7 +7,6 @@ import type { ServerSignerResolver } from "../../signers/server/resolver";
 import { assembleSigner } from "../../signers";
 import {
     isApiSourcedServerSignerConfig,
-    isQuorumLocator,
     isQuorumSigner,
     type InternalSignerConfig,
     type QuorumSigner,
@@ -260,9 +259,10 @@ export class SignerManager<C extends Chain> {
         const activeLocator = this.#activeSigner?.locator();
         const activeIndex = activeLocator == null ? -1 : recoveryLocators.indexOf(activeLocator);
         if (activeIndex === -1) {
-            const known = recoveryLocators.filter(
-                (locator): locator is SignerLocator => locator != null && !isQuorumLocator(locator)
-            );
+            const known = this.#recoverySigners
+                .filter((recovery) => !isQuorumSigner(recovery))
+                .map((recovery) => this.recoveryLocator(recovery))
+                .filter((locator): locator is SignerLocator => locator != null);
             const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
             throw new RecoveryMethodRequiredError(
                 activeLocator == null

@@ -123,8 +123,8 @@ describe("mapApiSignerToSigner", () => {
         it.each([
             ["without the quorum: prefix", "quorum-x"],
             ["with an id that is not a UUID", "quorum:not-a-uuid"],
-            ["with a version-4 UUID", "quorum:0b3e8f4c-6a1d-4c2e-9f3a-7d5b1e2c4a6f"],
-            ["with an uppercase UUID", "quorum:0B3E8F4C-6A1D-8C2E-9F3A-7D5B1E2C4A6F"],
+            ["with a version-8 UUID", "quorum:0b3e8f4c-6a1d-8c2e-9f3a-7d5b1e2c4a6f"],
+            ["with an uppercase UUID", "quorum:0B3E8F4C-6A1D-4C2E-9F3A-7D5B1E2C4A6F"],
         ])("rejects a quorum locator %s", (_name, locator) => {
             const apiSigner = { ...createQuorumApiEntry(), locator, chains: {} } as unknown as APISigner;
 
