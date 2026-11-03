@@ -1,5 +1,43 @@
 # @crossmint/client-sdk-base
 
+## 4.7.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+- 712a06a: payment-method-management: add `fields.billingDetails.address` and surface `card.billing` on the emitted card method.
+
+  - `fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } }` — optional fields of the add-card form, in Stripe's `billingDetails` shape so new fields need no new prop. `address: true` requires a valid billing address before the card saves, for built-in and `ref.submit()` submissions alike. An object collects it too and configures address line 2: `"optional"` (default, same as `true`), `"required"`, or `"hidden"`. Applies to cards only.
+  - `CrossmintCardPaymentMethod.card.billing` — optional billing details (`name`, `address`, `phone`) the card was saved with, surfaced on `onPaymentMethodSelected` and `submit()` results via the new `CrossmintPaymentMethodBillingDetails` / `CrossmintPaymentMethodBillingAddress` types.
+
+  Requires the matching iframe release (Paella-Labs/crossbit-main#33078; the `line2` object form also needs Paella-Labs/crossbit-main#33171): the flag is a no-op until it is deployed.
+
+### Patch Changes
+
+- 754047d: Remove dependencies the packages do not import: `exponential-backoff` and `uuid` from `@crossmint/client-sdk-base`, `zod` from `@crossmint/client-signers-cryptography`, and `bs58`, `lodash.clonedeep`, `lodash.isequal` and `zod` from `@crossmint/client-sdk-react-native-ui`.
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+
+## 4.6.1
+
+### Patch Changes
+
+- 9705007: Document the JWT sources supported by payment-method management. Crossmint Auth JWTs are not supported.
+
+## 4.6.0
+
+### Minor Changes
+
+- 0be2c42: `CrossmintCvcRecollection` can be submitted from your own button.
+
+  - New `ref`: `ref.current.submit()` resolves with `CvcRecollectionSubmitResult`: `complete` (the new CVC was stored; `onComplete` also fired), `invalid` (the component shows the field error), `failed` (retryable, with a message), `refused` (terminal, with the same `reason`/`message` `onError` reported) or `unavailable` (the component is not ready or did not answer). It never rejects. A call while one is in flight returns the same promise; after `complete`, submitting again returns `complete` without updating the vault twice.
+  - New `hideSubmitButton` prop (default `false`): the component renders no Confirm button. Nothing changes for hosts that do not pass it; `onComplete` and `onError` keep firing, including for submits started by `submit()`.
+  - `@crossmint/client-sdk-react-ui` now exports `CrossmintCvcRecollectionRef` and `CvcRecollectionSubmitResult`.
+
+  Pending submits resolve as `superseded` when the card, iframe configuration, or connection changes, or the component unmounts. The connection and handshake start on mount — so `submit()` also works if the iframe `load` event was missed (SSR/hydration) — and each later iframe reload establishes a fresh handshake before submitting. An iframe result with an unrecognized status resolves as `failed` instead of hanging until the timeout. Superseding a submit does not cancel an update already started on the server; after a timeout the update may still have completed, `onComplete` fires if it did, and submitting again returns the outcome.
+
+  Requires the updated `/sdk/unstable/cvc-recollection` iframe (crossbit-main); against an older frame `submit()` resolves `unavailable` after the timeout.
+
 ## 4.5.0
 
 ### Minor Changes

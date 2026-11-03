@@ -1,5 +1,36 @@
 # @crossmint/wallets-sdk
 
+## 1.21.0
+
+### Minor Changes
+
+- 507f354: Support recovery methods on EVM. `createWallet` sends `recoveryMethods` on EVM chains and accepts more than one. `addRecoveryMethod` and `removeRecoveryMethod` work on EVM wallets and send the wallet's chain, which the API requires on EVM. A single recovery method passed as `recovery` still goes under `adminSigner`.
+
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 1.20.6
+
+### Patch Changes
+
+- 46666e3: Preserve the optional `inTransit` field in `wallet.balances()` results. For wallets with a card, it holds funds moving between the wallet and the card's collateral that the card provider has not reflected yet; `available + inTransit` is the total the user holds while funds move.
+  - @crossmint/common-sdk-auth@1.1.29
+
+## 1.20.5
+
+### Patch Changes
+
+- 7401d02: README: passkey signers work on EVM, Solana and Stellar, in the browser and React Native. The React Native README documents the `passkeys` prop on `CrossmintWalletProvider`.
+- 25e5591: Reject a passkey assertion that lacks the user-verification flag on the browser WebAuthn path too, not only when a custom `onSignWithPasskey` is supplied. `WebAuthnP256.sign` requests user verification but does not check that the authenticator honoured it; a UV-less assertion used to be forwarded and fail later as a bundler AA24 "Invalid signature".
+  - @crossmint/common-sdk-auth@1.1.28
+
 ## 1.20.4
 
 ### Patch Changes

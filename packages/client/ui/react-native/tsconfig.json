@@ -6,7 +6,10 @@
         "paths": {
             "@/*": ["src/*"]
         },
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "skipLibCheck": true
     },
     "include": ["src/**/*"],
     "exclude": ["__tests__"]

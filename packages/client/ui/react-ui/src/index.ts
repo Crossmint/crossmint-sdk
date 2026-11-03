@@ -8,6 +8,8 @@ export type { CrossmintConfig } from "@crossmint/common-sdk-base";
 
 export {
     type CrossmintCvcRecollectionProps,
+    type CrossmintCvcRecollectionRef,
+    type CvcRecollectionSubmitResult,
     type CrossmintEvent,
     type CrossmintEventMap,
     CrossmintEvents,
@@ -34,6 +36,14 @@ export {
     type AgentCardAuthorizationErrorCode,
     type AgentCardPaymentMethodSummary,
     type AgentCardRail,
+    type CrossmintEmbeddedOfframpProps,
+    type EmbeddedOfframpCredentials,
+    type EmbeddedOfframpPayer,
+    type OfframpStatus,
+    type OfframpErrorReason,
+    OfframpSignatureRejectedError,
 } from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
 
 export { CrossmintProvider, type CrossmintProviderProps } from "./providers/CrossmintProvider";

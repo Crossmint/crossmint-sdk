@@ -8,7 +8,8 @@
         },
         "test:vitest": {
             "env": ["PREVIEW_CK_KEY", "PREVIEW_SK_KEY"],
-            "outputLogs": "new-only"
+            "outputLogs": "new-only",
+            "dependsOn": ["^build"]
         },
         "test:integration": {
             "env": ["TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY", "CROSSMINT_BASE_URL"],

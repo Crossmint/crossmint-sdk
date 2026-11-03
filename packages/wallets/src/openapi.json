@@ -27269,7 +27269,8 @@
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
                                     },
                                     "isSmartWalletSignature": {
-                                        "description": "Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.",
+                                        "const": true,
+                                        "description": "Must be true or omitted. The signature always corresponds to the smart wallet and is wrapped with ERC6492.",
                                         "type": "boolean"
                                     }
                                 },
@@ -48910,6 +48911,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -48947,6 +48969,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -48957,6 +48991,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -48993,6 +49028,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49007,6 +49054,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49088,6 +49136,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49125,6 +49194,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49135,6 +49216,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49171,6 +49253,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49185,6 +49279,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49266,6 +49361,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49303,6 +49419,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49313,6 +49441,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49349,6 +49478,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49363,6 +49504,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49532,6 +49674,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49569,6 +49732,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49579,6 +49754,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49615,6 +49791,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49629,6 +49817,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49710,6 +49899,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49747,6 +49957,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49757,6 +49979,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49793,6 +50016,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49807,6 +50042,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49888,6 +50124,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49925,6 +50182,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["wallet"]
@@ -49935,6 +50204,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type"
                                                             ]
                                                         },
@@ -49971,6 +50241,18 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49985,6 +50267,7 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
                                                                 "type",
                                                                 "provider"
                                                             ]

@@ -159,6 +159,20 @@ console.log(balances.nativeToken.amount);
 console.log(balances.usdc.amount);
 ```
 
+For wallets with a card, each token also reports how its balance splits:
+
+-   `available`: what can be spent now
+-   `locked`: pending card charges
+-   `inTransit`: funds moving between the wallet and the card that the card provider has not reflected yet
+-   `accounts`: the same split for the wallet and for each card
+
+`available + inTransit` is the total the user holds while funds move.
+
+```ts
+const { usdc } = await wallet.balances();
+console.log(usdc.available?.amount, usdc.inTransit?.amount);
+```
+
 ### Send Tokens
 
 ```ts
@@ -256,7 +270,7 @@ const result = await wallet.approve({
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
 | `email` | OTP-based recovery method. | All |
 | `phone` | OTP-based recovery method. | All |
-| `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
+| `passkey` | WebAuthn/FIDO2 biometric signer on EVM, Solana and Stellar. On Solana it can be a signer but not a recovery method. | Browser, React Native (set the `passkeys` prop on `CrossmintWalletProvider`) |
 | `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
 
 ## React / React Native

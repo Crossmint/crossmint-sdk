@@ -20,6 +20,7 @@ export {
     QuorumSignerNotSupportedError,
     UnsupportedBrowserError,
     NotAuthorizedError,
+    TransactionNotCreatedError,
     JWTExpiredError,
     JWTInvalidError,
     JWTDecryptionError,
