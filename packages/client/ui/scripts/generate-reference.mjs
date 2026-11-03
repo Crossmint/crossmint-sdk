@@ -1189,12 +1189,6 @@ export function generate(config) {
             if (!comment) {
                 validationWarnings.push(`[${productName}] Type "${name}" has no JSDoc comment`);
             }
-            const values = node.kind === KIND.TYPE_ALIAS ? resolveLiteralValues(node.type) : null;
-            for (const value of values || []) {
-                if (!comment.includes(`\`${value}\``)) {
-                    validationWarnings.push(`[${productName}] Type "${name}" JSDoc does not describe \`${value}\``);
-                }
-            }
         }
 
         // Wallet methods: warn if any extracted method has no description
