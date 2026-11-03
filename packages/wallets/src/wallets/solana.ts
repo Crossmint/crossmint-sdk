@@ -45,6 +45,8 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     /**
      * Send a raw Solana transaction.
      * @param params - The transaction parameters (serialized transaction or Transaction object)
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`; members approve it with `approve`. Pass `prepareOnly: true` for that type.
      * @returns The transaction result
      */
     @WithLoggerContext({
@@ -60,9 +62,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
-        const createdTransaction = await this.createTransaction(params);
+        const signerParams = this.resolveSignerParams(params.options);
+        const createdTransaction = await this.createTransaction(params, signerParams);
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -100,9 +103,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return result;
     }
 
-    private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signerParams = this.resolveSignerParams(params.options);
-
+    private async createTransaction(
+        params: SolanaTransactionInput,
+        signerParams: { signer: string }
+    ): Promise<CreateTransactionSuccessResponse> {
         let serializedTransaction: string;
 
         if ("serializedTransaction" in params) {
