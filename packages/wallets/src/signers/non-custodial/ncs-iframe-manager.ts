@@ -1,6 +1,7 @@
 import { IFrameWindow, SignersWindowTransport, type HandshakeParent } from "@crossmint/client-sdk-window";
 import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { walletsLogger } from "../../logger";
 
 export type IframeConfig = {
     environment: APIKeyEnvironmentPrefix;
@@ -16,7 +17,7 @@ export class NcsIframeManager {
             return this.handshakeParent;
         }
 
-        console.info("Initializing signers frame for the first time");
+        walletsLogger.info("Initializing signers frame for the first time");
         const t0 = Date.now();
         const iframeUrl = new URL(environmentUrlConfig[this.config.environment]);
         iframeUrl.searchParams.set("targetOrigin", window.location.origin);
@@ -36,7 +37,7 @@ export class NcsIframeManager {
             SignersWindowTransport
         );
         await this.handshakeParent.handshakeWithChild();
-        console.info(`Signers frame initialized in ${Date.now() - t0}ms`);
+        walletsLogger.info(`Signers frame initialized in ${Date.now() - t0}ms`);
         return this.handshakeParent;
     }
 
