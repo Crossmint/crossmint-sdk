@@ -1,7 +1,9 @@
 import {
     type CrossmintEmbeddedOfframpProps,
+    type SignMessageOutcome,
     createEmbeddedOfframpService,
     sendTransactionReply,
+    signMessageReply,
     embeddedOfframpIncomingEvents,
     embeddedOfframpOutgoingEvents,
 } from "@crossmint/client-sdk-base";
@@ -39,6 +41,7 @@ function EmbeddedOfframpDocument({
     const [height, setHeight] = useState(0);
     const webViewRef = useRef<WebView>(null);
     const sendPending = useRef<object | null>(null);
+    const signPending = useRef<object | null>(null);
     const latestProps = useRef(props);
     useEffect(() => {
         latestProps.current = props;
@@ -86,9 +89,32 @@ function EmbeddedOfframpDocument({
                 sendPending.current = null;
                 sendTransactionReply(client, outcome);
             }),
+            client.on("crypto:sign-message", async (request) => {
+                if (signPending.current) {
+                    return;
+                }
+                const pending = {};
+                signPending.current = pending;
+                let outcome: SignMessageOutcome;
+                try {
+                    const { payer } = latestProps.current;
+                    if (payer.signMessage == null) {
+                        throw new Error("This payer cannot sign messages");
+                    }
+                    outcome = { signature: await payer.signMessage(request) };
+                } catch (error) {
+                    outcome = { error };
+                }
+                if (signPending.current !== pending) {
+                    return;
+                }
+                signPending.current = null;
+                signMessageReply(client, outcome);
+            }),
         ];
         return () => {
             sendPending.current = null;
+            signPending.current = null;
             for (const id of ids) {
                 client.off(id);
             }
@@ -118,6 +144,7 @@ function EmbeddedOfframpDocument({
             source={{ uri: url }}
             onLoadStart={() => {
                 sendPending.current = null;
+                signPending.current = null;
             }}
             onMessage={(event) => {
                 if (isOfframpPage(event.nativeEvent.url)) {
