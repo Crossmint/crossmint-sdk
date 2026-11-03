@@ -204,7 +204,10 @@ describe("SignerManager", () => {
         );
     });
 
-    const primaryRecovery = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+    const primaryRecovery = asRecoveryConfig({
+        type: "external-wallet",
+        address: "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+    });
     const secondaryRecovery = asRecoveryConfig({ type: "email", email: "Second@Example.com" });
     const serverRecovery = asRecoveryConfig({ type: "server", address: "0xServerRecovery" });
     const multiRecovery = [primaryRecovery, secondaryRecovery, serverRecovery];
@@ -221,9 +224,9 @@ describe("SignerManager", () => {
         [
             "several recovery signers and the primary one active",
             multiRecovery,
-            makeSigner("external-wallet", "external-wallet:0xPrimary"),
+            makeSigner("external-wallet", "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01"),
             primaryRecovery,
-            "external-wallet:0xPrimary",
+            "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
         ],
         [
             "several recovery signers and a secondary one active (matched on the normalized locator)",
@@ -235,9 +238,9 @@ describe("SignerManager", () => {
         [
             "several recovery signers and the primary one active with its EVM address in another case",
             multiRecovery,
-            makeSigner("external-wallet", "external-wallet:0xPRIMARY"),
+            makeSigner("external-wallet", "external-wallet:0xABCDEF0123456789ABCDEF0123456789ABCDEF01"),
             primaryRecovery,
-            "external-wallet:0xPrimary",
+            "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
         ],
         [
             "several recovery signers and the api-sourced server one active",
@@ -280,29 +283,33 @@ describe("SignerManager", () => {
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(SignerRequiredError);
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(branchKeyword);
             expect(() => manager.resolveAuthorizingRecovery()).toThrow(
-                "external-wallet:0xPrimary, email:second@example.com, server:0xServerRecovery"
+                "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01, email:second@example.com, server:0xServerRecovery"
             );
             expect(() => manager.resolveAuthorizingRecovery()).not.toThrow(/topsecret/);
         }
     );
 
     it("withRecoverySigner() assembles the active recovery signer and hands its locator to the operation", async () => {
-        const active = makeSigner("external-wallet", "external-wallet:0xPrimary");
+        const active = makeSigner("external-wallet", "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
         const onSign = vi.fn();
         const recoverySigners = [
             asRecoveryConfig({ type: "api-key" }),
-            asRecoveryConfig({ type: "external-wallet", address: "0xPrimary", onSign }),
+            asRecoveryConfig({
+                type: "external-wallet",
+                address: "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+                onSign,
+            }),
         ];
-        const assembled = makeSigner("external-wallet", "external-wallet:0xPrimary");
+        const assembled = makeSigner("external-wallet", "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
         mockedAssembleSigner.mockReturnValue(assembled);
         const manager = makeManager({ signer: active, recoverySigners });
 
         const approver = await manager.withRecoverySigner(async (approver) => approver);
 
-        expect(approver).toBe("external-wallet:0xPrimary");
+        expect(approver).toBe("external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
         expect(mockedAssembleSigner).toHaveBeenCalledWith(
             "base-sepolia",
-            expect.objectContaining({ type: "external-wallet", address: "0xPrimary" }),
+            expect.objectContaining({ type: "external-wallet", address: "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01" }),
             undefined
         );
         expect(manager.activeSigner).toBe(active);
@@ -319,7 +326,10 @@ describe("SignerManager", () => {
     });
 
     it("recovery is the first entry of recoverySigners", () => {
-        const primary = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+        const primary = asRecoveryConfig({
+            type: "external-wallet",
+            address: "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+        });
         const secondary = asRecoveryConfig({ type: "server", address: "0xSecondary" });
         const manager = makeManager({ recoverySigners: [primary, secondary] });
         expect(manager.recovery).toBe(primary);
@@ -333,7 +343,10 @@ describe("SignerManager", () => {
     });
 
     it("adoptRecoveryConfig() replaces only the entry at the given index", () => {
-        const primary = asRecoveryConfig({ type: "external-wallet", address: "0xPrimary" });
+        const primary = asRecoveryConfig({
+            type: "external-wallet",
+            address: "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+        });
         const secondary = asRecoveryConfig({ type: "external-wallet", address: "0xSecondary" });
         const adopted = {
             type: "external-wallet",
@@ -558,8 +571,12 @@ describe("SignerManager with quorum recovery methods", () => {
 
 describe("SignerManager.heldSigners", () => {
     const ACTIVE_LOCATOR: SignerLocator = "external-wallet:0xActive";
-    const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0xRecovery";
-    const RECOVERY_WITH_ON_SIGN = asRecoveryConfig({ type: "external-wallet", address: "0xRecovery", onSign: vi.fn() });
+    const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0x1234567890aBcDeF1234567890AbCdEf12345678";
+    const RECOVERY_WITH_ON_SIGN = asRecoveryConfig({
+        type: "external-wallet",
+        address: "0x1234567890aBcDeF1234567890AbCdEf12345678",
+        onSign: vi.fn(),
+    });
 
     describe("when only an active signer is set", () => {
         it("returns the active signer", () => {
@@ -580,7 +597,10 @@ describe("SignerManager.heldSigners", () => {
             expect(manager.heldSigners()).toEqual([active, assembled]);
             expect(mockedAssembleSigner).toHaveBeenCalledWith(
                 "base-sepolia",
-                expect.objectContaining({ type: "external-wallet", address: "0xRecovery" }),
+                expect.objectContaining({
+                    type: "external-wallet",
+                    address: "0x1234567890aBcDeF1234567890AbCdEf12345678",
+                }),
                 undefined
             );
         });
@@ -595,7 +615,7 @@ describe("SignerManager.heldSigners", () => {
         });
 
         it("lists it once when the active signer's EVM address differs only in case", () => {
-            const active = makeSigner("external-wallet", "external-wallet:0xRECOVERY");
+            const active = makeSigner("external-wallet", "external-wallet:0x1234567890ABCDEF1234567890ABCDEF12345678");
             mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
             const manager = makeManager({ signer: active, recoverySigners: [apiKeyConfig, RECOVERY_WITH_ON_SIGN] });
             manager.selectRecovery(1);
@@ -606,7 +626,13 @@ describe("SignerManager.heldSigners", () => {
         it("throws withRecoverySigner's error when the selection cannot be assembled", () => {
             const manager = makeManager({
                 signer: makeSigner("external-wallet", ACTIVE_LOCATOR),
-                recoverySigners: [apiKeyConfig, asRecoveryConfig({ type: "external-wallet", address: "0xRecovery" })],
+                recoverySigners: [
+                    apiKeyConfig,
+                    asRecoveryConfig({
+                        type: "external-wallet",
+                        address: "0x1234567890aBcDeF1234567890AbCdEf12345678",
+                    }),
+                ],
             });
             manager.selectRecovery(1);
 
