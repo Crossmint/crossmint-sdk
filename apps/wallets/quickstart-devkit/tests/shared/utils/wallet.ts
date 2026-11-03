@@ -272,8 +272,7 @@ export async function transferFunds(
     page: Page,
     recipientAddress: string,
     amount = "0.001",
-    signerType?: string,
-    emailOverride?: string
+    signerType?: string
 ): Promise<void> {
     try {
         // Scope to the Transfer funds section only
@@ -307,7 +306,7 @@ export async function transferFunds(
         // Wait a moment for the transaction to initialize
         await page.waitForTimeout(1000);
 
-        await handleSignerConfirmation(page, signerType as any, emailOverride);
+        await handleSignerConfirmation(page, signerType as any);
 
         try {
             await page.locator('a[data-testid="successful-tx-link"]').waitFor({
