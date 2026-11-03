@@ -7,6 +7,7 @@ export const OFFRAMP_STATUSES = [
     "adding-bank",
     "verifying-identity",
     "identity-in-review",
+    "verifying-wallet",
     "reviewing",
     "awaiting-signature",
     "confirming-deposit",
@@ -48,5 +49,6 @@ export const embeddedOfframpIncomingEvents = {
         chain: z.string(),
         payerAddress: z.string(),
     }),
+    "crypto:sign-message": z.object({ message: z.string(), chain: z.string(), payerAddress: z.string() }),
 };
 export type EmbeddedOfframpIncomingEventMap = typeof embeddedOfframpIncomingEvents;
