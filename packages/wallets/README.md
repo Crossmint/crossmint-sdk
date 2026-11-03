@@ -164,7 +164,7 @@ For wallets with a card, each token also reports how its balance splits:
 -   `available`: what can be spent now
 -   `locked`: pending card charges
 -   `inTransit`: funds moving between the wallet and the card that the card provider has not reflected yet
--   `accounts`: the same split for the wallet and for each card. Each card also reports `creditLimit`: the collateral the card provider has credited to it, which caps what the card can spend
+-   `accounts`: the same split for the wallet and for each card. Only card accounts have `inTransit`. Each card also reports `creditLimit`: the most it can spend, as set by the card provider
 
 `available + inTransit` is the total the user holds while funds move.
 
