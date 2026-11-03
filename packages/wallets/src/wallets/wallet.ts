@@ -333,7 +333,7 @@ export class Wallet<C extends Chain> {
 
     /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
     protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string): boolean {
-        return options?.prepareOnly === true || hasQuorumLocatorPrefix(signerLocator);
+        return Boolean(options?.prepareOnly) || hasQuorumLocatorPrefix(signerLocator);
     }
 
     /** The API locator of a call's `signer` option. */

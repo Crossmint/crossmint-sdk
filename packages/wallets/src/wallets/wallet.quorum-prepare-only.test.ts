@@ -267,5 +267,16 @@ describe("creating calls with a signer that is not a quorum", () => {
                 expect(api.getTransaction).not.toHaveBeenCalled();
             });
         });
+
+        describe("when an untyped caller passes a truthy prepareOnly that is not a boolean", () => {
+            it("returns the created request without waiting", async () => {
+                const wallet = await createMockWallet(chain, api, "api-key");
+
+                const outcome = await settle(call(wallet, { prepareOnly: 1 as unknown as boolean }));
+
+                expect(outcome).toStrictEqual({ value: createdRequest("txn-1") });
+                expect(api.getTransaction).not.toHaveBeenCalled();
+            });
+        });
     });
 });
