@@ -262,7 +262,6 @@
                                 "crossmint-private-testnet-ethereum",
                                 "crossmint-private-testnet-polygon",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "shape-sepolia",
                                 "skale-nebula-testnet",
                                 "space-testnet",
@@ -285,7 +284,6 @@
                                 "apechain",
                                 "mantle",
                                 "skale-nebula",
-                                "sei-pacific-1",
                                 "chiliz",
                                 "avalanche",
                                 "shape",
@@ -446,7 +444,6 @@
                                 "crossmint-private-testnet-ethereum",
                                 "crossmint-private-testnet-polygon",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "shape-sepolia",
                                 "skale-nebula-testnet",
                                 "space-testnet",
@@ -469,7 +466,6 @@
                                 "apechain",
                                 "mantle",
                                 "skale-nebula",
-                                "sei-pacific-1",
                                 "chiliz",
                                 "avalanche",
                                 "shape",
@@ -1206,7 +1202,6 @@
                                 "optimism",
                                 "polygon",
                                 "scroll",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "tempo",
@@ -1223,7 +1218,6 @@
                                 "optimism-sepolia",
                                 "polygon-amoy",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "story-testnet",
                                 "zora-sepolia",
                                 "arc-testnet",
@@ -2400,7 +2394,6 @@
                                 "optimism",
                                 "polygon",
                                 "scroll",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "tempo",
@@ -2417,7 +2410,6 @@
                                 "optimism-sepolia",
                                 "polygon-amoy",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "story-testnet",
                                 "zora-sepolia",
                                 "arc-testnet",
@@ -2662,8 +2654,6 @@
                                 "robinhood-chain-testnet",
                                 "scroll",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "story-testnet",
@@ -2827,8 +2817,6 @@
                                 "robinhood-chain-testnet",
                                 "scroll",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "story-testnet",
@@ -5950,7 +5938,6 @@
                                                                                         "crossmint-private-testnet-ethereum",
                                                                                         "crossmint-private-testnet-polygon",
                                                                                         "scroll-sepolia",
-                                                                                        "sei-atlantic-2-testnet",
                                                                                         "shape-sepolia",
                                                                                         "skale-nebula-testnet",
                                                                                         "space-testnet",
@@ -5973,7 +5960,6 @@
                                                                                         "apechain",
                                                                                         "mantle",
                                                                                         "skale-nebula",
-                                                                                        "sei-pacific-1",
                                                                                         "chiliz",
                                                                                         "avalanche",
                                                                                         "shape",
@@ -16073,7 +16059,6 @@
                                                                             "crossmint-private-testnet-ethereum",
                                                                             "crossmint-private-testnet-polygon",
                                                                             "scroll-sepolia",
-                                                                            "sei-atlantic-2-testnet",
                                                                             "shape-sepolia",
                                                                             "skale-nebula-testnet",
                                                                             "space-testnet",
@@ -16096,7 +16081,6 @@
                                                                             "apechain",
                                                                             "mantle",
                                                                             "skale-nebula",
-                                                                            "sei-pacific-1",
                                                                             "chiliz",
                                                                             "avalanche",
                                                                             "shape",
@@ -24386,29 +24370,6 @@
                                             },
                                             "method": {
                                                 "type": "string",
-                                                "enum": ["sei-atlantic-2-testnet"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
                                                 "enum": ["shape-sepolia"]
                                             },
                                             "currency": {
@@ -24893,29 +24854,6 @@
                                             "method": {
                                                 "type": "string",
                                                 "enum": ["skale-nebula"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["sei-pacific-1"]
                                             },
                                             "currency": {
                                                 "type": "string"
@@ -25955,29 +25893,6 @@
                                             },
                                             "method": {
                                                 "type": "string",
-                                                "enum": ["sei-atlantic-2-testnet"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
                                                 "enum": ["shape-sepolia"]
                                             },
                                             "currency": {
@@ -26462,29 +26377,6 @@
                                             "method": {
                                                 "type": "string",
                                                 "enum": ["skale-nebula"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["sei-pacific-1"]
                                             },
                                             "currency": {
                                                 "type": "string"
@@ -27094,7 +26986,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -27117,7 +27008,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -27223,7 +27113,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -27246,7 +27135,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -27538,7 +27426,6 @@
                                     "optimism",
                                     "polygon",
                                     "scroll",
-                                    "sei-pacific-1",
                                     "shape",
                                     "story",
                                     "tempo",
@@ -27555,7 +27442,6 @@
                                     "optimism-sepolia",
                                     "polygon-amoy",
                                     "scroll-sepolia",
-                                    "sei-atlantic-2-testnet",
                                     "story-testnet",
                                     "zora-sepolia",
                                     "arc-testnet",
@@ -28463,7 +28349,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -28486,7 +28371,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -40859,7 +40743,6 @@
                                                     "crossmint-private-testnet-ethereum",
                                                     "crossmint-private-testnet-polygon",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
                                                     "shape-sepolia",
                                                     "skale-nebula-testnet",
                                                     "space-testnet",
@@ -40882,7 +40765,6 @@
                                                     "apechain",
                                                     "mantle",
                                                     "skale-nebula",
-                                                    "sei-pacific-1",
                                                     "chiliz",
                                                     "avalanche",
                                                     "shape",
@@ -48014,7 +47896,6 @@
                             "ethereum-sepolia",
                             "optimism-sepolia",
                             "polygon-amoy",
-                            "sei-atlantic-2-testnet",
                             "skale-nebula-testnet",
                             "solana",
                             "stellar"
@@ -50300,7 +50181,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50323,7 +50203,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50392,7 +50271,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50415,7 +50293,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50511,7 +50388,6 @@
                                                                 "crossmint-private-testnet-ethereum",
                                                                 "crossmint-private-testnet-polygon",
                                                                 "scroll-sepolia",
-                                                                "sei-atlantic-2-testnet",
                                                                 "shape-sepolia",
                                                                 "skale-nebula-testnet",
                                                                 "space-testnet",
@@ -50534,7 +50410,6 @@
                                                                 "apechain",
                                                                 "mantle",
                                                                 "skale-nebula",
-                                                                "sei-pacific-1",
                                                                 "chiliz",
                                                                 "avalanche",
                                                                 "shape",
@@ -50802,7 +50677,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50825,7 +50699,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50894,7 +50767,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50917,7 +50789,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -51013,7 +50884,6 @@
                                                                 "crossmint-private-testnet-ethereum",
                                                                 "crossmint-private-testnet-polygon",
                                                                 "scroll-sepolia",
-                                                                "sei-atlantic-2-testnet",
                                                                 "shape-sepolia",
                                                                 "skale-nebula-testnet",
                                                                 "space-testnet",
@@ -51036,7 +50906,6 @@
                                                                 "apechain",
                                                                 "mantle",
                                                                 "skale-nebula",
-                                                                "sei-pacific-1",
                                                                 "chiliz",
                                                                 "avalanche",
                                                                 "shape",
@@ -51551,7 +51420,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -51574,7 +51442,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -51674,7 +51541,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -51697,7 +51563,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -55367,7 +55232,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -55390,7 +55254,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -62799,7 +62662,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -62822,7 +62684,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -62917,7 +62778,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -62940,7 +62800,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -66416,7 +66275,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -66439,7 +66297,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -74272,7 +74129,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -74295,7 +74151,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -76223,7 +76078,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -76246,7 +76100,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -83416,8 +83269,6 @@
                                     "robinhood-chain-testnet",
                                     "scroll",
                                     "scroll-sepolia",
-                                    "sei-atlantic-2-testnet",
-                                    "sei-pacific-1",
                                     "shape",
                                     "story",
                                     "story-testnet",
@@ -85863,8 +85714,6 @@
                                                     "robinhood-chain-testnet",
                                                     "scroll",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
-                                                    "sei-pacific-1",
                                                     "shape",
                                                     "shape-sepolia",
                                                     "skale-nebula",
@@ -87685,8 +87534,6 @@
                                                     "robinhood-chain-testnet",
                                                     "scroll",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
-                                                    "sei-pacific-1",
                                                     "shape",
                                                     "story",
                                                     "story-testnet",

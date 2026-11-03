@@ -48,7 +48,6 @@ const TESTNET_AA_CHAINS = [
     Blockchain.POLYGON_AMOY,
     Blockchain.ROBINHOOD_CHAIN_TESTNET,
     Blockchain.SCROLL_SEPOLIA,
-    Blockchain.SEI_ATLANTIC_2_TESTNET,
     Blockchain.STORY_TESTNET,
     Blockchain.ZORA_SEPOLIA,
     Blockchain.ARC_TESTNET,
@@ -71,7 +70,6 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.POLYGON,
     Blockchain.ROBINHOOD_CHAIN,
     Blockchain.SCROLL,
-    Blockchain.SEI_PACIFIC_1,
     Blockchain.SHAPE,
     Blockchain.STORY,
     Blockchain.TEMPO,
@@ -147,8 +145,6 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
         case Blockchain.MANTLE_SEPOLIA:
         case Blockchain.SCROLL:
         case Blockchain.SCROLL_SEPOLIA:
-        case Blockchain.SEI_PACIFIC_1:
-        case Blockchain.SEI_ATLANTIC_2_TESTNET:
         case Blockchain.CURTIS:
             throw new Error(
                 `Chain ${chain} is not yet supported in toViemChain function. Please add the appropriate viem chain definition.`
@@ -185,7 +181,6 @@ const MAINNET_TO_TESTNET_MAP: Partial<Record<EVMSmartWalletMainnet, EVMSmartWall
     [Blockchain.POLYGON]: Blockchain.POLYGON_AMOY,
     [Blockchain.ROBINHOOD_CHAIN]: Blockchain.ROBINHOOD_CHAIN_TESTNET,
     [Blockchain.SCROLL]: Blockchain.SCROLL_SEPOLIA,
-    [Blockchain.SEI_PACIFIC_1]: Blockchain.SEI_ATLANTIC_2_TESTNET,
     [Blockchain.STORY]: Blockchain.STORY_TESTNET,
     [Blockchain.ZORA]: Blockchain.ZORA_SEPOLIA,
     [Blockchain.TEMPO]: Blockchain.TEMPO_TESTNET,
