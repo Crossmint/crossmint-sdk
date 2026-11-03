@@ -124,6 +124,41 @@ describe("Wallet - quorum entries", () => {
         });
     });
 
+    describe("recovery", () => {
+        const walletWithRecovery = (recovery: unknown[]) =>
+            new Wallet(
+                {
+                    chain: "solana",
+                    address: SOLANA_ADDRESS,
+                    recovery: recovery as RecoverySignerConfigForChain<"solana">[],
+                },
+                mockApiClient as unknown as ApiClient
+            );
+
+        describe("when a quorum comes before a recovery method that signs alone", () => {
+            it("is that recovery method", async () => {
+                const wallet = walletWithRecovery([
+                    createQuorumApiEntry(),
+                    { type: "external-wallet", address: EXTERNAL_WALLET_ADDRESS },
+                ]);
+                await wallet.waitForInit();
+
+                expect(wallet.recovery).toEqual({ type: "external-wallet", address: EXTERNAL_WALLET_ADDRESS });
+            });
+        });
+
+        describe("when every recovery method is a quorum", () => {
+            it("throws QuorumSignerNotSupportedError naming the quorum", async () => {
+                const quorum = createQuorumApiEntry();
+                const wallet = walletWithRecovery([quorum]);
+                await wallet.waitForInit();
+
+                expect(() => wallet.recovery).toThrow(QuorumSignerNotSupportedError);
+                expect(() => wallet.recovery).toThrow(quorum.locator);
+            });
+        });
+    });
+
     describe("useRecoveryMethod() with a config that is not a recovery method", () => {
         it("names the quorum by its locator in the error", async () => {
             const quorum = createQuorumApiEntry();
