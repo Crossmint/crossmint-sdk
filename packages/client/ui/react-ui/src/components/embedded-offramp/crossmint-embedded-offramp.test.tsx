@@ -221,15 +221,28 @@ describe("<CrossmintEmbeddedOfframp />", () => {
                 vi.fn().mockReturnValueOnce(oldSignature.promise).mockReturnValueOnce(newSignature.promise)
             );
             render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
-            fireEvent.load(screen.getByTitle("Withdraw"));
+            emit("offramp:ready", {});
             await signMessage();
-            fireEvent.load(screen.getByTitle("Withdraw"));
+            emit("offramp:ready", {});
             await signMessage();
             expect(payer.signMessage).toHaveBeenCalledTimes(2);
             await act(async () => oldSignature.resolve("0xold"));
             expect(iframeClient.send).not.toHaveBeenCalled();
             await act(async () => newSignature.resolve("0xnew"));
             expect(iframeClient.send.mock.calls).toEqual([["crypto:sign-message:success", { signature: "0xnew" }]]);
+        });
+
+        test("answers a reloaded document that asks before its load event", async () => {
+            const signature = deferredTransaction();
+            render(
+                <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payerSigning(() => signature.promise)} />
+            );
+            fireEvent.load(screen.getByTitle("Withdraw"));
+            emit("offramp:ready", {});
+            await signMessage();
+            fireEvent.load(screen.getByTitle("Withdraw"));
+            await act(async () => signature.resolve("0xsig"));
+            expect(iframeClient.send.mock.calls).toEqual([["crypto:sign-message:success", { signature: "0xsig" }]]);
         });
 
         test("does not reply after unmount", async () => {
@@ -303,9 +316,9 @@ describe("signing session isolation", () => {
         const newTransaction = deferredTransaction();
         const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
         render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
-        fireEvent.load(screen.getByTitle("Withdraw"));
+        emit("offramp:ready", {});
         await sendTx();
-        fireEvent.load(screen.getByTitle("Withdraw"));
+        emit("offramp:ready", {});
         await sendTx();
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => oldTransaction.resolve("old-tx"));
@@ -314,6 +327,22 @@ describe("signing session isolation", () => {
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => newTransaction.resolve("new-tx"));
         expect(iframeClient.send).toHaveBeenCalledTimes(1);
+    });
+
+    test("answers a reloaded document that asks before its load event", async () => {
+        const transaction = deferredTransaction();
+        render(
+            <CrossmintEmbeddedOfframp
+                credentials={CREDENTIALS}
+                payer={{ signAndSendTransaction: () => transaction.promise }}
+            />
+        );
+        fireEvent.load(screen.getByTitle("Withdraw"));
+        emit("offramp:ready", {});
+        await sendTx();
+        fireEvent.load(screen.getByTitle("Withdraw"));
+        await act(async () => transaction.resolve("new-tx"));
+        expect(iframeClient.send.mock.calls).toEqual([["crypto:send-transaction:success", { txId: "new-tx" }]]);
     });
 
     test("does not reply after unmount", async () => {

@@ -34,7 +34,6 @@ function EmbeddedOfframpDocument({
     const ref = useRef<HTMLIFrameElement>(null);
     const sendPending = useRef<object | null>(null);
     const signPending = useRef<object | null>(null);
-    const hasLoaded = useRef(false);
     const latestProps = useRef(props);
     useEffect(() => {
         latestProps.current = props;
@@ -53,7 +52,12 @@ function EmbeddedOfframpDocument({
         }
         const ids = [
             iframeClient.on("ui:height.changed", (data) => setHeight(data.height)),
-            iframeClient.on("offramp:ready", () => latestProps.current.onReady?.()),
+            iframeClient.on("offramp:ready", () => {
+                // Each offramp document sends ready once, before any wallet request, so it marks a reload.
+                sendPending.current = null;
+                signPending.current = null;
+                latestProps.current.onReady?.();
+            }),
             iframeClient.on("offramp:status", (data) => latestProps.current.onStatusChange?.(data)),
             iframeClient.on("offramp:completed", (data) => latestProps.current.onComplete?.(data)),
             iframeClient.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
@@ -113,14 +117,6 @@ function EmbeddedOfframpDocument({
         <iframe
             ref={ref}
             src={url}
-            onLoad={() => {
-                // The first load may finish after the document has already requested signing.
-                if (hasLoaded.current) {
-                    sendPending.current = null;
-                    signPending.current = null;
-                }
-                hasLoaded.current = true;
-            }}
             id="crossmint-embedded-offramp.iframe"
             title="Withdraw"
             allow="camera"
