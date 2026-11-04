@@ -71,7 +71,6 @@ import type {
 import {
     type ApiSourcedServerSignerConfig,
     isApiSourcedServerSignerConfig,
-    isQuorumSigner,
     throwIfQuorumSigner,
 } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -241,15 +240,16 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // A quorum signs through its members, so it is never the default signer and does not count as one.
+        const singleSigners = this.#signerManager.singleInitialSigners;
         const signerToAssemble =
-            this.#initialSigners.length === 0
+            singleSigners.length === 0
                 ? this.#signerManager.defaultRecovery
-                : this.#initialSigners.length === 1
-                  ? this.#initialSigners[0]
+                : singleSigners.length === 1
+                  ? singleSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        // A quorum signs through its members, so it is never the default signer.
-        if (signerToAssemble == null || isQuorumSigner(signerToAssemble)) {
+        if (signerToAssemble == null) {
             return;
         }
 
