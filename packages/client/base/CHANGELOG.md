@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-base
 
+## 4.7.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+
 ## 4.7.0
 
 ### Minor Changes
