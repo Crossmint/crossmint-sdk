@@ -2,7 +2,7 @@ import {
     CrossmintProvider as BaseCrossmintProvider,
     initReactLogger,
     createLoggerContext,
-} from "@crossmint/client-sdk-react-base";
+} from "@crossmint/client-sdk-react-base/core";
 import type { CrossmintConfig, ConsoleLogLevel } from "@crossmint/common-sdk-base";
 import packageJson from "../../package.json";
 import { useMemo, type ReactNode } from "react";
