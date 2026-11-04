@@ -74,7 +74,6 @@ import type {
 import {
     type ApiSourcedServerSignerConfig,
     isApiSourcedServerSignerConfig,
-    isQuorumSigner,
     throwIfQuorumSigner,
 } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -245,15 +244,16 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // A quorum signs through its members, so it is never the default signer and does not count as one.
+        const singleSigners = this.#signerManager.singleInitialSigners;
         const signerToAssemble =
-            this.#initialSigners.length === 0
+            singleSigners.length === 0
                 ? this.#signerManager.defaultRecovery
-                : this.#initialSigners.length === 1
-                  ? this.#initialSigners[0]
+                : singleSigners.length === 1
+                  ? singleSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        // A quorum signs through its members, so it is never the default signer.
-        if (signerToAssemble == null || isQuorumSigner(signerToAssemble)) {
+        if (signerToAssemble == null) {
             return;
         }
 
@@ -345,13 +345,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the primary recovery signer config. Use {@link recoveryMethods} for the full list on wallets
-     * created with several recovery signers.
+     * Get the primary recovery signer config: the first recovery method that signs on its own. Use
+     * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
+     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): RecoverySignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#signerManager.requireDefaultRecovery() as SignerConfigForChain<C>;
     }
 
     /**
