@@ -120,13 +120,14 @@ describe("formatBalanceResponse", () => {
                             available: { amount: "960", rawAmount: "9600000000" },
                             locked: { amount: "40", rawAmount: "400000000" },
                             inTransit: { amount: "10", rawAmount: "100000000" },
+                            creditLimit: { amount: "990", rawAmount: "9900000000" },
                         },
                     ],
                 },
             },
         } satisfies ResponseToken;
 
-        it("preserves available, locked, inTransit, and account balances alongside the total", () => {
+        it("preserves available, locked, inTransit, and account balances, including the card credit limit, alongside the total", () => {
             const balances = formatBalanceResponse([usdc], "stellar", "xlm");
 
             expect(balances.usdc).toStrictEqual({
@@ -146,6 +147,7 @@ describe("formatBalanceResponse", () => {
                 available: { amount: "960" },
                 locked: { rawAmount: "400000000" },
                 inTransit: { amount: "10" },
+                creditLimit: { amount: "990", rawAmount: "9900000000" },
             });
             const walletAccount = balances.usdc.accounts?.find((account) => account.type === "wallet");
             expect(walletAccount).not.toHaveProperty("inTransit");
