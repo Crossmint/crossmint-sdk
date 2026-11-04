@@ -11,7 +11,6 @@ import {
     createMockWallet,
     createQuorumApiEntry,
     createQuorumPendingApproval,
-    createMockSigner,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
