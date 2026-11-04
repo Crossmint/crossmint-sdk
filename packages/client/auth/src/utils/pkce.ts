@@ -1,4 +1,5 @@
 import { sha256 } from "@noble/hashes/sha256";
+import { bytesToBase64Url } from "@crossmint/common-sdk-base";
 
 export type PkcePair = {
     verifier: string;
@@ -10,7 +11,7 @@ export type PkcePair = {
  * Send the challenge when the login starts. Keep the verifier on the device and send it when you redeem the one-time secret.
  */
 export function createPkcePair(): PkcePair {
-    const verifier = toBase64Url(globalThis.crypto.getRandomValues(new Uint8Array(32)));
+    const verifier = bytesToBase64Url(globalThis.crypto.getRandomValues(new Uint8Array(32)));
     return { verifier, challenge: getPkceChallenge(verifier) };
 }
 
@@ -18,13 +19,5 @@ export function createPkcePair(): PkcePair {
  * Returns the S256 PKCE challenge for a verifier.
  */
 export function getPkceChallenge(verifier: string): string {
-    return toBase64Url(sha256(new TextEncoder().encode(verifier)));
-}
-
-function toBase64Url(bytes: Uint8Array): string {
-    let binary = "";
-    for (const byte of bytes) {
-        binary += String.fromCharCode(byte);
-    }
-    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return bytesToBase64Url(sha256(new TextEncoder().encode(verifier)));
 }

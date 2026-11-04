@@ -1,6 +1,7 @@
 import "react-native-get-random-values";
 import type { PasskeyProvider } from "@crossmint/wallets-sdk";
-import { bytesToBase64Url, hexChallengeToBase64Url, publicKeyFromRegistration, toPasskeySignResult } from "./webauthn";
+import { bytesToBase64Url } from "@crossmint/common-sdk-base";
+import { hexChallengeToBase64Url, publicKeyFromRegistration, toPasskeySignResult } from "./webauthn";
 
 /** The relying party of the app's passkeys, and the native passkey module that creates and uses them. */
 export type NativePasskeyConfig = {
