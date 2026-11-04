@@ -529,9 +529,26 @@ describe("SignerManager with quorum recovery methods", () => {
             expect(manager.defaultRecovery).toBe(emailRecovery);
         });
 
-        it("authorizes with the one method that signs alone, naming it as approver", async () => {
+        // Swift and Kotlin count quorums too: with several recovery methods, one must be active or selected.
+        it("asks to select a recovery method even when only one of them signs alone", async () => {
+            const operation = vi.fn();
+            const quorum = createQuorumApiEntry();
+            const manager = makeManager({ recoverySigners: [quorum, emailRecovery] });
+
+            const error = await manager.withRecoverySigner(operation).catch((caught: unknown) => caught);
+
+            expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+            expect(String(error)).toContain("(email:recovery@example.com)");
+            expect(String(error)).not.toContain(quorum.locator);
+            expect(operation).not.toHaveBeenCalled();
+        });
+
+        it("authorizes with that method when it is the active signer, naming it as approver", async () => {
             const operation = vi.fn().mockResolvedValue("done");
-            const manager = makeManager({ recoverySigners: [createQuorumApiEntry(), emailRecovery] });
+            const manager = makeManager({
+                recoverySigners: [createQuorumApiEntry(), emailRecovery],
+                signer: makeSigner("email", "email:recovery@example.com"),
+            });
 
             await manager.withRecoverySigner(operation);
 
