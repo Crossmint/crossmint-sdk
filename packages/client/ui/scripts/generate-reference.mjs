@@ -243,6 +243,15 @@ function renderType(t, depth = 0) {
     return result;
 }
 
+function getBlockComment(node) {
+    const summary = node?.comment?.summary;
+    if (!summary?.length) return "";
+    return summary
+        .map((s) => s.text)
+        .join("")
+        .trim();
+}
+
 function getComment(node) {
     const summary = node?.comment?.summary;
     if (!summary?.length) return "";
@@ -616,6 +625,50 @@ export function generate(config) {
         return [...unique.values()];
     }
 
+    /** Resolves a literal union, or `(typeof CONST_TUPLE)[number]`, to its literal values. */
+    function resolveLiteralValues(type) {
+        if (!type) return null;
+        if (type.type === "literal") return [type.value];
+        let elements = null;
+        if (type.type === "union") {
+            elements = type.types;
+        } else if (type.type === "tuple") {
+            elements = type.elements;
+        } else if (type.type === "typeOperator" && type.operator === "readonly") {
+            return resolveLiteralValues(type.target);
+        } else if (
+            type.type === "indexedAccess" &&
+            type.indexType?.name === "number" &&
+            type.objectType?.type === "query"
+        ) {
+            return resolveLiteralValues(byId.get(type.objectType.queryType?.target)?.type);
+        } else if (type.type === "reference" && typeof type.target === "number") {
+            return resolveLiteralValues(byId.get(type.target)?.type);
+        }
+        if (!elements?.length) return null;
+        const values = elements.map((e) => (e.type === "literal" ? e.value : null));
+        return values.every((v) => v != null) ? values : null;
+    }
+
+    function findTypeExport(name) {
+        return allExports.find(
+            (c) => c.name === name && [KIND.FUNCTION, KIND.CLASS, KIND.INTERFACE, KIND.TYPE_ALIAS].includes(c.kind)
+        );
+    }
+
+    /** Gives method members a function type so they render as `(args) => Return`. */
+    function asFieldMembers(members) {
+        return (members || []).map((m) => {
+            if (m.type || !m.signatures?.length) return m;
+            const sig = m.signatures[0];
+            return {
+                ...m,
+                comment: m.comment ?? sig.comment,
+                type: { type: "reflection", declaration: { signatures: [sig] } },
+            };
+        });
+    }
+
     function extractReturnMembers(node) {
         const sig = node?.signatures?.[0];
         const retType = sig?.type;
@@ -747,6 +800,11 @@ export function generate(config) {
         }
         if (comps.length) {
             emit(`- [Components](/${product.navPrefix}/components) — Drop-in UI components`);
+        }
+        if (product.types?.length) {
+            emit(
+                `- [Types and Utilities](/${product.navPrefix}/types) — Functions, classes and types to use with the components`
+            );
         }
         if (product.walletMethods?.enabled) {
             emit(
@@ -961,6 +1019,90 @@ export function generate(config) {
         return L.join("\n");
     }
 
+    function buildTypes(product) {
+        const L = [];
+        const emit = (...a) => L.push(a.join(""));
+
+        emit("---");
+        emit(`title: Types and Utilities`);
+        emit(
+            `description: ${product.title.replace(/ SDK$/, "")} functions, classes and types for ${product.description}`
+        );
+        emit("---");
+        emit("");
+
+        let typeIdx = 0;
+        for (const name of product.types) {
+            const node = findTypeExport(name);
+            if (!node) continue;
+
+            if (typeIdx++ > 0) {
+                emit("---");
+                emit("");
+            }
+            emit(`## ${name}`);
+            emit("");
+
+            const sig = node.signatures?.[0];
+            const comment = getBlockComment(node) || getBlockComment(sig);
+            const values = node.kind === KIND.TYPE_ALIAS ? resolveLiteralValues(node.type) : null;
+            const members =
+                node.kind === KIND.INTERFACE
+                    ? node.children
+                    : node.type?.type === "reflection"
+                      ? node.type.declaration?.children
+                      : null;
+
+            if (node.kind === KIND.FUNCTION && sig) {
+                const params = (sig.parameters || []).map((p) => `${p.name}: ${renderType(p.type)}`).join(", ");
+                emit("```typescript");
+                emit(`function ${name}(${params}): ${renderType(sig.type)}`);
+                emit("```");
+                emit("");
+            } else if (node.kind === KIND.CLASS) {
+                const parent = node.extendedTypes?.[0];
+                emit("```typescript");
+                emit(`class ${name}${parent ? ` extends ${renderType(parent)}` : ""}`);
+                emit("```");
+                emit("");
+            } else if (values) {
+                emit("```typescript");
+                emit(`type ${name} =`);
+                values.forEach((v) => emit(`    | ${JSON.stringify(v)}`));
+                emit("```");
+                emit("");
+            } else if (!members?.length && node.type) {
+                emit("```typescript");
+                emit(`type ${name} = ${renderType(node.type)}`);
+                emit("```");
+                emit("");
+            }
+
+            if (comment) {
+                emit(comment);
+                emit("");
+            }
+
+            if (members?.length) {
+                const fields = buildFieldsSection(asFieldMembers(members));
+                if (fields) {
+                    emit("### Properties");
+                    emit("");
+                    emit(fields);
+                }
+            }
+
+            const ex = renderExample(name);
+            if (ex) {
+                emit("### Usage");
+                emit(ex);
+                emit("");
+            }
+        }
+
+        return L.join("\n");
+    }
+
     // =========================================================================
     // Generate pages for each product
     // =========================================================================
@@ -990,6 +1132,9 @@ export function generate(config) {
         }
         if (productComponents.length) {
             pages.push({ file: "components.mdx", content: buildComponents(product) });
+        }
+        if (product.types?.length) {
+            pages.push({ file: "types.mdx", content: buildTypes(product) });
         }
 
         console.log(`\n[${productName}]`);
@@ -1031,6 +1176,18 @@ export function generate(config) {
         for (const name of neededExamples) {
             if (!examples[name]) {
                 validationWarnings.push(`[${productName}] Missing example in examples.json for: "${name}"`);
+            }
+        }
+
+        for (const name of product.types || []) {
+            const node = findTypeExport(name);
+            if (!node) {
+                validationWarnings.push(`[${productName}] Type "${name}" not found in api.json`);
+                continue;
+            }
+            const comment = getBlockComment(node) || getBlockComment(node.signatures?.[0]);
+            if (!comment) {
+                validationWarnings.push(`[${productName}] Type "${name}" has no JSDoc comment`);
             }
         }
 

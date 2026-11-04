@@ -27,14 +27,15 @@ on:
             - "packages/client/react-base/src/**"
             - "packages/client/base/src/types/embed/**"
             - "packages/client/base/src/types/hosted/**"
+            - "packages/client/base/src/types/embedded-offramp/**"
             - "packages/client/base/src/types/index.ts"
             - "packages/common/base/src/types/uiconfig.ts"
     workflow_dispatch:
         inputs:
             packages:
-                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native, auth/typescript, agents/react). Defaults to all."
+                description: "Comma-separated list of packages to generate docs for (wallets/react, wallets/react-native, wallets/typescript, checkout/react, checkout/react-native, auth/react, auth/react-native, auth/typescript, agents/react, offramp/react, offramp/react-native). Defaults to all."
                 required: false
-                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react"
+                default: "wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react,offramp/react,offramp/react-native"
                 type: string
 
 permissions:
@@ -66,7 +67,7 @@ jobs:
             - name: Parse package selection
               id: packages
               env:
-                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react' }}
+                  PACKAGES_INPUT: ${{ inputs.packages || 'wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react,offramp/react,offramp/react-native' }}
               run: |
                   PACKAGES="$PACKAGES_INPUT"
                   echo "wallets_react=false" >> $GITHUB_OUTPUT
@@ -78,6 +79,8 @@ jobs:
                   echo "auth_react_native=false" >> $GITHUB_OUTPUT
                   echo "auth_typescript=false" >> $GITHUB_OUTPUT
                   echo "agents_react=false" >> $GITHUB_OUTPUT
+                  echo "offramp_react=false" >> $GITHUB_OUTPUT
+                  echo "offramp_react_native=false" >> $GITHUB_OUTPUT
                   if echo ",$PACKAGES," | grep -q ",wallets/react,"; then
                     echo "wallets_react=true" >> $GITHUB_OUTPUT
                   fi
@@ -105,6 +108,12 @@ jobs:
                   if echo ",$PACKAGES," | grep -q ",agents/react,"; then
                     echo "agents_react=true" >> $GITHUB_OUTPUT
                   fi
+                  if echo ",$PACKAGES," | grep -q ",offramp/react,"; then
+                    echo "offramp_react=true" >> $GITHUB_OUTPUT
+                  fi
+                  if echo ",$PACKAGES," | grep -q ",offramp/react-native,"; then
+                    echo "offramp_react_native=true" >> $GITHUB_OUTPUT
+                  fi
 
             - name: Generate React UI docs (wallets)
               if: steps.packages.outputs.wallets_react == 'true'
@@ -126,6 +135,11 @@ jobs:
               working-directory: packages/client/ui/react-ui
               run: pnpm generate:docs --product agents
 
+            - name: Generate React UI docs (offramp)
+              if: steps.packages.outputs.offramp_react == 'true'
+              working-directory: packages/client/ui/react-ui
+              run: pnpm generate:docs --product offramp
+
             - name: Generate React Native docs (wallets)
               if: steps.packages.outputs.wallets_react_native == 'true'
               working-directory: packages/client/ui/react-native
@@ -140,6 +154,11 @@ jobs:
               if: steps.packages.outputs.checkout_react_native == 'true'
               working-directory: packages/client/ui/react-native
               run: pnpm generate:docs --product checkout
+
+            - name: Generate React Native docs (offramp)
+              if: steps.packages.outputs.offramp_react_native == 'true'
+              working-directory: packages/client/ui/react-native
+              run: pnpm generate:docs --product offramp
 
             - name: Generate Node Wallets SDK docs
               if: steps.packages.outputs.wallets_typescript == 'true'
@@ -176,6 +195,8 @@ jobs:
                   AUTH_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.auth_react_native }}
                   AUTH_TYPESCRIPT_ENABLED: ${{ steps.packages.outputs.auth_typescript }}
                   AGENTS_REACT_ENABLED: ${{ steps.packages.outputs.agents_react }}
+                  OFFRAMP_REACT_ENABLED: ${{ steps.packages.outputs.offramp_react }}
+                  OFFRAMP_REACT_NATIVE_ENABLED: ${{ steps.packages.outputs.offramp_react_native }}
               run: |
                   mkdir -p sdk-reference/wallets/react
                   mkdir -p sdk-reference/wallets/react-native
@@ -186,6 +207,8 @@ jobs:
                   mkdir -p sdk-reference/auth/react-native
                   mkdir -p sdk-reference/auth/typescript
                   mkdir -p sdk-reference/agents/react
+                  mkdir -p sdk-reference/offramp/react
+                  mkdir -p sdk-reference/offramp/react-native
 
                   if [ "$WALLETS_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/wallets ]; then
                     cp -r packages/client/ui/react-ui/docs/wallets/. sdk-reference/wallets/react/
@@ -223,6 +246,14 @@ jobs:
                     cp -r packages/client/ui/react-ui/docs/agents/. sdk-reference/agents/react/
                   fi
 
+                  if [ "$OFFRAMP_REACT_ENABLED" == "true" ] && [ -d packages/client/ui/react-ui/docs/offramp ]; then
+                    cp -r packages/client/ui/react-ui/docs/offramp/. sdk-reference/offramp/react/
+                  fi
+
+                  if [ "$OFFRAMP_REACT_NATIVE_ENABLED" == "true" ] && [ -d packages/client/ui/react-native/docs/offramp ]; then
+                    cp -r packages/client/ui/react-native/docs/offramp/. sdk-reference/offramp/react-native/
+                  fi
+
             - name: Verify at least one package was generated
               id: verify
               run: |
@@ -254,4 +285,4 @@ jobs:
                   token: ${{ steps.generate_app_token.outputs.token }}
                   repository: Paella-Labs/crossbit-main
                   event-type: sdk-reference-docs-update
-                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'
+                  client-payload: '{"run_id": "${{ github.run_id }}", "packages": ${{ toJSON(inputs.packages || ''wallets/react,wallets/react-native,wallets/typescript,checkout/react,checkout/react-native,auth/react,auth/react-native,auth/typescript,agents/react,offramp/react,offramp/react-native'') }}, "source_repo": "crossmint-sdk", "source_ref": ${{ toJSON(github.ref_name) }}}'

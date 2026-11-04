@@ -93,6 +93,34 @@ const PRODUCTS = {
             quickExampleIntro: "Once providers are set up, use the checkout components to accept payments:",
         },
     },
+    offramp: {
+        outdir: "offramp",
+        navPrefix: "sdk-reference/offramp/react-native",
+        title: "React Native SDK",
+        description: "React Native SDK reference for Crossmint offramp",
+        packageName: "@crossmint/client-sdk-react-native-ui",
+        npmUrl: "https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui",
+        installSnippet: "client-sdk-react-native-ui-installation-cmd.mdx",
+        intro: "The Crossmint React Native SDK (`@crossmint/client-sdk-react-native-ui`) provides `CrossmintEmbeddedOfframp`, which renders the Crossmint offramp in a WebView, so your users can withdraw stablecoins from their wallet to their bank account. Create the session on your server with [Create Offramp Session](/offramp/api-reference/create-offramp-session). To pay from a Crossmint wallet, use the wallet providers and hooks of the [Wallets React Native SDK](/sdk-reference/wallets/react-native/get-started).",
+        exports: ["CrossmintProvider", "CrossmintEmbeddedOfframp"],
+        types: [
+            "createCrossmintWalletSigner",
+            "OfframpSignatureRejectedError",
+            "EmbeddedOfframpCredentials",
+            "EmbeddedOfframpPayer",
+            "OfframpStatus",
+            "OfframpErrorReason",
+        ],
+        descriptions: {
+            CrossmintProvider: "SDK initialization (required for all Crossmint features)",
+        },
+        getStartedExamples: {
+            setup: "rnOfframpProviderSetup",
+            quickExample: "rnOfframpQuickExample",
+            quickExampleIntro:
+                "Once providers are set up, render the offramp with the credentials of a session that your server created:",
+        },
+    },
 };
 
 generate({

@@ -20,6 +20,10 @@ function validateOfframpWallet(
     }
 }
 
+/**
+ * Returns an `EmbeddedOfframpPayer` for a Crossmint wallet, such as the one `useWallet()` returns. It supports EVM and Solana wallets.
+ * It throws a plain error when the deposit was prepared for another chain or another wallet. That error leaves the user on the confirming screen, so mount `CrossmintEmbeddedOfframp` only while this wallet has the same address and chain as the session's payer.
+ */
 export function createCrossmintWalletSigner(wallet: Wallet<Chain>): EmbeddedOfframpPayer {
     return {
         async signAndSendTransaction({ serializedTransaction, payerAddress, chain }) {
