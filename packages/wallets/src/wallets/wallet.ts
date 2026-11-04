@@ -658,10 +658,18 @@ export class Wallet<C extends Chain> {
                 : signer;
 
         return this.#signerManager.withRecoverySigner(async (approver) => {
-            // Check for an existing signer registration (e.g. from a previous interrupted attempt)
+            // A passkey without a credential id is created here, after the approver is resolved
+            const preparedSigner =
+                typeof resolvedSigner === "string" ? resolvedSigner : await this.prepareRegistration(resolvedSigner);
+            const createdNow = preparedSigner !== resolvedSigner;
+
+            // Check for an existing signer registration (e.g. from a previous interrupted attempt). A signer created
+            // just now cannot be registered yet, so the lookup is skipped.
             const signerLocator =
-                typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
-            const existingState = await this.#signerManager.getSignerState(signerLocator);
+                typeof preparedSigner === "string" ? preparedSigner : getSignerLocator(preparedSigner);
+            const existingState = createdNow
+                ? { signer: null, pendingOperation: null }
+                : await this.#signerManager.getSignerState(signerLocator);
 
             if (existingState.signer != null) {
                 // Signer already fully approved — return immediately (idempotent)
@@ -696,10 +704,10 @@ export class Wallet<C extends Chain> {
             }
 
             const signerInput =
-                typeof resolvedSigner === "string"
-                    ? resolvedSigner
-                    : getSignerDescriptor<C>(resolvedSigner.type).addSignerPayload(
-                          resolvedSigner as SignerConfigForChain<C>,
+                typeof preparedSigner === "string"
+                    ? preparedSigner
+                    : getSignerDescriptor<C>(preparedSigner.type).addSignerPayload(
+                          preparedSigner as SignerConfigForChain<C>,
                           this.#signerManager.descriptorContext()
                       );
 
@@ -737,6 +745,20 @@ export class Wallet<C extends Chain> {
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
+    }
+
+    /** Lets the signer's descriptor complete the config before it is registered (creates a new passkey). */
+    private async prepareRegistration<S extends SignerConfigForChain<C> | ExternalWalletRegistrationConfig>(
+        signer: S
+    ): Promise<S> {
+        const descriptor = getSignerDescriptor<C>(signer.type);
+        if (descriptor.prepareRegistration == null) {
+            return signer;
+        }
+        return (await descriptor.prepareRegistration(
+            signer as SignerConfigForChain<C>,
+            this.#signerManager.descriptorContext()
+        )) as S;
     }
 
     /**
@@ -868,11 +890,14 @@ export class Wallet<C extends Chain> {
                 : recoveryMethod;
 
         return this.#signerManager.withRecoverySigner(async (approver) => {
+            // A passkey without a credential id is created here, after the approver is resolved
+            const preparedMethod =
+                typeof resolvedMethod === "string" ? resolvedMethod : await this.prepareRegistration(resolvedMethod);
             const recoveryMethodInput =
-                typeof resolvedMethod === "string"
-                    ? resolvedMethod
-                    : getSignerDescriptor<C>(resolvedMethod.type).addSignerPayload(
-                          resolvedMethod as SignerConfigForChain<C>,
+                typeof preparedMethod === "string"
+                    ? preparedMethod
+                    : getSignerDescriptor<C>(preparedMethod.type).addSignerPayload(
+                          preparedMethod as SignerConfigForChain<C>,
                           this.#signerManager.descriptorContext()
                       );
 
@@ -897,12 +922,12 @@ export class Wallet<C extends Chain> {
 
             await this.approveTransactionAndWait(transactionId);
             this.#signerManager.addRecoverySigner(
-                typeof resolvedMethod === "string"
+                typeof preparedMethod === "string"
                     ? ({
                           type: "server",
-                          address: resolvedMethod.slice("server:".length),
+                          address: preparedMethod.slice("server:".length),
                       } as ApiSourcedServerSignerConfig)
-                    : (resolvedMethod as RecoverySignerConfigForChain<C>)
+                    : (preparedMethod as RecoverySignerConfigForChain<C>)
             );
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };

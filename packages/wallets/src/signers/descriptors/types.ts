@@ -37,6 +37,15 @@ export interface SignerDescriptor<C extends Chain = Chain> {
         config: SignerConfigForChain<C> | ApiSourcedServerSignerConfig,
         ctx: SignerDescriptorContext<C>
     ): boolean;
+    /**
+     * Completes a config the API cannot register as given, before addSigner / addRecoveryMethod look it up or send
+     * it: a passkey without a credential id gets its WebAuthn credential created here. Returns the config unchanged
+     * when there is nothing to complete. Omitted by descriptors whose configs are always registrable.
+     */
+    prepareRegistration?(
+        config: SignerConfigForChain<C>,
+        ctx: SignerDescriptorContext<C>
+    ): Promise<SignerConfigForChain<C>>;
     addSignerPayload(config: SignerConfigForChain<C>, ctx: SignerDescriptorContext<C>): RegisterSignerParams["signer"];
     matchesRecovery(
         config: SignerConfigForChain<C>,
