@@ -143,7 +143,7 @@ describe("SignerManager", () => {
                 recoverySigners: [asRecoveryConfig({ type: "email", email: "recovery@example.com" })],
                 initialSigners: [createQuorumApiEntry(), createQuorumApiEntry()],
             },
-            /multiple signers configured/,
+            /read-only/,
         ],
     ] as const)("require() with no active signer reports %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(() => makeManager(overrides as unknown as Overrides).require(), branchKeyword);

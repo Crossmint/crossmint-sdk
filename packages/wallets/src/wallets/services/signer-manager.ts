@@ -88,6 +88,11 @@ export class SignerManager<C extends Chain> {
         return [...this.#recoverySigners];
     }
 
+    /** Delegated signers that sign on their own: every initial signer except quorums. */
+    get singleInitialSigners(): SignerConfigForChain<C>[] {
+        return this.#initialSigners.filter((signer) => !isQuorumSigner(signer));
+    }
+
     /** The first recovery method that signs on its own, or null when every recovery method is a quorum. */
     get defaultRecovery(): SingleRecoverySigner<C> | null {
         return this.#singleRecoverySigners()[0] ?? null;
@@ -209,14 +214,14 @@ export class SignerManager<C extends Chain> {
 
     require(): SignerAdapter {
         if (this.#activeSigner == null) {
-            const hasSingleInitialSigner = this.#initialSigners.some((signer) => !isQuorumSigner(signer));
-            if (this.#initialSigners.length > 1 && (this.defaultRecovery != null || hasSingleInitialSigner)) {
+            const singleInitialSigners = this.singleInitialSigners;
+            if (singleInitialSigners.length > 1) {
                 throw new Error(
                     "No signer is set. This wallet has multiple signers configured. " +
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            if (this.defaultRecovery == null && hasSingleInitialSigner) {
+            if (this.defaultRecovery == null && singleInitialSigners.length === 1) {
                 throw new Error(USE_SIGNER_REQUIRED);
             }
             const recovery = this.requireDefaultRecovery();

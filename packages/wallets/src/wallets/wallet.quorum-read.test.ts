@@ -7,6 +7,7 @@ import { getSignerLocator } from "../utils/signer-locator";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
+    createMockSigner,
     createMockWallet,
     createQuorumApiEntry,
     createQuorumPendingApproval,
@@ -107,20 +108,39 @@ describe("Wallet - quorum entries", () => {
         });
     });
 
-    describe("when the only delegated signer is a quorum", () => {
-        it("loads without a default signer", async () => {
-            const wallet = new Wallet(
+    // A quorum is never the default signer and does not count as a delegated signer (Kotlin defaultSignerHolder).
+    describe("default signer with delegated quorums", () => {
+        const walletWithDelegated = (signers: unknown[]) =>
+            new Wallet(
                 {
                     chain: "stellar",
                     address: STELLAR_ADDRESS,
                     recovery: { type: "api-key" } as RecoverySignerConfigForChain<"stellar">,
-                    signers: [createQuorumApiEntry()] as unknown as SignerConfigForChain<"stellar">[],
+                    signers: signers as SignerConfigForChain<"stellar">[],
                 },
                 mockApiClient as unknown as ApiClient
             );
 
-            await expect(wallet.waitForInit()).resolves.toBeUndefined();
-            expect(wallet.signer).toBeUndefined();
+        describe.each([
+            ["the only delegated signer is a quorum", 1],
+            ["every delegated signer is a quorum", 2],
+        ])("when %s", (_name, quorumCount) => {
+            it("assembles the recovery signer, as a wallet with no delegated signer does", async () => {
+                const wallet = walletWithDelegated(Array.from({ length: quorumCount }, () => createQuorumApiEntry()));
+                await wallet.waitForInit();
+
+                expect(wallet.signer?.type).toBe("api-key");
+            });
+        });
+
+        describe("when one delegated signer is not a quorum", () => {
+            it("assembles that signer", async () => {
+                const delegated = createMockSigner("external-wallet", "stellar") as unknown as { address: string };
+                const wallet = walletWithDelegated([createQuorumApiEntry(), delegated]);
+                await wallet.waitForInit();
+
+                expect(wallet.signer?.locator()).toBe(`external-wallet:${delegated.address}`);
+            });
         });
     });
 
