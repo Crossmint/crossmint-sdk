@@ -16,11 +16,13 @@ pnpm add @crossmint/client-sdk-react-ui
 yarn add @crossmint/client-sdk-react-ui
 ```
 
+Install the latest release. This package pins its own `@crossmint/wallets-sdk`; if your server code also uses `@crossmint/wallets-sdk`, install that same version (`npm view @crossmint/client-sdk-react-ui dependencies`).
+
 ## Quick Start
 
 ### 1. Setup Providers
 
-**With Crossmint Authentication (Recommended for quickstarts only)**
+**With Crossmint Auth (default)**
 
 ```tsx
 "use client";
@@ -51,7 +53,7 @@ export default function App({ children }) {
 
 **Bring Your Own Authentication**
 
-Already have authentication? Skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth) for full details.
+Use this only when your app already has an auth provider: skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth) for full details.
 
 ```tsx
 "use client";
@@ -93,15 +95,21 @@ function WalletActions() {
   if (status === "in-progress") return <p>Loading wallet...</p>;
   if (!wallet) return <p>No wallet</p>;
 
+  // Staging only: mints USDXM, Crossmint's test stablecoin, into the wallet
+  const handleFund = async () => {
+    await wallet.stagingFund(10);
+  };
+
   const handleSend = async () => {
-    const tx = await wallet.send("0xRecipient", "usdc", "10");
+    const tx = await wallet.send("0xRecipient", "usdxm", "10");
     console.log("Transaction:", tx.explorerLink);
   };
 
   return (
     <div>
       <p>Wallet: {wallet.address}</p>
-      <button onClick={handleSend}>Send 10 USDC</button>
+      <button onClick={handleFund}>Get 10 USDXM</button>
+      <button onClick={handleSend}>Send 10 USDXM</button>
     </div>
   );
 }
@@ -197,7 +205,7 @@ The `wallet` object returned by `useWallet()` is a [`Wallet`](https://www.npmjs.
 
 - [Crossmint Wallets Docs](https://docs.crossmint.com)
 - [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets/react)
-- [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)
+- [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth)
 
 ## SDK Reference Docs Generation
 

@@ -19,6 +19,8 @@ pnpm add @crossmint/wallets-sdk
 yarn add @crossmint/wallets-sdk
 ```
 
+Install the latest release. In an app that also uses `@crossmint/client-sdk-react-ui` or `@crossmint/client-sdk-react-native-ui`, install the `@crossmint/wallets-sdk` version that package depends on, so client and server run the same SDK.
+
 ## Quick Start
 
 ### Server-side (Node.js)
@@ -37,14 +39,17 @@ const wallet = await wallets.createWallet({
 
 console.log(wallet.address);
 
+// Staging only: mint USDXM, Crossmint's test stablecoin, into the wallet
+await wallet.stagingFund(10);
+
 // Send tokens
-const tx = await wallet.send("0xRecipientAddress", "usdc", "10");
+const tx = await wallet.send("0xRecipientAddress", "usdxm", "10");
 console.log(tx.explorerLink);
 ```
 
 ### Client-side (Headless)
 
-For client-side usage without React, you can use the SDK directly with JWT authentication:
+For client-side usage without React, you can use the SDK directly with a user JWT. Get it from Crossmint Auth (`@crossmint/client-sdk-auth`) unless your app already has an auth provider:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";

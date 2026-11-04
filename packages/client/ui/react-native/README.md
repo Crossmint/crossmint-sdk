@@ -26,7 +26,7 @@ If your app config still sets `ios.enableSceneSupport` in `expo-build-properties
 
 ### 1. Setup Providers
 
-**With Crossmint Authentication (Recommended for quickstarts only)**
+**With Crossmint Auth (default)**
 
 ```tsx
 import {
@@ -55,7 +55,7 @@ export default function App() {
 
 **Bring Your Own Authentication**
 
-Already have authentication? Skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth#react-native) for full details.
+Use this only when your app already has an auth provider: skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
 
 ```tsx
 import {
@@ -96,16 +96,24 @@ function WalletActions() {
   if (status === "in-progress") return <Text>Loading wallet...</Text>;
   if (!wallet) return <Text>No wallet</Text>;
 
+  // Staging only: mints USDXM, Crossmint's test stablecoin, into the wallet
+  const handleFund = async () => {
+    await wallet.stagingFund(10);
+  };
+
   const handleSend = async () => {
-    const tx = await wallet.send("0xRecipient", "usdc", "10");
+    const tx = await wallet.send("0xRecipient", "usdxm", "10");
     console.log("Transaction:", tx.explorerLink);
   };
 
   return (
     <View>
       <Text>Wallet: {wallet.address}</Text>
+      <TouchableOpacity onPress={handleFund}>
+        <Text>Get 10 USDXM</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleSend}>
-        <Text>Send 10 USDC</Text>
+        <Text>Send 10 USDXM</Text>
       </TouchableOpacity>
     </View>
   );
@@ -216,7 +224,7 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 - [Crossmint Wallets Docs](https://docs.crossmint.com)
 - [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets/react-native)
 - [Wallets Expo Quickstart](https://github.com/Crossmint/wallets-expo-quickstart)
-- [Custom Auth Guide (React Native)](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth#react-native)
+- [Custom Auth Guide (React Native)](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native)
 
 ## License
 
