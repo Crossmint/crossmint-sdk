@@ -2,6 +2,7 @@ import {
     SESSION_PREFIX,
     REFRESH_TOKEN_PREFIX,
     CrossmintAuthenticationError,
+    getScopedCookieName,
     type AuthMaterialBasic,
     type AuthMaterial,
     type CookieData,
@@ -20,19 +21,51 @@ import {
 
 type GetCookiesOptions = { throwError?: boolean };
 
-export function getAuthCookies(request: GenericRequest, options?: GetCookiesOptions): AuthMaterialBasic | null {
+/** The project-scoped cookie names the client SDK stores the session under. */
+export function getAuthCookieNames(projectId: string) {
+    return {
+        jwt: getScopedCookieName(SESSION_PREFIX, projectId),
+        refreshToken: getScopedCookieName(REFRESH_TOKEN_PREFIX, projectId),
+    };
+}
+
+/**
+ * Read the session from the request cookies. Each cookie is read under its project-scoped name
+ * (`crossmint-jwt-<projectId>`, as the client SDK writes it) first, then under its legacy bare name
+ * (`crossmint-jwt`). A legacy JWT for another project fails the audience check and is refreshed.
+ */
+export function getAuthCookies(
+    request: GenericRequest,
+    projectId: string,
+    options?: GetCookiesOptions
+): AuthMaterialBasic | null {
     const cookieHeader = getCookieHeader(request, options);
     if (cookieHeader == null) {
         return null;
     }
-    const { [SESSION_PREFIX]: jwt, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
-    return { jwt, refreshToken };
+    const cookies = parseCookieHeader(cookieHeader);
+    const names = getAuthCookieNames(projectId);
+    const read = (scopedName: string, legacyName: string) => cookies[scopedName] || cookies[legacyName] || undefined;
+    return {
+        jwt: read(names.jwt, SESSION_PREFIX),
+        refreshToken: read(names.refreshToken, REFRESH_TOKEN_PREFIX),
+    } as AuthMaterialBasic;
 }
 
-export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial, options?: CookieOptions) {
+/**
+ * Write the session to the response cookies under the project-scoped names, and expire the legacy
+ * bare-named cookies so a stale legacy session does not outlive the scoped one.
+ */
+export function setAuthCookies(
+    response: GenericResponse,
+    authMaterial: AuthMaterial,
+    projectId: string,
+    options?: CookieOptions
+) {
+    const names = getAuthCookieNames(projectId);
     const cookies = [
         createCookieString({
-            name: SESSION_PREFIX,
+            name: names.jwt,
             value: authMaterial.jwt,
             options: {
                 ...options,
@@ -41,13 +74,16 @@ export function setAuthCookies(response: GenericResponse, authMaterial: AuthMate
             },
         }),
         createCookieString({
-            name: REFRESH_TOKEN_PREFIX,
+            name: names.refreshToken,
             value: authMaterial.refreshToken.secret,
             options: {
                 ...options,
                 expiresAt: authMaterial.refreshToken.expiresAt,
             },
         }),
+        ...[SESSION_PREFIX, REFRESH_TOKEN_PREFIX].map((legacyName) =>
+            createCookieString({ name: legacyName, value: "", options })
+        ),
     ];
 
     const responseAdapter = isNodeResponse(response)

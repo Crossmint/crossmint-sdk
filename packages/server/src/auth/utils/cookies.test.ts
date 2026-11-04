@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IncomingMessage, ServerResponse } from "http";
 import { CrossmintAuthenticationError, SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
-import { getAuthCookies, setAuthCookies } from "./cookies";
+import { getAuthCookieNames, getAuthCookies, setAuthCookies } from "./cookies";
 
 vi.mock("@crossmint/common-sdk-auth", async () => {
     const actual = await vi.importActual("@crossmint/common-sdk-auth");
@@ -16,6 +16,23 @@ vi.mock("@crossmint/common-sdk-auth", async () => {
     };
 });
 
+const PROJECT_ID = "test-project-id";
+const SCOPED_JWT = `${SESSION_PREFIX}-${PROJECT_ID}`;
+const SCOPED_REFRESH = `${REFRESH_TOKEN_PREFIX}-${PROJECT_ID}`;
+
+function fetchRequestWithCookies(cookie: string) {
+    return new Request("https://example.com", { headers: { Cookie: cookie } });
+}
+
+describe("getAuthCookieNames", () => {
+    it("scopes both cookie names by project ID", () => {
+        expect(getAuthCookieNames(PROJECT_ID)).toEqual({
+            jwt: "crossmint-jwt-test-project-id",
+            refreshToken: "crossmint-refresh-token-test-project-id",
+        });
+    });
+});
+
 describe("getAuthCookies", () => {
     beforeEach(() => {
         vi.resetAllMocks();
@@ -25,34 +42,79 @@ describe("getAuthCookies", () => {
         vi.restoreAllMocks();
     });
 
-    it("extracts auth cookies from IncomingMessage", () => {
-        const mockRequest = {
-            headers: {
-                cookie: `${SESSION_PREFIX}=mock-jwt-token; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token`,
-            },
-            httpVersion: "1.1",
-        } as IncomingMessage;
+    describe("when the cookies use the project-scoped names", () => {
+        it("reads them from an IncomingMessage", () => {
+            const mockRequest = {
+                headers: { cookie: `${SCOPED_JWT}=scoped-jwt; ${SCOPED_REFRESH}=scoped-refresh` },
+                httpVersion: "1.1",
+            } as IncomingMessage;
 
-        const result = getAuthCookies(mockRequest);
+            expect(getAuthCookies(mockRequest, PROJECT_ID)).toEqual({
+                jwt: "scoped-jwt",
+                refreshToken: "scoped-refresh",
+            });
+        });
 
-        expect(result).toEqual({
-            jwt: "mock-jwt-token",
-            refreshToken: "mock-refresh-token",
+        it("reads them from a Fetch Request", () => {
+            const request = fetchRequestWithCookies(`${SCOPED_JWT}=scoped-jwt; ${SCOPED_REFRESH}=scoped-refresh`);
+
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
+                jwt: "scoped-jwt",
+                refreshToken: "scoped-refresh",
+            });
+        });
+
+        it("ignores cookies scoped to another project", () => {
+            const request = fetchRequestWithCookies(
+                `${SESSION_PREFIX}-other-project=other-jwt; ${REFRESH_TOKEN_PREFIX}-other-project=other-refresh`
+            );
+
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({ jwt: undefined, refreshToken: undefined });
         });
     });
 
-    it("extracts auth cookies from Fetch Request", () => {
-        const mockRequest = new Request("https://example.com", {
-            headers: {
-                Cookie: `${SESSION_PREFIX}=mock-jwt-token; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token`,
-            },
+    describe("when only the legacy bare-named cookies are present", () => {
+        it("falls back to them", () => {
+            const mockRequest = {
+                headers: { cookie: `${SESSION_PREFIX}=legacy-jwt; ${REFRESH_TOKEN_PREFIX}=legacy-refresh` },
+                httpVersion: "1.1",
+            } as IncomingMessage;
+
+            expect(getAuthCookies(mockRequest, PROJECT_ID)).toEqual({
+                jwt: "legacy-jwt",
+                refreshToken: "legacy-refresh",
+            });
+        });
+    });
+
+    describe("when scoped and legacy cookies are mixed", () => {
+        it("prefers the scoped cookie when both names are present", () => {
+            const request = fetchRequestWithCookies(
+                `${SESSION_PREFIX}=legacy-jwt; ${REFRESH_TOKEN_PREFIX}=legacy-refresh; ${SCOPED_JWT}=scoped-jwt; ${SCOPED_REFRESH}=scoped-refresh`
+            );
+
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
+                jwt: "scoped-jwt",
+                refreshToken: "scoped-refresh",
+            });
         });
 
-        const result = getAuthCookies(mockRequest);
+        it("reads each cookie from whichever name is present", () => {
+            const request = fetchRequestWithCookies(`${SCOPED_JWT}=scoped-jwt; ${REFRESH_TOKEN_PREFIX}=legacy-refresh`);
 
-        expect(result).toEqual({
-            jwt: "mock-jwt-token",
-            refreshToken: "mock-refresh-token",
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
+                jwt: "scoped-jwt",
+                refreshToken: "legacy-refresh",
+            });
+        });
+
+        it("falls back to the legacy cookie when the scoped one is empty", () => {
+            const request = fetchRequestWithCookies(`${SCOPED_REFRESH}=; ${REFRESH_TOKEN_PREFIX}=legacy-refresh`);
+
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
+                jwt: undefined,
+                refreshToken: "legacy-refresh",
+            });
         });
     });
 
@@ -62,15 +124,19 @@ describe("getAuthCookies", () => {
             httpVersion: "1.1",
         } as IncomingMessage;
 
-        expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
-        expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
+        expect(() => getAuthCookies(mockRequest, PROJECT_ID)).toThrow(CrossmintAuthenticationError);
+        expect(() => getAuthCookies(mockRequest, PROJECT_ID)).toThrow("No cookies found in request");
     });
 
     it("throws CrossmintAuthenticationError when cookie header is missing in Fetch Request", () => {
         const mockRequest = new Request("https://example.com");
 
-        expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
-        expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
+        expect(() => getAuthCookies(mockRequest, PROJECT_ID)).toThrow(CrossmintAuthenticationError);
+        expect(() => getAuthCookies(mockRequest, PROJECT_ID)).toThrow("No cookies found in request");
+    });
+
+    it("returns null when cookie header is missing and throwError is false", () => {
+        expect(getAuthCookies(new Request("https://example.com"), PROJECT_ID, { throwError: false })).toBeNull();
     });
 });
 
@@ -89,6 +155,18 @@ describe("setAuthCookies", () => {
         httpOnly: false,
     };
 
+    const EXPIRED = "expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    const EXPIRED_LEGACY_COOKIES = [
+        `${SESSION_PREFIX}=; path=/; SameSite=Lax; ${EXPIRED}`,
+        `${REFRESH_TOKEN_PREFIX}=; path=/; SameSite=Lax; ${EXPIRED}`,
+    ];
+
+    function setCookieHeaders(response: Response) {
+        return Array.from(response.headers.entries())
+            .filter(([key]) => key.startsWith("set-cookie"))
+            .map(([_, value]) => value);
+    }
+
     beforeEach(() => {
         vi.resetAllMocks();
     });
@@ -97,38 +175,33 @@ describe("setAuthCookies", () => {
         vi.restoreAllMocks();
     });
 
-    it("sets auth cookies for Node.js ServerResponse", () => {
+    it("writes the scoped cookies and expires the legacy ones on a Node.js ServerResponse", () => {
         const mockResponse = {
             setHeader: vi.fn(),
         } as unknown as ServerResponse;
 
-        setAuthCookies(mockResponse, mockAuthMaterial, defaultOptions);
+        setAuthCookies(mockResponse, mockAuthMaterial, PROJECT_ID, defaultOptions);
 
         expect(mockResponse.setHeader).toHaveBeenCalledWith("Set-Cookie", [
-            `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Lax;`,
-            `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
+            `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Lax;`,
+            `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
+            ...EXPIRED_LEGACY_COOKIES,
         ]);
     });
 
-    it("sets auth cookies for Fetch Response", () => {
-        const mockHeaders = new Headers();
-        const appendSpy = vi.spyOn(mockHeaders, "append");
+    it("writes the scoped cookies and expires the legacy ones on a Fetch Response", () => {
+        const response = new Response();
 
-        const mockResponse = {
-            headers: mockHeaders,
-        } as unknown as Response;
+        setAuthCookies(response, mockAuthMaterial, PROJECT_ID, defaultOptions);
 
-        setAuthCookies(mockResponse, mockAuthMaterial, defaultOptions);
-
-        expect(appendSpy).toHaveBeenCalledTimes(2);
-        expect(appendSpy).toHaveBeenCalledWith("Set-Cookie", `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Lax;`);
-        expect(appendSpy).toHaveBeenCalledWith(
-            "Set-Cookie",
-            `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`
-        );
+        expect(setCookieHeaders(response)).toEqual([
+            `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Lax;`,
+            `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
+            ...EXPIRED_LEGACY_COOKIES,
+        ]);
     });
 
-    it("sets expired cookies when setting empty auth material", () => {
+    it("expires both the scoped and the legacy cookies when setting empty auth material", () => {
         const response = new Response();
         const emptyAuthMaterial = {
             jwt: "",
@@ -138,19 +211,16 @@ describe("setAuthCookies", () => {
             },
         };
 
-        setAuthCookies(response, emptyAuthMaterial, defaultOptions);
+        setAuthCookies(response, emptyAuthMaterial, PROJECT_ID, defaultOptions);
 
-        const cookies = Array.from(response.headers.entries())
-            .filter(([key]) => key.startsWith("set-cookie"))
-            .map(([_, value]) => value);
-        expect(cookies).toHaveLength(2);
-        expect(cookies[0]).toBe(`${SESSION_PREFIX}=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;`);
-        expect(cookies[1]).toBe(
-            `${REFRESH_TOKEN_PREFIX}=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;`
-        );
+        expect(setCookieHeaders(response)).toEqual([
+            `${SCOPED_JWT}=; path=/; SameSite=Lax; ${EXPIRED}`,
+            `${SCOPED_REFRESH}=; path=/; SameSite=Lax; ${EXPIRED}`,
+            ...EXPIRED_LEGACY_COOKIES,
+        ]);
     });
 
-    it("sets cookies with custom options", () => {
+    it("applies custom options to the scoped cookies and to the legacy expiry", () => {
         const response = new Response();
         const customOptions = {
             sameSite: "Strict" as const,
@@ -159,17 +229,13 @@ describe("setAuthCookies", () => {
             domain: "example.com",
         };
 
-        setAuthCookies(response, mockAuthMaterial, customOptions);
+        setAuthCookies(response, mockAuthMaterial, PROJECT_ID, customOptions);
 
-        const cookies = Array.from(response.headers.entries())
-            .filter(([key]) => key.startsWith("set-cookie"))
-            .map(([_, value]) => value);
-        expect(cookies).toHaveLength(2);
-        expect(cookies[0]).toBe(
-            `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Strict; Secure; Domain=example.com;`
-        );
-        expect(cookies[1]).toBe(
-            `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; expires=Sat, 01 Apr 2023 00:00:00 GMT;`
-        );
+        expect(setCookieHeaders(response)).toEqual([
+            `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Strict; Secure; Domain=example.com;`,
+            `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
+            `${SESSION_PREFIX}=; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; ${EXPIRED}`,
+            `${REFRESH_TOKEN_PREFIX}=; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; ${EXPIRED}`,
+        ]);
     });
 });
