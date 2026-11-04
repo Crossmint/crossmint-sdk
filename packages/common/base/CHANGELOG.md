@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.13.2
+
+### Patch Changes
+
+- d3b62df: OAuth login in the React Native SDK now uses PKCE. The SDK sends a code challenge when the login starts and the matching verifier when it redeems the one-time secret.
+
 ## 0.13.1
 
 ### Patch Changes
