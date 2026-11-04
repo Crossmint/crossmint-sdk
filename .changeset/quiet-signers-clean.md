@@ -9,6 +9,7 @@ The SDK now removes stale device signers. A device signer becomes stale when the
 - After the device registers a new signer, the SDK removes the signer with the saved locator.
 - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
 - The SDK does not remove a device signer only because the signer name matches the device name.
+- If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
 
 `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
 
