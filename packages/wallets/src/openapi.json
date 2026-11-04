@@ -33558,7 +33558,7 @@
                                             },
                                             "locator": {
                                                 "type": "string",
-                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                 "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                             },
                                             "members": {
@@ -37333,7 +37333,7 @@
                                             },
                                             "locator": {
                                                 "type": "string",
-                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                 "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                             },
                                             "members": {
@@ -77983,7 +77983,7 @@
                                                     },
                                                     "locator": {
                                                         "type": "string",
-                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                         "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                     },
                                                     "members": {
@@ -78390,7 +78390,7 @@
                                                         },
                                                         "locator": {
                                                             "type": "string",
-                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
                                                         "members": {
@@ -78933,7 +78933,7 @@
                                                         },
                                                         "locator": {
                                                             "type": "string",
-                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
                                                         "members": {
@@ -79328,7 +79328,7 @@
                                                     },
                                                     "locator": {
                                                         "type": "string",
-                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                         "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                     },
                                                     "members": {
@@ -79612,7 +79612,7 @@
                                                         },
                                                         "locator": {
                                                             "type": "string",
-                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
                                                         "members": {
@@ -82113,7 +82113,7 @@
                                                     },
                                                     "locator": {
                                                         "type": "string",
-                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                        "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                         "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                     },
                                                     "members": {
@@ -82459,7 +82459,7 @@
                                                         },
                                                         "locator": {
                                                             "type": "string",
-                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                            "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                             "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                         },
                                                         "members": {
@@ -82917,7 +82917,7 @@
                                                                 },
                                                                 "locator": {
                                                                     "type": "string",
-                                                                    "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                                                                    "pattern": "^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
                                                                     "description": "The locator of the quorum signer (read-only, derived from threshold + members)"
                                                                 },
                                                                 "members": {
