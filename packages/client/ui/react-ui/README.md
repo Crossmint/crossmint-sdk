@@ -213,6 +213,17 @@ Run with `pnpm generate:docs` or `node scripts/generate-reference.mjs --product 
 
 Apache-2.0
 
+## Order intent verification diagnostics
+
+Basis Theory can show a retry dialog before rejecting the verification promise. Those
+failures need to be recorded when they occur, because dismissing the dialog can replace
+the original failure with cancellation. Within `CrossmintProvider`, verification failures
+use the SDK's existing logger and Datadog transport with event
+`order_intent.verification_failed`. Allowance and order-intent IDs, provider, typed error
+category, HTTP status, machine code and BT trace ID support correlation. Free-text
+messages, stacks, field errors and provider debug payloads are excluded because they
+can contain protected data. Logging does not reset the dialog or affect payment approval.
+
 ## Protected buyer fields (in development)
 
 Render each protected UC field independently; an HTML form and Crossmint auth provider
