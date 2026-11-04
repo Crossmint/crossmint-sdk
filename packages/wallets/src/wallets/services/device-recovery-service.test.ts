@@ -396,9 +396,25 @@ describe("DeviceRecoveryService", () => {
             const addSigner = vi.fn().mockRejectedValue(new SignerLimitExceededError("limit"));
             const removeSigner = vi.fn();
             const signers = vi.fn().mockResolvedValue(existing);
-            const { service } = setup({ signers, addSigner, removeSigner, deviceSignerActivity });
+            const { service, storage } = setup({ signers, addSigner, removeSigner, deviceSignerActivity });
             await expect(service.recover()).rejects.toBeInstanceOf(SignerLimitExceededError);
             expect(removeSigner).not.toHaveBeenCalled();
+            expect(storage?.deleteKey).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            ["removing the stale signer fails", vi.fn().mockRejectedValue(new Error("backend unavailable")), "limit"],
+            ["the wallet is still at its limit after the removal", vi.fn().mockResolvedValue(undefined), "limit-again"],
+        ])("keeps the local key and throws the limit error when %s", async (_name, removeSigner, secondAttempt) => {
+            const addSigner = vi
+                .fn()
+                .mockRejectedValueOnce(new SignerLimitExceededError("limit"))
+                .mockRejectedValueOnce(new SignerLimitExceededError(secondAttempt));
+            const deviceSignerActivity = vi.fn().mockResolvedValue(ACTIVITY);
+            const signers = vi.fn().mockResolvedValue(DEVICE_SIGNERS);
+            const { service, storage } = setup({ signers, addSigner, removeSigner, deviceSignerActivity });
+            await expect(service.recover()).rejects.toBeInstanceOf(SignerLimitExceededError);
+            expect(storage?.deleteKey).not.toHaveBeenCalled();
         });
     });
 

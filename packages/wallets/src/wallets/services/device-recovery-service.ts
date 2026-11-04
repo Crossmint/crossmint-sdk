@@ -228,6 +228,11 @@ export class DeviceRecoveryService<C extends Chain> {
                     code: error instanceof OtpValidationError ? error.code : undefined,
                 });
                 throw error;
+            } else if (error instanceof SignerLimitExceededError) {
+                walletsLogger.warn("wallet.recover.device.signerLimitExceeded", {
+                    signerLocator: newDeviceSigner.locator,
+                });
+                throw error;
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 await deviceSignerKeyStorage.deleteKey(this.#walletAddress);
@@ -273,7 +278,15 @@ export class DeviceRecoveryService<C extends Chain> {
                 throw error;
             }
             walletsLogger.info("wallet.recover.signerLimitReached", { signerLocator: signerLocatorToRemove });
-            await this.#removeSigner(signerLocatorToRemove);
+            try {
+                await this.#removeSigner(signerLocatorToRemove);
+            } catch (removeError) {
+                walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", {
+                    signerLocator: signerLocatorToRemove,
+                    error: removeError,
+                });
+                throw error;
+            }
             walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: signerLocatorToRemove });
             await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>);
             return undefined;
