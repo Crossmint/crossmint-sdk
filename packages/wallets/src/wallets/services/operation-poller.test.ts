@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient, WalletLocator } from "../../api";
 import {
-    SignatureAwaitingApprovalError,
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
     SigningFailedError,
@@ -237,63 +236,49 @@ describe("operation-poller", () => {
         });
 
         describe("when only quorum members must still approve", () => {
-            it("throws TransactionAwaitingApprovalError with the transaction id", async () => {
-                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
-                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
-
-                const error = await settleError(pollTx("txn-quorum"));
-
-                expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
-                expect(error.transactionId).toBe("txn-quorum");
-                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
-            });
-
-            it("carries each quorum's progress on the error", async () => {
+            it("returns the transaction id without a hash or explorer link", async () => {
                 const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
                 const [signed, ...others] = quorum.members;
-                const entry = createQuorumPendingApproval({
-                    quorum,
-                    pending: others,
-                    submitted: [signed],
-                    remaining: 1,
-                });
+                const entry = createQuorumPendingApproval({ quorum, pending: others, submitted: [signed] });
                 mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
 
-                const error = await settleError(pollTx("txn-quorum"));
-
-                expect(error.quorums).toEqual([
-                    {
-                        quorum: quorum.locator,
-                        threshold: 2,
-                        remaining: 1,
-                        pending: others.map(({ locator }) => locator),
-                        submitted: [signed.locator],
-                    },
-                ]);
+                expect(await settleValue(pollTx("txn-quorum"))).toStrictEqual({
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: "txn-quorum",
+                });
             });
         });
 
         describe("when a flat signer must still approve", () => {
-            it("throws TransactionAwaitingApprovalError with no quorum progress", async () => {
+            it("throws TransactionAwaitingApprovalError with the transaction id", async () => {
                 mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-flat", { pending: [FLAT_APPROVAL] }));
 
                 const error = await settleError(pollTx("txn-flat"));
 
                 expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
-                expect(error.quorums).toBeUndefined();
+                expect(error.transactionId).toBe("txn-flat");
+                expect(error.message).toBe(AWAITING_APPROVAL_MESSAGE);
             });
         });
 
-        describe("when an awaiting quorum entry has a locator the SDK rejects", () => {
-            it("throws the malformed locator error, not TransactionAwaitingApprovalError", async () => {
+        describe("when an awaiting quorum entry has members or a locator the SDK cannot read", () => {
+            it("returns the transaction id without a hash, as for any quorum-only wait", async () => {
                 const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
-                const malformed = { ...entry, signer: { type: "quorum" as const, locator: "quorum:garbage" } };
-                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-malformed", { pending: [malformed] }));
+                const unreadable = {
+                    signer: { type: "quorum" as const, locator: "quorum:garbage" },
+                    quorumApprovals: {
+                        ...entry.quorumApprovals,
+                        pending: [{ member: { type: "email", locator: "garbage" }, message: "0xmessage" }],
+                    },
+                } as unknown as PendingApproval;
+                mockApiClient.getTransaction.mockResolvedValue(txAwaiting("txn-unreadable", { pending: [unreadable] }));
 
-                const error = await settleError(pollTx("txn-malformed"));
-
-                expect(error).not.toBeInstanceOf(TransactionAwaitingApprovalError);
-                expect(error.message).toBe("Malformed quorum locator: quorum:garbage");
+                expect(await settleValue(pollTx("txn-unreadable"))).toStrictEqual({
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: "txn-unreadable",
+                });
             });
         });
 
@@ -332,7 +317,7 @@ describe("operation-poller", () => {
         });
 
         describe("when only quorum members must still approve", () => {
-            it("returns the awaiting outcome with each quorum's progress at the first awaiting response", async () => {
+            it("returns the awaiting outcome with the transaction id at the first awaiting response", async () => {
                 const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
                 const [signed, ...waiting] = quorum.members;
                 const entry = createQuorumPendingApproval({ quorum, pending: waiting, submitted: [signed] });
@@ -340,18 +325,9 @@ describe("operation-poller", () => {
                     .mockResolvedValueOnce({ id: "txn-quorum", status: "pending" } as any)
                     .mockResolvedValue(txAwaiting("txn-quorum", { pending: [entry] }));
 
-                expect(await settleValue(pollOutcome("txn-quorum"))).toEqual({
+                expect(await settleValue(pollOutcome("txn-quorum"))).toStrictEqual({
                     status: "awaiting-approval",
                     transactionId: "txn-quorum",
-                    quorums: [
-                        {
-                            quorum: quorum.locator,
-                            threshold: 2,
-                            remaining: 1,
-                            pending: waiting.map((member) => member.locator),
-                            submitted: [signed.locator],
-                        },
-                    ],
                 });
                 expect(mockApiClient.getTransaction).toHaveBeenCalledTimes(2);
             });
@@ -468,7 +444,7 @@ describe("operation-poller", () => {
         });
 
         describe("when only quorum members must still approve", () => {
-            it("throws SignatureAwaitingApprovalError with the signature id and each quorum's progress", async () => {
+            it("returns the signature id without a signature", async () => {
                 const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
                 const [signed, ...others] = quorum.members;
                 const entry = createQuorumPendingApproval({
@@ -479,20 +455,10 @@ describe("operation-poller", () => {
                 });
                 mockApiClient.getSignature.mockResolvedValue(txAwaiting("sig-quorum", { pending: [entry] }));
 
-                const error = await settleError(pollSig("sig-quorum"));
-
-                expect(error).toBeInstanceOf(SignatureAwaitingApprovalError);
-                expect(error).toBeInstanceOf(SignatureNotAvailableError);
-                expect(error.signatureId).toBe("sig-quorum");
-                expect(error.quorums).toEqual([
-                    {
-                        quorum: quorum.locator,
-                        threshold: 2,
-                        remaining: 1,
-                        pending: others.map(({ locator }) => locator),
-                        submitted: [signed.locator],
-                    },
-                ]);
+                expect(await settleValue(pollSig("sig-quorum"))).toStrictEqual({
+                    signature: undefined,
+                    signatureId: "sig-quorum",
+                });
             });
         });
 
@@ -502,7 +468,6 @@ describe("operation-poller", () => {
 
                 const error = await settleError(pollSig("sig-flat"));
 
-                expect(error).not.toBeInstanceOf(SignatureAwaitingApprovalError);
                 expect(error).toBeInstanceOf(SignatureNotAvailableError);
                 expect(error.message).toBe("Signature not available");
             });

@@ -48,6 +48,8 @@ export class StellarWallet extends Wallet<StellarChain> {
     /**
      * Send a raw Stellar transaction (serialized transaction or contract call).
      * @param params - The transaction parameters
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @returns The transaction result
      */
     @WithLoggerContext({
@@ -63,9 +65,10 @@ export class StellarWallet extends Wallet<StellarChain> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
-        const createdTransaction = await this.createTransaction(params);
+        const signerParams = await this.resolveSignerParams(params.options);
+        const createdTransaction = await this.createTransaction(params, signerParams);
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("stellarWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -105,6 +108,8 @@ export class StellarWallet extends Wallet<StellarChain> {
      *     phase-1 `upgrade-wallet` transaction.
      *   - When `prepareOnly` is true and the wallet is already locked (idempotent path):
      *     the prepared phase-2 `migrate-wallet` transaction.
+     *   - When quorum members must still approve phase 1: the phase-1 transaction without
+     *     `hash`; call `migrate()` once it lands.
      *   - Otherwise: the confirmed migrate transaction result.
      */
     @WithLoggerContext({
@@ -133,7 +138,12 @@ export class StellarWallet extends Wallet<StellarChain> {
                 } as Transaction<T extends PrepareOnly<true> ? true : false>;
             }
 
-            await this.approveTransactionAndWait(upgradeTxId);
+            const upgradeResult = await this.approveTransactionAndWait(upgradeTxId);
+            // A quorum still has to approve phase 1, so the wallet is not locked yet: migrate after it lands.
+            if (upgradeResult.hash == null) {
+                walletsLogger.info("stellarWallet.upgrade.phase1.awaitingApproval", { transactionId: upgradeTxId });
+                return upgradeResult as Transaction<T extends PrepareOnly<true> ? true : false>;
+            }
             walletsLogger.info("stellarWallet.upgrade.phase1.success", { transactionId: upgradeTxId });
         } else {
             walletsLogger.info("stellarWallet.upgrade.phase1.skipped", {
@@ -200,9 +210,11 @@ export class StellarWallet extends Wallet<StellarChain> {
         return result;
     }
 
-    private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const { contractId, options } = params;
-        const signerParams = await this.resolveSignerParams(options);
+    private async createTransaction(
+        params: StellarTransactionInput,
+        signerParams: { signer: string }
+    ): Promise<CreateTransactionSuccessResponse> {
+        const { contractId } = params;
 
         // The `serialized-transaction` variant is accepted at runtime but not part of
         // the curated public OpenAPI spec, so its shape is not in the generated DTOs.

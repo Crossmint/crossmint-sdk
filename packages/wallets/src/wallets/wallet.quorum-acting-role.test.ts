@@ -2,11 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
-import {
-    QuorumSelectionAmbiguousError,
-    SignatureAwaitingApprovalError,
-    WalletNotAvailableError,
-} from "../utils/errors";
+import { QuorumSelectionAmbiguousError, WalletNotAvailableError } from "../utils/errors";
 import { EVMWallet } from "./evm";
 import { SolanaWallet } from "./solana";
 import { StellarWallet } from "./stellar";
@@ -19,6 +15,7 @@ import {
     createQuorumApiEntry,
     createQuorumApiEntryWith,
     createQuorumPendingApproval,
+    settle,
     signatureOver,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
@@ -26,12 +23,6 @@ import {
 const EVM_ADDRESS = "0x1234567890123456789012345678901234567890";
 const STELLAR_ADDRESS = "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
-const SUCCESS = {
-    id: "txn-1",
-    status: "success",
-    onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx/0xhash" },
-};
-
 // Bob holds only his own key; it is a member of the wallet's quorums and nothing else.
 const bobConfig = (address: string) =>
     ({
@@ -50,15 +41,6 @@ const awaiting = (id: string, pending: object[], chainType = "evm") => ({
     chainType,
     approvals: { pending, submitted: [] },
 });
-
-async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
-    const outcome = call.then(
-        (value) => ({ value }),
-        (error: unknown) => ({ error })
-    );
-    await vi.runAllTimersAsync();
-    return outcome;
-}
 
 // The wallet as `getWallet` returns it, listing its recovery methods and delegated signers in its config.
 const walletConfigResponse = (
@@ -118,20 +100,15 @@ describe("a creating call with a key that is only a quorum member", () => {
     });
 
     describe("when the key is in one delegated quorum", () => {
-        it("creates the send as that quorum and signs the key's pending member", async () => {
+        it("creates the send as that quorum and returns it unsigned, as with prepareOnly", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
             const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
-            const entry = createQuorumPendingApproval({ quorum: treasury });
-            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [entry]) as never);
-            api.getTransaction.mockResolvedValue(SUCCESS as never);
 
             const { value } = await settle(wallet.send(RECIPIENT, "usdc", "1"));
 
             expect(sentSendSigner(api)).toBe(treasury.locator);
-            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
-                [{ signer: bob.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
-            ]);
-            expect(value).toMatchObject({ transactionId: "txn-1", hash: "0xhash" });
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(value).toStrictEqual({ hash: undefined, explorerLink: undefined, transactionId: "txn-1" });
         });
 
         it("creates an EVM sendTransaction as that quorum", async () => {
@@ -497,7 +474,7 @@ describe("EVM signatures with a key that is only a quorum member", () => {
             expect(value).toEqual({ signature: "0x1271", signatureId: "sig-1" });
         });
 
-        it("throws SignatureAwaitingApprovalError when other members must still sign", async () => {
+        it("returns the signature id without a signature when other members must still sign", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
             const [, ...others] = treasury.members;
             const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
@@ -510,13 +487,10 @@ describe("EVM signatures with a key that is only a quorum member", () => {
             api.getSignature.mockResolvedValue(after as never);
             api.approveSignature.mockResolvedValue(after as never);
 
-            const { error } = await settle(sign(EVMWallet.from(wallet)));
+            const { value, error } = await settle(sign(EVMWallet.from(wallet)));
 
-            expect(error).toBeInstanceOf(SignatureAwaitingApprovalError);
-            expect(error).toMatchObject({
-                signatureId: "sig-1",
-                quorums: [{ quorum: treasury.locator, remaining: 1 }],
-            });
+            expect(error).toBeUndefined();
+            expect(value).toStrictEqual({ signature: undefined, signatureId: "sig-1" });
         });
 
         it("throws QuorumSelectionAmbiguousError when the key is in two quorums, and requests nothing", async () => {
