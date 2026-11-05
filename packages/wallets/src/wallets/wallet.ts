@@ -1680,6 +1680,11 @@ export class Wallet<C extends Chain> {
 
     async #recoverIfNeeded(): Promise<void> {
         await this.#signerInitialization;
+        // Joins a recovery already running, explicit or automatic, instead of calling recover() again.
+        if (this.#recovering != null) {
+            await this.#recovering;
+            return;
+        }
         await this.recover();
     }
 
