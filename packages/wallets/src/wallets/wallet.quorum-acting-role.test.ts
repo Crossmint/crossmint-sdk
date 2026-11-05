@@ -14,7 +14,6 @@ import {
     createMockWallet,
     createQuorumApiEntry,
     createQuorumApiEntryWith,
-    createQuorumPendingApproval,
     settle,
     signatureOver,
     type MockedApiClient,
@@ -34,13 +33,6 @@ const bobMember = (address: string) =>
     ({ type: "external-wallet", address, locator: `external-wallet:${address}` }) as QuorumMember;
 const BOB_EVM = "0x4444444444444444444444444444444444444444";
 const BOB_STELLAR = "GBOBMEMBERKEY";
-
-const awaiting = (id: string, pending: object[], chainType = "evm") => ({
-    id,
-    status: "awaiting-approval",
-    chainType,
-    approvals: { pending, submitted: [] },
-});
 
 // The wallet as `getWallet` returns it, listing its recovery methods and delegated signers in its config.
 const walletConfigResponse = (
@@ -111,17 +103,15 @@ describe("a creating call with a key that is only a quorum member", () => {
             expect(value).toStrictEqual({ hash: undefined, explorerLink: undefined, transactionId: "txn-1" });
         });
 
-        it("creates an EVM sendTransaction as that quorum", async () => {
+        it("creates an EVM sendTransaction as that quorum and returns it unsigned", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
             const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
 
-            await EVMWallet.from(wallet).sendTransaction({
-                to: RECIPIENT,
-                value: BigInt(1),
-                options: { prepareOnly: true },
-            });
+            const { value } = await settle(EVMWallet.from(wallet).sendTransaction({ to: RECIPIENT, value: BigInt(1) }));
 
             expect(createdTransactionSigner(api)).toBe(treasury.locator);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(value).toStrictEqual({ hash: undefined, explorerLink: undefined, transactionId: "txn-1" });
         });
 
         it("creates the request as that quorum and signs nothing with prepareOnly", async () => {
@@ -148,13 +138,15 @@ describe("a creating call with a key that is only a quorum member", () => {
     });
 
     describe("when the key is in one recovery quorum", () => {
-        it("creates the send as the recovery quorum", async () => {
+        it("creates the send as the recovery quorum and returns it unsigned", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([bob]);
             const { wallet } = await walletWithBob(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
 
-            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+            const { value } = await settle(wallet.send(RECIPIENT, "usdc", "1"));
 
             expect(sentSendSigner(api)).toBe(recoveryQuorum.locator);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(value).toStrictEqual({ hash: undefined, explorerLink: undefined, transactionId: "txn-1" });
         });
     });
 
@@ -454,42 +446,16 @@ describe("EVM signatures with a key that is only a quorum member", () => {
         { name: "signMessage", sign: (wallet: EVMWallet) => wallet.signMessage({ message: "hello" }) },
         { name: "signTypedData", sign: (wallet: EVMWallet) => wallet.signTypedData(EVM_TYPED_DATA as never) },
     ])("$name", ({ sign }) => {
-        it("requests the signature as the key's quorum and returns it once the key's approval completes it", async () => {
+        it("requests the signature as the key's quorum and returns it unsigned, as with prepareOnly", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
             const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
-            const entry = createQuorumPendingApproval({ quorum: treasury });
-            api.getSignature.mockResolvedValue(awaiting("sig-1", [entry]) as never);
-            api.approveSignature.mockResolvedValue({
-                id: "sig-1",
-                status: "success",
-                outputSignature: "0x1271",
-            } as never);
-
-            const { value } = await settle(sign(EVMWallet.from(wallet)));
-
-            expect(signatureSigner()).toBe(treasury.locator);
-            expect(api.approveSignature.mock.calls.map((call) => call[2].approvals)).toEqual([
-                [{ signer: bob.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
-            ]);
-            expect(value).toEqual({ signature: "0x1271", signatureId: "sig-1" });
-        });
-
-        it("returns the signature id without a signature when other members must still sign", async () => {
-            const treasury = createQuorumApiEntryWith([bob]);
-            const [, ...others] = treasury.members;
-            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
-            const after = awaiting("sig-1", [
-                createQuorumPendingApproval({ quorum: treasury, pending: others, submitted: [bob], remaining: 1 }),
-            ]);
-            api.getSignature.mockResolvedValueOnce(
-                awaiting("sig-1", [createQuorumPendingApproval({ quorum: treasury })]) as never
-            );
-            api.getSignature.mockResolvedValue(after as never);
-            api.approveSignature.mockResolvedValue(after as never);
 
             const { value, error } = await settle(sign(EVMWallet.from(wallet)));
 
             expect(error).toBeUndefined();
+            expect(signatureSigner()).toBe(treasury.locator);
+            expect(api.getSignature).not.toHaveBeenCalled();
+            expect(api.approveSignature).not.toHaveBeenCalled();
             expect(value).toStrictEqual({ signature: undefined, signatureId: "sig-1" });
         });
 
@@ -509,6 +475,33 @@ describe("EVM signatures with a key that is only a quorum member", () => {
     });
 
     describe("when signMessage names a quorum in its signer option", () => {
+        it.each([false, true])(
+            "requests the signature as that quorum and returns it unsigned with prepareOnly %s",
+            async (prepareOnly) => {
+                const treasury = createQuorumApiEntry();
+                const registered = {
+                    type: "external-wallet",
+                    address: BOB_EVM,
+                    locator: bob.locator,
+                    status: "success",
+                };
+                const { wallet } = await walletWithBob(api, {
+                    signers: [{ ...treasury, status: "success" }, registered],
+                });
+
+                const { value } = await settle(
+                    EVMWallet.from(wallet).signMessage({
+                        message: "hello",
+                        options: { prepareOnly, signer: treasury.locator },
+                    })
+                );
+
+                expect(signatureSigner()).toBe(treasury.locator);
+                expect(api.approveSignature).not.toHaveBeenCalled();
+                expect(value).toStrictEqual({ signature: undefined, signatureId: "sig-1" });
+            }
+        );
+
         it("requests the signature as that quorum, for a key that is a registered signer", async () => {
             const treasury = createQuorumApiEntry();
             const registered = { type: "external-wallet", address: BOB_EVM, locator: bob.locator, status: "success" };
@@ -538,18 +531,19 @@ describe("Stellar with a key that is only a quorum member", () => {
         vi.restoreAllMocks();
     });
 
-    it("creates sendTransaction as the key's quorum", async () => {
+    it("creates sendTransaction as the key's quorum and returns it unsigned", async () => {
         const treasury = createQuorumApiEntryWith([bob]);
         const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] }, "stellar");
 
-        await StellarWallet.from(wallet).sendTransaction({
+        const result = await StellarWallet.from(wallet).sendTransaction({
             contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
             method: "transfer",
             args: {},
-            options: { prepareOnly: true },
         });
 
         expect(createdTransactionSigner(api)).toBe(treasury.locator);
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+        expect(result).toStrictEqual({ hash: undefined, explorerLink: undefined, transactionId: "txn-1" });
     });
 
     it("sends no signer on upgrade, so the API uses the admin signer, as before", async () => {

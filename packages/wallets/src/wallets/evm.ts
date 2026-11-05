@@ -94,6 +94,8 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Sign a message with the wallet's private key.
+     * When the signer is a quorum (named in `signer`, or inferred from a key that is only a quorum member), the call
+     * returns the created request unsigned and without a signature, as with `prepareOnly: true`.
      * @param params - The message to sign
      * @returns The signature
      */
@@ -110,11 +112,12 @@ export class EVMWallet extends Wallet<EVMChain> {
         walletsLogger.info("evmWallet.signMessage.start");
 
         await this.preAuthIfNeeded();
+        const signerParams = await this.resolveSignerParams(params.options);
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
                 message: params.message,
-                ...(await this.resolveSignerParams(params.options)),
+                ...signerParams,
                 chain: this.chain,
             },
         });
@@ -124,7 +127,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("evmWallet.signMessage.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
@@ -141,6 +144,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Sign EIP-712 typed data.
+     * When the signer is a quorum, the call returns the created request unsigned, as {@link signMessage} does.
      * @param params - The typed data parameters (domain, types, message, primaryType, chain)
      * @returns The signature
      */
@@ -169,6 +173,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new InvalidTypedDataError("Invalid typed data domain");
         }
 
+        const signerParams = await this.resolveSignerParams(params.options);
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "typed-data",
             params: {
@@ -184,7 +189,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     primaryType,
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
-                ...(await this.resolveSignerParams(params.options)),
+                ...signerParams,
                 chain,
             },
         });
@@ -194,7 +199,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("evmWallet.signTypedData.prepared", {
                 signatureId: signatureCreationResponse.id,
             });
