@@ -1,5 +1,11 @@
 # @crossmint/client-signers-cryptography
 
+## 0.0.6
+
+### Patch Changes
+
+- 754047d: Remove dependencies the packages do not import: `exponential-backoff` and `uuid` from `@crossmint/client-sdk-base`, `zod` from `@crossmint/client-signers-cryptography`, and `bs58`, `lodash.clonedeep`, `lodash.isequal` and `zod` from `@crossmint/client-sdk-react-native-ui`.
+
 ## 0.0.5
 
 ### Patch Changes

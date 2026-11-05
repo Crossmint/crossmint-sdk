@@ -36,6 +36,60 @@ const SENSITIVE_KEYS = new Set([
 const MAX_REDACTION_DEPTH = 10;
 
 /**
+ * Keys whose string values are prose (a serialized Error, an API error response) and are
+ * scrubbed as free text, including bare 64-char hex secrets.
+ */
+const ERROR_TEXT_KEYS = new Set(["message", "stack"]);
+
+/**
+ * Shapes of secret material that can end up inside free text (error messages, stack traces,
+ * interpolated log messages), where key-based redaction cannot see them.
+ * - Server signer master secrets: `xmsk1_` + 64 hex chars.
+ * - JWTs: three base64url segments, the first one starting with `eyJ`.
+ * - Crossmint API keys: `sk_`/`ck_` + environment + payload.
+ * Every pattern is anchored to a delimiter so a long run of look-alike characters is scanned once
+ * (linear time): the scrubbed text can come from an untrusted API response.
+ * Lookbehind is avoided on purpose: some JS engines the SDK runs on reject it at parse time.
+ */
+const PREFIXED_SECRET_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
+    { pattern: /xmsk1_[0-9a-fA-F]{64}/g, replacement: "xmsk1_[REDACTED]" },
+    { pattern: /(^|[^A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, replacement: "$1[REDACTED]" },
+    {
+        pattern: /(^|[^0-9a-zA-Z])[sc]k_(?:development|staging|production|live|test)_[A-Za-z0-9]+/g,
+        replacement: "$1[REDACTED]",
+    },
+];
+
+/**
+ * A server signer master secret is also accepted without its `xmsk1_` prefix, as a bare 64-char hex
+ * string. That shape is shared with legitimate observability data (Stellar transaction hashes,
+ * SHA-256 digests) that the SDK logs as structured context fields, so it is only scrubbed from
+ * free text. `0x`-prefixed hex (EVM transaction hashes) is left alone for the same reason.
+ */
+const BARE_HEX_SECRET_PATTERN = {
+    pattern: /(^|[^0-9a-zA-Z])[0-9a-fA-F]{64}(?![0-9a-zA-Z])/g,
+    replacement: "$1[REDACTED]",
+};
+
+/**
+ * Replaces known secret shapes inside a string with a placeholder.
+ * Complements {@link redactSensitiveFields}, which only redacts by object key: an Error whose
+ * message embeds a secret would otherwise reach every sink unchanged.
+ *
+ * @param text - The text to scrub
+ * @param freeText - true for prose that may embed any value (log messages, error messages and
+ *   stacks), which also scrubs bare 64-char hex; false for structured context fields
+ */
+export function redactSensitiveText(text: string, freeText: boolean): string {
+    const patterns = freeText ? [...PREFIXED_SECRET_PATTERNS, BARE_HEX_SECRET_PATTERN] : PREFIXED_SECRET_PATTERNS;
+    let redacted = text;
+    for (const { pattern, replacement } of patterns) {
+        redacted = redacted.replace(pattern, replacement);
+    }
+    return redacted;
+}
+
+/**
  * Truncates a string value for redacted output, showing first and last 4 chars.
  * For short strings (<=20 chars), returns '[REDACTED]'.
  */
@@ -56,6 +110,9 @@ function redactValue(value: unknown): string {
  * @returns A new object with sensitive fields replaced by redacted placeholders
  */
 export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
+    if (typeof obj === "string") {
+        return redactSensitiveText(obj, false);
+    }
     if (depth > MAX_REDACTION_DEPTH || obj == null || typeof obj !== "object") {
         return obj;
     }
@@ -69,8 +126,8 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
     if (obj instanceof Error) {
         return {
             name: obj.name,
-            message: obj.message,
-            stack: obj.stack,
+            message: redactSensitiveText(obj.message, true),
+            stack: obj.stack == null ? obj.stack : redactSensitiveText(obj.stack, true),
             ...(redactSensitiveFields(Object.fromEntries(Object.entries(obj)), depth + 1) as object),
         };
     }
@@ -79,6 +136,8 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
         if (SENSITIVE_KEYS.has(key.toLowerCase())) {
             result[key] = redactValue(value);
+        } else if (typeof value === "string" && ERROR_TEXT_KEYS.has(key.toLowerCase())) {
+            result[key] = redactSensitiveText(value, true);
         } else {
             result[key] = redactSensitiveFields(value, depth + 1);
         }
