@@ -86,4 +86,5 @@ async function forEachPage(
             return;
         }
     }
+    throw new Error(`The ${kind} history is longer than ${MAX_PAGES * PAGE_SIZE} records`);
 }

@@ -77,6 +77,15 @@ describe("fetchDeviceSignerActivity", () => {
         await expect(fetchActivity(apiClient)).rejects.toThrow(/signatures/);
     });
 
+    it("fails when the history is longer than the page limit", async () => {
+        const fullPage = Array.from({ length: 50 }, () => approvedBy("device:recentKey", "2026-09-01T00:00:00Z"));
+        const apiClient = makeApiClient({
+            getTransactions: vi.fn().mockResolvedValue({ transactions: fullPage }),
+        });
+
+        await expect(fetchActivity(apiClient)).rejects.toThrow(/transactions history/);
+    });
+
     it("reads only transactions when the chain has no signatures", async () => {
         const apiClient = makeApiClient({
             getTransactions: vi.fn().mockResolvedValue({
