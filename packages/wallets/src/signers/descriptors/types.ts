@@ -38,9 +38,8 @@ export interface SignerDescriptor<C extends Chain = Chain> {
         ctx: SignerDescriptorContext<C>
     ): boolean;
     /**
-     * Completes a config the API cannot register as given, before addSigner / addRecoveryMethod look it up or send
-     * it: a passkey without a credential id gets its WebAuthn credential created here. Returns the config unchanged
-     * when there is nothing to complete. Omitted by descriptors whose configs are always registrable.
+     * Completes a config the API cannot register as given, before addSigner / addRecoveryMethod send it (a passkey
+     * without a credential id gets its credential created). Returns the config unchanged when nothing is missing.
      */
     prepareRegistration?(
         config: SignerConfigForChain<C>,

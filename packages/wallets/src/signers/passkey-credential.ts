@@ -2,10 +2,7 @@ import { WebAuthnP256 } from "ox";
 import type { RegisterSignerPasskeyParams } from "../api";
 import type { PasskeyProvider, PasskeySignerConfig } from "./types";
 
-/**
- * Creates the WebAuthn credential for a passkey signer that does not exist yet, and returns the config the API
- * registers. Uses the config's `onCreatePasskey`, else the wallet's `passkeyProvider`, else the browser WebAuthn API.
- */
+/** Creates the WebAuthn credential for a new passkey signer: `onCreatePasskey`, else `passkeyProvider`, else the browser. */
 export async function createPasskeyCredential(
     config: Pick<PasskeySignerConfig, "name" | "onCreatePasskey">,
     passkeyProvider?: PasskeyProvider

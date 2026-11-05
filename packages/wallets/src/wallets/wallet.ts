@@ -663,8 +663,8 @@ export class Wallet<C extends Chain> {
                 typeof resolvedSigner === "string" ? resolvedSigner : await this.prepareRegistration(resolvedSigner);
             const createdNow = preparedSigner !== resolvedSigner;
 
-            // Check for an existing signer registration (e.g. from a previous interrupted attempt). A signer created
-            // just now cannot be registered yet, so the lookup is skipped.
+            // Check for an existing signer registration (e.g. from a previous interrupted attempt), unless the
+            // passkey was only just created.
             const signerLocator =
                 typeof preparedSigner === "string" ? preparedSigner : getSignerLocator(preparedSigner);
             const existingState = createdNow
