@@ -7,3 +7,8 @@ when the config has no credential id, using the config's `onCreatePasskey`, else
 else the browser WebAuthn API, and register its id and public key. Before, the SDK looked up a signer named
 `passkey` and sent the bare config, which the API rejected. A config with a credential id is registered as before,
 and the request body now carries only the passkey fields the API takes.
+
+If a step fails after the passkey was created, they throw `PasskeyRegistrationError`, whose `passkey` is the created
+passkey: pass it to the same method to retry without creating another. Creating a passkey with no `onCreatePasskey`,
+no `passkeyProvider` and no WebAuthn (for example in Node) now throws `InvalidSignerError` saying so, in wallet
+creation too.

@@ -7,6 +7,7 @@ export { recoveryMethodsFromCreateArgs } from "./utils/recovery";
 // Errors
 export {
     DuplicateRecoverySignerError,
+    PasskeyRegistrationError,
     InvalidRecoveryConfigError,
     NotSupportedOnApiVersionError,
     RecoveryAdminSignerConflictError,

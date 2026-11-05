@@ -4,6 +4,7 @@ import type { EVMChain } from "../../chains/chains";
 import type { DeviceSignerKeyStorage } from "../../utils/device-signers/DeviceSignerKeyStorage";
 import type { ServerSignerResolver } from "../server/resolver";
 import type { ApiSourcedServerSignerConfig, PasskeyProvider, ServerSignerConfig, SignerConfigForChain } from "../types";
+import { InvalidSignerError } from "../../utils/errors";
 import { getSignerDescriptor } from "./index";
 import type { SignerDescriptorContext } from "./types";
 
@@ -14,6 +15,7 @@ vi.mock("ox", async (importOriginal) => {
 });
 afterEach(() => {
     createCredential.mockReset();
+    vi.unstubAllGlobals();
 });
 
 const CHAIN: EVMChain = "base-sepolia";
@@ -289,10 +291,20 @@ describe("prepareRegistration: passkey", () => {
     });
 
     it("creates the passkey with the browser WebAuthn API otherwise, as decimal-string coordinates", async () => {
+        vi.stubGlobal("window", { navigator: { credentials: { create: vi.fn() } } });
         createCredential.mockResolvedValue(CREATED_CREDENTIAL);
 
         expect(await prepare({ type: "passkey", name: "my-key" })).toEqual(REGISTERED_SIGNER);
         expect(createCredential).toHaveBeenCalledWith({ name: "my-key" });
+    });
+
+    it("throws a clear error without WebAuthn, onCreatePasskey or a passkeyProvider (e.g. in Node)", async () => {
+        await expect(prepare({ type: "passkey", name: "my-key" })).rejects.toThrow(
+            new InvalidSignerError(
+                'Creating a passkey needs WebAuthn, which this environment does not have. Pass a created passkey ({ type: "passkey", id, name, publicKey }) or an onCreatePasskey callback.'
+            )
+        );
+        expect(createCredential).not.toHaveBeenCalled();
     });
 });
 

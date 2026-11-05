@@ -1,5 +1,5 @@
 import { Hex, WebAuthnP256 } from "ox";
-import { SigningFailedError } from "../utils/errors";
+import { InvalidSignerError, SigningFailedError } from "../utils/errors";
 import type { RegisterSignerPasskeyParams } from "../api";
 import type {
     PasskeyInternalSignerConfig,
@@ -77,6 +77,10 @@ export class PasskeySigner implements SignerAdapter {
     }
 }
 
+function canCreateWebAuthnCredential(): boolean {
+    return typeof window !== "undefined" && typeof window.navigator?.credentials?.create === "function";
+}
+
 /** Creates the WebAuthn credential for a new passkey signer: `onCreatePasskey`, else `passkeyProvider`, else the browser. */
 export async function createPasskeyCredential(
     config: Pick<PasskeySignerConfig, "name" | "onCreatePasskey">,
@@ -84,6 +88,11 @@ export async function createPasskeyCredential(
 ): Promise<RegisterSignerPasskeyParams> {
     const name = config.name ?? `Crossmint Wallet ${Date.now()}`;
     const onCreatePasskey = config.onCreatePasskey ?? passkeyProvider?.createPasskey;
+    if (onCreatePasskey == null && !canCreateWebAuthnCredential()) {
+        throw new InvalidSignerError(
+            'Creating a passkey needs WebAuthn, which this environment does not have. Pass a created passkey ({ type: "passkey", id, name, publicKey }) or an onCreatePasskey callback.'
+        );
+    }
     const credential = onCreatePasskey ? await onCreatePasskey(name) : await WebAuthnP256.createCredential({ name });
     return {
         type: "passkey",
