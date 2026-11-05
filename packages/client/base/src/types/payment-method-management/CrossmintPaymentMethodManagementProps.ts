@@ -13,14 +13,15 @@ export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden
 /** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
 export type PaymentMethodManagementDefaultValues = {
     billingDetails?: {
+        /** `null` or an empty string means no default for that field. */
         address?: {
             /** Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. */
-            country?: string;
-            line1?: string;
-            line2?: string;
-            city?: string;
-            stateOrRegion?: string;
-            postalCode?: string;
+            country?: string | null;
+            line1?: string | null;
+            line2?: string | null;
+            city?: string | null;
+            stateOrRegion?: string | null;
+            postalCode?: string | null;
         };
     };
 };
@@ -64,7 +65,8 @@ export interface CrossmintPaymentMethodManagementProps {
     fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
     /**
      * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
-     * The buyer can edit every value. The form uses them only when
+     * The buyer can edit every value. `null` or an empty string means no default for that
+     * field, so values from a database can pass as they are. The form uses them only when
      * `fields.billingDetails.address` collects an address.
      *
      * The iframe checks each value on its own: it ignores an invalid value and logs a console

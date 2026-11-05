@@ -62,7 +62,8 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         warnAboutUnknownKeys(address, "defaultValues.billingDetails.address", KNOWN_ADDRESS_KEYS);
         for (const key of KNOWN_ADDRESS_KEYS) {
             const field = address[key];
-            if (field !== undefined && typeof field !== "string") {
+            // `null` is stored data for "no value" (an empty line 2 in a database), not a programming error.
+            if (field != null && typeof field !== "string") {
                 throw new Error(
                     `[CrossmintPaymentMethodManagement] defaultValues.billingDetails.address.${key} must be a string, got ${describeType(field)}.`
                 );

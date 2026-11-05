@@ -145,6 +145,18 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
         expect(warn).not.toHaveBeenCalled();
     });
 
+    it("passes a null address field through as no value, since stored data often has null for a blank field", () => {
+        const warn = captureWarnings();
+        const defaultValues = {
+            billingDetails: { address: { country: "US", line1: "80 SW 8th St", line2: null, city: "Miami" } },
+        };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
     it.each([
         ["defaultValues is a string", "ES", /defaultValues must be a plain object, got string/],
         ["defaultValues is null", null, /defaultValues must be a plain object, got null/],
@@ -165,9 +177,14 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
             /defaultValues\.billingDetails\.address\.postalCode must be a string, got number/,
         ],
         [
-            "an address field is null",
-            { billingDetails: { address: { line2: null } } },
-            /defaultValues\.billingDetails\.address\.line2 must be a string, got null/,
+            "an address field is a boolean",
+            { billingDetails: { address: { line2: false } } },
+            /defaultValues\.billingDetails\.address\.line2 must be a string, got boolean/,
+        ],
+        [
+            "an address field is an object",
+            { billingDetails: { address: { city: { name: "Madrid" } } } },
+            /defaultValues\.billingDetails\.address\.city must be a string, got an instance of Object/,
         ],
     ])("throws when %s", (_, defaultValues, message) => {
         expect(() =>
