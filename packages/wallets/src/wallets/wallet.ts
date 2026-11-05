@@ -28,6 +28,7 @@ import type {
     ApproveOptions,
     Approval,
     PendingApproval,
+    PendingSignerOperation,
     SignerStatus,
     Signature,
     ApproveResult,
@@ -122,6 +123,19 @@ const REGISTERED: HeldKeyRole = { kind: "registered" };
 // A delegated quorum as `signers()` lists it, with its install status.
 type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
 const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
+
+function pendingOperationId(operation: PendingSignerOperation): { transactionId: string } | { signatureId: string } {
+    switch (operation.type) {
+        case "transaction":
+            return { transactionId: operation.id };
+        case "signature":
+            return { signatureId: operation.id };
+        default: {
+            const _exhaustive: never = operation.type;
+            throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+        }
+    }
+}
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -678,6 +692,8 @@ export class Wallet<C extends Chain> {
      * cannot authorize this.
      * If the signer being added is the current operational signer, it will be reassembled with the new locator.
      * Otherwise, the original signer is restored after the operation.
+     * When it resumes a registration that quorum members must still approve, it returns the signer with its
+     * `transactionId` or `signatureId` and its current status, as with `prepareOnly: true`.
      * @param signer - The signer configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the signer with approval ID without auto-approving
@@ -797,44 +813,38 @@ export class Wallet<C extends Chain> {
             if (pendingOperation == null) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
-            switch (pendingOperation.type) {
-                case "transaction": {
-                    const operationId = { transactionId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                case "signature": {
-                    const operationId = { signatureId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
+            const operationId = pendingOperationId(pendingOperation);
+            walletsLogger.info("wallet.addSigner.prepared", operationId);
+            return { ...signer, ...operationId } as AddSignerReturnType<C>;
         }
 
-        if (pendingOperation != null) {
-            switch (pendingOperation.type) {
-                case "transaction":
-                    await this.approveTransactionAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { transactionId: pendingOperation.id });
-                    break;
-                case "signature":
-                    await this.approveSignatureAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { signatureId: pendingOperation.id });
-                    break;
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
-        } else {
+        if (pendingOperation == null) {
             walletsLogger.info("wallet.addSigner.success");
+            return { ...signer, status: "success" as const } as WalletSigner;
         }
 
+        const operationId = pendingOperationId(pendingOperation);
+        if (!(await this.#approvePendingOperation(pendingOperation))) {
+            // Other quorum members must still sign: return the operation as prepareOnly does, status unchanged.
+            walletsLogger.info("wallet.addSigner.awaitingApproval", operationId);
+            return { ...signer, ...operationId } as AddSignerReturnType<C>;
+        }
+        walletsLogger.info("wallet.addSigner.success", operationId);
         return { ...signer, status: "success" as const } as WalletSigner;
+    }
+
+    /** True when the operation landed; false while only quorum members can still approve it. */
+    async #approvePendingOperation(pendingOperation: PendingSignerOperation): Promise<boolean> {
+        switch (pendingOperation.type) {
+            case "transaction":
+                return (await this.approveTransactionAndWait(pendingOperation.id)).hash != null;
+            case "signature":
+                return (await this.approveSignatureAndWait(pendingOperation.id)).signature != null;
+            default: {
+                const _exhaustive: never = pendingOperation.type;
+                throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+            }
+        }
     }
 
     /**

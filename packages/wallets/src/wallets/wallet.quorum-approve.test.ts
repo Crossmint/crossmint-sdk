@@ -772,6 +772,66 @@ describe("approve() on a Stellar transaction with pending quorum entries", () =>
     });
 });
 
+describe("addSigner() resuming a registration that quorum members must still approve", () => {
+    let api: MockedApiClient;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it("returns the signer with its transaction id, not as added (Stellar)", async () => {
+        const wallet = await createSigningWallet("stellar", api);
+        api.getSigner.mockResolvedValue({
+            type: "external-wallet",
+            address: "GNEW",
+            locator: "external-wallet:GNEW",
+            transaction: { id: "txn-add", status: "awaiting-approval" },
+        } as never);
+        const entry = createQuorumPendingApproval({
+            quorum: createQuorumApiEntry(),
+            createMessage: randomStellarMessage,
+        });
+        api.getTransaction.mockResolvedValue(awaiting("txn-add", [entry], "stellar") as never);
+
+        const { value, error } = await settle(
+            wallet.addSigner({ type: "external-wallet", address: "GNEW" } as SignerConfigForChain<Chain>)
+        );
+
+        expect(error).toBeUndefined();
+        expect(api.registerSigner).not.toHaveBeenCalled();
+        expect(value).toMatchObject({ locator: "external-wallet:GNEW", transactionId: "txn-add" });
+        expect(value).not.toMatchObject({ status: "success" });
+    });
+
+    it("returns the signer with its signature id, not as added (EVM)", async () => {
+        const wallet = await createSigningWallet("base-sepolia", api);
+        api.getSigner.mockResolvedValue({
+            type: "external-wallet",
+            address: "0x456",
+            locator: "external-wallet:0x456",
+            chains: { "base-sepolia": { id: "sig-add", status: "awaiting-approval" } },
+        } as never);
+        api.getSignature.mockResolvedValue(
+            awaiting("sig-add", [createQuorumPendingApproval({ quorum: createQuorumApiEntry() })]) as never
+        );
+
+        const { value, error } = await settle(
+            wallet.addSigner({ type: "external-wallet", address: "0x456" } as SignerConfigForChain<Chain>)
+        );
+
+        expect(error).toBeUndefined();
+        expect(api.registerSigner).not.toHaveBeenCalled();
+        expect(value).toMatchObject({ locator: "external-wallet:0x456", signatureId: "sig-add" });
+        expect(value).not.toMatchObject({ status: "success" });
+    });
+});
+
 describe("approve() on a signature with a pending quorum entry", () => {
     let api: MockedApiClient;
     let wallet: Wallet<Chain>;
