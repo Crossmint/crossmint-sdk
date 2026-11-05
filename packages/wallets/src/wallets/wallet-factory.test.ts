@@ -12,7 +12,12 @@ import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { deriveServerSignerDetails } from "../signers/server";
-import { createQuorumApiEntry } from "./__tests__/test-helpers";
+import {
+    QUORUM_SERVER_MEMBER_SECRET,
+    createQuorumApiEntry,
+    createQuorumFixture,
+    withMembersReordered,
+} from "./__tests__/test-helpers";
 
 type MockedApiClient = {
     isServerSide: boolean;
@@ -1828,4 +1833,203 @@ describe("WalletFactory - quorum entries", () => {
             ).rejects.toBeInstanceOf(WalletCreationError);
         });
     });
+});
+
+describe("WalletFactory - creating quorums", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    const CHAIN_TYPES = { "base-sepolia": "evm", solana: "solana", stellar: "stellar" } as const;
+    const walletResponse = (chain: keyof typeof CHAIN_TYPES, config: Record<string, unknown>) =>
+        ({
+            chainType: CHAIN_TYPES[chain],
+            type: "smart" as const,
+            address: "wallet-address",
+            owner: "test-owner",
+            config,
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        mockApiClient = {
+            isServerSide: false,
+            crossmint: { projectId: "test-project" },
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe.each([{ chain: "base-sepolia" }, { chain: "solana" }, { chain: "stellar" }] as const)(
+        "on $chain",
+        ({ chain }) => {
+            describe("createWallet with a recovery quorum", () => {
+                it("sends each member's identity fields only, under recoveryMethods", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await walletFactory.createWallet({ chain, recoveryMethods: [quorum.config] } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(expect.objectContaining({ recoveryMethods: [quorum.input] }));
+                    expect(params.config).not.toHaveProperty("adminSigner");
+                    expect(JSON.stringify(params)).not.toContain(QUORUM_SERVER_MEMBER_SECRET);
+                });
+
+                it("sends a quorum passed alone under recoveryMethods, never adminSigner", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await walletFactory.createWallet({ chain, recovery: quorum.config } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(expect.objectContaining({ recoveryMethods: [quorum.input] }));
+                    expect(params.config).not.toHaveProperty("adminSigner");
+                });
+
+                it("lists the API's entry and holds none of the members' keys", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    const wallet = await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [quorum.config],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([quorum.entry]);
+                    expect(wallet.signer).toBeUndefined();
+                });
+            });
+
+            describe("createWallet with a delegated quorum", () => {
+                it("registers it with each member's identity fields only", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                    } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(
+                        expect.objectContaining({ delegatedSigners: [{ signer: quorum.input }] })
+                    );
+                });
+            });
+
+            describe("getWallet with a recovery quorum in the config", () => {
+                it("takes the wallet's quorum whatever the member order and address case", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    const wallet = await walletFactory.getWallet({
+                        chain,
+                        recoveryMethods: [withMembersReordered(quorum.config)],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([quorum.entry]);
+                });
+
+                it("matches each of two quorums to its own entry", async () => {
+                    const first = createQuorumFixture(chain);
+                    const second = createQuorumFixture(chain, 3);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [first.entry, second.entry] })
+                    );
+
+                    const wallet = await walletFactory.getWallet({
+                        chain,
+                        recoveryMethods: [second.config, first.config],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([first.entry, second.entry]);
+                });
+
+                it.each([
+                    {
+                        name: "another threshold",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            threshold: 3,
+                        }),
+                    },
+                    {
+                        name: "a member missing",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            members: config.members.slice(1),
+                        }),
+                    },
+                    {
+                        name: "another member",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            members: [{ type: "email", email: "mallory@example.com" }, ...config.members.slice(1)],
+                        }),
+                    },
+                ])("rejects a quorum with $name", async ({ change }) => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, recoveryMethods: [change(quorum.config)] } as never)
+                    ).rejects.toBeInstanceOf(WalletCreationError);
+                });
+            });
+
+            describe("getWallet with a delegated quorum in the config", () => {
+                it("takes the wallet's delegated quorum whatever the member order", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, signers: [withMembersReordered(quorum.config)] } as never)
+                    ).resolves.toBeDefined();
+                });
+
+                it("rejects a delegated quorum the wallet does not have", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [createQuorumFixture(chain, 3).entry],
+                        })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, signers: [quorum.config] } as never)
+                    ).rejects.toBeInstanceOf(WalletCreationError);
+                });
+            });
+        }
+    );
 });
