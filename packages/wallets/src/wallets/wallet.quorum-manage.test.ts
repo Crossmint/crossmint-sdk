@@ -181,6 +181,21 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             expect(api.approveTransaction).not.toHaveBeenCalled();
         });
 
+        it("sends members given by their identity alone as they are", async () => {
+            const identityOnly = {
+                type: "quorum",
+                threshold: 2,
+                members: [
+                    { type: "server", address: "ServerMemberAddress777" },
+                    { type: "external-wallet", address: "ExternalMemberAddress888" },
+                ],
+            };
+
+            await wallet.addSigner(identityOnly as never);
+
+            expect(api.registerSigner.mock.calls[0][1].signer).toEqual(identityOnly);
+        });
+
         it("registers without first looking the new quorum up, as it has no locator yet", async () => {
             await wallet.addSigner(quorum.config as never);
 

@@ -10,7 +10,7 @@ import type {
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
-import { parseSignerLocator } from "../utils/signer-locator";
+import { hasQuorumLocatorPrefix, parseSignerLocator } from "../utils/signer-locator";
 import { quorumSignerNotSupported } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
@@ -369,7 +369,7 @@ export type QuorumRef = { locator: QuorumLocator };
 /** True for `{ locator: "quorum:…" }`, whether or not its id is well formed; callers check the id. */
 export function isQuorumRef(target: QuorumRef | { type: string }): target is QuorumRef {
     const { locator } = target as Partial<QuorumRef>;
-    return locator != null && locator.startsWith("quorum:");
+    return locator != null && hasQuorumLocatorPrefix(locator);
 }
 
 ////////////////////////////////////////////////////////////
