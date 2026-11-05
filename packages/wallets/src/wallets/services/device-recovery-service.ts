@@ -332,7 +332,13 @@ export class DeviceRecoveryService<C extends Chain> {
         }
         const savedLocator = await this.#getSavedSignerLocator(deviceSignerKeyStorage);
         if (savedLocator != null && savedLocator !== signerLocator) {
-            const existingSigners = await this.#signers();
+            let existingSigners: WalletSigner[];
+            try {
+                existingSigners = await this.#signers();
+            } catch (error) {
+                walletsLogger.warn("wallet.recover.staleSignerLookupFailed", { signerLocator: savedLocator, error });
+                return;
+            }
             if (existingSigners.some((s) => s.type === "device" && s.locator === savedLocator)) {
                 await this.#removeStaleSigner(savedLocator);
             }

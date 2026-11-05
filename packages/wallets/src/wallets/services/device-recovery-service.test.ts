@@ -317,6 +317,25 @@ describe("DeviceRecoveryService", () => {
             expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:newkey");
         });
 
+        it("keeps recovery successful and the saved locator when the wallet cannot be read after approval", async () => {
+            const signers = vi.fn().mockRejectedValue(new Error("backend unavailable"));
+            const storage = makeStorage({ getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldkey") });
+            const removeSigner = vi.fn();
+            const { service } = setup({
+                storage,
+                signers,
+                removeSigner,
+                signerManager: {
+                    activeSigner: makeSigner("device", "device:newkey", "awaiting-approval"),
+                    getSignerState: vi.fn().mockResolvedValue(pendingState("transaction", "tx-1")),
+                },
+            });
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(service.needsRecovery).toBe(false);
+            expect(removeSigner).not.toHaveBeenCalled();
+            expect(storage.saveSignerLocator).not.toHaveBeenCalled();
+        });
+
         it.each([
             ["no locator is saved", null],
             ["the saved locator is no longer on the wallet", "device:alreadyRemovedKey"],
