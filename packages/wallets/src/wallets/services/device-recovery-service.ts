@@ -315,9 +315,9 @@ export class DeviceRecoveryService<C extends Chain> {
         return undefined;
     }
 
-    // Whether a signer change made now would wait on quorum members; at the signer limit such a removal cannot free a
-    // slot in time, so an approver that cannot be resolved counts as one too.
-    #removalApprovedByQuorum(): boolean {
+    // Whether a signer change made now would wait on quorum members; an approver that cannot be resolved counts as one,
+    // as nothing flat could sign it either.
+    #changeApprovedByQuorum(): boolean {
         try {
             return this.#signerManager.approvesAsQuorum();
         } catch {
@@ -335,7 +335,7 @@ export class DeviceRecoveryService<C extends Chain> {
             return { staleDeviceSignerLocator, awaitedRegistration: awaitedRequest(change) };
         } catch (error) {
             // Through a quorum, the removal would wait on its members and the next add would hit the limit again.
-            if (!(error instanceof SignerLimitExceededError) || this.#removalApprovedByQuorum()) {
+            if (!(error instanceof SignerLimitExceededError) || this.#changeApprovedByQuorum()) {
                 throw error;
             }
             const signerLocatorToRemove =
@@ -492,8 +492,8 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const signerState = await this.#signerManager.getSignerState(deviceSigner.locator());
-        // Registering again could start a second request while the first one waits on quorum members.
-        if (signerState.lookupFailed) {
+        // Registering again could start a second request while the first waits on quorum members; flat wallets go on.
+        if (signerState.lookupFailed && this.#changeApprovedByQuorum()) {
             throw new WalletNotAvailableError(`Could not read device signer ${deviceSigner.locator()}; try again`);
         }
         deviceSigner.status = signerState.signer?.status;

@@ -245,7 +245,7 @@ export class Wallet<C extends Chain> {
             signerManager: this.#signerManager,
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
-            addSigner: (deviceSigner) => this.#addSigner(deviceSigner),
+            addSigner: (deviceSigner) => this.#addSigner(deviceSigner, undefined, { stopIfUnreadable: true }),
             removeSigner: (signerLocator, approver) =>
                 this.#removeSigner(
                     { type: "device", locator: signerLocator } as SignerConfigForChain<C>,
@@ -805,10 +805,12 @@ export class Wallet<C extends Chain> {
         >;
     }
 
-    // addSigner's body, also run by device recovery for the device signer it registers.
+    // addSigner's body; device recovery passes `stopIfUnreadable`, so through a quorum an unreadable earlier
+    // registration stops it instead of starting a second request for the members.
     async #addSigner(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>,
-        options?: AddSignerOptions
+        options?: AddSignerOptions,
+        { stopIfUnreadable = false }: { stopIfUnreadable?: boolean } = {}
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
@@ -823,7 +825,8 @@ export class Wallet<C extends Chain> {
             const prepareOnly = this.isPrepareOnly(options, approver);
             const signerLocator = this.#registrationLocator(resolvedSigner);
             if (signerLocator != null) {
-                const resumed = await this.#resumeRegistration(signerLocator, options, prepareOnly);
+                const stop = stopIfUnreadable && approver != null && hasQuorumLocatorPrefix(approver);
+                const resumed = await this.#resumeRegistration(signerLocator, options, prepareOnly, stop);
                 if (resumed != null) {
                     return resumed;
                 }
@@ -876,9 +879,13 @@ export class Wallet<C extends Chain> {
     async #resumeRegistration(
         signerLocator: SignerLocator,
         options: AddSignerOptions | undefined,
-        prepareOnly: boolean
+        prepareOnly: boolean,
+        stopIfUnreadable: boolean
     ): Promise<AddSignerReturnType<C> | WalletSigner | null> {
         const existingState = await this.#signerManager.getSignerState(signerLocator);
+        if (stopIfUnreadable && existingState.lookupFailed) {
+            throw new WalletNotAvailableError(`Could not read signer ${signerLocator}; try again`);
+        }
         if (existingState.signer != null) {
             // Signer already fully approved — return immediately (idempotent)
             if (this.#signerManager.isApprovedSignerStatus(existingState.signer.status)) {
