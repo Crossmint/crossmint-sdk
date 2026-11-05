@@ -515,6 +515,20 @@ describe("approve() with an api-key active signer on a chain without quorum appr
         expect(api.approveTransaction).not.toHaveBeenCalled();
         vi.useRealTimers();
     });
+
+    it("returns the transaction id without a hash while only the quorum can still approve, as on other chains", async () => {
+        vi.useFakeTimers();
+        const api = createMockApiClient();
+        const wallet = await createMockWallet("solana", api, "api-key");
+        const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+        api.getTransaction.mockResolvedValue(awaiting("txn-1", [entry], "solana") as never);
+
+        const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+        expect(value).toStrictEqual(AWAITING_TRANSACTION);
+        vi.useRealTimers();
+    });
 });
 
 describe("send() with a quorum as signer, then approve()", () => {
