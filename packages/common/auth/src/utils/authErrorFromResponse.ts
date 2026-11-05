@@ -10,7 +10,8 @@ export async function authErrorFromResponse(
     hint?: string
 ): Promise<CrossmintAuthenticationError> {
     const details = (await readApiErrorMessage(response)) ?? response.statusText;
-    const message = `${action} (${response.status}${details ? `: ${details}` : ""})${hint ? `. ${hint}` : ""}`;
+    const status = details ? `${response.status}: ${details}` : `${response.status}`;
+    const message = hint ? `${action} (${status}). ${hint}` : `${action} (${status})`;
     return new CrossmintAuthenticationError(message, { status: response.status });
 }
 
