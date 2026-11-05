@@ -13,7 +13,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -320,14 +320,14 @@ export class DeviceRecoveryService<C extends Chain> {
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
-        const recovery = this.#signerManager.recovery;
+        const recovery = this.#signerManager.resolveAuthorizingRecovery().recovery as SignerConfigForChain<C>;
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
         ) {
             throw new Error(
                 "Cannot resume pending approval: no secret available. " +
-                    'Call wallet.useSigner({ type: "server", secret: ... }) first with the recovery server secret.'
+                    'Call wallet.useRecoveryMethod({ type: "server", secret: ... }) first with the recovery server secret.'
             );
         }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
@@ -338,7 +338,7 @@ export class DeviceRecoveryService<C extends Chain> {
         ) {
             throw new Error(
                 "Cannot resume pending approval: no onSign callback available. " +
-                    'Call wallet.useSigner({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
+                    'Call wallet.useRecoveryMethod({ type: "external-wallet", address: "0x...", onSign: async (tx) => ... }) first.'
             );
         }
         const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
@@ -407,7 +407,17 @@ export class DeviceRecoveryService<C extends Chain> {
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {
-        const recovery = this.#signerManager.recovery;
+        let recovery: SignerConfigForChain<C>;
+        try {
+            recovery = this.#signerManager.resolveAuthorizingRecovery().recovery as SignerConfigForChain<C>;
+        } catch (error) {
+            if (!(error instanceof RecoveryMethodRequiredError)) {
+                throw error;
+            }
+            // Several recovery methods and none selected: leave the wallet without a signer rather than guess.
+            walletsLogger.warn("wallet.recover.device.unsupportedFallback.noRecoveryMethodSelected", { error });
+            return;
+        }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {
