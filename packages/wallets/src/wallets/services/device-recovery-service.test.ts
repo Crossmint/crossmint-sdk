@@ -9,7 +9,11 @@ import {
     type SignerAdapter,
 } from "../../signers/types";
 import { createDeviceSigner } from "@/utils/device-signers";
-import { DeviceSignerNotSupportedError, QuorumSignerNotSupportedError } from "../../utils/errors";
+import {
+    DeviceSignerNotSupportedError,
+    QuorumSignerNotSupportedError,
+    RecoveryMethodRequiredError,
+} from "../../utils/errors";
 import type { ApiClient } from "../../api";
 import type { RecoverySignerConfigForChain } from "../../signers/types";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
@@ -53,6 +57,7 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
         }),
         recovery,
         requireDefaultRecovery: overrides.requireDefaultRecovery ?? vi.fn(() => recovery),
+        resolveAuthorizingRecovery: vi.fn(() => ({ recovery, approver: undefined })),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -477,12 +482,27 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
     });
 
     describe("when a quorum comes before an external-wallet recovery method", () => {
-        it("falls back to the external wallet when the provider rejects device signers", async () => {
+        it("throws RecoveryMethodRequiredError and creates no device key while neither is selected", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager(
                 [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
                 storage
             );
+            const addSigner = vi.fn();
+            const { service } = setup({ storage, manager, addSigner });
+
+            await expect(service.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+            expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
+            expect(addSigner).not.toHaveBeenCalled();
+        });
+
+        it("falls back to the selected external wallet when the provider rejects device signers", async () => {
+            const storage = makeStorage();
+            const manager = makeRealSignerManager(
+                [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
+                storage
+            );
+            manager.selectRecovery(1);
             const addSigner = vi.fn().mockRejectedValue(new DeviceSignerNotSupportedError("unsupported"));
             const { service } = setup({ storage, manager, addSigner });
 

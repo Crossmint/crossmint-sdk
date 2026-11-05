@@ -28,6 +28,7 @@ import type {
     ApproveOptions,
     Approval,
     PendingApproval,
+    PendingSignerOperation,
     SignerStatus,
     Signature,
     ApproveResult,
@@ -86,7 +87,12 @@ import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
 import { recoveryMethodsFromWalletConfig } from "../utils/recovery";
-import { getSignerLocator, isSameSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
+import {
+    getSignerLocator,
+    hasQuorumLocatorPrefix,
+    isSameSignerLocator,
+    passkeyCredentialId,
+} from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { type ApproverRequest, type RecoveryMember, SignerManager } from "./services/signer-manager";
@@ -128,6 +134,19 @@ const REGISTERED: HeldKeyRole = { kind: "registered" };
 // A delegated quorum as `signers()` lists it, with its install status.
 type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
 const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
+
+function pendingOperationId(operation: PendingSignerOperation): { transactionId: string } | { signatureId: string } {
+    switch (operation.type) {
+        case "transaction":
+            return { transactionId: operation.id };
+        case "signature":
+            return { signatureId: operation.id };
+        default: {
+            const _exhaustive: never = operation.type;
+            throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+        }
+    }
+}
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -276,15 +295,16 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // A quorum signs through its members, so it is never the default signer and does not count as one.
+        const singleSigners = this.#signerManager.singleInitialSigners;
         const signerToAssemble =
-            this.#initialSigners.length === 0
+            singleSigners.length === 0
                 ? this.#signerManager.defaultRecovery
-                : this.#initialSigners.length === 1
-                  ? this.#initialSigners[0]
+                : singleSigners.length === 1
+                  ? singleSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        // A quorum signs through its members, so it is never the default signer.
-        if (signerToAssemble == null || isQuorumSigner(signerToAssemble)) {
+        if (signerToAssemble == null) {
             return;
         }
 
@@ -363,7 +383,10 @@ export class Wallet<C extends Chain> {
     }
 
     /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
-    protected async resolveSignerParams(options?: { signer?: SignerOption }): Promise<{ signer: string }> {
+    protected async resolveSignerParams(
+        options?: { signer?: SignerOption },
+        requestChain: Chain = this.chain
+    ): Promise<{ signer: string }> {
         if (options?.signer != null) {
             return { signer: this.resolveSignerOption(options.signer) };
         }
@@ -371,12 +394,12 @@ export class Wallet<C extends Chain> {
         if (this.#quorumMemberLocator == null || !isSameSignerLocator(activeLocator, this.#quorumMemberLocator)) {
             return { signer: activeLocator };
         }
-        return { signer: await this.#actingRoleLocator(activeLocator) };
+        return { signer: await this.#actingRoleLocator(activeLocator, requestChain) };
     }
 
     // A member-only key acts as its quorum (EDD 007 §7 "Role"). Recovery methods and delegated quorums come from one
     // fresh read of the wallet's config, so no per-signer lookup can silently drop a quorum from the decision.
-    async #actingRoleLocator(heldLocator: SignerLocator): Promise<string> {
+    async #actingRoleLocator(heldLocator: SignerLocator, requestChain: Chain): Promise<string> {
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
@@ -396,12 +419,17 @@ export class Wallet<C extends Chain> {
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
             delegatedQuorums: configSigners.filter(isQuorumSigner),
-            // Registered on this chain: an EVM signer registered on other chains only is still just a member here.
+            // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
             isRegisteredSigner: configSigners.some(
-                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, this.chain)
+                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
             ),
         });
         return role.kind === "none" ? heldLocator : role.locator;
+    }
+
+    /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
+    protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string): boolean {
+        return Boolean(options?.prepareOnly) || hasQuorumLocatorPrefix(signerLocator);
     }
 
     /** The API locator of a call's `signer` option. */
@@ -413,13 +441,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the primary recovery signer config. Use {@link recoveryMethods} for the full list on wallets
-     * created with several recovery signers.
+     * Get the primary recovery signer config: the first recovery method that signs on its own. Use
+     * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
+     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): RecoverySignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#signerManager.requireDefaultRecovery() as SignerConfigForChain<C>;
     }
 
     /**
@@ -580,6 +609,8 @@ export class Wallet<C extends Chain> {
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
      * @param {TransactionInputOptions} options - The options for the transaction
+     * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
+     * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
      * @returns {Transaction} The transaction
      */
     @WithLoggerContext({
@@ -615,10 +646,11 @@ export class Wallet<C extends Chain> {
 
         await this.preAuthIfNeeded();
 
+        const signerParams = await this.resolveSignerParams(options);
         const sendParams = {
             recipient,
             amount,
-            ...(await this.resolveSignerParams(options)),
+            ...signerParams,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -633,7 +665,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.prepareOnly === true) {
+        if (this.isPrepareOnly(options, signerParams.signer)) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
@@ -678,7 +710,8 @@ export class Wallet<C extends Chain> {
      * @param params.options - The options for the approval
      * @param params.options.approval - The approval data
      * @param params.options.additionalSigners - Additional signers for the approval
-     * @returns The transaction or signature
+     * @returns The transaction or signature. While other quorum members must still sign, the transaction comes back
+     * without `hash` and `explorerLink`, and the signature without `signature`.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -735,6 +768,8 @@ export class Wallet<C extends Chain> {
      * cannot authorize this.
      * If the signer being added is the current operational signer, it will be reassembled with the new locator.
      * Otherwise, the original signer is restored after the operation.
+     * When it resumes a registration that quorum members must still approve, it returns the signer with its
+     * `transactionId` or `signatureId` and its current status, as with `prepareOnly: true`.
      * @param signer - The signer configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the signer with approval ID without auto-approving
@@ -860,51 +895,40 @@ export class Wallet<C extends Chain> {
      */
     private async completeSignerRegistration(
         signer: WalletSigner,
-        pendingOperation: { type: "signature" | "transaction"; id: string } | null,
+        pendingOperation: PendingSignerOperation | null,
         options?: AddSignerOptions
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
-        if (options?.prepareOnly) {
-            if (pendingOperation == null) {
+        if (pendingOperation == null) {
+            if (options?.prepareOnly) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
-            switch (pendingOperation.type) {
-                case "transaction": {
-                    const operationId = { transactionId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                case "signature": {
-                    const operationId = { signatureId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
-        }
-
-        if (pendingOperation != null) {
-            switch (pendingOperation.type) {
-                case "transaction":
-                    await this.approveTransactionAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { transactionId: pendingOperation.id });
-                    break;
-                case "signature":
-                    await this.approveSignatureAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { signatureId: pendingOperation.id });
-                    break;
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
-        } else {
             walletsLogger.info("wallet.addSigner.success");
+        } else {
+            const operationId = pendingOperationId(pendingOperation);
+            // prepareOnly signs nothing; after this client approves, other quorum members may still have to sign.
+            const landed = !options?.prepareOnly && (await this.#approvePendingOperation(pendingOperation));
+            if (!landed) {
+                const event = options?.prepareOnly ? "wallet.addSigner.prepared" : "wallet.addSigner.awaitingApproval";
+                walletsLogger.info(event, operationId);
+                return { ...signer, ...operationId } as AddSignerReturnType<C>;
+            }
+            walletsLogger.info("wallet.addSigner.success", operationId);
         }
-
         return { ...signer, status: "success" as const } as WalletSigner;
+    }
+
+    /** True when the operation landed; false while only quorum members can still approve it. */
+    async #approvePendingOperation(pendingOperation: PendingSignerOperation): Promise<boolean> {
+        switch (pendingOperation.type) {
+            case "transaction":
+                return (await this.approveTransactionAndWait(pendingOperation.id)).hash != null;
+            case "signature":
+                return (await this.approveSignatureAndWait(pendingOperation.id)).signature != null;
+            default: {
+                const _exhaustive: never = pendingOperation.type;
+                throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+            }
+        }
     }
 
     /**
@@ -1647,17 +1671,25 @@ export class Wallet<C extends Chain> {
 
     // A quorum member may be any key this client holds, the useRecoveryMethod key included (EDD 007 §7 "Approval").
     // Flat-only approvals keep their keys, so wallets without quorums sign as before.
+    #heldSigners(
+        walletSigner: SignerAdapter,
+        additional: SignerAdapter[],
+        pending: PendingApproval[]
+    ): SignerAdapter[] {
+        if (pending.some(isQuorumPendingApproval)) {
+            return this.#signerManager.heldSigners(additional);
+        }
+        return [...additional, walletSigner];
+    }
+
     #approvalSigning(
         walletSigner: SignerAdapter,
         options: ApproveOptions | undefined,
         pending: PendingApproval[],
         sign: ApprovalSigning["sign"]
     ) {
-        const additional = options?.additionalSigners ?? [];
         return {
-            held: pending.some(isQuorumPendingApproval)
-                ? this.#signerManager.heldSigners(additional)
-                : [...additional, walletSigner],
+            held: this.#heldSigners(walletSigner, options?.additionalSigners ?? [], pending),
             limit: "all",
             sign,
             resolveMissing: (locator) => this.#resolveMissingDeviceSigner(locator),

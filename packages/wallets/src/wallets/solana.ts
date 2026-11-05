@@ -62,9 +62,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
-        const createdTransaction = await this.createTransaction(params);
+        const signerParams = await this.resolveSignerParams(params.options);
+        const createdTransaction = await this.createTransaction(params, signerParams);
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -102,9 +103,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return result;
     }
 
-    private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        const signerParams = await this.resolveSignerParams(params.options);
-
+    private async createTransaction(
+        params: SolanaTransactionInput,
+        signerParams: { signer: string }
+    ): Promise<CreateTransactionSuccessResponse> {
         let serializedTransaction: string;
 
         if ("serializedTransaction" in params) {

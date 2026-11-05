@@ -290,8 +290,8 @@ describe("throwIfRequestExpired", () => {
 describe("QuorumSelectionAmbiguousError", () => {
     test("names every matching quorum and keeps their locators", () => {
         const quorumLocators = [
-            "quorum:3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21",
-            "quorum:7b1d4e6a-2c3f-8a5b-9d8e-1f2a3b4c5d6e",
+            "quorum:3f9c2b8e-5d1a-4c4f-9e2b-7a6d5c4b3a21",
+            "quorum:7b1d4e6a-2c3f-4a5b-9d8e-1f2a3b4c5d6e",
         ] as const;
 
         const error = new QuorumSelectionAmbiguousError([...quorumLocators]);

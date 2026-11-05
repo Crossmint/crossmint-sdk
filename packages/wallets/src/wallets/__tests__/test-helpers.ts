@@ -1,5 +1,6 @@
 import { vi, type MockedFunction } from "vitest";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
@@ -79,6 +80,16 @@ export const createMockWallet = async <C extends Chain>(
     signerType: "api-key" | "external-wallet" = "api-key",
     recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => walletWithSigner(chain, mockApiClient, createMockSigner(signerType, chain), recoverySigners);
+
+// Runs the call to the end, fake timers included, so a sleep on the approval path cannot hang the test.
+export async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
+    const outcome = call.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error })
+    );
+    await vi.runAllTimersAsync();
+    return outcome;
+}
 
 // What a signing test signer returns for `payload`, so a test can tell which message each approval signed.
 export const signatureOver = (payload: string) => `0xsig:${payload}`;
@@ -176,8 +187,6 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     ...overrides,
 });
 
-// The API issues version-8 UUIDs for quorum locators.
-const randomQuorumId = () => crypto.randomUUID().replace(/^(.{14})4/, "$18");
 const randomEvmAddress = () => `0x${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().slice(0, 8)}`;
 
 // A quorum entry as the wallets API returns it. Members are random so no test depends on them.
@@ -188,7 +197,7 @@ export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) =>
     });
     return {
         type: "quorum" as const,
-        locator: `quorum:${randomQuorumId()}` as const,
+        locator: `quorum:${crypto.randomUUID()}` as const,
         threshold,
         members,
     } satisfies QuorumSigner;
@@ -206,21 +215,23 @@ export const createQuorumPendingApproval = ({
     pending = quorum.members,
     submitted = [],
     remaining = quorum.threshold - submitted.length,
+    createMessage = randomHexMessage,
 }: {
     quorum: QuorumSigner;
     pending?: QuorumMember[];
     submitted?: QuorumMember[];
     remaining?: number;
+    createMessage?: () => string;
 }) =>
     ({
         signer: { type: "quorum", locator: quorum.locator },
         quorumApprovals: {
             threshold: quorum.threshold,
             remaining,
-            pending: pending.map((member) => ({ member, message: randomHexMessage() })),
+            pending: pending.map((member) => ({ member, message: createMessage() })),
             submitted: submitted.map((member) => ({
                 member,
-                message: randomHexMessage(),
+                message: createMessage(),
                 signature: randomHexMessage(),
                 submittedAt: new Date().toISOString(),
             })),
@@ -228,6 +239,21 @@ export const createQuorumPendingApproval = ({
     }) satisfies PendingApproval;
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
+
+// What a call returns for a request made as a quorum, or while only quorum members can still approve it.
+export const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
+export const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+
+// A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
+export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
+    id,
+    status: "awaiting-approval",
+    chainType,
+    approvals: { pending, submitted: [] },
+});
+
+// A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
+export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
 
 // The wallets API's expiry message (crossbit-main `constants/error.ts`, `TRANSACTION_EXPIRED_MESSAGE`).
 export const TRANSACTION_EXPIRED_API_MESSAGE =

@@ -6,7 +6,7 @@ import {
     type QuorumMemberLocator,
     type SignerLocator,
 } from "../signers/types";
-import type { PendingApproval, QuorumApprovalProgress } from "../wallets/types";
+import type { PendingApproval } from "../wallets/types";
 import { isSameSignerLocator } from "../utils/signer-locator";
 
 export type QuorumPendingApproval = Extract<PendingApproval, { signer: { type: "quorum" } }>;
@@ -39,17 +39,6 @@ export function splitPendingApprovals(pending: PendingApproval[]): {
         }
     }
     return { flat, quorums };
-}
-
-export function toQuorumProgress(entry: QuorumPendingApproval): QuorumApprovalProgress {
-    const { threshold, remaining, pending, submitted } = entry.quorumApprovals;
-    return {
-        quorum: requireQuorumLocator(entry.signer.locator),
-        threshold,
-        remaining,
-        pending: pending.map(({ member }) => requireQuorumMemberLocator(member.locator)),
-        submitted: submitted.map(({ member }) => requireQuorumMemberLocator(member.locator)),
-    };
 }
 
 /** True when only quorum members can move the operation forward: no flat signer is pending. */

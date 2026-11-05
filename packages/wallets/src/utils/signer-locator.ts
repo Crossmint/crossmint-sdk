@@ -1,3 +1,4 @@
+import { getAddress, isAddress } from "viem";
 import type { Chain } from "../chains/chains";
 import type {
     SignerLocator,
@@ -17,13 +18,21 @@ export function hasQuorumLocatorPrefix(locator: string): boolean {
     return locator.startsWith(QUORUM_LOCATOR_PREFIX);
 }
 
-// EVM addresses ignore case, so `external-wallet:0x…` locators compare in lowercase (Kotlin `isSameLocator`).
-// Every other locator compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
+// The API's `normalizeLocator` rule: an EVM address, bare or after the type, compares checksummed.
+// Every other value compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
 export function comparableLocator(locator: string): string {
-    if (locator.startsWith("external-wallet:0x")) {
-        return locator.toLowerCase();
+    const separator = locator.indexOf(":");
+    if (separator === -1) {
+        return checksummedIfEvmAddress(locator);
     }
-    return locator;
+    return `${locator.slice(0, separator)}:${checksummedIfEvmAddress(locator.slice(separator + 1))}`;
+}
+
+function checksummedIfEvmAddress(value: string): string {
+    if (isAddress(value, { strict: false })) {
+        return getAddress(value);
+    }
+    return value;
 }
 
 export function isSameSignerLocator(left: string, right: string): boolean {

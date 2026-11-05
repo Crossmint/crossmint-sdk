@@ -7,7 +7,6 @@ import type { ServerSignerResolver } from "../../signers/server/resolver";
 import { assembleSigner } from "../../signers";
 import {
     isApiSourcedServerSignerConfig,
-    isQuorumLocator,
     isQuorumSigner,
     type InternalSignerConfig,
     type QuorumSigner,
@@ -96,6 +95,11 @@ export class SignerManager<C extends Chain> {
 
     get recoverySigners(): Array<RecoverySignerConfigForChain<C>> {
         return [...this.#recoverySigners];
+    }
+
+    /** Delegated signers that sign on their own: every initial signer except quorums. */
+    get singleInitialSigners(): SignerConfigForChain<C>[] {
+        return this.#initialSigners.filter((signer) => !isQuorumSigner(signer));
     }
 
     /** The first recovery method that signs on its own, or null when every recovery method is a quorum. */
@@ -238,14 +242,14 @@ export class SignerManager<C extends Chain> {
 
     require(): SignerAdapter {
         if (this.#activeSigner == null) {
-            const hasSingleInitialSigner = this.#initialSigners.some((signer) => !isQuorumSigner(signer));
-            if (this.#initialSigners.length > 1 && (this.defaultRecovery != null || hasSingleInitialSigner)) {
+            const singleInitialSigners = this.singleInitialSigners;
+            if (singleInitialSigners.length > 1) {
                 throw new Error(
                     "No signer is set. This wallet has multiple signers configured. " +
                         "Call wallet.useSigner() to select which signer to use before signing operations."
                 );
             }
-            if (this.defaultRecovery == null && hasSingleInitialSigner) {
+            if (this.defaultRecovery == null && singleInitialSigners.length === 1) {
                 throw new Error(USE_SIGNER_REQUIRED);
             }
             const recovery = this.requireDefaultRecovery();
@@ -269,10 +273,9 @@ export class SignerManager<C extends Chain> {
      * `approver` locator to send to the API when the wallet has several recovery methods.
      *
      * A recovery method selected via `useRecoveryMethod()` always wins. Otherwise, a wallet with a single
-     * recovery method authorizes with it whatever the active signer is, and so does a wallet whose other
-     * recovery methods are all quorums, which approve only when chosen ({@link withApprover}). A wallet with
-     * several recovery methods that sign alone needs `useSigner()` to have selected one of them: the API has to
-     * know which key will approve, and an operational signer cannot authorize these changes.
+     * recovery method authorizes with it whatever the active signer is. A wallet with several recovery
+     * methods, quorums included as in Swift and Kotlin, needs the active signer to be one of those that sign
+     * alone: the API has to know which key will approve, and an operational signer cannot authorize these changes.
      */
     resolveAuthorizingRecovery(): { recovery: RecoverySignerConfigForChain<C>; approver: SignerLocator | undefined } {
         const selected = this.selectedRecovery;
@@ -290,19 +293,16 @@ export class SignerManager<C extends Chain> {
         if (this.#recoverySigners.length === 1) {
             return { recovery: defaultRecovery, approver: undefined };
         }
-        // Quorums approve only when chosen, so a lone recovery method that signs alone needs no selection.
-        if (this.#singleRecoverySigners().length === 1) {
-            return { recovery: defaultRecovery, approver: this.recoveryLocator(defaultRecovery) ?? undefined };
-        }
         const recoveryLocators = this.#recoverySigners.map((recovery) => this.recoveryLocator(recovery));
         const activeLocator = this.#activeSigner?.locator();
         const activeIndex = recoveryLocators.findIndex(
             (locator) => locator != null && activeLocator != null && isSameSignerLocator(locator, activeLocator)
         );
         if (activeIndex === -1) {
-            const known = recoveryLocators.filter(
-                (locator): locator is SignerLocator => locator != null && !isQuorumLocator(locator)
-            );
+            const known = this.#recoverySigners
+                .filter((recovery) => !isQuorumSigner(recovery))
+                .map((recovery) => this.recoveryLocator(recovery))
+                .filter((locator): locator is SignerLocator => locator != null);
             const selection = `Call wallet.useRecoveryMethod() with one of them (${known.join(", ")}) first.`;
             throw new RecoveryMethodRequiredError(
                 activeLocator == null

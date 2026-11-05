@@ -172,8 +172,10 @@ export class DeviceRecoveryService<C extends Chain> {
             deviceSignerKeyStorage
         );
 
-        // A recovery method that signs alone approves the new device signer; check before creating its key.
+        // The recovery method that approves the new device signer is resolved before its key is created: one that
+        // signs alone, selected when the wallet has several (quorums count, as in Swift and Kotlin).
         this.#signerManager.requireDefaultRecovery();
+        this.#signerManager.resolveAuthorizingRecovery();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
 
         try {
