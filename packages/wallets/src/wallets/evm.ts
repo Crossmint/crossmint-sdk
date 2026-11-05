@@ -174,7 +174,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new InvalidTypedDataError("Invalid typed data domain");
         }
 
-        const signerParams = await this.resolveSignerParams(params.options);
+        const signerParams = await this.resolveSignerParams(params.options, chain);
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "typed-data",
             params: {

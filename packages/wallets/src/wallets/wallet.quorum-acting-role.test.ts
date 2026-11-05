@@ -584,6 +584,37 @@ describe("EVM signatures with a key that is only a quorum member", () => {
         });
     });
 
+    describe("when signTypedData names a chain other than the wallet's", () => {
+        const signTypedDataOn = (wallet: Wallet<Chain>, chain: Chain) =>
+            EVMWallet.from(wallet).signTypedData({
+                ...EVM_TYPED_DATA,
+                chain,
+                options: { prepareOnly: true },
+            } as never);
+
+        it("acts as itself when the key is registered on the request's chain only", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            const onRequestChain = { ...bob, chains: { "polygon-amoy": { id: "sig-9", status: "success" } } };
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, onRequestChain]) as never);
+
+            await signTypedDataOn(wallet, "polygon-amoy");
+
+            expect(signatureSigner()).toBe(bob.locator);
+        });
+
+        it("acts as its quorum when the key is registered on the wallet's chain only", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            const onWalletChain = { ...bob, chains: { "base-sepolia": { id: "sig-9", status: "success" } } };
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, onWalletChain]) as never);
+
+            await signTypedDataOn(wallet, "polygon-amoy");
+
+            expect(signatureSigner()).toBe(treasury.locator);
+        });
+    });
+
     describe("when signMessage names a quorum in its signer option", () => {
         it.each([false, true])(
             "requests the signature as that quorum and returns it unsigned with prepareOnly %s",

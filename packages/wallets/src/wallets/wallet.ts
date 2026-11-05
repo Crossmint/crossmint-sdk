@@ -370,7 +370,10 @@ export class Wallet<C extends Chain> {
     }
 
     /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
-    protected async resolveSignerParams(options?: { signer?: SignerOption }): Promise<{ signer: string }> {
+    protected async resolveSignerParams(
+        options?: { signer?: SignerOption },
+        requestChain: Chain = this.chain
+    ): Promise<{ signer: string }> {
         if (options?.signer != null) {
             return { signer: this.resolveSignerOption(options.signer) };
         }
@@ -378,12 +381,12 @@ export class Wallet<C extends Chain> {
         if (this.#quorumMemberLocator == null || !isSameSignerLocator(activeLocator, this.#quorumMemberLocator)) {
             return { signer: activeLocator };
         }
-        return { signer: await this.#actingRoleLocator(activeLocator) };
+        return { signer: await this.#actingRoleLocator(activeLocator, requestChain) };
     }
 
     // A member-only key acts as its quorum (EDD 007 §7 "Role"). Recovery methods and delegated quorums come from one
     // fresh read of the wallet's config, so no per-signer lookup can silently drop a quorum from the decision.
-    async #actingRoleLocator(heldLocator: SignerLocator): Promise<string> {
+    async #actingRoleLocator(heldLocator: SignerLocator, requestChain: Chain): Promise<string> {
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
@@ -403,9 +406,9 @@ export class Wallet<C extends Chain> {
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
             delegatedQuorums: configSigners.filter(isQuorumSigner),
-            // Registered on this chain: an EVM signer registered on other chains only is still just a member here.
+            // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
             isRegisteredSigner: configSigners.some(
-                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, this.chain)
+                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
             ),
         });
         return role.kind === "none" ? heldLocator : role.locator;
