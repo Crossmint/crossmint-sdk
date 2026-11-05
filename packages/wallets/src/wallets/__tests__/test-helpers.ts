@@ -1,5 +1,6 @@
 import { vi, type MockedFunction } from "vitest";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
@@ -184,21 +185,23 @@ export const createQuorumPendingApproval = ({
     pending = quorum.members,
     submitted = [],
     remaining = quorum.threshold - submitted.length,
+    createMessage = randomHexMessage,
 }: {
     quorum: QuorumSigner;
     pending?: QuorumMember[];
     submitted?: QuorumMember[];
     remaining?: number;
+    createMessage?: () => string;
 }) =>
     ({
         signer: { type: "quorum", locator: quorum.locator },
         quorumApprovals: {
             threshold: quorum.threshold,
             remaining,
-            pending: pending.map((member) => ({ member, message: randomHexMessage() })),
+            pending: pending.map((member) => ({ member, message: createMessage() })),
             submitted: submitted.map((member) => ({
                 member,
-                message: randomHexMessage(),
+                message: createMessage(),
                 signature: randomHexMessage(),
                 submittedAt: new Date().toISOString(),
             })),
@@ -206,6 +209,9 @@ export const createQuorumPendingApproval = ({
     }) satisfies PendingApproval;
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
+
+// A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
+export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
 
 // The wallets API's expiry message (crossbit-main `constants/error.ts`, `TRANSACTION_EXPIRED_MESSAGE`).
 export const TRANSACTION_EXPIRED_API_MESSAGE =

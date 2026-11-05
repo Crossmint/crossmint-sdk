@@ -629,7 +629,8 @@ export class Wallet<C extends Chain> {
      * @param params.options - The options for the approval
      * @param params.options.approval - The approval data
      * @param params.options.additionalSigners - Additional signers for the approval
-     * @returns The transaction or signature
+     * @returns The transaction or signature. While other quorum members must still sign, the transaction comes back
+     * without `hash` and `explorerLink`, and the signature without `signature`.
      */
     @WithLoggerContext({
         logger: walletsLogger,
