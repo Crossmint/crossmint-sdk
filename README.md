@@ -126,22 +126,33 @@ For more information on how to use the SDK, see the [Crossmint SDK Documentation
 ```shell
 node >= 20.19.4
 pnpm
+chainctl
 ```
+
+Dependencies resolve from [Chainguard Libraries](https://edu.chainguard.dev/chainguard/libraries/javascript/overview/), not from npmjs.org directly, so `pnpm install` needs a Chainguard token. [Install chainctl](https://edu.chainguard.dev/chainguard/chainctl-usage/how-to-install-chainctl/) and ask IT for access to the `crossmint.com` organization.
 
 ### Installation
 
 1. Clone the repository:
 ```shell
 git clone https://github.com/Crossmint/crossmint-sdk.git
+cd crossmint-sdk
 ```
 
-2. Install dependencies:
+2. Authenticate with Chainguard. The token expires after one hour; repeat this before `pnpm install` when it does:
 ```shell
-cd crossmint-sdk
+chainctl auth login
+export CHAINGUARD_TOKEN=$(chainctl auth token --audience=libraries.cgr.dev)
+./scripts/setup-pnpm-auth.sh
+```
+`.npmrc` only routes packages to registries; the script stores the token in your user-level `.npmrc`. Where `chainctl` cannot log in, the pull-token pair `CHAINGUARD_JAVASCRIPT_IDENTITY_ID` and `CHAINGUARD_JAVASCRIPT_TOKEN` works with the same script.
+
+3. Install dependencies:
+```shell
 pnpm install
 ```
 
-3. Build all packages:
+4. Build all packages:
 ```shell
 pnpm build
 ```
@@ -164,6 +175,15 @@ pnpm install
 ```
 
 4. Restart the demo application to see your changes
+
+### Without Chainguard access
+
+`pnpm-lock.yaml` pins Chainguard tarballs and hashes, so it does not install from npmjs.org. Outside the Crossmint organization, delete it and resolve from npmjs.org:
+```shell
+rm pnpm-lock.yaml
+npm_config_registry=https://registry.npmjs.org/ pnpm install
+```
+Leave the regenerated `pnpm-lock.yaml` out of your pull request; a maintainer regenerates it against Chainguard.
 
 ## Publishing
 
