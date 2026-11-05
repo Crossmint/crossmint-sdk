@@ -20,6 +20,11 @@ export function CrossmintCheckoutProvider({ children }: { children: ReactNode })
     const checkoutOrigin = new URL(createCrossmintApiClient(crossmint, { usageOrigin: "client" }).baseUrl).origin;
 
     const trustCheckoutWindow = useCallback<TrustCheckoutWindow>((checkoutWindow) => {
+        for (const openedWindow of checkoutWindows.current) {
+            if (openedWindow.closed) {
+                checkoutWindows.current.delete(openedWindow);
+            }
+        }
         checkoutWindows.current.add(checkoutWindow);
         return () => {
             checkoutWindows.current.delete(checkoutWindow);
