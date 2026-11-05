@@ -108,7 +108,14 @@ const CHAINS = [
 function mockSignerChangeResponses(api: MockedApiClient, registered: object) {
     api.registerSigner.mockResolvedValue(registered as never);
     api.removeSigner.mockResolvedValue({ id: "txn-change", status: "awaiting-approval" } as never);
-    api.registerRecoveryMethod.mockResolvedValue({ tx: { id: "txn-change" } } as never);
+    api.registerRecoveryMethod.mockResolvedValue({
+        recoveryMethods: {
+            type: "external-wallet",
+            address: "NewRecovery555",
+            locator: "external-wallet:NewRecovery555",
+        },
+        tx: { id: "txn-change" },
+    } as never);
     api.removeRecoveryMethod.mockResolvedValue({ id: "txn-change", status: "awaiting-approval" } as never);
     api.approveTransaction.mockResolvedValue({ id: "txn-change", status: "pending" } as never);
 }

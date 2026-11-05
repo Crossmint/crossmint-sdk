@@ -17,7 +17,9 @@ import type {
     PasskeySignerConfig,
     PasskeyProvider,
     QuorumSigner,
+    QuorumSignerConfig,
     ServerSignerConfig,
+    SignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -73,7 +75,8 @@ export type AddRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
 export type RemoveRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
-export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+/** `locator` is the new recovery method's, as the API names it (a quorum's is generated when it is added). */
+export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success"; locator: SignerLocator };
 
 export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
 
@@ -260,9 +263,11 @@ export type WalletArgsFor<C extends Chain> = {
  * A signer that can be used as a recovery signer. Device signers cannot be recovery signers, and on Solana a passkey
  * can only be a delegated signer.
  */
-export type RecoverySignerConfigFor<C extends Chain> = C extends SolanaChain
-    ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
-    : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+export type RecoverySignerConfigFor<C extends Chain> =
+    | (C extends SolanaChain
+          ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
+          : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>)
+    | QuorumSignerConfig<C>;
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /**
@@ -276,7 +281,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
      */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
-    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
+    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>>;
     alias?: string;
 };
 

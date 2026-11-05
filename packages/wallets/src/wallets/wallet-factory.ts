@@ -8,6 +8,7 @@ import type {
     CreateWalletParams,
     CreateWalletResponse,
     GetWalletSuccessResponse,
+    QuorumSignerInput,
     RegisterSignerPasskeyParams,
     Signer as SignerResponse,
     RegisterSignerParams,
@@ -21,13 +22,16 @@ import {
     throwIfRecoverySignerApiError,
 } from "../utils/errors";
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
-import type {
-    ExternalWalletRegistrationConfig,
-    PasskeyProvider,
-    PasskeySignerConfig,
-    RecoverySignerConfigForChain,
-    SignerConfigForChain,
+import {
+    isQuorumSigner,
+    type ExternalWalletRegistrationConfig,
+    type PasskeyProvider,
+    type PasskeySignerConfig,
+    type QuorumSignerConfig,
+    type RecoverySignerConfigForChain,
+    type SignerConfigForChain,
 } from "../signers/types";
+import { quorumsMatchingInput, toQuorumSignerInput } from "../quorum/config";
 import { Wallet } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
 import {
@@ -52,7 +56,14 @@ type SmartWalletConfig = {
 };
 
 /** A recovery signer once passkey creation and server signer derivation have been resolved. */
-type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams | { type: "server"; address: string };
+type ResolvedRecoverySigner =
+    | RecoverySignerConfig
+    | RegisterSignerPasskeyParams
+    | { type: "server"; address: string }
+    | QuorumSignerInput;
+
+/** A delegated signer as the create request carries it. */
+type BuiltSigner = { signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig };
 
 /**
  * The recovery half of a wallet-creation request. The API rejects requests carrying both fields
@@ -224,7 +235,7 @@ export class WalletFactory {
     private async createSmartWallet<C extends Chain>(
         args: WalletCreateArgs<C>,
         recoveryRequestConfig: RecoveryRequestConfig,
-        builtSigners: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>,
+        builtSigners: Array<BuiltSigner>,
         didAutoInjectDeviceSigner: boolean
     ): Promise<CreateWalletResponse> {
         const buildParams = (delegatedSigners: typeof builtSigners): CreateWalletParams =>
@@ -261,7 +272,8 @@ export class WalletFactory {
         args: WalletCreateArgs<C>,
         resolvedRecoverySigners: ResolvedRecoverySigner[]
     ): RecoveryRequestConfig {
-        if (hasRecoveryMethodList(args)) {
+        // A quorum is never an admin signer on EVM, so it goes under `recoveryMethods` even when passed alone.
+        if (hasRecoveryMethodList(args) || resolvedRecoverySigners.some((signer) => signer.type === "quorum")) {
             return { recoveryMethods: resolvedRecoverySigners };
         }
         return { adminSigner: resolvedRecoverySigners[0] };
@@ -290,6 +302,9 @@ export class WalletFactory {
         chain: C,
         passkeyProvider?: PasskeyProvider
     ): Promise<ResolvedRecoverySigner> {
+        if (recovery.type === "quorum") {
+            return this.quorumInput(recovery, chain);
+        }
         if (recovery.type === "passkey" && recovery.id == null) {
             return await this.createPasskeySigner(recovery as SignerConfigForChain<C>, passkeyProvider);
         }
@@ -307,9 +322,7 @@ export class WalletFactory {
 
     // Matches a device signer in object form. Callers only run this when didAutoInjectDeviceSigner is
     // true (no caller-supplied device signer), so the sole match is the one we injected.
-    private isBuiltDeviceSigner(
-        builtSigner: { signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }
-    ): boolean {
+    private isBuiltDeviceSigner(builtSigner: BuiltSigner): boolean {
         const signer = builtSigner.signer;
         return typeof signer === "object" && signer != null && signer.type === "device";
     }
@@ -412,17 +425,18 @@ export class WalletFactory {
      */
     private mergeRecoverySigners<C extends Chain>(
         apiRecoverySigners: Array<RecoverySignerConfigForChain<C>>,
-        inputRecoverySigners: Array<RecoverySignerConfigForChain<C>>,
+        inputRecoverySigners: Array<RecoverySignerConfigForChain<C> | QuorumSignerConfig<C>>,
         chain: C
     ): Array<RecoverySignerConfigForChain<C>> {
         const unmatchedInputSigners = [...inputRecoverySigners];
-        const pairedInputSigners = new Map<number, RecoverySignerConfigForChain<C>>();
+        const pairedInputSigners = new Map<number, RecoverySignerConfigForChain<C> | QuorumSignerConfig<C>>();
         // Pair on signer identity first and only then on type alone, so that a server signer whose API-reported
         // address comes from a legacy derivation still keeps the caller's config (and its secret).
         const matchers = [
-            (input: RecoverySignerConfigForChain<C>, api: RecoverySignerConfigForChain<C>) =>
+            (input: RecoverySignerConfigForChain<C> | QuorumSignerConfig<C>, api: RecoverySignerConfigForChain<C>) =>
                 this.matchesRecoverySigner(input, api, chain),
-            (input: RecoverySignerConfigForChain<C>, api: RecoverySignerConfigForChain<C>) => input.type === api.type,
+            (input: RecoverySignerConfigForChain<C> | QuorumSignerConfig<C>, api: RecoverySignerConfigForChain<C>) =>
+                input.type === api.type,
         ];
         for (const matches of matchers) {
             apiRecoverySigners.forEach((apiRecoverySigner, index) => {
@@ -455,12 +469,17 @@ export class WalletFactory {
      * for server signers that means deriving the address the caller's secret maps to.
      */
     private matchesRecoverySigner<C extends Chain>(
-        inputRecoverySigner: RecoverySignerConfigForChain<C>,
+        inputRecoverySigner: RecoverySignerConfigForChain<C> | QuorumSignerConfig<C>,
         apiRecoverySigner: RecoverySignerConfig | PasskeySignerConfig | RecoverySignerConfigForChain<C>,
         chain: C
     ): boolean {
         if (inputRecoverySigner.type !== apiRecoverySigner.type) {
             return false;
+        }
+        // A quorum matches on its threshold and member set; a listed `QuorumSigner` reads like a config here.
+        if (inputRecoverySigner.type === "quorum" && isQuorumSigner(apiRecoverySigner)) {
+            const input = this.quorumInput(inputRecoverySigner as QuorumSignerConfig<C>, chain);
+            return quorumsMatchingInput([apiRecoverySigner], input).length === 1;
         }
         if (inputRecoverySigner.type === "email" && "email" in apiRecoverySigner) {
             return (
@@ -490,6 +509,16 @@ export class WalletFactory {
             );
         }
         return true;
+    }
+
+    /** A quorum config as the API takes it; a server member's secret becomes the address it derives. */
+    private quorumInput<C extends Chain>(config: QuorumSignerConfig<C>, chain: C): QuorumSignerInput {
+        return toQuorumSignerInput(
+            config as QuorumSignerConfig<Chain>,
+            (server) =>
+                deriveServerSignerDetails(server, chain, this.apiClient.projectId, this.apiClient.environment)
+                    .derivedAddress
+        );
     }
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
@@ -561,6 +590,16 @@ export class WalletFactory {
                 const matchIndex = unmatchedExistingSigners.findIndex((existingWalletSigner) =>
                     this.matchesRecoverySigner(inputRecoverySigner, existingWalletSigner, args.chain)
                 );
+                // A quorum is identified by its threshold and member set alone, so only an exact match counts.
+                if (inputRecoverySigner.type === "quorum") {
+                    if (matchIndex === -1) {
+                        throw new WalletCreationError(
+                            "The quorum recovery method does not match any of the existing wallet's quorums: the threshold and members must be the same"
+                        );
+                    }
+                    unmatchedExistingSigners.splice(matchIndex, 1);
+                    continue;
+                }
                 // A server signer is identified by the address its secret derives to. Falling back to a
                 // type-only match would let any secret pass, so an address miss is a mismatch.
                 if (
@@ -597,7 +636,7 @@ export class WalletFactory {
 
     private validateSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputSigners: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
+        inputSigners: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>>,
         chain: C
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
@@ -616,6 +655,15 @@ export class WalletFactory {
         }
 
         for (const inputSigner of inputSigners) {
+            if (inputSigner.type === "quorum") {
+                const delegatedQuorums = existingSigners.filter(isQuorumSigner);
+                if (quorumsMatchingInput(delegatedQuorums, this.quorumInput(inputSigner, chain)).length === 0) {
+                    throw new WalletCreationError(
+                        `No delegated quorum in wallet "${existingWallet.address}" has this threshold and these members. ${SIGNER_MISMATCH_ERROR}`
+                    );
+                }
+                continue;
+            }
             const matchingExistingSigner = existingSigners.find((existingSigner) => {
                 if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {
                     return true;
@@ -676,12 +724,12 @@ export class WalletFactory {
     }
 
     private async registerSigners<C extends Chain>(
-        signersList?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
+        signersList?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>>,
         chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage,
         passkeyProvider?: PasskeyProvider
-    ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
-        const registered: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> = [];
+    ): Promise<Array<BuiltSigner>> {
+        const registered: Array<BuiltSigner> = [];
         // Sequential: creating a passkey or a device key can prompt the user, and the platform rejects a second
         // prompt (browser WebAuthn, native passkey and biometric dialogs) while one is open.
         for (const signer of signersList ?? []) {
@@ -691,11 +739,17 @@ export class WalletFactory {
     }
 
     private async registerSigner<C extends Chain>(
-        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>,
         chain?: C,
         deviceSignerKeyStorage?: DeviceSignerKeyStorage,
         passkeyProvider?: PasskeyProvider
-    ): Promise<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> {
+    ): Promise<BuiltSigner> {
+        if (signer.type === "quorum") {
+            if (chain == null) {
+                throw new WalletCreationError("A chain is required to register a quorum signer");
+            }
+            return { signer: this.quorumInput(signer, chain) };
+        }
         if (signer.type === "passkey") {
             if (signer.id == null) {
                 return { signer: await this.createPasskeySigner(signer, passkeyProvider) };
