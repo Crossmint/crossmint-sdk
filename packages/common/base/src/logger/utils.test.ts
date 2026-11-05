@@ -81,6 +81,21 @@ describe("redactSensitiveFields with personal data", () => {
             { response: { type: "phone", phone: "+15551234567", email: "bob@example.co.uk" } },
             { response: { type: "phone", phone: "+1***4567", email: "b***@example.co.uk" } },
         ],
+        [
+            "email with an apostrophe",
+            { recipient: "email:o'brien@example.com" },
+            { recipient: "email:o***@example.com" },
+        ],
+        [
+            "email with a quoted local part",
+            { recipient: 'email:"john.doe"@example.com' },
+            { recipient: "email:***@example.com" },
+        ],
+        [
+            "email with an escaped quote in a quoted local part",
+            { recipient: 'email:"john\\"doe"@example.com' },
+            { recipient: "email:***@example.com" },
+        ],
         ["phone field that is not a plain number", { phoneNumber: "+1 555 123 4567" }, { phoneNumber: "[REDACTED]" }],
     ])("masks an %s", (_, input, expected) => {
         expect(redactSensitiveFields(input)).toEqual(expected);
@@ -136,7 +151,7 @@ describe("redactSensitiveText", () => {
     it("scans adversarial look-alike text in linear time", () => {
         // Linear scanning takes a few milliseconds; the quadratic pattern this guards against took
         // tens of seconds, so the bound is loose enough for a loaded CI runner.
-        const text = `${"-eyJ".repeat(200_000)} a@${"a.".repeat(200_000)} ${"phone:1".repeat(200_000)}`;
+        const text = `${"-eyJ".repeat(200_000)} a@${"a.".repeat(200_000)} ${"phone:1".repeat(200_000)} ${' "a'.repeat(200_000)}`;
         const startedAt = performance.now();
         redactSensitiveText(text, true);
         expect(performance.now() - startedAt).toBeLessThan(5_000);

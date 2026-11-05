@@ -77,14 +77,20 @@ function maskPhoneNumber(phone: string): string {
  * Shapes of personal data (emails, phone numbers in locators) masked in every string, so a
  * `recipient` such as `email:alice@example.com` logs as `email:a***@example.com`.
  * The first local-part character and the domain stay so support can still match a log to a user.
+ * A quoted local part (`"john.doe"@example.com`) is masked whole.
  * Emails need a letters-only top-level domain, so package specifiers such as `sdk@1.2.3` stay.
  * Both patterns are anchored to a delimiter, like {@link PREFIXED_SECRET_PATTERNS}, to scan in linear time.
  */
 const PERSONAL_DATA_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
     {
         pattern:
-            /(^|[^A-Za-z0-9._%+-])([A-Za-z0-9_%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,
+            /(^|[^A-Za-z0-9!#$%&'*+/=?^_`{|}~.-])([A-Za-z0-9!#$%&'*+/=?^_`{|}~-])[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,
         replacement: "$1$2***@$3",
+    },
+    {
+        pattern:
+            /(^|[^A-Za-z0-9!#$%&'*+/=?^_`{|}~."-])"(?:[^"\\\r\n]|\\.)*"@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,
+        replacement: "$1***@$2",
     },
     {
         pattern: /(^|[^A-Za-z0-9])(phone(?:Number)?:)(\+?\d)\d*(\d{4})/g,
