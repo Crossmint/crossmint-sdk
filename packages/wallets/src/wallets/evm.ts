@@ -144,7 +144,8 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Sign EIP-712 typed data.
-     * When the signer is a quorum, the call returns the created request unsigned, as {@link signMessage} does.
+     * When the signer is a quorum, the call returns the request unsigned, as {@link signMessage} does; pass
+     * `prepareOnly: true` for that type.
      * @param params - The typed data parameters (domain, types, message, primaryType, chain)
      * @returns The signature
      */

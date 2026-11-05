@@ -226,6 +226,10 @@ export const createQuorumPendingApproval = ({
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
 
+// What a call returns for a request made as a quorum, or while only quorum members can still approve it.
+export const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
+export const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+
 // A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
 export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
     id,

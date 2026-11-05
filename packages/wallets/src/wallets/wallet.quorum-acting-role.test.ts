@@ -18,6 +18,8 @@ import {
     createQuorumPendingApproval,
     settle,
     signatureOver,
+    UNSIGNED_SIGNATURE,
+    UNSIGNED_TRANSACTION,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -70,9 +72,11 @@ async function walletWithBob(
     return { wallet, signersSpy };
 }
 
-// What a call made as a quorum returns: the created request, unsigned, as with prepareOnly.
-const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
-const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+const STELLAR_CONTRACT_CALL = {
+    contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    method: "transfer",
+    args: {},
+};
 
 const sentSendSigner = (api: MockedApiClient) => api.send.mock.calls[0][2].signer;
 const createdTransactionSigner = (api: MockedApiClient) =>
@@ -460,12 +464,7 @@ describe("a creating call with a key that is only a quorum member", () => {
             {
                 name: "Stellar sendTransaction",
                 chain: "stellar" as const,
-                create: (wallet: Wallet<Chain>) =>
-                    StellarWallet.from(wallet).sendTransaction({
-                        contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-                        method: "transfer",
-                        args: {},
-                    }),
+                create: (wallet: Wallet<Chain>) => StellarWallet.from(wallet).sendTransaction(STELLAR_CONTRACT_CALL),
                 unsigned: UNSIGNED_TRANSACTION,
             },
         ])(
@@ -633,11 +632,7 @@ describe("Stellar with a key that is only a quorum member", () => {
         const treasury = createQuorumApiEntryWith([bob]);
         const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] }, "stellar");
 
-        const result = await StellarWallet.from(wallet).sendTransaction({
-            contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-            method: "transfer",
-            args: {},
-        });
+        const result = await StellarWallet.from(wallet).sendTransaction(STELLAR_CONTRACT_CALL);
 
         expect(createdTransactionSigner(api)).toBe(treasury.locator);
         expect(api.approveTransaction).not.toHaveBeenCalled();
@@ -681,9 +676,7 @@ describe("a creating call with a key that is not a quorum member", () => {
             chain: "stellar" as const,
             create: (wallet: Wallet<Chain>) =>
                 StellarWallet.from(wallet).sendTransaction({
-                    contractId: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-                    method: "transfer",
-                    args: {},
+                    ...STELLAR_CONTRACT_CALL,
                     options: { prepareOnly: true },
                 }),
         },

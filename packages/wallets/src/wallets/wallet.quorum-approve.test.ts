@@ -25,6 +25,8 @@ import {
     settle,
     signatureOver,
     TRANSACTION_EXPIRED_API_MESSAGE,
+    UNSIGNED_SIGNATURE,
+    UNSIGNED_TRANSACTION,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -35,8 +37,8 @@ const SUCCESS = {
     onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx/0xhash" },
 };
 // What approve() returns while other members must still sign (EDD 007 §7 "Approval").
-const AWAITING_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
-const AWAITING_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+const AWAITING_TRANSACTION = UNSIGNED_TRANSACTION;
+const AWAITING_SIGNATURE = UNSIGNED_SIGNATURE;
 
 const quorumWith = createQuorumApiEntryWith;
 
