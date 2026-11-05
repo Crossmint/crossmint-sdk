@@ -98,6 +98,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
      *
      * @throws CrossmintAuthenticationError with the HTTP `status` if Crossmint rejects the request, for example
      * 403 when the API key lacks the `users.read` scope or 404 when the user has not signed in to this project.
+     * @throws ApiClientError on a 5xx response, as every Crossmint API call does.
      */
     public async getUser(externalUserId: string): Promise<SDKExternalUser> {
         const result = await this.apiClient.get(
