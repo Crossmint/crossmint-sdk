@@ -20,7 +20,6 @@ const NATIVE_MODULES = [
     "expo-secure-store",
     "expo-web-browser",
     "react-native-get-random-values",
-    "react-native-svg",
     "react-native-webview",
 ];
 

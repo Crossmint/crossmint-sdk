@@ -12,3 +12,4 @@ export * from "./protected-input";
 export * from "./agent-card-authorization";
 
 export { EmbeddedAuthForm } from "./auth/EmbeddedAuthForm";
+export * from "./embedded-offramp";

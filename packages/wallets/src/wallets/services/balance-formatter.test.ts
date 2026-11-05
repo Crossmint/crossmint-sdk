@@ -111,7 +111,6 @@ describe("formatBalanceResponse", () => {
                             rawAmount: "2505000000",
                             available: { amount: "250.5", rawAmount: "2505000000" },
                             locked: { amount: "0", rawAmount: "0" },
-                            inTransit: { amount: "0", rawAmount: "0" },
                         },
                         {
                             type: "card",
@@ -121,13 +120,14 @@ describe("formatBalanceResponse", () => {
                             available: { amount: "960", rawAmount: "9600000000" },
                             locked: { amount: "40", rawAmount: "400000000" },
                             inTransit: { amount: "10", rawAmount: "100000000" },
+                            creditLimit: { amount: "990", rawAmount: "9900000000" },
                         },
                     ],
                 },
             },
         } satisfies ResponseToken;
 
-        it("preserves available, locked, inTransit, and account balances alongside the total", () => {
+        it("preserves available, locked, inTransit, and account balances, including the card credit limit, alongside the total", () => {
             const balances = formatBalanceResponse([usdc], "stellar", "xlm");
 
             expect(balances.usdc).toStrictEqual({
@@ -143,11 +143,14 @@ describe("formatBalanceResponse", () => {
                 accounts: usdc.chains.stellar.accounts,
             });
             const card = balances.usdc.accounts?.find((account) => account.type === "card");
-            expect(card?.available.amount).toBe("960");
-            expect(card?.locked.rawAmount).toBe("400000000");
-            expect(card?.inTransit.amount).toBe("10");
+            expect(card).toMatchObject({
+                available: { amount: "960" },
+                locked: { rawAmount: "400000000" },
+                inTransit: { amount: "10" },
+                creditLimit: { amount: "990", rawAmount: "9900000000" },
+            });
             const walletAccount = balances.usdc.accounts?.find((account) => account.type === "wallet");
-            expect(walletAccount?.inTransit.amount).toBe("0");
+            expect(walletAccount).not.toHaveProperty("inTransit");
         });
 
         it("keeps MGUSD without a card as a plain balance alongside enriched USDC", () => {
