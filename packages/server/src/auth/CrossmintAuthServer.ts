@@ -58,8 +58,10 @@ export class CrossmintAuthServer extends CrossmintAuth {
     /**
      * Validate the user's session and return it, refreshing it if expired.
      * Accepts either a request object (auth material is read from cookies) or the auth material
-     * itself (`{ jwt, refreshToken }`). If a response object is provided, refreshed auth material
-     * is stored in its cookies.
+     * itself (`{ jwt, refreshToken }`). From a request, the cookies are read under the project-scoped
+     * names the client SDK writes (see `getAuthCookieNames`), falling back to
+     * the legacy `crossmint-jwt` / `crossmint-refresh-token` names. If a response object is provided,
+     * refreshed auth material is stored in its cookies.
      *
      * @throws CrossmintAuthenticationError if no valid session can be established.
      */
@@ -68,7 +70,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         response?: GenericResponse
     ): Promise<AuthSession> {
         const request = "refreshToken" in options ? undefined : options;
-        const authMaterial = request ? getAuthCookies(request) : (options as AuthMaterialBasic);
+        const authMaterial = request ? getAuthCookies(request, this.projectId) : (options as AuthMaterialBasic);
         if (authMaterial == null) {
             throw new CrossmintAuthenticationError("No auth material found");
         }
@@ -118,7 +120,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         // Otherwise, try to get the refresh token from the cookies
         const body = await requestAdapter.getBody();
         const { refresh: tokenFromBody } = body ?? {};
-        const authCookies = getAuthCookies(request, { throwError: false });
+        const authCookies = getAuthCookies(request, this.projectId, { throwError: false });
         const tokenFromCookies = authCookies?.refreshToken;
         const refreshToken = tokenFromBody ?? tokenFromCookies;
 
@@ -173,9 +175,12 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return verifyCrossmintJwt(token, this.getJwksUri(), { audience: this.projectId });
     }
 
-    /** Store auth material (JWT and refresh token) in the response's cookies. */
+    /**
+     * Store auth material (JWT and refresh token) in the response's cookies, under the project-scoped
+     * names. Empty auth material (logout) also expires the legacy unscoped cookies.
+     */
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
-        setAuthCookies(response, authMaterial, this.cookieOptions);
+        setAuthCookies(response, authMaterial, this.projectId, this.cookieOptions);
     }
 
     /** Log the user out: invalidate the refresh token with Crossmint and clear the auth cookies on the response. */
@@ -183,7 +188,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         try {
             // It's not necessary to call the logout endpoint, but desirable
             if (request != null) {
-                const authCookies = getAuthCookies(request);
+                const authCookies = getAuthCookies(request, this.projectId);
                 if (authCookies != null) {
                     await this.logoutFromDefaultRoute(authCookies.refreshToken);
                 }

@@ -42,7 +42,9 @@ import {
     InvalidSignerError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
+    SIGNER_LIMIT_EXCEEDED_ERROR_CODE,
     SignatureFailedError,
+    SignerLimitExceededError,
     SignatureNotAvailableError,
     TransactionFailedError,
     TransactionNotAvailableError,
@@ -79,6 +81,7 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
+import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
     type PollingOptions,
     waitForSignatureCompletion,
@@ -202,6 +205,10 @@ export class Wallet<C extends Chain> {
                 this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
+            deviceSignerActivity: () =>
+                fetchDeviceSignerActivity(this.#apiClient, this.walletLocator, {
+                    includeSignatures: this.chainAdapter.supportsSignatures,
+                }),
         });
         this.#signerInitialization = this.initDefaultSigner(apiSigners);
     }
@@ -542,12 +549,12 @@ export class Wallet<C extends Chain> {
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
-        if ("message" in transactionCreationResponse) {
+        if ("error" in transactionCreationResponse) {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
             throw new TransactionNotCreatedError(
-                `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
+                `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
             );
         }
 
@@ -730,6 +737,9 @@ export class Wallet<C extends Chain> {
                 });
                 if (response.code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE) {
                     throw new DeviceSignerNotSupportedError(response.message);
+                }
+                if (response.code === SIGNER_LIMIT_EXCEEDED_ERROR_CODE) {
+                    throw new SignerLimitExceededError(response.message, JSON.stringify(response));
                 }
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }

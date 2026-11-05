@@ -28,30 +28,44 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 
 2. Use the SDK to authenticate users:
 
-With most frameworks, pass the request object:
+Pass the request object, and the SDK reads the session cookies for you. This works with Node.js
+(`IncomingMessage`) and Fetch API (`Request`) requests, including Next.js middleware and route handlers:
 
 ```ts
 const { jwt, userId } = await crossmintAuth.getSession(request);
 ```
 
-With Next.js, fetch the cookies and pass them to the `getSession` method:
+The client SDK stores the session in cookies scoped to your project: `crossmint-jwt-<projectId>` and
+`crossmint-refresh-token-<projectId>`, where the project ID comes from your API key. `getSession(request)` reads
+those names, and reads the legacy `crossmint-jwt` and `crossmint-refresh-token` names only when no scoped cookie is present.
+
+In a Next.js Server Component there is no request object. Read the cookies by the names `getAuthCookieNames(projectId)`
+returns and pass them to `getSession`. The project ID comes from your API key:
 
 ```ts
 import { cookies } from "next/headers";
+import { getAuthCookieNames, validateAPIKey } from "@crossmint/server-sdk";
 
-const cookieStore = cookies();
-const jwtCookie = cookieStore.get("crossmint-jwt")?.value;
-const refreshCookie = cookieStore.get("crossmint-refresh-token")?.value;
+const apiKeyResult = validateAPIKey(process.env.SERVER_CROSSMINT_API_KEY ?? "");
+if (!apiKeyResult.isValid) {
+    throw new Error(apiKeyResult.message);
+}
 
-const { jwt, userId } = await crossmintAuth.getSession({
-    jwt: jwtCookie,
-    refreshToken: refreshCookie,
-});
+const cookieStore = await cookies();
+const cookieNames = getAuthCookieNames(apiKeyResult.projectId);
+const refreshToken = cookieStore.get(cookieNames.refreshToken)?.value;
+
+if (refreshToken != null) {
+    const { jwt, userId } = await crossmintAuth.getSession({
+        jwt: cookieStore.get(cookieNames.jwt)?.value,
+        refreshToken,
+    });
+}
 ```
 
 3. Store the authentication material in cookies
 
-If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method:
+If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method. The SDK writes the project-scoped cookie names (logout also expires the legacy unscoped ones):
 
 ```ts
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
