@@ -17,7 +17,7 @@ import {
     throwIfQuorumSigner,
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
-import { getSignerLocator, isSameSignerLocator } from "../../utils/signer-locator";
+import { getSignerLocator, hasQuorumLocatorPrefix, isSameSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { resolveActingRole } from "../../quorum/roles";
 import { walletsLogger } from "../../logger";
@@ -349,6 +349,10 @@ export class SignerManager<C extends Chain> {
             if (recovery != null) {
                 return this.#withActiveSigner(this.#assembleRecovery(recovery), () => operation(explicit));
             }
+            // A quorum's change is created unsigned (EDD 007 §7), so it needs no held key; members sign with approve().
+            if (hasQuorumLocatorPrefix(explicit)) {
+                return operation(explicit);
+            }
             return this.#withHeldKey(member, () => operation(explicit));
         }
         if (member == null) {
@@ -372,11 +376,11 @@ export class SignerManager<C extends Chain> {
             const memberSigner = this.#assembleRecovery(member.config);
             return this.#withActiveSigner(memberSigner, () => operation(role.locator));
         }
-        return this.#withHeldKey(member, () => operation(role.locator));
+        return operation(role.locator);
     }
 
-    // A quorum or explicit approver is signed by the held keys (heldSigners). With no active signer, the selected
-    // recovery method, else the selected member, signs as the active one; with none, this client holds no key.
+    // An explicit approver that is no recovery method or quorum is signed by the held keys (heldSigners). With no active
+    // signer, the selected recovery method, else the selected member, stands in; with none, this client holds no key.
     #withHeldKey<T>(member: RecoveryMember<C> | null, run: () => Promise<T>): Promise<T> {
         if (this.#activeSigner != null) {
             return run();

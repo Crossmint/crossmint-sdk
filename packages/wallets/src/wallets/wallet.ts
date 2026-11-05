@@ -428,8 +428,8 @@ export class Wallet<C extends Chain> {
     }
 
     /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
-    protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string): boolean {
-        return Boolean(options?.prepareOnly) || hasQuorumLocatorPrefix(signerLocator);
+    protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string | undefined): boolean {
+        return Boolean(options?.prepareOnly) || (signerLocator != null && hasQuorumLocatorPrefix(signerLocator));
     }
 
     /** The API locator of a call's `signer` option. */
@@ -807,6 +807,7 @@ export class Wallet<C extends Chain> {
 
         const explicit = this.#explicitApprover(options);
         return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
+            const prepareOnly = this.isPrepareOnly(options, approver);
             // Check for an existing signer registration (e.g. from a previous interrupted attempt)
             const signerLocator =
                 typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner);
@@ -822,7 +823,7 @@ export class Wallet<C extends Chain> {
                         });
                     }
                     walletsLogger.info("wallet.addSigner.alreadyApproved");
-                    return this.completeSignerRegistration(existingState.signer, null, options);
+                    return this.completeSignerRegistration(existingState.signer, null, prepareOnly);
                 }
 
                 // Pending operation from a previous attempt — resume instead of re-registering
@@ -839,7 +840,7 @@ export class Wallet<C extends Chain> {
                     return this.completeSignerRegistration(
                         existingState.signer,
                         existingState.pendingOperation,
-                        options
+                        prepareOnly
                     );
                 }
             }
@@ -885,7 +886,7 @@ export class Wallet<C extends Chain> {
                 type: signer.type,
             });
 
-            return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
+            return this.completeSignerRegistration(registeredSigner, pendingOperation, prepareOnly);
         });
     }
 
@@ -896,19 +897,19 @@ export class Wallet<C extends Chain> {
     private async completeSignerRegistration(
         signer: WalletSigner,
         pendingOperation: PendingSignerOperation | null,
-        options?: AddSignerOptions
+        prepareOnly: boolean
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
         if (pendingOperation == null) {
-            if (options?.prepareOnly) {
+            if (prepareOnly) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
             walletsLogger.info("wallet.addSigner.success");
         } else {
             const operationId = pendingOperationId(pendingOperation);
             // prepareOnly signs nothing; after this client approves, other quorum members may still have to sign.
-            const landed = !options?.prepareOnly && (await this.#approvePendingOperation(pendingOperation));
+            const landed = !prepareOnly && (await this.#approvePendingOperation(pendingOperation));
             if (!landed) {
-                const event = options?.prepareOnly ? "wallet.addSigner.prepared" : "wallet.addSigner.awaitingApproval";
+                const event = prepareOnly ? "wallet.addSigner.prepared" : "wallet.addSigner.awaitingApproval";
                 walletsLogger.info(event, operationId);
                 return { ...signer, ...operationId } as AddSignerReturnType<C>;
             }
@@ -977,7 +978,7 @@ export class Wallet<C extends Chain> {
             }
 
             const transactionId = response.id;
-            if (options?.prepareOnly) {
+            if (this.isPrepareOnly(options, approver)) {
                 walletsLogger.info("wallet.removeSigner.prepared", {
                     transactionId,
                 });
@@ -1041,7 +1042,7 @@ export class Wallet<C extends Chain> {
             }
 
             const transactionId = response.tx.id;
-            if (options?.prepareOnly) {
+            if (this.isPrepareOnly(options, approver)) {
                 walletsLogger.info("wallet.addRecoveryMethod.prepared", { transactionId });
                 return { transactionId, status: undefined };
             }
@@ -1096,7 +1097,7 @@ export class Wallet<C extends Chain> {
             }
 
             const transactionId = response.id;
-            if (options?.prepareOnly) {
+            if (this.isPrepareOnly(options, approver)) {
                 walletsLogger.info("wallet.removeRecoveryMethod.prepared", { transactionId });
                 return { transactionId, status: undefined };
             }
