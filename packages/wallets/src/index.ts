@@ -114,7 +114,6 @@ export type {
 } from "./signers/types";
 
 // Server signer
-export { getCreatedPasskey } from "./signers/passkey";
 export { createServerSigner } from "./utils/server-signers";
 export type { CreateServerSignerParams, ServerSigner } from "./utils/server-signers";
 

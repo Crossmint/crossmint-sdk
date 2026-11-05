@@ -77,31 +77,6 @@ export class PasskeySigner implements SignerAdapter {
     }
 }
 
-/**
- * The passkey that a failed `wallet.addSigner` or `wallet.addRecoveryMethod` call created, if any. The call throws
- * its usual error, with this passkey attached: pass it to the same method to retry without creating another.
- */
-export function getCreatedPasskey(error: unknown): PasskeySignerConfig | undefined {
-    if (typeof error !== "object" || error == null || !("passkey" in error)) {
-        return undefined;
-    }
-    const passkey = (error as { passkey: unknown }).passkey;
-    return typeof passkey === "object" && passkey != null && (passkey as { type?: unknown }).type === "passkey"
-        ? (passkey as PasskeySignerConfig)
-        : undefined;
-}
-
-/** Attaches a passkey created during a call to the error that call throws, keeping the error's type. */
-export function attachCreatedPasskey(error: unknown, passkey: PasskeySignerConfig): unknown {
-    const target = typeof error === "object" && error != null ? error : new Error(String(error));
-    try {
-        Object.assign(target, { passkey });
-    } catch {
-        // A frozen error cannot carry it; throw it unchanged.
-    }
-    return target;
-}
-
 function canCreateWebAuthnCredential(): boolean {
     return typeof window !== "undefined" && typeof window.navigator?.credentials?.create === "function";
 }

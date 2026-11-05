@@ -26,7 +26,6 @@ import {
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
-import { getCreatedPasskey } from "../signers/passkey";
 
 vi.mock("@/signers/server", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/signers/server")>();
@@ -63,9 +62,6 @@ vi.mock("@/utils/device-signers", async (importOriginal) => {
         }),
     };
 });
-
-/** The passkey a test's onCreatePasskey creates, as the API registers it. */
-const NEW_PASSKEY = { type: "passkey", id: "new-cred", name: "Face ID", publicKey: { x: "11", y: "22" } };
 
 describe("Wallet - balances()", () => {
     let mockApiClient: MockedApiClient;
@@ -1232,41 +1228,6 @@ describe("Wallet - addSigner()", () => {
             );
             expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
-
-        it("throws the usual error with the created passkey attached when registration fails, so a retry reuses it", async () => {
-            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
-            mockApiClient.registerSigner.mockResolvedValueOnce({
-                error: true,
-                message: "A wallet supports at most 16 combined admin and delegated signers, got 17.",
-                code: "SIGNER_LIMIT_EXCEEDED",
-            } as any);
-            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
-
-            const error = await stellarWallet
-                .addSigner({ type: "passkey", name: "Face ID", onCreatePasskey })
-                .catch((e: unknown) => e);
-
-            expect(error).toBeInstanceOf(SignerLimitExceededError);
-            const passkey = getCreatedPasskey(error);
-            expect(passkey).toMatchObject(NEW_PASSKEY);
-            if (passkey == null) {
-                throw new Error("expected the created passkey on the error");
-            }
-
-            mockApiClient.registerSigner.mockResolvedValue({
-                type: "passkey",
-                locator: "passkey:new-cred",
-                transaction: { id: "txn-passkey", status: "pending" },
-            } as any);
-            await stellarWallet.addSigner(passkey, { prepareOnly: true });
-
-            expect(onCreatePasskey).toHaveBeenCalledTimes(1);
-            expect(mockApiClient.getSigner).toHaveBeenCalledWith(expect.any(String), "passkey:new-cred");
-            expect(mockApiClient.registerSigner).toHaveBeenLastCalledWith(
-                expect.any(String),
-                expect.objectContaining({ signer: NEW_PASSKEY })
-            );
-        });
     });
 
     describe("error cases", () => {
@@ -1790,18 +1751,6 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             );
             expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
             expect(evmWallet.recoveryMethods).toEqual(before);
-        });
-
-        it("throws the usual error with the created passkey attached when adding it as a recovery method fails", async () => {
-            mockApiClient.registerRecoveryMethod.mockResolvedValue({ error: true, message: "Network error" } as any);
-            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
-
-            const error = await evmWallet
-                .addRecoveryMethod({ type: "passkey", name: "Face ID", onCreatePasskey })
-                .catch((e: unknown) => e);
-
-            expect(error).toBeInstanceOf(InvalidSignerError);
-            expect(getCreatedPasskey(error)).toMatchObject(NEW_PASSKEY);
         });
 
         it("throws on API failure", async () => {

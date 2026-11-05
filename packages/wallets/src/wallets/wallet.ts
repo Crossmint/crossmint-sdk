@@ -73,7 +73,6 @@ import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } fro
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
-import { attachCreatedPasskey } from "../signers/passkey";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
@@ -102,14 +101,6 @@ type WalletContructorType<C extends Chain> = {
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
 };
-
-/** The passkey an addSigner or addRecoveryMethod call created, once it exists. */
-type CreatedPasskey = { passkey?: PasskeySignerConfig };
-
-/** A failure after a passkey was created keeps its type and carries that passkey, so a retry can reuse it. */
-function withCreatedPasskey(error: unknown, created: CreatedPasskey): unknown {
-    return created.passkey == null ? error : attachCreatedPasskey(error, created.passkey);
-}
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -673,15 +664,11 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(signer) as `server:${string}`)
                 : signer;
 
-        const created: CreatedPasskey = {};
-        const registration = this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withRecoverySigner(async (approver) => {
             // A passkey without a credential id is created here, after the approver is resolved
             const preparedSigner =
                 typeof resolvedSigner === "string" ? resolvedSigner : await this.prepareRegistration(resolvedSigner);
             const createdNow = preparedSigner !== resolvedSigner;
-            if (createdNow) {
-                created.passkey = preparedSigner as PasskeySignerConfig;
-            }
 
             // Check for an existing signer registration (e.g. from a previous interrupted attempt), unless the
             // passkey was only just created.
@@ -767,9 +754,6 @@ export class Wallet<C extends Chain> {
             });
 
             return this.completeSignerRegistration(registeredSigner, pendingOperation, options);
-        });
-        return registration.catch((error: unknown) => {
-            throw withCreatedPasskey(error, created);
         }) as Promise<T extends PrepareOnly<true> ? AddSignerReturnType<C> : WalletSigner>;
     }
 
@@ -915,14 +899,10 @@ export class Wallet<C extends Chain> {
                 ? (this.resolveServerSignerApiLocator(recoveryMethod) as `server:${string}`)
                 : recoveryMethod;
 
-        const created: CreatedPasskey = {};
-        const registration = this.#signerManager.withRecoverySigner(async (approver) => {
+        return this.#signerManager.withRecoverySigner(async (approver) => {
             // A passkey without a credential id is created here, after the approver is resolved
             const preparedMethod =
                 typeof resolvedMethod === "string" ? resolvedMethod : await this.prepareRegistration(resolvedMethod);
-            if (preparedMethod !== resolvedMethod) {
-                created.passkey = preparedMethod as PasskeySignerConfig;
-            }
             const recoveryMethodInput =
                 typeof preparedMethod === "string"
                     ? preparedMethod
@@ -961,9 +941,6 @@ export class Wallet<C extends Chain> {
             );
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };
-        });
-        return registration.catch((error: unknown) => {
-            throw withCreatedPasskey(error, created);
         });
     }
 
