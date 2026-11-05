@@ -62,6 +62,13 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(new URL(url).searchParams.get("hideSubmitButton")).toBe("true");
     });
 
+    it("tells the iframe that the host shows submit errors, so the message is not drawn twice", () => {
+        const service = makeService();
+
+        const url = service.iframe.getUrl({ jwt: "jwt-token" });
+        expect(new URL(url).searchParams.get("hostShowsSubmitErrors")).toBe("true");
+    });
+
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
         const service = makeService();
 
