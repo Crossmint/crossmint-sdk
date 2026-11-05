@@ -84,7 +84,6 @@ const PATHS: SignerChangePath[] = [
 ];
 
 const REGISTERED = { type: "external-wallet", address: "NewSigner444", locator: "external-wallet:NewSigner444" };
-// Recovery-method changes are not on EVM in this stack (#2219).
 const CHAINS = [
     {
         chain: "solana" as const,
@@ -98,7 +97,7 @@ const CHAINS = [
     },
     {
         chain: "base-sepolia" as const,
-        paths: PATHS.filter(({ name }) => name === "addSigner" || name === "removeSigner"),
+        paths: PATHS,
         registered: {
             ...REGISTERED,
             chains: { "base-sepolia": { id: "txn-change", status: "awaiting-approval", onChain: {} } },
@@ -354,9 +353,9 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
     });
 });
 
-// Members sign on EVM and Stellar with the plain external-wallet test key. EVM recovery-method calls wait for #2219.
+// Members sign on EVM and Stellar with the plain external-wallet test key.
 describe.each([
-    { chain: "base-sepolia" as const, paths: PATHS.slice(0, 2) },
+    { chain: "base-sepolia" as const, paths: PATHS },
     { chain: "stellar" as const, paths: PATHS },
 ])("a quorum-approved signer change signed later with approve() on $chain", ({ chain, paths }) => {
     let api: MockedApiClient;
