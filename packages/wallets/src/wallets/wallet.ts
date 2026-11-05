@@ -593,8 +593,8 @@ export class Wallet<C extends Chain> {
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
      * @param {TransactionInputOptions} options - The options for the transaction
-     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
-     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
+     * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
+     * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
      * @returns {Transaction} The transaction
      */
     @WithLoggerContext({

@@ -12,6 +12,7 @@ import { Base64, Hex } from "ox";
 import type { Wallet } from "./wallet";
 import {
     activeSignerMember,
+    createAwaitingRequest,
     createExpiredRequest,
     createHeldSigner,
     createMockApiClient,
@@ -39,12 +40,7 @@ const AWAITING_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
 
 const quorumWith = createQuorumApiEntryWith;
 
-const awaiting = (id: string, pending: object[], chainType = "evm") => ({
-    id,
-    status: "awaiting-approval",
-    chainType,
-    approvals: { pending, submitted: [] },
-});
+const awaiting = createAwaitingRequest;
 
 const sentApprovals = (api: MockedApiClient) => api.approveTransaction.mock.calls.map((call) => call[2].approvals);
 

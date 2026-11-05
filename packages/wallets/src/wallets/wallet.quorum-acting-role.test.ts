@@ -13,7 +13,9 @@ import {
     createMockSolanaSerializedTransaction,
     createMockWallet,
     createQuorumApiEntry,
+    createAwaitingRequest,
     createQuorumApiEntryWith,
+    createQuorumPendingApproval,
     settle,
     signatureOver,
     type MockedApiClient,
@@ -501,19 +503,6 @@ describe("EVM signatures with a key that is only a quorum member", () => {
                 expect(value).toStrictEqual({ signature: undefined, signatureId: "sig-1" });
             }
         );
-
-        it("requests the signature as that quorum, for a key that is a registered signer", async () => {
-            const treasury = createQuorumApiEntry();
-            const registered = { type: "external-wallet", address: BOB_EVM, locator: bob.locator, status: "success" };
-            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }, registered] });
-
-            await EVMWallet.from(wallet).signMessage({
-                message: "hello",
-                options: { prepareOnly: true, signer: treasury.locator },
-            });
-
-            expect(signatureSigner()).toBe(treasury.locator);
-        });
     });
 });
 
@@ -553,6 +542,125 @@ describe("Stellar with a key that is only a quorum member", () => {
         await StellarWallet.from(wallet).upgrade({ prepareOnly: true });
 
         expect(api.createTransaction.mock.calls[0][1].params).not.toHaveProperty("signer");
+    });
+});
+
+describe("a creating call with a key that is only a quorum member reads the wallet once", () => {
+    let api: MockedApiClient;
+    const bob = bobMember(BOB_EVM);
+    const unsignedTransaction = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
+    const unsignedSignature = { signature: undefined, signatureId: "sig-1" };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+        api.send.mockResolvedValue({ id: "txn-1" } as never);
+        api.createTransaction.mockResolvedValue({ id: "txn-1" } as never);
+        api.createSignature.mockResolvedValue({ id: "sig-1" } as never);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    describe.each([
+        {
+            name: "send",
+            create: (wallet: Wallet<Chain>) => wallet.send(RECIPIENT, "usdc", "1"),
+            unsigned: unsignedTransaction,
+        },
+        {
+            name: "EVM sendTransaction",
+            create: (wallet: Wallet<Chain>) =>
+                EVMWallet.from(wallet).sendTransaction({ to: RECIPIENT, value: BigInt(1) }),
+            unsigned: unsignedTransaction,
+        },
+        {
+            name: "signMessage",
+            create: (wallet: Wallet<Chain>) => EVMWallet.from(wallet).signMessage({ message: "hello" }),
+            unsigned: unsignedSignature,
+        },
+        {
+            name: "signTypedData",
+            create: (wallet: Wallet<Chain>) => EVMWallet.from(wallet).signTypedData(EVM_TYPED_DATA as never),
+            unsigned: unsignedSignature,
+        },
+    ])("$name", ({ create, unsigned }) => {
+        it("decides the request's signer and the early return from one read", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+            // Only the first read finds Bob a member; a second read would find him registered and sign as himself.
+            api.getWallet.mockReset();
+            api.getWallet.mockResolvedValueOnce(walletConfigResponse("base-sepolia", [treasury]) as never);
+            api.getWallet.mockResolvedValue(walletConfigResponse("base-sepolia", [treasury, bob]) as never);
+
+            const { value } = await settle(create(wallet));
+
+            expect(api.getWallet).toHaveBeenCalledTimes(1);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(api.approveSignature).not.toHaveBeenCalled();
+            expect(value).toStrictEqual(unsigned);
+        });
+    });
+});
+
+describe("a key that is only a quorum member signs its quorum's request later with approve()", () => {
+    let api: MockedApiClient;
+    const bob = bobMember(BOB_EVM);
+    const approvalsSent = (approve: MockedApiClient["approveTransaction"] | MockedApiClient["approveSignature"]) =>
+        approve.mock.calls.map((call) => call[2].approvals);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+        api.send.mockResolvedValue({ id: "txn-1" } as never);
+        api.createSignature.mockResolvedValue({ id: "sig-1" } as never);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    it("signs the key's member entry of a send created as its quorum", async () => {
+        const treasury = createQuorumApiEntryWith([bob]);
+        const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+        const entry = createQuorumPendingApproval({ quorum: treasury });
+        api.approveTransaction.mockResolvedValue({ id: "txn-1", status: "pending" } as never);
+        api.getTransaction.mockResolvedValueOnce(createAwaitingRequest("txn-1", [entry]) as never);
+        api.getTransaction.mockResolvedValue({
+            id: "txn-1",
+            status: "success",
+            onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx/0xhash" },
+        } as never);
+
+        const { transactionId } = await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+        const { value } = await settle(wallet.approve({ transactionId }));
+
+        expect(approvalsSent(api.approveTransaction)).toEqual([
+            [{ signer: bob.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+        ]);
+        expect(value).toMatchObject({ transactionId: "txn-1", hash: "0xhash" });
+    });
+
+    it("signs the key's member entry of a signature requested as its quorum", async () => {
+        const treasury = createQuorumApiEntryWith([bob]);
+        const { wallet } = await walletWithBob(api, { signers: [{ ...treasury, status: "success" }] });
+        const entry = createQuorumPendingApproval({ quorum: treasury });
+        api.getSignature.mockResolvedValue(createAwaitingRequest("sig-1", [entry]) as never);
+        api.approveSignature.mockResolvedValue({ id: "sig-1", status: "success", outputSignature: "0x1271" } as never);
+        const evmWallet = EVMWallet.from(wallet);
+
+        const { signatureId } = await evmWallet.signMessage({ message: "hello", options: { prepareOnly: true } });
+        const { value } = await settle(evmWallet.approve({ signatureId }));
+
+        expect(approvalsSent(api.approveSignature)).toEqual([
+            [{ signer: bob.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+        ]);
+        expect(value).toEqual({ signature: "0x1271", signatureId: "sig-1" });
     });
 });
 

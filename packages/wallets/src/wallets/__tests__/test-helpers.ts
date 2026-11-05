@@ -226,6 +226,14 @@ export const createQuorumPendingApproval = ({
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
 
+// A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
+export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
+    id,
+    status: "awaiting-approval",
+    chainType,
+    approvals: { pending, submitted: [] },
+});
+
 // A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
 export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
 
