@@ -532,12 +532,12 @@ export class Wallet<C extends Chain> {
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
-        if ("message" in transactionCreationResponse) {
+        if ("error" in transactionCreationResponse) {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
             throw new TransactionNotCreatedError(
-                `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
+                `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
             );
         }
 
