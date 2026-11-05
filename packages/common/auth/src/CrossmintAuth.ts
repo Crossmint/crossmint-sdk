@@ -30,21 +30,21 @@ export class CrossmintAuth {
         return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
     }
 
-    protected async refreshAuthMaterial(refreshToken?: string): Promise<AuthMaterialWithUser> {
+    protected async refreshAuthMaterial(refreshToken?: string, codeVerifier?: string): Promise<AuthMaterialWithUser> {
         if (this.refreshRoute != null) {
             return await this.refreshFromCustomRoute(refreshToken);
         }
 
         if (refreshToken != null) {
-            return await this.refresh(refreshToken);
+            return await this.refresh(refreshToken, codeVerifier);
         }
 
         throw new CrossmintAuthenticationError("Refresh token missing from parameters");
     }
 
-    protected async refresh(refreshToken: string): Promise<AuthMaterialWithUser> {
+    protected async refresh(refreshToken: string, codeVerifier?: string): Promise<AuthMaterialWithUser> {
         const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/refresh`, {
-            body: JSON.stringify({ refresh: refreshToken }),
+            body: JSON.stringify({ refresh: refreshToken, codeVerifier }),
             headers: {
                 "Content-Type": "application/json",
             },

@@ -38,7 +38,6 @@ declare const orderSchema: z.ZodObject<
                         readonly APECHAIN: "apechain";
                         readonly APEX: "apex";
                         readonly SKALE_NEBULA: "skale-nebula";
-                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                         readonly CHILIZ: "chiliz";
                         readonly AVALANCHE: "avalanche";
                         readonly SHAPE: "shape";
@@ -58,7 +57,6 @@ declare const orderSchema: z.ZodObject<
                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                         readonly SPACE_TESTNET: "space-testnet";
@@ -1416,7 +1414,6 @@ declare const orderSchema: z.ZodObject<
                         | "apechain"
                         | "apex"
                         | "skale-nebula"
-                        | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
                         | "shape"
@@ -1436,7 +1433,6 @@ declare const orderSchema: z.ZodObject<
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
                         | "scroll-sepolia"
-                        | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
                         | "space-testnet"
@@ -1664,7 +1660,6 @@ declare const orderSchema: z.ZodObject<
                         | "apechain"
                         | "apex"
                         | "skale-nebula"
-                        | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
                         | "shape"
@@ -1684,7 +1679,6 @@ declare const orderSchema: z.ZodObject<
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
                         | "scroll-sepolia"
-                        | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
                         | "space-testnet"
@@ -2168,7 +2162,6 @@ declare const orderSchema: z.ZodObject<
                     readonly APECHAIN: "apechain";
                     readonly APEX: "apex";
                     readonly SKALE_NEBULA: "skale-nebula";
-                    readonly SEI_PACIFIC_1: "sei-pacific-1";
                     readonly CHILIZ: "chiliz";
                     readonly AVALANCHE: "avalanche";
                     readonly SHAPE: "shape";
@@ -2188,7 +2181,6 @@ declare const orderSchema: z.ZodObject<
                     readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                     readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                     readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                    readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                     readonly SHAPE_SEPOLIA: "shape-sepolia";
                     readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                     readonly SPACE_TESTNET: "space-testnet";
@@ -2249,7 +2241,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly APECHAIN: "apechain";
                                             readonly APEX: "apex";
                                             readonly SKALE_NEBULA: "skale-nebula";
-                                            readonly SEI_PACIFIC_1: "sei-pacific-1";
                                             readonly CHILIZ: "chiliz";
                                             readonly AVALANCHE: "avalanche";
                                             readonly SHAPE: "shape";
@@ -2269,7 +2260,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                             readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                             readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                            readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                             readonly SHAPE_SEPOLIA: "shape-sepolia";
                                             readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                             readonly SPACE_TESTNET: "space-testnet";
@@ -2299,7 +2289,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2319,7 +2308,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2346,7 +2334,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2366,7 +2353,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2458,7 +2444,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly SKALE_NEBULA: "skale-nebula";
-                                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
                                         readonly SHAPE: "shape";
@@ -2478,7 +2463,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
@@ -2533,7 +2517,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2553,7 +2536,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2605,7 +2587,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2625,7 +2606,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2790,7 +2770,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly SKALE_NEBULA: "skale-nebula";
-                                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
                                         readonly SHAPE: "shape";
@@ -2810,7 +2789,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
@@ -2865,7 +2843,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2885,7 +2862,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2937,7 +2913,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2957,7 +2932,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -3095,7 +3069,6 @@ declare const orderSchema: z.ZodObject<
                     | "apechain"
                     | "apex"
                     | "skale-nebula"
-                    | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
                     | "shape"
@@ -3115,7 +3088,6 @@ declare const orderSchema: z.ZodObject<
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
                     | "scroll-sepolia"
-                    | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
                     | "space-testnet"
@@ -3174,7 +3146,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3194,7 +3165,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3286,7 +3256,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3306,7 +3275,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3389,7 +3357,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3409,7 +3376,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3444,7 +3410,6 @@ declare const orderSchema: z.ZodObject<
                     | "apechain"
                     | "apex"
                     | "skale-nebula"
-                    | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
                     | "shape"
@@ -3464,7 +3429,6 @@ declare const orderSchema: z.ZodObject<
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
                     | "scroll-sepolia"
-                    | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
                     | "space-testnet"
@@ -3523,7 +3487,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3543,7 +3506,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3635,7 +3597,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3655,7 +3616,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3738,7 +3698,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3758,7 +3717,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3839,7 +3797,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -3859,7 +3816,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -3918,7 +3874,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -3938,7 +3893,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4030,7 +3984,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4050,7 +4003,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4133,7 +4085,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4153,7 +4104,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4199,7 +4149,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4219,7 +4168,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -4498,7 +4446,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4518,7 +4465,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -4577,7 +4523,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4597,7 +4542,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4689,7 +4633,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4709,7 +4652,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4792,7 +4734,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4812,7 +4753,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4858,7 +4798,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4878,7 +4817,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
