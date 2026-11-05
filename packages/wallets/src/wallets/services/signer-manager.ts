@@ -150,6 +150,11 @@ export class SignerManager<C extends Chain> {
         this.#selectedRecovery = null;
     }
 
+    /** A selected member signs approvals with its own key when no key is active (EDD 007 §7 use case 6). */
+    get memberStandsIn(): boolean {
+        return this.#activeSigner == null && this.#selectedMember != null;
+    }
+
     descriptorContext(): SignerDescriptorContext<C> {
         return {
             chain: this.#chain,

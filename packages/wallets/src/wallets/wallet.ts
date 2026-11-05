@@ -726,9 +726,9 @@ export class Wallet<C extends Chain> {
             signatureId: params.signatureId,
         });
 
-        // A selected member with no active key signs with its own key, so approving needs no device signer.
-        const memberApproves = this.#signerManager.activeSigner == null && this.#signerManager.selectedMember != null;
-        if (!memberApproves) {
+        await this.#signerInitialization;
+        // A member that stands in signs with its own key, so approving needs no device signer.
+        if (!this.#signerManager.memberStandsIn) {
             await this.#recoverIfNeeded();
         }
         // With no active key, the key selected with useRecoveryMethod() approves (EDD 007 §7 use case 6).
@@ -939,8 +939,8 @@ export class Wallet<C extends Chain> {
 
     /**
      * Remove a signer from the wallet.
-     * The removal is approved as in {@link addSigner}. When a quorum approves, it returns `{ transactionId }`
-     * unsigned, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
+     * The removal is approved as in {@link addSigner}. When a quorum approves, it returns `{ transactionId }` with
+     * `status` undefined, as with `prepareOnly: true`; members sign it with {@link approve}.
      * @param signer - The signer to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the operation ID without auto-approving
@@ -1002,8 +1002,7 @@ export class Wallet<C extends Chain> {
     /**
      * Add a recovery method to the wallet. Supported on Solana and Stellar only.
      * The change is approved as in {@link addSigner}, by a recovery method or a recovery quorum. When a quorum
-     * approves, it returns `{ transactionId }` unsigned, as with `prepareOnly: true`; pass `prepareOnly: true` for that
-     * type.
+     * approves, it returns `{ transactionId }` with `status` undefined, as with `prepareOnly: true`.
      * @param recoveryMethod - The recovery method configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving
@@ -1072,8 +1071,7 @@ export class Wallet<C extends Chain> {
     /**
      * Remove a recovery method from the wallet. Supported on Solana and Stellar only.
      * The change is approved as in {@link addSigner}, by a remaining recovery method or a recovery quorum. When a
-     * quorum approves, it returns `{ transactionId }` unsigned, as with `prepareOnly: true`; pass `prepareOnly: true`
-     * for that type.
+     * quorum approves, it returns `{ transactionId }` with `status` undefined, as with `prepareOnly: true`.
      * @param recoveryMethod - The recovery method to remove, provided as a signer config object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the transaction ID without auto-approving

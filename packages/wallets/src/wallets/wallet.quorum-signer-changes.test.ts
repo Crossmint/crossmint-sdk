@@ -712,6 +712,46 @@ describe("approve() on a client with no active key", () => {
             expect(storage.generateKey).not.toHaveBeenCalled();
             expect(api.registerSigner).not.toHaveBeenCalled();
         });
+
+        it("still starts automatic device recovery when no member is selected", async () => {
+            const storage = deviceKeyStorage();
+            const wallet = await createMockWalletWithoutSigner(
+                chain,
+                api,
+                [{ type: "api-key" }] as unknown as RecoverySignerConfigForChain<Chain>[],
+                { deviceSignerKeyStorage: storage as never }
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+
+            await settle(wallet.approve({ transactionId: "txn-change" }));
+
+            expect(storage.generateKey).toHaveBeenCalled();
+        });
+    });
+
+    describe("when approve() runs on a chain wallet right after a member is selected", () => {
+        it("waits for the wallet's init, so the recovery method init assembles stays active", async () => {
+            const recoveryAddress = "0x8888888888888888888888888888888888888888";
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await createMockWalletWithoutSigner(chain, api, [
+                { type: "external-wallet", address: recoveryAddress },
+                recoveryQuorum,
+            ] as unknown as RecoverySignerConfigForChain<Chain>[]);
+            await wallet.useRecoveryMethod({
+                type: "external-wallet",
+                address: recoveryAddress,
+                onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+            } as never);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            api.getTransaction.mockResolvedValueOnce(awaiting([entry], "evm") as never);
+            api.getTransaction.mockResolvedValue(LANDED as never);
+            const evmWallet = EVMWallet.from(wallet);
+
+            await settle(evmWallet.approve({ transactionId: "txn-change" }));
+
+            expect(evmWallet.signer?.locator()).toBe(`external-wallet:${recoveryAddress}`);
+        });
     });
 
     describe("when a member of the recovery quorum is selected with useRecoveryMethod", () => {

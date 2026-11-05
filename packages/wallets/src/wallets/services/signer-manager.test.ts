@@ -696,3 +696,26 @@ describe("SignerManager.heldSigners", () => {
         });
     });
 });
+
+describe("SignerManager.memberStandsIn", () => {
+    const MEMBER_LOCATOR = "external-wallet:0xMember";
+    const member = asRecoveryConfig({ type: "external-wallet", address: "0xMember", onSign: vi.fn() });
+
+    it("is true when a member is selected and no key is active", () => {
+        const manager = makeManager();
+        manager.selectRecoveryMember(member, MEMBER_LOCATOR);
+
+        expect(manager.memberStandsIn).toBe(true);
+    });
+
+    it("is false when a key is active, even with a member selected", () => {
+        const manager = makeManager({ signer: makeSigner("external-wallet", "external-wallet:0xActive") });
+        manager.selectRecoveryMember(member, MEMBER_LOCATOR);
+
+        expect(manager.memberStandsIn).toBe(false);
+    });
+
+    it("is false when no member is selected", () => {
+        expect(makeManager().memberStandsIn).toBe(false);
+    });
+});
