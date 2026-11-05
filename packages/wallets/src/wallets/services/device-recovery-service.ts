@@ -214,9 +214,8 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
-        // The approver is resolved before the key is created: a selected member's recovery quorum, else the recovery
-        // method of withRecoverySigner (one that signs alone, selected when the wallet has several).
-        // Called for its error: no key is created when no approver can be resolved.
+        // Resolves the approver as withApprover will (the member's quorum, else a recovery method), for its error only:
+        // no key is created when no approver can be resolved.
         this.#signerManager.approvesAsQuorum();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
         let staleDeviceSignerLocator = await this.#findSavedStaleSignerLocator(
