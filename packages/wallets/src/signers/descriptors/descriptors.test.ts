@@ -242,8 +242,8 @@ it.each<[name: string, config: Config]>([
 });
 
 describe("prepareRegistration: passkey", () => {
-    const created = { id: "new-cred", publicKey: { x: 11n, y: 22n } };
-    const registered = { type: "passkey", id: "new-cred", name: "my-key", publicKey: { x: "11", y: "22" } };
+    const CREATED_CREDENTIAL = { id: "new-cred", publicKey: { x: 11n, y: 22n } };
+    const REGISTERED_SIGNER = { type: "passkey", id: "new-cred", name: "my-key", publicKey: { x: "11", y: "22" } };
     const prepare = (config: object, ctx = makeCtx()) =>
         getSignerDescriptor("passkey").prepareRegistration?.(cfg(config) as never, ctx);
 
@@ -262,7 +262,7 @@ describe("prepareRegistration: passkey", () => {
     });
 
     it("creates the passkey with the config's onCreatePasskey over the passkeyProvider, keeping its callbacks", async () => {
-        const onCreatePasskey = vi.fn().mockResolvedValue(created);
+        const onCreatePasskey = vi.fn().mockResolvedValue(CREATED_CREDENTIAL);
         const onSignWithPasskey = vi.fn();
         const passkeyProvider: PasskeyProvider = { createPasskey: vi.fn(), signWithPasskey: vi.fn() };
 
@@ -273,23 +273,25 @@ describe("prepareRegistration: passkey", () => {
 
         expect(onCreatePasskey).toHaveBeenCalledWith("my-key");
         expect(passkeyProvider.createPasskey).not.toHaveBeenCalled();
-        expect(result).toEqual({ ...registered, onCreatePasskey, onSignWithPasskey });
+        expect(result).toEqual({ ...REGISTERED_SIGNER, onCreatePasskey, onSignWithPasskey });
     });
 
     it("creates the passkey with the passkeyProvider when the config has no onCreatePasskey", async () => {
         const passkeyProvider: PasskeyProvider = {
-            createPasskey: vi.fn().mockResolvedValue(created),
+            createPasskey: vi.fn().mockResolvedValue(CREATED_CREDENTIAL),
             signWithPasskey: vi.fn(),
         };
 
-        expect(await prepare({ type: "passkey", name: "my-key" }, makeCtx({ passkeyProvider }))).toEqual(registered);
+        expect(await prepare({ type: "passkey", name: "my-key" }, makeCtx({ passkeyProvider }))).toEqual(
+            REGISTERED_SIGNER
+        );
         expect(passkeyProvider.createPasskey).toHaveBeenCalledWith("my-key");
     });
 
     it("creates the passkey with the browser WebAuthn API otherwise, as decimal-string coordinates", async () => {
-        createCredential.mockResolvedValue(created);
+        createCredential.mockResolvedValue(CREATED_CREDENTIAL);
 
-        expect(await prepare({ type: "passkey", name: "my-key" })).toEqual(registered);
+        expect(await prepare({ type: "passkey", name: "my-key" })).toEqual(REGISTERED_SIGNER);
         expect(createCredential).toHaveBeenCalledWith({ name: "my-key" });
     });
 });
