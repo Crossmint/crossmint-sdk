@@ -176,6 +176,8 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
+        // A recovery method that signs alone approves the new device signer; check before creating its key.
+        this.#signerManager.requireDefaultRecovery();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
         let staleDeviceSignerLocator = await this.#findSavedStaleSignerLocator(
             deviceSignerKeyStorage,
@@ -426,7 +428,7 @@ export class DeviceRecoveryService<C extends Chain> {
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
-        const recovery = this.#signerManager.recovery;
+        const recovery = this.#signerManager.requireDefaultRecovery();
         if (
             isApiSourcedServerSignerConfig(recovery) &&
             !this.#serverSignerResolver.hasRecoveryResolutionFor(recovery.address)
@@ -513,7 +515,7 @@ export class DeviceRecoveryService<C extends Chain> {
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {
-        const recovery = this.#signerManager.recovery;
+        const recovery = this.#signerManager.requireDefaultRecovery();
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {

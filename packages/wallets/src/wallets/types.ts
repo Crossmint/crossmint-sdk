@@ -13,10 +13,14 @@ import type {
     PasskeySignResult,
     DeviceSignResult,
     DeviceSignerConfig,
+    ApiKeySignerLocator,
     DeviceSignerLocator,
     PasskeySignerConfig,
     PasskeyProvider,
+    QuorumLocator,
+    QuorumSigner,
     ServerSignerConfig,
+    SignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -200,7 +204,20 @@ export type Signer =
           locator: string;
           status: SignerStatus;
           scopes?: Scope[];
-      };
+      }
+    | (QuorumSigner & { status: SignerStatus; scopes?: Scope[] });
+
+// api-key and device signers are never quorum members (007 §7, "Config").
+type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
+
+/** Progress of one quorum entry on a request waiting for approvals. */
+export type QuorumApprovalProgress = {
+    quorum: QuorumLocator;
+    threshold: number;
+    remaining: number;
+    pending: QuorumMemberLocator[];
+    submitted: QuorumMemberLocator[];
+};
 
 // Approvals
 export type PendingApproval = NonNullable<

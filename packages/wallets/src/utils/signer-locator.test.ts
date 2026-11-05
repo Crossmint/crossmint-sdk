@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getSignerLocator, parseSignerLocator } from "./signer-locator";
 import type { Chain } from "../chains/chains";
 import type { SignerConfigForChain } from "../signers/types";
+import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
 
 describe("getSignerLocator", () => {
     describe("email signer — Gmail dot normalization", () => {
@@ -69,6 +70,11 @@ describe("getSignerLocator", () => {
     it("returns device locator with existing locator", () => {
         const signer = { type: "device", locator: "device:0xPUBKEY" } as SignerConfigForChain<Chain>;
         expect(getSignerLocator(signer)).toBe("device:0xPUBKEY");
+    });
+
+    it("returns a quorum's own locator", () => {
+        const quorum = createQuorumApiEntry();
+        expect(getSignerLocator(quorum)).toBe(quorum.locator);
     });
 });
 
