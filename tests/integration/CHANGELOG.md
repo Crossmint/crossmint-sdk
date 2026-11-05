@@ -1,5 +1,39 @@
 # @crossmint/integration-tests
 
+## 0.0.11
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/wallets-sdk@1.21.2
+
+## 0.0.10
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/wallets-sdk@1.20.7
+
 ## 0.0.7
 
 ### Patch Changes

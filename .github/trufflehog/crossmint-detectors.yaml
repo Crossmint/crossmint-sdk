@@ -1,0 +1,55 @@
+# Custom TruffleHog detectors for Crossmint server API keys (SECUR-111).
+#
+# Key format (APIKeyManager.ts):
+#   sk_<env>_<base58(projectUUID.32hex:base58(ed25519 sig))>, about 216 base58 chars.
+#   Legacy keys: sk_live.<8 alnum>.<32 alnum>
+# Client keys (ck_*) are not covered: they ship in browser bundles by design.
+#
+# Real key found: revoke it and load it from the secret manager. Deleting the
+# line is not enough, the key stays in git history. Never add an exception for it.
+#
+# Exceptions (test fixtures, public demo keys), narrowest first:
+#   1. One line: add a `trufflehog:ignore` comment on that line, with the reason.
+#   2. Placeholder words: add them to exclude_words below, in lowercase
+#      (TruffleHog lowercases the candidate but compares entries verbatim).
+#   3. Whole files: add a path regex to exclude-paths.txt, with reason and owner.
+
+detectors:
+    - name: CrossmintProductionServerKey
+      keywords:
+          - sk_production_
+      # The optional process.env / "<" context outside the capture group exists only
+      # so exclude_regexes_match can see it. No leading \b: "_" is a word character,
+      # so a boundary would miss keys glued to an identifier (CROSSMINT_sk_production_...).
+      regex:
+          key: '(?:process\.env\.[A-Za-z0-9_.]*)?<?(sk_production_[1-9A-HJ-NP-Za-km-z]{64,256})\b>?'
+      primary_regex_name: key
+      entropy: 3
+      exclude_words: &placeholders
+          - your_api_key
+          - example
+          - placeholder
+          - redacted
+      exclude_regexes_match: &indirection
+          - '^process\.env\.'
+          - "^<"
+
+    - name: CrossmintStagingServerKey
+      keywords:
+          - sk_staging_
+      regex:
+          key: '(?:process\.env\.[A-Za-z0-9_.]*)?<?(sk_staging_[1-9A-HJ-NP-Za-km-z]{64,256})\b>?'
+      primary_regex_name: key
+      entropy: 3
+      exclude_words: *placeholders
+      exclude_regexes_match: *indirection
+
+    - name: CrossmintLegacyServerKey
+      keywords:
+          - sk_live.
+      # Literal dots, so Stripe's sk_live_ keys do not match.
+      regex:
+          key: '\b(sk_live\.[a-zA-Z0-9]{8}\.[a-zA-Z0-9]{32})\b'
+      primary_regex_name: key
+      entropy: 3
+      exclude_words: *placeholders
