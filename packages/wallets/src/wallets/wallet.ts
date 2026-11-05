@@ -806,30 +806,25 @@ export class Wallet<C extends Chain> {
      */
     private async completeSignerRegistration(
         signer: WalletSigner,
-        pendingOperation: { type: "signature" | "transaction"; id: string } | null,
+        pendingOperation: PendingSignerOperation | null,
         options?: AddSignerOptions
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
-        if (options?.prepareOnly) {
-            if (pendingOperation == null) {
+        if (pendingOperation == null) {
+            if (options?.prepareOnly) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
-            const operationId = pendingOperationId(pendingOperation);
-            walletsLogger.info("wallet.addSigner.prepared", operationId);
-            return { ...signer, ...operationId } as AddSignerReturnType<C>;
-        }
-
-        if (pendingOperation == null) {
             walletsLogger.info("wallet.addSigner.success");
-            return { ...signer, status: "success" as const } as WalletSigner;
+        } else {
+            const operationId = pendingOperationId(pendingOperation);
+            // prepareOnly signs nothing; after this client approves, other quorum members may still have to sign.
+            const landed = !options?.prepareOnly && (await this.#approvePendingOperation(pendingOperation));
+            if (!landed) {
+                const event = options?.prepareOnly ? "wallet.addSigner.prepared" : "wallet.addSigner.awaitingApproval";
+                walletsLogger.info(event, operationId);
+                return { ...signer, ...operationId } as AddSignerReturnType<C>;
+            }
+            walletsLogger.info("wallet.addSigner.success", operationId);
         }
-
-        const operationId = pendingOperationId(pendingOperation);
-        if (!(await this.#approvePendingOperation(pendingOperation))) {
-            // Other quorum members must still sign: return the operation as prepareOnly does, status unchanged.
-            walletsLogger.info("wallet.addSigner.awaitingApproval", operationId);
-            return { ...signer, ...operationId } as AddSignerReturnType<C>;
-        }
-        walletsLogger.info("wallet.addSigner.success", operationId);
         return { ...signer, status: "success" as const } as WalletSigner;
     }
 
@@ -1528,17 +1523,25 @@ export class Wallet<C extends Chain> {
 
     // A quorum member may be any key this client holds, the useRecoveryMethod key included (EDD 007 §7 "Approval").
     // Flat-only approvals keep their keys, so wallets without quorums sign as before.
+    #heldSigners(
+        walletSigner: SignerAdapter,
+        additional: SignerAdapter[],
+        pending: PendingApproval[]
+    ): SignerAdapter[] {
+        if (pending.some(isQuorumPendingApproval)) {
+            return this.#signerManager.heldSigners(additional);
+        }
+        return [...additional, walletSigner];
+    }
+
     #approvalSigning(
         walletSigner: SignerAdapter,
         options: ApproveOptions | undefined,
         pending: PendingApproval[],
         sign: ApprovalSigning["sign"]
     ) {
-        const additional = options?.additionalSigners ?? [];
         return {
-            held: pending.some(isQuorumPendingApproval)
-                ? this.#signerManager.heldSigners(additional)
-                : [...additional, walletSigner],
+            held: this.#heldSigners(walletSigner, options?.additionalSigners ?? [], pending),
             limit: "all",
             sign,
             resolveMissing: (locator) => this.#resolveMissingDeviceSigner(locator),

@@ -829,8 +829,11 @@ describe("addSigner() resuming a registration that quorum members must still app
 
         expect(error).toBeUndefined();
         expect(api.registerSigner).not.toHaveBeenCalled();
-        expect(value).toMatchObject({ locator: "external-wallet:GNEW", transactionId: "txn-add" });
-        expect(value).not.toMatchObject({ status: "success" });
+        expect(value).toMatchObject({
+            locator: "external-wallet:GNEW",
+            transactionId: "txn-add",
+            status: "awaiting-approval",
+        });
     });
 
     it("returns the signer with its signature id, not as added (EVM)", async () => {
@@ -851,8 +854,11 @@ describe("addSigner() resuming a registration that quorum members must still app
 
         expect(error).toBeUndefined();
         expect(api.registerSigner).not.toHaveBeenCalled();
-        expect(value).toMatchObject({ locator: "external-wallet:0x456", signatureId: "sig-add" });
-        expect(value).not.toMatchObject({ status: "success" });
+        expect(value).toMatchObject({
+            locator: "external-wallet:0x456",
+            signatureId: "sig-add",
+            status: "awaiting-approval",
+        });
     });
 });
 
