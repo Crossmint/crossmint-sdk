@@ -59,7 +59,8 @@ export class CrossmintAuthServer extends CrossmintAuth {
      * Validate the user's session and return it, refreshing it if expired.
      * Accepts either a request object (auth material is read from cookies) or the auth material
      * itself (`{ jwt, refreshToken }`). If a response object is provided, refreshed auth material
-     * is stored in its cookies.
+     * is stored in its cookies. When the session was refreshed, the result also holds the `user`
+     * (email, phone number, linked accounts), so no {@link getUser} call is needed.
      *
      * @throws CrossmintAuthenticationError if no valid session can be established.
      */
@@ -236,6 +237,8 @@ export class CrossmintAuthServer extends CrossmintAuth {
             jwt: refreshedAuthMaterial.jwt,
             refreshToken: refreshedAuthMaterial.refreshToken,
             userId,
+            // verifyRefreshedAuthMaterial checked that this user is the JWT's subject
+            user: refreshedAuthMaterial.user,
         };
     }
 
