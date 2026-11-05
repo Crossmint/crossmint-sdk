@@ -94,8 +94,8 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Sign a message with the wallet's private key.
-     * When the signer is a quorum (named in `signer`, or inferred from a key that is only a quorum member), the call
-     * returns the created request unsigned and without a signature, as with `prepareOnly: true`.
+     * When the signer is a quorum, named in `signer` or inferred from a key that is only a member, the call returns the
+     * request unsigned and without a signature, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
      * @param params - The message to sign
      * @returns The signature
      */
