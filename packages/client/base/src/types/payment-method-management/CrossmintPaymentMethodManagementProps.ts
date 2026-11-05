@@ -15,11 +15,20 @@ export type PaymentMethodManagementDefaultValues = {
     billingDetails?: {
         /** `null` or an empty string means no default for that field. */
         address?: {
-            /** Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. */
+            /**
+             * Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. Without it, the form starts
+             * in the US.
+             */
             country?: string | null;
             line1?: string | null;
             line2?: string | null;
             city?: string | null;
+            /**
+             * ISO 3166-2 subdivision code of the starting country, without the country prefix:
+             * `"FL"` (not `"US-FL"`), `"ON"`, `"MU"` (Murcia, Spain), `"AGU"` (Aguascalientes,
+             * Mexico). The match is exact: the iframe ignores a name (`"Florida"`) or a lowercase
+             * code (`"fl"`) and logs a console warning. Without `country`, use a US code.
+             */
             stateOrRegion?: string | null;
             postalCode?: string | null;
         };

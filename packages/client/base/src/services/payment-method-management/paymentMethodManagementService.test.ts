@@ -118,7 +118,7 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
                     line1: "Calle Mayor 1",
                     line2: "2B",
                     city: "Madrid",
-                    stateOrRegion: "Madrid",
+                    stateOrRegion: "MD",
                     postalCode: "28013",
                 },
             },
