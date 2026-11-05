@@ -15,7 +15,6 @@ import type {
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     InvalidRecoveryConfigError,
-    RecoveryNotSupportedOnChainError,
     WalletCreationError,
     WalletNotAvailableError,
     throwIfQuorumApiError,
@@ -258,8 +257,7 @@ export class WalletFactory {
         args: WalletCreateArgs<C>,
         resolvedRecoverySigners: ResolvedRecoverySigner[]
     ): RecoveryRequestConfig {
-        // The API only accepts recoveryMethods on Solana and Stellar; EVM still requires adminSigner for one method.
-        if (hasRecoveryMethodList(args) && (args.chain === "solana" || args.chain === "stellar")) {
+        if (hasRecoveryMethodList(args)) {
             return { recoveryMethods: resolvedRecoverySigners };
         }
         return { adminSigner: resolvedRecoverySigners[0] };
@@ -271,11 +269,6 @@ export class WalletFactory {
     ): Array<RecoverySignerConfigFor<C>> {
         if (recoveryMethods.length === 0) {
             throw new InvalidRecoveryConfigError("At least one recovery method is required");
-        }
-        if (recoveryMethods.length > 1 && chain !== "solana" && chain !== "stellar") {
-            throw new RecoveryNotSupportedOnChainError(
-                `Multiple recovery methods are not supported on ${chain} yet. Pass a single recovery method.`
-            );
         }
         for (const method of recoveryMethods) {
             if (!canBeRecoveryMethod(method.type)) {
@@ -566,6 +559,18 @@ export class WalletFactory {
                 const matchIndex = unmatchedExistingSigners.findIndex((existingWalletSigner) =>
                     this.matchesRecoverySigner(inputRecoverySigner, existingWalletSigner, args.chain)
                 );
+                // A server signer is identified by the address its secret derives to. Falling back to a
+                // type-only match would let any secret pass, so an address miss is a mismatch.
+                if (
+                    matchIndex === -1 &&
+                    inputRecoverySigner.type === "server" &&
+                    "secret" in inputRecoverySigner &&
+                    unmatchedExistingSigners.some((s) => s.type === "server")
+                ) {
+                    throw new WalletCreationError(
+                        "The server recovery signer does not match the existing wallet's server recovery signer: its secret derives to a different address"
+                    );
+                }
                 const existingWalletSigner =
                     matchIndex === -1
                         ? unmatchedExistingSigners.find((s) => s.type === inputRecoverySigner.type)

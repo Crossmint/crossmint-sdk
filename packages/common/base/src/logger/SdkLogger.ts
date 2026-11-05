@@ -1,6 +1,12 @@
 import type { ISdkLogger } from "./interfaces";
 import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { generateExecutionId, mergeContext, redactSensitiveFields, serializeLogArgs } from "./utils";
+import {
+    generateExecutionId,
+    mergeContext,
+    redactSensitiveFields,
+    redactSensitiveText,
+    serializeLogArgs,
+} from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -418,7 +424,7 @@ export class SdkLogger implements ISdkLogger {
         // Create log entry
         const entry: LogEntry = {
             level,
-            message: serializedMessage,
+            message: redactSensitiveText(serializedMessage, true),
             context: redactedContext,
             timestamp: Date.now(),
         };

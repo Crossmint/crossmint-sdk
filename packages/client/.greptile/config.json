@@ -2,7 +2,7 @@
     "rules": [
         {
             "id": "rn-one-expo-sdk-per-release",
-            "rule": "The React Native SDK supports one Expo SDK per release. Native modules (expo, expo-*, react-native-svg, react-native-webview, react-native-get-random-values) must be peerDependencies, not dependencies, and their ranges must target that one Expo SDK (for example ^58.0.0), not span several. Moving to a new Expo SDK is a major release.",
+            "rule": "The React Native SDK supports one Expo SDK per release. Native modules (expo, expo-*, react-native-webview, react-native-get-random-values) must be peerDependencies, not dependencies, and their ranges must target that one Expo SDK (for example ^58.0.0), not span several. Moving to a new Expo SDK is a major release.",
             "scope": ["ui/react-native/package.json", "rn-window/package.json"],
             "severity": "medium"
         }
