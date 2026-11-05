@@ -20,6 +20,7 @@ import {
     createQuorumPendingApproval,
     createSigningWallet,
     randomStellarMessage,
+    settle,
     signatureOver,
     TRANSACTION_EXPIRED_API_MESSAGE,
     type MockedApiClient,
@@ -47,16 +48,6 @@ const awaiting = (id: string, pending: object[], chainType = "evm") => ({
     chainType,
     approvals: { pending, submitted: [] },
 });
-
-// Runs the call to the end, timers included; the outcome is the value or the error.
-async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
-    const outcome = call.then(
-        (value) => ({ value }),
-        (error: unknown) => ({ error })
-    );
-    await vi.runAllTimersAsync();
-    return outcome;
-}
 
 const sentApprovals = (api: MockedApiClient) => api.approveTransaction.mock.calls.map((call) => call[2].approvals);
 
@@ -186,8 +177,8 @@ describe("approve() on a transaction with a pending quorum entry", () => {
         });
     });
 
-    describe("when a held member is pending in two quorum entries", () => {
-        it("throws the API's rejection, which the API returns for any member shared by two quorum entries", async () => {
+    describe("when a held member is pending in two different quorums", () => {
+        it("throws the API's rejection, which the API returns for a member shared by two quorums", async () => {
             const first = createQuorumPendingApproval({ quorum: quorumWith([member]) });
             const second = createQuorumPendingApproval({ quorum: quorumWith([member]) });
             api.getTransaction.mockResolvedValue(awaiting("txn-1", [first, second]) as never);
@@ -704,6 +695,25 @@ describe("approve() on a Stellar transaction with pending quorum entries", () =>
             expect(error).toBeUndefined();
             expect(sentApprovals(api)).toHaveLength(1);
             expect(value).toStrictEqual(AWAITING_TRANSACTION);
+        });
+    });
+
+    describe("when another member completes the quorum first", () => {
+        it("returns the landed transaction the API client reads back after the 422", async () => {
+            api.getTransaction.mockResolvedValueOnce(
+                awaiting("txn-1", [stellarEntry({ quorum: quorumWith([member]) })], "stellar") as never
+            );
+            api.approveTransaction.mockResolvedValue(STELLAR_SUCCESS as never);
+            api.getTransaction.mockResolvedValue(STELLAR_SUCCESS as never);
+
+            const { value, error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual({
+                hash: "stellar-hash",
+                explorerLink: STELLAR_SUCCESS.onChain.explorerLink,
+                transactionId: "txn-1",
+            });
         });
     });
 

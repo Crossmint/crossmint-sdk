@@ -81,6 +81,16 @@ export const createMockWallet = async <C extends Chain>(
     recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => walletWithSigner(chain, mockApiClient, createMockSigner(signerType, chain), recoverySigners);
 
+// Runs the call to the end, fake timers included, so a sleep on the approval path cannot hang the test.
+export async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
+    const outcome = call.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error })
+    );
+    await vi.runAllTimersAsync();
+    return outcome;
+}
+
 // What a signing test signer returns for `payload`, so a test can tell which message each approval signed.
 export const signatureOver = (payload: string) => `0xsig:${payload}`;
 

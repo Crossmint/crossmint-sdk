@@ -10,6 +10,7 @@ import {
     createMockSigner,
     createQuorumApiEntry,
     createQuorumPendingApproval,
+    settle,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -471,14 +472,9 @@ describe("StellarWallet - upgrade() / migrate()", () => {
             mockApiClient.createTransaction.mockResolvedValueOnce(makeTxResponse("upgrade-tx-q", "upgrade-wallet"));
             mockGetTransactionById({ "upgrade-tx-q": quorumOnlyWait("upgrade-tx-q", quorum) });
 
-            const promise = stellarWallet.upgrade({ signer: quorum.locator });
-            const outcome = promise.then(
-                (value) => ({ value }),
-                (error: unknown) => ({ error })
-            );
-            await vi.runAllTimersAsync();
+            const outcome = await settle(stellarWallet.upgrade({ signer: quorum.locator }));
 
-            expect(await outcome).toStrictEqual({
+            expect(outcome).toStrictEqual({
                 value: { hash: undefined, explorerLink: undefined, transactionId: "upgrade-tx-q" },
             });
             expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(1);
@@ -488,14 +484,9 @@ describe("StellarWallet - upgrade() / migrate()", () => {
             mockApiClient.createTransaction.mockResolvedValueOnce(makeTxResponse("migrate-tx-q", "migrate-wallet"));
             mockGetTransactionById({ "migrate-tx-q": quorumOnlyWait("migrate-tx-q") });
 
-            const promise = stellarWallet.migrate();
-            const outcome = promise.then(
-                (value) => ({ value }),
-                (error: unknown) => ({ error })
-            );
-            await vi.runAllTimersAsync();
+            const outcome = await settle(stellarWallet.migrate());
 
-            expect(await outcome).toStrictEqual({
+            expect(outcome).toStrictEqual({
                 value: { hash: undefined, explorerLink: undefined, transactionId: "migrate-tx-q" },
             });
         });
