@@ -4,16 +4,16 @@ import type {
     ApproveOptions,
     MigrateOptions,
     PrepareOnly,
+    SignerOption,
     StellarTransactionInput,
     Transaction,
     TransactionInputOptions,
     UpgradeOptions,
 } from "./types";
 import { Wallet } from "./wallet";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
-import type { ServerSignerConfig } from "../signers/types";
 
 const WALLET_LOCKED_STATUS_CODE = 409;
 
@@ -201,7 +201,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const { contractId, options } = params;
-        const signer = this.resolveStellarSigner(options?.signer);
+        const signerParams = this.resolveSignerParams(options);
 
         // The `serialized-transaction` variant is accepted at runtime but not part of
         // the curated public OpenAPI spec, so its shape is not in the generated DTOs.
@@ -224,11 +224,12 @@ export class StellarWallet extends Wallet<StellarChain> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction,
-                signer,
+                ...signerParams,
             },
         });
 
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
@@ -243,18 +244,12 @@ export class StellarWallet extends Wallet<StellarChain> {
      */
     private async createWalletLifecycleTransaction(
         type: "upgrade-wallet" | "migrate-wallet",
-        options: { signer?: string | ServerSignerConfig } | undefined
+        options: { signer?: SignerOption } | undefined
     ): Promise<string | null> {
-        // Only forward an explicit signer override. When unset, the server defaults to
-        // the wallet's admin signer — the correct behavior for wallet-lifecycle ops,
-        // and it avoids passing the unqualified "api-key" locator which the upgrade
-        // DTO rejects.
-        const signer = options?.signer != null ? this.resolveStellarSigner(options.signer) : undefined;
-
         const response = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction: { type },
-                ...(signer != null ? { signer } : {}),
+                ...this.lifecycleSignerParams(options),
             },
         });
 
@@ -262,20 +257,20 @@ export class StellarWallet extends Wallet<StellarChain> {
             if (type === "upgrade-wallet" && isWalletLockedError(response)) {
                 return null;
             }
+            throwIfQuorumApiError(response);
             throw new TransactionNotCreatedError(JSON.stringify(response));
         }
 
         return response.id;
     }
 
-    private resolveStellarSigner(signerOverride: string | ServerSignerConfig | undefined): string {
-        if (signerOverride == null) {
-            return this.signerManager.require().locator();
+    // Only an explicit signer is forwarded: without one, the server uses the admin signer, which wallet-lifecycle
+    // ops need (the upgrade DTO rejects the unqualified "api-key" locator).
+    private lifecycleSignerParams(options: { signer?: SignerOption } | undefined): { signer?: string } {
+        if (options?.signer == null) {
+            return {};
         }
-        if (typeof signerOverride === "string") {
-            return signerOverride;
-        }
-        return this.resolveServerSignerApiLocator(signerOverride);
+        return { signer: this.resolveSignerOption(options.signer) };
     }
 }
 

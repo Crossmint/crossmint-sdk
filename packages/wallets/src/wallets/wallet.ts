@@ -32,7 +32,9 @@ import type {
     PrepareOnly,
     RecoverySignerConfigFor,
     SendTokenTransactionOptions,
+    SignerOption,
 } from "./types";
+import { isSignerLocatorOption } from "./types";
 import { mapApiSignerToSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
@@ -40,7 +42,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    QuorumSignerNotSupportedError,
     SIGNER_LIMIT_EXCEEDED_ERROR_CODE,
     SignatureFailedError,
     SignerLimitExceededError,
@@ -51,6 +52,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
+    throwIfQuorumApiError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import {
@@ -325,6 +327,22 @@ export class Wallet<C extends Chain> {
         return this.#serverSignerResolver.apiLocator(signer);
     }
 
+    /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
+    protected resolveSignerParams(options?: { signer?: SignerOption }): { signer: string } {
+        if (options?.signer == null) {
+            return { signer: this.#signerManager.require().locator() };
+        }
+        return { signer: this.resolveSignerOption(options.signer) };
+    }
+
+    /** The API locator of a call's `signer` option. */
+    protected resolveSignerOption(signer: SignerOption): string {
+        if (isSignerLocatorOption(signer)) {
+            return signer;
+        }
+        return this.resolveServerSignerApiLocator(signer);
+    }
+
     /**
      * Get the primary recovery signer config: the first recovery method that signs on its own. Use
      * {@link recoveryMethods} for the full list, quorums included.
@@ -527,21 +545,11 @@ export class Wallet<C extends Chain> {
         });
 
         await this.preAuthIfNeeded();
-        const walletSigner = this.#signerManager.require();
-
-        let signer: string;
-        if (options?.signer == null) {
-            signer = walletSigner.locator();
-        } else if (typeof options.signer === "string") {
-            signer = options.signer;
-        } else {
-            signer = this.resolveServerSignerApiLocator(options.signer);
-        }
 
         const sendParams = {
             recipient,
             amount,
-            signer,
+            ...this.resolveSignerParams(options),
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -550,6 +558,7 @@ export class Wallet<C extends Chain> {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
             );
@@ -738,6 +747,7 @@ export class Wallet<C extends Chain> {
                 if (response.code === SIGNER_LIMIT_EXCEEDED_ERROR_CODE) {
                     throw new SignerLimitExceededError(response.message, JSON.stringify(response));
                 }
+                throwIfQuorumApiError(response);
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
 
@@ -840,6 +850,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeSigner.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
             }
 
@@ -903,6 +914,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.addRecoveryMethod.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new InvalidSignerError(`Failed to add recovery method: ${JSON.stringify(response.message)}`);
             }
 
@@ -957,6 +969,7 @@ export class Wallet<C extends Chain> {
                 walletsLogger.error("wallet.removeRecoveryMethod.error", {
                     error: response,
                 });
+                throwIfQuorumApiError(response);
                 throw new Error(`Failed to remove recovery method: ${JSON.stringify(response)}`);
             }
 
@@ -1439,11 +1452,7 @@ export class Wallet<C extends Chain> {
         pendingApprovals: P[]
     ): Extract<P, { message: string }>[] {
         return pendingApprovals.map((pendingApproval) => {
-            if (pendingApproval.signer.type === "quorum") {
-                throw new QuorumSignerNotSupportedError(
-                    `This wallet requires approval from a quorum signer (${pendingApproval.signer.locator}), which is not yet supported by this SDK version`
-                );
-            }
+            throwIfQuorumSigner(pendingApproval.signer);
             return pendingApproval as Extract<P, { message: string }>;
         });
     }
@@ -1562,6 +1571,7 @@ export class Wallet<C extends Chain> {
 
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
+            throwIfQuorumApiError(approvedTransaction, { transactionId });
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 
@@ -1575,6 +1585,7 @@ export class Wallet<C extends Chain> {
 
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
+            throwIfQuorumApiError(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
         }
 
