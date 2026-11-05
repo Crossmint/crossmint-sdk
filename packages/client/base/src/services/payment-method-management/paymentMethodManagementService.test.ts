@@ -158,18 +158,68 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
     });
 
     it.each([
-        ["defaultValues is a string", "ES", /defaultValues must be a plain object, got string/],
-        ["defaultValues is null", null, /defaultValues must be a plain object, got null/],
-        ["defaultValues is an array", [], /defaultValues must be a plain object, got an array/],
+        ["defaultValues", null, undefined],
+        ["billingDetails", { billingDetails: null }, {}],
+        ["address", { billingDetails: { address: null } }, { billingDetails: {} }],
+    ])("treats a null %s as no default", (_, defaultValues, expected) => {
+        const warn = captureWarnings();
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        const param = new URL(url).searchParams.get("defaultValues");
+        expect(param == null ? undefined : JSON.parse(param)).toEqual(expected);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("accepts a class instance, such as an ORM entity, and reads its getters", () => {
+        class BuyerAddress {
+            country = "US";
+            line1 = "80 SW 8th St";
+            get city() {
+                return "Miami";
+            }
+        }
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: { billingDetails: { address: new BuyerAddress() } },
+        });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual({
+            billingDetails: { address: { country: "US", line1: "80 SW 8th St", city: "Miami" } },
+        });
+    });
+
+    it("keeps unknown keys of a spread buyer record out of the iframe URL", () => {
+        captureWarnings();
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: {
+                billingDetails: {
+                    address: { country: "US", email: "buyer@example.com" } as { country: string },
+                },
+            },
+        });
+
+        expect(url).not.toContain("email");
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual({
+            billingDetails: { address: { country: "US" } },
+        });
+    });
+
+    it.each([
+        ["defaultValues is a string", "ES", /defaultValues must be an object, got string/],
+        ["defaultValues is an array", [], /defaultValues must be an object, got an array/],
         [
             "billingDetails is a boolean",
             { billingDetails: true },
-            /defaultValues\.billingDetails must be a plain object, got boolean/,
+            /defaultValues\.billingDetails must be an object, got boolean/,
         ],
         [
-            "address is a class instance",
-            { billingDetails: { address: new Date() } },
-            /defaultValues\.billingDetails\.address must be a plain object, got an instance of Date/,
+            "address is an array",
+            { billingDetails: { address: ["Calle Mayor 1"] } },
+            /defaultValues\.billingDetails\.address must be an object, got an array/,
         ],
         [
             "an address field is a number",
@@ -200,18 +250,21 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
             "defaultValues",
             { billing: {} },
             'Unknown key "defaultValues.billing" is ignored. Known keys: billingDetails.',
+            {},
         ],
         [
             "defaultValues.billingDetails",
             { billingDetails: { name: "Ana" } },
             'Unknown key "defaultValues.billingDetails.name" is ignored. Known keys: address.',
+            { billingDetails: {} },
         ],
         [
             "defaultValues.billingDetails.address",
-            { billingDetails: { address: { postal_code: "28013" } } },
+            { billingDetails: { address: { country: "ES", postal_code: "28013" } } },
             'Unknown key "defaultValues.billingDetails.address.postal_code" is ignored. Known keys: country, line1, line2, city, stateOrRegion, postalCode.',
+            { billingDetails: { address: { country: "ES" } } },
         ],
-    ])("warns about an unknown key under %s and passes it through", (_, defaultValues, message) => {
+    ])("warns about an unknown key under %s and drops it", (_, defaultValues, message, expected) => {
         const warn = captureWarnings();
 
         const url = makeService().iframe.getUrl({
@@ -220,7 +273,7 @@ describe("paymentMethodManagementService.getUrl defaultValues", () => {
         });
 
         expect(warn).toHaveBeenCalledWith(expect.stringContaining(message));
-        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(expected);
     });
 
     it("logs each unknown-key warning once per service, since React rebuilds the URL on every render", () => {

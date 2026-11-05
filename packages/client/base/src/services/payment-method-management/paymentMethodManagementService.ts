@@ -1,4 +1,7 @@
-import type { CrossmintPaymentMethodManagementProps } from "@/types/payment-method-management/CrossmintPaymentMethodManagementProps";
+import type {
+    CrossmintPaymentMethodManagementProps,
+    PaymentMethodManagementDefaultValues,
+} from "@/types/payment-method-management/CrossmintPaymentMethodManagementProps";
 import {
     paymentMethodManagementIncomingEvents,
     paymentMethodManagementOutgoingEvents,
@@ -7,9 +10,23 @@ import { appendObjectToQueryParams } from "@/utils/appendObjectToQueryParams";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
-const KNOWN_DEFAULT_VALUES_KEYS = ["billingDetails"];
-const KNOWN_BILLING_DETAILS_KEYS = ["address"];
-const KNOWN_ADDRESS_KEYS = ["country", "line1", "line2", "city", "stateOrRegion", "postalCode"];
+type DefaultBillingDetails = NonNullable<PaymentMethodManagementDefaultValues["billingDetails"]>;
+type DefaultAddress = NonNullable<DefaultBillingDetails["address"]>;
+
+// Records, not arrays, so a field added to the type without an entry here fails to compile.
+const KNOWN_DEFAULT_VALUES_KEYS = keysOf({ billingDetails: true } satisfies Record<
+    keyof PaymentMethodManagementDefaultValues,
+    true
+>);
+const KNOWN_BILLING_DETAILS_KEYS = keysOf({ address: true } satisfies Record<keyof DefaultBillingDetails, true>);
+const KNOWN_ADDRESS_KEYS = keysOf({
+    country: true,
+    line1: true,
+    line2: true,
+    city: true,
+    stateOrRegion: true,
+    postalCode: true,
+} satisfies Record<keyof DefaultAddress, true>);
 
 export type PaymentMethodManagementServiceProps = {
     apiClient: CrossmintApiClient;
@@ -27,7 +44,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         console.warn(message);
     }
 
-    function warnAboutUnknownKeys(value: Record<string, unknown>, path: string, knownKeys: string[]) {
+    function warnAboutUnknownKeys(value: Record<string, unknown>, path: string, knownKeys: readonly string[]) {
         for (const key of Object.keys(value)) {
             if (!knownKeys.includes(key)) {
                 warnOnce(
@@ -40,39 +57,48 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
     // Like Stripe.js: a wrong shape or type is a programming error and throws; an unknown key
     // only warns. The iframe validates the values themselves and ignores an invalid one, because
     // hosts fill them from their buyers' stored data and they must never break the form.
-    function assertValidDefaultValues(defaultValues: unknown) {
-        if (defaultValues === undefined) {
-            return;
+    // `null` at any level is stored data for "no value" (a buyer without an address), not an error.
+    // Returns a copy with only the known keys, so unknown keys (a spread buyer record with email or
+    // internal IDs) never reach the iframe URL.
+    function parseDefaultValues(defaultValues: unknown): PaymentMethodManagementDefaultValues | undefined {
+        if (defaultValues == null) {
+            return undefined;
         }
-        assertPlainObject(defaultValues, "defaultValues");
+        assertObject(defaultValues, "defaultValues");
         warnAboutUnknownKeys(defaultValues, "defaultValues", KNOWN_DEFAULT_VALUES_KEYS);
 
         const { billingDetails } = defaultValues;
-        if (billingDetails === undefined) {
-            return;
+        if (billingDetails == null) {
+            return {};
         }
-        assertPlainObject(billingDetails, "defaultValues.billingDetails");
+        assertObject(billingDetails, "defaultValues.billingDetails");
         warnAboutUnknownKeys(billingDetails, "defaultValues.billingDetails", KNOWN_BILLING_DETAILS_KEYS);
 
         const { address } = billingDetails;
-        if (address === undefined) {
-            return;
+        if (address == null) {
+            return { billingDetails: {} };
         }
-        assertPlainObject(address, "defaultValues.billingDetails.address");
+        assertObject(address, "defaultValues.billingDetails.address");
         warnAboutUnknownKeys(address, "defaultValues.billingDetails.address", KNOWN_ADDRESS_KEYS);
+        const knownAddress: DefaultAddress = {};
         for (const key of KNOWN_ADDRESS_KEYS) {
+            // Read by name, not by `Object.keys`, so getters of class instances count too.
             const field = address[key];
-            // `null` is stored data for "no value" (an empty line 2 in a database), not a programming error.
-            if (field != null && typeof field !== "string") {
+            if (field === undefined) {
+                continue;
+            }
+            if (field !== null && typeof field !== "string") {
                 throw new Error(
                     `[CrossmintPaymentMethodManagement] defaultValues.billingDetails.address.${key} must be a string, got ${describeType(field)}.`
                 );
             }
+            knownAddress[key] = field;
         }
+        return { billingDetails: { address: knownAddress } };
     }
 
     function getIFrameUrl(props: CrossmintPaymentMethodManagementProps) {
-        assertValidDefaultValues(props.defaultValues);
+        const defaultValues = parseDefaultValues(props.defaultValues);
 
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/payment-method-management");
         const queryParams = new URLSearchParams();
@@ -85,6 +111,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
         const serializableProps = {
             ...rest,
+            defaultValues,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
             ...(allowedModes?.length ? { allowedModes } : {}),
         };
@@ -112,13 +139,16 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
     };
 }
 
-function assertPlainObject(value: unknown, path: string): asserts value is Record<string, unknown> {
-    const prototype = value !== null && typeof value === "object" ? Object.getPrototypeOf(value) : undefined;
-    if (prototype !== Object.prototype && prototype !== null) {
-        throw new Error(
-            `[CrossmintPaymentMethodManagement] ${path} must be a plain object, got ${describeType(value)}.`
-        );
+// Any non-array object passes: class instances (ORM entities, DTOs) and objects from another
+// realm serialize like plain objects.
+function assertObject(value: unknown, path: string): asserts value is Record<string, unknown> {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+        throw new Error(`[CrossmintPaymentMethodManagement] ${path} must be an object, got ${describeType(value)}.`);
     }
+}
+
+function keysOf<T extends object>(record: T) {
+    return Object.keys(record) as (keyof T & string)[];
 }
 
 function describeType(value: unknown) {

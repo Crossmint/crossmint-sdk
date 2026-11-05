@@ -12,6 +12,7 @@ export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden
 
 /** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
 export type PaymentMethodManagementDefaultValues = {
+    /** `null` at any level means no default, like a missing key. */
     billingDetails?: {
         /** `null` or an empty string means no default for that field. */
         address?: {
@@ -31,8 +32,8 @@ export type PaymentMethodManagementDefaultValues = {
              */
             stateOrRegion?: string | null;
             postalCode?: string | null;
-        };
-    };
+        } | null;
+    } | null;
 };
 
 export interface CrossmintPaymentMethodManagementProps {
@@ -85,7 +86,7 @@ export interface CrossmintPaymentMethodManagementProps {
      * The values travel in the iframe URL. A change after mount reloads the iframe, so pass
      * stable values (for example, memoize the object).
      */
-    defaultValues?: PaymentMethodManagementDefaultValues;
+    defaultValues?: PaymentMethodManagementDefaultValues | null;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 
