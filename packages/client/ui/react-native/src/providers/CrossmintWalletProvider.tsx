@@ -94,7 +94,7 @@ function PasskeyGuard({ children }: { children: ReactNode }) {
     const guardedCreateWallet: typeof baseContext.createWallet = useCallback(
         async (args) => {
             if (
-                recoveryMethodsFromCreateArgs(args).some((s) => s.type === "passkey") ||
+                recoveryMethodsFromCreateArgs(args).some((s: { type: string }) => s.type === "passkey") ||
                 args.signers?.some((s) => s.type === "passkey")
             ) {
                 throw new Error(PASSKEY_RN_ERROR);
