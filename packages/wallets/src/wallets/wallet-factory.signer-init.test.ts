@@ -33,6 +33,7 @@ function keyStorage(where: "mapped" | "unmapped") {
         getKey: vi.fn().mockResolvedValue(where === "mapped" ? DEVICE_KEY : null),
         hasKey: vi.fn().mockImplementation(async (key: string) => key === DEVICE_KEY),
         mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+        saveSignerLocator: vi.fn().mockResolvedValue(undefined),
         generateKey: vi.fn(),
         signMessage: vi.fn(),
         deleteKey: vi.fn(),
