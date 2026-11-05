@@ -17,6 +17,7 @@ import {
     JWTExpiredError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
+    SignerLimitExceededError,
 } from "../utils/errors";
 import {
     createMockWallet,
@@ -474,6 +475,10 @@ describe("Wallet - send()", () => {
     describe("error cases", () => {
         it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
+                error: {
+                    reason: "unknown",
+                    message: "Insufficient balance",
+                },
                 message: "Insufficient balance",
             };
 
@@ -481,6 +486,27 @@ describe("Wallet - send()", () => {
 
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
                 TransactionNotCreatedError
+            );
+        });
+
+        it("includes the API error object in the thrown error", async () => {
+            const errorResponse = {
+                message: "Transaction reverted during execution",
+                error: {
+                    reason: "execution_reverted",
+                    message: "Transaction reverted during execution",
+                    revert: {
+                        type: "contract_call",
+                        reason: "ERC20: transfer amount exceeds balance",
+                        simulationLink: "https://simulation.example.com/abc",
+                    },
+                },
+            };
+
+            mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
+
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
+                /simulation\.example\.com\/abc/
             );
         });
 
@@ -1182,6 +1208,19 @@ describe("Wallet - addSigner()", () => {
             await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Failed to register signer"
             );
+        });
+
+        it("throws SignerLimitExceededError when the wallet is at its signer limit", async () => {
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "A wallet supports at most 16 combined admin and delegated signers, got 17.",
+                code: "SIGNER_LIMIT_EXCEEDED",
+            } as any);
+
+            const addSigner = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            await expect(addSigner).rejects.toBeInstanceOf(SignerLimitExceededError);
+            await expect(addSigner).rejects.toBeInstanceOf(InvalidSignerError);
         });
 
         it("throws error when Solana response missing transaction", async () => {
