@@ -7,7 +7,6 @@ import {
     NotAuthorizedError,
     WalletErrorCode,
 } from "@crossmint/common-sdk-base";
-import type { PasskeySignerConfig } from "../signers/types";
 
 export {
     NotAuthorizedError,
@@ -74,27 +73,6 @@ export class SignerTypeMismatchError extends CrossmintSDKError {
 export class InvalidSignerError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.SIGNER_INVALID, details);
-    }
-}
-
-/**
- * Thrown by `addSigner` and `addRecoveryMethod` when a step fails after they created a new passkey. The passkey
- * already exists on the user's device: retry with `error.passkey` to reuse it instead of creating another.
- */
-export class PasskeyRegistrationError extends CrossmintSDKError {
-    /** The error that stopped the registration. */
-    public readonly cause: unknown;
-
-    constructor(
-        /** The created passkey, with the caller's callbacks. */
-        public readonly passkey: PasskeySignerConfig,
-        cause: unknown
-    ) {
-        super(
-            `A new passkey was created but not added: ${cause instanceof Error ? cause.message : String(cause)}. Retry with error.passkey to reuse it.`,
-            cause instanceof CrossmintSDKError ? cause.code : WalletErrorCode.SIGNER_INVALID
-        );
-        this.cause = cause;
     }
 }
 

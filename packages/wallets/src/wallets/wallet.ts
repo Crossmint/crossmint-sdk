@@ -40,7 +40,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    PasskeyRegistrationError,
     QuorumSignerNotSupportedError,
     SIGNER_LIMIT_EXCEEDED_ERROR_CODE,
     SignatureFailedError,
@@ -74,6 +73,7 @@ import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } fro
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
+import { attachCreatedPasskey } from "../signers/passkey";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
@@ -106,9 +106,9 @@ type WalletContructorType<C extends Chain> = {
 /** The passkey an addSigner or addRecoveryMethod call created, once it exists. */
 type CreatedPasskey = { passkey?: PasskeySignerConfig };
 
-/** A failure after a passkey was created carries that passkey, so a retry reuses it instead of creating another. */
+/** A failure after a passkey was created keeps its type and carries that passkey, so a retry can reuse it. */
 function withCreatedPasskey(error: unknown, created: CreatedPasskey): unknown {
-    return created.passkey == null ? error : new PasskeyRegistrationError(created.passkey, error);
+    return created.passkey == null ? error : attachCreatedPasskey(error, created.passkey);
 }
 
 export class Wallet<C extends Chain> {

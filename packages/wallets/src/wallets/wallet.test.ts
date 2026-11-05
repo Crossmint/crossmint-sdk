@@ -17,7 +17,6 @@ import {
     JWTExpiredError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
-    PasskeyRegistrationError,
     SignerLimitExceededError,
 } from "../utils/errors";
 import {
@@ -27,6 +26,7 @@ import {
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 import { walletsLogger } from "../logger";
+import { getCreatedPasskey } from "../signers/passkey";
 
 vi.mock("@/signers/server", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/signers/server")>();
@@ -1233,18 +1233,25 @@ describe("Wallet - addSigner()", () => {
             expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
 
-        it("keeps the created passkey on the error when registration fails, so a retry reuses it", async () => {
+        it("throws the usual error with the created passkey attached when registration fails, so a retry reuses it", async () => {
             const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
-            mockApiClient.registerSigner.mockResolvedValueOnce({ error: true, message: "Network error" } as any);
+            mockApiClient.registerSigner.mockResolvedValueOnce({
+                error: true,
+                message: "A wallet supports at most 16 combined admin and delegated signers, got 17.",
+                code: "SIGNER_LIMIT_EXCEEDED",
+            } as any);
             const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
 
             const error = await stellarWallet
                 .addSigner({ type: "passkey", name: "Face ID", onCreatePasskey })
                 .catch((e: unknown) => e);
 
-            expect(error).toBeInstanceOf(PasskeyRegistrationError);
-            const { passkey } = error as PasskeyRegistrationError;
+            expect(error).toBeInstanceOf(SignerLimitExceededError);
+            const passkey = getCreatedPasskey(error);
             expect(passkey).toMatchObject(NEW_PASSKEY);
+            if (passkey == null) {
+                throw new Error("expected the created passkey on the error");
+            }
 
             mockApiClient.registerSigner.mockResolvedValue({
                 type: "passkey",
@@ -1785,7 +1792,7 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(evmWallet.recoveryMethods).toEqual(before);
         });
 
-        it("keeps the created passkey on the error when adding it as a recovery method fails", async () => {
+        it("throws the usual error with the created passkey attached when adding it as a recovery method fails", async () => {
             mockApiClient.registerRecoveryMethod.mockResolvedValue({ error: true, message: "Network error" } as any);
             const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
 
@@ -1793,8 +1800,8 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 .addRecoveryMethod({ type: "passkey", name: "Face ID", onCreatePasskey })
                 .catch((e: unknown) => e);
 
-            expect(error).toBeInstanceOf(PasskeyRegistrationError);
-            expect((error as PasskeyRegistrationError).passkey).toMatchObject(NEW_PASSKEY);
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect(getCreatedPasskey(error)).toMatchObject(NEW_PASSKEY);
         });
 
         it("throws on API failure", async () => {
