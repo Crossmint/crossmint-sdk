@@ -10,6 +10,21 @@ export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 /** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
 export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
 
+/** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
+export type PaymentMethodManagementDefaultValues = {
+    billingDetails?: {
+        address?: {
+            /** Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. */
+            country?: string;
+            line1?: string;
+            line2?: string;
+            city?: string;
+            stateOrRegion?: string;
+            postalCode?: string;
+        };
+    };
+};
+
 export interface CrossmintPaymentMethodManagementProps {
     /**
      * Pass a user JWT from your own auth provider or a custom JWT.
@@ -47,6 +62,19 @@ export interface CrossmintPaymentMethodManagementProps {
      * `true` equals `{ line2: "optional" }`.
      */
     fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
+    /**
+     * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
+     * The buyer can edit every value. The form uses them only when
+     * `fields.billingDetails.address` collects an address.
+     *
+     * The iframe checks each value on its own: it ignores an invalid value and logs a console
+     * warning, and keeps the other values. It drops a `line2` default when
+     * `fields.billingDetails.address.line2` is `"hidden"`.
+     *
+     * The values travel in the iframe URL. A change after mount reloads the iframe, so pass
+     * stable values (for example, memoize the object).
+     */
+    defaultValues?: PaymentMethodManagementDefaultValues;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 

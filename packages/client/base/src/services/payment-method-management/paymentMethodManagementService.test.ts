@@ -1,5 +1,5 @@
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import type {
     CrossmintPaymentMethod,
     CrossmintPaymentMethodManagementProps,
@@ -98,6 +98,123 @@ describe("paymentMethodManagementService.getUrl", () => {
         // An empty array must not serialize as `[]` (which the iframe would read as
         // "offer no types"); the key is dropped so the documented default applies.
         expect(new URL(url).searchParams.has("allowedPaymentMethodTypes")).toBe(false);
+    });
+});
+
+describe("paymentMethodManagementService.getUrl defaultValues", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function captureWarnings() {
+        return vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    }
+
+    it("carries defaultValues as JSON in the iframe URL", () => {
+        const defaultValues = {
+            billingDetails: {
+                address: {
+                    country: "ES",
+                    line1: "Calle Mayor 1",
+                    line2: "2B",
+                    city: "Madrid",
+                    stateOrRegion: "Madrid",
+                    postalCode: "28013",
+                },
+            },
+        };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+    });
+
+    it("omits defaultValues when the host does not set it", () => {
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token" });
+
+        expect(new URL(url).searchParams.has("defaultValues")).toBe(false);
+    });
+
+    it("passes invalid values through, since the iframe validates them and only warns", () => {
+        const warn = captureWarnings();
+        const defaultValues = { billingDetails: { address: { country: "es", postalCode: "" } } };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["defaultValues is a string", "ES", /defaultValues must be a plain object, got string/],
+        ["defaultValues is null", null, /defaultValues must be a plain object, got null/],
+        ["defaultValues is an array", [], /defaultValues must be a plain object, got an array/],
+        [
+            "billingDetails is a boolean",
+            { billingDetails: true },
+            /defaultValues\.billingDetails must be a plain object, got boolean/,
+        ],
+        [
+            "address is a class instance",
+            { billingDetails: { address: new Date() } },
+            /defaultValues\.billingDetails\.address must be a plain object, got an instance of Date/,
+        ],
+        [
+            "an address field is a number",
+            { billingDetails: { address: { postalCode: 28013 } } },
+            /defaultValues\.billingDetails\.address\.postalCode must be a string, got number/,
+        ],
+        [
+            "an address field is null",
+            { billingDetails: { address: { line2: null } } },
+            /defaultValues\.billingDetails\.address\.line2 must be a string, got null/,
+        ],
+    ])("throws when %s", (_, defaultValues, message) => {
+        expect(() =>
+            makeService().iframe.getUrl({
+                jwt: "jwt-token",
+                defaultValues: defaultValues as CrossmintPaymentMethodManagementProps["defaultValues"],
+            })
+        ).toThrow(message);
+    });
+
+    it.each([
+        [
+            "defaultValues",
+            { billing: {} },
+            'Unknown key "defaultValues.billing" is ignored. Known keys: billingDetails.',
+        ],
+        [
+            "defaultValues.billingDetails",
+            { billingDetails: { name: "Ana" } },
+            'Unknown key "defaultValues.billingDetails.name" is ignored. Known keys: address.',
+        ],
+        [
+            "defaultValues.billingDetails.address",
+            { billingDetails: { address: { postal_code: "28013" } } },
+            'Unknown key "defaultValues.billingDetails.address.postal_code" is ignored. Known keys: country, line1, line2, city, stateOrRegion, postalCode.',
+        ],
+    ])("warns about an unknown key under %s and passes it through", (_, defaultValues, message) => {
+        const warn = captureWarnings();
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: defaultValues as CrossmintPaymentMethodManagementProps["defaultValues"],
+        });
+
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(message));
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+    });
+
+    it("logs each unknown-key warning once per service, since React rebuilds the URL on every render", () => {
+        const warn = captureWarnings();
+        const service = makeService();
+        const props = { jwt: "jwt-token", defaultValues: { billingDetails: { address: { zip: "28013" } } } };
+
+        service.iframe.getUrl(props as CrossmintPaymentMethodManagementProps);
+        service.iframe.getUrl(props as CrossmintPaymentMethodManagementProps);
+
+        expect(warn).toHaveBeenCalledTimes(1);
     });
 });
 
