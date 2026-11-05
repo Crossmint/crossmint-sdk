@@ -1,5 +1,50 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.86
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+
+## 0.3.85
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 0.3.84
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/client-sdk-base@4.7.1
+
+## 0.3.83
+
+### Patch Changes
+
+- c138095: `signTypedData` no longer sends `isSmartWalletSignature: false`, which the signatures API now rejects. It returns the wallet's output signature, an ERC-6492 smart wallet signature, instead of the admin signer's raw signature.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+  - @crossmint/client-sdk-base@4.7.0
+
+## 0.3.82
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+  - @crossmint/client-sdk-base@4.6.1
+
 ## 0.3.81
 
 ### Patch Changes

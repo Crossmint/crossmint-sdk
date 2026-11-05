@@ -7,6 +7,35 @@ import type { EmbeddedCheckoutV3Appearance } from "../embed";
  */
 export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 
+/** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
+export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
+
+/** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
+export type PaymentMethodManagementDefaultValues = {
+    /** `null` at any level means no default, like a missing key. */
+    billingDetails?: {
+        /** `null` or an empty string means no default for that field. */
+        address?: {
+            /**
+             * Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. Without it, the form starts
+             * in the US.
+             */
+            country?: string | null;
+            line1?: string | null;
+            line2?: string | null;
+            city?: string | null;
+            /**
+             * ISO 3166-2 subdivision code of the starting country, without the country prefix:
+             * `"FL"` (not `"US-FL"`), `"ON"`, `"MU"` (Murcia, Spain), `"AGU"` (Aguascalientes,
+             * Mexico). The match is exact: the iframe ignores a name (`"Florida"`) or a lowercase
+             * code (`"fl"`) and logs a console warning. Without `country`, use a US code.
+             */
+            stateOrRegion?: string | null;
+            postalCode?: string | null;
+        } | null;
+    } | null;
+};
+
 export interface CrossmintPaymentMethodManagementProps {
     /**
      * Pass a user JWT from your own auth provider or a custom JWT.
@@ -27,6 +56,32 @@ export interface CrossmintPaymentMethodManagementProps {
      * than one type does not yet render a type picker.
      */
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
+    /**
+     * Optional fields of the add-card form, in Stripe's `billingDetails` shape so new
+     * fields need no new prop. `billingDetails.address: true` collects a required
+     * billing address: the card form validates it before saving — for built-in and
+     * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
+     * of the emitted method. Applies to cards only; other method types ignore it.
+     *
+     * An object collects it too and configures the fields the payment-methods API
+     * leaves optional: `{ line2: "optional" | "required" | "hidden" }`.
+     * `true` equals `{ line2: "optional" }`.
+     */
+    fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
+    /**
+     * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
+     * The buyer can edit every value. `null` or an empty string means no default for that
+     * field, so values from a database can pass as they are. The form uses them only when
+     * `fields.billingDetails.address` collects an address.
+     *
+     * The iframe checks each value on its own: it ignores an invalid value and logs a console
+     * warning, and keeps the other values. It drops a `line2` default when
+     * `fields.billingDetails.address.line2` is `"hidden"`.
+     *
+     * The values travel in the iframe URL. A change after mount reloads the iframe, so pass
+     * stable values (for example, memoize the object).
+     */
+    defaultValues?: PaymentMethodManagementDefaultValues | null;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 
@@ -82,11 +137,33 @@ export type CrossmintCardPaymentMethod = {
             // 4 digit year
             year: string;
         };
+        /**
+         * Billing details the card was saved with. `address` is present when the card
+         * was saved with `fields.billingDetails.address` (or the account has one on file).
+         */
+        billing?: CrossmintPaymentMethodBillingDetails;
     };
     default?: boolean;
     display?: {
         imageUrl?: string;
     };
+};
+
+export type CrossmintPaymentMethodBillingDetails = {
+    name: string;
+    address?: CrossmintPaymentMethodBillingAddress;
+    phone?: string;
+};
+
+export type CrossmintPaymentMethodBillingAddress = {
+    /** 2-letter ISO country code. */
+    country: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    stateOrRegion?: string;
+    /** May be empty for countries whose address format has no postal code. */
+    postalCode: string;
 };
 
 /**

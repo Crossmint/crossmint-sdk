@@ -17,6 +17,7 @@ function toTokenBalance<C extends Chain>(tokenData: GetBalanceSuccessResponse[nu
         rawAmount: tokenData.rawAmount ?? "0",
         ...(chainData?.available != null ? { available: chainData.available } : {}),
         ...(chainData?.locked != null ? { locked: chainData.locked } : {}),
+        ...(chainData?.inTransit != null ? { inTransit: chainData.inTransit } : {}),
         ...(chainData?.accounts != null ? { accounts: chainData.accounts } : {}),
         ...chainSpecificField,
     } as TokenBalance<C>;

@@ -1,5 +1,106 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 2.1.4
+
+### Patch Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-auth@1.3.35
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 2.1.3
+
+### Patch Changes
+
+- d3b62df: OAuth login in the React Native SDK now uses PKCE. The SDK sends a code challenge when the login starts and the matching verifier when it redeems the one-time secret.
+- Updated dependencies [d3b62df]
+  - @crossmint/client-sdk-auth@1.3.34
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-react-base@2.5.3
+  - @crossmint/wallets-sdk@1.21.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 2.1.2
+
+### Patch Changes
+
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-react-base@2.5.2
+  - @crossmint/client-sdk-auth@1.3.33
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 2.1.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+  - @crossmint/client-sdk-react-base@2.5.1
+
+## 2.1.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- 0e86e2b: The iOS device signer module now comes from the crossmint-swift-sdk Swift Package instead of the `CrossmintDeviceSigner` pod, since CocoaPods trunk becomes read-only on December 2nd. Apps still use CocoaPods, and `pod install` adds the Swift Package to the Pods project. The config plugin no longer adds the `CrossmintDeviceSigner` simulator fix to the Podfile, since that pod is no longer installed.
+- a77707b: `react-native-svg` is no longer a peer dependency. The SDK does not use it, so apps that do not use it themselves can uninstall it.
+- 754047d: Remove dependencies the packages do not import: `exponential-backoff` and `uuid` from `@crossmint/client-sdk-base`, `zod` from `@crossmint/client-signers-cryptography`, and `bs58`, `lodash.clonedeep`, `lodash.isequal` and `zod` from `@crossmint/client-sdk-react-native-ui`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/client-sdk-auth@1.3.32
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-auth@1.3.31
+  - @crossmint/client-sdk-react-base@2.4.6
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 2.0.0
 
 ### Major Changes

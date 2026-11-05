@@ -1,5 +1,87 @@
 # @crossmint/client-sdk-react-ui
 
+## 4.13.4
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 4.13.3
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-react-base@2.5.3
+  - @crossmint/wallets-sdk@1.21.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 4.13.2
+
+### Patch Changes
+
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-react-base@2.5.2
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 4.13.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+  - @crossmint/client-sdk-react-base@2.5.1
+
+## 4.13.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 4.12.1
+
+### Patch Changes
+
+- 9705007: Document the JWT sources supported by payment-method management. Crossmint Auth JWTs are not supported.
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-react-base@2.4.6
+  - @crossmint/common-sdk-auth@1.1.29
+
 ## 4.12.0
 
 ### Minor Changes

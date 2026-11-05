@@ -9,7 +9,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    RecoveryNotSupportedOnChainError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
     WalletNotAvailableError,
@@ -18,6 +17,7 @@ import {
     JWTExpiredError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
+    SignerLimitExceededError,
 } from "../utils/errors";
 import {
     createMockWallet,
@@ -475,6 +475,10 @@ describe("Wallet - send()", () => {
     describe("error cases", () => {
         it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
+                error: {
+                    reason: "unknown",
+                    message: "Insufficient balance",
+                },
                 message: "Insufficient balance",
             };
 
@@ -482,6 +486,27 @@ describe("Wallet - send()", () => {
 
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
                 TransactionNotCreatedError
+            );
+        });
+
+        it("includes the API error object in the thrown error", async () => {
+            const errorResponse = {
+                message: "Transaction reverted during execution",
+                error: {
+                    reason: "execution_reverted",
+                    message: "Transaction reverted during execution",
+                    revert: {
+                        type: "contract_call",
+                        reason: "ERC20: transfer amount exceeds balance",
+                        simulationLink: "https://simulation.example.com/abc",
+                    },
+                },
+            };
+
+            mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
+
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
+                /simulation\.example\.com\/abc/
             );
         });
 
@@ -1185,6 +1210,19 @@ describe("Wallet - addSigner()", () => {
             );
         });
 
+        it("throws SignerLimitExceededError when the wallet is at its signer limit", async () => {
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "A wallet supports at most 16 combined admin and delegated signers, got 17.",
+                code: "SIGNER_LIMIT_EXCEEDED",
+            } as any);
+
+            const addSigner = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            await expect(addSigner).rejects.toBeInstanceOf(SignerLimitExceededError);
+            await expect(addSigner).rejects.toBeInstanceOf(InvalidSignerError);
+        });
+
         it("throws error when Solana response missing transaction", async () => {
             const mockRegisterResponse = {
                 type: "external-wallet",
@@ -1635,11 +1673,19 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
-            );
-            expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+        it("registers the recovery method on EVM with the wallet's chain and reads the transaction id from tx", async () => {
+            const result = await evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: "external-wallet:0x456",
+                approver: "api-key",
+                chain: "base-sepolia",
+            });
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(evmWallet.recoveryMethods).toEqual([
+                { type: "api-key" },
+                { type: "external-wallet", address: "0x456" },
+            ]);
         });
 
         it("throws on API failure", async () => {
@@ -1693,11 +1739,15 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
+        it("removes the recovery method on EVM with the wallet's chain", async () => {
+            const result = await evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:0x456",
+                { approver: "api-key", chain: "base-sepolia" }
             );
-            expect(mockApiClient.removeRecoveryMethod).not.toHaveBeenCalled();
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
         });
 
         it("throws on API failure", async () => {
