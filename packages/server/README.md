@@ -39,14 +39,20 @@ The client SDK stores the session in cookies scoped to your project: `crossmint-
 `crossmint-refresh-token-<projectId>`, where the project ID comes from your API key. `getSession(request)` reads
 those names, and reads the legacy `crossmint-jwt` and `crossmint-refresh-token` names only when no scoped cookie is present.
 
-In a Next.js Server Component there is no request object. Read the cookies by the names `getAuthCookieNames()`
-returns and pass them to `getSession`:
+In a Next.js Server Component there is no request object. Read the cookies by the names `getAuthCookieNames(projectId)`
+returns and pass them to `getSession`. The project ID comes from your API key:
 
 ```ts
 import { cookies } from "next/headers";
+import { getAuthCookieNames, validateAPIKey } from "@crossmint/server-sdk";
+
+const apiKeyResult = validateAPIKey(process.env.SERVER_CROSSMINT_API_KEY ?? "");
+if (!apiKeyResult.isValid) {
+    throw new Error(apiKeyResult.message);
+}
 
 const cookieStore = await cookies();
-const cookieNames = crossmintAuth.getAuthCookieNames();
+const cookieNames = getAuthCookieNames(apiKeyResult.projectId);
 const refreshToken = cookieStore.get(cookieNames.refreshToken)?.value;
 
 if (refreshToken != null) {

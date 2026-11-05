@@ -21,8 +21,13 @@ import {
 
 type GetCookiesOptions = { throwError?: boolean };
 
-/** The project-scoped cookie names the client SDK stores the session under. */
-export function getAuthCookieNames(projectId: string) {
+/**
+ * Names of the cookies the session is stored under for a project: `crossmint-jwt-<projectId>` and
+ * `crossmint-refresh-token-<projectId>`, the same names the client SDK uses. Use them where there is no
+ * request object to pass to `getSession`, such as a Next.js Server Component reading `cookies()`.
+ * The project ID is `validateAPIKey(apiKey).projectId`.
+ */
+export function getAuthCookieNames(projectId: string): { jwt: string; refreshToken: string } {
     return {
         jwt: getScopedCookieName(SESSION_PREFIX, projectId),
         refreshToken: getScopedCookieName(REFRESH_TOKEN_PREFIX, projectId),

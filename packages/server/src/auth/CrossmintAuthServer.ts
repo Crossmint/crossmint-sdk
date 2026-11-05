@@ -20,7 +20,7 @@ import {
     type GenericRequest,
     type GenericResponse,
 } from "./types/request";
-import { getAuthCookieNames, getAuthCookies, setAuthCookies } from "./utils/cookies";
+import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { JwksUnavailableError, verifyCrossmintJwt } from "./utils/jwt";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 
@@ -59,7 +59,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
      * Validate the user's session and return it, refreshing it if expired.
      * Accepts either a request object (auth material is read from cookies) or the auth material
      * itself (`{ jwt, refreshToken }`). From a request, the cookies are read under the project-scoped
-     * names the client SDK writes (see {@link CrossmintAuthServer.getAuthCookieNames}), falling back to
+     * names the client SDK writes (see `getAuthCookieNames`), falling back to
      * the legacy `crossmint-jwt` / `crossmint-refresh-token` names. If a response object is provided,
      * refreshed auth material is stored in its cookies.
      *
@@ -173,16 +173,6 @@ export class CrossmintAuthServer extends CrossmintAuth {
             return verifyCrossmintJwt(token, jwks, { audience: this.projectId });
         }
         return verifyCrossmintJwt(token, this.getJwksUri(), { audience: this.projectId });
-    }
-
-    /**
-     * Names of the cookies the session is stored under for this project: `crossmint-jwt-<projectId>`
-     * and `crossmint-refresh-token-<projectId>`, the same names the client SDK uses. Use them where
-     * there is no request object to pass to {@link CrossmintAuthServer.getSession}, such as a
-     * Next.js Server Component reading `cookies()`.
-     */
-    public getAuthCookieNames(): { jwt: string; refreshToken: string } {
-        return getAuthCookieNames(this.projectId);
     }
 
     /**

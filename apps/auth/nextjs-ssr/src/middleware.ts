@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createCrossmint, CrossmintAuth } from "@crossmint/server-sdk";
+import { createCrossmint, CrossmintAuth, getAuthCookieNames, validateAPIKey } from "@crossmint/server-sdk";
 
 // Only run middleware on /direct routes
 export const config = {
@@ -16,17 +16,19 @@ export async function middleware(request: NextRequest) {
 
     const response = NextResponse.next();
 
+    const apiKey = process.env.SERVER_CROSSMINT_API_KEY || "";
+    const apiKeyResult = validateAPIKey(apiKey);
+    if (!apiKeyResult.isValid) {
+        return response;
+    }
+
     let crossmintAuth: CrossmintAuth;
     try {
-        crossmintAuth = CrossmintAuth.from(
-            createCrossmint({
-                apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
-            })
-        );
+        crossmintAuth = CrossmintAuth.from(createCrossmint({ apiKey }));
     } catch (_) {
         return response;
     }
-    const cookieNames = crossmintAuth.getAuthCookieNames();
+    const cookieNames = getAuthCookieNames(apiKeyResult.projectId);
 
     const jwt = request.cookies.get(cookieNames.jwt)?.value;
     const refreshToken = request.cookies.get(cookieNames.refreshToken)?.value;
