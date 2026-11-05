@@ -468,6 +468,17 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
+        it("encodes the user ID so it cannot change the request path", async () => {
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify({ id: "x" }), { status: 200 }));
+
+            await crossmintAuthServer.getUser("a/b?c");
+
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "api/2024-09-26/sdk/auth/user/a%2Fb%3Fc",
+                expect.any(Object)
+            );
+        });
+
         it("throws with the API message and the required scope when the API key lacks users.read", async () => {
             const apiMessage =
                 "The API key provided doesn't have the required scopes to perform this action: users.read. It has the scopes: wallets.read.";
