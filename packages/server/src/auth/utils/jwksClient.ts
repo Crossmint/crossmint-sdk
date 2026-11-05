@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, type JWTVerifyGetKey } from "jose";
+import { createRemoteJWKSet, jwksCache, type JWKSCacheInput, type JWTVerifyGetKey } from "jose";
 
 /** Keys older than this are re-downloaded in the background; verification keeps using them meanwhile. */
 const REFRESH_AFTER_MS = 10 * 60 * 1000;
@@ -30,24 +30,20 @@ export function createJWKSClient(jwksUri: string): JWTVerifyGetKey {
  * token signed with a key it has not seen (rotation), or keys past MAX_STALE_MS block.
  */
 function createRefreshingJWKS(url: URL): JWTVerifyGetKey {
-    // Age is tracked here; jose re-downloads on its own only for an unknown key id.
-    const remote = createRemoteJWKSet(url, { cacheMaxAge: Number.POSITIVE_INFINITY });
-    let downloadedAt = Number.NEGATIVE_INFINITY;
+    // Age is tracked here, not by jose, which still re-downloads on its own for an unknown key id. jose stamps
+    // `uat` on this cache after every successful download, its own included, so the age covers both.
+    const cache: JWKSCacheInput = {};
+    const remote = createRemoteJWKSet(url, { cacheMaxAge: Number.POSITIVE_INFINITY, [jwksCache]: cache });
     let refreshAttemptedAt = Number.NEGATIVE_INFINITY;
 
-    async function download() {
-        await remote.reload();
-        downloadedAt = Date.now();
-    }
-
     return async (protectedHeader, token) => {
-        const age = Date.now() - downloadedAt;
+        const age = "uat" in cache ? Date.now() - cache.uat : Number.POSITIVE_INFINITY;
         if (age > MAX_STALE_MS) {
-            await download();
+            await remote.reload();
         } else if (age > REFRESH_AFTER_MS && Date.now() - refreshAttemptedAt > REFRESH_RETRY_MS) {
             refreshAttemptedAt = Date.now();
             // A failed refresh keeps the current keys; the next verification after REFRESH_RETRY_MS retries.
-            download().catch(() => {});
+            remote.reload().catch(() => {});
         }
         return remote(protectedHeader, token);
     };

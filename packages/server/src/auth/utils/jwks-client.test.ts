@@ -17,6 +17,7 @@ type JwksEndpoint = {
     state: EndpointState;
     requests: number;
     addKey(kid: string): Promise<void>;
+    removeKey(kid: string): void;
     sign(kid: string): Promise<string>;
     close(): Promise<void>;
 };
@@ -32,6 +33,12 @@ async function startJwksEndpoint(): Promise<JwksEndpoint> {
             const { publicKey, privateKey } = await generateKeyPair("RS256");
             privateKeys.set(kid, privateKey);
             publicJwks.push({ ...(await exportJWK(publicKey)), kid, alg: "RS256", use: "sig" });
+        },
+        removeKey(kid: string) {
+            publicJwks.splice(
+                publicJwks.findIndex((jwk) => jwk.kid === kid),
+                1
+            );
         },
         sign(kid: string) {
             const key = privateKeys.get(kid);
@@ -94,6 +101,7 @@ describe("createJWKSClient", () => {
     afterEach(async () => {
         await endpoint.close();
         vi.useRealTimers();
+        vi.restoreAllMocks();
     });
 
     it("returns the same client for the same URI", () => {
@@ -126,6 +134,19 @@ describe("createJWKSClient", () => {
             await vi.waitFor(() => expect(endpoint.requests).toBe(2));
         });
 
+        it("replaces them once the background download completes", async () => {
+            await verify();
+            await endpoint.addKey("key-2");
+            endpoint.removeKey("key-1");
+            at(11);
+
+            await verify("key-1");
+            // the old key is rejected once the new set is in use, with no download beyond the background one
+            await vi.waitFor(() => expect(verify("key-1")).rejects.toThrow());
+            await expect(verify("key-2")).resolves.toMatchObject({ sub: "user-1" });
+            expect(endpoint.requests).toBe(2);
+        });
+
         it("keeps using them while the endpoint fails, retrying at most every 30 seconds", async () => {
             await verify();
             endpoint.state = "down";
@@ -151,6 +172,19 @@ describe("createJWKSClient", () => {
 
             endpoint.state = "up";
             await expect(verify()).resolves.toMatchObject({ sub: "user-1" });
+        });
+    });
+
+    describe("when a token signed with a new key made it download the keys", () => {
+        it("counts their age from that download", async () => {
+            await verify();
+            await endpoint.addKey("key-2");
+            at(9);
+            await verify("key-2");
+            endpoint.state = "down";
+            at(61);
+
+            await expect(verify("key-2")).resolves.toMatchObject({ sub: "user-1" });
         });
     });
 
