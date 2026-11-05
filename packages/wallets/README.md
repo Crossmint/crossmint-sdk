@@ -4,7 +4,7 @@ Typescript SDK for creating and managing [Crossmint Wallets](https://docs.crossm
 
 ## Prerequisites
 
-Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 - **Client-side** (browser): Use a client API key
 - **Server-side** (Node.js): Use a server API key

@@ -4,7 +4,7 @@ React SDK for integrating [Crossmint Wallets](https://docs.crossmint.com) into y
 
 ## Prerequisites
 
-Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 ## Installation
 
