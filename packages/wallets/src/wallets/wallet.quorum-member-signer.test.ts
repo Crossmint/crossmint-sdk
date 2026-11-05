@@ -329,7 +329,7 @@ describe("signer changes with server keys", () => {
         const server = memberKey("server");
         const recoveryQuorum = quorumOf(server.member);
 
-        // A signer change the recovery quorum approves, landing once the member's entry is signed.
+        // A signer change the recovery quorum approves: created unsigned, then the member's entry is signed by approve().
         async function removeSignerSignedByMember(wallet: Wallet<Chain>) {
             api.getTransaction.mockResolvedValueOnce({
                 id: "txn-change",
@@ -342,11 +342,11 @@ describe("signer changes with server keys", () => {
                 status: "success",
                 onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx" },
             } as never);
-            const removing = wallet
-                .removeSigner({ type: "external-wallet", address: "Delegated333" } as never)
-                .catch((error: unknown) => error);
+            await wallet.removeSigner({ type: "external-wallet", address: "Delegated333" } as never);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            const approving = wallet.approve({ transactionId: "txn-change" }).catch((error: unknown) => error);
             await vi.runAllTimersAsync();
-            await removing;
+            await approving;
         }
 
         it("signs the member's entry with the server key", async () => {
