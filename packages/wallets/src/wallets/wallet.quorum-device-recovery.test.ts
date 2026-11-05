@@ -211,11 +211,22 @@ describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ 
         });
 
         it("keeps the key when the registration fails and whether it exists cannot be read", async () => {
-            api.getSigner.mockRejectedValue(new Error("network down"));
-            api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
             const wallet = await recoveringWallet();
+            api.getSigner
+                .mockResolvedValueOnce({ error: { message: "not found" } } as never)
+                .mockRejectedValue(new Error("network down"));
+            api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
 
             await expect(wallet.recover()).rejects.toThrow("fetch failed");
+            expect(storage.deleteKey).not.toHaveBeenCalled();
+        });
+
+        it("stops before registering when an earlier registration of this key cannot be read", async () => {
+            const wallet = await recoveringWallet();
+            api.getSigner.mockRejectedValue(new Error("network down"));
+
+            await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
+            expect(api.registerSigner).not.toHaveBeenCalled();
             expect(storage.deleteKey).not.toHaveBeenCalled();
         });
 

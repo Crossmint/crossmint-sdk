@@ -482,6 +482,23 @@ describe("DeviceRecoveryService", () => {
         });
     });
 
+    describe("recover() when the device signer cannot be read", () => {
+        it("goes on and registers the device signer through a recovery method that signs alone, as before", async () => {
+            const pendingDevice = makeSigner("device", "device:localKey");
+            const addSigner = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({
+                addSigner,
+                signerManager: {
+                    activeSigner: pendingDevice,
+                    getSignerState: vi.fn().mockResolvedValue({ ...NULL_STATE, lookupFailed: true }),
+                },
+            });
+
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(addSigner).toHaveBeenCalled();
+        });
+    });
+
     describe("initDeviceSigner", () => {
         it("is a no-op when no device key storage is configured", async () => {
             const { service, signers } = setup({ storage: null });
