@@ -674,6 +674,46 @@ describe("approve() on a client with no active key", () => {
             remaining: 1,
         });
 
+    describe("when the client keeps device keys and a member is selected", () => {
+        // A client that keeps device keys, as the React and React Native providers set up by default.
+        const deviceKeyStorage = () => ({
+            getKey: vi.fn().mockResolvedValue(null),
+            hasKey: vi.fn().mockResolvedValue(false),
+            generateKey: vi.fn(),
+            mapAddressToKey: vi.fn(),
+            deleteKey: vi.fn(),
+            getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        });
+
+        it.each([
+            { shape: "an api-key recovery method and the quorum", flat: [{ type: "api-key" }] },
+            { shape: "only the quorum", flat: [] },
+        ])("signs the member's entry without registering a device, on a wallet with $shape", async ({ flat }) => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const storage = deviceKeyStorage();
+            const wallet = await createMockWalletWithoutSigner(
+                chain,
+                api,
+                [...flat, recoveryQuorum] as unknown as RecoverySignerConfigForChain<Chain>[],
+                { deviceSignerKeyStorage: storage as never }
+            );
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            api.getTransaction.mockResolvedValueOnce(awaiting([entry], "evm") as never);
+            api.getTransaction.mockResolvedValue(LANDED as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-change" }));
+
+            expect(error).toBeUndefined();
+            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: bob.member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+            ]);
+            expect(storage.generateKey).not.toHaveBeenCalled();
+            expect(api.registerSigner).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when a member of the recovery quorum is selected with useRecoveryMethod", () => {
         it("signs the member's pending transaction entry, then leaves no active key", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);

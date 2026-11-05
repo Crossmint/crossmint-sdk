@@ -726,7 +726,11 @@ export class Wallet<C extends Chain> {
             signatureId: params.signatureId,
         });
 
-        await this.#recoverIfNeeded();
+        // A selected member with no active key signs with its own key, so approving needs no device signer.
+        const memberApproves = this.#signerManager.activeSigner == null && this.#signerManager.selectedMember != null;
+        if (!memberApproves) {
+            await this.#recoverIfNeeded();
+        }
         // With no active key, the key selected with useRecoveryMethod() approves (EDD 007 §7 use case 6).
         return this.#signerManager.withStandInSigner(async () => {
             await this.#authenticateActiveSigner();
