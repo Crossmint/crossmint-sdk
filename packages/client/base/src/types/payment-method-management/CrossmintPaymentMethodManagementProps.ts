@@ -10,6 +10,32 @@ export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 /** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
 export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
 
+/** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
+export type PaymentMethodManagementDefaultValues = {
+    /** `null` at any level means no default, like a missing key. */
+    billingDetails?: {
+        /** `null` or an empty string means no default for that field. */
+        address?: {
+            /**
+             * Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. Without it, the form starts
+             * in the US.
+             */
+            country?: string | null;
+            line1?: string | null;
+            line2?: string | null;
+            city?: string | null;
+            /**
+             * ISO 3166-2 subdivision code of the starting country, without the country prefix:
+             * `"FL"` (not `"US-FL"`), `"ON"`, `"MU"` (Murcia, Spain), `"AGU"` (Aguascalientes,
+             * Mexico). The match is exact: the iframe ignores a name (`"Florida"`) or a lowercase
+             * code (`"fl"`) and logs a console warning. Without `country`, use a US code.
+             */
+            stateOrRegion?: string | null;
+            postalCode?: string | null;
+        } | null;
+    } | null;
+};
+
 export interface CrossmintPaymentMethodManagementProps {
     /**
      * Pass a user JWT from your own auth provider or a custom JWT.
@@ -47,6 +73,20 @@ export interface CrossmintPaymentMethodManagementProps {
      * `true` equals `{ line2: "optional" }`.
      */
     fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
+    /**
+     * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
+     * The buyer can edit every value. `null` or an empty string means no default for that
+     * field, so values from a database can pass as they are. The form uses them only when
+     * `fields.billingDetails.address` collects an address.
+     *
+     * The iframe checks each value on its own: it ignores an invalid value and logs a console
+     * warning, and keeps the other values. It drops a `line2` default when
+     * `fields.billingDetails.address.line2` is `"hidden"`.
+     *
+     * The values travel in the iframe URL. A change after mount reloads the iframe, so pass
+     * stable values (for example, memoize the object).
+     */
+    defaultValues?: PaymentMethodManagementDefaultValues | null;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
 }
 

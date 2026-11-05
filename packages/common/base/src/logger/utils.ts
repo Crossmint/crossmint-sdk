@@ -61,6 +61,45 @@ const PREFIXED_SECRET_PATTERNS: Array<{ pattern: RegExp; replacement: string }> 
 ];
 
 /**
+ * Keys whose string values are phone numbers, masked like a `phone:` locator.
+ */
+const PHONE_KEYS = new Set(["phone", "phonenumber"]);
+
+/**
+ * Masks a phone number to its first digit (with `+`) and last 4 digits, e.g. `+1***4567`.
+ */
+function maskPhoneNumber(phone: string): string {
+    const masked = phone.replace(/^(\+?\d)\d*(\d{4})$/, "$1***$2");
+    return masked === phone ? "[REDACTED]" : masked;
+}
+
+/**
+ * Shapes of personal data (emails, phone numbers in locators) masked in every string, so a
+ * `recipient` such as `email:alice@example.com` logs as `email:a***@example.com`.
+ * The first local-part character and the domain stay so support can still match a log to a user.
+ * A quoted local part (`"john.doe"@example.com`) is masked whole. A quote right after a backslash
+ * cannot start a match, so escaped quotes do not each restart the scan.
+ * Emails need a letters-only top-level domain, so package specifiers such as `sdk@1.2.3` stay.
+ * Both patterns are anchored to a delimiter, like {@link PREFIXED_SECRET_PATTERNS}, to scan in linear time.
+ */
+const PERSONAL_DATA_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
+    {
+        pattern:
+            /(^|[^A-Za-z0-9!#$%&'*+/=?^_`{|}~.-])([A-Za-z0-9!#$%&'*+/=?^_`{|}~-])[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,
+        replacement: "$1$2***@$3",
+    },
+    {
+        pattern:
+            /(^|[^A-Za-z0-9!#$%&'*+/=?^_`{|}~."\\-])"(?:[^"\\\r\n]|\\.)*"@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,
+        replacement: "$1***@$2",
+    },
+    {
+        pattern: /(^|[^A-Za-z0-9])(phone(?:Number)?:)(\+?\d)\d*(\d{4})/g,
+        replacement: "$1$2$3***$4",
+    },
+];
+
+/**
  * A server signer master secret is also accepted without its `xmsk1_` prefix, as a bare 64-char hex
  * string. That shape is shared with legitimate observability data (Stellar transaction hashes,
  * SHA-256 digests) that the SDK logs as structured context fields, so it is only scrubbed from
@@ -72,7 +111,7 @@ const BARE_HEX_SECRET_PATTERN = {
 };
 
 /**
- * Replaces known secret shapes inside a string with a placeholder.
+ * Replaces known secret shapes inside a string with a placeholder, and masks emails and phone locators.
  * Complements {@link redactSensitiveFields}, which only redacts by object key: an Error whose
  * message embeds a secret would otherwise reach every sink unchanged.
  *
@@ -81,7 +120,9 @@ const BARE_HEX_SECRET_PATTERN = {
  *   stacks), which also scrubs bare 64-char hex; false for structured context fields
  */
 export function redactSensitiveText(text: string, freeText: boolean): string {
-    const patterns = freeText ? [...PREFIXED_SECRET_PATTERNS, BARE_HEX_SECRET_PATTERN] : PREFIXED_SECRET_PATTERNS;
+    const patterns = freeText
+        ? [...PREFIXED_SECRET_PATTERNS, BARE_HEX_SECRET_PATTERN, ...PERSONAL_DATA_PATTERNS]
+        : [...PREFIXED_SECRET_PATTERNS, ...PERSONAL_DATA_PATTERNS];
     let redacted = text;
     for (const { pattern, replacement } of patterns) {
         redacted = redacted.replace(pattern, replacement);
@@ -136,6 +177,8 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
         if (SENSITIVE_KEYS.has(key.toLowerCase())) {
             result[key] = redactValue(value);
+        } else if (typeof value === "string" && PHONE_KEYS.has(key.toLowerCase())) {
+            result[key] = maskPhoneNumber(value);
         } else if (typeof value === "string" && ERROR_TEXT_KEYS.has(key.toLowerCase())) {
             result[key] = redactSensitiveText(value, true);
         } else {
