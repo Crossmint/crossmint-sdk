@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { Chain } from "../chains/chains";
-import type { WalletCreateArgs } from "../wallets/types";
+import type { RecoverResult, WalletCreateArgs } from "../wallets/types";
 import type { Wallet } from "../wallets/wallet";
 import type { QuorumLocator, QuorumMemberConfig, QuorumSignerConfig } from "./types";
 
@@ -82,5 +82,13 @@ describe("Wallet.recovery", () => {
         expectTypeOf(evmWallet.recovery).toMatchTypeOf<Parameters<typeof evmWallet.useSigner>[0]>();
         expectTypeOf(solanaWallet.recovery).toMatchTypeOf<Parameters<typeof solanaWallet.useRecoveryMethod>[0]>();
         expectTypeOf(stellarWallet.recovery).toMatchTypeOf<Parameters<typeof stellarWallet.useRecoveryMethod>[0]>();
+    });
+});
+
+describe("recover()", () => {
+    it("returns a request approve() takes once it is checked for undefined", () => {
+        expectTypeOf<Awaited<ReturnType<typeof evmWallet.recover>>>().toEqualTypeOf<RecoverResult>();
+        expectTypeOf<NonNullable<RecoverResult>>().toMatchTypeOf<Parameters<typeof evmWallet.approve>[0]>();
+        expectTypeOf<NonNullable<RecoverResult>>().toMatchTypeOf<Parameters<typeof stellarWallet.approve>[0]>();
     });
 });

@@ -41,7 +41,7 @@ import type {
     SignerOption,
 } from "./types";
 import { isSignerLocatorOption } from "./types";
-import { isSignerOnChain, mapApiSignerToSigner, toQuorumSigner } from "../utils/signer-mapping";
+import { isSignerOnChain, mapApiSignerToSigner, pendingOperationId, toQuorumSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerNotSupportedError,
@@ -147,19 +147,6 @@ const REGISTERED: HeldKeyRole = { kind: "registered" };
 type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
 const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
 
-function pendingOperationId(operation: PendingSignerOperation): { transactionId: string } | { signatureId: string } {
-    switch (operation.type) {
-        case "transaction":
-            return { transactionId: operation.id };
-        case "signature":
-            return { signatureId: operation.id };
-        default: {
-            const _exhaustive: never = operation.type;
-            throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-        }
-    }
-}
-
 export class Wallet<C extends Chain> {
     chain: C;
     address: string;
@@ -259,8 +246,11 @@ export class Wallet<C extends Chain> {
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
             addSigner: (deviceSigner) => this.#addSigner(deviceSigner),
-            removeSigner: (signerLocator) =>
-                this.#removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
+            removeSigner: (signerLocator, approver) =>
+                this.#removeSigner(
+                    { type: "device", locator: signerLocator } as SignerConfigForChain<C>,
+                    approver == null ? undefined : { prepareOnly: true, signer: approver }
+                ),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
             deviceSignerActivity: () =>
@@ -1587,10 +1577,8 @@ export class Wallet<C extends Chain> {
      * Register a device signer with the wallet using the recovery signer.
      * Generates a new device key and registers it on-chain.
      * Returns early if the device signer's locator is already approved on-chain.
-     * When a recovery quorum approves (a member selected with {@link useRecoveryMethod}), the registration is created
-     * unsigned and returned as `{ transactionId }` or `{ signatureId }`; members sign it with {@link approve}, and the
-     * device signer stays in `needs-recovery` until it lands. The call that sees it land starts the old device
-     * signer's removal through the quorum and returns that request the same way.
+     * Returns the request recovery quorum members still have to sign with {@link approve}: the new device signer, then
+     * the old one's removal; undefined when none is left.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -1600,7 +1588,12 @@ export class Wallet<C extends Chain> {
         },
     })
     public async recover(): Promise<RecoverResult> {
-        return await this.#deviceRecovery.recover();
+        if (this.#recovering == null) {
+            this.#recovering = this.#deviceRecovery.recover().finally(() => {
+                this.#recovering = null;
+            });
+        }
+        return await this.#recovering;
     }
 
     /**
@@ -1680,14 +1673,7 @@ export class Wallet<C extends Chain> {
 
     async #recoverIfNeeded(): Promise<void> {
         await this.#signerInitialization;
-        if (this.#recovering == null) {
-            this.#recovering = this.recover();
-        }
-        try {
-            await this.#recovering;
-        } finally {
-            this.#recovering = null;
-        }
+        await this.recover();
     }
 
     async #authenticateActiveSigner(): Promise<void> {

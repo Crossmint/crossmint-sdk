@@ -9,6 +9,7 @@ import {
     isApiSourcedServerSignerConfig,
     isQuorumSigner,
     type InternalSignerConfig,
+    type QuorumLocator,
     type QuorumSigner,
     type RecoverySignerConfigForChain,
     type SignerAdapter,
@@ -18,7 +19,7 @@ import {
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator, hasQuorumLocatorPrefix, isSameSignerLocator } from "../../utils/signer-locator";
-import { getPendingSignerOperation, mapApiSignerToSigner, registrationAwaitsQuorum } from "../../utils/signer-mapping";
+import { getPendingSignerOperation, mapApiSignerToSigner, registrationQuorum } from "../../utils/signer-mapping";
 import { resolveActingRole } from "../../quorum/roles";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
@@ -488,15 +489,15 @@ export class SignerManager<C extends Chain> {
         response: GetSignerResponse | null;
         signer: WalletSigner | null;
         pendingOperation: PendingSignerOperation | null;
-        /** The pending registration waits on quorum members, who approve it with `approve`. */
-        awaitsQuorum: boolean;
+        /** The quorum that approves the registration, when its request names one: its members sign with `approve`. */
+        approvingQuorum: QuorumLocator | null;
     }> {
         let signerResponse: GetSignerResponse | null = null;
         try {
             signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
         } catch (error) {
             walletsLogger.warn("wallet.signers.getSignerState.fetchFailed", { signerLocator, error });
-            return { response: null, signer: null, pendingOperation: null, awaitsQuorum: false };
+            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
         }
 
         if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
@@ -504,7 +505,7 @@ export class SignerManager<C extends Chain> {
                 signerLocator,
                 response: signerResponse,
             });
-            return { response: null, signer: null, pendingOperation: null, awaitsQuorum: false };
+            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
         }
 
         const signer = mapApiSignerToSigner(signerResponse, this.#chain);
@@ -512,7 +513,7 @@ export class SignerManager<C extends Chain> {
             response: signerResponse,
             signer,
             pendingOperation: getPendingSignerOperation(signerResponse, this.#chain),
-            awaitsQuorum: registrationAwaitsQuorum(signerResponse, this.#chain),
+            approvingQuorum: registrationQuorum(signerResponse, this.#chain),
         };
     }
 

@@ -28,7 +28,7 @@ vi.mock("../../signers", async (importOriginal) => {
 
 const mockedAssembleSigner = vi.mocked(assembleSigner);
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
-const NULL_SIGNER_STATE = { response: null, signer: null, pendingOperation: null, awaitsQuorum: false };
+const NULL_SIGNER_STATE = { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
 
 const asRecoveryConfig = (config: unknown) => config as RecoverySignerConfigForChain<Chain>;
 type Overrides = Partial<SignerManagerParams<Chain>>;
