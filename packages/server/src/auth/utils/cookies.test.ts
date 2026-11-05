@@ -99,20 +99,22 @@ describe("getAuthCookies", () => {
             });
         });
 
-        it("reads each cookie from whichever name is present", () => {
-            const request = fetchRequestWithCookies(`${SCOPED_JWT}=scoped-jwt; ${REFRESH_TOKEN_PREFIX}=legacy-refresh`);
-
-            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
-                jwt: "scoped-jwt",
-                refreshToken: "legacy-refresh",
-            });
-        });
-
-        it("falls back to the legacy cookie when the scoped one is empty", () => {
-            const request = fetchRequestWithCookies(`${SCOPED_REFRESH}=; ${REFRESH_TOKEN_PREFIX}=legacy-refresh`);
+        it("does not pair a legacy JWT with a scoped refresh token", () => {
+            const request = fetchRequestWithCookies(`${SESSION_PREFIX}=legacy-jwt; ${SCOPED_REFRESH}=scoped-refresh`);
 
             expect(getAuthCookies(request, PROJECT_ID)).toEqual({
                 jwt: undefined,
+                refreshToken: "scoped-refresh",
+            });
+        });
+
+        it("treats an empty scoped cookie as absent", () => {
+            const request = fetchRequestWithCookies(
+                `${SCOPED_JWT}=; ${SCOPED_REFRESH}=; ${SESSION_PREFIX}=legacy-jwt; ${REFRESH_TOKEN_PREFIX}=legacy-refresh`
+            );
+
+            expect(getAuthCookies(request, PROJECT_ID)).toEqual({
+                jwt: "legacy-jwt",
                 refreshToken: "legacy-refresh",
             });
         });

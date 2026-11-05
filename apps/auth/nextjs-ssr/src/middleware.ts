@@ -16,17 +16,34 @@ export async function middleware(request: NextRequest) {
 
     const response = NextResponse.next();
 
-    try {
-        const crossmint = createCrossmint({
-            apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
-        });
-        const crossmintAuth = CrossmintAuth.from(crossmint);
+    const crossmint = createCrossmint({
+        apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
+    });
+    const crossmintAuth = CrossmintAuth.from(crossmint);
+    const cookieNames = crossmintAuth.getAuthCookieNames();
 
-        // Reads the session cookies from the request and, if the session was refreshed, writes the new
-        // ones to the response. If the session is invalid, it clears them.
-        await crossmintAuth.getSession(request, response);
+    const jwt = request.cookies.get(cookieNames.jwt)?.value;
+    const refreshToken = request.cookies.get(cookieNames.refreshToken)?.value;
+
+    if (!refreshToken) {
+        return response;
+    }
+
+    try {
+        const { jwt: newJwt, refreshToken: newRefreshToken } = await crossmintAuth.getSession({
+            jwt,
+            refreshToken,
+        });
+
+        // Only update response cookies if tokens have changed. response.cookies.set (not raw Set-Cookie headers)
+        // lets Next.js hand the refreshed cookies to Server Components in the same request.
+        if (newJwt !== jwt || newRefreshToken.secret !== refreshToken) {
+            response.cookies.set(cookieNames.jwt, newJwt);
+            response.cookies.set(cookieNames.refreshToken, newRefreshToken.secret);
+        }
     } catch (_) {
-        // Not signed in
+        response.cookies.delete(cookieNames.jwt);
+        response.cookies.delete(cookieNames.refreshToken);
     }
 
     return response;

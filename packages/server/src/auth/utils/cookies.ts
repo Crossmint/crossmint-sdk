@@ -30,9 +30,9 @@ export function getAuthCookieNames(projectId: string) {
 }
 
 /**
- * Read the session from the request cookies. Each cookie is read under its project-scoped name
- * (`crossmint-jwt-<projectId>`, as the client SDK writes it) first, then under its legacy bare name
- * (`crossmint-jwt`). A legacy JWT for another project fails the audience check and is refreshed.
+ * Read the session from the request cookies. If either project-scoped cookie (`crossmint-jwt-<projectId>`,
+ * as the client SDK writes it) is present, both come from the scoped names; otherwise both come from the legacy
+ * bare names. The two are never mixed, so a legacy JWT is never paired with a scoped refresh token.
  */
 export function getAuthCookies(
     request: GenericRequest,
@@ -45,10 +45,14 @@ export function getAuthCookies(
     }
     const cookies = parseCookieHeader(cookieHeader);
     const names = getAuthCookieNames(projectId);
-    const read = (scopedName: string, legacyName: string) => cookies[scopedName] || cookies[legacyName] || undefined;
+    const jwt = cookies[names.jwt] || undefined;
+    const refreshToken = cookies[names.refreshToken] || undefined;
+    if (jwt != null || refreshToken != null) {
+        return { jwt, refreshToken } as AuthMaterialBasic;
+    }
     return {
-        jwt: read(names.jwt, SESSION_PREFIX),
-        refreshToken: read(names.refreshToken, REFRESH_TOKEN_PREFIX),
+        jwt: cookies[SESSION_PREFIX] || undefined,
+        refreshToken: cookies[REFRESH_TOKEN_PREFIX] || undefined,
     } as AuthMaterialBasic;
 }
 
