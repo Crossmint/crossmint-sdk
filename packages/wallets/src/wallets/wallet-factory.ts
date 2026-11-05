@@ -118,6 +118,10 @@ export class WalletFactory {
 
         walletsLogger.info("walletFactory.getWallet.start");
 
+        // Signer initialization reads device keys right after the wallet loads: start loading the key
+        // storage (an iframe on web) now, alongside the request.
+        validatedArgs.options?.deviceSignerKeyStorage?.preload?.();
+
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
             walletsLogger.warn("walletFactory.getWallet.notFound", {
@@ -390,6 +394,7 @@ export class WalletFactory {
                 apiRecoveryServerSignerAddresses,
                 apiDelegatedServerSignerAddresses,
                 signers: (signers ?? []) as SignerConfigForChain<C>[],
+                apiSigners: apiDelegatedSigners as SignerResponse[] | undefined,
             },
             this.apiClient
         );

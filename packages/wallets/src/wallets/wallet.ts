@@ -9,6 +9,7 @@ import type {
     GetTransactionsResponse,
     GetWalletSuccessResponse,
     FundWalletResponse,
+    Signer as APISigner,
 } from "../api";
 import type {
     AddSignerOptions,
@@ -97,6 +98,12 @@ type WalletContructorType<C extends Chain> = {
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
+    /**
+     * Delegated signers exactly as the API returned them with this wallet, when the wallet was built from a
+     * fresh API response. Signer initialization reads their status from here instead of fetching it again.
+     * Leave unset when the data may be stale (e.g. when wrapping an existing wallet).
+     */
+    apiSigners?: APISigner[];
 };
 
 export class Wallet<C extends Chain> {
@@ -126,6 +133,7 @@ export class Wallet<C extends Chain> {
             apiDelegatedServerSignerAddresses,
             signers,
             signer,
+            apiSigners,
         } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
@@ -195,7 +203,7 @@ export class Wallet<C extends Chain> {
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
         });
-        this.#signerInitialization = this.initDefaultSigner();
+        this.#signerInitialization = this.initDefaultSigner(apiSigners);
     }
 
     public get signer(): SignerAdapter | undefined {
@@ -222,13 +230,13 @@ export class Wallet<C extends Chain> {
      * Note: Server and api-key signers may fail to auto-assemble if required data
      * is not available in the API response. In those cases, the signer is left undefined.
      */
-    private async initDefaultSigner(): Promise<void> {
+    private async initDefaultSigner(apiSigners?: APISigner[]): Promise<void> {
         // If useSigner has been called, don't try to auto-assemble a signer
         if (this.#signerManager.activeSigner != null) {
             return;
         }
         // Step 1: Try device signer (existing behavior)
-        await this.#deviceRecovery.initDeviceSigner();
+        await this.#deviceRecovery.initDeviceSigner(apiSigners);
 
         // If device signer was found or recovery is pending, we're done
         if (this.#signerManager.activeSigner != null || this.#deviceRecovery.needsRecovery) {
@@ -258,7 +266,9 @@ export class Wallet<C extends Chain> {
                 signerToAssemble as SignerConfigForChain<C>,
                 signerDescriptorContext
             );
-            this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
+            this.#signerManager.setActiveSigner(
+                await this.#signerManager.assemble(internalConfig, { isAdminSigner, apiSigners })
+            );
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#signerManager.recovery.type,
