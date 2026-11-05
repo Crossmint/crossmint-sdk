@@ -1937,6 +1937,73 @@ describe("WalletFactory - creating quorums", () => {
                 });
             });
 
+            describe("createWallet with a delegated quorum and device key storage", () => {
+                const deviceKeyStorage = () => ({
+                    getKey: vi.fn().mockResolvedValue(null),
+                    saveKey: vi.fn().mockResolvedValue(undefined),
+                    generateKey: vi
+                        .fn()
+                        .mockResolvedValue(
+                            Buffer.concat([Buffer.from([0x04]), Buffer.alloc(32, 1), Buffer.alloc(32, 2)]).toString(
+                                "base64"
+                            )
+                        ),
+                    getDeviceName: vi.fn().mockReturnValue("Chrome on Mac"),
+                });
+                const sentDelegatedSigners = (call: number) =>
+                    (
+                        mockApiClient.createWallet.mock.calls[call][0].config as {
+                            delegatedSigners: Array<{ signer: unknown }>;
+                        }
+                    ).delegatedSigners;
+
+                it("registers the quorum next to the device signer it adds", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                        options: { deviceSignerKeyStorage: deviceKeyStorage() },
+                    } as never);
+
+                    const signers = sentDelegatedSigners(0);
+                    expect(signers).toContainEqual({ signer: quorum.input });
+                    expect(signers).toContainEqual({ signer: expect.objectContaining({ type: "device" }) });
+                });
+
+                it("keeps the quorum when it retries without a device signer the provider rejects", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet
+                        .mockResolvedValueOnce({
+                            error: true,
+                            code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                            message: "Device signers are not supported",
+                        } as never)
+                        .mockResolvedValue(
+                            walletResponse(chain, {
+                                recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                                delegatedSigners: [quorum.entry],
+                            })
+                        );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                        options: { deviceSignerKeyStorage: deviceKeyStorage() },
+                    } as never);
+
+                    expect(sentDelegatedSigners(1)).toEqual([{ signer: quorum.input }]);
+                });
+            });
+
             describe("getWallet with a recovery quorum in the config", () => {
                 it("takes the wallet's quorum whatever the member order and address case", async () => {
                     const quorum = createQuorumFixture(chain);

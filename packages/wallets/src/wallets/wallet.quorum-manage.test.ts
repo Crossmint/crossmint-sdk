@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Chain } from "../chains/chains";
-import { isQuorumSigner, type QuorumLocator, type QuorumSigner } from "../signers/types";
+import { isQuorumSigner, type QuorumLocator } from "../signers/types";
 import { InvalidSignerError, QuorumRequestError } from "../utils/errors";
-import type { Wallet } from "./wallet";
+import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import type { ApiClient } from "../api";
+import { deriveServerSignerCandidates } from "../signers/server";
+import { Wallet } from "./wallet";
 import {
     QUORUM_SERVER_MEMBER_SECRET,
     QUORUM_TEST_PROJECT_ID,
@@ -10,11 +13,13 @@ import {
     createMockWallet,
     createQuorumApiEntry,
     createQuorumFixture,
+    serverMemberAddress,
     withMembersReordered,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
 type ChainCase = { chain: "base-sepolia" | "solana" | "stellar" };
+const NEW_SIGNER = { type: "external-wallet", address: "NewSigner444" };
 const CHAINS: ChainCase[] = [{ chain: "base-sepolia" }, { chain: "solana" }, { chain: "stellar" }];
 
 // A wallet read as the API returns it: recovery quorums under `recoveryMethods`, delegated ones under `delegatedSigners`.
@@ -27,12 +32,12 @@ function walletRead(chain: Chain, { recoveryMethods = [] as object[], delegatedS
     };
 }
 
-// A delegated quorum as the register-signer endpoint returns it once it is active on `chain`.
-function registeredQuorum(chain: Chain, entry: QuorumSigner) {
+// A signer as the register-signer endpoint returns it on `chain`: active, or waiting on approvals.
+function registered(chain: Chain, signer: object, status: "success" | "awaiting-approval" = "success") {
     if (chain === "solana" || chain === "stellar") {
-        return { ...entry, transaction: { id: "txn-add-quorum", status: "success" } };
+        return { ...signer, transaction: { id: "txn-add", status } };
     }
-    return { ...entry, chains: { [chain]: { id: "txn-add-quorum", status: "success", onChain: {} } } };
+    return { ...signer, chains: { [chain]: { id: "txn-add", status, onChain: {} } } };
 }
 
 const LANDED = { id: "txn-change", status: "success", onChain: { txId: "0xhash", explorerLink: "https://explorer" } };
@@ -99,6 +104,23 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             expect(wallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
+        it("lets a member of the added quorum select it for the next signer change", async () => {
+            await wallet.addRecoveryMethod(quorum.config as never);
+            const [, externalMember] = quorum.entry.members;
+            api.registerSigner.mockResolvedValue(
+                registered(
+                    chain,
+                    { ...NEW_SIGNER, locator: `external-wallet:${NEW_SIGNER.address}` },
+                    "awaiting-approval"
+                ) as never
+            );
+
+            await wallet.useRecoveryMethod({ ...externalMember, onSign: vi.fn() } as never);
+            await wallet.addSigner(NEW_SIGNER as never, { prepareOnly: true });
+
+            expect(api.registerSigner.mock.calls.at(-1)?.[1].approver).toBe(quorum.entry.locator);
+        });
+
         it("holds none of the members' keys afterwards", async () => {
             await wallet.addRecoveryMethod(quorum.config as never);
 
@@ -128,7 +150,7 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
 
         beforeEach(() => {
             quorum = createQuorumFixture(chain);
-            api.registerSigner.mockResolvedValue(registeredQuorum(chain, quorum.entry) as never);
+            api.registerSigner.mockResolvedValue(registered(chain, quorum.entry) as never);
         });
 
         it("sends each member's identity fields only", async () => {
@@ -143,6 +165,20 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             const result = await wallet.addSigner(quorum.config as never);
 
             expect(result).toEqual({ ...quorum.entry, status: "success" });
+        });
+
+        it("returns the new quorum's locator unsigned when a quorum approves", async () => {
+            const approver = createQuorumApiEntry();
+            api.registerSigner.mockResolvedValue(registered(chain, quorum.entry, "awaiting-approval") as never);
+
+            const result = await wallet.addSigner(quorum.config as never, {
+                signer: approver.locator,
+                prepareOnly: true,
+            });
+
+            expect(result.locator).toBe(quorum.entry.locator);
+            expect(result.transactionId).toBe("txn-add");
+            expect(api.approveTransaction).not.toHaveBeenCalled();
         });
 
         it("registers without first looking the new quorum up, as it has no locator yet", async () => {
@@ -234,6 +270,27 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
         });
     });
 
+    describe.each([
+        {
+            call: "removeSigner",
+            remove: (target: object) => wallet.removeSigner(target as never),
+            sent: () => api.removeSigner,
+        },
+        {
+            call: "removeRecoveryMethod",
+            remove: (target: object) => wallet.removeRecoveryMethod(target as never),
+            sent: () => api.removeRecoveryMethod,
+        },
+    ])("$call of a malformed quorum locator", ({ remove, sent }) => {
+        it.each(["quorum:abc", `quorum:${crypto.randomUUID().toUpperCase()}`])(
+            "rejects %s before any removal",
+            async (locator) => {
+                await expect(remove({ locator })).rejects.toBeInstanceOf(InvalidSignerError);
+                expect(sent()).not.toHaveBeenCalled();
+            }
+        );
+    });
+
     describe("removeSigner of a quorum", () => {
         it("sends the locator it is given", async () => {
             const target = createQuorumFixture(chain).entry;
@@ -278,5 +335,37 @@ describe("a Solana quorum the API does not take yet", () => {
 
         expect(error).toBeInstanceOf(QuorumRequestError);
         expect((error as QuorumRequestError).reason).toBe("QUORUM_SIGNER_UNSUPPORTED");
+    });
+});
+
+describe("a server member given by its secret on a wallet that knows the secret's legacy address", () => {
+    it("is sent under the primary derivation, as members sign with it", async () => {
+        const chain = "base-sepolia";
+        const { legacy } = deriveServerSignerCandidates(
+            { type: "server", secret: QUORUM_SERVER_MEMBER_SECRET },
+            chain,
+            QUORUM_TEST_PROJECT_ID,
+            APIKeyEnvironmentPrefix.STAGING
+        );
+        const api = createMockApiClient({ projectId: QUORUM_TEST_PROJECT_ID } as Partial<MockedApiClient>);
+        const wallet = new Wallet(
+            {
+                chain,
+                address: "0x1234567890123456789012345678901234567890",
+                recovery: [{ type: "api-key" }],
+                apiRecoveryServerSignerAddresses: [legacy?.derivedAddress ?? ""],
+            },
+            api as unknown as ApiClient
+        );
+        const quorum = createQuorumFixture(chain);
+        api.registerRecoveryMethod.mockResolvedValue({
+            recoveryMethods: quorum.entry,
+            tx: { id: "txn-change", status: "awaiting-approval" },
+        } as never);
+
+        await wallet.addRecoveryMethod(quorum.config as never, { prepareOnly: true });
+
+        expect(api.registerRecoveryMethod.mock.calls[0][1].recoveryMethods).toEqual(quorum.input);
+        expect(legacy?.derivedAddress).not.toBe(serverMemberAddress(chain));
     });
 });

@@ -511,14 +511,12 @@ export class WalletFactory {
         return true;
     }
 
-    /** A quorum config as the API takes it; a server member's secret becomes the address it derives. */
     private quorumInput<C extends Chain>(config: QuorumSignerConfig<C>, chain: C): QuorumSignerInput {
-        return toQuorumSignerInput(
-            config as QuorumSignerConfig<Chain>,
-            (server) =>
-                deriveServerSignerDetails(server, chain, this.apiClient.projectId, this.apiClient.environment)
-                    .derivedAddress
-        );
+        return toQuorumSignerInput(config as QuorumSignerConfig<Chain>, {
+            chain,
+            projectId: this.apiClient.projectId,
+            environment: this.apiClient.environment,
+        });
     }
 
     private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {

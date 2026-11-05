@@ -84,6 +84,7 @@ import type {
 import {
     type ApiSourcedServerSignerConfig,
     isApiSourcedServerSignerConfig,
+    isQuorumLocator,
     isQuorumRef,
     isQuorumSigner,
     throwIfQuorumSigner,
@@ -833,13 +834,9 @@ export class Wallet<C extends Chain> {
         const explicit = this.#explicitApprover(options);
         return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
             const prepareOnly = this.isPrepareOnly(options, approver);
-            // A quorum has no locator until the API names it, so it has no earlier registration to resume.
-            if (typeof resolvedSigner === "string" || resolvedSigner.type !== "quorum") {
-                const resumed = await this.#resumeRegistration(
-                    typeof resolvedSigner === "string" ? resolvedSigner : getSignerLocator(resolvedSigner),
-                    options,
-                    prepareOnly
-                );
+            const signerLocator = this.#registrationLocator(resolvedSigner);
+            if (signerLocator != null) {
+                const resumed = await this.#resumeRegistration(signerLocator, options, prepareOnly);
                 if (resumed != null) {
                     return resumed;
                 }
@@ -946,12 +943,25 @@ export class Wallet<C extends Chain> {
         );
     }
 
-    // A quorum as the API takes it; a server member's secret becomes the address it derives, as for a server signer.
     #quorumInput(config: QuorumSignerConfig<C>): QuorumSignerInput {
-        return toQuorumSignerInput(
-            config as QuorumSignerConfig<Chain>,
-            (server) => parseSignerLocator(this.resolveServerSignerApiLocator(server)).value
-        );
+        return toQuorumSignerInput(config as QuorumSignerConfig<Chain>, {
+            chain: this.chain,
+            projectId: this.#apiClient.projectId,
+            environment: this.#apiClient.environment,
+        });
+    }
+
+    // The locator a signer is registered under, or null for a quorum, which has none until the API names it.
+    #registrationLocator(
+        signer: SignerLocator | SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>
+    ): SignerLocator | null {
+        if (typeof signer === "string") {
+            return signer;
+        }
+        if (signer.type === "quorum") {
+            return null;
+        }
+        return getSignerLocator(signer);
     }
 
     /**
@@ -1501,6 +1511,9 @@ export class Wallet<C extends Chain> {
         scope: "recovery" | "delegated"
     ): Promise<string> {
         if (isQuorumRef(target)) {
+            if (!isQuorumLocator(target.locator)) {
+                throw new InvalidSignerError(`Malformed quorum locator: ${target.locator}`);
+            }
             return target.locator;
         }
         if (target.type === "quorum") {
