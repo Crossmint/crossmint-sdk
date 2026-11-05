@@ -129,13 +129,19 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("reads the request cookies for the API key's project", async () => {
-            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+        it("reads the session from the cookies scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
 
-            await crossmintAuthServer.getSession(mockRequest as GenericRequest);
+            const result = await crossmintAuthServer.getSession(request);
 
-            expect(cookiesUtils.getAuthCookies).toHaveBeenCalledWith(mockRequest, PROJECT_ID);
+            expect(result).toMatchObject({ jwt: "scoped.jwt.token", refreshToken: { secret: "scoped-refresh" } });
         });
 
         it("refreshes the session when JWT is invalid", async () => {
@@ -877,15 +883,21 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
-        it("revokes the refresh token read from the request cookies for the API key's project", async () => {
+        it("revokes the refresh token stored in the cookie scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
             mockApiClient.post.mockResolvedValue({ ok: true });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
 
-            await crossmintAuthServer.logout(mockRequest, {} as GenericResponse);
+            await crossmintAuthServer.logout(request, {} as GenericResponse);
 
-            expect(cookiesUtils.getAuthCookies).toHaveBeenCalledWith(mockRequest, PROJECT_ID);
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 expect.stringContaining("/logout"),
-                expect.objectContaining({ body: JSON.stringify({ refresh: "mock-refresh-token" }) })
+                expect.objectContaining({ body: JSON.stringify({ refresh: "scoped-refresh" }) })
             );
         });
 
