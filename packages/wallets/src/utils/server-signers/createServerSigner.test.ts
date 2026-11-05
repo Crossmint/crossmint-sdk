@@ -36,6 +36,12 @@ describe("createServerSigner().sign", () => {
         expect(ed25519.verify(base58.decode(signature), messageBytes, base58.decode(signer.address))).toBe(true);
     });
 
+    it("Solana: rejects a message that is not base58", async () => {
+        const signer = createServerSigner({ ...params, chain: "solana" });
+
+        await expect(signer.sign("0OIl")).rejects.toThrow("base58");
+    });
+
     it("Stellar: signs the base64-decoded message with the address's ed25519 key, base64 out", async () => {
         const signer = createServerSigner({ ...params, chain: "stellar" });
         // A quorum member's Stellar message is the 32-byte auth-entry preimage hash, base64-encoded.
@@ -52,6 +58,15 @@ describe("createServerSigner().sign", () => {
         const signer = createServerSigner({ ...params, chain: "stellar" });
 
         await expect(signer.sign("not base64!")).rejects.toThrow("base64");
+    });
+
+    it("signs again with the same signer after a first signature", async () => {
+        const signer = createServerSigner({ ...params, chain: "base-sepolia" });
+        const message = "0x01";
+
+        const first = await signer.sign(message);
+
+        await expect(signer.sign(message)).resolves.toBe(first);
     });
 
     it("leaves keyBytes intact after signing", async () => {
