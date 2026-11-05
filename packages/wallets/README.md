@@ -49,7 +49,7 @@ console.log(tx.explorerLink);
 
 ### Client-side (Headless)
 
-For client-side usage without React, you can use the SDK directly with a user JWT. Get it from Crossmint Auth (`@crossmint/client-sdk-auth`) unless your app already has an auth provider:
+For client-side usage without React, you can use the SDK directly with a user JWT. In staging, get it from Crossmint Auth (`@crossmint/client-sdk-auth`); in production, or when your app already has an auth provider, use that provider's JWT:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";

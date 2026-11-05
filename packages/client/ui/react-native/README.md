@@ -26,7 +26,7 @@ If your app config still sets `ios.enableSceneSupport` in `expo-build-properties
 
 ### 1. Setup Providers
 
-**With Crossmint Auth (default)**
+**With Crossmint Auth (default in staging)**
 
 ```tsx
 import {
@@ -55,7 +55,7 @@ export default function App() {
 
 **Bring Your Own Authentication**
 
-Use this only when your app already has an auth provider: skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
+Use this when your app already has an auth provider, and in production (see the [Crossmint Auth guide](https://docs.crossmint.com/wallets/guides/crossmint-auth)): skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
 
 ```tsx
 import {
