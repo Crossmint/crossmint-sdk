@@ -494,8 +494,8 @@ describe("approve() with an api-key active signer on a chain without quorum appr
     });
 });
 
-describe("send() with a quorum as signer", () => {
-    it("creates the transaction as the quorum and signs this client's pending member", async () => {
+describe("send() with a quorum as signer, then approve()", () => {
+    it("creates the transaction as the quorum unsigned; approve() signs this client's pending member", async () => {
         vi.useFakeTimers();
         const api = createMockApiClient();
         const wallet = await createSigningWallet("base-sepolia", api);
@@ -507,11 +507,14 @@ describe("send() with a quorum as signer", () => {
         api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [entry]) as never);
         api.getTransaction.mockResolvedValue(SUCCESS as never);
 
-        const { value } = await settle(
-            wallet.send(RECIPIENT, "usdc", "1", { signer: quorum.locator, prepareOnly: false })
-        );
+        const sent = await wallet.send(RECIPIENT, "usdc", "1", { signer: quorum.locator, prepareOnly: true });
 
         expect(api.send.mock.calls[0][2]).toMatchObject({ signer: quorum.locator });
+        expect(sent).toMatchObject({ transactionId: "txn-1", hash: undefined });
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+
+        const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
         expect(sentApprovals(api)).toEqual([
             [{ signer: member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
         ]);

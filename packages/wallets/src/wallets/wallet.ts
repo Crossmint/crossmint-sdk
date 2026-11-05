@@ -85,7 +85,7 @@ import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
+import { getSignerLocator, hasQuorumLocatorPrefix, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
@@ -259,15 +259,16 @@ export class Wallet<C extends Chain> {
             return;
         }
 
+        // A quorum signs through its members, so it is never the default signer and does not count as one.
+        const singleSigners = this.#signerManager.singleInitialSigners;
         const signerToAssemble =
-            this.#initialSigners.length === 0
+            singleSigners.length === 0
                 ? this.#signerManager.defaultRecovery
-                : this.#initialSigners.length === 1
-                  ? this.#initialSigners[0]
+                : singleSigners.length === 1
+                  ? singleSigners[0]
                   : null; // >1 signers → user must call useSigner()
 
-        // A quorum signs through its members, so it is never the default signer.
-        if (signerToAssemble == null || isQuorumSigner(signerToAssemble)) {
+        if (signerToAssemble == null) {
             return;
         }
 
@@ -345,6 +346,11 @@ export class Wallet<C extends Chain> {
         return { signer: this.resolveSignerOption(options.signer) };
     }
 
+    /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
+    protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string): boolean {
+        return Boolean(options?.prepareOnly) || hasQuorumLocatorPrefix(signerLocator);
+    }
+
     /** The API locator of a call's `signer` option. */
     protected resolveSignerOption(signer: SignerOption): string {
         if (isSignerLocatorOption(signer)) {
@@ -354,13 +360,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the primary recovery signer config. Use {@link recoveryMethods} for the full list on wallets
-     * created with several recovery signers.
+     * Get the primary recovery signer config: the first recovery method that signs on its own. Use
+     * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
+     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
-    public get recovery(): RecoverySignerConfigForChain<C> {
-        return this.#signerManager.recovery;
+    public get recovery(): SignerConfigForChain<C> {
+        return this.#signerManager.requireDefaultRecovery() as SignerConfigForChain<C>;
     }
 
     /**
@@ -521,6 +528,8 @@ export class Wallet<C extends Chain> {
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
      * @param {TransactionInputOptions} options - The options for the transaction
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @returns {Transaction} The transaction
      */
     @WithLoggerContext({
@@ -556,10 +565,11 @@ export class Wallet<C extends Chain> {
 
         await this.preAuthIfNeeded();
 
+        const signerParams = this.resolveSignerParams(options);
         const sendParams = {
             recipient,
             amount,
-            ...this.resolveSignerParams(options),
+            ...signerParams,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
@@ -574,7 +584,7 @@ export class Wallet<C extends Chain> {
             );
         }
 
-        if (options?.prepareOnly === true) {
+        if (this.isPrepareOnly(options, signerParams.signer)) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
