@@ -14,7 +14,7 @@ import {
     type SignerConfigForChain,
     type SignerLocator,
 } from "../../signers/types";
-import { DeviceSignerNotSupportedError, SignerLimitExceededError } from "../../utils/errors";
+import { DeviceSignerNotSupportedError, SignerLimitExceededError, WalletNotAvailableError } from "../../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
@@ -130,11 +130,23 @@ export class DeviceRecoveryService<C extends Chain> {
             this.#status = "needs-recovery";
             return;
         }
-        // A different saved locator is the device signer this one replaces: recover() removes it, then saves this one.
-        const savedLocator = await this.#getSavedSignerLocator(deviceSignerKeyStorage);
-        if (savedLocator == null || savedLocator === deviceSigner.locator()) {
-            await this.#saveSignerLocator(deviceSignerKeyStorage, deviceSigner.locator());
+        // A quorum-approved device replacing a saved one leaves it for recover(), which removes it through that quorum.
+        if (await this.#replacesSavedSignerThroughQuorum(deviceSignerKeyStorage, deviceSigner.locator())) {
+            return;
         }
+        await this.#saveSignerLocator(deviceSignerKeyStorage, deviceSigner.locator());
+    }
+
+    async #replacesSavedSignerThroughQuorum(
+        deviceSignerKeyStorage: DeviceSignerKeyStorage,
+        signerLocator: SignerLocator
+    ): Promise<boolean> {
+        const savedLocator = await this.#getSavedSignerLocator(deviceSignerKeyStorage);
+        if (savedLocator == null || savedLocator === signerLocator) {
+            return false;
+        }
+        const { approvingQuorum } = await this.#signerManager.getSignerState(signerLocator);
+        return approvingQuorum != null;
     }
 
     async recover(): Promise<RecoverResult> {
@@ -204,6 +216,7 @@ export class DeviceRecoveryService<C extends Chain> {
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
         // The approver is resolved before the key is created: a selected member's recovery quorum, else the recovery
         // method of withRecoverySigner (one that signs alone, selected when the wallet has several).
+        // Called for its error: no key is created when no approver can be resolved.
         this.#signerManager.approvesAsQuorum();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
         let staleDeviceSignerLocator = await this.#findSavedStaleSignerLocator(
@@ -267,7 +280,7 @@ export class DeviceRecoveryService<C extends Chain> {
                 walletsLogger.error("wallet.recover.device.error", { error });
                 // Once a registration exists, its approvers may still sign it: deleting the key would strand it.
                 const registered = await this.#signerManager.getSignerState(newDeviceSigner.locator as SignerLocator);
-                if (registered.signer == null) {
+                if (registered.signer == null && !registered.lookupFailed) {
                     await deviceSignerKeyStorage.deleteKey(this.#walletAddress);
                 }
                 throw error;
@@ -397,7 +410,7 @@ export class DeviceRecoveryService<C extends Chain> {
             }
             if (existingSigners.some((s) => s.type === "device" && s.locator === savedLocator)) {
                 const { approvingQuorum } = await this.#signerManager.getSignerState(signerLocator as SignerLocator);
-                staleRemoval = await this.#removeStaleSigner(savedLocator, approvingQuorum ?? null);
+                staleRemoval = await this.#removeStaleSigner(savedLocator, approvingQuorum);
             }
         }
         await this.#saveSignerLocator(deviceSignerKeyStorage, signerLocator);
@@ -480,6 +493,10 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const signerState = await this.#signerManager.getSignerState(deviceSigner.locator());
+        // Registering again could start a second request while the first one waits on quorum members.
+        if (signerState.lookupFailed) {
+            throw new WalletNotAvailableError(`Could not read device signer ${deviceSigner.locator()}; try again`);
+        }
         deviceSigner.status = signerState.signer?.status;
 
         if (signerState.pendingOperation != null) {
@@ -591,7 +608,10 @@ export class DeviceRecoveryService<C extends Chain> {
     }
 
     async #assembleRecoverySignerFallback(): Promise<void> {
-        const recovery = this.#signerManager.requireDefaultRecovery();
+        const recovery = this.#signerManager.defaultRecovery;
+        if (recovery == null) {
+            return;
+        }
         const signerDescriptor = getSignerDescriptor<C>(recovery.type);
         const signerDescriptorContext = this.#signerManager.descriptorContext();
         if (!signerDescriptor.canAutoAssemble(recovery, signerDescriptorContext)) {

@@ -36,14 +36,20 @@ const mockedAssembleSigner = vi.mocked(assembleSigner);
 const mockedCreateDeviceSigner = vi.mocked(createDeviceSigner);
 
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
-const NULL_STATE = { response: null, signer: null, pendingOperation: null };
+const NULL_STATE = { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed: false };
 
 function makeSigner(type: string, locatorValue: string, status?: string): SignerAdapter {
     return { type, status, locator: () => locatorValue } as unknown as SignerAdapter;
 }
 
 function pendingState(operationType: "signature" | "transaction", id: string) {
-    return { response: {}, signer: { status: "awaiting-approval" }, pendingOperation: { type: operationType, id } };
+    return {
+        response: {},
+        signer: { status: "awaiting-approval" },
+        pendingOperation: { type: operationType, id },
+        approvingQuorum: null,
+        lookupFailed: false,
+    };
 }
 
 function makeSignerManager(overrides: Record<string, unknown> = {}) {
@@ -57,6 +63,7 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
             active = signer;
         }),
         recovery,
+        defaultRecovery: recovery,
         requireDefaultRecovery: overrides.requireDefaultRecovery ?? vi.fn(() => recovery),
         resolveAuthorizingRecovery: vi.fn(() => ({ recovery, approver: undefined })),
         approvesAsQuorum: vi.fn(() => false),
@@ -523,6 +530,32 @@ describe("DeviceRecoveryService", () => {
             expect(service.needsRecovery).toBe(false);
             expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:localKey");
         });
+
+        it.each([
+            { approver: "a recovery method that signs alone", approvingQuorum: null, saves: true },
+            {
+                approver: "a recovery quorum",
+                approvingQuorum: "quorum:0d3b3f6c-2c2a-4f43-9a2e-4b6a3c5d7e8f",
+                saves: false,
+            },
+        ])(
+            "with another device's locator saved, saves this one only when $approver approved it",
+            async ({ approvingQuorum, saves }) => {
+                const storage = makeStorage({
+                    getKey: vi.fn().mockResolvedValue("localKey"),
+                    getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldKey"),
+                });
+                const signerManager = {
+                    assemble: vi.fn().mockResolvedValue(makeSigner("device", "device:localKey", "success")),
+                    getSignerState: vi.fn().mockResolvedValue({ ...NULL_STATE, approvingQuorum }),
+                };
+                const { service } = setup({ storage, signerManager });
+
+                await service.initDeviceSigner();
+
+                expect(storage.saveSignerLocator.mock.calls.length > 0).toBe(saves);
+            }
+        );
     });
 });
 

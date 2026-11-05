@@ -491,13 +491,15 @@ export class SignerManager<C extends Chain> {
         pendingOperation: PendingSignerOperation | null;
         /** The quorum that approves the registration, when its request names one: its members sign with `approve`. */
         approvingQuorum: QuorumLocator | null;
+        /** The signer could not be read (the request threw), so whether it is registered is unknown. */
+        lookupFailed: boolean;
     }> {
         let signerResponse: GetSignerResponse | null = null;
         try {
             signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
         } catch (error) {
             walletsLogger.warn("wallet.signers.getSignerState.fetchFailed", { signerLocator, error });
-            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
+            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed: true };
         }
 
         if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
@@ -505,7 +507,7 @@ export class SignerManager<C extends Chain> {
                 signerLocator,
                 response: signerResponse,
             });
-            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
+            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed: false };
         }
 
         const signer = mapApiSignerToSigner(signerResponse, this.#chain);
@@ -514,6 +516,7 @@ export class SignerManager<C extends Chain> {
             signer,
             pendingOperation: getPendingSignerOperation(signerResponse, this.#chain),
             approvingQuorum: registrationQuorum(signerResponse, this.#chain),
+            lookupFailed: false,
         };
     }
 

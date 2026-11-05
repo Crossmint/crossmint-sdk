@@ -3,7 +3,7 @@ import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import { walletsLogger } from "../logger";
 import type { QuorumMember, SignerConfigForChain } from "../signers/types";
-import { RecoveryMethodRequiredError, SignerLimitExceededError } from "../utils/errors";
+import { RecoveryMethodRequiredError, SignerLimitExceededError, WalletNotAvailableError } from "../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import { Wallet } from "./wallet";
 import {
@@ -199,6 +199,50 @@ describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ 
             expect(first).toEqual({ transactionId: "tx-add" });
             expect(second).toEqual(first);
             expect(api.registerSigner).toHaveBeenCalledTimes(1);
+        });
+
+        it("stops without registering again when the registration cannot be read", async () => {
+            const wallet = await recoveringWallet();
+            await wallet.recover();
+            api.getSigner.mockRejectedValue(new Error("network down"));
+
+            await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
+            expect(api.registerSigner).toHaveBeenCalledTimes(1);
+        });
+
+        it("keeps the key when the registration fails and whether it exists cannot be read", async () => {
+            api.getSigner.mockRejectedValue(new Error("network down"));
+            api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
+            const wallet = await recoveringWallet();
+
+            await expect(wallet.recover()).rejects.toThrow("fetch failed");
+            expect(storage.deleteKey).not.toHaveBeenCalled();
+        });
+
+        it("falls back without an error when the provider rejects device signers", async () => {
+            const wallet = await recoveringWallet();
+            api.registerSigner.mockResolvedValue({
+                error: true,
+                code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                message: "Device signers are not supported",
+            } as never);
+
+            await expect(wallet.recover()).resolves.toBeUndefined();
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("returns the request when this device's key is found through the wallet's signers", async () => {
+            const wallet = await recoveringWallet([
+                deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])),
+            ]);
+            storage.hasKey.mockResolvedValue(true);
+            api.getSigner.mockResolvedValue(
+                deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
+            );
+
+            await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-add" });
+            expect(api.registerSigner).not.toHaveBeenCalled();
+            expect(wallet.needsRecovery()).toBe(true);
         });
 
         it("throws SignerLimitExceededError at the signer limit without removing a device", async () => {

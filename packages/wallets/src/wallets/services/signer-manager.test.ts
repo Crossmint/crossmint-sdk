@@ -28,7 +28,13 @@ vi.mock("../../signers", async (importOriginal) => {
 
 const mockedAssembleSigner = vi.mocked(assembleSigner);
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
-const NULL_SIGNER_STATE = { response: null, signer: null, pendingOperation: null, approvingQuorum: null };
+const NULL_SIGNER_STATE = {
+    response: null,
+    signer: null,
+    pendingOperation: null,
+    approvingQuorum: null,
+    lookupFailed: false,
+};
 
 const asRecoveryConfig = (config: unknown) => config as RecoverySignerConfigForChain<Chain>;
 type Overrides = Partial<SignerManagerParams<Chain>>;
@@ -386,15 +392,21 @@ describe("SignerManager", () => {
     });
 
     it.each([
-        ["a thrown getSigner call", vi.fn().mockRejectedValue(new Error("network"))],
-        ["an error response", vi.fn().mockResolvedValue({ error: true, message: "nope" })],
-        ["a null response", vi.fn().mockResolvedValue(null)],
-        ["a non-object response", vi.fn().mockResolvedValue("not-an-object")],
-    ])("getSignerState() falls back to a null state and logs a warning for %s", async (_name, getSigner) => {
-        const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
-        await expect(manager.getSignerState("api-key" as SignerLocator)).resolves.toEqual(NULL_SIGNER_STATE);
-        expect(walletsLogger.warn).toHaveBeenCalled();
-    });
+        ["a thrown getSigner call", vi.fn().mockRejectedValue(new Error("network")), true],
+        ["an error response", vi.fn().mockResolvedValue({ error: true, message: "nope" }), false],
+        ["a null response", vi.fn().mockResolvedValue(null), false],
+        ["a non-object response", vi.fn().mockResolvedValue("not-an-object"), false],
+    ])(
+        "getSignerState() falls back to a null state and logs a warning for %s",
+        async (_name, getSigner, lookupFailed) => {
+            const manager = makeManager({ apiClient: makeApiClient({ getSigner }) });
+            await expect(manager.getSignerState("api-key" as SignerLocator)).resolves.toEqual({
+                ...NULL_SIGNER_STATE,
+                lookupFailed,
+            });
+            expect(walletsLogger.warn).toHaveBeenCalled();
+        }
+    );
 
     it("getSignerState() logs the specific fetch failure when getSigner throws", async () => {
         const getSigner = vi.fn().mockRejectedValue(new Error("network"));
