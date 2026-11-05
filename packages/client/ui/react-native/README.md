@@ -55,7 +55,7 @@ export default function App() {
 
 **Bring Your Own Authentication**
 
-Use this when your app already has an auth provider, and in production (see the [Crossmint Auth guide](https://docs.crossmint.com/wallets/guides/crossmint-auth)): skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
+Use this when your app already has an auth provider, and in production: connect your provider and configure [JWT Authentication](https://docs.crossmint.com/introduction/platform/api-keys/jwt-authentication) in the Crossmint Console (see [Move to Production](https://docs.crossmint.com/wallets/guides/crossmint-auth#move-to-production)). Then skip `CrossmintAuthProvider` and pass your provider's JWT to the wallets SDK. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
 
 ```tsx
 import {
