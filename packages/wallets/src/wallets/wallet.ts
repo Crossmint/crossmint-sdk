@@ -1288,22 +1288,11 @@ export class Wallet<C extends Chain> {
             throw new WalletTypeNotSupportedError(reason);
         }
 
-        const configSigners = walletResponse?.config?.delegatedSigners ?? [];
-
-        const signersWithStatus = await Promise.all(
-            configSigners.map(async (configSigner) => {
-                try {
-                    const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
-                    return signerState.signer;
-                } catch (error) {
-                    walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
-                    return null;
-                }
-            })
-        );
-
-        // Filter out null results (signers that don't have approval for this chain)
-        const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
+        // Each delegated signer in the wallet response is the same object GET signer returns, status included,
+        // so one request covers them all. Signers with no approval on this chain map to null.
+        const signers = ((walletResponse.config?.delegatedSigners ?? []) as APISigner[])
+            .map((apiSigner) => mapApiSignerToSigner(apiSigner, this.chain))
+            .filter((s): s is WalletSigner => s != null);
 
         walletsLogger.info("wallet.signers.success", {
             count: signers.length,
