@@ -31,7 +31,7 @@ import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from ".
 import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
-import { createPasskeyCredential } from "../signers/passkey-credential";
+import { createPasskeyCredential } from "../signers/passkey";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";

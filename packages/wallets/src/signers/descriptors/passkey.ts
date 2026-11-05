@@ -9,7 +9,7 @@ import type {
     SignerLocator,
 } from "../types";
 import { passkeyCredentialId } from "../../utils/signer-locator";
-import { createPasskeyCredential } from "../passkey-credential";
+import { createPasskeyCredential } from "../passkey";
 import type { SignerDescriptor, SignerDescriptorContext } from "./types";
 
 export const passkeySignerDescriptor: SignerDescriptor = {
