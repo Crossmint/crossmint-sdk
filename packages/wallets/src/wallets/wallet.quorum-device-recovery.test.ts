@@ -4,6 +4,7 @@ import type { Chain } from "../chains/chains";
 import { walletsLogger } from "../logger";
 import type { QuorumMember, SignerConfigForChain } from "../signers/types";
 import { RecoveryMethodRequiredError, SignerLimitExceededError } from "../utils/errors";
+import { createDeviceSigner } from "@/utils/device-signers";
 import { Wallet } from "./wallet";
 import {
     createAwaitingRequest,
@@ -18,15 +19,7 @@ import {
 
 vi.mock("@/utils/device-signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/utils/device-signers")>();
-    return {
-        ...actual,
-        createDeviceSigner: vi.fn().mockResolvedValue({
-            type: "device",
-            publicKey: { x: "0x01", y: "0x02" },
-            locator: "device:newKey",
-            name: "Test Device",
-        }),
-    };
+    return { ...actual, createDeviceSigner: vi.fn() };
 });
 
 const NEW_DEVICE = "device:newKey";
@@ -102,6 +95,12 @@ describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ 
     beforeEach(() => {
         vi.clearAllMocks();
         vi.useFakeTimers({ shouldAdvanceTime: true });
+        vi.mocked(createDeviceSigner).mockResolvedValue({
+            type: "device",
+            publicKey: { x: "0x01", y: "0x02" },
+            locator: NEW_DEVICE,
+            name: "Test Device",
+        } as never);
         api = createMockApiClient();
         storage = deviceKeyStorage();
         quorum = createQuorumApiEntryWith([aliceMember]);

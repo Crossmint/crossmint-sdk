@@ -35,6 +35,7 @@ import type {
     Signature,
     ApproveResult,
     PrepareOnly,
+    RecoverResult,
     RecoverySignerConfigFor,
     SendTokenTransactionOptions,
     SignerOption,
@@ -104,7 +105,7 @@ import {
 } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
-import { type ApproverRequest, type RecoveryMember, SignerManager } from "./services/signer-manager";
+import { type RecoveryMember, SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
@@ -172,7 +173,7 @@ export class Wallet<C extends Chain> {
     #deviceRecovery: DeviceRecoveryService<C>;
     #apiDelegatedServerSignerAddresses: string[] = [];
     #signerInitialization: Promise<void>;
-    #recovering: Promise<void> | null = null;
+    #recovering: Promise<RecoverResult> | null = null;
     // The active key when useSigner selected it as only a quorum member: creating calls then act as its quorum.
     #quorumMemberLocator: SignerLocator | null = null;
 
@@ -257,12 +258,9 @@ export class Wallet<C extends Chain> {
             signerManager: this.#signerManager,
             serverSignerResolver: this.#serverSignerResolver,
             signers: () => this.signers(),
-            // Until device recovery supports recovery quorums, its signer changes ignore a selected member.
-            addSigner: (deviceSigner) => this.#addSigner(deviceSigner, undefined, { ignoreMember: true }),
+            addSigner: (deviceSigner) => this.#addSigner(deviceSigner),
             removeSigner: (signerLocator) =>
-                this.#removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>, undefined, {
-                    ignoreMember: true,
-                }),
+                this.#removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
             deviceSignerActivity: () =>
@@ -817,11 +815,10 @@ export class Wallet<C extends Chain> {
         >;
     }
 
-    // addSigner's body; device recovery passes `ignoreMember` so its own signer changes keep the recovery method.
+    // addSigner's body, also run by device recovery for the device signer it registers.
     async #addSigner(
         signer: SignerConfigForChain<C> | ServerSignerConfig | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>,
-        options?: AddSignerOptions,
-        approverOptions: Omit<ApproverRequest, "explicit"> = {}
+        options?: AddSignerOptions
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
         walletsLogger.info("wallet.addSigner.start");
 
@@ -832,7 +829,7 @@ export class Wallet<C extends Chain> {
                 : signer;
 
         const explicit = this.#explicitApprover(options);
-        return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
+        return this.#signerManager.withApprover({ explicit }, async (approver) => {
             const prepareOnly = this.isPrepareOnly(options, approver);
             const signerLocator = this.#registrationLocator(resolvedSigner);
             if (signerLocator != null) {
@@ -1029,17 +1026,16 @@ export class Wallet<C extends Chain> {
         return this.#removeSigner(signer, options);
     }
 
-    // removeSigner's body; device recovery passes `ignoreMember` so its own signer changes keep the recovery method.
+    // removeSigner's body, also run by device recovery for the old device signer it removes.
     async #removeSigner(
         signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumRef | QuorumSignerConfig<C>,
-        options?: RemoveSignerOptions,
-        approverOptions: Omit<ApproverRequest, "explicit"> = {}
+        options?: RemoveSignerOptions
     ): Promise<RemoveSignerReturnType> {
         const signerLocator = await this.#removalLocator(signer, "delegated");
         walletsLogger.info("wallet.removeSigner.start", { signerLocator });
 
         const explicit = this.#explicitApprover(options);
-        return this.#signerManager.withApprover({ explicit, ...approverOptions }, async (approver) => {
+        return this.#signerManager.withApprover({ explicit }, async (approver) => {
             const response = await this.#apiClient.removeSigner(this.walletLocator, signerLocator, {
                 chain: this.chainAdapter.addSignerChain(this.chain),
                 ...(approver != null && { approver }),
@@ -1591,6 +1587,10 @@ export class Wallet<C extends Chain> {
      * Register a device signer with the wallet using the recovery signer.
      * Generates a new device key and registers it on-chain.
      * Returns early if the device signer's locator is already approved on-chain.
+     * When a recovery quorum approves (a member selected with {@link useRecoveryMethod}), the registration is created
+     * unsigned and returned as `{ transactionId }` or `{ signatureId }`; members sign it with {@link approve}, and the
+     * device signer stays in `needs-recovery` until it lands. The call that sees it land starts the old device
+     * signer's removal through the quorum and returns that request the same way.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -1599,8 +1599,8 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async recover(): Promise<void> {
-        await this.#deviceRecovery.recover();
+    public async recover(): Promise<RecoverResult> {
+        return await this.#deviceRecovery.recover();
     }
 
     /**

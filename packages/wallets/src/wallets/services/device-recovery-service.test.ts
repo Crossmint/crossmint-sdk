@@ -59,6 +59,7 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
         recovery,
         requireDefaultRecovery: overrides.requireDefaultRecovery ?? vi.fn(() => recovery),
         resolveAuthorizingRecovery: vi.fn(() => ({ recovery, approver: undefined })),
+        approvesAsQuorum: vi.fn(() => false),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -548,12 +549,12 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
     }
 
     describe("when every recovery method is a quorum", () => {
-        it("throws QuorumSignerNotSupportedError and creates no device key", async () => {
+        it("throws RecoveryMethodRequiredError and creates no device key while no member is selected", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager([createQuorumApiEntry()], storage);
             const { service } = setup({ storage, manager });
 
-            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            await expect(service.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
             expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
         });
 

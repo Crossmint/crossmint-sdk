@@ -80,6 +80,9 @@ export type AddRecoveryMethodReturnType = { transactionId: string; status?: "suc
 
 export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
 
+/** The request `recover()` leaves for quorum members to approve with `approve`, or undefined when none is left. */
+export type RecoverResult = { transactionId: string } | { signatureId: string } | undefined;
+
 export type SignMessageInput = {
     message: string;
     options?: SignatureInputOptions;

@@ -1,7 +1,8 @@
 import type { Signer as APISigner, Scope } from "../api";
-import type { PendingSignerOperation, Signer, SignerStatus } from "../wallets/types";
+import type { PendingApproval, PendingSignerOperation, Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
 import { requireQuorumLocator, type QuorumMember, type QuorumSigner } from "../signers/types";
+import { isQuorumPendingApproval } from "../quorum/approvals";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
 type SignerBase = DistributiveOmit<Signer, "status">;
@@ -113,6 +114,25 @@ export function isSignerOnChain(
         return true;
     }
     return Object.keys(apiSigner.chains).length === 0 || apiSigner.chains[chain] != null;
+}
+
+/** Whether a signer's pending registration waits on quorum members: its request has a quorum entry pending. */
+export function registrationAwaitsQuorum(apiSigner: APISigner, chain: Chain): boolean {
+    return pendingRegistrationApprovals(apiSigner, chain).some(isQuorumPendingApproval);
+}
+
+function pendingRegistrationApprovals(apiSigner: APISigner, chain: Chain): PendingApproval[] {
+    if (chain === "solana" || chain === "stellar") {
+        if ("transaction" in apiSigner && apiSigner.transaction != null) {
+            return (apiSigner.transaction.approvals?.pending ?? []) as PendingApproval[];
+        }
+        return [];
+    }
+    const chainEntry = "chains" in apiSigner ? apiSigner.chains?.[chain] : undefined;
+    if (chainEntry != null && "approvals" in chainEntry) {
+        return (chainEntry.approvals?.pending ?? []) as PendingApproval[];
+    }
+    return [];
 }
 
 export function getPendingSignerOperation(apiSigner: APISigner, chain: Chain): PendingSignerOperation | null {
