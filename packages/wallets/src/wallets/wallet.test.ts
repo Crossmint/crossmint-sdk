@@ -3714,6 +3714,34 @@ describe("Wallet - recover()", () => {
                 expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
             });
 
+            it("never sends the member's quorum as the device signer's approver, even when selected while the key is made", async () => {
+                const mockStorage = createMockDeviceKeyStorage();
+                const wallet = new Wallet(
+                    {
+                        chain: "solana",
+                        address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                        recovery: [{ type: "api-key" }, recoveryQuorum] as any,
+                        options: { deviceSignerKeyStorage: mockStorage as any },
+                    },
+                    mockApiClient as unknown as ApiClient
+                );
+                vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
+                await wallet.useRecoveryMethod({ type: "api-key" } as any);
+                mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
+                let finishKey: (key: unknown) => void = () => {};
+                vi.mocked(createDeviceSigner).mockImplementationOnce(
+                    () => new Promise((resolve) => (finishKey = resolve)) as never
+                );
+
+                const recovering = wallet.recover().catch((error: unknown) => error);
+                await vi.waitFor(() => expect(createDeviceSigner).toHaveBeenCalled());
+                await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
+                finishKey({ type: "device", publicKey: { x: "0x01", y: "0x02" }, locator: "device:mockNewKey" });
+
+                expect(await recovering).toBeInstanceOf(RecoveryMethodRequiredError);
+                expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+            });
+
             it("keeps the member selection, so the next signer change sends the member's quorum", async () => {
                 const mockStorage = createMockDeviceKeyStorage();
                 const wallet = await walletWithSelectedMember(mockStorage);

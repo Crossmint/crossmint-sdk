@@ -354,7 +354,6 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
     });
 });
 
-// Stellar picks the approver as on EVM, but its adapter does not sign quorum entries yet (m0d flag).
 // Members sign on EVM and Stellar with the plain external-wallet test key. EVM recovery-method calls wait for #2219.
 describe.each([
     { chain: "base-sepolia" as const, paths: PATHS.slice(0, 2) },
@@ -621,6 +620,28 @@ describe("addSigner resuming a registration that a recovery quorum approves", ()
         expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
             [{ signer: alice.member.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
         ]);
+    });
+});
+
+describe("addSigner with a quorum approver when the signer is already approved", () => {
+    it("returns it as prepareOnly does, with its own status, and sends nothing", async () => {
+        const api = createMockApiClient();
+        const alice = memberKey(ALICE["base-sepolia"]);
+        const recoveryQuorum = createQuorumApiEntryWith([alice.member]);
+        const wallet = await walletWithRecovery("base-sepolia", api, [{ type: "api-key" }, recoveryQuorum]);
+        api.getSigner.mockResolvedValue({
+            ...REGISTERED,
+            chains: { "base-sepolia": { id: "txn-done", status: "active" } },
+        } as never);
+
+        const result = await wallet.addSigner(
+            { type: "external-wallet", address: "NewSigner444" } as never,
+            { signer: recoveryQuorum.locator } as never
+        );
+
+        expect(result).toMatchObject({ locator: REGISTERED.locator, status: "active" });
+        expect(api.registerSigner).not.toHaveBeenCalled();
+        expect(api.approveTransaction).not.toHaveBeenCalled();
     });
 });
 
