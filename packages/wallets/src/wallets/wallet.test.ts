@@ -1169,8 +1169,6 @@ describe("Wallet - addSigner()", () => {
         });
 
         it("creates the passkey when the config has no credential id, and registers the new credential", async () => {
-            // The docs' `addSigner({ type: "passkey" })`: before the fix the SDK looked up signer "passkey" and sent
-            // the bare config, which the API rejects (`signer: Invalid input`).
             const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
             mockApiClient.registerSigner.mockResolvedValue({
                 type: "passkey",
@@ -1193,6 +1191,16 @@ describe("Wallet - addSigner()", () => {
                 })
             );
             expect(result).toMatchObject({ locator: "passkey:new-cred", transactionId: "txn-passkey" });
+        });
+
+        it("registers nothing when the user cancels the passkey prompt", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(stellarWallet.addSigner({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
+            );
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
         });
     });
 
@@ -1693,6 +1701,17 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 chain: "base-sepolia",
             });
             expect(evmWallet.recoveryMethods[1]).toMatchObject(passkey);
+        });
+
+        it("registers nothing and keeps the recovery methods when the user cancels the passkey prompt", async () => {
+            const before = [...evmWallet.recoveryMethods];
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(evmWallet.addRecoveryMethod({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
+            );
+            expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+            expect(evmWallet.recoveryMethods).toEqual(before);
         });
 
         it("throws on API failure", async () => {
