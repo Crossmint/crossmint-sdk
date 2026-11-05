@@ -1,5 +1,28 @@
 # @crossmint/wallets-sdk
 
+## 1.22.0
+
+### Minor Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+### Patch Changes
+
+- e981bab: `wallet.send` now serializes the full API error response into `TransactionNotCreatedError` instead of only the `message` field, so failed transfers surface the structured `error` object (`reason`, `revert.reason`, `revert.explorerLink`, `revert.simulationLink`, Solana `logs`).
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
 ## 1.21.2
 
 ### Patch Changes
