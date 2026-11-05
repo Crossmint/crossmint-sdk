@@ -1,5 +1,42 @@
 # @crossmint/wallets-sdk
 
+## 1.21.2
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+
+## 1.21.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- d170b2d: Stop leaking server signer secrets through wallet signer-config mismatch errors. `compareSignerConfigs` no longer compares or echoes `secret` fields (or runtime callbacks), and its error message names only the mismatching field. A server recovery signer is matched by the address its secret derives to: on an existing wallet, a secret that derives to none of the wallet's server recovery signers is now rejected instead of passing a type-only match. The SDK logger now also scrubs known secret shapes (server signer master secrets, JWTs, Crossmint API keys) from error messages, stack traces and log messages before they reach the log sinks.
+- 6471943: `wallet.balances()` no longer returns `inTransit` on the wallet account in `accounts`. Card accounts and the token total still have it.
+- 3de9265: Type the `creditLimit` field on card accounts in `wallet.balances()` results. Each card in `accounts` now reports `creditLimit`: the collateral the card provider has credited to the card, which caps what it can spend.
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.21.0
+
+### Minor Changes
+
+- 507f354: Support recovery methods on EVM. `createWallet` sends `recoveryMethods` on EVM chains and accepts more than one. `addRecoveryMethod` and `removeRecoveryMethod` work on EVM wallets and send the wallet's chain, which the API requires on EVM. A single recovery method passed as `recovery` still goes under `adminSigner`.
+
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
 ## 1.20.6
 
 ### Patch Changes

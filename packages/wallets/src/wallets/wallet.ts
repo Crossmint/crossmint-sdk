@@ -45,8 +45,9 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    RecoveryNotSupportedOnChainError,
+    SIGNER_LIMIT_EXCEEDED_ERROR_CODE,
     SignatureFailedError,
+    SignerLimitExceededError,
     SignatureNotAvailableError,
     TransactionFailedError,
     TransactionNotAvailableError,
@@ -94,6 +95,7 @@ import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
+import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
     type PollingOptions,
     waitForSignatureCompletion,
@@ -106,7 +108,7 @@ type WalletContructorType<C extends Chain> = {
     owner?: string;
     alias?: string;
     options?: WalletOptions;
-    /** The wallet's recovery signer(s). Wallets on chains that support a single recovery signer take one entry. */
+    /** The wallet's recovery signer(s). */
     recovery: RecoverySignerConfigForChain<C> | Array<RecoverySignerConfigForChain<C>>;
     /** Addresses of the API-sourced server recovery signers, so legacy derivations can be recognised. */
     apiRecoveryServerSignerAddresses?: string[];
@@ -232,6 +234,10 @@ export class Wallet<C extends Chain> {
                 this.removeSigner({ type: "device", locator: signerLocator } as SignerConfigForChain<C>),
             approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
             approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
+            deviceSignerActivity: () =>
+                fetchDeviceSignerActivity(this.#apiClient, this.walletLocator, {
+                    includeSignatures: this.chainAdapter.supportsSignatures,
+                }),
         });
         this.#signerInitialization = this.initDefaultSigner();
     }
@@ -385,8 +391,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get every recovery signer config of the wallet. Wallets on chains that support a single recovery
-     * signer always return one entry.
+     * Get every recovery signer config of the wallet.
      * @returns The recovery signer configs
      * @experimental This API is experimental and may change in the future
      */
@@ -588,13 +593,13 @@ export class Wallet<C extends Chain> {
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
-        if ("message" in transactionCreationResponse) {
+        if ("error" in transactionCreationResponse) {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
             throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(
-                `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
+                `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
             );
         }
 
@@ -781,6 +786,9 @@ export class Wallet<C extends Chain> {
                 if (response.code === DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE) {
                     throw new DeviceSignerNotSupportedError(response.message);
                 }
+                if (response.code === SIGNER_LIMIT_EXCEEDED_ERROR_CODE) {
+                    throw new SignerLimitExceededError(response.message, JSON.stringify(response));
+                }
                 throwIfQuorumApiError(response);
                 throw new InvalidSignerError(`Failed to register signer: ${JSON.stringify(response.message)}`);
             }
@@ -894,7 +902,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Add a recovery method to the wallet. Supported on Solana and Stellar only.
+     * Add a recovery method to the wallet.
      * Always uses one of the existing recovery methods to approve the change, selected as in {@link addSigner}.
      * @param recoveryMethod - The recovery method configuration object
      * @param options - The options for the operation
@@ -911,7 +919,6 @@ export class Wallet<C extends Chain> {
         recoveryMethod: RecoverySignerConfigFor<C> | ServerSignerConfig | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<AddRecoveryMethodReturnType> {
-        this.assertRecoveryMethodManagementSupported();
         walletsLogger.info("wallet.addRecoveryMethod.start");
 
         const resolvedMethod =
@@ -931,6 +938,7 @@ export class Wallet<C extends Chain> {
             const response = await this.#apiClient.registerRecoveryMethod(this.walletLocator, {
                 recoveryMethods: recoveryMethodInput as RegisterRecoveryMethodParams["recoveryMethods"],
                 approver: this.resolveRecoveryApprover(approver),
+                chain: this.chainAdapter.addSignerChain(this.chain),
             });
 
             if ("error" in response) {
@@ -962,7 +970,7 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Remove a recovery method from the wallet. Supported on Solana and Stellar only.
+     * Remove a recovery method from the wallet.
      * Always uses one of the remaining recovery methods to approve the change, selected as in {@link addSigner}.
      * @param recoveryMethod - The recovery method to remove, provided as a signer config object
      * @param options - The options for the operation
@@ -979,13 +987,13 @@ export class Wallet<C extends Chain> {
         recoveryMethod: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
         options?: T
     ): Promise<RemoveRecoveryMethodReturnType> {
-        this.assertRecoveryMethodManagementSupported();
         const recoveryMethodLocator = this.resolveSignerLocator(recoveryMethod);
         walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
 
         return this.#signerManager.withRecoverySigner(async (approver) => {
             const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
                 approver: this.resolveRecoveryApprover(approver),
+                chain: this.chainAdapter.addSignerChain(this.chain),
             });
 
             if ("error" in response) {
@@ -1007,14 +1015,6 @@ export class Wallet<C extends Chain> {
             walletsLogger.info("wallet.removeRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };
         });
-    }
-
-    private assertRecoveryMethodManagementSupported(): void {
-        if (this.chain !== "solana" && this.chain !== "stellar") {
-            throw new RecoveryNotSupportedOnChainError(
-                `Adding and removing recovery methods is not supported on ${this.chain} yet. It is available on Solana and Stellar.`
-            );
-        }
     }
 
     /**
