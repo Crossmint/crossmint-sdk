@@ -3743,7 +3743,7 @@ describe("Wallet - recover()", () => {
                 expect(mockStorage.deleteKey).toHaveBeenCalledWith("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
             });
 
-            it("never removes the stale device signer through the member's quorum, even when selected mid-recovery", async () => {
+            it("skips the stale device signer's removal when a member is selected mid-recovery", async () => {
                 const mockStorage = createMockDeviceKeyStorage();
                 const wallet = new Wallet(
                     {
@@ -3785,11 +3785,11 @@ describe("Wallet - recover()", () => {
                     publicKey: { x: "0x01", y: "0x02" },
                     transaction: { id: "tx-1", status: "pending", onChain: { transaction: "serialized-tx" } },
                 });
-                await recovering;
+                expect(await recovering).toBeUndefined();
 
-                expect(mockApiClient.removeSigner.mock.calls.map((call) => call[2].approver)).not.toContain(
-                    recoveryQuorum.locator
-                );
+                // Selecting the member cleared the recovery method, so no key can approve the removal until E5.
+                expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
+                expect(wallet.signer?.locator()).toBe("device:mockNewKey");
             });
 
             it("keeps the member selection, so the next signer change sends the member's quorum", async () => {
