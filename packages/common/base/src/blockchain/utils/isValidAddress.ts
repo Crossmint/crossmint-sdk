@@ -8,9 +8,9 @@ export function isValidSolanaAddress(address: string): boolean {
     return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
 }
 
-// Stellar address: starts with "G" followed by 56 alphanumeric characters
+// Stellar address: StrKey account ("G...") or contract ("C...") id, 56 characters of RFC 4648 base32 (A-Z, 2-7)
 export function isValidStellarAddress(address: string): boolean {
-    return /^[G|C][A-Z0-9]{55}$/.test(address);
+    return /^[GC][A-Z2-7]{55}$/.test(address);
 }
 
 // General: valid if EVM, Solana or Stellar
