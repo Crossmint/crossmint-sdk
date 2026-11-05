@@ -57,8 +57,9 @@ export function getAuthCookies(
 }
 
 /**
- * Write the session to the response cookies under the project-scoped names, and expire the legacy
- * bare-named cookies so a stale legacy session does not outlive the scoped one.
+ * Write the session to the response cookies under the project-scoped names. Empty auth material (logout)
+ * also expires the legacy bare-named cookies, so an old session cannot be read back through the fallback.
+ * A refresh leaves them alone: they may belong to another project on the same domain.
  */
 export function setAuthCookies(
     response: GenericResponse,
@@ -85,9 +86,11 @@ export function setAuthCookies(
                 expiresAt: authMaterial.refreshToken.expiresAt,
             },
         }),
-        ...[SESSION_PREFIX, REFRESH_TOKEN_PREFIX].map((legacyName) =>
-            createCookieString({ name: legacyName, value: "", options })
-        ),
+        ...(authMaterial.jwt === ""
+            ? [SESSION_PREFIX, REFRESH_TOKEN_PREFIX].map((legacyName) =>
+                  createCookieString({ name: legacyName, value: "", options })
+              )
+            : []),
     ];
 
     const responseAdapter = isNodeResponse(response)

@@ -177,7 +177,7 @@ describe("setAuthCookies", () => {
         vi.restoreAllMocks();
     });
 
-    it("writes the scoped cookies and expires the legacy ones on a Node.js ServerResponse", () => {
+    it("writes only the scoped cookies on a Node.js ServerResponse, leaving legacy cookies to other projects", () => {
         const mockResponse = {
             setHeader: vi.fn(),
         } as unknown as ServerResponse;
@@ -187,11 +187,10 @@ describe("setAuthCookies", () => {
         expect(mockResponse.setHeader).toHaveBeenCalledWith("Set-Cookie", [
             `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Lax;`,
             `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
-            ...EXPIRED_LEGACY_COOKIES,
         ]);
     });
 
-    it("writes the scoped cookies and expires the legacy ones on a Fetch Response", () => {
+    it("writes only the scoped cookies on a Fetch Response, leaving legacy cookies to other projects", () => {
         const response = new Response();
 
         setAuthCookies(response, mockAuthMaterial, PROJECT_ID, defaultOptions);
@@ -199,7 +198,6 @@ describe("setAuthCookies", () => {
         expect(setCookieHeaders(response)).toEqual([
             `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Lax;`,
             `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
-            ...EXPIRED_LEGACY_COOKIES,
         ]);
     });
 
@@ -222,7 +220,7 @@ describe("setAuthCookies", () => {
         ]);
     });
 
-    it("applies custom options to the scoped cookies and to the legacy expiry", () => {
+    it("applies custom options to the scoped cookies", () => {
         const response = new Response();
         const customOptions = {
             sameSite: "Strict" as const,
@@ -236,8 +234,6 @@ describe("setAuthCookies", () => {
         expect(setCookieHeaders(response)).toEqual([
             `${SCOPED_JWT}=mock-jwt-token; path=/; SameSite=Strict; Secure; Domain=example.com;`,
             `${SCOPED_REFRESH}=mock-refresh-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; expires=Sat, 01 Apr 2023 00:00:00 GMT;`,
-            `${SESSION_PREFIX}=; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; ${EXPIRED}`,
-            `${REFRESH_TOKEN_PREFIX}=; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; ${EXPIRED}`,
         ]);
     });
 });

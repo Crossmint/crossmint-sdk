@@ -16,10 +16,16 @@ export async function middleware(request: NextRequest) {
 
     const response = NextResponse.next();
 
-    const crossmint = createCrossmint({
-        apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
-    });
-    const crossmintAuth = CrossmintAuth.from(crossmint);
+    let crossmintAuth: CrossmintAuth;
+    try {
+        crossmintAuth = CrossmintAuth.from(
+            createCrossmint({
+                apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
+            })
+        );
+    } catch (_) {
+        return response;
+    }
     const cookieNames = crossmintAuth.getAuthCookieNames();
 
     const jwt = request.cookies.get(cookieNames.jwt)?.value;

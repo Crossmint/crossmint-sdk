@@ -187,7 +187,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
 
     /**
      * Store auth material (JWT and refresh token) in the response's cookies, under the project-scoped
-     * names, and expire the legacy unscoped cookies.
+     * names. Empty auth material (logout) also expires the legacy unscoped cookies.
      */
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
         setAuthCookies(response, authMaterial, this.projectId, this.cookieOptions);

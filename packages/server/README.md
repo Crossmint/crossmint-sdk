@@ -59,7 +59,7 @@ if (refreshToken != null) {
 
 3. Store the authentication material in cookies
 
-If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method. The SDK writes the project-scoped cookie names and expires the legacy unscoped ones:
+If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method. The SDK writes the project-scoped cookie names (logout also expires the legacy unscoped ones):
 
 ```ts
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
