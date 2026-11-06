@@ -15,6 +15,7 @@ import {
     createQuorumPendingApproval,
     settle,
     signatureOver,
+    signerNotFound,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -117,7 +118,7 @@ describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ 
         api = createMockApiClient();
         storage = deviceKeyStorage();
         quorum = createQuorumApiEntryWith([aliceMember]);
-        api.getSigner.mockResolvedValue({ error: { message: "not found" } } as never);
+        api.getSigner.mockRejectedValue(signerNotFound());
         api.registerSigner.mockResolvedValue(
             deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
         );
@@ -217,9 +218,7 @@ describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ 
 
         it("keeps the key when the registration fails and whether it exists cannot be read", async () => {
             const wallet = await recoveringWallet();
-            api.getSigner
-                .mockResolvedValueOnce({ error: { message: "not found" } } as never)
-                .mockRejectedValue(new Error("network down"));
+            api.getSigner.mockRejectedValueOnce(signerNotFound()).mockRejectedValue(new Error("network down"));
             api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
 
             await expect(wallet.recover()).rejects.toThrow("fetch failed");
@@ -504,7 +503,7 @@ describe("device recovery through a recovery quorum on EVM", () => {
         api = createMockApiClient();
         storage = deviceKeyStorage();
         quorum = createQuorumApiEntryWith([alice]);
-        api.getSigner.mockResolvedValue({ error: { message: "not found" } } as never);
+        api.getSigner.mockRejectedValue(signerNotFound());
     });
 
     afterEach(() => {
@@ -530,7 +529,7 @@ describe("device recovery through a recovery quorum on EVM", () => {
         const wallet = await recoveringWallet();
         // Not registered yet when recovery checks; registered once the failed response comes back.
         api.getSigner
-            .mockResolvedValueOnce({ error: { message: "not found" } } as never)
+            .mockRejectedValueOnce(signerNotFound())
             .mockResolvedValue(registration({ id: "tx-add", status: "awaiting-approval", onChain: {} }) as never);
 
         await expect(wallet.recover()).rejects.toThrow();
@@ -607,10 +606,13 @@ describe.each(CHAINS)(
             storage = keyKeepingStorage(address);
             registrations = new Map();
             const approved = new Set<string>();
-            api.getSigner.mockImplementation(
-                (async (_wallet: string, locator: string) =>
-                    registrations.get(locator) ?? { error: { message: "not found" } }) as never
-            );
+            api.getSigner.mockImplementation((async (_wallet: string, locator: string) => {
+                const registered = registrations.get(locator);
+                if (registered == null) {
+                    throw signerNotFound();
+                }
+                return registered;
+            }) as never);
             api.registerSigner.mockImplementation((async () => {
                 const locator = `device:${await storage.getKey(address)}`;
                 registrations.set(locator, registration(locator, `tx-${registrations.size + 1}`));

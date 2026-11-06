@@ -19,7 +19,7 @@ import type { WalletOptions } from "../types";
 import { SignerManager, type SignerManagerParams } from "./signer-manager";
 import { assembleSigner } from "../../signers";
 import { walletsLogger } from "../../logger";
-import { createQuorumApiEntry } from "../__tests__/test-helpers";
+import { createQuorumApiEntry, signerNotFound } from "../__tests__/test-helpers";
 
 vi.mock("../../signers", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../signers")>();
@@ -393,6 +393,13 @@ describe("SignerManager", () => {
 
     it.each([
         ["a thrown getSigner call", vi.fn().mockRejectedValue(new Error("network")), true],
+        [
+            "a server error",
+            vi.fn().mockRejectedValue(new ApiClientError("API request failed: 503", 503, "Service Unavailable", null)),
+            true,
+        ],
+        // The client throws a 404 for a signer the wallet does not have: it is read as not registered.
+        ["a signer the wallet does not have", vi.fn().mockRejectedValue(signerNotFound()), false],
         ["an error response", vi.fn().mockResolvedValue({ error: true, message: "nope" }), false],
         ["a null response", vi.fn().mockResolvedValue(null), false],
         ["a non-object response", vi.fn().mockResolvedValue("not-an-object"), false],

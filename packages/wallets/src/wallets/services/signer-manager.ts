@@ -41,10 +41,15 @@ export type SignerManagerParams<C extends Chain> = {
 const USE_SIGNER_REQUIRED =
     "No signer is set. This wallet requires calling wallet.useSigner() before signing operations.";
 
+// The API answers 404 for a signer the wallet does not have, and the client throws it as an ApiClientError.
+function isSignerNotFound(error: unknown): boolean {
+    return error instanceof ApiClientError && error.status === 404;
+}
+
 /** A recovery method that signs on its own, as opposed to a quorum. */
 type SingleRecoverySigner<C extends Chain> = Exclude<RecoverySignerConfigForChain<C>, QuorumSigner>;
 
-// How a signer change picks its approver: an explicit `signer` option, and whether to skip the member selection.
+// How a signer change picks its approver: an explicit `signer` option.
 export type ApproverRequest = { explicit?: string };
 
 /** A key selected with useRecoveryMethod() that is only a member of a recovery quorum, and its member locator. */
@@ -491,7 +496,7 @@ export class SignerManager<C extends Chain> {
         pendingOperation: PendingSignerOperation | null;
         /** The quorum that approves the registration, when its request names one: its members sign with `approve`. */
         approvingQuorum: QuorumLocator | null;
-        /** The signer could not be read (the request threw), so whether it is registered is unknown. */
+        /** The signer could not be read (the request threw, other than a 404), so whether it is registered is unknown. */
         lookupFailed: boolean;
     }> {
         let signerResponse: GetSignerResponse | null = null;
@@ -499,7 +504,8 @@ export class SignerManager<C extends Chain> {
             signerResponse = await this.#apiClient.getSigner(this.#walletLocator(), signerLocator);
         } catch (error) {
             walletsLogger.warn("wallet.signers.getSignerState.fetchFailed", { signerLocator, error });
-            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed: true };
+            const lookupFailed = !isSignerNotFound(error);
+            return { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed };
         }
 
         if (signerResponse == null || typeof signerResponse !== "object" || "error" in signerResponse) {
@@ -530,7 +536,7 @@ export class SignerManager<C extends Chain> {
             const signer = await this.#fetchSigner(signerLocator as SignerLocator);
             return this.isApprovedSignerStatus(signer?.status);
         } catch (error) {
-            if (error instanceof ApiClientError && error.status === 404) {
+            if (isSignerNotFound(error)) {
                 return false;
             }
             walletsLogger.error("wallet.signers.isSignerApproved.failed", { signerLocator, error });
