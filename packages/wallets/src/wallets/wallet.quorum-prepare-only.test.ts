@@ -15,6 +15,7 @@ import {
     createMockWallet,
     createQuorumApiEntry,
     createQuorumPendingApproval,
+    settle,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 import type { SendTokenTransactionOptions, SignerOption, TransactionInputOptions } from "./types";
@@ -98,16 +99,6 @@ const CREATING_CALLS: CreatingCall[] = [
         created: createTransactionRequests,
     },
 ];
-
-// Settles the call while fake timers run, so a sleep on the approval path cannot hang the test.
-const settle = async (call: Promise<unknown>) => {
-    const settled = call.then(
-        (value) => ({ value }),
-        (error: unknown) => ({ error })
-    );
-    await vi.runAllTimersAsync();
-    return settled;
-};
 
 const createdRequest = (transactionId: string) => ({ hash: undefined, explorerLink: undefined, transactionId });
 

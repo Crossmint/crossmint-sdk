@@ -1,6 +1,6 @@
 import type { ApiClient, GetSignatureResponse, GetTransactionSuccessResponse, WalletLocator } from "../../api";
-import { awaitsQuorumOnly, splitPendingApprovals, toQuorumProgress } from "../../quorum/approvals";
-import type { QuorumApprovalProgress, Signature, Transaction } from "../types";
+import { awaitsQuorumOnly } from "../../quorum/approvals";
+import type { Signature, Transaction } from "../types";
 import {
     SignatureConfirmationTimeoutError,
     SignatureNotAvailableError,
@@ -27,16 +27,15 @@ export type PollingOptions = {
 const AWAITING_APPROVAL_MESSAGE =
     "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
 
-/** Only quorum members can still approve the transaction; `quorums` is each quorum's progress. */
-export type AwaitingApproval = {
-    status: "awaiting-approval";
-    transactionId: string;
-    quorums: QuorumApprovalProgress[];
-};
+/** Only quorum members can still approve the transaction. */
+export type AwaitingApproval = { status: "awaiting-approval"; transactionId: string };
 
 export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | AwaitingApproval;
 
-/** Waits for the transaction to land; throws `TransactionAwaitingApprovalError` while it still needs approvals. */
+/**
+ * Waits for the transaction to land. While only quorum members can still approve it, returns it without `hash` and
+ * `explorerLink` (EDD 007 §7 "Approval"); any other wait for approvals throws `TransactionAwaitingApprovalError`.
+ */
 export async function waitForTransactionCompletion(
     apiClient: ApiClient,
     walletLocator: WalletLocator,
@@ -45,7 +44,9 @@ export async function waitForTransactionCompletion(
 ): Promise<Transaction<false>> {
     const outcome = await waitForTransactionOutcome(apiClient, walletLocator, transactionId, options);
     if (outcome.status === "awaiting-approval") {
-        throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
+        // The prepareOnly shape under the full result type, which the EDD keeps: callers check `hash == null`.
+        const transaction: Transaction<true> = { hash: undefined, explorerLink: undefined, transactionId };
+        return transaction as Transaction<false>;
     }
     return outcome.transaction;
 }
@@ -130,19 +131,40 @@ export async function waitForTransactionOutcome(
 }
 
 function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transactionId: string): AwaitingApproval {
-    if (transaction.approvals == null || !awaitsQuorumOnly(transaction)) {
+    if (!awaitsQuorumOnly(transaction)) {
         throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
     }
-    const { quorums } = splitPendingApprovals(transaction.approvals.pending);
-    return { status: "awaiting-approval", transactionId, quorums: quorums.map(toQuorumProgress) };
+    return { status: "awaiting-approval", transactionId };
 }
 
+/** Only quorum members can still approve the signature. */
+export type SignatureAwaitingApproval = { status: "awaiting-approval"; signatureId: string };
+
+export type SignatureOutcome = { status: "success"; signature: Signature<false> } | SignatureAwaitingApproval;
+
+/** Waits for the signature. While only quorum members can still approve it, returns it without `signature`. */
 export async function waitForSignatureCompletion(
     apiClient: ApiClient,
     walletLocator: WalletLocator,
     signatureId: string,
     options?: PollingOptions
 ): Promise<Signature<false>> {
+    const outcome = await waitForSignatureOutcome(apiClient, walletLocator, signatureId, options);
+    if (outcome.status === "awaiting-approval") {
+        // As for transactions: the prepareOnly shape under the full result type; callers check `signature == null`.
+        const signature: Signature<true> = { signature: undefined, signatureId };
+        return signature as Signature<false>;
+    }
+    return outcome.signature;
+}
+
+/** Waits for the signature, or until only quorum members can still approve it. */
+export async function waitForSignatureOutcome(
+    apiClient: ApiClient,
+    walletLocator: WalletLocator,
+    signatureId: string,
+    options?: PollingOptions
+): Promise<SignatureOutcome> {
     const { timeoutMs = 60_000 } = options ?? {};
     const startTime = Date.now();
     let signatureResponse: GetSignatureResponse | null = null;
@@ -164,14 +186,17 @@ export async function waitForSignatureCompletion(
         throw new SigningFailedError("Signature signing failed");
     }
 
+    // Signature responses may omit `approvals.pending`; no list means no approver is pending.
+    const pending = signatureResponse.approvals?.pending ?? [];
+    if (awaitsQuorumOnly({ status: signatureResponse.status, approvals: { pending } })) {
+        return { status: "awaiting-approval", signatureId };
+    }
+
     if (!signatureResponse.outputSignature) {
         throw new SignatureNotAvailableError("Signature not available");
     }
 
-    return {
-        signature: signatureResponse.outputSignature,
-        signatureId,
-    };
+    return { status: "success", signature: { signature: signatureResponse.outputSignature, signatureId } };
 }
 
 async function sleep(ms: number) {
