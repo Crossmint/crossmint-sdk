@@ -913,7 +913,10 @@ export class Wallet<C extends Chain> {
                           type: "server",
                           address: resolvedMethod.slice("server:".length),
                       } as ApiSourcedServerSignerConfig)
-                    : (resolvedMethod as RecoverySignerConfigForChain<C>)
+                    : resolvedMethod.type === "api-key"
+                      ? // Keeps the `api-key:<address>` locator the API resolved, which later recovery-method calls send.
+                        ({ ...resolvedMethod, ...response.recoveryMethods } as RecoverySignerConfigForChain<C>)
+                      : (resolvedMethod as RecoverySignerConfigForChain<C>)
             );
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const };

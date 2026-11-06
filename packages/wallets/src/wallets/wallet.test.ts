@@ -4715,6 +4715,27 @@ describe("Wallet - recovery methods of an api-key wallet", () => {
         });
     });
 
+    describe("when the api-key is added as a recovery method", () => {
+        it("keeps the locator the API resolved for later recovery-method calls", async () => {
+            const wallet = await getWallet([SERVER_RECOVERY]);
+            await wallet.useRecoveryMethod({ type: "server", secret: "test-secret" });
+            mockApiClient.registerRecoveryMethod.mockResolvedValue({
+                recoveryMethods: API_KEY_RECOVERY,
+                tx: { id: "txn-add-recovery", status: "awaiting-approval" },
+            } as any);
+
+            await wallet.addRecoveryMethod({ type: "api-key" });
+            await wallet.removeRecoveryMethod({ type: "api-key" }, { prepareOnly: true });
+
+            expect(wallet.recoveryMethods[1]).toEqual(API_KEY_RECOVERY);
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "api-key:ApiKeyAdmin111",
+                expect.anything()
+            );
+        });
+    });
+
     describe("when a server recovery method was added", () => {
         it("removes the api-key with its full locator, approved by the server recovery method", async () => {
             const wallet = await getWallet([API_KEY_RECOVERY, SERVER_RECOVERY]);

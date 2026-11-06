@@ -5,6 +5,7 @@ import type { DeviceSignerKeyStorage } from "../../utils/device-signers/DeviceSi
 import type { ServerSignerResolver } from "../server/resolver";
 import type { ApiSourcedServerSignerConfig, PasskeyProvider, ServerSignerConfig, SignerConfigForChain } from "../types";
 import { getSignerDescriptor } from "./index";
+import { qualifiedApiKeyLocator } from "./api-key";
 import type { SignerDescriptorContext } from "./types";
 
 const CHAIN: EVMChain = "base-sepolia";
@@ -370,3 +371,25 @@ it.each(["email", "phone", "api-key", "device", "passkey"] as const)(
         expect(getSignerDescriptor(type).signerUnavailableReason()).toBeNull();
     }
 );
+
+it.each([
+    ["the API locator", { type: "api-key", address: "Addr111", locator: "api-key:Addr111" }, "api-key:Addr111"],
+    [
+        "the locator over a differing address",
+        { type: "api-key", address: "Other222", locator: "api-key:Addr111" },
+        "api-key:Addr111",
+    ],
+    [
+        "a locator built from the address when the locator is missing",
+        { type: "api-key", address: "Addr111" },
+        "api-key:Addr111",
+    ],
+    [
+        "a locator built from the address when the locator is bare",
+        { type: "api-key", address: "Addr111", locator: "api-key" },
+        "api-key:Addr111",
+    ],
+    ["null when neither is present", { type: "api-key" }, null],
+] as const)("qualifiedApiKeyLocator returns %s", (_name, recovery, expected) => {
+    expect(qualifiedApiKeyLocator(recovery)).toBe(expected);
+});
