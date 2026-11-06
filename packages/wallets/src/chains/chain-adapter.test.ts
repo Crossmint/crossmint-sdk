@@ -38,8 +38,12 @@ describe("chain-adapter", () => {
     });
 
     describe("supportsQuorumApprovals", () => {
-        it.each(["base-sepolia", "solana", "stellar"] as const)("%s -> false until its quorum milestone", (chain) => {
-            expect(getChainAdapter(chain).supportsQuorumApprovals).toBe(false);
+        it.each(["base-sepolia", "stellar"] as const)("%s -> true: signs as a quorum member", (chain) => {
+            expect(getChainAdapter(chain).supportsQuorumApprovals).toBe(true);
+        });
+
+        it("solana -> false: Solana has no quorums", () => {
+            expect(getChainAdapter("solana").supportsQuorumApprovals).toBe(false);
         });
     });
 

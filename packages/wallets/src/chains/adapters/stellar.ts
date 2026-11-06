@@ -10,7 +10,7 @@ export const stellarChainAdapter: ChainAdapter = {
     nativeToken: "xlm",
     walletLocatorPrefix: "me:stellar:smart",
     supportsSignatures: false,
-    supportsQuorumApprovals: false,
+    supportsQuorumApprovals: true,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;
