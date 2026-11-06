@@ -18,7 +18,6 @@ describe("RNWebViewTransport in a WebView", () => {
     beforeEach(() => {
         host.ReactNativeWebView = { postMessage: vi.fn() };
         vi.spyOn(console, "info").mockImplementation(() => {});
-        vi.spyOn(console, "warn").mockImplementation(() => {});
         received = [];
         transport = new RNWebViewTransport();
         listenerId = transport.addMessageListener((event) => received.push(event.data));
