@@ -44,6 +44,17 @@ describe("mapWalletError", () => {
         });
     });
 
+    describe("when the error is a 451", () => {
+        test("maps to region-blocked whatever the body", () => {
+            expect(mapWalletError(apiClientError(451, '{ "error": { "code": 451, }, }'))).toEqual({
+                code: "region-blocked",
+                status: 451,
+                message: "API request failed: 451",
+            });
+            expect(mapWalletError(apiClientError(451, null)).code).toBe("region-blocked");
+        });
+    });
+
     describe("when a 403 body is a generic non-Cloudflare block", () => {
         test("maps to unknown so the auto-retry loop is not permanently suppressed", () => {
             const nginxBody =

@@ -21,6 +21,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import {
     ApiClientError,
     CrossmintSDKError,
+    HTTP_STATUS_UNAVAILABLE_FOR_LEGAL_REASONS,
     type SdkLogger,
     type UIConfig,
     WalletErrorCode,
@@ -37,7 +38,7 @@ import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
 /**
  * Structured detail about the last wallet load/creation failure, exposed alongside `status`
  * so integrators can render an actionable message and decide whether to retry.
- * - `region-blocked`: request was blocked (e.g. Cloudflare 403 from a restricted region). Permanent — do not retry.
+ * - `region-blocked`: request was blocked (an HTTP 451, or a Cloudflare 403 from a restricted region). Permanent — do not retry.
  * - `network`: transient failure (fetch reject/timeout, 5xx, or 429). Retryable.
  * - `unknown`: anything else.
  */
@@ -223,11 +224,14 @@ export function isSameFailedAttempt<C extends Chain>(
 
 /**
  * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
- * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
+ * A 451 or a Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
  * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
  */
 export function mapWalletError(error: unknown): WalletContextError {
     if (error instanceof ApiClientError) {
+        if (error.status === HTTP_STATUS_UNAVAILABLE_FOR_LEGAL_REASONS) {
+            return { code: "region-blocked", status: error.status, message: error.message };
+        }
         if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {
             return { code: "region-blocked", status: error.status, message: error.message };
         }
