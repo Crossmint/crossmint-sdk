@@ -32,6 +32,22 @@ export const apiKeySignerDescriptor: SignerDescriptor = {
     matchesRecovery(config: SignerConfigForChain<Chain>, recovery: RecoverySignerConfigForChain<Chain>): boolean {
         return getSignerLocator(config) === getSignerLocator(recovery as SignerConfigForChain<Chain>);
     },
-    adoptsRecoveryConfigOnMatch: true,
+    adoptsRecoveryConfigOnMatch: false,
     signerUnavailableReason: () => null,
 };
+
+/**
+ * The `api-key:<address>` locator of an api-key recovery method, as the API returns it on the wallet's
+ * recovery config, or null when the config carries neither the locator nor the address.
+ * Transactions still use the bare `"api-key"` locator; only the recovery-methods API needs this one.
+ */
+export function qualifiedApiKeyLocator(recovery: object): SignerLocator | null {
+    const { locator, address } = recovery as { locator?: unknown; address?: unknown };
+    if (typeof locator === "string" && locator.startsWith("api-key:")) {
+        return locator as SignerLocator;
+    }
+    if (typeof address === "string" && address !== "") {
+        return `api-key:${address}`;
+    }
+    return null;
+}

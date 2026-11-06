@@ -348,7 +348,7 @@ it.each<[name: string, type: string, config: Config, recovery: Config, expected:
 it.each([
     ["email", true],
     ["phone", true],
-    ["api-key", true],
+    ["api-key", false],
     ["device", true],
     ["external-wallet", true],
     ["server", true],

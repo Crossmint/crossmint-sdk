@@ -4642,3 +4642,107 @@ describe("Wallet - isSignerApproved()", () => {
         await expect(wallet.isSignerApproved("email:pending@example.com")).resolves.toBe(false);
     });
 });
+
+describe("Wallet - recovery methods of an api-key wallet", () => {
+    const API_KEY_RECOVERY = { type: "api-key", address: "ApiKeyAdmin111", locator: "api-key:ApiKeyAdmin111" };
+    const SERVER_RECOVERY = {
+        type: "server",
+        address: "0xDerivedServerAddress",
+        locator: "server:0xDerivedServerAddress",
+    };
+    let mockApiClient: MockedApiClient;
+
+    beforeEach(async () => {
+        const { deriveServerSignerCandidates } = await import("@/signers/server");
+        vi.mocked(deriveServerSignerCandidates).mockReturnValue({
+            primary: { derivedKeyBytes: new Uint8Array(32), derivedAddress: "0xDerivedServerAddress" },
+            legacy: { derivedKeyBytes: new Uint8Array(32).fill(1), derivedAddress: "0xLegacyServerAddress" },
+        });
+    });
+
+    async function getWallet(recoveryMethods: unknown[]) {
+        mockApiClient = createMockApiClient();
+        mockApiClient.getWallet.mockResolvedValue({
+            chainType: "solana",
+            type: "smart",
+            address: "5FHwkrdxntdK24hgQU8qgBjn35Y1zwhz1GZwCkP2UJnM",
+            config: { adminSigner: recoveryMethods[0], recoveryMethods, delegatedSigners: [] },
+            createdAt: Date.now(),
+        } as unknown as GetWalletSuccessResponse);
+        mockApiClient.registerRecoveryMethod.mockResolvedValue({
+            recoveryMethods: "server:0xDerivedServerAddress",
+            tx: { id: "txn-add-recovery", status: "awaiting-approval" },
+        } as any);
+        mockApiClient.removeRecoveryMethod.mockResolvedValue({
+            id: "txn-remove-recovery",
+            status: "awaiting-approval",
+            approvals: { pending: [], submitted: [] },
+        } as any);
+        mockApiClient.getTransaction.mockResolvedValue({
+            id: "txn",
+            status: "success",
+            onChain: { txId: "hash", explorerLink: "https://explorer.com/tx/hash" },
+        } as any);
+        const wallet = await new WalletFactory(mockApiClient as unknown as ApiClient).getWallet({ chain: "solana" });
+        vi.spyOn(wallet, "signers").mockResolvedValue([]);
+        return wallet;
+    }
+
+    describe("when the api-key is the only recovery method", () => {
+        it("approves addRecoveryMethod with the api-key locator the API returned", async () => {
+            const wallet = await getWallet([API_KEY_RECOVERY]);
+
+            await wallet.addRecoveryMethod({ type: "server", secret: "test-secret" }, { prepareOnly: true });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({ approver: "api-key:ApiKeyAdmin111" })
+            );
+        });
+
+        it("keeps that locator after useSigner selects the api-key, while transactions still use the bare locator", async () => {
+            const wallet = await getWallet([API_KEY_RECOVERY]);
+
+            await wallet.useSigner({ type: "api-key" });
+            await wallet.addRecoveryMethod({ type: "server", secret: "test-secret" }, { prepareOnly: true });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({ approver: "api-key:ApiKeyAdmin111" })
+            );
+            expect(wallet.signer?.locator()).toBe("api-key");
+            expect(wallet.recoveryMethods[0]).toEqual(API_KEY_RECOVERY);
+        });
+    });
+
+    describe("when a server recovery method was added", () => {
+        it("removes the api-key with its full locator, approved by the server recovery method", async () => {
+            const wallet = await getWallet([API_KEY_RECOVERY, SERVER_RECOVERY]);
+
+            await wallet.useRecoveryMethod({ type: "server", secret: "test-secret" });
+            const result = await wallet.removeRecoveryMethod({ type: "api-key" });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "api-key:ApiKeyAdmin111",
+                { approver: "server:0xDerivedServerAddress" }
+            );
+            expect(result.status).toBe("success");
+            expect(wallet.recoveryMethods.map((recovery) => recovery.type)).toEqual(["server"]);
+        });
+
+        it("approves with the full api-key locator when useRecoveryMethod selects the api-key", async () => {
+            const wallet = await getWallet([API_KEY_RECOVERY, { type: "external-wallet", address: "Other222" }]);
+
+            await wallet.useRecoveryMethod({ type: "api-key" });
+            await wallet.removeRecoveryMethod({ type: "external-wallet", address: "Other222" }, { prepareOnly: true });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:Other222",
+                { approver: "api-key:ApiKeyAdmin111" }
+            );
+            expect(wallet.signer?.locator()).not.toBe("api-key:ApiKeyAdmin111");
+        });
+    });
+});

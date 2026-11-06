@@ -73,6 +73,7 @@ import { type ApiSourcedServerSignerConfig, isApiSourcedServerSignerConfig } fro
 import { NonCustodialSigner } from "../signers/non-custodial";
 import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
+import { qualifiedApiKeyLocator } from "../signers/descriptors/api-key";
 import { walletsLogger } from "../logger";
 
 import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
@@ -941,10 +942,14 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.removeRecoveryMethod.start", { recoveryMethodLocator });
 
         return this.#signerManager.withRecoverySigner(async (approver) => {
-            const response = await this.#apiClient.removeRecoveryMethod(this.walletLocator, recoveryMethodLocator, {
-                approver: this.resolveRecoveryApprover(approver),
-                chain: this.chainAdapter.addSignerChain(this.chain),
-            });
+            const response = await this.#apiClient.removeRecoveryMethod(
+                this.walletLocator,
+                this.toRecoveryMethodsApiLocator(recoveryMethodLocator),
+                {
+                    approver: this.resolveRecoveryApprover(approver),
+                    chain: this.chainAdapter.addSignerChain(this.chain),
+                }
+            );
 
             if ("error" in response) {
                 walletsLogger.error("wallet.removeRecoveryMethod.error", {
@@ -972,7 +977,20 @@ export class Wallet<C extends Chain> {
      * active signer for the duration of the operation, so its locator is used.
      */
     private resolveRecoveryApprover(approver: SignerLocator | undefined): SignerLocator {
-        return approver ?? this.#signerManager.require().locator();
+        return this.toRecoveryMethodsApiLocator(approver ?? this.#signerManager.require().locator());
+    }
+
+    /**
+     * The SDK identifies the api-key recovery method by the bare `"api-key"` locator, which transactions also
+     * send, but the recovery-methods API rejects it and needs `api-key:<address>`. The address comes from the
+     * wallet's recovery config returned by the API.
+     */
+    private toRecoveryMethodsApiLocator<L extends string>(locator: L): L | SignerLocator {
+        if (locator !== "api-key") {
+            return locator;
+        }
+        const apiKeyRecovery = this.recoveryMethods.find((recovery) => recovery.type === "api-key");
+        return (apiKeyRecovery != null ? qualifiedApiKeyLocator(apiKeyRecovery) : null) ?? locator;
     }
 
     /**
@@ -1062,11 +1080,10 @@ export class Wallet<C extends Chain> {
                 this.#serverSignerResolver.resolveRecovery(recoveryMethod)
             );
         }
-        const selected = getSignerDescriptor<C>(recoveryMethod.type).adoptsRecoveryConfigOnMatch
-            ? this.recoveryMethods[index]
-            : recoveryMethod.type === "passkey"
-              ? (this.withPasskeyRecoveryCredentialId(recoveryMethod, index) as RecoverySignerConfigForChain<C>)
-              : (recoveryMethod as RecoverySignerConfigForChain<C>);
+        const selected =
+            recoveryMethod.type === "passkey"
+                ? (this.withPasskeyRecoveryCredentialId(recoveryMethod, index) as RecoverySignerConfigForChain<C>)
+                : this.recoveryMethods[index];
         this.#signerManager.selectRecovery(index, selected);
         walletsLogger.info("wallet.useRecoveryMethod.success", {
             recoveryMethodLocator: this.#signerManager.recoveryLocator(selected),
