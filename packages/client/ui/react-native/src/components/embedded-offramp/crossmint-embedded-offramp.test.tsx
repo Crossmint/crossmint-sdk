@@ -289,7 +289,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         test("keeps accepting the current nonce after a same-document navigation (onLoadStart without onLoad)", async () => {
             const payer = renderPayer();
             load();
-            act(() => lastWebViewProps().onLoadStart());
+            act(() => lastWebViewProps().onLoadStart?.());
             await emit("crypto:send-transaction", TX);
             expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
         });
@@ -603,7 +603,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             expect(injectJavaScript).toHaveBeenCalledTimes(1);
         });
 
-        test("ignores a pending reply after the page starts loading again", async () => {
+        test("ignores a pending reply after a new document sends ready, then serves new requests", async () => {
             const oldSignature = deferredTransaction();
             const newSignature = deferredTransaction();
             const payer = payerSigning(
@@ -611,8 +611,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             );
             render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
             await emit("crypto:sign-message", SIGN);
-            act(() => lastWebViewProps().onLoadStart());
-            load();
+            await emit("offramp:ready");
             await emit("crypto:sign-message", SIGN);
             expect(payer.signMessage).toHaveBeenCalledTimes(2);
             await act(async () => oldSignature.resolve("old"));
@@ -713,16 +712,32 @@ describe("signing session isolation", () => {
         expect(injectJavaScript).toHaveBeenCalledTimes(1);
     });
 
-    test("ignores a pending reply after the document reloads", async () => {
+    test("keeps pending send and sign replies when the page only updates its URL (onLoadStart, same document)", async () => {
+        const send = deferredTransaction();
+        const sign = deferredTransaction();
+        const payer = {
+            signAndSendTransaction: vi.fn().mockReturnValue(send.promise),
+            signMessage: vi.fn().mockReturnValue(sign.promise),
+        };
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+        await emit("crypto:send-transaction", TX);
+        await emit("crypto:sign-message", { message: "m", chain: "solana", payerAddress: "9Wz" });
+        act(() => lastWebViewProps().onLoadStart?.());
+        await act(async () => {
+            send.resolve("0xtx");
+            sign.resolve("c2ln");
+        });
+        expect(replies("crypto:send-transaction:success")).toHaveLength(1);
+        expect(replies("crypto:sign-message:success")).toHaveLength(1);
+    });
+
+    test("ignores a pending reply after a new document sends ready, then serves new requests", async () => {
         const oldTransaction = deferredTransaction();
         const newTransaction = deferredTransaction();
         const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
         render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
-        act(() => lastWebViewProps().onLoadStart());
-        load();
         await emit("crypto:send-transaction", TX);
-        act(() => lastWebViewProps().onLoadStart());
-        load();
+        await emit("offramp:ready");
         await emit("crypto:send-transaction", TX);
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => oldTransaction.resolve("old-tx"));
@@ -730,7 +745,9 @@ describe("signing session isolation", () => {
         await emit("crypto:send-transaction", TX);
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => newTransaction.resolve("new-tx"));
-        expect(injectJavaScript).toHaveBeenCalledTimes(1);
+        expect(replies("crypto:send-transaction:success")).toEqual([
+            { event: "crypto:send-transaction:success", data: { txId: "new-tx" } },
+        ]);
     });
 
     test("does not reply after unmount", async () => {

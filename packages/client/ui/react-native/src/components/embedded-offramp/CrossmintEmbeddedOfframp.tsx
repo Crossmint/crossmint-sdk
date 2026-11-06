@@ -114,7 +114,12 @@ function EmbeddedOfframpDocument({
         }
         const ids = [
             client.on("ui:height.changed", (data) => setHeight(data.height)),
-            client.on("offramp:ready", () => latestProps.current.onReady?.()),
+            client.on("offramp:ready", () => {
+                // Each offramp document sends ready once, before any wallet request, so it marks a reload.
+                sendPending.current = null;
+                signPending.current = null;
+                latestProps.current.onReady?.();
+            }),
             client.on("offramp:status", (data) => latestProps.current.onStatusChange?.(data)),
             client.on("offramp:completed", (data) => latestProps.current.onComplete?.(data)),
             client.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
@@ -191,10 +196,6 @@ function EmbeddedOfframpDocument({
         <RNWebView
             ref={webViewRef}
             source={{ uri: url }}
-            onLoadStart={() => {
-                sendPending.current = null;
-                signPending.current = null;
-            }}
             onLoad={({ nativeEvent }) => {
                 mainFrameNonce.current = null;
                 if (isOfframpPage(nativeEvent.url) && isSameSession(nativeEvent.url, url)) {
