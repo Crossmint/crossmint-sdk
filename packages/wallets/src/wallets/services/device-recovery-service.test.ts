@@ -11,7 +11,6 @@ import {
 import { createDeviceSigner } from "@/utils/device-signers";
 import {
     DeviceSignerNotSupportedError,
-    QuorumSignerNotSupportedError,
     RecoveryMethodRequiredError,
     SignerLimitExceededError,
 } from "../../utils/errors";
@@ -548,12 +547,12 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
     }
 
     describe("when every recovery method is a quorum", () => {
-        it("throws QuorumSignerNotSupportedError and creates no device key", async () => {
+        it("throws RecoveryMethodRequiredError and creates no device key", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager([createQuorumApiEntry()], storage);
             const { service } = setup({ storage, manager });
 
-            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            await expect(service.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
             expect(mockedCreateDeviceSigner).not.toHaveBeenCalled();
         });
 
@@ -572,7 +571,7 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
             const approveSignature = vi.fn().mockResolvedValue(undefined);
             const { service } = setup({ storage, manager, approveSignature });
 
-            await expect(service.recover()).rejects.toBeInstanceOf(QuorumSignerNotSupportedError);
+            await expect(service.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
             expect(manager.activeSigner).toBe(pendingDevice);
             expect(approveSignature).not.toHaveBeenCalled();
         });

@@ -11,7 +11,7 @@ import type {
 import type { ServerSignerResolver } from "../../signers/server/resolver";
 import {
     InvalidRecoveryConfigError,
-    QuorumSignerNotSupportedError,
+    InvalidSignerError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
 } from "../../utils/errors";
@@ -127,7 +127,7 @@ describe("SignerManager", () => {
         [
             "quorum-only recovery and one delegated quorum",
             { recoverySigners: [createQuorumApiEntry()], initialSigners: [createQuorumApiEntry()] },
-            /quorum signer/,
+            /Every recovery method of this wallet is a quorum/,
         ],
         [
             "two delegated quorums and quorum-only recovery",
@@ -135,7 +135,7 @@ describe("SignerManager", () => {
                 recoverySigners: [createQuorumApiEntry()],
                 initialSigners: [createQuorumApiEntry(), createQuorumApiEntry()],
             },
-            /quorum signer/,
+            /Every recovery method of this wallet is a quorum/,
         ],
         [
             "two delegated quorums and a recovery signer that signs alone",
@@ -492,7 +492,7 @@ describe("SignerManager with quorum recovery methods", () => {
         ] as const;
 
         it.each(QUORUM_ONLY_LISTS)(
-            "require() with %s throws QuorumSignerNotSupportedError naming every quorum",
+            "require() with %s throws RecoveryMethodRequiredError naming every quorum",
             (_name, recoverySigners) => {
                 const error = (() => {
                     try {
@@ -502,7 +502,8 @@ describe("SignerManager with quorum recovery methods", () => {
                     }
                 })();
 
-                expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
+                expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+                expect(String(error)).toContain("useSigner()");
                 for (const quorum of recoverySigners) {
                     expect(String(error)).toContain(quorum.locator);
                 }
@@ -659,12 +660,12 @@ describe("SignerManager.heldSigners", () => {
             expect(() => manager.heldSigners()).toThrow(/Cannot assemble external wallet signer/);
         });
 
-        it("throws QuorumSignerNotSupportedError when the selection is a quorum", () => {
+        it("throws InvalidSignerError when the selection is a quorum", () => {
             const quorum = createQuorumApiEntry();
             const manager = makeManager({ recoverySigners: [apiKeyConfig, quorum] });
             manager.selectRecovery(1);
 
-            expect(() => manager.heldSigners()).toThrow(QuorumSignerNotSupportedError);
+            expect(() => manager.heldSigners()).toThrow(InvalidSignerError);
         });
     });
 
