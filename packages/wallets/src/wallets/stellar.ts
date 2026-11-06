@@ -31,6 +31,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
+                quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -47,8 +48,8 @@ export class StellarWallet extends Wallet<StellarChain> {
     /**
      * Send a raw Stellar transaction (serialized transaction or contract call).
      * @param params - The transaction parameters
-     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
-     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
+     * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
+     * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
      * @returns The transaction result
      */
     @WithLoggerContext({
@@ -64,7 +65,7 @@ export class StellarWallet extends Wallet<StellarChain> {
         walletsLogger.info("stellarWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
-        const signerParams = this.resolveSignerParams(params.options);
+        const signerParams = await this.resolveSignerParams(params.options);
         const createdTransaction = await this.createTransaction(params, signerParams);
 
         if (this.isPrepareOnly(params.options, signerParams.signer)) {

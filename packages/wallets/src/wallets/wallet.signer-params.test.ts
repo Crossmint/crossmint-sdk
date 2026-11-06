@@ -11,6 +11,7 @@ import {
     createMockSolanaSerializedTransaction,
     createMockWallet,
     type MockedApiClient,
+    EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
 import type { SignerOption } from "./types";
 
@@ -69,6 +70,23 @@ const SIGNER_PATHS: SignerPath[] = [
         sentSigner: createdSigner,
     },
     {
+        name: "EVM signMessage",
+        chain: "base-sepolia",
+        create: (wallet, signer) =>
+            EVMWallet.from(wallet).signMessage({ message: "hello", options: { prepareOnly: true, signer } }),
+        sentSigner: (api) => api.createSignature.mock.calls[0][1].params.signer,
+    },
+    {
+        name: "EVM signTypedData",
+        chain: "base-sepolia",
+        create: (wallet, signer) =>
+            EVMWallet.from(wallet).signTypedData({
+                ...EVM_TYPED_DATA,
+                options: { prepareOnly: true, signer },
+            } as never),
+        sentSigner: (api) => api.createSignature.mock.calls[0][1].params.signer,
+    },
+    {
         name: "Stellar sendTransaction",
         chain: "stellar",
         create: (wallet, signer) =>
@@ -90,6 +108,7 @@ describe("acting signer sent with a new transaction", () => {
         api = createMockApiClient();
         api.send.mockResolvedValue({ id: "txn-1" } as unknown as SendResponse);
         api.createTransaction.mockResolvedValue(CREATED);
+        api.createSignature.mockResolvedValue({ id: "sig-1" } as never);
         stubServerSignerResolution();
     });
 
@@ -151,6 +170,7 @@ describe("acting signer sent with a new transaction", () => {
             await expect(create(wallet, EXPLICIT_LOCATOR)).rejects.toThrow(/No signer is set/);
             expect(api.send).not.toHaveBeenCalled();
             expect(api.createTransaction).not.toHaveBeenCalled();
+            expect(api.createSignature).not.toHaveBeenCalled();
         });
     });
 });

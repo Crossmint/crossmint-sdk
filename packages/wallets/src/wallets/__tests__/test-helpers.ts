@@ -189,6 +189,12 @@ export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) =>
     } satisfies QuorumSigner;
 };
 
+// A quorum entry whose first members are `members`; the rest are random email members.
+export const createQuorumApiEntryWith = (members: QuorumMember[], { threshold = 2, memberCount = 3 } = {}) => {
+    const quorum = createQuorumApiEntry({ threshold, memberCount });
+    return { ...quorum, members: [...members, ...quorum.members.slice(members.length)] } satisfies QuorumSigner;
+};
+
 // A quorum entry of `approvals.pending` as the wallets API returns it. Each member gets its own random message.
 export const createQuorumPendingApproval = ({
     quorum,
@@ -220,6 +226,18 @@ export const createQuorumPendingApproval = ({
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
 
+// What a call returns for a request made as a quorum, or while only quorum members can still approve it.
+export const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
+export const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+
+// A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
+export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
+    id,
+    status: "awaiting-approval",
+    chainType,
+    approvals: { pending, submitted: [] },
+});
+
 // A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
 export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
 
@@ -244,3 +262,17 @@ export const createExpiredRequest = (id: string) => ({
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };
+
+// EIP-712 typed data for EVM `signTypedData` calls.
+export const EVM_TYPED_DATA = {
+    domain: {
+        name: "App",
+        version: "1",
+        chainId: 84532,
+        verifyingContract: "0x1111111111111111111111111111111111111111",
+    },
+    types: { Mail: [{ name: "contents", type: "string" }] },
+    primaryType: "Mail",
+    message: { contents: "hello" },
+    chain: "base-sepolia",
+} as const;
