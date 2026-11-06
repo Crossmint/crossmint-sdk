@@ -95,7 +95,13 @@ export function generateSetup(seed: number, { quorums }: { quorums: boolean }): 
     if (shape === "flat") {
         const count = r.pick([1, 1, 1, 2, 2, 3]);
         for (let i = 0; i < count; i++) {
-            recovery.push({ kind: pickFlat(r, chain, recovery.map((entry) => entry.kind as FlatKind)) });
+            recovery.push({
+                kind: pickFlat(
+                    r,
+                    chain,
+                    recovery.map((entry) => entry.kind as FlatKind)
+                ),
+            });
         }
     } else if (shape === "quorum-alone") {
         recovery.push(quorumSpec(r, chain));
@@ -104,7 +110,14 @@ export function generateSetup(seed: number, { quorums }: { quorums: boolean }): 
         recovery.push({ kind: pickFlat(r, chain, []) });
     } else {
         const entries: RecoverySpec[] = [{ kind: pickFlat(r, chain, []) }, quorumSpec(r, chain)];
-        if (r.bool()) entries.push({ kind: pickFlat(r, chain, entries.map((entry) => entry.kind as FlatKind)) });
+        if (r.bool())
+            entries.push({
+                kind: pickFlat(
+                    r,
+                    chain,
+                    entries.map((entry) => entry.kind as FlatKind)
+                ),
+            });
         recovery.push(...r.shuffle(entries));
     }
 
@@ -419,7 +432,12 @@ export async function buildWorld(seed: number, setup: Setup): Promise<World> {
         key.spec = spec;
         return remember(key);
     });
-    const foreignKinds: FlatKind[] = ["external-wallet", "email", "server", ...(chain === "base-sepolia" ? ["passkey" as const] : [])];
+    const foreignKinds: FlatKind[] = [
+        "external-wallet",
+        "email",
+        "server",
+        ...(chain === "base-sepolia" ? ["passkey" as const] : []),
+    ];
     const foreign = foreignKinds.map((kind) => makeKey(env, values, chain, kind, `F:${kind}`));
 
     const storage = setup.device === "none" ? null : env.device("caller");
@@ -516,11 +534,14 @@ async function buildExistingWallet(world: World) {
     const pendingApprover = nonCustodial.length > 0 ? nonCustodial[setup.approverPick % nonCustodial.length] : null;
 
     const register = async (signer: Any, approver: SetupKey) => {
-        const response: Any = await client.registerSigner(walletLocator as Any, {
-            signer,
-            ...(chain === "base-sepolia" ? { chain } : {}),
-            approver: approver.locator,
-        } as Any);
+        const response: Any = await client.registerSigner(
+            walletLocator as Any,
+            {
+                signer,
+                ...(chain === "base-sepolia" ? { chain } : {}),
+                approver: approver.locator,
+            } as Any
+        );
         if (response == null || "error" in response) {
             throw new Error(`setup: registerSigner failed: ${JSON.stringify(response)}`);
         }

@@ -289,7 +289,8 @@ async function probeSeed(seed: number, { quorums }: { quorums: boolean }): Promi
     fp.construct = outcomeOf(base.world, base.construct, () => "ok");
     lines.push(`  construct: ${fp.construct}`);
     if ("error" in base.construct) {
-        if (isBadError(base.construct.error)) violate(`construct threw ${String((base.construct.error as Any)?.stack)}`);
+        if (isBadError(base.construct.error))
+            violate(`construct threw ${String((base.construct.error as Any)?.stack)}`);
         const expectedFailure = setup.signersArg === "foreign";
         if (!expectedFailure) violate(`construct failed: ${fp.construct}`);
         if (expectedFailure && !(base.construct.error instanceof WalletCreationError)) {
@@ -399,8 +400,10 @@ async function probeSeed(seed: number, { quorums }: { quorums: boolean }): Promi
             const used = await settle(wallet.useRecoveryMethod(target.config(world)));
             useRecoveryOut[target.label] = outcomeOf(world, used, () => "ok");
             if ("error" in used) {
-                if (isBadError(used.error)) violate(`useRecoveryMethod(${target.label}) threw ${(used.error as Any)?.stack}`);
-                if (target.expect !== "reject") violate(`useRecoveryMethod(${target.label}): ${useRecoveryOut[target.label]}`);
+                if (isBadError(used.error))
+                    violate(`useRecoveryMethod(${target.label}) threw ${(used.error as Any)?.stack}`);
+                if (target.expect !== "reject")
+                    violate(`useRecoveryMethod(${target.label}): ${useRecoveryOut[target.label]}`);
             } else if (target.expect === "reject") {
                 violate(`useRecoveryMethod(${target.label}) accepted a key that is no recovery method`);
             }
@@ -440,7 +443,9 @@ async function probeSeed(seed: number, { quorums }: { quorums: boolean }): Promi
                 `ok sameSigner=${same} needsRecovery now=${now} afterInit=${after} base=${wallet.needsRecovery()}`;
             if (!same) violate(`${probe.name}.from changed the active signer`);
             if (after !== wallet.needsRecovery()) {
-                violate(`${probe.name}.from: needsRecovery()=${after}, the wallet it came from says ${wallet.needsRecovery()}`);
+                violate(
+                    `${probe.name}.from: needsRecovery()=${after}, the wallet it came from says ${wallet.needsRecovery()}`
+                );
             }
         }
     });
@@ -581,33 +586,30 @@ describe("BUG repros", () => {
     // wallet-factory.ts matchesRecoverySigner has no passkey branch and returns true for any two passkeys, so
     // validateExistingWalletConfig pairs the caller's passkey with the wallet's first passkey recovery method and
     // compareSignerConfigs then rejects the different credential id.
-    bug(
-        "BUG: getWallet with the wallet's second passkey recovery method throws WalletCreationError",
-        async () => {
-            const env = stressEnv(SEED);
-            try {
-                const passkey = (id: string) => ({
-                    type: "passkey",
-                    id,
-                    name: id,
-                    publicKey: { x: "1", y: "2" },
-                });
-                await rawWallet(env, "base-sepolia", [passkey("pk-first"), passkey("pk-second")]);
+    bug("BUG: getWallet with the wallet's second passkey recovery method throws WalletCreationError", async () => {
+        const env = stressEnv(SEED);
+        try {
+            const passkey = (id: string) => ({
+                type: "passkey",
+                id,
+                name: id,
+                publicKey: { x: "1", y: "2" },
+            });
+            await rawWallet(env, "base-sepolia", [passkey("pk-first"), passkey("pk-second")]);
 
-                const outcome = await settle(
-                    env.sdk().getWallet({
-                        chain: "base-sepolia",
-                        recovery: passkey("pk-second"),
-                        options: options(),
-                    } as Any)
-                );
+            const outcome = await settle(
+                env.sdk().getWallet({
+                    chain: "base-sepolia",
+                    recovery: passkey("pk-second"),
+                    options: options(),
+                } as Any)
+            );
 
-                expect("error" in outcome ? String((outcome.error as Any)?.message) : "ok").toBe("ok");
-            } finally {
-                env.dispose();
-            }
+            expect("error" in outcome ? String((outcome.error as Any)?.message) : "ok").toBe("ok");
+        } finally {
+            env.dispose();
         }
-    );
+    });
 
     // wallet-factory.ts resolveRecoverySigner derives a server recovery method's address from its secret without
     // checking there is one; an address-only server config (the form wallet.recoveryMethods returns) reaches
@@ -645,48 +647,40 @@ describe("BUG repros", () => {
     // wallet.ts useSigner → resolveNonDeviceSigner: signerIsRegistered (signer-manager.ts signerIsRegistered, `===`) and
     // isRecoverySigner (descriptors/external-wallet.ts matchesRecovery, `===`) compare locators exactly, so a lowercased
     // EVM address of a registered signer or of the recovery method is "not registered".
-    bug(
-        "BUG: useSigner with a lowercased EVM address of a registered signer throws 'not registered'",
-        async () => {
-            const env = stressEnv(SEED);
-            try {
-                const recovery = env.key("base-sepolia");
-                const operational = env.key("base-sepolia");
-                await rawWallet(env, "base-sepolia", [recovery.member], [{ signer: operational.locator }]);
-                const wallet: Any = await drive(
-                    env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any)
-                );
+    bug("BUG: useSigner with a lowercased EVM address of a registered signer throws 'not registered'", async () => {
+        const env = stressEnv(SEED);
+        try {
+            const recovery = env.key("base-sepolia");
+            const operational = env.key("base-sepolia");
+            await rawWallet(env, "base-sepolia", [recovery.member], [{ signer: operational.locator }]);
+            const wallet: Any = await drive(env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any));
 
-                const used = await settle(
-                    wallet.useSigner({ ...operational.config, address: operational.address.toLowerCase() })
-                );
+            const used = await settle(
+                wallet.useSigner({ ...operational.config, address: operational.address.toLowerCase() })
+            );
 
-                expect("error" in used ? String((used.error as Any)?.message) : "ok").toBe("ok");
-            } finally {
-                env.dispose();
-            }
+            expect("error" in used ? String((used.error as Any)?.message) : "ok").toBe("ok");
+        } finally {
+            env.dispose();
         }
-    );
+    });
 
-    bug(
-        "BUG: useSigner with a lowercased EVM address of the recovery method throws 'not registered'",
-        async () => {
-            const env = stressEnv(SEED);
-            try {
-                const recovery = env.key("base-sepolia");
-                await rawWallet(env, "base-sepolia", [recovery.member]);
-                const wallet: Any = await drive(
-                    env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any)
-                );
+    bug("BUG: useSigner with a lowercased EVM address of the recovery method throws 'not registered'", async () => {
+        const env = stressEnv(SEED);
+        try {
+            const recovery = env.key("base-sepolia");
+            await rawWallet(env, "base-sepolia", [recovery.member]);
+            const wallet: Any = await drive(env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any));
 
-                const used = await settle(wallet.useSigner({ ...recovery.config, address: recovery.address.toLowerCase() }));
+            const used = await settle(
+                wallet.useSigner({ ...recovery.config, address: recovery.address.toLowerCase() })
+            );
 
-                expect("error" in used ? String((used.error as Any)?.message) : "ok").toBe("ok");
-            } finally {
-                env.dispose();
-            }
+            expect("error" in used ? String((used.error as Any)?.message) : "ok").toBe("ok");
+        } finally {
+            env.dispose();
         }
-    );
+    });
 
     // evm.ts / stellar.ts / solana.ts constructors pass `signer: wallet.signer` to a new Wallet, whose
     // initDefaultSigner then returns early (wallet.ts ~290) and whose DeviceRecoveryService starts "unknown": a wallet
@@ -698,7 +692,9 @@ describe("BUG repros", () => {
             const address = await rawWallet(env, "base-sepolia", [recovery.member]);
             const { storage } = await pendingDevice(env, "base-sepolia", address, recovery.locator);
             const wallet: Any = await drive(
-                env.sdk().getWallet({ chain: "base-sepolia", recovery: recovery.config, options: options(storage) } as Any)
+                env
+                    .sdk()
+                    .getWallet({ chain: "base-sepolia", recovery: recovery.config, options: options(storage) } as Any)
             );
             expect(wallet.needsRecovery()).toBe(true);
 
@@ -759,7 +755,11 @@ describe("BUG repros", () => {
     bug("BUG: EVMWallet.from loses the useRecoveryMethod() selection, so addSigner fails on the copy", async () => {
         const env = stressEnv(SEED);
         try {
-            const [first, second, operational] = [env.key("base-sepolia"), env.key("base-sepolia"), env.key("base-sepolia")];
+            const [first, second, operational] = [
+                env.key("base-sepolia"),
+                env.key("base-sepolia"),
+                env.key("base-sepolia"),
+            ];
             const wallet: Any = await drive(
                 env.sdk().createWallet({
                     chain: "base-sepolia",
@@ -791,7 +791,9 @@ describe("BUG repros", () => {
             const address = await rawWallet(env, "base-sepolia", [recovery.member]);
             const { storage } = await pendingDevice(env, "base-sepolia", address, recovery.locator);
             const wallet: Any = await drive(
-                env.sdk().getWallet({ chain: "base-sepolia", recovery: recovery.config, options: options(storage) } as Any)
+                env
+                    .sdk()
+                    .getWallet({ chain: "base-sepolia", recovery: recovery.config, options: options(storage) } as Any)
             );
             expect(wallet.needsRecovery()).toBe(true);
 
@@ -816,7 +818,9 @@ describe("BUG repros", () => {
                 const operational = env.key("base-sepolia");
                 await rawWallet(env, "base-sepolia", [{ type: "api-key" }], [{ signer: operational.locator }]);
 
-                const wallet: Any = await drive(env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any));
+                const wallet: Any = await drive(
+                    env.sdk().getWallet({ chain: "base-sepolia", options: options() } as Any)
+                );
 
                 expect(wallet.signer?.locator()).toBeUndefined();
             } finally {
