@@ -16,8 +16,6 @@ pnpm add @crossmint/client-sdk-react-ui
 yarn add @crossmint/client-sdk-react-ui
 ```
 
-Install the latest release. This package pins its own `@crossmint/wallets-sdk`; if your server code also uses `@crossmint/wallets-sdk`, install that same version (`npm view @crossmint/client-sdk-react-ui dependencies`).
-
 ## Quick Start
 
 ### 1. Setup Providers

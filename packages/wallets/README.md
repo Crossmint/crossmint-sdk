@@ -19,8 +19,6 @@ pnpm add @crossmint/wallets-sdk
 yarn add @crossmint/wallets-sdk
 ```
 
-Install the latest release. In an app that also uses `@crossmint/client-sdk-react-ui` or `@crossmint/client-sdk-react-native-ui`, install the `@crossmint/wallets-sdk` version that package depends on, so client and server run the same SDK.
-
 ## Quick Start
 
 ### Server-side (Node.js)
