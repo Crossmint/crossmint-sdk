@@ -1,5 +1,27 @@
 # @crossmint/wallets-sdk
 
+## 1.22.2
+
+### Patch Changes
+
+- 04ec76f: `wallet.addSigner({ type: "passkey" })` and `wallet.addRecoveryMethod({ type: "passkey" })` now create the passkey
+  when the config has no credential id, using the config's `onCreatePasskey`, else the wallet's `passkeyProvider`,
+  else the browser WebAuthn API, and register its id and public key. Before, the SDK looked up a signer named
+  `passkey` and sent the bare config, which the API rejected. A config with a credential id is registered as before,
+  and the request body now carries only the passkey fields the API takes.
+
+  Creating a passkey with no `onCreatePasskey`,
+  no `passkeyProvider` and no WebAuthn (for example in Node) now throws `InvalidSignerError` saying so, in wallet
+  creation too.
+
+- 36903ca: `getWallet` resolves faster when the device signer's key is on this device: signer initialization reads the signer's status from the wallet response instead of fetching the wallet and each signer again, and the device key storage (an iframe on web) starts loading alongside the wallet request. `DeviceSignerKeyStorage` gains an optional `preload()` hook (no-op by default).
+
+  `wallet.signers()` makes one request instead of one per signer: it reads each signer's status from the wallet response.
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
 ## 1.22.1
 
 ### Patch Changes

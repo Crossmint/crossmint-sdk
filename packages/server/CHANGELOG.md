@@ -1,5 +1,16 @@
 # @crossmint/server-sdk
 
+## 1.2.99
+
+### Patch Changes
+
+- e6ad150: `CrossmintAuth.getUser` now throws a `CrossmintAuthenticationError` when Crossmint rejects the request, instead of returning the API's error body as if it were the user. The error carries the HTTP `status` and the API's message, which names the missing `users.read` scope when the API key lacks it. `getUser` now returns `SDKExternalUser` instead of `any`, and the server SDK exports `CrossmintAuthenticationError` and `SDKExternalUser`. Failed session refreshes and logouts also report the status and the API's message.
+- a2181ff: JWT verification no longer waits for the JWKS to be re-downloaded every 10 minutes: the keys are refreshed in the background while verification keeps using the current ones. If the JWKS endpoint keeps failing, keys stay in use for up to an hour; a token signed with an unknown key still waits for a download, as before.
+- a2181ff: `getSession` returns the user (email, phone number, linked accounts) when it had to refresh the session, since the refresh response already carries it. A server that needs the email can skip `getUser` in that case.
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
 ## 1.2.98
 
 ### Patch Changes
