@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 2.1.5
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-auth@1.3.36
+  - @crossmint/client-sdk-react-base@2.5.5
+
 ## 2.1.4
 
 ### Patch Changes

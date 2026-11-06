@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 1.22.1
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
 ## 1.22.0
 
 ### Minor Changes

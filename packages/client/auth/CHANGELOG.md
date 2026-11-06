@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-auth
 
+## 1.3.36
+
+### Patch Changes
+
+- 0c053ed: Read and write the project-scoped auth cookies in the server SDK. Since `@crossmint/client-sdk-auth` 1.3.4 the client stores the session as `crossmint-jwt-<projectId>` and `crossmint-refresh-token-<projectId>`, but the server SDK only read and wrote `crossmint-jwt` and `crossmint-refresh-token`, so `getSession(request)` saw no session and a custom refresh route stored cookies the client never read. `getSession(request)`, `handleCustomRefresh` and `logout` now read the scoped names, and the legacy names only when no scoped cookie is present. `storeAuthMaterial` (and so `getSession(request, response)`, `handleCustomRefresh` and `logout`) writes the scoped names; `logout` also expires the legacy ones. New `getAuthCookieNames(projectId)` returns the scoped names, for code with no request object such as a Next.js Server Component; `validateAPIKey` is re-exported so the project ID can be read from the API key. The naming helper `getScopedCookieName` now lives in `@crossmint/common-sdk-auth` and the client uses it.
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+
 ## 1.3.35
 
 ### Patch Changes
