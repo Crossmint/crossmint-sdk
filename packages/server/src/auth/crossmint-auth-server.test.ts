@@ -481,9 +481,7 @@ describe("CrossmintAuthServer", () => {
         it("fetches user data for a given external user ID", async () => {
             const mockExternalUserId = "external-user-123";
             const mockUserData = { id: "user456", email: "user@example.com" };
-            mockApiClient.get.mockResolvedValue({
-                json: () => Promise.resolve(mockUserData),
-            });
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify(mockUserData), { status: 200 }));
 
             const result = await crossmintAuthServer.getUser(mockExternalUserId);
 
@@ -492,6 +490,52 @@ describe("CrossmintAuthServer", () => {
                 `api/2024-09-26/sdk/auth/user/${mockExternalUserId}`,
                 expect.any(Object)
             );
+        });
+
+        it("encodes the user ID so it cannot change the request path", async () => {
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify({ id: "x" }), { status: 200 }));
+
+            await crossmintAuthServer.getUser("a/b?c");
+
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "api/2024-09-26/sdk/auth/user/a%2Fb%3Fc",
+                expect.any(Object)
+            );
+        });
+
+        it("throws with the API message when the API key lacks users.read", async () => {
+            const apiMessage =
+                "The API key provided doesn't have the required scopes to perform this action: users.read. It has the scopes: wallets.read.";
+            mockApiClient.get.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 403, message: apiMessage, error: "Forbidden" }), {
+                    status: 403,
+                    statusText: "Forbidden",
+                })
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(403);
+            expect(error.message).toBe(`Failed to get user (403: ${apiMessage})`);
+        });
+
+        it("throws with the status and the API message when the user is not found", async () => {
+            mockApiClient.get.mockResolvedValue(
+                new Response(
+                    JSON.stringify({ statusCode: 404, message: "User with id external-user-123 not found." }),
+                    {
+                        status: 404,
+                        statusText: "Not Found",
+                    }
+                )
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(404);
+            expect(error.message).toBe("Failed to get user (404: User with id external-user-123 not found.)");
         });
     });
 
@@ -784,6 +828,27 @@ describe("CrossmintAuthServer", () => {
                 PROJECT_ID,
                 {}
             );
+        });
+
+        it("returns the API's reason when Crossmint rejects the refresh token", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            mockApiClient.post.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 401, message: "Invalid refresh token" }), {
+                    status: 401,
+                    statusText: "Unauthorized",
+                })
+            );
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(await result.json()).toEqual({
+                error: "Unauthorized",
+                message: "Failed to refresh the session (401: Invalid refresh token)",
+            });
         });
 
         it("throws error when refresh token is missing", async () => {

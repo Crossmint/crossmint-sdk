@@ -10,6 +10,17 @@ To install the SDK, you can use npm or yarn:
 npm install @crossmint/server-sdk
 ```
 
+## API key and scopes
+
+Use a server-side API key (`sk_...`) from the Crossmint Console. Which scopes it needs depends on the methods you call:
+
+| Method                                           | Scope        |
+| ------------------------------------------------ | ------------ |
+| `getSession`, `handleCustomRefresh`, `logout`    | None         |
+| `getUser`                                        | `users.read` |
+
+`getSession` verifies the JWT with Crossmint's public keys and refreshes the session through endpoints that do not check scopes. `getUser` reads the user's profile, so the key needs `users.read`. Without it, `getUser` throws a `CrossmintAuthenticationError` with `status` 403.
+
 ## Usage
 
 To use the SDK in your application, follow these steps:
@@ -63,7 +74,25 @@ if (refreshToken != null) {
 }
 ```
 
-3. Store the authentication material in cookies
+3. Get the user's profile
+
+`getSession` returns the user's ID. To get their email, phone number or linked X account, pass the ID to `getUser`. It needs the `users.read` scope on your API key:
+
+```ts
+import { CrossmintAuthenticationError } from "@crossmint/server-sdk";
+
+try {
+    const user = await crossmintAuth.getUser(userId); // { id, email?, phoneNumber?, twitter? }
+} catch (error) {
+    if (error instanceof CrossmintAuthenticationError) {
+        // error.status is 403 when the API key lacks users.read, 404 when the user has not signed in to this project
+        console.error(error.status, error.message);
+    }
+    throw error;
+}
+```
+
+4. Store the authentication material in cookies
 
 If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method. The SDK writes the project-scoped cookie names (logout also expires the legacy unscoped ones):
 
@@ -71,7 +100,7 @@ If you are using a framework with access to the response object, you can store t
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
 ```
 
-4. Logout
+5. Logout
 
 ```ts
 await crossmintAuth.logout(request);

@@ -8,6 +8,8 @@ import {
     type AuthMaterial,
     CROSSMINT_API_VERSION,
     type CookieOptions,
+    type SDKExternalUser,
+    authErrorFromResponse,
 } from "@crossmint/common-sdk-auth";
 import { validateAPIKey, type Crossmint, type CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
@@ -34,7 +36,8 @@ export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
  * fetch users, and manage auth cookies. Works with both Node.js (`IncomingMessage`/`ServerResponse`)
  * and Fetch API (`Request`/`Response`) request/response objects.
  *
- * Create an instance with {@link CrossmintAuthServer.from}.
+ * Create an instance with {@link CrossmintAuthServer.from} and a server-side API key. Sessions, refreshes and
+ * logout need no API key scope; {@link CrossmintAuthServer.getUser} needs `users.read`.
  */
 export class CrossmintAuthServer extends CrossmintAuth {
     private cookieOptions: CookieOptions;
@@ -92,16 +95,29 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
     }
 
-    /** Fetch the Crossmint user associated with the given external user ID. */
-    public async getUser(externalUserId: string) {
-        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    /**
+     * Fetch the user with the given ID (the `userId` from {@link CrossmintAuthServer.getSession}, the JWT's `sub`).
+     * Needs a server API key with the `users.read` scope.
+     *
+     * @throws CrossmintAuthenticationError with the HTTP `status` if Crossmint rejects the request, for example
+     * 403 when the API key lacks the `users.read` scope or 404 when the user has not signed in to this project.
+     * @throws ApiClientError on a 5xx response, as every Crossmint API call does.
+     */
+    public async getUser(externalUserId: string): Promise<SDKExternalUser> {
+        const result = await this.apiClient.get(
+            `api/${CROSSMINT_API_VERSION}/sdk/auth/user/${encodeURIComponent(externalUserId)}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-        const user = await result.json();
-        return user;
+        if (!result.ok) {
+            throw await authErrorFromResponse(result, "Failed to get user");
+        }
+
+        return (await result.json()) as SDKExternalUser;
     }
 
     /**
@@ -191,7 +207,10 @@ export class CrossmintAuthServer extends CrossmintAuth {
             if (request != null) {
                 const authCookies = getAuthCookies(request, this.projectId);
                 if (authCookies != null) {
-                    await this.logoutFromDefaultRoute(authCookies.refreshToken);
+                    const result = await this.logoutFromDefaultRoute(authCookies.refreshToken);
+                    if (!result.ok) {
+                        throw await authErrorFromResponse(result, "Failed to log out");
+                    }
                 }
             }
         } catch (error) {

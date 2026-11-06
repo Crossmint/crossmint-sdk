@@ -1,5 +1,6 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { AUTH_SDK_ROOT_ENDPOINT, SDK_NAME, SDK_VERSION } from "./utils/constants";
+import { authErrorFromResponse } from "./utils/authErrorFromResponse";
 import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
 
 export type CrossmintAuthOptions = {
@@ -51,7 +52,7 @@ export class CrossmintAuth {
         });
 
         if (!result.ok) {
-            throw new CrossmintAuthenticationError(result.statusText);
+            throw await authErrorFromResponse(result, "Failed to refresh the session");
         }
 
         const resultJson = (await result.json()) as AuthMaterialResponse;
@@ -76,12 +77,11 @@ export class CrossmintAuth {
             },
         });
 
-        const resultJson = await result.json();
         if (!result.ok) {
-            throw new CrossmintAuthenticationError(resultJson.message);
+            throw await authErrorFromResponse(result, "Failed to refresh the session from the custom refresh route");
         }
 
-        return resultJson;
+        return await result.json();
     }
 
     protected async logoutFromDefaultRoute(refreshToken: string) {
