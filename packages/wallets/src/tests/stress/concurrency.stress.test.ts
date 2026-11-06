@@ -15,7 +15,7 @@ import { EVMWallet } from "../../wallets/evm";
 import { StellarWallet } from "../../wallets/stellar";
 import type { Wallet } from "../../wallets/wallet";
 import type { Chain } from "../../chains/chains";
-import { QuorumSignerNotSupportedError } from "../../utils/errors";
+import { RecoveryMethodRequiredError } from "../../utils/errors";
 import { comparableLocator } from "./fake-api";
 import {
     drive,
@@ -438,7 +438,7 @@ describe.each(DEVICE_CHAINS)("overlapping approvals with a stand-in member (%s)"
             );
 
             const rejected = outcomes.find((outcome) => outcome.status === "rejected") as PromiseRejectedResult;
-            expect(rejected?.reason).not.toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(rejected?.reason).not.toBeInstanceOf(RecoveryMethodRequiredError);
             expect(outcomes.map((outcome) => outcome.status)).toEqual(["fulfilled", "fulfilled"]);
         }
     );
@@ -906,12 +906,12 @@ describe.each(DEVICE_CHAINS)("randomized approvals by quorum members on their ow
             const opsLabel = `${label} ops=${runs.ops.map((op) => op.name).join(",")}`;
             assertSettledAndTyped(runs.ops, opsLabel);
 
-            // One member approving two requests at once is the known stand-in overlap (QuorumSignerNotSupportedError).
+            // One member approving two requests at once is the known stand-in overlap (RecoveryMethodRequiredError since E2 6f7ff53a).
             for (const op of runs.ops) {
                 if (op.outcome == null || !("error" in op.outcome)) continue;
                 const member = op.name.split(":")[0];
                 const ownOverlap = runs.ops.some((other) => other.name.split(":")[0] === member && overlap(op, other));
-                if (op.outcome.error instanceof QuorumSignerNotSupportedError && ownOverlap) {
+                if (op.outcome.error instanceof RecoveryMethodRequiredError && ownOverlap) {
                     noteKnown("standin-approve-overlap");
                 } else {
                     expect.fail(`${opsLabel}: ${op.name} failed: ${describeError(op.outcome.error)}`);

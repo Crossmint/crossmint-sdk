@@ -10,7 +10,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { QuorumSignerNotSupportedError, TransactionNotCreatedError, WalletCreationError } from "../../utils/errors";
+import { InvalidSignerError, TransactionNotCreatedError, WalletCreationError } from "../../utils/errors";
 import { EVMWallet } from "../../wallets/evm";
 import { drive, forEachSeed, rng, settle, stressEnv, stressRuns, stressSeed, useStressTimers } from "./harness";
 import {
@@ -313,7 +313,7 @@ async function probeSeed(seed: number, { quorums }: { quorums: boolean }): Promi
                 if (target.expect === "accept" || target.expect === "member") {
                     violate(`useSigner(${target.label}) rejected: ${useSignerOut[target.label]}`);
                 }
-                if (target.expect === "quorum" && !(error instanceof QuorumSignerNotSupportedError)) {
+                if (target.expect === "quorum" && !(error instanceof InvalidSignerError)) {
                     violate(`useSigner(${target.label}) with a quorum: ${useSignerOut[target.label]}`);
                 }
                 return;
@@ -833,8 +833,8 @@ describe("BUG repros", () => {
 describe("BUG repros (quorum stack only)", () => {
     const SEED = 4343;
 
-    // signers/types.ts throwIfQuorumSigner passes `entry.locator`, which a quorum config does not have.
-    bug("BUG: useSigner with a quorum config names no quorum in QuorumSignerNotSupportedError", async () => {
+    // FIXED in E2 (6f7ff53a): a quorum given as a key throws InvalidSignerError asking for a member's key.
+    it("FIXED: useSigner with a quorum config throws InvalidSignerError asking for a member's key", async () => {
         const env = stressEnv(SEED);
         try {
             const members = [env.key("base-sepolia"), env.key("base-sepolia")];
@@ -845,8 +845,8 @@ describe("BUG repros (quorum stack only)", () => {
 
             const used = await settle(wallet.useSigner(quorum));
 
-            expect("error" in used && used.error).toBeInstanceOf(QuorumSignerNotSupportedError);
-            expect(String((used as Any).error.message)).not.toMatch(/quorum signer\s+is not/);
+            expect("error" in used && used.error).toBeInstanceOf(InvalidSignerError);
+            expect(String((used as Any).error.message)).toContain("member's key");
         } finally {
             env.dispose();
         }
