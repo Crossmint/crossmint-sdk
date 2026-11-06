@@ -101,13 +101,9 @@ type WalletContructorType<C extends Chain> = {
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
-    /**
-     * Delegated signers exactly as the API returned them with this wallet, when the wallet was built from a
-     * fresh API response. Signer initialization reads their status from here instead of fetching it again.
-     * Leave unset when the data may be stale (e.g. when wrapping an existing wallet).
-     */
-    apiSigners?: APISigner[];
 };
+
+export type WalletFactoryConstructorArgs<C extends Chain> = WalletContructorType<C> & { apiSigners?: APISigner[] };
 
 export class Wallet<C extends Chain> {
     chain: C;
@@ -137,7 +133,7 @@ export class Wallet<C extends Chain> {
             signers,
             signer,
             apiSigners,
-        } = args;
+        } = args as WalletFactoryConstructorArgs<C>;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
