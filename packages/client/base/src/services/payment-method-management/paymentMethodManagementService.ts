@@ -118,6 +118,11 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
         appendObjectToQueryParams(queryParams, serializableProps);
 
+        // The component never renders a submit button; the host submits via ref.submit().
+        queryParams.append("hideSubmitButton", "true");
+        // The host gets the message of an invalid or failed submit from ref.submit() and shows it, so the iframe
+        // draws only field errors and does not show the message a second time.
+        queryParams.append("hostShowsSubmitErrors", "true");
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
 
