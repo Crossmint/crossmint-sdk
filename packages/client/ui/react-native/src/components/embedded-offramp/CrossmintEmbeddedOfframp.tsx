@@ -16,6 +16,8 @@ import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
+import { isSameSession } from "./sameSession";
+
 type EmbeddedOfframpWebViewParent = WebViewParent<
     typeof embeddedOfframpIncomingEvents,
     typeof embeddedOfframpOutgoingEvents
@@ -46,16 +48,6 @@ function stampMainFrameScript(nonce: string) {
   };
 })();
 true;`;
-}
-
-function isSameSession(pageUrl: string, ownUrl: string) {
-    try {
-        const page = new URL(pageUrl).searchParams;
-        const own = new URL(ownUrl).searchParams;
-        return page.get("apiKey") === own.get("apiKey") && page.get("credentials") === own.get("credentials");
-    } catch {
-        return false;
-    }
 }
 
 function isFromMainFrame(raw: string, nonce: string | null) {
@@ -209,6 +201,10 @@ function EmbeddedOfframpDocument({
                     const nonce = createNonce();
                     mainFrameNonce.current = nonce;
                     webViewRef.current?.injectJavaScript(stampMainFrameScript(nonce));
+                } else {
+                    console.warn(
+                        "[CrossmintEmbeddedOfframp] Loaded page is not this offramp session, wallet requests are blocked"
+                    );
                 }
             }}
             onMessage={(event) => {

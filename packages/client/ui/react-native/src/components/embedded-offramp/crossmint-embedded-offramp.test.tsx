@@ -5,6 +5,7 @@ import { WebView } from "react-native-webview";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { CrossmintEmbeddedOfframp } from "./CrossmintEmbeddedOfframp";
+import { isSameSession } from "./sameSession";
 
 const { injectJavaScript, openURL } = vi.hoisted(() => ({
     injectJavaScript: vi.fn(),
@@ -335,6 +336,28 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
                 expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
             });
 
+            test("warns once per load that is not stamped", () => {
+                renderPayer();
+                const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+                load("https://evil.example/page");
+                expect(warn).toHaveBeenCalledTimes(1);
+                load();
+                expect(warn).toHaveBeenCalledTimes(1);
+            });
+
+            test("is still stamped when URL and URLSearchParams are unusable", () => {
+                renderPayer();
+                const own = lastWebViewProps().source.uri as string;
+                vi.stubGlobal("URL", () => {
+                    throw new Error("not implemented");
+                });
+                try {
+                    expect(load(own).nonce).not.toBeNull();
+                } finally {
+                    vi.unstubAllGlobals();
+                }
+            });
+
             test("the component's own URL gets a nonce", () => {
                 renderPayer();
                 expect(load(lastWebViewProps().source.uri as string).nonce).not.toBeNull();
@@ -634,6 +657,27 @@ function deferredTransaction() {
     });
     return { promise, resolve, reject };
 }
+
+describe("isSameSession", () => {
+    const OWN = "https://h.example/r?apiKey=ck%20a&credentials=%7B%22a%22%3A1%7D";
+
+    test.each([
+        ["identical", OWN, true],
+        ["+ and %20 both mean a space", "https://h.example/r?credentials=%7B%22a%22%3A1%7D&apiKey=ck+a", true],
+        ["different param order", "https://h.example/r?credentials=%7B%22a%22%3A1%7D&apiKey=ck%20a", true],
+        ["a fragment", `${OWN}#frag?apiKey=other`, true],
+        ["an extra param", `${OWN}&fill=true`, true],
+        ["a missing param", "https://h.example/r?apiKey=ck%20a", false],
+        ["a different value", "https://h.example/r?apiKey=ck%20b&credentials=%7B%22a%22%3A1%7D", false],
+        ["a malformed escape", "https://h.example/r?apiKey=%E0%A4%A&credentials=%7B%22a%22%3A1%7D", false],
+    ])("%s", (_name, page, expected) => {
+        expect(isSameSession(page as string, OWN)).toBe(expected);
+    });
+
+    test("is false when both URLs lack the params", () => {
+        expect(isSameSession("https://h.example/r", "https://h.example/r")).toBe(false);
+    });
+});
 
 describe("signing session isolation", () => {
     test.each(["success", "rejection"])("ignores old session %s without unlocking the new session", async (outcome) => {
