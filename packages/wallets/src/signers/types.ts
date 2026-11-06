@@ -11,7 +11,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
 import { hasQuorumLocatorPrefix, parseSignerLocator } from "../utils/signer-locator";
-import { quorumSignerNotSupported } from "../utils/errors";
+import { InvalidSignerError } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -204,10 +204,12 @@ export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {
     return entry.type === "quorum";
 }
 
-/** Throws `QuorumSignerNotSupportedError` for a quorum, as the SDK cannot sign as one yet. */
+/** Throws `InvalidSignerError` for a quorum given as a key: a quorum signs only through its members' keys. */
 export function throwIfQuorumSigner(entry: { type: string }): void {
     if (isQuorumSigner(entry)) {
-        throw quorumSignerNotSupported([entry.locator]);
+        throw new InvalidSignerError(
+            "A quorum signs through its members, so it cannot be used as a key: pass a member's key instead."
+        );
     }
 }
 
