@@ -87,17 +87,23 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
 
-    // For EVM, status comes from the chains field
-    if ("chains" in apiSigner && apiSigner.chains != null && Object.keys(apiSigner.chains).length > 0) {
-        const chainEntry = apiSigner.chains[chain];
-        if (chainEntry == null) {
-            return null; // No approval for this chain
-        }
-        return { ...base, status: chainEntry.status, ...(scopes != null && { scopes }) } as Signer;
+    if (!isSignerOnChain(apiSigner, chain)) {
+        return null; // No approval for this chain
     }
+    // For EVM, status comes from the chains field; with none, the signer was created during wallet creation.
+    const chainEntry = "chains" in apiSigner ? apiSigner.chains?.[chain] : undefined;
+    return { ...base, status: chainEntry?.status ?? "success", ...(scopes != null && { scopes }) } as Signer;
+}
 
-    // If chains field is empty, the signer was created during wallet creation.
-    return { ...base, status: "success", ...(scopes != null && { scopes }) } as Signer;
+/** Whether a listed signer is registered on `chain`. An EVM signer lists its chains; with none, it is on every chain. */
+export function isSignerOnChain(
+    apiSigner: { locator: string; chains?: Record<string, unknown> | null },
+    chain: Chain
+): boolean {
+    if (chain === "solana" || chain === "stellar" || apiSigner.chains == null) {
+        return true;
+    }
+    return Object.keys(apiSigner.chains).length === 0 || apiSigner.chains[chain] != null;
 }
 
 export function getPendingSignerOperation(apiSigner: APISigner, chain: Chain): PendingSignerOperation | null {

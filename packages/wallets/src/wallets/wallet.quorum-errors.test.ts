@@ -24,6 +24,7 @@ import {
     createMockSolanaSerializedTransaction,
     createMockWallet,
     type MockedApiClient,
+    EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
 
 const QUORUM_CODE = "QUORUM_SIZE_INVALID";
@@ -39,13 +40,6 @@ const AWAITING_TRANSACTION = {
     approvals: { pending: [], submitted: [] },
 };
 const AWAITING_SIGNATURE = { id: "sig-1", status: "awaiting-approval", approvals: { pending: [], submitted: [] } };
-const TYPED_DATA = {
-    domain: { name: "App", version: "1", chainId: 84532, verifyingContract: RECIPIENT },
-    types: { Mail: [{ name: "contents", type: "string" }] },
-    primaryType: "Mail",
-    message: { contents: "hello" },
-    chain: "base-sepolia",
-} as const;
 
 const errorBody = (code: string) => ({ error: true, message: `rejected: ${code}`, code });
 
@@ -89,7 +83,7 @@ const ERROR_SITES: ErrorSite[] = [
         chain: "base-sepolia",
         signerType: "api-key",
         arrange: (api, body) => api.createSignature.mockResolvedValue(body as never),
-        act: (wallet) => EVMWallet.from(wallet).signTypedData(TYPED_DATA as never),
+        act: (wallet) => EVMWallet.from(wallet).signTypedData(EVM_TYPED_DATA as never),
         todayError: SignatureNotCreatedError,
     },
     {
