@@ -1,12 +1,7 @@
-import {
-    hasQuorumLocatorPrefix,
-    requireQuorumLocator,
-    type QuorumLocator,
-    type QuorumSigner,
-    type SignerLocator,
-} from "../signers/types";
+import { requireQuorumLocator, type QuorumLocator, type QuorumSigner, type SignerLocator } from "../signers/types";
 import { QuorumSelectionAmbiguousError } from "../utils/errors";
-import { isSameSignerLocator, quorumsWithMember } from "./members";
+import { hasQuorumLocatorPrefix, isSameSignerLocator } from "../utils/signer-locator";
+import { quorumsWithMember } from "./members";
 
 /**
  * What the held key signs as. `self`: the single signer `locator`. `quorum`: a member of that quorum.

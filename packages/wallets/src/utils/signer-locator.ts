@@ -1,3 +1,4 @@
+import { getAddress, isAddress } from "viem";
 import type { Chain } from "../chains/chains";
 import type {
     SignerLocator,
@@ -10,6 +11,33 @@ import type { RegisterSignerPasskeyParams } from "../api";
 import { normalizeEmail } from "./signer-validation";
 
 const PASSKEY_LOCATOR_PREFIX = "passkey:";
+const QUORUM_LOCATOR_PREFIX = "quorum:";
+
+/** True for any `quorum:` locator, valid or not; `isQuorumLocator` also checks the id. */
+export function hasQuorumLocatorPrefix(locator: string): boolean {
+    return locator.startsWith(QUORUM_LOCATOR_PREFIX);
+}
+
+// The API's `normalizeLocator` rule: an EVM address, bare or after the type, compares checksummed.
+// Every other value compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
+export function comparableLocator(locator: string): string {
+    const separator = locator.indexOf(":");
+    if (separator === -1) {
+        return checksummedIfEvmAddress(locator);
+    }
+    return `${locator.slice(0, separator)}:${checksummedIfEvmAddress(locator.slice(separator + 1))}`;
+}
+
+function checksummedIfEvmAddress(value: string): string {
+    if (isAddress(value, { strict: false })) {
+        return getAddress(value);
+    }
+    return value;
+}
+
+export function isSameSignerLocator(left: string, right: string): boolean {
+    return comparableLocator(left) === comparableLocator(right);
+}
 
 /** The credential id from `id` or a `passkey:{id}` locator, or null when the config carries neither. */
 export function passkeyCredentialId(config: Pick<PasskeySignerConfig, "id" | "locator">): string | null {
@@ -66,7 +94,7 @@ export function getSignerLocator<C extends Chain>(
 /**
  * Parses a signer locator string into its type and value components.
  */
-export function parseSignerLocator(locator: SignerLocator): { type: string; value: string } {
+export function parseSignerLocator(locator: string): { type: string; value: string } {
     const colonIndex = locator.indexOf(":");
     if (colonIndex === -1) {
         return { type: locator, value: "" };
