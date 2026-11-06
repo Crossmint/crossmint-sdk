@@ -260,4 +260,18 @@ describe("CrossmintPaymentMethodManagement ref", () => {
 
         expect(onChange).toHaveBeenCalledTimes(1);
     });
+
+    test("reports complete: false when the iframe reloads in place", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        fireEvent.load(iframe);
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: false, complete: true }));
+
+        fireEvent.load(iframe);
+
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: false, complete: false });
+        expect(onChange).toHaveBeenCalledTimes(2);
+    });
 });

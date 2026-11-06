@@ -52,12 +52,7 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
             return;
         }
         previousUrl.current = url;
-        const last = lastChange.current;
-        if (last?.complete === true) {
-            const reloading = { ...last, complete: false };
-            lastChange.current = reloading;
-            latestOnChange.current?.(reloading);
-        }
+        reportReload(lastChange, latestOnChange.current);
     }, [url]);
     // Authentication and form configuration live in the URL. A committed change must
     // retire the old window too, so its events cannot reach the next buyer's callbacks.
@@ -74,6 +69,21 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
         />
     );
 });
+
+// A reloaded form has not reported yet: a host that enabled its button on `complete` gets `complete: false` until the
+// new document reports its own state.
+function reportReload(
+    lastChange: { current: PaymentMethodManagementChangeEvent | null },
+    onChange: ((event: PaymentMethodManagementChangeEvent) => void) | undefined
+) {
+    const last = lastChange.current;
+    if (last?.complete !== true) {
+        return;
+    }
+    const reloading = { ...last, complete: false };
+    lastChange.current = reloading;
+    onChange?.(reloading);
+}
 
 const PaymentMethodConnection = forwardRef<
     CrossmintPaymentMethodManagementRef,
@@ -120,6 +130,10 @@ const PaymentMethodConnection = forwardRef<
         // answers only one handshake per document: share one client (and its single
         // handshake) per document, while each run still gets a fresh `active`.
         if (clientRef.current?.reloads !== reloads) {
+            // The iframe navigated in place: the URL is the same, but the form starts over.
+            if (reloads > 0) {
+                reportReload(lastChange, latestProps.current.onChange);
+            }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
             // submit can retry without reloading the iframe.
