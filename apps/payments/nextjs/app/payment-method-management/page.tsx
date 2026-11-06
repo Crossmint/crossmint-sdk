@@ -6,6 +6,7 @@ import {
     useCrossmintAuth,
     CrossmintPaymentMethodManagement,
     type CrossmintPaymentMethodManagementRef,
+    type PaymentMethodManagementChangeEvent,
     type PaymentMethodSubmitResult,
 } from "@crossmint/client-sdk-react-ui";
 import { useRef, useState } from "react";
@@ -22,6 +23,8 @@ export default function PaymentMethodManagementPage() {
 function PaymentMethodManagementWrapper() {
     const { jwt } = useCrossmintAuth();
     const [submitting, setSubmitting] = useState(false);
+    const [ready, setReady] = useState(false);
+    const [formState, setFormState] = useState<PaymentMethodManagementChangeEvent | null>(null);
     const [collectBillingAddress, setCollectBillingAddress] = useState(false);
     const [billingLine2, setBillingLine2] = useState<"optional" | "required" | "hidden">("optional");
     const [result, setResult] = useState<PaymentMethodSubmitResult | null>(null);
@@ -70,15 +73,18 @@ function PaymentMethodManagementWrapper() {
                 allowedModes={["new", "existing"]}
                 fields={collectBillingAddress ? { billingDetails: { address: { line2: billingLine2 } } } : undefined}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
+                onReady={() => setReady(true)}
+                onChange={setFormState}
             />
             <button
                 type="button"
                 style={{ marginTop: 16, padding: "12px 20px" }}
                 onClick={submitPaymentMethod}
-                disabled={submitting}
+                disabled={!ready || formState?.complete !== true || submitting}
             >
                 {submitting ? "Saving…" : "My own submit button"}
             </button>
+            <pre style={{ marginTop: 16 }}>{JSON.stringify({ ready, formState }, null, 2)}</pre>
             {result != null && <pre style={{ marginTop: 16 }}>{JSON.stringify(result, null, 2)}</pre>}
         </div>
     );

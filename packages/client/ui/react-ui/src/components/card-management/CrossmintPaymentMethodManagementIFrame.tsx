@@ -14,7 +14,11 @@ const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : use
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
 
-const unavailable = (message: string): PaymentMethodSubmitResult => ({ status: "unavailable", message });
+const unavailable = (code: "not_ready" | "timeout", message: string): PaymentMethodSubmitResult => ({
+    status: "unavailable",
+    code,
+    message,
+});
 const superseded = (): PaymentMethodSubmitResult => ({
     status: "superseded",
     message: "The payment method component changed. Please submit again.",
@@ -127,9 +131,21 @@ const PaymentMethodConnection = forwardRef<
                 return latestProps.current.onPaymentMethodSelected?.(method);
             }
         });
+        const readyListener = client.on("payment-method:ready", () => {
+            if (connection.current === active) {
+                latestProps.current.onReady?.();
+            }
+        });
+        const changeListener = client.on("payment-method:change", (event) => {
+            if (connection.current === active) {
+                latestProps.current.onChange?.(event);
+            }
+        });
         return () => {
             client.off(heightListener);
             client.off(selectedListener);
+            client.off(readyListener);
+            client.off(changeListener);
             if (pending.current?.client === client) {
                 pending.current.cancel();
                 pending.current = null;
@@ -144,7 +160,7 @@ const PaymentMethodConnection = forwardRef<
         submit() {
             const active = connection.current;
             if (active == null) {
-                return Promise.resolve(unavailable("The payment method component has not loaded yet."));
+                return Promise.resolve(unavailable("not_ready", "The payment method component has not loaded yet."));
             }
             if (pending.current?.client === active.client) {
                 return pending.current.promise;
@@ -162,7 +178,7 @@ const PaymentMethodConnection = forwardRef<
                     await active.ready();
                 } catch {
                     return connection.current === active
-                        ? unavailable("The payment method component did not answer. Please try again.")
+                        ? unavailable("not_ready", "The payment method component did not answer. Please try again.")
                         : superseded();
                 }
                 if (connection.current !== active) {
@@ -185,6 +201,7 @@ const PaymentMethodConnection = forwardRef<
                     // The request was already sent; the save may still have completed.
                     return connection.current === active
                         ? unavailable(
+                              "timeout",
                               "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it."
                           )
                         : superseded();

@@ -83,7 +83,42 @@ export interface CrossmintPaymentMethodManagementProps {
      */
     defaultValues?: PaymentMethodManagementDefaultValues | null;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
+    /**
+     * Fires when `ref.submit()` can first select or save, like Stripe's `ready` event. Until then a
+     * submit answers `unavailable`. It fires again after the iframe reloads, for example when `jwt`
+     * or the form configuration changes.
+     */
+    onReady?: () => void;
+    /**
+     * Fires after `onReady` and whenever the form state changes, like Stripe's `change` event. Use
+     * `complete` to enable your submit button.
+     */
+    onChange?: (event: PaymentMethodManagementChangeEvent) => void;
 }
+
+/**
+ * The form state `onChange` reports.
+ * - `mode`: `"existing"` while a saved method is selected, `"new"` while the add-new form shows.
+ * - `complete`: a submit would select or save without a field error.
+ * - `empty`: the user entered nothing in the add-new form. Prefilled `defaultValues` do not count.
+ */
+export type PaymentMethodManagementChangeEvent = {
+    mode: "new" | "existing";
+    empty: boolean;
+    complete: boolean;
+};
+
+/**
+ * Why a submit did not select or save, for code that branches on the reason or shows its own text.
+ * `unknown` means the component sent no known code.
+ */
+export type PaymentMethodSubmitInvalidCode =
+    | "incomplete_card"
+    | "invalid_billing_address"
+    | "incomplete_bank_account"
+    | "unknown";
+export type PaymentMethodSubmitFailedCode = "save_failed" | "select_failed" | "unknown";
+export type PaymentMethodSubmitUnavailableCode = "not_ready" | "timeout" | "unknown";
 
 /**
  * What `ref.submit()` resolves to. It never rejects.
@@ -96,13 +131,16 @@ export interface CrossmintPaymentMethodManagementProps {
  *   `onPaymentMethodSelected` fires if it did, and submitting again returns the same method.
  * - `superseded`: the component changed or unmounted while submitting. Discard the result;
  *   this does not cancel a save already started on the server.
+ *
+ * `invalid`, `failed` and `unavailable` carry a `code` (see the `PaymentMethodSubmit*Code` types)
+ * and a `message` to show the user. The component shows only field errors itself.
  */
 export type PaymentMethodSubmitResult =
     | { status: "selected"; paymentMethod: CrossmintPaymentMethod }
     | { status: "saved"; paymentMethod: CrossmintPaymentMethod }
-    | { status: "invalid"; message: string }
-    | { status: "failed"; message: string }
-    | { status: "unavailable"; message: string }
+    | { status: "invalid"; code: PaymentMethodSubmitInvalidCode; message: string }
+    | { status: "failed"; code: PaymentMethodSubmitFailedCode; message: string }
+    | { status: "unavailable"; code: PaymentMethodSubmitUnavailableCode; message: string }
     | { status: "superseded"; message: string };
 
 export interface CrossmintPaymentMethodManagementRef {

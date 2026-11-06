@@ -121,7 +121,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
         const { component } = mount();
 
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable", code: "not_ready" });
         expect(mocks.sendAction).not.toHaveBeenCalled();
 
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
@@ -135,6 +135,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
 
         await expect(component.submit()).resolves.toMatchObject({
             status: "unavailable",
+            code: "timeout",
             message:
                 "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it.",
         });
@@ -214,5 +215,22 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
         act(() => newListener?.({ height: 500 }));
         expect(newIframe.style.height).toBe("500px");
+    });
+
+    test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
+        const onReady = vi.fn();
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onReady={onReady} onChange={onChange} />);
+
+        act(() => listener("payment-method:ready")?.({}));
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: false, complete: true }));
+        expect(onReady).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith({ mode: "new", empty: false, complete: true });
+
+        const retiredChange = listener("payment-method:change");
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onReady={onReady} onChange={onChange} />);
+        act(() => retiredChange?.({ mode: "existing", empty: false, complete: true }));
+        expect(onChange).toHaveBeenCalledTimes(1);
     });
 });
