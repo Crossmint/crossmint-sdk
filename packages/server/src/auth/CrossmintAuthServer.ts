@@ -61,7 +61,8 @@ export class CrossmintAuthServer extends CrossmintAuth {
      * itself (`{ jwt, refreshToken }`). From a request, the cookies are read under the project-scoped
      * names the client SDK writes (see `getAuthCookieNames`), falling back to
      * the legacy `crossmint-jwt` / `crossmint-refresh-token` names. If a response object is provided,
-     * refreshed auth material is stored in its cookies.
+     * refreshed auth material is stored in its cookies. When the session was refreshed, the result also
+     * holds the `user` (email, phone number, linked accounts), so no {@link getUser} call is needed.
      *
      * @throws CrossmintAuthenticationError if no valid session can be established.
      */
@@ -241,6 +242,8 @@ export class CrossmintAuthServer extends CrossmintAuth {
             jwt: refreshedAuthMaterial.jwt,
             refreshToken: refreshedAuthMaterial.refreshToken,
             userId,
+            // verifyRefreshedAuthMaterial checked that this user is the JWT's subject
+            user: refreshedAuthMaterial.user,
         };
     }
 

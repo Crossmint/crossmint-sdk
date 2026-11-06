@@ -158,7 +158,7 @@ describe("CrossmintAuthServer", () => {
                             secret: "new-refresh-token",
                             expiresAt: "2023-12-31T23:59:59Z",
                         },
-                        user: { id: "user456" },
+                        user: { id: "user456", email: "user@example.com" },
                     }),
                 ok: true,
             });
@@ -172,6 +172,7 @@ describe("CrossmintAuthServer", () => {
                     expiresAt: "2023-12-31T23:59:59Z",
                 },
                 userId: "user456",
+                user: { id: "user456", email: "user@example.com" },
             });
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
                 refreshedJwt,
