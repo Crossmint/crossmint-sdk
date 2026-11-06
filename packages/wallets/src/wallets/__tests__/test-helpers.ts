@@ -4,9 +4,12 @@ import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
+import { deriveServerSignerDetails } from "../../signers/server";
 import type {
+    QuorumLocator,
     QuorumMember,
     QuorumSigner,
+    QuorumSignerConfig,
     RecoverySignerConfigForChain,
     SignerAdapter,
     SignerConfigForChain,
@@ -291,3 +294,75 @@ export const EVM_TYPED_DATA = {
     message: { contents: "hello" },
     chain: "base-sepolia",
 } as const;
+
+export const QUORUM_TEST_PROJECT_ID = "test-project";
+export const QUORUM_SERVER_MEMBER_SECRET = "c".repeat(64);
+const QUORUM_EXTERNAL_MEMBER: Record<string, string> = {
+    "base-sepolia": "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+    solana: "ExternalMember11111111111111111111111111111",
+    stellar: "GEXTERNALMEMBER",
+};
+const QUORUM_PASSKEY_MEMBER = {
+    type: "passkey",
+    id: "cred-dave",
+    name: "Dave",
+    publicKey: { x: "11", y: "22" },
+} as const;
+
+export const serverMemberAddress = (chain: Chain) =>
+    deriveServerSignerDetails(
+        { type: "server", secret: QUORUM_SERVER_MEMBER_SECRET },
+        chain,
+        QUORUM_TEST_PROJECT_ID,
+        APIKeyEnvironmentPrefix.STAGING
+    ).derivedAddress;
+
+// One quorum on a chain: the config a caller passes, the identity fields the API must receive, and the entry the API
+// returns. Its members cover every type the chain takes (Solana: no passkey).
+export function createQuorumFixture(chain: Chain, threshold = 2) {
+    const passkey = chain === "solana" ? [] : [QUORUM_PASSKEY_MEMBER];
+    const externalAddress = QUORUM_EXTERNAL_MEMBER[chain];
+    const config = {
+        type: "quorum",
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com" },
+            { type: "external-wallet", address: externalAddress, onSign: vi.fn() },
+            { type: "server", secret: QUORUM_SERVER_MEMBER_SECRET },
+            ...passkey,
+        ],
+    } as unknown as QuorumSignerConfig<Chain>;
+    const input = {
+        type: "quorum",
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com" },
+            { type: "external-wallet", address: externalAddress },
+            { type: "server", address: serverMemberAddress(chain) },
+            ...passkey,
+        ],
+    };
+    const entry = {
+        type: "quorum",
+        locator: `quorum:${crypto.randomUUID()}` as QuorumLocator,
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com", locator: "email:alice@example.com" },
+            { type: "external-wallet", address: externalAddress, locator: `external-wallet:${externalAddress}` },
+            { type: "server", address: serverMemberAddress(chain), locator: `server:${serverMemberAddress(chain)}` },
+            ...passkey.map((member) => ({ ...member, locator: `passkey:${member.id}` })),
+        ] as QuorumMember[],
+    } satisfies QuorumSigner;
+    return { config, input, entry };
+}
+
+// The same quorum config with its members listed in reverse and EVM addresses lowercased (only EVM ignores case).
+export function withMembersReordered(config: QuorumSignerConfig<Chain>): QuorumSignerConfig<Chain> {
+    const members = [...config.members].reverse().map((member) => {
+        if (member.type !== "external-wallet" || !member.address.startsWith("0x")) {
+            return member;
+        }
+        return { ...member, address: member.address.toLowerCase() };
+    });
+    return { ...config, members } as QuorumSignerConfig<Chain>;
+}

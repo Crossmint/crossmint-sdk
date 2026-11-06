@@ -28756,7 +28756,7 @@
                                                         "minimum": 1,
                                                         "maximum": 9007199254740991
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -28887,10 +28887,10 @@
                                                                 }
                                                             ]
                                                         },
-                                                        "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                        "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                     }
                                                 },
-                                                "required": ["type", "signers"],
+                                                "required": ["type", "members"],
                                                 "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                 "title": "Quorum Signer"
                                             }
@@ -29055,7 +29055,7 @@
                                                         "minimum": 1,
                                                         "maximum": 9007199254740991
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -29186,10 +29186,10 @@
                                                                 }
                                                             ]
                                                         },
-                                                        "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                        "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                     }
                                                 },
-                                                "required": ["type", "signers"],
+                                                "required": ["type", "members"],
                                                 "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                 "title": "Quorum Signer"
                                             }
@@ -29639,7 +29639,7 @@
                                                         "minimum": 1,
                                                         "maximum": 9007199254740991
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -29770,10 +29770,10 @@
                                                                 }
                                                             ]
                                                         },
-                                                        "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                        "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                     }
                                                 },
-                                                "required": ["type", "signers"],
+                                                "required": ["type", "members"],
                                                 "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                 "title": "Quorum Signer"
                                             }
@@ -29894,7 +29894,7 @@
                                                             "minimum": 1,
                                                             "maximum": 9007199254740991
                                                         },
-                                                        "signers": {
+                                                        "members": {
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
@@ -30025,10 +30025,10 @@
                                                                     }
                                                                 ]
                                                             },
-                                                            "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                            "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                         }
                                                     },
-                                                    "required": ["type", "signers"],
+                                                    "required": ["type", "members"],
                                                     "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                     "title": "Quorum Signer"
                                                 }
@@ -30518,7 +30518,7 @@
                                                         "minimum": 1,
                                                         "maximum": 9007199254740991
                                                     },
-                                                    "signers": {
+                                                    "members": {
                                                         "type": "array",
                                                         "items": {
                                                             "oneOf": [
@@ -30649,10 +30649,10 @@
                                                                 }
                                                             ]
                                                         },
-                                                        "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                        "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                     }
                                                 },
-                                                "required": ["type", "signers"],
+                                                "required": ["type", "members"],
                                                 "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                 "title": "Quorum Signer"
                                             }
@@ -30773,7 +30773,7 @@
                                                             "minimum": 1,
                                                             "maximum": 9007199254740991
                                                         },
-                                                        "signers": {
+                                                        "members": {
                                                             "type": "array",
                                                             "items": {
                                                                 "oneOf": [
@@ -30904,10 +30904,10 @@
                                                                     }
                                                                 ]
                                                             },
-                                                            "description": "The member signers that make up the quorum (1-10 members, no duplicates). Nested quorums are not allowed."
+                                                            "description": "The member signers that make up the quorum (2-10 members, no duplicates). Nested quorums are not allowed."
                                                         }
                                                     },
-                                                    "required": ["type", "signers"],
+                                                    "required": ["type", "members"],
                                                     "description": "A quorum (multisig) signer composed of multiple member signers with an approval threshold",
                                                     "title": "Quorum Signer"
                                                 }
