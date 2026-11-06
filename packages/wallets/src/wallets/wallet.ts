@@ -56,6 +56,7 @@ import {
     TransactionNotCreatedError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
+    quorumSignerNotSupported,
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
     throwIfRequestExpired,
@@ -465,7 +466,7 @@ export class Wallet<C extends Chain> {
      * Get the primary recovery signer config: the first recovery method that signs on its own. Use
      * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
-     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
+     * @throws {RecoveryMethodRequiredError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
     public get recovery(): SignerConfigForChain<C> {
@@ -1771,8 +1772,9 @@ export class Wallet<C extends Chain> {
     // Quorum approvals ship chain by chain: on a chain whose adapter does not support them yet,
     // a pending quorum entry fails with an actionable error instead of being signed.
     #requireSupportedApprovals<P extends { signer: { type: string; locator: string } }>(pendingApprovals: P[]): P[] {
-        if (!this.chainAdapter.supportsQuorumApprovals) {
-            pendingApprovals.forEach((pendingApproval) => throwIfQuorumSigner(pendingApproval.signer));
+        const quorumEntry = pendingApprovals.find((pendingApproval) => isQuorumSigner(pendingApproval.signer));
+        if (!this.chainAdapter.supportsQuorumApprovals && quorumEntry != null) {
+            throw quorumSignerNotSupported([quorumEntry.signer.locator]);
         }
         return pendingApprovals;
     }

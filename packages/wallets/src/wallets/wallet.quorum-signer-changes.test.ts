@@ -4,7 +4,6 @@ import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain }
 import {
     InvalidRecoveryConfigError,
     QuorumSelectionAmbiguousError,
-    QuorumSignerNotSupportedError,
     RecoveryMethodRequiredError,
 } from "../utils/errors";
 import { EVMWallet } from "./evm";
@@ -833,14 +832,15 @@ describe("approve() on a client with no active key", () => {
     });
 
     describe("when nothing is selected", () => {
-        it("throws as before and sends no approval", async () => {
+        it("asks for a member's key and sends no approval", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
             const wallet = await quorumOnlyWallet(recoveryQuorum);
             api.getTransaction.mockResolvedValue(awaiting([bobPending(recoveryQuorum)], "evm") as never);
 
             const { error } = await settle(wallet.approve({ transactionId: "txn-change" }));
 
-            expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
+            expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
+            expect((error as Error).message).toContain("useSigner()");
             expect(api.approveTransaction).not.toHaveBeenCalled();
         });
     });
