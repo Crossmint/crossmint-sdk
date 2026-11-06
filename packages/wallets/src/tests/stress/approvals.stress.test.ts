@@ -979,35 +979,31 @@ describe("BUG candidates (approvals)", () => {
     // api/client.ts `approveSignature` re-reads the signature on any 422 (transactions only on "Already has the required
     // number of approvals"), so the API's 422 for a member pending in two quorums is dropped and approveSignatureAndWait
     // returns the unsigned shape. The same approval of a transaction throws TransactionFailedError.
-    bugIt(
-        "BUG: approve({ signatureId }) reports the API's 422 rejection as a signature still awaiting approval",
-        async () => {
-            const [shared, bob, carol] = [env.key(chain), env.key(chain), env.key(chain)];
-            const created = await drive(
-                deviceSdk(env, "creator").createWallet({
-                    chain,
-                    recoveryMethods: [quorumOf([shared, bob], 2), quorumOf([shared, carol], 2)],
-                } as Any)
-            );
-            const [first, second] = quorumRecords(env.fake, created.address).recovery;
-            const device = EVMWallet.from(await memberDevice("device", chain, shared, "useSigner"));
-            const transaction = await drive(
-                device.send(recipientFor(chain, env.rng), "usdc", "1", { signer: first.locator } as Any)
-            );
-            addPendingEntry(env.fake, transaction.transactionId, second, env.rng);
-            const signature = await drive(
-                device.signMessage({ message: "hi", options: { signer: first.locator } } as Any)
-            );
-            addPendingEntry(env.fake, signature.signatureId as string, second, env.rng);
+    // FIXED in E1 (3b599c44): kept as a regression test.
+    it("FIXED: approve({ signatureId }) throws the API's 422 rejection instead of reporting a signature still awaiting approval", async () => {
+        const [shared, bob, carol] = [env.key(chain), env.key(chain), env.key(chain)];
+        const created = await drive(
+            deviceSdk(env, "creator").createWallet({
+                chain,
+                recoveryMethods: [quorumOf([shared, bob], 2), quorumOf([shared, carol], 2)],
+            } as Any)
+        );
+        const [first, second] = quorumRecords(env.fake, created.address).recovery;
+        const device = EVMWallet.from(await memberDevice("device", chain, shared, "useSigner"));
+        const transaction = await drive(
+            device.send(recipientFor(chain, env.rng), "usdc", "1", { signer: first.locator } as Any)
+        );
+        addPendingEntry(env.fake, transaction.transactionId, second, env.rng);
+        const signature = await drive(device.signMessage({ message: "hi", options: { signer: first.locator } } as Any));
+        addPendingEntry(env.fake, signature.signatureId as string, second, env.rng);
 
-            const forTransaction = await settle(device.approve({ transactionId: transaction.transactionId }));
-            const forSignature = await settle(device.approve({ signatureId: signature.signatureId as string }));
+        const forTransaction = await settle(device.approve({ transactionId: transaction.transactionId }));
+        const forSignature = await settle(device.approve({ signatureId: signature.signatureId as string }));
 
-            expect(errorOf(forTransaction)).toBeInstanceOf(TransactionFailedError);
-            expect(submittedApprovals(env.fake, devices).map((approval) => approval.status)).toEqual([422, 422]);
-            expect(errorOf(forSignature)).toBeInstanceOf(SignatureFailedError);
-        }
-    );
+        expect(errorOf(forTransaction)).toBeInstanceOf(TransactionFailedError);
+        expect(submittedApprovals(env.fake, devices).map((approval) => approval.status)).toEqual([422, 422]);
+        expect(errorOf(forSignature)).toBeInstanceOf(SignatureFailedError);
+    });
 
     // wallet.ts `#actingRoleLocator` passes every delegated quorum of the wallet config to resolveActingRole, whatever
     // chain it is installed on (`isRegisteredSigner` checks `isSignerOnChain`, the quorums do not).
