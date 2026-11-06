@@ -3,7 +3,12 @@ import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { RecoverySignerConfigForChain, SignerConfigForChain, SignerLocator } from "../../signers/types";
+import type {
+    QuorumSigner,
+    RecoverySignerConfigForChain,
+    SignerConfigForChain,
+    SignerLocator,
+} from "../../signers/types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -113,6 +118,22 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     getSigner: vi.fn(),
     ...overrides,
 });
+
+const randomEvmAddress = () => `0x${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().slice(0, 8)}`;
+
+// A quorum entry as the wallets API returns it. Members are random so no test depends on them.
+export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) => {
+    const members = Array.from({ length: memberCount }, () => {
+        const email = `member-${crypto.randomUUID()}@example.com`;
+        return { type: "email" as const, email, address: randomEvmAddress(), locator: `email:${email}` };
+    });
+    return {
+        type: "quorum" as const,
+        locator: `quorum:${crypto.randomUUID()}` as const,
+        threshold,
+        members,
+    } satisfies QuorumSigner;
+};
 
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
