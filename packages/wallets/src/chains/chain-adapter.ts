@@ -15,6 +15,8 @@ export interface ChainAdapter {
     readonly nativeToken: "eth" | "sol" | "xlm";
     readonly walletLocatorPrefix: "me:evm:smart" | "me:solana:smart" | "me:stellar:smart";
     readonly supportsSignatures: boolean;
+    /** Whether this client signs as a quorum member on the chain; each chain's quorum milestone turns it on. */
+    readonly supportsQuorumApprovals: boolean;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
     extractAddSignerOperation(
         response: RegisterSignerResponse,
