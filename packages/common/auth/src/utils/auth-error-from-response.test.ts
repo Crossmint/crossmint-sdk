@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { authErrorFromResponse } from "./authErrorFromResponse";
 
 describe("authErrorFromResponse", () => {
-    const cases: { name: string; response: Response; hint?: string; message: string }[] = [
+    const cases: { name: string; response: Response; message: string }[] = [
         {
             name: "uses the API's message",
             response: new Response(JSON.stringify({ message: "User not found" }), { status: 404 }),
@@ -30,16 +30,10 @@ describe("authErrorFromResponse", () => {
             response: new Response(null, { status: 500 }),
             message: "Failed to get user (500)",
         },
-        {
-            name: "appends the hint",
-            response: new Response(JSON.stringify({ message: "Forbidden" }), { status: 403 }),
-            hint: "needs users.read",
-            message: "Failed to get user (403: Forbidden). needs users.read",
-        },
     ];
 
-    it.each(cases)("$name", async ({ response, hint, message }) => {
-        const error = await authErrorFromResponse(response, "Failed to get user", hint);
+    it.each(cases)("$name", async ({ response, message }) => {
+        const error = await authErrorFromResponse(response, "Failed to get user");
 
         expect(error.message).toBe(message);
         expect(error.status).toBe(response.status);

@@ -479,7 +479,7 @@ describe("CrossmintAuthServer", () => {
             );
         });
 
-        it("throws with the API message and the required scope when the API key lacks users.read", async () => {
+        it("throws with the API message when the API key lacks users.read", async () => {
             const apiMessage =
                 "The API key provided doesn't have the required scopes to perform this action: users.read. It has the scopes: wallets.read.";
             mockApiClient.get.mockResolvedValue(
@@ -493,11 +493,10 @@ describe("CrossmintAuthServer", () => {
 
             expect(error).toBeInstanceOf(CrossmintAuthenticationError);
             expect(error.status).toBe(403);
-            expect(error.message).toContain(apiMessage);
-            expect(error.message).toContain("getUser needs a server API key with the users.read scope");
+            expect(error.message).toBe(`Failed to get user (403: ${apiMessage})`);
         });
 
-        it("throws with the status and no scope hint when the user is not found", async () => {
+        it("throws with the status and the API message when the user is not found", async () => {
             mockApiClient.get.mockResolvedValue(
                 new Response(
                     JSON.stringify({ statusCode: 404, message: "User with id external-user-123 not found." }),

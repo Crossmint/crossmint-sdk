@@ -111,11 +111,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         );
 
         if (!result.ok) {
-            const hint =
-                result.status === 401 || result.status === 403
-                    ? "getUser needs a server API key with the users.read scope"
-                    : undefined;
-            throw await authErrorFromResponse(result, "Failed to get user", hint);
+            throw await authErrorFromResponse(result, "Failed to get user");
         }
 
         return (await result.json()) as SDKExternalUser;
