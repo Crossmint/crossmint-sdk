@@ -35,17 +35,27 @@ function stampMainFrameScript(nonce: string) {
   var bridge = window.ReactNativeWebView;
   window.ReactNativeWebView = {
     postMessage: function (message) {
+      var out = message;
       try {
         var parsed = JSON.parse(message);
         parsed.data = Object.assign({ __mainFrameNonce: ${JSON.stringify(nonce)} }, parsed.data);
-        bridge.postMessage(JSON.stringify(parsed));
-      } catch (error) {
-        bridge.postMessage(message);
-      }
+        out = JSON.stringify(parsed);
+      } catch (error) {}
+      bridge.postMessage(out);
     }
   };
 })();
 true;`;
+}
+
+function isSameSession(pageUrl: string, ownUrl: string) {
+    try {
+        const page = new URL(pageUrl).searchParams;
+        const own = new URL(ownUrl).searchParams;
+        return page.get("apiKey") === own.get("apiKey") && page.get("credentials") === own.get("credentials");
+    } catch {
+        return false;
+    }
 }
 
 function isFromMainFrame(raw: string, nonce: string | null) {
@@ -190,13 +200,12 @@ function EmbeddedOfframpDocument({
             ref={webViewRef}
             source={{ uri: url }}
             onLoadStart={() => {
-                mainFrameNonce.current = null;
                 sendPending.current = null;
                 signPending.current = null;
             }}
             onLoad={({ nativeEvent }) => {
                 mainFrameNonce.current = null;
-                if (isOfframpPage(nativeEvent.url)) {
+                if (isOfframpPage(nativeEvent.url) && isSameSession(nativeEvent.url, url)) {
                     const nonce = createNonce();
                     mainFrameNonce.current = nonce;
                     webViewRef.current?.injectJavaScript(stampMainFrameScript(nonce));

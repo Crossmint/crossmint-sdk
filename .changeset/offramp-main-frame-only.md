@@ -2,4 +2,4 @@
 "@crossmint/client-sdk-react-native-ui": patch
 ---
 
-The React Native embedded offramp now accepts wallet requests (`crypto:send-transaction`, `crypto:sign-message`) only from the offramp page's main frame, not from frames embedded in it.
+The React Native embedded offramp now ignores wallet requests (`crypto:send-transaction`, `crypto:sign-message`) sent from cross-origin frames embedded in the offramp page; same-origin frames can still reach the main frame.

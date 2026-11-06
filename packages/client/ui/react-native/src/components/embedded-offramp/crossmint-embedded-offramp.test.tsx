@@ -47,7 +47,7 @@ const ROUTE = "https://staging.crossmint.com/sdk/unstable/embedded-offramp";
 
 let currentNonce: string | null = null;
 
-function load(url = `${ROUTE}?credentials=x`) {
+function load(url = lastWebViewProps().source.uri as string) {
     act(() => lastWebViewProps().onLoad({ nativeEvent: { url } }));
     const script = injectJavaScript.mock.calls.at(-1)?.[0] as string | undefined;
     currentNonce = script == null ? null : /__mainFrameNonce: "([0-9a-f]+)"/.exec(script)?.[1] ?? null;
@@ -285,13 +285,60 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             expect(injectJavaScript).not.toHaveBeenCalled();
         });
 
-        test("drops a request carrying the old nonce once a new load started", async () => {
+        test("keeps accepting the current nonce after a same-document navigation (onLoadStart without onLoad)", async () => {
             const payer = renderPayer();
-            const { nonce } = load();
+            load();
             act(() => lastWebViewProps().onLoadStart());
+            await emit("crypto:send-transaction", TX);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+        });
+
+        test("after a second load, drops the old nonce and accepts the new one", async () => {
+            const payer = renderPayer();
+            const first = load().nonce;
+            const second = load().nonce;
             vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            await emit("crypto:send-transaction", TX, undefined, nonce);
+            await emit("crypto:send-transaction", TX, undefined, first);
             expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            await emit("crypto:send-transaction", TX, undefined, second);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+        });
+
+        test("drops a request with a null or missing nonce before any load", async () => {
+            const payer = renderPayer();
+            vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            const { onMessage } = lastWebViewProps();
+            for (const data of [{ ...TX, __mainFrameNonce: null }, TX]) {
+                await act(async () => {
+                    onMessage({
+                        nativeEvent: { data: JSON.stringify({ event: "crypto:send-transaction", data }), url: ROUTE },
+                    });
+                });
+            }
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+        });
+
+        describe("a load of the same route for another session", () => {
+            test.each([
+                ["credentials", "credentials", "other"],
+                ["apiKey", "apiKey", "ck_staging_other"],
+            ])("gets no nonce when the %s differs", async (_name, param, value) => {
+                const payer = renderPayer();
+                vi.spyOn(console, "warn").mockImplementation(() => undefined);
+                const own = lastWebViewProps().source.uri as string;
+                const { nonce } = load(own);
+                expect(nonce).not.toBeNull();
+                const changed = new URL(own);
+                changed.searchParams.set(param as string, value as string);
+                expect(load(changed.toString()).script).toBeUndefined();
+                await emit("crypto:send-transaction", TX, undefined, nonce);
+                expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            });
+
+            test("the component's own URL gets a nonce", () => {
+                renderPayer();
+                expect(load(lastWebViewProps().source.uri as string).nonce).not.toBeNull();
+            });
         });
 
         test("uses a fresh nonce for each finished load", () => {
@@ -356,6 +403,18 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
                 new Function("window", second.script as string)(fakeWindow);
                 fakeWindow.ReactNativeWebView.postMessage(JSON.stringify({ event: "e", data: {} }));
                 expect(JSON.parse(postMessage.mock.calls[0][0]).data.__mainFrameNonce).toBe(second.nonce);
+            });
+
+            test("posts exactly once even when the bridge throws", () => {
+                renderPayer();
+                const { script } = load();
+                const postMessage = vi.fn((_message: string) => {
+                    throw new Error("bridge down");
+                });
+                const fakeWindow = { ReactNativeWebView: { postMessage } };
+                new Function("window", script as string)(fakeWindow);
+                expect(() => fakeWindow.ReactNativeWebView.postMessage("{}")).toThrow("bridge down");
+                expect(postMessage).toHaveBeenCalledTimes(1);
             });
 
             test("forwards an unparsable message unchanged", () => {
