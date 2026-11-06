@@ -44,7 +44,8 @@ describe("ed25519", () => {
                 expect(signature).toEqual(nacl.sign.detached(message, expected.secretKey));
                 expect(nacl.sign.detached.verify(message, signature, expected.publicKey)).toBe(true);
             }
-        });
+            // 200 rounds of pure-JS tweetnacl: under 1 s locally, but over 5 s on a busy CI runner.
+        }, 20_000);
 
         test("signs with a tweetnacl or Solana 64-byte secret key", () => {
             const keypair = nacl.sign.keyPair();
