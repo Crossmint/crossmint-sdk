@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Base64 } from "ox";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import { walletsLogger } from "../logger";
@@ -31,6 +32,8 @@ const CHAINS = [
         chain: "stellar" as const,
         address: "CWALLETSTELLARQUORUM",
         alice: "GALICEMEMBER",
+        recoveryAddresses: ["GFIRSTRECOVERY", "GSECONDRECOVERY"],
+        chainType: "stellar",
         request: (id: string, status: string, pending: object[] = [], submitted: object[] = []) => ({
             transaction: { id, status, approvals: { pending, submitted } },
         }),
@@ -39,6 +42,8 @@ const CHAINS = [
         chain: "base-sepolia" as const,
         address: "0x1234567890123456789012345678901234567890",
         alice: "0x6666666666666666666666666666666666666666",
+        recoveryAddresses: ["0x7777777777777777777777777777777777777777", "0x8888888888888888888888888888888888888888"],
+        chainType: "evm",
         request: (id: string, status: string, pending: object[] = [], submitted: object[] = []) => ({
             chains: { "base-sepolia": { id, status, onChain: {}, approvals: { pending, submitted } } },
         }),
@@ -532,3 +537,124 @@ describe("device recovery through a recovery quorum on EVM", () => {
         expect(storage.deleteKey).not.toHaveBeenCalled();
     });
 });
+
+// Key storage for one device: it keeps the key it generated until deleted, as the built-in storages do.
+const keyKeepingStorage = (walletAddress: string) => {
+    let key: string | null = null;
+    return {
+        generateKey: vi.fn(async () => {
+            key = Base64.fromBytes(new Uint8Array([4, ...crypto.getRandomValues(new Uint8Array(64))]));
+            return key;
+        }),
+        getKey: vi.fn(async (address: string) => (address === walletAddress ? key : null)),
+        hasKey: vi.fn(async (publicKey: string) => publicKey === key),
+        mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+        deleteKey: vi.fn(async () => {
+            key = null;
+        }),
+        signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
+        getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        saveSignerLocator: vi.fn().mockResolvedValue(undefined),
+        getSavedSignerLocator: vi.fn().mockResolvedValue(null),
+    };
+};
+
+describe.each(CHAINS)(
+    "device recovery on a wallet with several recovery methods that sign alone, on $chain",
+    ({ chain, address, recoveryAddresses, chainType, request }) => {
+        const secondAddress = recoveryAddresses[1];
+        // The second recovery method's approval of a device signer registration.
+        const secondApproval = {
+            signer: { type: "external-wallet", locator: `external-wallet:${secondAddress}` },
+            message: "0xdevice",
+        };
+        let api: MockedApiClient;
+        let storage: ReturnType<typeof keyKeepingStorage>;
+        // The device signers the API has registered, pending ones included, by locator.
+        let registrations: Map<string, object>;
+        const registration = (locator: string, id: string) => ({
+            type: "device",
+            locator,
+            publicKey: { x: "0x01", y: "0x02" },
+            name: "Test Device",
+            ...request(id, "awaiting-approval", [secondApproval]),
+        });
+
+        async function walletOnThisDevice() {
+            const wallet = new Wallet(
+                {
+                    chain,
+                    address,
+                    recovery: recoveryAddresses.map((recoveryAddress) => ({
+                        type: "external-wallet",
+                        address: recoveryAddress,
+                    })) as never,
+                    options: { deviceSignerKeyStorage: storage as never },
+                },
+                api as unknown as ApiClient
+            );
+            await wallet.waitForInit();
+            vi.spyOn(wallet, "signers").mockImplementation(async () => [...registrations.values()] as never);
+            return wallet;
+        }
+
+        beforeEach(async () => {
+            vi.clearAllMocks();
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+            const actual = await vi.importActual<typeof import("@/utils/device-signers")>("@/utils/device-signers");
+            vi.mocked(createDeviceSigner).mockImplementation(actual.createDeviceSigner);
+            api = createMockApiClient();
+            storage = keyKeepingStorage(address);
+            registrations = new Map();
+            const approved = new Set<string>();
+            api.getSigner.mockImplementation(
+                (async (_wallet: string, locator: string) =>
+                    registrations.get(locator) ?? { error: { message: "not found" } }) as never
+            );
+            api.registerSigner.mockImplementation((async () => {
+                const locator = `device:${await storage.getKey(address)}`;
+                registrations.set(locator, registration(locator, `tx-${registrations.size + 1}`));
+                return registrations.get(locator);
+            }) as never);
+            api.getTransaction.mockImplementation((async (_wallet: string, id: string) => {
+                if (approved.has(id)) {
+                    return { id, status: "success", onChain: { txId: "0xhash", txHash: "hash", explorerLink: "" } };
+                }
+                return createAwaitingRequest(id, [secondApproval], chainType);
+            }) as never);
+            api.approveTransaction.mockImplementation((async (_wallet: string, id: string) => {
+                approved.add(id);
+                return { id, status: "pending" };
+            }) as never);
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+            vi.restoreAllMocks();
+        });
+
+        it("prompts the selected recovery method again after its user rejected the device signer's registration", async () => {
+            const onSign = vi
+                .fn(async (payload: string) => signatureOver(payload))
+                .mockRejectedValueOnce(new Error("User rejected the request."));
+            const wallet = await walletOnThisDevice();
+            await wallet.useRecoveryMethod({ type: "external-wallet", address: secondAddress, onSign } as never);
+
+            await expect(wallet.recover()).rejects.toThrow("User rejected the request.");
+            await expect(wallet.recover()).resolves.toBeUndefined();
+
+            expect(onSign).toHaveBeenCalledTimes(2);
+            expect(wallet.needsRecovery()).toBe(false);
+        });
+
+        it("asks which recovery method to use when this device's earlier registration cannot be read", async () => {
+            const locator = `device:${await storage.generateKey()}`;
+            registrations.set(locator, registration(locator, "tx-1"));
+            api.getSigner.mockRejectedValue(new Error("network down"));
+            const wallet = await walletOnThisDevice();
+
+            await expect(wallet.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+            expect(api.registerSigner).not.toHaveBeenCalled();
+        });
+    }
+);
