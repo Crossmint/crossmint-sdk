@@ -45,10 +45,39 @@ function lastWebViewProps() {
 
 const ROUTE = "https://staging.crossmint.com/sdk/unstable/embedded-offramp";
 
-function emit(event: string, data: Record<string, unknown> = {}, url = `${ROUTE}?credentials=x`) {
+let currentNonce: string | null = null;
+
+function load(url = `${ROUTE}?credentials=x`) {
+    act(() => lastWebViewProps().onLoad({ nativeEvent: { url } }));
+    const script = injectJavaScript.mock.calls.at(-1)?.[0] as string | undefined;
+    currentNonce = script == null ? null : /__mainFrameNonce: "([0-9a-f]+)"/.exec(script)?.[1] ?? null;
+    injectJavaScript.mockClear();
+    return { script, nonce: currentNonce };
+}
+
+// A nonce of undefined means "the page's current one, loading first if needed"; null sends none.
+function emit(
+    event: string,
+    data: Record<string, unknown> = {},
+    url = `${ROUTE}?credentials=x`,
+    nonce: string | null | undefined = undefined
+) {
+    const isWallet = event.startsWith("crypto:");
+    if (isWallet && nonce === undefined && currentNonce == null) {
+        load();
+    }
+    const stamp = nonce === undefined ? currentNonce : nonce;
     const { onMessage } = lastWebViewProps();
     return act(async () => {
-        onMessage({ nativeEvent: { data: JSON.stringify({ event, data }), url } });
+        onMessage({
+            nativeEvent: {
+                data: JSON.stringify({
+                    event,
+                    data: isWallet && stamp != null ? { ...data, __mainFrameNonce: stamp } : data,
+                }),
+                url,
+            },
+        });
     });
 }
 
@@ -61,6 +90,7 @@ function replies(name: string) {
 }
 
 afterEach(() => {
+    currentNonce = null;
     cleanup();
     vi.clearAllMocks();
 });
@@ -196,6 +226,146 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
                 expect(injectJavaScript).not.toHaveBeenCalled();
             }
         );
+    });
+
+    describe("when a wallet request must come from the main frame", () => {
+        const SIGN = { message: "crossmint.com wants you to sign in", chain: "solana", payerAddress: "9Wz" };
+        const renderPayer = () => {
+            const payer = {
+                signAndSendTransaction: vi.fn().mockResolvedValue("0xtx"),
+                signMessage: vi.fn().mockResolvedValue("c2ln"),
+            };
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+            return payer;
+        };
+
+        test("answers requests carrying the nonce of the finished load", async () => {
+            const payer = renderPayer();
+            load();
+            await emit("crypto:send-transaction", TX);
+            await emit("crypto:sign-message", SIGN);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            expect(payer.signMessage).toHaveBeenCalledTimes(1);
+            expect(injectJavaScript).toHaveBeenCalledTimes(2);
+        });
+
+        test.each([
+            ["crypto:send-transaction", TX],
+            ["crypto:sign-message", SIGN],
+        ])("drops %s without a nonce, silently", async (event, data) => {
+            const payer = renderPayer();
+            load();
+            const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            await emit(event, data, undefined, null);
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            expect(payer.signMessage).not.toHaveBeenCalled();
+            expect(injectJavaScript).not.toHaveBeenCalled();
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining(event));
+            warn.mockRestore();
+        });
+
+        test.each([
+            ["crypto:send-transaction", TX],
+            ["crypto:sign-message", SIGN],
+        ])("drops %s with a wrong nonce", async (event, data) => {
+            const payer = renderPayer();
+            load();
+            vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            await emit(event, data, undefined, "00".repeat(16));
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            expect(payer.signMessage).not.toHaveBeenCalled();
+            expect(injectJavaScript).not.toHaveBeenCalled();
+        });
+
+        test("drops requests before any load finished", async () => {
+            const payer = renderPayer();
+            vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            await emit("crypto:send-transaction", TX, undefined, "00".repeat(16));
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            expect(injectJavaScript).not.toHaveBeenCalled();
+        });
+
+        test("drops a request carrying the old nonce once a new load started", async () => {
+            const payer = renderPayer();
+            const { nonce } = load();
+            act(() => lastWebViewProps().onLoadStart());
+            vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            await emit("crypto:send-transaction", TX, undefined, nonce);
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+        });
+
+        test("uses a fresh nonce for each finished load", () => {
+            renderPayer();
+            const first = load().nonce;
+            const second = load().nonce;
+            expect(first).toMatch(/^[0-9a-f]{32}$/);
+            expect(second).toMatch(/^[0-9a-f]{32}$/);
+            expect(second).not.toBe(first);
+        });
+
+        test("passes other events through without a nonce", async () => {
+            const onReady = vi.fn();
+            render(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    onReady={onReady}
+                />
+            );
+            await emit("offramp:ready");
+            expect(onReady).toHaveBeenCalledTimes(1);
+        });
+
+        test("a load finishing on another page clears the nonce and injects nothing", async () => {
+            const payer = renderPayer();
+            const { nonce } = load();
+            vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            act(() => lastWebViewProps().onLoad({ nativeEvent: { url: "https://evil.example/page" } }));
+            expect(injectJavaScript).not.toHaveBeenCalled();
+            await emit("crypto:send-transaction", TX, undefined, nonce);
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+        });
+
+        describe("the injected script", () => {
+            function runScript(script: string) {
+                const postMessage = vi.fn();
+                const fakeWindow: { ReactNativeWebView: { postMessage: (message: string) => void } } = {
+                    ReactNativeWebView: { postMessage },
+                };
+                new Function("window", script)(fakeWindow);
+                return { postMessage, bridge: fakeWindow.ReactNativeWebView };
+            }
+
+            test("stamps the nonce into the data of every message", () => {
+                renderPayer();
+                const { script, nonce } = load();
+                const { postMessage, bridge } = runScript(script as string);
+                bridge.postMessage(JSON.stringify({ event: "crypto:sign-message", data: { message: "m" } }));
+                expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({
+                    event: "crypto:sign-message",
+                    data: { message: "m", __mainFrameNonce: nonce },
+                });
+            });
+
+            test("keeps the newer nonce when the page is stamped twice", () => {
+                renderPayer();
+                const first = load();
+                const second = load();
+                const { postMessage, bridge } = runScript(first.script as string);
+                const fakeWindow = { ReactNativeWebView: bridge };
+                new Function("window", second.script as string)(fakeWindow);
+                fakeWindow.ReactNativeWebView.postMessage(JSON.stringify({ event: "e", data: {} }));
+                expect(JSON.parse(postMessage.mock.calls[0][0]).data.__mainFrameNonce).toBe(second.nonce);
+            });
+
+            test("forwards an unparsable message unchanged", () => {
+                renderPayer();
+                const { script } = load();
+                const { postMessage, bridge } = runScript(script as string);
+                bridge.postMessage("not json");
+                expect(postMessage).toHaveBeenCalledWith("not json");
+            });
+        });
     });
 
     describe("when the page opens a new window", () => {
@@ -360,6 +530,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
             await emit("crypto:sign-message", SIGN);
             act(() => lastWebViewProps().onLoadStart());
+            load();
             await emit("crypto:sign-message", SIGN);
             expect(payer.signMessage).toHaveBeenCalledTimes(2);
             await act(async () => oldSignature.resolve("old"));
@@ -421,6 +592,7 @@ describe("signing session isolation", () => {
                 payer={{ signAndSendTransaction: newSigner }}
             />
         );
+        load();
         await emit("crypto:send-transaction", TX);
         expect(newSigner).toHaveBeenCalledTimes(1);
         await act(async () => {
@@ -444,8 +616,10 @@ describe("signing session isolation", () => {
         const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
         render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
         act(() => lastWebViewProps().onLoadStart());
+        load();
         await emit("crypto:send-transaction", TX);
         act(() => lastWebViewProps().onLoadStart());
+        load();
         await emit("crypto:send-transaction", TX);
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => oldTransaction.resolve("old-tx"));
