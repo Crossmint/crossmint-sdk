@@ -17,6 +17,8 @@ import { DeviceSignerNotSupportedError, SignerLimitExceededError } from "../../u
 import { createDeviceSigner } from "@/utils/device-signers";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
+import type { Signer as APISigner } from "../../api";
+import { mapApiSignerToSigner } from "../../utils/signer-mapping";
 import type { PendingSignerOperation, Signer as WalletSigner, WalletOptions } from "../types";
 import type { SignerManager } from "./signer-manager";
 
@@ -81,7 +83,11 @@ export class DeviceRecoveryService<C extends Chain> {
         }
     }
 
-    async initDeviceSigner(): Promise<void> {
+    /**
+     * @param apiSigners - Delegated signers as the API just returned them with the wallet. When given, the
+     * device signer is matched and its status read from them, with no request to the API.
+     */
+    async initDeviceSigner(apiSigners?: APISigner[]): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
             return;
@@ -92,7 +98,7 @@ export class DeviceRecoveryService<C extends Chain> {
 
         const deviceConfig: DeviceSignerConfig = { type: "device" };
         try {
-            await this.resolveAvailability(deviceConfig);
+            await this.resolveAvailability(deviceConfig, apiSigners);
         } catch (error) {
             walletsLogger.error("wallet.initDeviceSigner.error", { error });
             this.#status = "needs-recovery";
@@ -107,7 +113,7 @@ export class DeviceRecoveryService<C extends Chain> {
             deviceConfig as SignerConfigForChain<C>,
             this.#signerManager.descriptorContext()
         );
-        const deviceSigner = await this.#signerManager.assemble(internalConfig);
+        const deviceSigner = await this.#signerManager.assemble(internalConfig, { apiSigners });
         this.#signerManager.setActiveSigner(deviceSigner);
 
         if (!this.#signerManager.isApprovedSignerStatus(deviceSigner.status)) {
@@ -370,7 +376,7 @@ export class DeviceRecoveryService<C extends Chain> {
         }
     }
 
-    async resolveAvailability(config: DeviceSignerConfig): Promise<void> {
+    async resolveAvailability(config: DeviceSignerConfig, apiSigners?: APISigner[]): Promise<void> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
             throw new Error("Device signer key storage is required for device signers");
@@ -383,7 +389,11 @@ export class DeviceRecoveryService<C extends Chain> {
             return;
         }
 
-        const existingSigners = await this.#signers();
+        // Same filter as signers(): only signers with an approval on this chain.
+        const existingSigners =
+            apiSigners != null
+                ? apiSigners.filter((s) => mapApiSignerToSigner(s, this.#chain) != null)
+                : await this.#signers();
         const deviceSigners = existingSigners.filter((s) => s.locator.startsWith("device:"));
         for (const walletSigner of deviceSigners) {
             const publicKeyBase64 = walletSigner.locator.replace("device:", "");

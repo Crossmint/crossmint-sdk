@@ -9,6 +9,7 @@ import type {
     GetTransactionsResponse,
     GetWalletSuccessResponse,
     FundWalletResponse,
+    Signer as APISigner,
 } from "../api";
 import type {
     AddSignerOptions,
@@ -102,6 +103,8 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
+export type WalletFactoryConstructorArgs<C extends Chain> = WalletContructorType<C> & { apiSigners?: APISigner[] };
+
 export class Wallet<C extends Chain> {
     chain: C;
     address: string;
@@ -129,7 +132,8 @@ export class Wallet<C extends Chain> {
             apiDelegatedServerSignerAddresses,
             signers,
             signer,
-        } = args;
+            apiSigners,
+        } = args as WalletFactoryConstructorArgs<C>;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -202,7 +206,7 @@ export class Wallet<C extends Chain> {
                     includeSignatures: this.chainAdapter.supportsSignatures,
                 }),
         });
-        this.#signerInitialization = this.initDefaultSigner();
+        this.#signerInitialization = this.initDefaultSigner(apiSigners);
     }
 
     public get signer(): SignerAdapter | undefined {
@@ -229,13 +233,13 @@ export class Wallet<C extends Chain> {
      * Note: Server and api-key signers may fail to auto-assemble if required data
      * is not available in the API response. In those cases, the signer is left undefined.
      */
-    private async initDefaultSigner(): Promise<void> {
+    private async initDefaultSigner(apiSigners?: APISigner[]): Promise<void> {
         // If useSigner has been called, don't try to auto-assemble a signer
         if (this.#signerManager.activeSigner != null) {
             return;
         }
         // Step 1: Try device signer (existing behavior)
-        await this.#deviceRecovery.initDeviceSigner();
+        await this.#deviceRecovery.initDeviceSigner(apiSigners);
 
         // If device signer was found or recovery is pending, we're done
         if (this.#signerManager.activeSigner != null || this.#deviceRecovery.needsRecovery) {
@@ -265,7 +269,9 @@ export class Wallet<C extends Chain> {
                 signerToAssemble as SignerConfigForChain<C>,
                 signerDescriptorContext
             );
-            this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
+            this.#signerManager.setActiveSigner(
+                await this.#signerManager.assemble(internalConfig, { isAdminSigner, apiSigners })
+            );
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#signerManager.recovery.type,
@@ -1313,22 +1319,11 @@ export class Wallet<C extends Chain> {
             throw new WalletTypeNotSupportedError(reason);
         }
 
-        const configSigners = walletResponse?.config?.delegatedSigners ?? [];
-
-        const signersWithStatus = await Promise.all(
-            configSigners.map(async (configSigner) => {
-                try {
-                    const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
-                    return signerState.signer;
-                } catch (error) {
-                    walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
-                    return null;
-                }
-            })
-        );
-
-        // Filter out null results (signers that don't have approval for this chain)
-        const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
+        // Each delegated signer in the wallet response is the same object GET signer returns, status included,
+        // so one request covers them all. Signers with no approval on this chain map to null.
+        const signers = ((walletResponse.config?.delegatedSigners ?? []) as APISigner[])
+            .map((apiSigner) => mapApiSignerToSigner(apiSigner, this.chain))
+            .filter((s): s is WalletSigner => s != null);
 
         walletsLogger.info("wallet.signers.success", {
             count: signers.length,

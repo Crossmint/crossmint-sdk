@@ -26,7 +26,7 @@ import type {
     RecoverySignerConfigForChain,
     SignerConfigForChain,
 } from "../signers/types";
-import { Wallet } from "./wallet";
+import { Wallet, type WalletFactoryConstructorArgs } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
 import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
@@ -117,6 +117,10 @@ export class WalletFactory {
         }
 
         walletsLogger.info("walletFactory.getWallet.start");
+
+        // Signer initialization reads device keys right after the wallet loads: start loading the key
+        // storage (an iframe on web) now, alongside the request.
+        validatedArgs.options?.deviceSignerKeyStorage?.preload?.();
 
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
@@ -379,20 +383,19 @@ export class WalletFactory {
             .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
             .map((s) => (s as { address: string }).address);
 
-        const wallet = new Wallet(
-            {
-                chain: args.chain,
-                address: walletResponse.address,
-                owner: walletResponse.owner,
-                options: args.options,
-                alias: args.alias,
-                recovery: recoverySigners,
-                apiRecoveryServerSignerAddresses,
-                apiDelegatedServerSignerAddresses,
-                signers: (signers ?? []) as SignerConfigForChain<C>[],
-            },
-            this.apiClient
-        );
+        const walletArgs: WalletFactoryConstructorArgs<C> = {
+            chain: args.chain,
+            address: walletResponse.address,
+            owner: walletResponse.owner,
+            options: args.options,
+            alias: args.alias,
+            recovery: recoverySigners,
+            apiRecoveryServerSignerAddresses,
+            apiDelegatedServerSignerAddresses,
+            signers: (signers ?? []) as SignerConfigForChain<C>[],
+            apiSigners: apiDelegatedSigners as SignerResponse[] | undefined,
+        };
+        const wallet = new Wallet(walletArgs, this.apiClient);
 
         // Await signer initialization so that needsRecovery() returns the correct
         // value immediately after getWallet() / createWallet() resolves.
