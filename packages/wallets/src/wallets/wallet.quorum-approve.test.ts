@@ -4,6 +4,7 @@ import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain }
 import {
     InvalidSignerError,
     QuorumSignerNotSupportedError,
+    SignatureFailedError,
     TransactionAwaitingApprovalError,
     TransactionExpiredError,
     TransactionFailedError,
@@ -912,6 +913,19 @@ describe("approve() on a signature with a pending quorum entry", () => {
         expect(error).toBeUndefined();
         expect(signatureSentApprovals()).toHaveLength(1);
         expect(value).toStrictEqual(AWAITING_SIGNATURE);
+    });
+
+    it("throws the API's rejection when the held member is pending in two different quorums", async () => {
+        const first = createQuorumPendingApproval({ quorum: quorumWith([member]) });
+        const second = createQuorumPendingApproval({ quorum: quorumWith([member]) });
+        api.getSignature.mockResolvedValue(awaiting("sig-1", [first, second]) as never);
+        const rejection = `Signer '${member.locator}' belongs to multiple quorums, which is not supported`;
+        api.approveSignature.mockResolvedValue({ error: true, statusCode: 422, message: rejection } as never);
+
+        const { error } = await settle(wallet.approve({ signatureId: "sig-1" }));
+
+        expect(error).toBeInstanceOf(SignatureFailedError);
+        expect((error as Error).message).toContain("belongs to multiple quorums");
     });
 
     it("sends no approval and returns the signature id without a signature when this client holds no pending member", async () => {
