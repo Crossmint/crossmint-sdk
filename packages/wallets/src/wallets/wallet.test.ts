@@ -3768,28 +3768,40 @@ describe("Wallet - recover()", () => {
                 return wallet;
             }
 
-            // Until recovery through the quorum, two recovery methods (quorums count, as in Swift) need a selection.
-            it("throws RecoveryMethodRequiredError before creating a device key, and registers or removes nothing", async () => {
-                const mockStorage = createMockDeviceKeyStorage();
+            const staleDevice = {
+                type: "device",
+                locator: "device:oldKey",
+                publicKey: { x: "0x03", y: "0x04" },
+                name: "Test Device",
+                status: "success",
+            };
+            const storageWithOldDevice = () => ({
+                ...createMockDeviceKeyStorage(),
+                getSavedSignerLocator: vi.fn().mockResolvedValue(staleDevice.locator),
+                saveSignerLocator: vi.fn().mockResolvedValue(undefined),
+            });
+            const registrationAwaitingQuorum = {
+                type: "device",
+                locator: "device:mockNewKey",
+                publicKey: { x: "0x01", y: "0x02" },
+                transaction: { id: "tx-1", status: "awaiting-approval" },
+            };
+
+            it("registers the device signer through the member's quorum and removes nothing while it waits", async () => {
+                const mockStorage = storageWithOldDevice();
                 const wallet = await walletWithSelectedMember(mockStorage);
-                const staleDevice = {
-                    type: "device",
-                    locator: "device:oldKey",
-                    publicKey: { x: "0x03", y: "0x04" },
-                    name: "Test Device",
-                    status: "success",
-                };
                 vi.spyOn(wallet, "signers").mockResolvedValue([staleDevice] as any);
                 mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
+                mockApiClient.registerSigner.mockResolvedValue(registrationAwaitingQuorum as any);
 
-                await expect(wallet.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+                await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-1" });
 
-                expect(createDeviceSigner).not.toHaveBeenCalled();
-                expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+                expect(mockApiClient.registerSigner.mock.calls[0][1].approver).toBe(recoveryQuorum.locator);
                 expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
+                expect(mockStorage.deleteKey).not.toHaveBeenCalled();
             });
 
-            it("never sends the member's quorum as the device signer's approver, even when selected while the key is made", async () => {
+            it("sends the member's quorum when the member is selected while the key is made", async () => {
                 const mockStorage = createMockDeviceKeyStorage();
                 const wallet = new Wallet(
                     {
@@ -3803,23 +3815,24 @@ describe("Wallet - recover()", () => {
                 vi.spyOn(wallet, "signers").mockResolvedValue([] as any);
                 await wallet.useRecoveryMethod({ type: "api-key" } as any);
                 mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
+                mockApiClient.registerSigner.mockResolvedValue(registrationAwaitingQuorum as any);
                 let finishKey: (key: unknown) => void = () => {};
                 vi.mocked(createDeviceSigner).mockImplementationOnce(
                     () => new Promise((resolve) => (finishKey = resolve)) as never
                 );
 
-                const recovering = wallet.recover().catch((error: unknown) => error);
+                const recovering = wallet.recover();
                 await vi.waitFor(() => expect(createDeviceSigner).toHaveBeenCalled());
                 await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
                 finishKey({ type: "device", publicKey: { x: "0x01", y: "0x02" }, locator: "device:mockNewKey" });
 
-                expect(await recovering).toBeInstanceOf(RecoveryMethodRequiredError);
-                expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
-                expect(mockStorage.deleteKey).toHaveBeenCalledWith("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
+                await expect(recovering).resolves.toEqual({ transactionId: "tx-1" });
+                expect(mockApiClient.registerSigner.mock.calls[0][1].approver).toBe(recoveryQuorum.locator);
+                expect(mockStorage.deleteKey).not.toHaveBeenCalled();
             });
 
-            it("skips the stale device signer's removal when a member is selected mid-recovery", async () => {
-                const mockStorage = createMockDeviceKeyStorage();
+            it("removes the old device signer through the member's quorum when the member is selected mid-recovery", async () => {
+                const mockStorage = storageWithOldDevice();
                 const wallet = new Wallet(
                     {
                         chain: "solana",
@@ -3829,13 +3842,6 @@ describe("Wallet - recover()", () => {
                     },
                     mockApiClient as unknown as ApiClient
                 );
-                const staleDevice = {
-                    type: "device",
-                    locator: "device:oldKey",
-                    publicKey: { x: "0x03", y: "0x04" },
-                    name: "Test Device",
-                    status: "success",
-                };
                 vi.spyOn(wallet, "signers").mockResolvedValue([staleDevice] as any);
                 await wallet.useRecoveryMethod({ type: "api-key" } as any);
                 mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
@@ -3851,7 +3857,7 @@ describe("Wallet - recover()", () => {
                     () => new Promise((resolve) => (finishRegistration = resolve)) as never
                 );
 
-                const recovering = wallet.recover().catch((error: unknown) => error);
+                const recovering = wallet.recover();
                 await vi.waitFor(() => expect(mockApiClient.registerSigner).toHaveBeenCalled());
                 await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
                 finishRegistration({
@@ -3860,10 +3866,11 @@ describe("Wallet - recover()", () => {
                     publicKey: { x: "0x01", y: "0x02" },
                     transaction: { id: "tx-1", status: "pending", onChain: { transaction: "serialized-tx" } },
                 });
-                expect(await recovering).toBeUndefined();
 
-                // Selecting the member cleared the recovery method, so no key can approve the removal until E5.
-                expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
+                // The registration was approved with api-key; the removal goes through the quorum selected since.
+                await expect(recovering).resolves.toEqual({ transactionId: "tx-remove" });
+                expect(mockApiClient.removeSigner.mock.calls[0][1]).toBe(staleDevice.locator);
+                expect(mockApiClient.removeSigner.mock.calls[0][2]?.approver).toBe(recoveryQuorum.locator);
                 expect(wallet.signer?.locator()).toBe("device:mockNewKey");
             });
 
