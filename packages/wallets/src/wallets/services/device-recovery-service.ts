@@ -277,9 +277,7 @@ export class DeviceRecoveryService<C extends Chain> {
                 throw error;
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
-                // Once a registration exists, its approvers may still sign it: deleting the key would strand it.
-                const registered = await this.#signerManager.getSignerState(newDeviceSigner.locator as SignerLocator);
-                if (registered.signer == null && !registered.lookupFailed) {
+                if (!(await this.#registrationAwaitsQuorum(newDeviceSigner.locator as SignerLocator))) {
                     await deviceSignerKeyStorage.deleteKey(this.#walletAddress);
                 }
                 throw error;
@@ -323,6 +321,16 @@ export class DeviceRecoveryService<C extends Chain> {
         } catch {
             return true;
         }
+    }
+
+    // Quorum members may still approve a registration that exists, so deleting its key would strand it. A flat
+    // approver's registration is made again with a new key, as before quorums.
+    async #registrationAwaitsQuorum(signerLocator: SignerLocator): Promise<boolean> {
+        if (!this.#changeApprovedByQuorum()) {
+            return false;
+        }
+        const registered = await this.#signerManager.getSignerState(signerLocator);
+        return registered.signer != null || registered.lookupFailed;
     }
 
     async #registerDeviceSigner(
@@ -493,7 +501,8 @@ export class DeviceRecoveryService<C extends Chain> {
 
         const signerState = await this.#signerManager.getSignerState(deviceSigner.locator());
         // Registering again could start a second request while the first waits on quorum members; flat wallets go on.
-        if (signerState.lookupFailed && this.#changeApprovedByQuorum()) {
+        // With no approver resolved, this throws as registering would.
+        if (signerState.lookupFailed && this.#signerManager.approvesAsQuorum()) {
             throw new WalletNotAvailableError(`Could not read device signer ${deviceSigner.locator()}; try again`);
         }
         deviceSigner.status = signerState.signer?.status;
