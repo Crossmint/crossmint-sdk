@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+    PAYMENT_METHOD_SUBMIT_FAILED_CODES,
+    PAYMENT_METHOD_SUBMIT_INVALID_CODES,
+    PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES,
+    type PaymentMethodManagementChangeEvent,
+} from "../CrossmintPaymentMethodManagementProps";
 
 // `paymentMethod` is the same shape `payment-method:selected` carries (CrossmintPaymentMethod);
 // only the fields consumers narrow on are enforced, extra fields pass through.
@@ -11,19 +17,17 @@ const paymentMethodSubmitResultSchema = z.union([
         z.object({ status: z.literal("saved"), paymentMethod: paymentMethodSchema }),
         z.object({
             status: z.literal("invalid"),
-            code: z
-                .enum(["incomplete_card", "invalid_billing_address", "incomplete_bank_account", "unknown"])
-                .catch("unknown"),
+            code: z.enum(PAYMENT_METHOD_SUBMIT_INVALID_CODES).catch("unknown"),
             message: z.string(),
         }),
         z.object({
             status: z.literal("failed"),
-            code: z.enum(["save_failed", "select_failed", "unknown"]).catch("unknown"),
+            code: z.enum(PAYMENT_METHOD_SUBMIT_FAILED_CODES).catch("unknown"),
             message: z.string(),
         }),
         z.object({
             status: z.literal("unavailable"),
-            code: z.enum(["not_ready", "timeout", "unknown"]).catch("unknown"),
+            code: z.enum(PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES).catch("unknown"),
             message: z.string(),
         }),
     ]),
@@ -49,7 +53,7 @@ export const paymentMethodManagementIncomingEvents = {
         mode: z.enum(["new", "existing"]),
         empty: z.boolean(),
         complete: z.boolean(),
-    }),
+    }) satisfies z.ZodType<PaymentMethodManagementChangeEvent>,
     "payment-method:result": z.object({
         requestId: z.string().min(1),
         result: paymentMethodSubmitResultSchema,

@@ -111,15 +111,22 @@ export type PaymentMethodManagementChangeEvent = {
 
 /**
  * Why a submit did not select or save, for code that branches on the reason or shows its own text.
- * `unknown` means the component sent no known code.
+ * Each list is the single definition of its codes: the types below and the result validation both
+ * come from it. `unknown` means the component sent no known code.
  */
-export type PaymentMethodSubmitInvalidCode =
-    | "incomplete_card"
-    | "invalid_billing_address"
-    | "incomplete_bank_account"
-    | "unknown";
-export type PaymentMethodSubmitFailedCode = "save_failed" | "select_failed" | "unknown";
-export type PaymentMethodSubmitUnavailableCode = "not_ready" | "timeout" | "unknown";
+export const PAYMENT_METHOD_SUBMIT_INVALID_CODES = [
+    "incomplete_card",
+    "invalid_billing_address",
+    "incomplete_bank_account",
+    "unknown",
+] as const;
+export const PAYMENT_METHOD_SUBMIT_FAILED_CODES = ["save_failed", "select_failed", "unknown"] as const;
+/** `timeout` comes from the SDK: the component did not answer in time. */
+export const PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES = ["not_ready", "timeout", "unknown"] as const;
+
+export type PaymentMethodSubmitInvalidCode = (typeof PAYMENT_METHOD_SUBMIT_INVALID_CODES)[number];
+export type PaymentMethodSubmitFailedCode = (typeof PAYMENT_METHOD_SUBMIT_FAILED_CODES)[number];
+export type PaymentMethodSubmitUnavailableCode = (typeof PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES)[number];
 
 /**
  * What `ref.submit()` resolves to. It never rejects.

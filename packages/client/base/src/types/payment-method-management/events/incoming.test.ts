@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import {
+    PAYMENT_METHOD_SUBMIT_FAILED_CODES,
+    PAYMENT_METHOD_SUBMIT_INVALID_CODES,
+    PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES,
+} from "../CrossmintPaymentMethodManagementProps";
 import { paymentMethodManagementIncomingEvents } from "./incoming";
 
 const resultSchema = paymentMethodManagementIncomingEvents["payment-method:result"];
@@ -69,6 +74,22 @@ describe("submit result codes", () => {
         expect(resultSchema.parse({ requestId: "r1", result: { status: "unavailable", message: "m" } }).result).toEqual(
             { status: "unavailable", code: "unknown", message: "m" }
         );
+    });
+});
+
+describe("published code lists", () => {
+    it.each([
+        ["invalid", PAYMENT_METHOD_SUBMIT_INVALID_CODES],
+        ["failed", PAYMENT_METHOD_SUBMIT_FAILED_CODES],
+        ["unavailable", PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES],
+    ] as const)("keeps every published %s code", (status, codes) => {
+        for (const code of codes) {
+            expect(resultSchema.parse({ requestId: "r1", result: { status, code, message: "m" } }).result).toEqual({
+                status,
+                code,
+                message: "m",
+            });
+        }
     });
 });
 
