@@ -161,12 +161,12 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        // HTTP 422 means the approval was already completed (idempotent).
-        // Fetch and return the current signature state instead of the error body.
-        if (response.status === 422) {
+        const body = await response.json();
+        // Another approver completed the signature first: return its current state instead of the error.
+        if (response.status === 422 && body?.message === APPROVALS_ALREADY_COMPLETE_MESSAGE) {
             return this.getSignature(walletLocator, signatureId);
         }
-        return response.json();
+        return body;
     }
 
     async getSignature(walletLocator: WalletLocator, signatureId: string): Promise<GetSignatureResponse> {
