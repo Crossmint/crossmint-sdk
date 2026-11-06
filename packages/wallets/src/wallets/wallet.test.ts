@@ -1193,6 +1193,41 @@ describe("Wallet - addSigner()", () => {
                 })
             );
         });
+
+        it("creates the passkey when the config has no credential id, and registers the new credential", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "passkey",
+                locator: "passkey:new-cred",
+                transaction: { id: "txn-passkey", status: "pending" },
+            } as any);
+            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
+
+            const result = await stellarWallet.addSigner(
+                { type: "passkey", name: "Face ID", onCreatePasskey },
+                { prepareOnly: true }
+            );
+
+            expect(onCreatePasskey).toHaveBeenCalledWith("Face ID");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    signer: { type: "passkey", id: "new-cred", name: "Face ID", publicKey: { x: "11", y: "22" } },
+                })
+            );
+            expect(result).toMatchObject({ locator: "passkey:new-cred", transactionId: "txn-passkey" });
+        });
+
+        it("registers nothing when the user cancels the passkey prompt", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(stellarWallet.addSigner({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
+            );
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+        });
     });
 
     describe("error cases", () => {
@@ -1686,6 +1721,36 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 { type: "api-key" },
                 { type: "external-wallet", address: "0x456" },
             ]);
+        });
+
+        it("creates a passkey recovery method that has no credential id, and keeps it with its id", async () => {
+            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "recovery-cred", publicKey: { x: "11", y: "22" } });
+
+            await evmWallet.addRecoveryMethod({ type: "passkey", name: "Recovery passkey", onCreatePasskey });
+
+            const passkey = {
+                type: "passkey",
+                id: "recovery-cred",
+                name: "Recovery passkey",
+                publicKey: { x: "11", y: "22" },
+            };
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: passkey,
+                approver: "api-key",
+                chain: "base-sepolia",
+            });
+            expect(evmWallet.recoveryMethods[1]).toMatchObject(passkey);
+        });
+
+        it("registers nothing and keeps the recovery methods when the user cancels the passkey prompt", async () => {
+            const before = [...evmWallet.recoveryMethods];
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(evmWallet.addRecoveryMethod({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
+            );
+            expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+            expect(evmWallet.recoveryMethods).toEqual(before);
         });
 
         it("throws on API failure", async () => {

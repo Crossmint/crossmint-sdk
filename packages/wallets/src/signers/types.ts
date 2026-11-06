@@ -162,6 +162,8 @@ export type PasskeySignerConfig = {
     name?: string;
     id?: string;
     locator?: string;
+    /** The credential's public key, as `createPasskeySigner` returns it. Omit it, with `id`, to create a new passkey. */
+    publicKey?: { x: string; y: string };
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey's credential id when it is known. */
     onSignWithPasskey?: (message: string, credentialId?: string) => Promise<PasskeySignResult>;

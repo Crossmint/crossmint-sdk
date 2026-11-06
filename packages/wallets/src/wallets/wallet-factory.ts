@@ -1,5 +1,4 @@
 import { WithLoggerContext } from "@crossmint/common-sdk-base";
-import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
@@ -32,6 +31,7 @@ import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from ".
 import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
+import { createPasskeyCredential } from "../signers/passkey";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
@@ -499,20 +499,7 @@ export class WalletFactory {
         if (signer.type !== "passkey") {
             throw new Error("Signer is not a passkey");
         }
-        const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
-        const onCreatePasskey = signer.onCreatePasskey ?? passkeyProvider?.createPasskey;
-        const passkeyCredential = onCreatePasskey
-            ? await onCreatePasskey(passkeyName)
-            : await WebAuthnP256.createCredential({ name: passkeyName });
-        return {
-            type: "passkey",
-            id: passkeyCredential.id,
-            name: passkeyName,
-            publicKey: {
-                x: passkeyCredential.publicKey.x.toString(),
-                y: passkeyCredential.publicKey.y.toString(),
-            },
-        };
+        return await createPasskeyCredential(signer, passkeyProvider);
     }
 
     private validateExistingWalletConfig<C extends Chain>(
