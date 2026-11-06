@@ -511,13 +511,16 @@ describe("SignerManager with quorum recovery methods", () => {
         );
 
         it.each(QUORUM_ONLY_LISTS)(
-            "withRecoverySigner() with %s throws RecoveryMethodRequiredError without running the operation",
+            "withRecoverySigner() with %s throws RecoveryMethodRequiredError, asking for a member or the signer option, without running the operation",
             async (_name, recoverySigners) => {
                 const operation = vi.fn();
 
-                await expect(
-                    makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(operation)
-                ).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+                const authorizing = makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(
+                    operation
+                );
+
+                await expect(authorizing).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+                await expect(authorizing).rejects.toThrow(/useRecoveryMethod\(\) with a key that is a member/);
                 expect(operation).not.toHaveBeenCalled();
             }
         );
@@ -692,5 +695,28 @@ describe("SignerManager.heldSigners", () => {
 
             expect(manager.heldSigners([additional])).toEqual([additional, assembled]);
         });
+    });
+});
+
+describe("SignerManager.memberStandsIn", () => {
+    const MEMBER_LOCATOR = "external-wallet:0xMember";
+    const member = asRecoveryConfig({ type: "external-wallet", address: "0xMember", onSign: vi.fn() });
+
+    it("is true when a member is selected and no key is active", () => {
+        const manager = makeManager();
+        manager.selectRecoveryMember(member, MEMBER_LOCATOR);
+
+        expect(manager.memberStandsIn).toBe(true);
+    });
+
+    it("is false when a key is active, even with a member selected", () => {
+        const manager = makeManager({ signer: makeSigner("external-wallet", "external-wallet:0xActive") });
+        manager.selectRecoveryMember(member, MEMBER_LOCATOR);
+
+        expect(manager.memberStandsIn).toBe(false);
+    });
+
+    it("is false when no member is selected", () => {
+        expect(makeManager().memberStandsIn).toBe(false);
     });
 });

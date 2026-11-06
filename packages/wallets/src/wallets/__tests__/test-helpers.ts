@@ -12,7 +12,7 @@ import type {
     SignerConfigForChain,
     SignerLocator,
 } from "../../signers/types";
-import type { PendingApproval } from "../types";
+import type { PendingApproval, WalletOptions } from "../types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -150,6 +150,21 @@ const walletWithSigner = async <C extends Chain>(
         ])
     );
     await wallet.useSigner(signer);
+    return wallet;
+};
+
+// A wallet with no active signer: its recovery methods are never activated on their own (no api-key recovery).
+export const createMockWalletWithoutSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners: Array<RecoverySignerConfigForChain<C>>,
+    options?: WalletOptions
+): Promise<Wallet<C>> => {
+    const wallet = new Wallet(
+        { chain, address: getChainAddress(chain), recovery: recoverySigners, options },
+        mockApiClient as unknown as ApiClient
+    );
+    await wallet.waitForInit();
     return wallet;
 };
 
