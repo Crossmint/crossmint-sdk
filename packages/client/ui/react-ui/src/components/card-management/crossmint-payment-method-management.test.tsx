@@ -231,6 +231,33 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const retiredChange = listener("payment-method:change");
         view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onReady={onReady} onChange={onChange} />);
         act(() => retiredChange?.({ mode: "existing", empty: false, complete: true }));
+        // The reload resets `complete`; the retired iframe's event is ignored.
+        expect(onChange).toHaveBeenCalledTimes(2);
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: false, complete: false });
+    });
+
+    test("reports complete: false when a prop change reloads a complete form", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        act(() => listener("payment-method:change")?.({ mode: "existing", empty: false, complete: true }));
+
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onChange={onChange} />);
+
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "existing", empty: false, complete: false });
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: true, complete: false }));
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: true, complete: false });
+        expect(onChange).toHaveBeenCalledTimes(3);
+    });
+
+    test("does not report a reload when the form was not complete", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: true, complete: false }));
+
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onChange={onChange} />);
+
         expect(onChange).toHaveBeenCalledTimes(1);
     });
 });

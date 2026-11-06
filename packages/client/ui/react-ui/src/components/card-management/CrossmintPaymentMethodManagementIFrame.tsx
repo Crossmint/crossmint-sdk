@@ -2,6 +2,7 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     type CrossmintPaymentMethodManagementProps,
     type CrossmintPaymentMethodManagementRef,
+    type PaymentMethodManagementChangeEvent,
     type PaymentMethodManagementIFrameEmitter,
     type PaymentMethodSubmitResult,
     createPaymentMethodManagementService,
@@ -40,6 +41,24 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
     // The height survives a `key={url}` remount: the last reported height applies to the
     // new iframe until it reports its own.
     const [height, setHeight] = useState(0);
+    // The last state the host got. A new URL reloads the form, so a host that enabled its button on `complete`
+    // gets `complete: false` until the new document reports its own state.
+    const lastChange = useRef<PaymentMethodManagementChangeEvent | null>(null);
+    const latestOnChange = useRef(props.onChange);
+    latestOnChange.current = props.onChange;
+    const previousUrl = useRef(url);
+    useEffect(() => {
+        if (previousUrl.current === url) {
+            return;
+        }
+        previousUrl.current = url;
+        const last = lastChange.current;
+        if (last?.complete === true) {
+            const reloading = { ...last, complete: false };
+            lastChange.current = reloading;
+            latestOnChange.current?.(reloading);
+        }
+    }, [url]);
     // Authentication and form configuration live in the URL. A committed change must
     // retire the old window too, so its events cannot reach the next buyer's callbacks.
     return (
@@ -51,6 +70,7 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
             props={props}
             height={height}
             onHeightChange={setHeight}
+            lastChange={lastChange}
         />
     );
 });
@@ -63,8 +83,9 @@ const PaymentMethodConnection = forwardRef<
         props: CrossmintPaymentMethodManagementProps;
         height: number;
         onHeightChange: (height: number) => void;
+        lastChange: { current: PaymentMethodManagementChangeEvent | null };
     }
->(function PaymentMethodConnection({ url, service, props, height, onHeightChange }, ref) {
+>(function PaymentMethodConnection({ url, service, props, height, onHeightChange, lastChange }, ref) {
     const [iframeService] = useState(service);
     const iframe = useRef<HTMLIFrameElement>(null);
     // The first `load` only confirms the mount-time connection; SSR hydration can miss it,
@@ -138,6 +159,7 @@ const PaymentMethodConnection = forwardRef<
         });
         const changeListener = client.on("payment-method:change", (event) => {
             if (connection.current === active) {
+                lastChange.current = event;
                 latestProps.current.onChange?.(event);
             }
         });

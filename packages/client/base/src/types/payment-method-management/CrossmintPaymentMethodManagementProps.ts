@@ -91,7 +91,8 @@ export interface CrossmintPaymentMethodManagementProps {
     onReady?: () => void;
     /**
      * Fires after `onReady` and whenever the form state changes, like Stripe's `change` event. Use
-     * `complete` to enable your submit button.
+     * `complete` to enable your submit button. When a prop change reloads the iframe, it fires with
+     * `complete: false` until the new form reports its own state.
      */
     onChange?: (event: PaymentMethodManagementChangeEvent) => void;
 }
