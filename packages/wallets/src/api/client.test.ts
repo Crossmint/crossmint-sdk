@@ -1511,7 +1511,7 @@ describe("ApiClient - approveSignature()", () => {
         expect(result).toEqual(mockResponse);
     });
 
-    it("re-fetches signature state on HTTP 422 instead of returning error body", async () => {
+    it("re-fetches the signature when the API answers 422 because its approvals are already complete", async () => {
         const errorBody = { error: true, message: "Already has the required number of approvals" };
         mockPost.mockResolvedValue(
             createMockResponse({ data: errorBody, status: 422, ok: false, statusText: "Unprocessable Entity" })
@@ -1526,6 +1526,35 @@ describe("ApiClient - approveSignature()", () => {
 
         expect(result).toEqual(currentSignature);
         expect(mockGet).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        {
+            reason: "a member shared by two quorum entries",
+            body: {
+                error: true,
+                message: "Signer 'email:a@x.com' belongs to multiple quorums, which is not supported",
+            },
+        },
+        {
+            reason: "an expired signature request",
+            body: {
+                error: true,
+                code: "TRANSACTION_EXPIRED",
+                message: "The transaction expired before it could be submitted.",
+            },
+        },
+    ])("returns the error body for a 422 about $reason", async ({ body }) => {
+        mockPost.mockResolvedValue(
+            createMockResponse({ data: body, status: 422, ok: false, statusText: "Unprocessable Entity" })
+        );
+
+        const result = await apiClient.approveSignature(WALLET_LOCATORS.evmSmart, "sig-1", {
+            approvals: [],
+        } as unknown as ApproveSignatureParams);
+
+        expect(result).toEqual(body);
+        expect(mockGet).not.toHaveBeenCalled();
     });
 
     it("returns error body for non-422 error responses", async () => {
