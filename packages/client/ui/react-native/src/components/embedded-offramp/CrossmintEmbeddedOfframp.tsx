@@ -11,14 +11,62 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
+import "react-native-get-random-values";
 import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
+
+import { isSameSession } from "./sameSession";
 
 type EmbeddedOfframpWebViewParent = WebViewParent<
     typeof embeddedOfframpIncomingEvents,
     typeof embeddedOfframpOutgoingEvents
 >;
+
+const WALLET_EVENTS = ["crypto:send-transaction", "crypto:sign-message"];
+
+function createNonce() {
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+// Subframes can reach the same native bridge; only the main frame ever learns the nonce.
+function stampMainFrameScript(nonce: string) {
+    return `(function () {
+  var bridge = window.ReactNativeWebView;
+  window.ReactNativeWebView = {
+    postMessage: function (message) {
+      var out = message;
+      try {
+        var parsed = JSON.parse(message);
+        parsed.data = Object.assign({ __mainFrameNonce: ${JSON.stringify(nonce)} }, parsed.data);
+        out = JSON.stringify(parsed);
+      } catch (error) {}
+      bridge.postMessage(out);
+    }
+  };
+})();
+true;`;
+}
+
+function isFromMainFrame(raw: string, nonce: string | null) {
+    let message: { event?: unknown; data?: { __mainFrameNonce?: unknown } | null } | null;
+    try {
+        message = JSON.parse(raw);
+    } catch {
+        return true;
+    }
+    const name = message?.event;
+    if (typeof name !== "string" || !WALLET_EVENTS.includes(name)) {
+        return true;
+    }
+    if (nonce != null && message?.data?.__mainFrameNonce === nonce) {
+        return true;
+    }
+    console.warn(`[CrossmintEmbeddedOfframp] Dropped ${name} not sent from the offramp main frame`);
+    return false;
+}
 
 export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     const { crossmint } = useCrossmint();
@@ -40,6 +88,7 @@ function EmbeddedOfframpDocument({
     const [client, setClient] = useState<EmbeddedOfframpWebViewParent | null>(null);
     const [height, setHeight] = useState(0);
     const webViewRef = useRef<WebView>(null);
+    const mainFrameNonce = useRef<string | null>(null);
     const sendPending = useRef<object | null>(null);
     const signPending = useRef<object | null>(null);
     const latestProps = useRef(props);
@@ -65,7 +114,12 @@ function EmbeddedOfframpDocument({
         }
         const ids = [
             client.on("ui:height.changed", (data) => setHeight(data.height)),
-            client.on("offramp:ready", () => latestProps.current.onReady?.()),
+            client.on("offramp:ready", () => {
+                // Each offramp document sends ready once, before any wallet request, so it marks a reload.
+                sendPending.current = null;
+                signPending.current = null;
+                latestProps.current.onReady?.();
+            }),
             client.on("offramp:status", (data) => latestProps.current.onStatusChange?.(data)),
             client.on("offramp:completed", (data) => latestProps.current.onComplete?.(data)),
             client.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
@@ -142,12 +196,23 @@ function EmbeddedOfframpDocument({
         <RNWebView
             ref={webViewRef}
             source={{ uri: url }}
-            onLoadStart={() => {
-                sendPending.current = null;
-                signPending.current = null;
+            onLoad={({ nativeEvent }) => {
+                mainFrameNonce.current = null;
+                if (isOfframpPage(nativeEvent.url) && isSameSession(nativeEvent.url, url)) {
+                    const nonce = createNonce();
+                    mainFrameNonce.current = nonce;
+                    webViewRef.current?.injectJavaScript(stampMainFrameScript(nonce));
+                } else {
+                    console.warn(
+                        "[CrossmintEmbeddedOfframp] Loaded page is not this offramp session, wallet requests are blocked"
+                    );
+                }
             }}
             onMessage={(event) => {
-                if (isOfframpPage(event.nativeEvent.url)) {
+                if (
+                    isOfframpPage(event.nativeEvent.url) &&
+                    isFromMainFrame(event.nativeEvent.data, mainFrameNonce.current)
+                ) {
                     client?.handleMessage(event);
                 }
             }}
