@@ -276,6 +276,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             expect(injectJavaScript).not.toHaveBeenCalled();
             expect(warn).toHaveBeenCalledTimes(1);
             expect(warn).toHaveBeenCalledWith(expect.stringContaining(event));
+            expect(JSON.stringify(warn.mock.calls)).not.toContain("9Wz");
         });
 
         test("after a stamped event, drops an unstamped offramp:completed without calling back", async () => {
@@ -317,6 +318,14 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             await emit("offramp:ready", {}, undefined, WRONG);
             await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
             expect(onComplete).toHaveBeenCalledTimes(1);
+        });
+
+        test("applies the gate after the page check, so a foreign page's unstamped event logs nothing", async () => {
+            renderPayer();
+            await emit("offramp:ready");
+            const warn = spyWarn();
+            await emit("offramp:status", {}, "https://evil.example/page", null);
+            expect(warn).not.toHaveBeenCalled();
         });
 
         test("passes messages without a string event, before and after the latch", async () => {

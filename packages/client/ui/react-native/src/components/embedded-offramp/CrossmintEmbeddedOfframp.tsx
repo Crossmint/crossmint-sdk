@@ -136,7 +136,7 @@ function EmbeddedOfframpDocument({
         };
     }, [client]);
 
-    // Subframes reach the same native bridge but cannot read the page's fragment, so only the main frame can stamp.
+    // Cross-origin subframes reach the same native bridge but cannot read the page's fragment, so they cannot stamp.
     const acceptsFromMainFrame = (raw: string) => {
         let message: { event?: unknown; data?: unknown } | null;
         try {
