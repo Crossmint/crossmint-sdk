@@ -5,7 +5,6 @@ import { WebView } from "react-native-webview";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { CrossmintEmbeddedOfframp } from "./CrossmintEmbeddedOfframp";
-import { isSameSession } from "./sameSession";
 
 const { injectJavaScript, openURL } = vi.hoisted(() => ({
     injectJavaScript: vi.fn(),
@@ -46,39 +45,25 @@ function lastWebViewProps() {
 
 const ROUTE = "https://staging.crossmint.com/sdk/unstable/embedded-offramp";
 
-let currentNonce: string | null = null;
-
-function load(url = lastWebViewProps().source.uri as string) {
-    act(() => lastWebViewProps().onLoad({ nativeEvent: { url } }));
-    const script = injectJavaScript.mock.calls.at(-1)?.[0] as string | undefined;
-    currentNonce = script == null ? null : /__mainFrameNonce: "([0-9a-f]+)"/.exec(script)?.[1] ?? null;
-    injectJavaScript.mockClear();
-    return { script, nonce: currentNonce };
+function mountNonce() {
+    return /#mainFrameNonce=([0-9a-f]{32})$/.exec(lastWebViewProps().source.uri as string)?.[1] ?? "";
 }
 
-// A nonce of undefined means "the page's current one, loading first if needed"; null sends none.
+// By default every event carries the mount's nonce, like a page that stamps; null sends it unstamped.
 function emit(
     event: string,
     data: Record<string, unknown> = {},
     url = `${ROUTE}?credentials=x`,
     nonce: string | null | undefined = undefined
 ) {
-    const isWallet = event.startsWith("crypto:");
-    if (isWallet && nonce === undefined && currentNonce == null) {
-        load();
-    }
-    const stamp = nonce === undefined ? currentNonce : nonce;
+    const stamp = nonce === undefined ? mountNonce() : nonce;
+    return emitRaw(JSON.stringify({ event, data: stamp == null ? data : { ...data, __mainFrameNonce: stamp } }), url);
+}
+
+function emitRaw(data: string, url = `${ROUTE}?credentials=x`) {
     const { onMessage } = lastWebViewProps();
     return act(async () => {
-        onMessage({
-            nativeEvent: {
-                data: JSON.stringify({
-                    event,
-                    data: isWallet && stamp != null ? { ...data, __mainFrameNonce: stamp } : data,
-                }),
-                url,
-            },
-        });
+        onMessage({ nativeEvent: { data, url } });
     });
 }
 
@@ -91,7 +76,6 @@ function replies(name: string) {
 }
 
 afterEach(() => {
-    currentNonce = null;
     cleanup();
     vi.clearAllMocks();
 });
@@ -229,224 +213,160 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
         );
     });
 
-    describe("when a wallet request must come from the main frame", () => {
+    describe("when events must come from the main frame", () => {
         const SIGN = { message: "crossmint.com wants you to sign in", chain: "solana", payerAddress: "9Wz" };
-        const renderPayer = () => {
+        const WRONG = "00".repeat(16);
+        const renderPayer = (props: Partial<React.ComponentProps<typeof CrossmintEmbeddedOfframp>> = {}) => {
             const payer = {
                 signAndSendTransaction: vi.fn().mockResolvedValue("0xtx"),
                 signMessage: vi.fn().mockResolvedValue("c2ln"),
             };
-            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} {...props} />);
             return payer;
         };
+        const spyWarn = () => vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
-        test("answers requests carrying the nonce of the finished load", async () => {
+        test("loads the URL with a 32 char lowercase hex nonce in the fragment and the query unchanged", () => {
+            renderPayer();
+            const url = new URL(lastWebViewProps().source.uri as string);
+            expect(url.hash).toMatch(/^#mainFrameNonce=[0-9a-f]{32}$/);
+            expect(JSON.parse(url.searchParams.get("credentials") ?? "{}")).toEqual(CREDENTIALS);
+            expect(url.searchParams.has("mainFrameNonce")).toBe(false);
+        });
+
+        test("uses a new nonce for a new mount and the same one across rerenders", () => {
+            const { unmount, rerender } = render(
+                <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />
+            );
+            const first = mountNonce();
+            rerender(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    onReady={vi.fn()}
+                />
+            );
+            expect(mountNonce()).toBe(first);
+            unmount();
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+            expect(mountNonce()).not.toBe(first);
+        });
+
+        test("accepts stamped events and answers stamped wallet requests", async () => {
             const payer = renderPayer();
-            load();
+            const warn = spyWarn();
             await emit("crypto:send-transaction", TX);
             await emit("crypto:sign-message", SIGN);
             expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
             expect(payer.signMessage).toHaveBeenCalledTimes(1);
             expect(injectJavaScript).toHaveBeenCalledTimes(2);
+            expect(warn).not.toHaveBeenCalled();
         });
 
         test.each([
             ["crypto:send-transaction", TX],
             ["crypto:sign-message", SIGN],
-        ])("drops %s without a nonce, silently", async (event, data) => {
+        ])("after a stamped event, drops an unstamped %s with a warning and no reply", async (event, data) => {
             const payer = renderPayer();
-            load();
-            const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+            await emit("offramp:status", { status: "x" });
+            const warn = spyWarn();
             await emit(event, data, undefined, null);
             expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
             expect(payer.signMessage).not.toHaveBeenCalled();
             expect(injectJavaScript).not.toHaveBeenCalled();
+            expect(warn).toHaveBeenCalledTimes(1);
             expect(warn).toHaveBeenCalledWith(expect.stringContaining(event));
-            warn.mockRestore();
+        });
+
+        test("after a stamped event, drops an unstamped offramp:completed without calling back", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            await emit("offramp:ready");
+            const warn = spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            expect(onComplete).not.toHaveBeenCalled();
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("offramp:completed"));
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" });
+            expect(onComplete).toHaveBeenCalledTimes(1);
+        });
+
+        test("after a stamped event, drops an event with a wrong nonce", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            await emit("offramp:ready");
+            spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, WRONG);
+            expect(onComplete).not.toHaveBeenCalled();
+        });
+
+        test("before any stamped event, accepts unstamped events with a single warning", async () => {
+            const onComplete = vi.fn();
+            const payer = renderPayer({ onComplete });
+            const warn = spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            await emit("crypto:send-transaction", TX, undefined, null);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            expect(warn).toHaveBeenCalledTimes(1);
+        });
+
+        test("does not count a wrong nonce as a stamp", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            spyWarn();
+            await emit("offramp:ready", {}, undefined, WRONG);
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+        });
+
+        test("passes messages without a string event, before and after the latch", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            const warn = spyWarn();
+            await emitRaw(JSON.stringify({ type: "console.info", data: ["hello"] }));
+            await emitRaw(JSON.stringify({ event: 7, data: {} }));
+            expect(warn).not.toHaveBeenCalled();
+            await emit("offramp:ready");
+            await emitRaw(JSON.stringify({ type: "console.info", data: ["hello"] }));
+            await emitRaw("not json");
+            expect(warn).not.toHaveBeenCalled();
         });
 
         test.each([
-            ["crypto:send-transaction", TX],
-            ["crypto:sign-message", SIGN],
-        ])("drops %s with a wrong nonce", async (event, data) => {
-            const payer = renderPayer();
-            load();
-            vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            await emit(event, data, undefined, "00".repeat(16));
-            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-            expect(payer.signMessage).not.toHaveBeenCalled();
-            expect(injectJavaScript).not.toHaveBeenCalled();
+            ["null", null],
+            ["a string", "x"],
+            ["a number", 3],
+        ])("does not throw when data is %s, and treats it as unstamped", async (_name, data) => {
+            const onStatusChange = vi.fn();
+            renderPayer({ onStatusChange });
+            const warn = spyWarn();
+            await emitRaw(JSON.stringify({ event: "offramp:status", data }));
+            expect(warn).toHaveBeenCalledTimes(1);
+            await emit("offramp:ready");
+            await emitRaw(JSON.stringify({ event: "offramp:status", data }));
+            expect(warn).toHaveBeenCalledTimes(2);
+            expect(onStatusChange).not.toHaveBeenCalled();
         });
 
-        test("drops requests before any load finished", async () => {
+        test("keeps the latch across onLoadStart and onLoad", async () => {
             const payer = renderPayer();
-            vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            await emit("crypto:send-transaction", TX, undefined, "00".repeat(16));
+            await emit("offramp:ready");
+            const url = lastWebViewProps().source.uri as string;
+            act(() => lastWebViewProps().onLoadStart?.({ nativeEvent: { url: ROUTE } }));
+            act(() => lastWebViewProps().onLoad?.({ nativeEvent: { url: ROUTE } }));
+            act(() => lastWebViewProps().onLoadStart?.({ nativeEvent: { url } }));
+            spyWarn();
+            await emit("crypto:send-transaction", TX, undefined, null);
             expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-            expect(injectJavaScript).not.toHaveBeenCalled();
-        });
-
-        test("keeps accepting the current nonce after a same-document navigation (onLoadStart without onLoad)", async () => {
-            const payer = renderPayer();
-            load();
-            act(() => lastWebViewProps().onLoadStart?.());
             await emit("crypto:send-transaction", TX);
             expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
         });
 
-        test("after a second load, drops the old nonce and accepts the new one", async () => {
-            const payer = renderPayer();
-            const first = load().nonce;
-            const second = load().nonce;
-            vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            await emit("crypto:send-transaction", TX, undefined, first);
-            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-            await emit("crypto:send-transaction", TX, undefined, second);
-            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
-        });
-
-        test("drops a request with a null or missing nonce before any load", async () => {
-            const payer = renderPayer();
-            vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            const { onMessage } = lastWebViewProps();
-            for (const data of [{ ...TX, __mainFrameNonce: null }, TX]) {
-                await act(async () => {
-                    onMessage({
-                        nativeEvent: { data: JSON.stringify({ event: "crypto:send-transaction", data }), url: ROUTE },
-                    });
-                });
-            }
-            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-        });
-
-        describe("a load of the same route for another session", () => {
-            test.each([
-                ["credentials", "credentials", "other"],
-                ["apiKey", "apiKey", "ck_staging_other"],
-            ])("gets no nonce when the %s differs", async (_name, param, value) => {
-                const payer = renderPayer();
-                vi.spyOn(console, "warn").mockImplementation(() => undefined);
-                const own = lastWebViewProps().source.uri as string;
-                const { nonce } = load(own);
-                expect(nonce).not.toBeNull();
-                const changed = new URL(own);
-                changed.searchParams.set(param as string, value as string);
-                expect(load(changed.toString()).script).toBeUndefined();
-                await emit("crypto:send-transaction", TX, undefined, nonce);
-                expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-            });
-
-            test("warns once per load that is not stamped", () => {
-                renderPayer();
-                const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-                load("https://evil.example/page");
-                expect(warn).toHaveBeenCalledTimes(1);
-                load();
-                expect(warn).toHaveBeenCalledTimes(1);
-            });
-
-            test("is still stamped when URL and URLSearchParams are unusable", () => {
-                renderPayer();
-                const own = lastWebViewProps().source.uri as string;
-                vi.stubGlobal("URL", () => {
-                    throw new Error("not implemented");
-                });
-                try {
-                    expect(load(own).nonce).not.toBeNull();
-                } finally {
-                    vi.unstubAllGlobals();
-                }
-            });
-
-            test("the component's own URL gets a nonce", () => {
-                renderPayer();
-                expect(load(lastWebViewProps().source.uri as string).nonce).not.toBeNull();
-            });
-        });
-
-        test("uses a fresh nonce for each finished load", () => {
+        test("does not inject any script into the page", async () => {
             renderPayer();
-            const first = load().nonce;
-            const second = load().nonce;
-            expect(first).toMatch(/^[0-9a-f]{32}$/);
-            expect(second).toMatch(/^[0-9a-f]{32}$/);
-            expect(second).not.toBe(first);
-        });
-
-        test("passes other events through without a nonce", async () => {
-            const onReady = vi.fn();
-            render(
-                <CrossmintEmbeddedOfframp
-                    credentials={CREDENTIALS}
-                    payer={{ signAndSendTransaction: vi.fn() }}
-                    onReady={onReady}
-                />
-            );
             await emit("offramp:ready");
-            expect(onReady).toHaveBeenCalledTimes(1);
-        });
-
-        test("a load finishing on another page clears the nonce and injects nothing", async () => {
-            const payer = renderPayer();
-            const { nonce } = load();
-            vi.spyOn(console, "warn").mockImplementation(() => undefined);
-            act(() => lastWebViewProps().onLoad({ nativeEvent: { url: "https://evil.example/page" } }));
+            act(() => lastWebViewProps().onLoad?.({ nativeEvent: { url: ROUTE } }));
             expect(injectJavaScript).not.toHaveBeenCalled();
-            await emit("crypto:send-transaction", TX, undefined, nonce);
-            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
-        });
-
-        describe("the injected script", () => {
-            function runScript(script: string) {
-                const postMessage = vi.fn();
-                const fakeWindow: { ReactNativeWebView: { postMessage: (message: string) => void } } = {
-                    ReactNativeWebView: { postMessage },
-                };
-                new Function("window", script)(fakeWindow);
-                return { postMessage, bridge: fakeWindow.ReactNativeWebView };
-            }
-
-            test("stamps the nonce into the data of every message", () => {
-                renderPayer();
-                const { script, nonce } = load();
-                const { postMessage, bridge } = runScript(script as string);
-                bridge.postMessage(JSON.stringify({ event: "crypto:sign-message", data: { message: "m" } }));
-                expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({
-                    event: "crypto:sign-message",
-                    data: { message: "m", __mainFrameNonce: nonce },
-                });
-            });
-
-            test("keeps the newer nonce when the page is stamped twice", () => {
-                renderPayer();
-                const first = load();
-                const second = load();
-                const { postMessage, bridge } = runScript(first.script as string);
-                const fakeWindow = { ReactNativeWebView: bridge };
-                new Function("window", second.script as string)(fakeWindow);
-                fakeWindow.ReactNativeWebView.postMessage(JSON.stringify({ event: "e", data: {} }));
-                expect(JSON.parse(postMessage.mock.calls[0][0]).data.__mainFrameNonce).toBe(second.nonce);
-            });
-
-            test("posts exactly once even when the bridge throws", () => {
-                renderPayer();
-                const { script } = load();
-                const postMessage = vi.fn((_message: string) => {
-                    throw new Error("bridge down");
-                });
-                const fakeWindow = { ReactNativeWebView: { postMessage } };
-                new Function("window", script as string)(fakeWindow);
-                expect(() => fakeWindow.ReactNativeWebView.postMessage("{}")).toThrow("bridge down");
-                expect(postMessage).toHaveBeenCalledTimes(1);
-            });
-
-            test("forwards an unparsable message unchanged", () => {
-                renderPayer();
-                const { script } = load();
-                const { postMessage, bridge } = runScript(script as string);
-                bridge.postMessage("not json");
-                expect(postMessage).toHaveBeenCalledWith("not json");
-            });
         });
     });
 
@@ -657,27 +577,6 @@ function deferredTransaction() {
     return { promise, resolve, reject };
 }
 
-describe("isSameSession", () => {
-    const OWN = "https://h.example/r?apiKey=ck%20a&credentials=%7B%22a%22%3A1%7D";
-
-    test.each([
-        ["identical", OWN, true],
-        ["+ and %20 both mean a space", "https://h.example/r?credentials=%7B%22a%22%3A1%7D&apiKey=ck+a", true],
-        ["different param order", "https://h.example/r?credentials=%7B%22a%22%3A1%7D&apiKey=ck%20a", true],
-        ["a fragment", `${OWN}#frag?apiKey=other`, true],
-        ["an extra param", `${OWN}&fill=true`, true],
-        ["a missing param", "https://h.example/r?apiKey=ck%20a", false],
-        ["a different value", "https://h.example/r?apiKey=ck%20b&credentials=%7B%22a%22%3A1%7D", false],
-        ["a malformed escape", "https://h.example/r?apiKey=%E0%A4%A&credentials=%7B%22a%22%3A1%7D", false],
-    ])("%s", (_name, page, expected) => {
-        expect(isSameSession(page as string, OWN)).toBe(expected);
-    });
-
-    test("is false when both URLs lack the params", () => {
-        expect(isSameSession("https://h.example/r", "https://h.example/r")).toBe(false);
-    });
-});
-
 describe("signing session isolation", () => {
     test.each(["success", "rejection"])("ignores old session %s without unlocking the new session", async (outcome) => {
         const oldTransaction = deferredTransaction();
@@ -694,7 +593,6 @@ describe("signing session isolation", () => {
                 payer={{ signAndSendTransaction: newSigner }}
             />
         );
-        load();
         await emit("crypto:send-transaction", TX);
         expect(newSigner).toHaveBeenCalledTimes(1);
         await act(async () => {
