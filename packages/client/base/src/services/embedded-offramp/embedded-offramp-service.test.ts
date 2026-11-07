@@ -54,6 +54,18 @@ describe("embeddedOfframpService", () => {
             }
         });
 
+        test.each([
+            [{ signAndSendTransaction: vi.fn(), signMessage: vi.fn() }, "true"],
+            [{ signAndSendTransaction: vi.fn() }, null],
+            [{ signAndSendTransaction: vi.fn(), signMessage: undefined }, null],
+            [{ signAndSendTransaction: vi.fn(), signMessage: "0xsig" }, null],
+        ])("announces canSignMessage only when the payer can sign messages (%#)", (payer, expected) => {
+            const url = iframeUrl({ payer });
+
+            expect(url.searchParams.get("canSignMessage")).toBe(expected);
+            expect(url.searchParams.has("payer")).toBe(false);
+        });
+
         test("adds fill=true only when fill is on", () => {
             expect(iframeUrl({ fill: true }).searchParams.get("fill")).toBe("true");
             expect(iframeUrl({ fill: false }).searchParams.has("fill")).toBe(false);

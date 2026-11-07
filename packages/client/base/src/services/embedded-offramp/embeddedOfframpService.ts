@@ -17,8 +17,11 @@ export function createEmbeddedOfframpService({ apiClient }: EmbeddedOfframpServi
         const queryParams = new URLSearchParams();
 
         // The payer stays in the host app, and appendObjectToQueryParams drops the callbacks.
-        const { payer: _payer, ...urlProps } = props;
+        const { payer, ...urlProps } = props;
         appendObjectToQueryParams(queryParams, urlProps);
+        if (typeof payer.signMessage === "function") {
+            queryParams.append("canSignMessage", "true");
+        }
 
         const { name, version } = apiClient["internalConfig"].sdkMetadata;
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
