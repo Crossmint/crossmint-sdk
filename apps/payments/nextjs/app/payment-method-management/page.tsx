@@ -25,7 +25,7 @@ function PaymentMethodManagementWrapper() {
     const [submitting, setSubmitting] = useState(false);
     const [ready, setReady] = useState(false);
     const [formState, setFormState] = useState<PaymentMethodManagementChangeEvent | null>(null);
-    const [collectBillingAddress, setCollectBillingAddress] = useState(false);
+    const [collectBillingAddress, setCollectBillingAddress] = useState(true);
     const [billingLine2, setBillingLine2] = useState<"optional" | "required" | "hidden">("optional");
     const [result, setResult] = useState<PaymentMethodSubmitResult | null>(null);
     const pmm = useRef<CrossmintPaymentMethodManagementRef>(null);
@@ -71,7 +71,7 @@ function PaymentMethodManagementWrapper() {
                 ref={pmm}
                 jwt={jwt}
                 allowedModes={["new", "existing"]}
-                fields={collectBillingAddress ? { billingDetails: { address: { line2: billingLine2 } } } : undefined}
+                fields={{ billingDetails: { address: collectBillingAddress ? { line2: billingLine2 } : false } }}
                 onPaymentMethodSelected={(paymentMethod) => console.log("payment-method:selected", paymentMethod)}
                 onReady={() => setReady(true)}
                 onChange={setFormState}

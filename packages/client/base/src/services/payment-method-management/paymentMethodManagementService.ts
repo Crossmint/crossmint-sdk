@@ -99,6 +99,15 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
     function getIFrameUrl(props: CrossmintPaymentMethodManagementProps) {
         const defaultValues = parseDefaultValues(props.defaultValues);
+        // The iframe collects no billing address by default. The SDK collects one unless the host sets
+        // `address: false`, because issuers approve more cards that carry a billing address.
+        const fields = {
+            ...props.fields,
+            billingDetails: {
+                ...props.fields?.billingDetails,
+                address: props.fields?.billingDetails?.address ?? true,
+            },
+        };
 
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/payment-method-management");
         const queryParams = new URLSearchParams();
@@ -111,6 +120,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
         const serializableProps = {
             ...rest,
+            fields,
             defaultValues,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
             ...(allowedModes?.length ? { allowedModes } : {}),

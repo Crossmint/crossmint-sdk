@@ -58,10 +58,12 @@ export interface CrossmintPaymentMethodManagementProps {
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
     /**
      * Optional fields of the add-card form, in Stripe's `billingDetails` shape so new
-     * fields need no new prop. `billingDetails.address: true` collects a required
+     * fields need no new prop. `billingDetails.address: true` (default) collects a required
      * billing address: the card form validates it before saving — for built-in and
      * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
      * of the emitted method. Applies to cards only; other method types ignore it.
+     * Pass `address: false` to save cards without a billing address; issuers decline
+     * more cards that have none.
      *
      * An object collects it too and configures the fields the payment-methods API
      * leaves optional: `{ line2: "optional" | "required" | "hidden" }`.
@@ -71,8 +73,8 @@ export interface CrossmintPaymentMethodManagementProps {
     /**
      * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
      * The buyer can edit every value. `null` or an empty string means no default for that
-     * field, so values from a database can pass as they are. The form uses them only when
-     * `fields.billingDetails.address` collects an address.
+     * field, so values from a database can pass as they are. The form ignores them when
+     * `fields.billingDetails.address` is `false`.
      *
      * The iframe checks each value on its own: it ignores an invalid value and logs a console
      * warning, and keeps the other values. It drops a `line2` default when
