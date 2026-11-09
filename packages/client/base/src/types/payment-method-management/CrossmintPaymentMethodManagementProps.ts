@@ -186,8 +186,8 @@ export type CrossmintCardPaymentMethod = {
             year: string;
         };
         /**
-         * Billing details the card was saved with. `address` is present when the card
-         * was saved with `fields.billingDetails.address` (or the account has one on file).
+         * Billing details the card was saved with. `address` is absent only when the card
+         * was saved with `fields.billingDetails.address: false` and the account has none on file.
          */
         billing?: CrossmintPaymentMethodBillingDetails;
     };
