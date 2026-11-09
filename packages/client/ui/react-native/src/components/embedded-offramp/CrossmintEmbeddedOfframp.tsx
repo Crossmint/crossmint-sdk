@@ -11,6 +11,7 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
+import "react-native-get-random-values";
 import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
@@ -19,6 +20,12 @@ type EmbeddedOfframpWebViewParent = WebViewParent<
     typeof embeddedOfframpIncomingEvents,
     typeof embeddedOfframpOutgoingEvents
 >;
+
+function createNonce() {
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 export function CrossmintEmbeddedOfframp(props: CrossmintEmbeddedOfframpProps) {
     const { crossmint } = useCrossmint();
@@ -40,6 +47,9 @@ function EmbeddedOfframpDocument({
     const [client, setClient] = useState<EmbeddedOfframpWebViewParent | null>(null);
     const [height, setHeight] = useState(0);
     const webViewRef = useRef<WebView>(null);
+    const [nonce] = useState(createNonce);
+    const pageStamps = useRef(false);
+    const warnedUnstamped = useRef(false);
     const sendPending = useRef<object | null>(null);
     const signPending = useRef<object | null>(null);
     const latestProps = useRef(props);
@@ -65,7 +75,12 @@ function EmbeddedOfframpDocument({
         }
         const ids = [
             client.on("ui:height.changed", (data) => setHeight(data.height)),
-            client.on("offramp:ready", () => latestProps.current.onReady?.()),
+            client.on("offramp:ready", () => {
+                // Each offramp document sends ready once, before any wallet request, so it marks a reload.
+                sendPending.current = null;
+                signPending.current = null;
+                latestProps.current.onReady?.();
+            }),
             client.on("offramp:status", (data) => latestProps.current.onStatusChange?.(data)),
             client.on("offramp:completed", (data) => latestProps.current.onComplete?.(data)),
             client.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
@@ -121,6 +136,38 @@ function EmbeddedOfframpDocument({
         };
     }, [client]);
 
+    // Cross-origin subframes reach the same native bridge but cannot read the page's fragment, so they cannot stamp.
+    const acceptsFromMainFrame = (raw: string) => {
+        let message: { event?: unknown; data?: unknown } | null;
+        try {
+            message = JSON.parse(raw);
+        } catch {
+            return true;
+        }
+        const name = message?.event;
+        if (typeof name !== "string") {
+            return true;
+        }
+        const data = message?.data;
+        if (
+            data != null &&
+            typeof data === "object" &&
+            (data as { __mainFrameNonce?: unknown }).__mainFrameNonce === nonce
+        ) {
+            pageStamps.current = true;
+            return true;
+        }
+        if (pageStamps.current) {
+            console.warn(`[CrossmintEmbeddedOfframp] Dropped ${name} not stamped by the offramp main frame`);
+            return false;
+        }
+        if (!warnedUnstamped.current) {
+            warnedUnstamped.current = true;
+            console.warn("[CrossmintEmbeddedOfframp] The offramp page does not stamp its events");
+        }
+        return true;
+    };
+
     const routeUrl = url.split("?")[0] ?? url;
     // Any other page the WebView ends up showing also receives the bridge, so only the offramp route may talk to it.
     // iOS reports the sender's full URL, Android only its origin.
@@ -141,13 +188,9 @@ function EmbeddedOfframpDocument({
     return (
         <RNWebView
             ref={webViewRef}
-            source={{ uri: url }}
-            onLoadStart={() => {
-                sendPending.current = null;
-                signPending.current = null;
-            }}
+            source={{ uri: `${url}#mainFrameNonce=${nonce}` }}
             onMessage={(event) => {
-                if (isOfframpPage(event.nativeEvent.url)) {
+                if (isOfframpPage(event.nativeEvent.url) && acceptsFromMainFrame(event.nativeEvent.data)) {
                     client?.handleMessage(event);
                 }
             }}

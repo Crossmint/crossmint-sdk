@@ -45,10 +45,25 @@ function lastWebViewProps() {
 
 const ROUTE = "https://staging.crossmint.com/sdk/unstable/embedded-offramp";
 
-function emit(event: string, data: Record<string, unknown> = {}, url = `${ROUTE}?credentials=x`) {
+function mountNonce() {
+    return /#mainFrameNonce=([0-9a-f]{32})$/.exec(lastWebViewProps().source.uri as string)?.[1] ?? "";
+}
+
+// By default every event carries the mount's nonce, like a page that stamps; null sends it unstamped.
+function emit(
+    event: string,
+    data: Record<string, unknown> = {},
+    url = `${ROUTE}?credentials=x`,
+    nonce: string | null | undefined = undefined
+) {
+    const stamp = nonce === undefined ? mountNonce() : nonce;
+    return emitRaw(JSON.stringify({ event, data: stamp == null ? data : { ...data, __mainFrameNonce: stamp } }), url);
+}
+
+function emitRaw(data: string, url = `${ROUTE}?credentials=x`) {
     const { onMessage } = lastWebViewProps();
     return act(async () => {
-        onMessage({ nativeEvent: { data: JSON.stringify({ event, data }), url } });
+        onMessage({ nativeEvent: { data, url } });
     });
 }
 
@@ -196,6 +211,172 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
                 expect(injectJavaScript).not.toHaveBeenCalled();
             }
         );
+    });
+
+    describe("when events must come from the main frame", () => {
+        const SIGN = { message: "crossmint.com wants you to sign in", chain: "solana", payerAddress: "9Wz" };
+        const WRONG = "00".repeat(16);
+        const renderPayer = (props: Partial<React.ComponentProps<typeof CrossmintEmbeddedOfframp>> = {}) => {
+            const payer = {
+                signAndSendTransaction: vi.fn().mockResolvedValue("0xtx"),
+                signMessage: vi.fn().mockResolvedValue("c2ln"),
+            };
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} {...props} />);
+            return payer;
+        };
+        const spyWarn = () => vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+        test("loads the URL with a 32 char lowercase hex nonce in the fragment and the query unchanged", () => {
+            renderPayer();
+            const url = new URL(lastWebViewProps().source.uri as string);
+            expect(url.hash).toMatch(/^#mainFrameNonce=[0-9a-f]{32}$/);
+            expect(JSON.parse(url.searchParams.get("credentials") ?? "{}")).toEqual(CREDENTIALS);
+            expect(url.searchParams.has("mainFrameNonce")).toBe(false);
+        });
+
+        test("uses a new nonce for a new mount and the same one across rerenders", () => {
+            const { unmount, rerender } = render(
+                <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />
+            );
+            const first = mountNonce();
+            rerender(
+                <CrossmintEmbeddedOfframp
+                    credentials={CREDENTIALS}
+                    payer={{ signAndSendTransaction: vi.fn() }}
+                    onReady={vi.fn()}
+                />
+            );
+            expect(mountNonce()).toBe(first);
+            unmount();
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+            expect(mountNonce()).not.toBe(first);
+        });
+
+        test("accepts stamped events and answers stamped wallet requests", async () => {
+            const payer = renderPayer();
+            const warn = spyWarn();
+            await emit("crypto:send-transaction", TX);
+            await emit("crypto:sign-message", SIGN);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            expect(payer.signMessage).toHaveBeenCalledTimes(1);
+            expect(injectJavaScript).toHaveBeenCalledTimes(2);
+            expect(warn).not.toHaveBeenCalled();
+        });
+
+        test.each([
+            ["crypto:send-transaction", TX],
+            ["crypto:sign-message", SIGN],
+        ])("after a stamped event, drops an unstamped %s with a warning and no reply", async (event, data) => {
+            const payer = renderPayer();
+            await emit("offramp:status", { status: "x" });
+            const warn = spyWarn();
+            await emit(event, data, undefined, null);
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            expect(payer.signMessage).not.toHaveBeenCalled();
+            expect(injectJavaScript).not.toHaveBeenCalled();
+            expect(warn).toHaveBeenCalledTimes(1);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining(event));
+            expect(JSON.stringify(warn.mock.calls)).not.toContain("9Wz");
+        });
+
+        test("after a stamped event, drops an unstamped offramp:completed without calling back", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            await emit("offramp:ready");
+            const warn = spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            expect(onComplete).not.toHaveBeenCalled();
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("offramp:completed"));
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" });
+            expect(onComplete).toHaveBeenCalledTimes(1);
+        });
+
+        test("after a stamped event, drops an event with a wrong nonce", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            await emit("offramp:ready");
+            spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, WRONG);
+            expect(onComplete).not.toHaveBeenCalled();
+        });
+
+        test("before any stamped event, accepts unstamped events with a single warning", async () => {
+            const onComplete = vi.fn();
+            const payer = renderPayer({ onComplete });
+            const warn = spyWarn();
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            await emit("crypto:send-transaction", TX, undefined, null);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+            expect(warn).toHaveBeenCalledTimes(1);
+        });
+
+        test("does not count a wrong nonce as a stamp", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            spyWarn();
+            await emit("offramp:ready", {}, undefined, WRONG);
+            await emit("offramp:completed", { orderId: "o1", txId: "0xtx" }, undefined, null);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+        });
+
+        test("applies the gate after the page check, so a foreign page's unstamped event logs nothing", async () => {
+            renderPayer();
+            await emit("offramp:ready");
+            const warn = spyWarn();
+            await emit("offramp:status", {}, "https://evil.example/page", null);
+            expect(warn).not.toHaveBeenCalled();
+        });
+
+        test("passes messages without a string event, before and after the latch", async () => {
+            const onComplete = vi.fn();
+            renderPayer({ onComplete });
+            const warn = spyWarn();
+            await emitRaw(JSON.stringify({ type: "console.info", data: ["hello"] }));
+            await emitRaw(JSON.stringify({ event: 7, data: {} }));
+            expect(warn).not.toHaveBeenCalled();
+            await emit("offramp:ready");
+            await emitRaw(JSON.stringify({ type: "console.info", data: ["hello"] }));
+            await emitRaw("not json");
+            expect(warn).not.toHaveBeenCalled();
+        });
+
+        test.each([
+            ["null", null],
+            ["a string", "x"],
+            ["a number", 3],
+        ])("does not throw when data is %s, and treats it as unstamped", async (_name, data) => {
+            const onStatusChange = vi.fn();
+            renderPayer({ onStatusChange });
+            const warn = spyWarn();
+            await emitRaw(JSON.stringify({ event: "offramp:status", data }));
+            expect(warn).toHaveBeenCalledTimes(1);
+            await emit("offramp:ready");
+            await emitRaw(JSON.stringify({ event: "offramp:status", data }));
+            expect(warn).toHaveBeenCalledTimes(2);
+            expect(onStatusChange).not.toHaveBeenCalled();
+        });
+
+        test("keeps the latch across onLoadStart and onLoad", async () => {
+            const payer = renderPayer();
+            await emit("offramp:ready");
+            const url = lastWebViewProps().source.uri as string;
+            act(() => lastWebViewProps().onLoadStart?.({ nativeEvent: { url: ROUTE } }));
+            act(() => lastWebViewProps().onLoad?.({ nativeEvent: { url: ROUTE } }));
+            act(() => lastWebViewProps().onLoadStart?.({ nativeEvent: { url } }));
+            spyWarn();
+            await emit("crypto:send-transaction", TX, undefined, null);
+            expect(payer.signAndSendTransaction).not.toHaveBeenCalled();
+            await emit("crypto:send-transaction", TX);
+            expect(payer.signAndSendTransaction).toHaveBeenCalledTimes(1);
+        });
+
+        test("does not inject any script into the page", async () => {
+            renderPayer();
+            await emit("offramp:ready");
+            act(() => lastWebViewProps().onLoad?.({ nativeEvent: { url: ROUTE } }));
+            expect(injectJavaScript).not.toHaveBeenCalled();
+        });
     });
 
     describe("when the page opens a new window", () => {
@@ -351,7 +532,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             expect(injectJavaScript).toHaveBeenCalledTimes(1);
         });
 
-        test("ignores a pending reply after the page starts loading again", async () => {
+        test("ignores a pending reply after a new document sends ready, then serves new requests", async () => {
             const oldSignature = deferredTransaction();
             const newSignature = deferredTransaction();
             const payer = payerSigning(
@@ -359,7 +540,7 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             );
             render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
             await emit("crypto:sign-message", SIGN);
-            act(() => lastWebViewProps().onLoadStart());
+            await emit("offramp:ready");
             await emit("crypto:sign-message", SIGN);
             expect(payer.signMessage).toHaveBeenCalledTimes(2);
             await act(async () => oldSignature.resolve("old"));
@@ -438,14 +619,32 @@ describe("signing session isolation", () => {
         expect(injectJavaScript).toHaveBeenCalledTimes(1);
     });
 
-    test("ignores a pending reply after the document reloads", async () => {
+    test("keeps pending send and sign replies when the page only updates its URL (onLoadStart, same document)", async () => {
+        const send = deferredTransaction();
+        const sign = deferredTransaction();
+        const payer = {
+            signAndSendTransaction: vi.fn().mockReturnValue(send.promise),
+            signMessage: vi.fn().mockReturnValue(sign.promise),
+        };
+        render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+        await emit("crypto:send-transaction", TX);
+        await emit("crypto:sign-message", { message: "m", chain: "solana", payerAddress: "9Wz" });
+        act(() => lastWebViewProps().onLoadStart?.());
+        await act(async () => {
+            send.resolve("0xtx");
+            sign.resolve("c2ln");
+        });
+        expect(replies("crypto:send-transaction:success")).toHaveLength(1);
+        expect(replies("crypto:sign-message:success")).toHaveLength(1);
+    });
+
+    test("ignores a pending reply after a new document sends ready, then serves new requests", async () => {
         const oldTransaction = deferredTransaction();
         const newTransaction = deferredTransaction();
         const signer = vi.fn().mockReturnValueOnce(oldTransaction.promise).mockReturnValueOnce(newTransaction.promise);
         render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: signer }} />);
-        act(() => lastWebViewProps().onLoadStart());
         await emit("crypto:send-transaction", TX);
-        act(() => lastWebViewProps().onLoadStart());
+        await emit("offramp:ready");
         await emit("crypto:send-transaction", TX);
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => oldTransaction.resolve("old-tx"));
@@ -453,7 +652,9 @@ describe("signing session isolation", () => {
         await emit("crypto:send-transaction", TX);
         expect(signer).toHaveBeenCalledTimes(2);
         await act(async () => newTransaction.resolve("new-tx"));
-        expect(injectJavaScript).toHaveBeenCalledTimes(1);
+        expect(replies("crypto:send-transaction:success")).toEqual([
+            { event: "crypto:send-transaction:success", data: { txId: "new-tx" } },
+        ]);
     });
 
     test("does not reply after unmount", async () => {
