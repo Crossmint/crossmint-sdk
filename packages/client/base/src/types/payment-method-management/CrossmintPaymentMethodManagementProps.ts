@@ -186,8 +186,10 @@ export type CrossmintCardPaymentMethod = {
             year: string;
         };
         /**
-         * Billing details the card was saved with. `address` is absent only when the card
-         * was saved with `fields.billingDetails.address: false` and the account has none on file.
+         * Billing details the card was saved with. `address` is present when the card was
+         * saved with a billing address (the SDK default) or the account has one on file. A card
+         * saved with `fields.billingDetails.address: false`, before this default, or outside
+         * the SDK can lack it.
          */
         billing?: CrossmintPaymentMethodBillingDetails;
     };
