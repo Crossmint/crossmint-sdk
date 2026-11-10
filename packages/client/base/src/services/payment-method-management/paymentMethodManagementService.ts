@@ -99,6 +99,15 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
     function getIFrameUrl(props: CrossmintPaymentMethodManagementProps) {
         const defaultValues = parseDefaultValues(props.defaultValues);
+        // The iframe collects no billing address by default. The SDK collects one unless the host sets
+        // `address: false`, because issuers approve more cards that carry a billing address.
+        const fields = {
+            ...props.fields,
+            billingDetails: {
+                ...props.fields?.billingDetails,
+                address: props.fields?.billingDetails?.address ?? true,
+            },
+        };
 
         const urlWithPath = apiClient.buildUrl("/sdk/unstable/payment-method-management");
         const queryParams = new URLSearchParams();
@@ -111,6 +120,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         const { allowedPaymentMethodTypes, allowedModes, ...rest } = props;
         const serializableProps = {
             ...rest,
+            fields,
             defaultValues,
             ...(allowedPaymentMethodTypes?.length ? { allowedPaymentMethodTypes } : {}),
             ...(allowedModes?.length ? { allowedModes } : {}),
@@ -118,6 +128,11 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
 
         appendObjectToQueryParams(queryParams, serializableProps);
 
+        // The component never renders a submit button; the host submits via ref.submit().
+        queryParams.append("hideSubmitButton", "true");
+        // The host gets the message of an invalid or failed submit from ref.submit() and shows it, so the iframe
+        // draws only field errors and does not show the message a second time.
+        queryParams.append("hostShowsSubmitErrors", "true");
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
         queryParams.append("sdkMetadata", JSON.stringify(apiClient["internalConfig"].sdkMetadata));
 

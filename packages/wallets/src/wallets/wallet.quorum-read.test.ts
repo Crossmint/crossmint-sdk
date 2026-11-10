@@ -19,7 +19,7 @@ const EXTERNAL_WALLET_ADDRESS = "ExternalWalletRecoveryAddress123";
 function walletWithDelegatedQuorum(
     chain: Chain,
     address: string,
-    quorum: ReturnType<typeof createQuorumApiEntry>
+    quorum: ReturnType<typeof createQuorumApiEntry> & Record<string, unknown>
 ): GetWalletSuccessResponse {
     return {
         chainType: chain === "solana" || chain === "stellar" ? chain : "evm",
@@ -78,12 +78,14 @@ describe("Wallet - quorum entries", () => {
                 const wallet = await createMockWallet(chain, mockApiClient);
                 vi.mocked(wallet.signers).mockRestore();
                 const quorum = createQuorumApiEntry();
-                mockApiClient.getWallet.mockResolvedValue(walletWithDelegatedQuorum(chain, wallet.address, quorum));
-                mockApiClient.getSigner.mockResolvedValue({ ...quorum, ...statusFields } as never);
+                mockApiClient.getWallet.mockResolvedValue(
+                    walletWithDelegatedQuorum(chain, wallet.address, { ...quorum, ...statusFields })
+                );
 
                 const signers = await wallet.signers();
 
                 expect(signers).toEqual([{ ...quorum, status }]);
+                expect(mockApiClient.getSigner).not.toHaveBeenCalled();
             });
         });
 
@@ -93,12 +95,11 @@ describe("Wallet - quorum entries", () => {
                 vi.mocked(wallet.signers).mockRestore();
                 const quorum = createQuorumApiEntry();
                 mockApiClient.getWallet.mockResolvedValue(
-                    walletWithDelegatedQuorum("base-sepolia", wallet.address, quorum)
+                    walletWithDelegatedQuorum("base-sepolia", wallet.address, {
+                        ...quorum,
+                        chains: { "polygon-amoy": { id: "tx-1", status: "success" } },
+                    })
                 );
-                mockApiClient.getSigner.mockResolvedValue({
-                    ...quorum,
-                    chains: { "polygon-amoy": { id: "tx-1", status: "success" } },
-                } as never);
 
                 await expect(wallet.signers()).resolves.toEqual([]);
             });
