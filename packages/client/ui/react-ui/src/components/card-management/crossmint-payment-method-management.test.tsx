@@ -42,12 +42,7 @@ const SAVED = { status: "saved", paymentMethod: CARD } as const;
 function mount({ load = true, onSelected }: { load?: boolean; onSelected?: (method: unknown) => void } = {}) {
     const ref = createRef<CrossmintPaymentMethodManagementRef>();
     const view = render(
-        <CrossmintPaymentMethodManagement
-            ref={ref}
-            jwt="buyer-jwt"
-            hideSubmitButton
-            onPaymentMethodSelected={onSelected}
-        />
+        <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" onPaymentMethodSelected={onSelected} />
     );
     if (load) {
         fireEvent.load(screen.getByRole("crossmint-payment-method-management.iframe"));
@@ -72,8 +67,7 @@ beforeEach(() => {
     mocks.on.mockReturnValue("subscription");
     mocks.createClient.mockImplementation(() => ({ ...mocks }));
     mocks.getUrl.mockImplementation(
-        (props) =>
-            `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=${props.hideSubmitButton ?? false}`
+        (props) => `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=true`
     );
 });
 
@@ -127,7 +121,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         mocks.handshakeWithChild.mockRejectedValueOnce(new Error("Handshake timed out"));
         const { component } = mount();
 
-        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable" });
+        await expect(component.submit()).resolves.toMatchObject({ status: "unavailable", code: "not_ready" });
         expect(mocks.sendAction).not.toHaveBeenCalled();
 
         mocks.sendAction.mockResolvedValueOnce({ result: SAVED });
@@ -141,6 +135,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
 
         await expect(component.submit()).resolves.toMatchObject({
             status: "unavailable",
+            code: "timeout",
             message:
                 "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it.",
         });
@@ -150,7 +145,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const ref = createRef<CrossmintPaymentMethodManagementRef>();
         render(
             <StrictMode>
-                <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" hideSubmitButton />
+                <CrossmintPaymentMethodManagement ref={ref} jwt="buyer-jwt" />
             </StrictMode>
         );
 
@@ -220,5 +215,63 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
         act(() => newListener?.({ height: 500 }));
         expect(newIframe.style.height).toBe("500px");
+    });
+
+    test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
+        const onReady = vi.fn();
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onReady={onReady} onChange={onChange} />);
+
+        act(() => listener("payment-method:ready")?.({}));
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: false, complete: true }));
+        expect(onReady).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith({ mode: "new", empty: false, complete: true });
+
+        const retiredChange = listener("payment-method:change");
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onReady={onReady} onChange={onChange} />);
+        act(() => retiredChange?.({ mode: "existing", empty: false, complete: true }));
+        // The reload resets `complete`; the retired iframe's event is ignored.
+        expect(onChange).toHaveBeenCalledTimes(2);
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: false, complete: false });
+    });
+
+    test("reports complete: false when a prop change reloads a complete form", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        act(() => listener("payment-method:change")?.({ mode: "existing", empty: false, complete: true }));
+
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onChange={onChange} />);
+
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "existing", empty: false, complete: false });
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: true, complete: false }));
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: true, complete: false });
+        expect(onChange).toHaveBeenCalledTimes(3);
+    });
+
+    test("does not report a reload when the form was not complete", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: true, complete: false }));
+
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" onChange={onChange} />);
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
+    test("reports complete: false when the iframe reloads in place", () => {
+        const onChange = vi.fn();
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" onChange={onChange} />);
+        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        fireEvent.load(iframe);
+        act(() => listener("payment-method:change")?.({ mode: "new", empty: false, complete: true }));
+
+        fireEvent.load(iframe);
+
+        expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: false, complete: false });
+        expect(onChange).toHaveBeenCalledTimes(2);
     });
 });

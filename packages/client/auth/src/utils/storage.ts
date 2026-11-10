@@ -1,5 +1,5 @@
 import { validateAPIKey } from "@crossmint/common-sdk-base";
-import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
+import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, getScopedCookieName } from "@crossmint/common-sdk-auth";
 import { deleteCookie, getCookie, setCookie } from "./cookies";
 
 export interface StorageProvider {
@@ -74,7 +74,7 @@ export class ScopedCookieStorage implements StorageProvider {
     }
 
     private getScopedKey(key: string): string {
-        return `${key}-${this.projectId}`;
+        return getScopedCookieName(key, this.projectId);
     }
 
     async get(key: string): Promise<string | undefined> {
