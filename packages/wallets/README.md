@@ -4,7 +4,7 @@ Typescript SDK for creating and managing [Crossmint Wallets](https://docs.crossm
 
 ## Prerequisites
 
-Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 - **Client-side** (browser): Use a client API key
 - **Server-side** (Node.js): Use a server API key
@@ -37,14 +37,17 @@ const wallet = await wallets.createWallet({
 
 console.log(wallet.address);
 
+// Staging only: mint USDXM, Crossmint's test stablecoin, into the wallet
+await wallet.stagingFund(10);
+
 // Send tokens
-const tx = await wallet.send("0xRecipientAddress", "usdc", "10");
+const tx = await wallet.send("0xRecipientAddress", "usdxm", "10");
 console.log(tx.explorerLink);
 ```
 
 ### Client-side (Headless)
 
-For client-side usage without React, you can use the SDK directly with JWT authentication:
+For client-side usage without React, you can use the SDK directly with a user JWT. In staging, get it from Crossmint Auth (`@crossmint/client-sdk-auth`); in production, or when your app already has an auth provider, use that provider's JWT:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
