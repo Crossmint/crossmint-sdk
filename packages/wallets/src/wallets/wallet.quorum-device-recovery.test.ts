@@ -4,7 +4,12 @@ import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import { walletsLogger } from "../logger";
 import type { QuorumMember, SignerConfigForChain } from "../signers/types";
-import { RecoveryMethodRequiredError, SignerLimitExceededError, WalletNotAvailableError } from "../utils/errors";
+import {
+    DeviceSignerAwaitingApprovalError,
+    RecoveryMethodRequiredError,
+    SignerLimitExceededError,
+    WalletNotAvailableError,
+} from "../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import { Wallet } from "./wallet";
 import {
@@ -32,6 +37,7 @@ const CHAINS = [
     {
         chain: "stellar" as const,
         address: "CWALLETSTELLARQUORUM",
+        recipient: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
         alice: "GALICEMEMBER",
         recoveryAddresses: ["GFIRSTRECOVERY", "GSECONDRECOVERY"],
         chainType: "stellar",
@@ -42,6 +48,7 @@ const CHAINS = [
     {
         chain: "base-sepolia" as const,
         address: "0x1234567890123456789012345678901234567890",
+        recipient: "0x1111111111111111111111111111111111111111",
         alice: "0x6666666666666666666666666666666666666666",
         recoveryAddresses: ["0x7777777777777777777777777777777777777777", "0x8888888888888888888888888888888888888888"],
         chainType: "evm",
@@ -69,290 +76,308 @@ const deviceKeyStorage = () => {
     };
 };
 
-describe.each(CHAINS)("device recovery through a recovery quorum on $chain", ({ chain, address, alice, request }) => {
-    let api: MockedApiClient;
-    let storage: ReturnType<typeof deviceKeyStorage>;
-    const aliceMember = {
-        type: "external-wallet",
-        address: alice,
-        locator: `external-wallet:${alice}`,
-    } as QuorumMember;
-    const aliceKey = {
-        type: "external-wallet",
-        address: alice,
-        onSign: vi.fn(async (payload: string) => signatureOver(payload)),
-    } as unknown as SignerConfigForChain<Chain>;
-    let quorum: ReturnType<typeof createQuorumApiEntryWith>;
-    const deviceEntry = (locator: string, change: object) => ({
-        type: "device",
-        locator,
-        publicKey: { x: "0x01", y: "0x02" },
-        name: "Test Device",
-        ...change,
-    });
-    const quorumEntry = () => createQuorumPendingApproval({ quorum, pending: [aliceMember] });
-    // The quorum entry once every member it needs has signed: nothing is left to sign, the request is still landing.
-    const signedQuorumEntry = () => createQuorumPendingApproval({ quorum, pending: [], submitted: [aliceMember] });
-
-    // A new device with no key yet, on a wallet whose only recovery method is `quorum`; Alice is selected.
-    async function recoveringWallet(listedSigners: object[] = []) {
-        const wallet = new Wallet(
-            { chain, address, recovery: [quorum], options: { deviceSignerKeyStorage: storage as never } },
-            api as unknown as ApiClient
-        );
-        await wallet.waitForInit();
-        vi.spyOn(wallet, "signers").mockResolvedValue(listedSigners as never);
-        await wallet.useRecoveryMethod(aliceKey as never);
-        return wallet;
-    }
-
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.useFakeTimers({ shouldAdvanceTime: true });
-        vi.mocked(createDeviceSigner).mockResolvedValue({
+describe.each(CHAINS)(
+    "device recovery through a recovery quorum on $chain",
+    ({ chain, address, recipient, alice, request }) => {
+        let api: MockedApiClient;
+        let storage: ReturnType<typeof deviceKeyStorage>;
+        const aliceMember = {
+            type: "external-wallet",
+            address: alice,
+            locator: `external-wallet:${alice}`,
+        } as QuorumMember;
+        const aliceKey = {
+            type: "external-wallet",
+            address: alice,
+            onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+        } as unknown as SignerConfigForChain<Chain>;
+        let quorum: ReturnType<typeof createQuorumApiEntryWith>;
+        const deviceEntry = (locator: string, change: object) => ({
             type: "device",
+            locator,
             publicKey: { x: "0x01", y: "0x02" },
-            locator: NEW_DEVICE,
             name: "Test Device",
-        } as never);
-        api = createMockApiClient();
-        storage = deviceKeyStorage();
-        quorum = createQuorumApiEntryWith([aliceMember]);
-        api.getSigner.mockRejectedValue(signerNotFound());
-        api.registerSigner.mockResolvedValue(
-            deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
-        );
-        api.removeSigner.mockResolvedValue({ id: "tx-remove", status: "awaiting-approval" } as never);
-    });
-
-    afterEach(() => {
-        vi.useRealTimers();
-        vi.restoreAllMocks();
-    });
-
-    describe("recover() with a member of the recovery quorum selected", () => {
-        it("registers the device signer with the quorum as approver and returns the request unsigned", async () => {
-            const wallet = await recoveringWallet();
-
-            const result = await wallet.recover();
-
-            expect(result).toEqual({ transactionId: "tx-add" });
-            expect(api.registerSigner.mock.calls[0][1].approver).toBe(quorum.locator);
-            expect(api.approveTransaction).not.toHaveBeenCalled();
-            expect(wallet.needsRecovery()).toBe(true);
+            ...change,
         });
+        const quorumEntry = () => createQuorumPendingApproval({ quorum, pending: [aliceMember] });
+        // The quorum entry once every member it needs has signed: nothing is left to sign, the request is still landing.
+        const signedQuorumEntry = () => createQuorumPendingApproval({ quorum, pending: [], submitted: [aliceMember] });
 
-        it("keeps the device key and the old device signer while the members approve", async () => {
-            await storage.saveSignerLocator("any", OLD_DEVICE);
-            const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
-
-            await wallet.recover();
-
-            expect(storage.deleteKey).not.toHaveBeenCalled();
-            expect(api.removeSigner).not.toHaveBeenCalled();
-            expect(storage.saveSignerLocator).not.toHaveBeenCalledWith(address, NEW_DEVICE);
-        });
-
-        it("returns the same request on the next call, registering and signing nothing", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(
-                deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
+        // A new device with no key yet, on a wallet whose only recovery method is `quorum`; Alice is selected.
+        async function recoveringWallet(listedSigners: object[] = []) {
+            const wallet = new Wallet(
+                { chain, address, recovery: [quorum], options: { deviceSignerKeyStorage: storage as never } },
+                api as unknown as ApiClient
             );
+            await wallet.waitForInit();
+            vi.spyOn(wallet, "signers").mockResolvedValue(listedSigners as never);
+            await wallet.useRecoveryMethod(aliceKey as never);
+            return wallet;
+        }
 
-            const result = await wallet.recover();
-
-            expect(result).toEqual({ transactionId: "tx-add" });
-            expect(api.registerSigner).toHaveBeenCalledTimes(1);
-            expect(api.approveTransaction).not.toHaveBeenCalled();
-            expect(wallet.needsRecovery()).toBe(true);
-        });
-
-        it("registers again with the same key when the request failed before the members approved", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "failed")) as never);
+        beforeEach(() => {
+            vi.clearAllMocks();
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+            vi.mocked(createDeviceSigner).mockResolvedValue({
+                type: "device",
+                publicKey: { x: "0x01", y: "0x02" },
+                locator: NEW_DEVICE,
+                name: "Test Device",
+            } as never);
+            api = createMockApiClient();
+            storage = deviceKeyStorage();
+            quorum = createQuorumApiEntryWith([aliceMember]);
+            api.getSigner.mockRejectedValue(signerNotFound());
             api.registerSigner.mockResolvedValue(
-                deviceEntry(NEW_DEVICE, request("tx-add-2", "awaiting-approval", [quorumEntry()])) as never
-            );
-
-            const result = await wallet.recover();
-
-            expect(result).toEqual({ transactionId: "tx-add-2" });
-            expect(api.registerSigner.mock.calls.map((call) => call[1].signer)).toEqual([
-                expect.objectContaining({ publicKey: { x: "0x01", y: "0x02" } }),
-                expect.objectContaining({ publicKey: { x: "0x01", y: "0x02" } }),
-            ]);
-        });
-
-        it("returns the request while it lands after the members signed, signing nothing", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(
-                deviceEntry(NEW_DEVICE, request("tx-add", "pending", [], [signedQuorumEntry()])) as never
-            );
-
-            await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-add" });
-            expect(api.approveTransaction).not.toHaveBeenCalled();
-            expect(wallet.needsRecovery()).toBe(true);
-        });
-
-        it("registers once when two recoveries run at the same time", async () => {
-            const wallet = await recoveringWallet();
-
-            const [first, second] = await Promise.all([wallet.recover(), wallet.recover()]);
-
-            expect(first).toEqual({ transactionId: "tx-add" });
-            expect(second).toEqual(first);
-            expect(api.registerSigner).toHaveBeenCalledTimes(1);
-        });
-
-        it("stops without registering again when the registration cannot be read", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            api.getSigner.mockRejectedValue(new Error("network down"));
-
-            await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
-            expect(api.registerSigner).toHaveBeenCalledTimes(1);
-        });
-
-        it("keeps the key when the registration fails and whether it exists cannot be read", async () => {
-            const wallet = await recoveringWallet();
-            api.getSigner.mockRejectedValueOnce(signerNotFound()).mockRejectedValue(new Error("network down"));
-            api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
-
-            await expect(wallet.recover()).rejects.toThrow("fetch failed");
-            expect(storage.deleteKey).not.toHaveBeenCalled();
-        });
-
-        it("stops before registering when an earlier registration of this key cannot be read", async () => {
-            const wallet = await recoveringWallet();
-            api.getSigner.mockRejectedValue(new Error("network down"));
-
-            await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
-            expect(api.registerSigner).not.toHaveBeenCalled();
-            expect(storage.deleteKey).not.toHaveBeenCalled();
-        });
-
-        it("falls back without an error when the provider rejects device signers", async () => {
-            const wallet = await recoveringWallet();
-            api.registerSigner.mockResolvedValue({
-                error: true,
-                code: "DEVICE_SIGNER_NOT_SUPPORTED",
-                message: "Device signers are not supported",
-            } as never);
-
-            await expect(wallet.recover()).resolves.toBeUndefined();
-            expect(wallet.needsRecovery()).toBe(false);
-        });
-
-        it("returns the request when this device's key is found through the wallet's signers", async () => {
-            const wallet = await recoveringWallet([
-                deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])),
-            ]);
-            storage.hasKey.mockResolvedValue(true);
-            api.getSigner.mockResolvedValue(
                 deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
             );
-
-            await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-add" });
-            expect(api.registerSigner).not.toHaveBeenCalled();
-            expect(wallet.needsRecovery()).toBe(true);
+            api.removeSigner.mockResolvedValue({ id: "tx-remove", status: "awaiting-approval" } as never);
         });
 
-        it("throws SignerLimitExceededError at the signer limit without removing a device", async () => {
-            const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
-            await storage.saveSignerLocator("any", OLD_DEVICE);
-            api.registerSigner.mockResolvedValue({
-                error: true,
-                code: "SIGNER_LIMIT_EXCEEDED",
-                message: "Signer limit reached",
-            } as never);
-
-            await expect(wallet.recover()).rejects.toBeInstanceOf(SignerLimitExceededError);
-            expect(api.removeSigner).not.toHaveBeenCalled();
-        });
-    });
-
-    describe("recover() once the members approved the device signer", () => {
-        it("activates the device and starts the old device's removal through the quorum, returning it", async () => {
-            await storage.saveSignerLocator("any", OLD_DEVICE);
-            const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
-
-            const result = await wallet.recover();
-
-            expect(result).toEqual({ transactionId: "tx-remove" });
-            expect(api.removeSigner.mock.calls[0][1]).toBe(OLD_DEVICE);
-            expect(api.removeSigner.mock.calls[0][2]?.approver).toBe(quorum.locator);
-            expect(wallet.needsRecovery()).toBe(false);
-            expect(wallet.signer?.locator()).toBe(NEW_DEVICE);
-            expect(storage.saveSignerLocator).toHaveBeenCalledWith(address, NEW_DEVICE);
+        afterEach(() => {
+            vi.useRealTimers();
+            vi.restoreAllMocks();
         });
 
-        it("logs the removal it starts, so automatic recovery leaves a trace", async () => {
-            await storage.saveSignerLocator("any", OLD_DEVICE);
-            const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
-            const info = vi.spyOn(walletsLogger, "info");
+        describe("recover() with a member of the recovery quorum selected", () => {
+            it("registers the device signer with the quorum as approver and returns the request unsigned", async () => {
+                const wallet = await recoveringWallet();
 
-            await wallet.recover();
+                const result = await wallet.recover();
 
-            expect(info).toHaveBeenCalledWith(
-                "wallet.recover.staleSignerRemovalPending",
-                expect.objectContaining({ signerLocator: OLD_DEVICE, transactionId: "tx-remove" })
-            );
+                expect(result).toEqual({ transactionId: "tx-add" });
+                expect(api.registerSigner.mock.calls[0][1].approver).toBe(quorum.locator);
+                expect(api.approveTransaction).not.toHaveBeenCalled();
+                expect(wallet.needsRecovery()).toBe(true);
+            });
+
+            it("keeps the device key and the old device signer while the members approve", async () => {
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+
+                await wallet.recover();
+
+                expect(storage.deleteKey).not.toHaveBeenCalled();
+                expect(api.removeSigner).not.toHaveBeenCalled();
+                expect(storage.saveSignerLocator).not.toHaveBeenCalledWith(address, NEW_DEVICE);
+            });
+
+            it("returns the same request on the next call, registering and signing nothing", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
+                );
+
+                const result = await wallet.recover();
+
+                expect(result).toEqual({ transactionId: "tx-add" });
+                expect(api.registerSigner).toHaveBeenCalledTimes(1);
+                expect(api.approveTransaction).not.toHaveBeenCalled();
+                expect(wallet.needsRecovery()).toBe(true);
+            });
+
+            it("registers again with the same key when the request failed before the members approved", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "failed")) as never);
+                api.registerSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add-2", "awaiting-approval", [quorumEntry()])) as never
+                );
+
+                const result = await wallet.recover();
+
+                expect(result).toEqual({ transactionId: "tx-add-2" });
+                expect(api.registerSigner.mock.calls.map((call) => call[1].signer)).toEqual([
+                    expect.objectContaining({ publicKey: { x: "0x01", y: "0x02" } }),
+                    expect.objectContaining({ publicKey: { x: "0x01", y: "0x02" } }),
+                ]);
+            });
+
+            it("returns the request while it lands after the members signed, signing nothing", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add", "pending", [], [signedQuorumEntry()])) as never
+                );
+
+                await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-add" });
+                expect(api.approveTransaction).not.toHaveBeenCalled();
+                expect(wallet.needsRecovery()).toBe(true);
+            });
+
+            it("registers once when two recoveries run at the same time", async () => {
+                const wallet = await recoveringWallet();
+
+                const [first, second] = await Promise.all([wallet.recover(), wallet.recover()]);
+
+                expect(first).toEqual({ transactionId: "tx-add" });
+                expect(second).toEqual(first);
+                expect(api.registerSigner).toHaveBeenCalledTimes(1);
+            });
+
+            it("stops without registering again when the registration cannot be read", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                api.getSigner.mockRejectedValue(new Error("network down"));
+
+                await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
+                expect(api.registerSigner).toHaveBeenCalledTimes(1);
+            });
+
+            it("keeps the key when the registration fails and whether it exists cannot be read", async () => {
+                const wallet = await recoveringWallet();
+                api.getSigner.mockRejectedValueOnce(signerNotFound()).mockRejectedValue(new Error("network down"));
+                api.registerSigner.mockRejectedValue(new TypeError("fetch failed"));
+
+                await expect(wallet.recover()).rejects.toThrow("fetch failed");
+                expect(storage.deleteKey).not.toHaveBeenCalled();
+            });
+
+            it("stops before registering when an earlier registration of this key cannot be read", async () => {
+                const wallet = await recoveringWallet();
+                api.getSigner.mockRejectedValue(new Error("network down"));
+
+                await expect(wallet.recover()).rejects.toBeInstanceOf(WalletNotAvailableError);
+                expect(api.registerSigner).not.toHaveBeenCalled();
+                expect(storage.deleteKey).not.toHaveBeenCalled();
+            });
+
+            it("falls back without an error when the provider rejects device signers", async () => {
+                const wallet = await recoveringWallet();
+                api.registerSigner.mockResolvedValue({
+                    error: true,
+                    code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                    message: "Device signers are not supported",
+                } as never);
+
+                await expect(wallet.recover()).resolves.toBeUndefined();
+                expect(wallet.needsRecovery()).toBe(false);
+            });
+
+            it("returns the request when this device's key is found through the wallet's signers", async () => {
+                const wallet = await recoveringWallet([
+                    deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])),
+                ]);
+                storage.hasKey.mockResolvedValue(true);
+                api.getSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
+                );
+
+                await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-add" });
+                expect(api.registerSigner).not.toHaveBeenCalled();
+                expect(wallet.needsRecovery()).toBe(true);
+            });
+
+            it("throws SignerLimitExceededError at the signer limit without removing a device", async () => {
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                api.registerSigner.mockResolvedValue({
+                    error: true,
+                    code: "SIGNER_LIMIT_EXCEEDED",
+                    message: "Signer limit reached",
+                } as never);
+
+                await expect(wallet.recover()).rejects.toBeInstanceOf(SignerLimitExceededError);
+                expect(api.removeSigner).not.toHaveBeenCalled();
+            });
         });
 
-        it("logs a removal it could not start and keeps the device active", async () => {
-            await storage.saveSignerLocator("any", OLD_DEVICE);
-            const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
-            api.removeSigner.mockRejectedValue(new Error("network down"));
-            const warn = vi.spyOn(walletsLogger, "warn");
+        describe("recover() once the members approved the device signer", () => {
+            it("activates the device and starts the old device's removal through the quorum, returning it", async () => {
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
 
-            await expect(wallet.recover()).resolves.toBeUndefined();
+                const result = await wallet.recover();
 
-            expect(warn).toHaveBeenCalledWith(
-                "wallet.recover.staleSignerRemovalFailed",
-                expect.objectContaining({ signerLocator: OLD_DEVICE })
-            );
-            expect(wallet.needsRecovery()).toBe(false);
+                expect(result).toEqual({ transactionId: "tx-remove" });
+                expect(api.removeSigner.mock.calls[0][1]).toBe(OLD_DEVICE);
+                expect(api.removeSigner.mock.calls[0][2]?.approver).toBe(quorum.locator);
+                expect(wallet.needsRecovery()).toBe(false);
+                expect(wallet.signer?.locator()).toBe(NEW_DEVICE);
+                expect(storage.saveSignerLocator).toHaveBeenCalledWith(address, NEW_DEVICE);
+            });
+
+            it("logs the removal it starts, so automatic recovery leaves a trace", async () => {
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
+                const info = vi.spyOn(walletsLogger, "info");
+
+                await wallet.recover();
+
+                expect(info).toHaveBeenCalledWith(
+                    "wallet.recover.staleSignerRemovalPending",
+                    expect.objectContaining({ signerLocator: OLD_DEVICE, transactionId: "tx-remove" })
+                );
+            });
+
+            it("logs a removal it could not start and keeps the device active", async () => {
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
+                api.removeSigner.mockRejectedValue(new Error("network down"));
+                const warn = vi.spyOn(walletsLogger, "warn");
+
+                await expect(wallet.recover()).resolves.toBeUndefined();
+
+                expect(warn).toHaveBeenCalledWith(
+                    "wallet.recover.staleSignerRemovalFailed",
+                    expect.objectContaining({ signerLocator: OLD_DEVICE })
+                );
+                expect(wallet.needsRecovery()).toBe(false);
+            });
+
+            it("returns nothing on later calls", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
+                await wallet.recover();
+
+                await expect(wallet.recover()).resolves.toBeUndefined();
+            });
         });
 
-        it("returns nothing on later calls", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
-            await wallet.recover();
+        describe("approve() on the recovering device with the member selected", () => {
+            it("signs the member's entry of the device's own registration", async () => {
+                const wallet = await recoveringWallet();
+                await wallet.recover();
+                const pending = quorumEntry();
+                api.getSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [pending])) as never
+                );
+                api.getTransaction.mockResolvedValue(createAwaitingRequest("tx-add", [pending]) as never);
+                api.approveTransaction.mockResolvedValue(createAwaitingRequest("tx-add", [pending]) as never);
 
-            await expect(wallet.recover()).resolves.toBeUndefined();
+                const { error } = await settle(wallet.approve({ transactionId: "tx-add" }));
+
+                expect(error).toBeUndefined();
+                expect(api.approveTransaction.mock.calls[0][2].approvals).toEqual([
+                    expect.objectContaining({ signer: aliceMember.locator }),
+                ]);
+            });
         });
-    });
+        describe("a creating call while the members still approve the device", () => {
+            it("throws DeviceSignerAwaitingApprovalError with the registration and creates nothing", async () => {
+                const wallet = await recoveringWallet();
+                const registration = await wallet.recover();
+                api.getSigner.mockResolvedValue(
+                    deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [quorumEntry()])) as never
+                );
 
-    describe("approve() on the recovering device with the member selected", () => {
-        it("signs the member's entry of the device's own registration", async () => {
-            const wallet = await recoveringWallet();
-            await wallet.recover();
-            const pending = quorumEntry();
-            api.getSigner.mockResolvedValue(
-                deviceEntry(NEW_DEVICE, request("tx-add", "awaiting-approval", [pending])) as never
-            );
-            api.getTransaction.mockResolvedValue(createAwaitingRequest("tx-add", [pending]) as never);
-            api.approveTransaction.mockResolvedValue(createAwaitingRequest("tx-add", [pending]) as never);
+                const { error } = await settle(wallet.send(recipient, "usdc", "1"));
 
-            const { error } = await settle(wallet.approve({ transactionId: "tx-add" }));
-
-            expect(error).toBeUndefined();
-            expect(api.approveTransaction.mock.calls[0][2].approvals).toEqual([
-                expect.objectContaining({ signer: aliceMember.locator }),
-            ]);
+                expect(error).toBeInstanceOf(DeviceSignerAwaitingApprovalError);
+                expect((error as DeviceSignerAwaitingApprovalError).request).toEqual(registration);
+                expect(api.send).not.toHaveBeenCalled();
+            });
         });
-    });
-});
+    }
+);
 
 describe("device recovery on a wallet whose recovery methods are all quorums, with nothing selected", () => {
     it("throws RecoveryMethodRequiredError before creating a device key", async () => {

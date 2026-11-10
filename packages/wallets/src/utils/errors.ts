@@ -98,6 +98,20 @@ export class DeviceSignerNotSupportedError extends CrossmintSDKError {
     }
 }
 
+/** This device's signer still waits for quorum members to approve its registration; `request` is what they approve. */
+export class DeviceSignerAwaitingApprovalError extends CrossmintSDKError {
+    readonly request: { transactionId: string } | { signatureId: string };
+
+    constructor(request: { transactionId: string } | { signatureId: string }, details?: string) {
+        super(
+            "This device's signer still awaits the recovery quorum's approval. Have its members approve the registration with approve(), then try again.",
+            WalletErrorCode.SIGNER_INVALID,
+            details
+        );
+        this.request = request;
+    }
+}
+
 export const SIGNER_LIMIT_EXCEEDED_ERROR_CODE = "SIGNER_LIMIT_EXCEEDED";
 
 /** The SDK throws this error when a new signer would put the wallet over its signer limit. */
@@ -505,6 +519,7 @@ export type WalletError =
     | InvalidSignerError
     | UnknownSignerTypeError
     | DeviceSignerNotSupportedError
+    | DeviceSignerAwaitingApprovalError
     | SignerLimitExceededError
     | QuorumSelectionAmbiguousError
     | QuorumRequestError
