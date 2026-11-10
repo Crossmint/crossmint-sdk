@@ -11,6 +11,7 @@ import type {
     GetTransactionsResponse,
     GetWalletSuccessResponse,
     FundWalletResponse,
+    Signer as APISigner,
 } from "../api";
 import type {
     AddSignerOptions,
@@ -110,7 +111,7 @@ import { type RecoveryMember, SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
-import { resolveActingRole } from "../quorum/roles";
+import { resolveTransactionRole } from "../quorum/roles";
 import { quorumsMatchingInput, toQuorumSignerInput } from "../quorum/config";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
@@ -148,6 +149,8 @@ const REGISTERED: HeldKeyRole = { kind: "registered" };
 type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
 const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
 
+export type WalletFactoryConstructorArgs<C extends Chain> = WalletContructorType<C> & { apiSigners?: APISigner[] };
+
 export class Wallet<C extends Chain> {
     chain: C;
     address: string;
@@ -179,7 +182,8 @@ export class Wallet<C extends Chain> {
             signer,
             quorumMemberLocator,
             recoveryMember,
-        } = args;
+            apiSigners,
+        } = args as WalletFactoryConstructorArgs<C>;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -259,7 +263,7 @@ export class Wallet<C extends Chain> {
                     includeSignatures: this.chainAdapter.supportsSignatures,
                 }),
         });
-        this.#signerInitialization = this.initDefaultSigner();
+        this.#signerInitialization = this.initDefaultSigner(apiSigners);
     }
 
     public get signer(): SignerAdapter | undefined {
@@ -286,13 +290,13 @@ export class Wallet<C extends Chain> {
      * Note: Server and api-key signers may fail to auto-assemble if required data
      * is not available in the API response. In those cases, the signer is left undefined.
      */
-    private async initDefaultSigner(): Promise<void> {
+    private async initDefaultSigner(apiSigners?: APISigner[]): Promise<void> {
         // If useSigner has been called, don't try to auto-assemble a signer
         if (this.#signerManager.activeSigner != null) {
             return;
         }
         // Step 1: Try device signer (existing behavior)
-        await this.#deviceRecovery.initDeviceSigner();
+        await this.#deviceRecovery.initDeviceSigner(apiSigners);
 
         // If device signer was found or recovery is pending, we're done
         if (this.#signerManager.activeSigner != null || this.#deviceRecovery.needsRecovery) {
@@ -324,7 +328,9 @@ export class Wallet<C extends Chain> {
                 signerToAssemble as SignerConfigForChain<C>,
                 signerDescriptorContext
             );
-            this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
+            this.#signerManager.setActiveSigner(
+                await this.#signerManager.assemble(internalConfig, { isAdminSigner, apiSigners })
+            );
         } catch (error) {
             walletsLogger.warn("wallet.initDefaultSigner.autoAssemblyFailed", {
                 recoveryType: this.#signerManager.defaultRecovery?.type,
@@ -420,17 +426,16 @@ export class Wallet<C extends Chain> {
         const walletConfig = await this.#readWalletConfig();
         const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletConfig);
         const configSigners = walletConfig.delegatedSigners ?? [];
-        const role = resolveActingRole({
-            scope: "transaction",
-            heldLocator,
-            recoveryLocators: recoveryMethods
+        const role = resolveTransactionRole({
+            held: heldLocator,
+            recoveryMethodLocators: recoveryMethods
                 .filter((recovery) => !isQuorumSigner(recovery))
                 .map((recovery) => this.#signerManager.recoveryLocator(recovery))
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
             delegatedQuorums: configSigners.filter(isQuorumSigner),
             // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
-            isRegisteredSigner: configSigners.some(
+            registeredOnChain: configSigners.some(
                 (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
             ),
         });
@@ -824,8 +829,14 @@ export class Wallet<C extends Chain> {
         const explicit = this.#explicitApprover(options);
         return this.#signerManager.withApprover({ explicit }, async (approver) => {
             const prepareOnly = this.isPrepareOnly(options, approver);
-            const signerLocator = this.#registrationLocator(resolvedSigner);
-            if (signerLocator != null) {
+            // A passkey without a credential id is created here, after the approver is resolved
+            const preparedSigner = await this.prepareRegistration(resolvedSigner);
+            const createdNow = preparedSigner !== resolvedSigner;
+
+            // An earlier registration (e.g. an interrupted attempt) exists only for a signer with a locator, and
+            // never for a passkey that was only just created.
+            const signerLocator = this.#registrationLocator(preparedSigner);
+            if (signerLocator != null && !createdNow) {
                 const stop = stopIfUnreadable && approver != null && hasQuorumLocatorPrefix(approver);
                 const resumed = await this.#resumeRegistration(signerLocator, options, prepareOnly, stop);
                 if (resumed != null) {
@@ -833,7 +844,7 @@ export class Wallet<C extends Chain> {
                 }
             }
 
-            const signerInput = this.#addSignerInput(resolvedSigner);
+            const signerInput = this.#addSignerInput(preparedSigner);
 
             const isEvm = this.chain !== "solana" && this.chain !== "stellar";
             const deployImmediately = isEvm ? options?.deployImmediately ?? true : undefined;
@@ -957,6 +968,24 @@ export class Wallet<C extends Chain> {
             return null;
         }
         return getSignerLocator(signer);
+    }
+
+    /** Lets the signer's descriptor complete the config before it is registered (creates a new passkey). */
+    private async prepareRegistration<
+        S extends SignerLocator | SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>,
+    >(signer: S): Promise<S> {
+        // A locator names a registered signer and a quorum has no descriptor: both go to the API as given.
+        if (typeof signer === "string" || signer.type === "quorum") {
+            return signer;
+        }
+        const descriptor = getSignerDescriptor<C>(signer.type);
+        if (descriptor.prepareRegistration == null) {
+            return signer;
+        }
+        return (await descriptor.prepareRegistration(
+            signer as SignerConfigForChain<C>,
+            this.#signerManager.descriptorContext()
+        )) as S;
     }
 
     /**
@@ -1091,9 +1120,12 @@ export class Wallet<C extends Chain> {
                 : recoveryMethod;
 
         return this.#signerManager.withApprover({ explicit: this.#explicitApprover(options) }, async (approver) => {
+            // A passkey without a credential id is created here, after the approver is resolved
+            const preparedMethod = await this.prepareRegistration(resolvedMethod);
+
             const response = await this.#apiClient.registerRecoveryMethod(this.walletLocator, {
                 recoveryMethods: this.#addSignerInput(
-                    resolvedMethod
+                    preparedMethod
                 ) as RegisterRecoveryMethodParams["recoveryMethods"],
                 approver: this.resolveRecoveryApprover(approver),
                 chain: this.chainAdapter.addSignerChain(this.chain),
@@ -1115,7 +1147,7 @@ export class Wallet<C extends Chain> {
             }
 
             await this.approveTransactionAndWait(transactionId);
-            this.#signerManager.addRecoverySigner(this.#addedRecoveryMethod(resolvedMethod, response));
+            this.#signerManager.addRecoverySigner(this.#addedRecoveryMethod(preparedMethod, response));
             walletsLogger.info("wallet.addRecoveryMethod.success", { transactionId });
             return { transactionId, status: "success" as const, locator };
         });
@@ -1637,22 +1669,11 @@ export class Wallet<C extends Chain> {
             throw new WalletTypeNotSupportedError(reason);
         }
 
-        const configSigners = walletResponse?.config?.delegatedSigners ?? [];
-
-        const signersWithStatus = await Promise.all(
-            configSigners.map(async (configSigner) => {
-                try {
-                    const signerState = await this.#signerManager.getSignerState(configSigner.locator as SignerLocator);
-                    return signerState.signer;
-                } catch (error) {
-                    walletsLogger.warn("wallet.signers.mapSigner.failed", { locator: configSigner.locator, error });
-                    return null;
-                }
-            })
-        );
-
-        // Filter out null results (signers that don't have approval for this chain)
-        const signers = signersWithStatus.filter((s): s is WalletSigner => s != null);
+        // Each delegated signer in the wallet response is the same object GET signer returns, status included,
+        // so one request covers them all. Signers with no approval on this chain map to null.
+        const signers = ((walletResponse.config?.delegatedSigners ?? []) as APISigner[])
+            .map((apiSigner) => mapApiSignerToSigner(apiSigner, this.chain))
+            .filter((s): s is WalletSigner => s != null);
 
         walletsLogger.info("wallet.signers.success", {
             count: signers.length,

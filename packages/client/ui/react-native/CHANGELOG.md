@@ -1,5 +1,59 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 2.1.6
+
+### Patch Changes
+
+- Updated dependencies [04ec76f]
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [36903ca]
+  - @crossmint/wallets-sdk@1.22.2
+  - @crossmint/common-sdk-auth@1.1.35
+  - @crossmint/client-sdk-react-base@2.5.6
+  - @crossmint/client-sdk-auth@1.3.37
+
+## 2.1.5
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-auth@1.3.36
+  - @crossmint/client-sdk-react-base@2.5.5
+
+## 2.1.4
+
+### Patch Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-auth@1.3.35
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
 ## 2.1.3
 
 ### Patch Changes
