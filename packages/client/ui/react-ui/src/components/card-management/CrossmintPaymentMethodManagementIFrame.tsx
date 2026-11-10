@@ -2,6 +2,7 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     type CrossmintPaymentMethodManagementProps,
     type CrossmintPaymentMethodManagementRef,
+    type PaymentMethodManagementChangeEvent,
     type PaymentMethodManagementIFrameEmitter,
     type PaymentMethodSubmitResult,
     createPaymentMethodManagementService,
@@ -14,7 +15,11 @@ const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : use
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
 
-const unavailable = (message: string): PaymentMethodSubmitResult => ({ status: "unavailable", message });
+const unavailable = (code: "not_ready" | "timeout", message: string): PaymentMethodSubmitResult => ({
+    status: "unavailable",
+    code,
+    message,
+});
 const superseded = (): PaymentMethodSubmitResult => ({
     status: "superseded",
     message: "The payment method component changed. Please submit again.",
@@ -36,6 +41,19 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
     // The height survives a `key={url}` remount: the last reported height applies to the
     // new iframe until it reports its own.
     const [height, setHeight] = useState(0);
+    // The last state the host got. A new URL reloads the form, so a host that enabled its button on `complete`
+    // gets `complete: false` until the new document reports its own state.
+    const lastChange = useRef<PaymentMethodManagementChangeEvent | null>(null);
+    const latestOnChange = useRef(props.onChange);
+    latestOnChange.current = props.onChange;
+    const previousUrl = useRef(url);
+    useEffect(() => {
+        if (previousUrl.current === url) {
+            return;
+        }
+        previousUrl.current = url;
+        reportReload(lastChange, latestOnChange.current);
+    }, [url]);
     // Authentication and form configuration live in the URL. A committed change must
     // retire the old window too, so its events cannot reach the next buyer's callbacks.
     return (
@@ -47,9 +65,25 @@ export const CrossmintPaymentMethodManagementIFrame = forwardRef<
             props={props}
             height={height}
             onHeightChange={setHeight}
+            lastChange={lastChange}
         />
     );
 });
+
+// A reloaded form has not reported yet: a host that enabled its button on `complete` gets `complete: false` until the
+// new document reports its own state.
+function reportReload(
+    lastChange: { current: PaymentMethodManagementChangeEvent | null },
+    onChange: ((event: PaymentMethodManagementChangeEvent) => void) | undefined
+) {
+    const last = lastChange.current;
+    if (last?.complete !== true) {
+        return;
+    }
+    const reloading = { ...last, complete: false };
+    lastChange.current = reloading;
+    onChange?.(reloading);
+}
 
 const PaymentMethodConnection = forwardRef<
     CrossmintPaymentMethodManagementRef,
@@ -59,8 +93,9 @@ const PaymentMethodConnection = forwardRef<
         props: CrossmintPaymentMethodManagementProps;
         height: number;
         onHeightChange: (height: number) => void;
+        lastChange: { current: PaymentMethodManagementChangeEvent | null };
     }
->(function PaymentMethodConnection({ url, service, props, height, onHeightChange }, ref) {
+>(function PaymentMethodConnection({ url, service, props, height, onHeightChange, lastChange }, ref) {
     const [iframeService] = useState(service);
     const iframe = useRef<HTMLIFrameElement>(null);
     // The first `load` only confirms the mount-time connection; SSR hydration can miss it,
@@ -95,6 +130,10 @@ const PaymentMethodConnection = forwardRef<
         // answers only one handshake per document: share one client (and its single
         // handshake) per document, while each run still gets a fresh `active`.
         if (clientRef.current?.reloads !== reloads) {
+            // The iframe navigated in place: the URL is the same, but the form starts over.
+            if (reloads > 0) {
+                reportReload(lastChange, latestProps.current.onChange);
+            }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
             // submit can retry without reloading the iframe.
@@ -127,9 +166,22 @@ const PaymentMethodConnection = forwardRef<
                 return latestProps.current.onPaymentMethodSelected?.(method);
             }
         });
+        const readyListener = client.on("payment-method:ready", () => {
+            if (connection.current === active) {
+                latestProps.current.onReady?.();
+            }
+        });
+        const changeListener = client.on("payment-method:change", (event) => {
+            if (connection.current === active) {
+                lastChange.current = event;
+                latestProps.current.onChange?.(event);
+            }
+        });
         return () => {
             client.off(heightListener);
             client.off(selectedListener);
+            client.off(readyListener);
+            client.off(changeListener);
             if (pending.current?.client === client) {
                 pending.current.cancel();
                 pending.current = null;
@@ -144,7 +196,7 @@ const PaymentMethodConnection = forwardRef<
         submit() {
             const active = connection.current;
             if (active == null) {
-                return Promise.resolve(unavailable("The payment method component has not loaded yet."));
+                return Promise.resolve(unavailable("not_ready", "The payment method component has not loaded yet."));
             }
             if (pending.current?.client === active.client) {
                 return pending.current.promise;
@@ -162,7 +214,7 @@ const PaymentMethodConnection = forwardRef<
                     await active.ready();
                 } catch {
                     return connection.current === active
-                        ? unavailable("The payment method component did not answer. Please try again.")
+                        ? unavailable("not_ready", "The payment method component did not answer. Please try again.")
                         : superseded();
                 }
                 if (connection.current !== active) {
@@ -185,6 +237,7 @@ const PaymentMethodConnection = forwardRef<
                     // The request was already sent; the save may still have completed.
                     return connection.current === active
                         ? unavailable(
+                              "timeout",
                               "The payment method component did not answer in time. The payment method may still have been saved: onPaymentMethodSelected fires if it was, and submitting again returns it."
                           )
                         : superseded();
