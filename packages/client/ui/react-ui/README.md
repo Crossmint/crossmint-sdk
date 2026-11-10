@@ -4,7 +4,7 @@ React SDK for integrating [Crossmint Wallets](https://docs.crossmint.com) into y
 
 ## Prerequisites
 
-Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 ## Installation
 
@@ -20,7 +20,7 @@ yarn add @crossmint/client-sdk-react-ui
 
 ### 1. Setup Providers
 
-**With Crossmint Authentication (Recommended for quickstarts only)**
+**With Crossmint Auth (default in staging)**
 
 ```tsx
 "use client";
@@ -51,7 +51,7 @@ export default function App({ children }) {
 
 **Bring Your Own Authentication**
 
-Already have authentication? Skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth) for full details.
+Use this when your app already has an auth provider, and in production: connect your provider and configure [JWT Authentication](https://docs.crossmint.com/introduction/platform/api-keys/jwt-authentication) in the Crossmint Console (see [Move to Production](https://docs.crossmint.com/wallets/guides/crossmint-auth#move-to-production)). Then skip `CrossmintAuthProvider` and pass your provider's JWT to the wallets SDK. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth) for full details.
 
 ```tsx
 "use client";
@@ -93,15 +93,21 @@ function WalletActions() {
   if (status === "in-progress") return <p>Loading wallet...</p>;
   if (!wallet) return <p>No wallet</p>;
 
+  // Staging only: mints USDXM, Crossmint's test stablecoin, into the wallet
+  const handleFund = async () => {
+    await wallet.stagingFund(10);
+  };
+
   const handleSend = async () => {
-    const tx = await wallet.send("0xRecipient", "usdc", "10");
+    const tx = await wallet.send("0xRecipient", "usdxm", "10");
     console.log("Transaction:", tx.explorerLink);
   };
 
   return (
     <div>
       <p>Wallet: {wallet.address}</p>
-      <button onClick={handleSend}>Send 10 USDC</button>
+      <button onClick={handleFund}>Get 10 USDXM</button>
+      <button onClick={handleSend}>Send 10 USDXM</button>
     </div>
   );
 }
@@ -197,7 +203,7 @@ The `wallet` object returned by `useWallet()` is a [`Wallet`](https://www.npmjs.
 
 - [Crossmint Wallets Docs](https://docs.crossmint.com)
 - [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets/react)
-- [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)
+- [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth)
 
 ## SDK Reference Docs Generation
 

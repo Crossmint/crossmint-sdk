@@ -66,6 +66,12 @@ export abstract class DeviceSignerKeyStorage {
     abstract deleteKey(address: string): Promise<void>;
 
     /**
+     * Start any slow setup (e.g. loading an iframe) so later calls don't wait for it. Called when a wallet
+     * starts loading, before its first request. Never throws; the default does nothing.
+     */
+    preload(): void {}
+
+    /**
      * Get a human-readable name for this device (e.g. "MacBook Pro", "iPhone 15").
      * Used to label device signers in the API for identification purposes.
      * @returns A descriptive name for the current device.
