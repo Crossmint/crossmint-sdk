@@ -126,6 +126,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         await this.rpc("deleteKey", { address });
     }
 
+    /** Start loading the iframe, so the first key lookup doesn't wait for it. */
+    preload(): void {
+        if (typeof document === "undefined") {
+            return;
+        }
+        // a failed load is retried, and surfaced, by the next RPC
+        this.getIframe().catch(() => {});
+    }
+
     destroy(): void {
         if (this.biometricListener != null) {
             window.removeEventListener("message", this.biometricListener);

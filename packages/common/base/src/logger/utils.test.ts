@@ -66,6 +66,49 @@ describe("redactSensitiveFields", () => {
     });
 });
 
+describe("redactSensitiveFields with personal data", () => {
+    it.each([
+        ["email recipient", { recipient: "email:alice@example.com" }, { recipient: "email:a***@example.com" }],
+        ["phone recipient", { recipient: "phoneNumber:+15551234567" }, { recipient: "phoneNumber:+1***4567" }],
+        ["phone signer locator", { signerLocator: "phone:+447911123456" }, { signerLocator: "phone:+4***3456" }],
+        [
+            "email wallet locator",
+            { locator: "email:alice@example.com:evm-smart-wallet" },
+            { locator: "email:a***@example.com:evm-smart-wallet" },
+        ],
+        [
+            "email and phone fields of a signer response",
+            { response: { type: "phone", phone: "+15551234567", email: "bob@example.co.uk" } },
+            { response: { type: "phone", phone: "+1***4567", email: "b***@example.co.uk" } },
+        ],
+        [
+            "email with an apostrophe",
+            { recipient: "email:o'brien@example.com" },
+            { recipient: "email:o***@example.com" },
+        ],
+        [
+            "email with a quoted local part",
+            { recipient: 'email:"john.doe"@example.com' },
+            { recipient: "email:***@example.com" },
+        ],
+        [
+            "email with an escaped quote in a quoted local part",
+            { recipient: 'email:"john\\"doe"@example.com' },
+            { recipient: "email:***@example.com" },
+        ],
+        ["phone field that is not a plain number", { phoneNumber: "+1 555 123 4567" }, { phoneNumber: "[REDACTED]" }],
+    ])("masks an %s", (_, input, expected) => {
+        expect(redactSensitiveFields(input)).toEqual(expected);
+    });
+
+    it("masks an email inside an Error's message", () => {
+        const result = redactSensitiveFields({ error: new Error("no wallet for alice@example.com") }) as {
+            error: { message: string };
+        };
+        expect(result.error.message).toBe("no wallet for a***@example.com");
+    });
+});
+
 describe("redactSensitiveText", () => {
     it.each([
         ["prefixed master secret", `key xmsk1_${MASTER_SECRET_HEX} end`, "key xmsk1_[REDACTED] end"],
@@ -94,6 +137,8 @@ describe("redactSensitiveText", () => {
         ["0x-prefixed transaction hash", `tx 0x${MASTER_SECRET_HEX} mined`],
         ["hex longer than a secret", `id ${MASTER_SECRET_HEX}ab done`],
         ["plain message", 'Wallet signer configuration mismatch at "email"'],
+        ["package specifier with a version", "loaded @crossmint/wallets-sdk@1.2.3"],
+        ["short phone locator", "phone:+1234"],
     ])("leaves a %s untouched in free text", (_, input) => {
         expect(redactSensitiveText(input, true)).toBe(input);
     });
@@ -106,7 +151,7 @@ describe("redactSensitiveText", () => {
     it("scans adversarial look-alike text in linear time", () => {
         // Linear scanning takes a few milliseconds; the quadratic pattern this guards against took
         // tens of seconds, so the bound is loose enough for a loaded CI runner.
-        const text = "-eyJ".repeat(200_000);
+        const text = `${"-eyJ".repeat(200_000)} a@${"a.".repeat(200_000)} ${"phone:1".repeat(200_000)} ${' "a'.repeat(200_000)} ${'\\"a'.repeat(200_000)}`;
         const startedAt = performance.now();
         redactSensitiveText(text, true);
         expect(performance.now() - startedAt).toBeLessThan(5_000);
