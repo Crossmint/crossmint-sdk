@@ -1,5 +1,4 @@
 import { WithLoggerContext } from "@crossmint/common-sdk-base";
-import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
@@ -32,7 +31,7 @@ import {
     type SignerConfigForChain,
 } from "../signers/types";
 import { quorumsMatchingInput, toQuorumSignerInput } from "../quorum/config";
-import { Wallet } from "./wallet";
+import { Wallet, type WalletFactoryConstructorArgs } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
 import {
     hasRecoveryMethodList,
@@ -41,6 +40,7 @@ import {
 } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
+import { createPasskeyCredential } from "../signers/passkey";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
@@ -133,6 +133,10 @@ export class WalletFactory {
         }
 
         walletsLogger.info("walletFactory.getWallet.start");
+
+        // Signer initialization reads device keys right after the wallet loads: start loading the key
+        // storage (an iframe on web) now, alongside the request.
+        validatedArgs.options?.deviceSignerKeyStorage?.preload?.();
 
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
@@ -396,20 +400,19 @@ export class WalletFactory {
             .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
             .map((s) => (s as { address: string }).address);
 
-        const wallet = new Wallet(
-            {
-                chain: args.chain,
-                address: walletResponse.address,
-                owner: walletResponse.owner,
-                options: args.options,
-                alias: args.alias,
-                recovery: recoverySigners,
-                apiRecoveryServerSignerAddresses,
-                apiDelegatedServerSignerAddresses,
-                signers: (signers ?? []) as SignerConfigForChain<C>[],
-            },
-            this.apiClient
-        );
+        const walletArgs: WalletFactoryConstructorArgs<C> = {
+            chain: args.chain,
+            address: walletResponse.address,
+            owner: walletResponse.owner,
+            options: args.options,
+            alias: args.alias,
+            recovery: recoverySigners,
+            apiRecoveryServerSignerAddresses,
+            apiDelegatedServerSignerAddresses,
+            signers: (signers ?? []) as SignerConfigForChain<C>[],
+            apiSigners: apiDelegatedSigners as SignerResponse[] | undefined,
+        };
+        const wallet = new Wallet(walletArgs, this.apiClient);
 
         // Await signer initialization so that needsRecovery() returns the correct
         // value immediately after getWallet() / createWallet() resolves.
@@ -530,20 +533,7 @@ export class WalletFactory {
         if (signer.type !== "passkey") {
             throw new Error("Signer is not a passkey");
         }
-        const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
-        const onCreatePasskey = signer.onCreatePasskey ?? passkeyProvider?.createPasskey;
-        const passkeyCredential = onCreatePasskey
-            ? await onCreatePasskey(passkeyName)
-            : await WebAuthnP256.createCredential({ name: passkeyName });
-        return {
-            type: "passkey",
-            id: passkeyCredential.id,
-            name: passkeyName,
-            publicKey: {
-                x: passkeyCredential.publicKey.x.toString(),
-                y: passkeyCredential.publicKey.y.toString(),
-            },
-        };
+        return await createPasskeyCredential(signer, passkeyProvider);
     }
 
     private validateExistingWalletConfig<C extends Chain>(

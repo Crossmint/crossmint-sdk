@@ -1,5 +1,29 @@
 # @crossmint/client-sdk-base
 
+## 5.0.0
+
+### Major Changes
+
+- a55b5e4: BREAKING: `CrossmintPaymentMethodManagement` no longer renders a built-in submit button. The `hideSubmitButton` prop is removed — the component always asks the host to submit via `ref.submit()`, which must be wired to your own button. The iframe no longer draws the message of an `invalid` or `failed` submit: show the `message` that `ref.submit()` returns. Field errors stay in the iframe.
+
+  `CrossmintPaymentMethodManagement` adds `onReady` and `onChange({ mode, empty, complete })`, like Stripe's `ready` and `change` events, so your button can stay disabled until a submit can succeed. `invalid`, `failed` and `unavailable` submit results now carry a `code` (for example `incomplete_card`, `save_failed`, `timeout`); a code the component does not know becomes `unknown`. The code lists are exported as `PAYMENT_METHOD_SUBMIT_INVALID_CODES`, `PAYMENT_METHOD_SUBMIT_FAILED_CODES` and `PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES`.
+
+## 4.8.0
+
+### Minor Changes
+
+- cd18fde: payment-method-management: add `defaultValues.billingDetails.address`, the starting values of the add-card billing address.
+
+  - `defaultValues?: { billingDetails?: { address?: { country?, line1?, line2?, city?, stateOrRegion?, postalCode? } } }` — same `billingDetails` shape as `fields`, with the field names of `card.billing.address`. The buyer can edit every value. `null` or an empty string means no default for that field. The form uses them only when `fields.billingDetails.address` collects an address.
+  - The iframe validates each value: it ignores an invalid value with a console warning and keeps the others. `country` must be an uppercase ISO 3166-1 alpha-2 code; without it, the form starts in the US. `stateOrRegion` must be an exact ISO 3166-2 subdivision code of that country, without the country prefix: `"FL"`, not `"US-FL"` or `"Florida"`.
+  - Like Stripe.js, the SDK throws when `defaultValues`, `billingDetails` or `address` is not an object (an array, a string), or when an address field is not a string or `null`. `null` at any level means no default. Class instances pass. The SDK logs a warning for an unknown key and drops the key, so only known keys reach the iframe URL.
+  - The values travel in the iframe URL. A change after mount reloads the iframe, so pass stable values.
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+
 ## 4.7.2
 
 ### Patch Changes
