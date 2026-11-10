@@ -102,7 +102,7 @@ import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
-import { resolveActingRole } from "../quorum/roles";
+import { resolveTransactionRole } from "../quorum/roles";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
@@ -410,17 +410,16 @@ export class Wallet<C extends Chain> {
         }
         const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletResponse.config);
         const configSigners = walletResponse.config.delegatedSigners ?? [];
-        const role = resolveActingRole({
-            scope: "transaction",
-            heldLocator,
-            recoveryLocators: recoveryMethods
+        const role = resolveTransactionRole({
+            held: heldLocator,
+            recoveryMethodLocators: recoveryMethods
                 .filter((recovery) => !isQuorumSigner(recovery))
                 .map((recovery) => this.#signerManager.recoveryLocator(recovery))
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
             delegatedQuorums: configSigners.filter(isQuorumSigner),
             // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
-            isRegisteredSigner: configSigners.some(
+            registeredOnChain: configSigners.some(
                 (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
             ),
         });
