@@ -31,8 +31,15 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
     private _onboardingConnectionGeneration: number | null = null;
+    // Holds the session JWT and API key: `#` keeps them out of console.log and JSON.stringify output.
+    readonly #config: EmailInternalSignerConfig | PhoneInternalSignerConfig;
 
-    constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    protected get config(): EmailInternalSignerConfig | PhoneInternalSignerConfig {
+        return this.#config;
+    }
+
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+        this.#config = config;
         // Only initialize the signer if running client-side
         if (typeof window !== "undefined") {
             this._initializationPromise = this.initialize();
