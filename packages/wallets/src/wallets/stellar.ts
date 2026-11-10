@@ -47,9 +47,9 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     /**
      * Send a raw Stellar transaction (serialized transaction or contract call).
-     * @param params - The transaction parameters
      * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
      * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
+     * @param params - The transaction parameters
      * @returns The transaction result
      */
     @WithLoggerContext({

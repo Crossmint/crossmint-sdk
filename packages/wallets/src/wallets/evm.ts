@@ -51,9 +51,9 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Send a raw EVM transaction.
-     * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
      * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
      * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
+     * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
      * @returns The transaction result
      */
     @WithLoggerContext({
