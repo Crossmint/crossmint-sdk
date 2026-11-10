@@ -437,6 +437,23 @@ describe("device recovery through a recovery quorum after the app restarts", () 
         expect(api.registerSigner).not.toHaveBeenCalled();
     });
 
+    it("asks for a member's key when the pending registration names no quorum, resuming nothing", async () => {
+        const flatPending = { signer: { type: "external-wallet", locator: "external-wallet:GFLAT" }, message: "m" };
+        api.getSigner.mockResolvedValue(
+            newDevice({
+                id: "tx-add",
+                status: "awaiting-approval",
+                approvals: { pending: [flatPending], submitted: [] },
+            }) as never
+        );
+        const wallet = await restartedWallet();
+
+        await expect(wallet.recover()).rejects.toThrow(/useRecoveryMethod/);
+        await expect(wallet.recover()).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+        expect(api.registerSigner).not.toHaveBeenCalled();
+    });
+
     it("removes the old device signer through the quorum that approved the new one, with nothing selected", async () => {
         api.getSigner.mockResolvedValue(
             newDevice({

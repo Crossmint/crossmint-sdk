@@ -538,6 +538,10 @@ export class DeviceRecoveryService<C extends Chain> {
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
         const originalSigner = this.#signerManager.activeSigner;
+        // No recovery method signs alone: the approver must be chosen, as for any signer change (for the error only).
+        if (this.#signerManager.defaultRecovery == null) {
+            this.#signerManager.resolveAuthorizingRecovery();
+        }
         const recovery = this.#signerManager.requireDefaultRecovery();
         if (
             isApiSourcedServerSignerConfig(recovery) &&
