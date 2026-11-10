@@ -549,12 +549,12 @@ export class Wallet<C extends Chain> {
 
     /**
      * Send a token to a wallet or user locator
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
      * @param {TransactionInputOptions} options - The options for the transaction
-     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
-     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @returns {Transaction} The transaction
      */
     @WithLoggerContext({
