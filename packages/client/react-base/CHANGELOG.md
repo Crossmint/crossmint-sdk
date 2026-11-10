@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-base
 
+## 2.5.7
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-auth@1.3.38
+  - @crossmint/common-sdk-auth@1.1.36
+  - @crossmint/wallets-sdk@1.22.3
+
 ## 2.5.6
 
 ### Patch Changes

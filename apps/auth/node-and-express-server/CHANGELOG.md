@@ -1,5 +1,11 @@
 # crossmint-auth-node
 
+## 1.1.111
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.100
+
 ## 1.1.110
 
 ### Patch Changes
