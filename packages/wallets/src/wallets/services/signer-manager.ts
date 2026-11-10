@@ -1,6 +1,6 @@
 import { ApiClientError } from "@crossmint/common-sdk-base";
 
-import type { ApiClient, GetSignerResponse, WalletLocator } from "../../api";
+import type { ApiClient, GetSignerResponse, Signer as APISigner, WalletLocator } from "../../api";
 import type { Chain } from "../../chains/chains";
 import { getSignerDescriptor, type SignerDescriptorContext } from "../../signers/descriptors";
 import type { ServerSignerResolver } from "../../signers/server/resolver";
@@ -19,7 +19,7 @@ import {
 import { InvalidRecoveryConfigError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator, hasQuorumLocatorPrefix, isSameSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
-import { resolveActingRole } from "../../quorum/roles";
+import { resolveSignerChangeRole } from "../../quorum/roles";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
 
@@ -233,13 +233,23 @@ export class SignerManager<C extends Chain> {
 
     async assemble(
         internalConfig: InternalSignerConfig<C>,
-        options?: { isAdminSigner?: boolean }
+        options?: {
+            isAdminSigner?: boolean;
+            /**
+             * Delegated signers as the API just returned them with the wallet. A signer listed here takes its
+             * status from that entry (the same object GET /signers/{locator} returns) instead of a new request.
+             */
+            apiSigners?: APISigner[];
+        }
     ): Promise<SignerAdapter> {
         const signer = assembleSigner(this.#chain, internalConfig, this.#options?.deviceSignerKeyStorage);
+        const apiSigner = options?.apiSigners?.find((s) => s.locator === signer.locator());
         if (options?.isAdminSigner) {
             // Admin signers are always approved for their wallet — skip the getSigner API call
             // which only works for delegated signers (returns 404/400 for admin signers).
             signer.status = "active";
+        } else if (apiSigner != null) {
+            signer.status = mapApiSignerToSigner(apiSigner, this.#chain)?.status;
         } else {
             const signerState = await this.getSignerState(signer.locator());
             signer.status = signerState.signer?.status;
@@ -365,10 +375,9 @@ export class SignerManager<C extends Chain> {
         if (member == null) {
             return this.withRecoverySigner(operation);
         }
-        const role = resolveActingRole({
-            scope: "signer-change",
-            heldLocator: member.locator as SignerLocator,
-            recoveryLocators: this.#singleRecoverySigners()
+        const role = resolveSignerChangeRole({
+            held: member.locator as SignerLocator,
+            recoveryMethodLocators: this.#singleRecoverySigners()
                 .map((recovery) => this.recoveryLocator(recovery))
                 .filter((locator) => locator != null),
             recoveryQuorums: this.#recoverySigners.filter(isQuorumSigner),

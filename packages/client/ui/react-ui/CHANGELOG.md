@@ -1,5 +1,50 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.0.1
+
+### Patch Changes
+
+- Updated dependencies [04ec76f]
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [36903ca]
+  - @crossmint/wallets-sdk@1.22.2
+  - @crossmint/common-sdk-auth@1.1.35
+  - @crossmint/client-sdk-react-base@2.5.6
+
+## 5.0.0
+
+### Major Changes
+
+- a55b5e4: BREAKING: `CrossmintPaymentMethodManagement` no longer renders a built-in submit button. The `hideSubmitButton` prop is removed — the component always asks the host to submit via `ref.submit()`, which must be wired to your own button. The iframe no longer draws the message of an `invalid` or `failed` submit: show the `message` that `ref.submit()` returns. Field errors stay in the iframe.
+
+  `CrossmintPaymentMethodManagement` adds `onReady` and `onChange({ mode, empty, complete })`, like Stripe's `ready` and `change` events, so your button can stay disabled until a submit can succeed. `invalid`, `failed` and `unavailable` submit results now carry a `code` (for example `incomplete_card`, `save_failed`, `timeout`); a code the component does not know becomes `unknown`. The code lists are exported as `PAYMENT_METHOD_SUBMIT_INVALID_CODES`, `PAYMENT_METHOD_SUBMIT_FAILED_CODES` and `PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES`.
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-react-base@2.5.5
+
+## 4.13.4
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
 ## 4.13.3
 
 ### Patch Changes
