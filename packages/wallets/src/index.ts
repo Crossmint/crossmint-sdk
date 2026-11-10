@@ -14,6 +14,7 @@ export {
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
     SignerLimitExceededError,
+    DeviceSignerAwaitingApprovalError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
     WalletNotAvailableError,

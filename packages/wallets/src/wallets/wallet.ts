@@ -45,6 +45,7 @@ import { isSignerLocatorOption } from "./types";
 import { isSignerOnChain, mapApiSignerToSigner, pendingOperationId, toQuorumSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
+    DeviceSignerAwaitingApprovalError,
     DeviceSignerNotSupportedError,
     InvalidRecoveryConfigError,
     InvalidSignerError,
@@ -1696,18 +1697,26 @@ export class Wallet<C extends Chain> {
     }
 
     protected async preAuthIfNeeded(): Promise<void> {
-        await this.#recoverIfNeeded();
+        const awaited = await this.#recoverIfNeeded();
+        // Nothing the pending device signs is accepted until the quorum's members approve it: stop before creating.
+        if (awaited != null && this.#deviceAwaitsApproval()) {
+            throw new DeviceSignerAwaitingApprovalError(awaited);
+        }
         await this.#authenticateActiveSigner();
     }
 
-    async #recoverIfNeeded(): Promise<void> {
+    #deviceAwaitsApproval(): boolean {
+        const signer = this.#signerManager.activeSigner;
+        return signer?.type === "device" && !this.#signerManager.isApprovedSignerStatus(signer.status);
+    }
+
+    async #recoverIfNeeded(): Promise<RecoverResult> {
         await this.#signerInitialization;
         // Joins a recovery already running, explicit or automatic, instead of calling recover() again.
         if (this.#recovering != null) {
-            await this.#recovering;
-            return;
+            return await this.#recovering;
         }
-        await this.recover();
+        return await this.recover();
     }
 
     async #authenticateActiveSigner(): Promise<void> {
