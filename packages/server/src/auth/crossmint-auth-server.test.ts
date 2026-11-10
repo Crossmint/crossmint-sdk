@@ -129,6 +129,21 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
+        it("reads the session from the cookies scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
+
+            const result = await crossmintAuthServer.getSession(request);
+
+            expect(result).toMatchObject({ jwt: "scoped.jwt.token", refreshToken: { secret: "scoped-refresh" } });
+        });
+
         it("refreshes the session when JWT is invalid", async () => {
             const refreshedJwt = jwtForProject(PROJECT_ID);
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
@@ -143,7 +158,7 @@ describe("CrossmintAuthServer", () => {
                             secret: "new-refresh-token",
                             expiresAt: "2023-12-31T23:59:59Z",
                         },
-                        user: { id: "user456" },
+                        user: { id: "user456", email: "user@example.com" },
                     }),
                 ok: true,
             });
@@ -157,6 +172,7 @@ describe("CrossmintAuthServer", () => {
                     expiresAt: "2023-12-31T23:59:59Z",
                 },
                 userId: "user456",
+                user: { id: "user456", email: "user@example.com" },
             });
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
                 refreshedJwt,
@@ -196,6 +212,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: foreignJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenLastCalledWith(
@@ -212,6 +229,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
         });
@@ -278,6 +296,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
@@ -289,6 +308,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
         });
@@ -327,6 +347,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
@@ -338,6 +359,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
         });
@@ -372,6 +394,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ refreshToken: refreshedAuthMaterial.refreshToken }),
+                PROJECT_ID,
                 expect.anything()
             );
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
@@ -383,6 +406,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
         });
@@ -457,9 +481,7 @@ describe("CrossmintAuthServer", () => {
         it("fetches user data for a given external user ID", async () => {
             const mockExternalUserId = "external-user-123";
             const mockUserData = { id: "user456", email: "user@example.com" };
-            mockApiClient.get.mockResolvedValue({
-                json: () => Promise.resolve(mockUserData),
-            });
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify(mockUserData), { status: 200 }));
 
             const result = await crossmintAuthServer.getUser(mockExternalUserId);
 
@@ -468,6 +490,52 @@ describe("CrossmintAuthServer", () => {
                 `api/2024-09-26/sdk/auth/user/${mockExternalUserId}`,
                 expect.any(Object)
             );
+        });
+
+        it("encodes the user ID so it cannot change the request path", async () => {
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify({ id: "x" }), { status: 200 }));
+
+            await crossmintAuthServer.getUser("a/b?c");
+
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "api/2024-09-26/sdk/auth/user/a%2Fb%3Fc",
+                expect.any(Object)
+            );
+        });
+
+        it("throws with the API message when the API key lacks users.read", async () => {
+            const apiMessage =
+                "The API key provided doesn't have the required scopes to perform this action: users.read. It has the scopes: wallets.read.";
+            mockApiClient.get.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 403, message: apiMessage, error: "Forbidden" }), {
+                    status: 403,
+                    statusText: "Forbidden",
+                })
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(403);
+            expect(error.message).toBe(`Failed to get user (403: ${apiMessage})`);
+        });
+
+        it("throws with the status and the API message when the user is not found", async () => {
+            mockApiClient.get.mockResolvedValue(
+                new Response(
+                    JSON.stringify({ statusCode: 404, message: "User with id external-user-123 not found." }),
+                    {
+                        status: 404,
+                        statusText: "Not Found",
+                    }
+                )
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(404);
+            expect(error.message).toBe("Failed to get user (404: User with id external-user-123 not found.)");
         });
     });
 
@@ -484,7 +552,7 @@ describe("CrossmintAuthServer", () => {
 
             crossmintAuthServer.storeAuthMaterial(mockResponse, mockAuthMaterial);
 
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial, {});
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial, PROJECT_ID, {});
         });
     });
 
@@ -525,6 +593,7 @@ describe("CrossmintAuthServer", () => {
                     refreshToken: mockRefreshedAuthRes.refresh,
                     user: mockRefreshedAuthRes.user,
                 },
+                PROJECT_ID,
                 {}
             );
         });
@@ -558,6 +627,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: foreignJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
@@ -569,6 +639,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
@@ -605,6 +676,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
         });
@@ -634,6 +706,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ refreshToken: refreshedAuthMaterial.refresh }),
+                PROJECT_ID,
                 expect.anything()
             );
         });
@@ -725,6 +798,7 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
                 expect.anything()
             );
         });
@@ -751,8 +825,30 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
+        });
+
+        it("returns the API's reason when Crossmint rejects the refresh token", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            mockApiClient.post.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 401, message: "Invalid refresh token" }), {
+                    status: 401,
+                    statusText: "Unauthorized",
+                })
+            );
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(await result.json()).toEqual({
+                error: "Unauthorized",
+                message: "Failed to refresh the session (401: Invalid refresh token)",
+            });
         });
 
         it("throws error when refresh token is missing", async () => {
@@ -809,6 +905,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "2023-12-31T23:59:59Z",
                     },
                 }),
+                PROJECT_ID,
                 {}
             );
 
@@ -836,6 +933,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 }),
+                PROJECT_ID,
                 {}
             );
         });
@@ -849,6 +947,24 @@ describe("CrossmintAuthServer", () => {
                 jwt: "mock.jwt.token",
                 refreshToken: "mock-refresh-token",
             });
+        });
+
+        it("revokes the refresh token stored in the cookie scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
+            mockApiClient.post.mockResolvedValue({ ok: true });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
+
+            await crossmintAuthServer.logout(request, {} as GenericResponse);
+
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                expect.stringContaining("/logout"),
+                expect.objectContaining({ body: JSON.stringify({ refresh: "scoped-refresh" }) })
+            );
         });
 
         it("clears auth material from response and returns it", async () => {
@@ -865,6 +981,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBe(mockResponse);
@@ -882,6 +999,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBeInstanceOf(Response);
@@ -917,6 +1035,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBe(mockResponse);
