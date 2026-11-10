@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.13.3
+
+### Patch Changes
+
+- 225e9e9: Mask emails and phone numbers in SDK logs, for example `email:a***@example.com` and `phone:+1***4567`.
+
 ## 0.13.2
 
 ### Patch Changes

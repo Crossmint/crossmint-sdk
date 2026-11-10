@@ -1,5 +1,58 @@
 # @crossmint/wallets-sdk
 
+## 1.22.2
+
+### Patch Changes
+
+- 04ec76f: `wallet.addSigner({ type: "passkey" })` and `wallet.addRecoveryMethod({ type: "passkey" })` now create the passkey
+  when the config has no credential id, using the config's `onCreatePasskey`, else the wallet's `passkeyProvider`,
+  else the browser WebAuthn API, and register its id and public key. Before, the SDK looked up a signer named
+  `passkey` and sent the bare config, which the API rejected. A config with a credential id is registered as before,
+  and the request body now carries only the passkey fields the API takes.
+
+  Creating a passkey with no `onCreatePasskey`,
+  no `passkeyProvider` and no WebAuthn (for example in Node) now throws `InvalidSignerError` saying so, in wallet
+  creation too.
+
+- 36903ca: `getWallet` resolves faster when the device signer's key is on this device: signer initialization reads the signer's status from the wallet response instead of fetching the wallet and each signer again, and the device key storage (an iframe on web) starts loading alongside the wallet request. `DeviceSignerKeyStorage` gains an optional `preload()` hook (no-op by default).
+
+  `wallet.signers()` makes one request instead of one per signer: it reads each signer's status from the wallet response.
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.22.1
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.22.0
+
+### Minor Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+### Patch Changes
+
+- e981bab: `wallet.send` now serializes the full API error response into `TransactionNotCreatedError` instead of only the `message` field, so failed transfers surface the structured `error` object (`reason`, `revert.reason`, `revert.explorerLink`, `revert.simulationLink`, Solana `logs`).
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
 ## 1.21.2
 
 ### Patch Changes

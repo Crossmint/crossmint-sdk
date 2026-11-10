@@ -1,4 +1,4 @@
-import { decodeJwt, jwtVerify, errors, type createRemoteJWKSet, createLocalJWKSet, type JSONWebKeySet } from "jose";
+import { decodeJwt, jwtVerify, errors, createLocalJWKSet, type JSONWebKeySet, type JWTVerifyGetKey } from "jose";
 
 import { CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
 
@@ -54,11 +54,7 @@ export function assertJwtAudience(jwt: string, expectedAudience: string): void {
     }
 }
 
-async function verifyJWT(
-    signingKey: ReturnType<typeof createRemoteJWKSet> | ReturnType<typeof createLocalJWKSet>,
-    token: string,
-    audience: string
-) {
+async function verifyJWT(signingKey: JWTVerifyGetKey, token: string, audience: string) {
     try {
         const { payload } = await jwtVerify(token, signingKey, {
             audience,
