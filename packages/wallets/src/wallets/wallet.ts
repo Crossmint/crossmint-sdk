@@ -168,6 +168,8 @@ export class Wallet<C extends Chain> {
     #recovering: Promise<void> | null = null;
     // The active key when useSigner selected it as only a quorum member: creating calls then act as its quorum.
     #quorumMemberLocator: SignerLocator | null = null;
+    // approve() calls in flight, by request id: a second call for the same request joins the first (one signing pass).
+    #approving = new Map<string, Promise<unknown>>();
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const {
@@ -710,6 +712,8 @@ export class Wallet<C extends Chain> {
      * @param params.options.additionalSigners - Additional signers for the approval
      * @returns The transaction or signature. While other quorum members must still sign, the transaction comes back
      * without `hash` and `explorerLink`, and the signature without `signature`.
+     * A second call for a request that is still being approved joins the running call and gets its result; its own
+     * `options` are not used.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -719,6 +723,24 @@ export class Wallet<C extends Chain> {
         },
     })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+        const requestId = params.transactionId ?? params.signatureId;
+        const inFlight = requestId == null ? undefined : this.#approving.get(requestId);
+        if (inFlight != null) {
+            walletsLogger.info("wallet.approve.joined", {
+                transactionId: params.transactionId,
+                signatureId: params.signatureId,
+            });
+            return (await inFlight) as ApproveResult<T>;
+        }
+        const run = this.#approveOnce(params);
+        if (requestId != null) {
+            this.#approving.set(requestId, run);
+            run.finally(() => this.#approving.delete(requestId)).catch(() => undefined);
+        }
+        return await run;
+    }
+
+    async #approveOnce<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         walletsLogger.info("wallet.approve.start", {
             transactionId: params.transactionId,
             signatureId: params.signatureId,
