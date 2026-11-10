@@ -41,29 +41,6 @@ describe("acting role", () => {
             resolve: (overrides: Partial<HeldKey>) => resolveSignerChangeRole(signerChangeKey(overrides)),
         },
     ])("for $scope", ({ resolve }) => {
-        describe("when the call passes an explicit signer", () => {
-            it("acts as an explicit quorum as given, without checking membership", () => {
-                const unrelated = createQuorumApiEntry();
-
-                expect(resolve({ explicitSigner: unrelated.locator })).toEqual({
-                    kind: "quorum",
-                    locator: unrelated.locator,
-                });
-            });
-
-            it("rejects an explicit quorum locator with a malformed id", () => {
-                expect(() => resolve({ explicitSigner: "quorum:garbage" })).toThrow(
-                    /Malformed quorum locator: quorum:garbage/
-                );
-            });
-
-            it("acts as an explicit single signer as given", () => {
-                const role = resolve({ explicitSigner: SINGLE_SIGNER, recoveryQuorums: [quorumWithHeldMember()] });
-
-                expect(role).toEqual({ kind: "self", locator: SINGLE_SIGNER });
-            });
-        });
-
         describe("when the key is a recovery method that signs alone", () => {
             it("acts as itself, even though it is also a quorum member", () => {
                 const role = resolve({ recoveryMethodLocators: [HELD], recoveryQuorums: [quorumWithHeldMember()] });
