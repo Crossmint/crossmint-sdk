@@ -8,6 +8,7 @@
             "outputs": ["dist/**"]
         },
         "test:vitest": {
+            "dependsOn": ["^build", "build"],
             "inputs": ["src/**", "vitest.config.ts"]
         }
     }
