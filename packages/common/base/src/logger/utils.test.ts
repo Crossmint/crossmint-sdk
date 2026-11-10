@@ -76,6 +76,9 @@ describe("redactSensitiveFields", () => {
         ],
         ["mnemonic", { mnemonic: "abandon ability able about above absent" }, { mnemonic: "aban...sent" }],
         ["createServerSigner key bytes", { keyBytes: new Uint8Array([200, 201, 202]) }, { keyBytes: "[REDACTED]" }],
+        // No known secret shape in these values: only key normalization can redact them.
+        ["kebab-case API key header", { "x-api-key": "pk_live_51HqT9xY2zR8mN3" }, { "x-api-key": "pk_l...8mN3" }],
+        ["snake_case token", { refresh_token: "rt_8f3Kq2LmZx91VbN4" }, { refresh_token: "[REDACTED]" }],
     ])("redacts a %s key", (_, input, expected) => {
         expect(redactSensitiveFields(input)).toEqual(expected);
     });
