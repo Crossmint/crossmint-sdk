@@ -129,6 +129,26 @@ describe("approve() on a transaction with a pending quorum entry", () => {
         });
     });
 
+    describe("when two approve() calls run at the same time for one request", () => {
+        it("signs the member once, sends one approval, and gives both calls the same result", async () => {
+            const entry = createQuorumPendingApproval({ quorum: quorumWith([member]) });
+            // Both calls read the request before either approval lands.
+            api.getTransaction
+                .mockResolvedValueOnce(awaiting("txn-1", [entry]) as never)
+                .mockResolvedValueOnce(awaiting("txn-1", [entry]) as never)
+                .mockResolvedValue(SUCCESS as never);
+
+            const [first, second] = await Promise.all([
+                settle(wallet.approve({ transactionId: "txn-1" })),
+                settle(wallet.approve({ transactionId: "txn-1" })),
+            ]);
+
+            expect(first.error).toBeUndefined();
+            expect(second).toEqual(first);
+            expect(sentApprovals(api)).toHaveLength(1);
+        });
+    });
+
     describe("when approve() runs again after this client's member signed", () => {
         it("sends nothing for the member that already signed", async () => {
             const quorum = quorumWith([member]);
