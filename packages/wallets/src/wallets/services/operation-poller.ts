@@ -130,6 +130,7 @@ export async function waitForTransactionOutcome(
 }
 
 function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transactionId: string): AwaitingApproval {
+    // A single-signer entry still pending next to the quorum (Stellar, another party's auth entry) keeps today's error.
     if (transaction.approvals == null || !awaitsQuorumOnly(transaction)) {
         throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
     }
