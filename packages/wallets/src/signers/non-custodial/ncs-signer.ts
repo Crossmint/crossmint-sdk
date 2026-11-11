@@ -227,14 +227,14 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     }
 
     /**
-     * The signer frame answers every `request:sign` with a bare `response:sign`, so two in-flight
-     * requests would both resolve with whichever signature comes back first. Requests are queued
-     * per frame connection (which may be shared by several signers) so each caller receives the
-     * signature of its own payload.
+     * Older signer frames answer every `request:sign` with a bare `response:sign`, so two in-flight
+     * requests would both resolve with whichever signature comes back first. Until a frame proves it
+     * echoes our `requestId`, requests are queued per frame connection (which may be shared by several
+     * signers); once it does, requests go out in parallel and each caller matches on its own id.
      */
     protected requestSignature(data: SignerInputEvent<"sign">["data"]): Promise<SignerOutputEvent<"sign"> | undefined> {
         const connection = this.config.clientTEEConnection;
-        if (connection == null) {
+        if (connection == null || connectionsEchoingRequestId.has(connection)) {
             return this.sendSignRequest(data);
         }
         const previous = lastSignRequestByConnection.get(connection) ?? Promise.resolve();
@@ -253,9 +253,12 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         data: SignerInputEvent<"sign">["data"]
     ): Promise<SignerOutputEvent<"sign"> | undefined> {
         const jwt = this.getJwtOrThrow();
-        walletsLogger.info("sign: sending request", { keyType: data.keyType });
+        const connection = this.config.clientTEEConnection;
+        const requestId = newSignRequestId();
+        const echoesRequestId = connection != null && connectionsEchoingRequestId.has(connection);
+        walletsLogger.info("sign: sending request", { keyType: data.keyType, requestId });
         const startTime = Date.now();
-        const res = await this.config.clientTEEConnection?.sendAction({
+        const res = await connection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
             data: {
@@ -264,9 +267,18 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data,
+                requestId,
             },
-            options: DEFAULT_EVENT_OPTIONS,
+            options: {
+                ...DEFAULT_EVENT_OPTIONS,
+                // A bare response can only be ours while requests are still queued one at a time.
+                condition: (response) =>
+                    response.requestId === requestId || (!echoesRequestId && response.requestId == null),
+            },
         });
+        if (connection != null && res?.requestId != null) {
+            connectionsEchoingRequestId.add(connection);
+        }
         walletsLogger.info("sign: response received", {
             status: res?.status,
             durationMs: Date.now() - startTime,
@@ -534,6 +546,14 @@ export const JWT_REQUIRED_ERROR_CODE = "jwt-required";
 
 const UNAUTHORIZED_ERROR_CODES = new Set(["unauthorized", "unauthenticated"]);
 const lastSignRequestByConnection = new WeakMap<object, Promise<unknown>>();
+const connectionsEchoingRequestId = new WeakSet<object>();
+
+function newSignRequestId(): string {
+    if (typeof crypto !== "undefined" && crypto.randomUUID != null) {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 // The signer frame reports a rejected JWT as a bare `HTTP 401: <statusText>` (statusText is empty in React Native).
 function isUnauthorizedResponse(errorMessage: string, code: string | undefined): boolean {
