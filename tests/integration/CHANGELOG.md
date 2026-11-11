@@ -1,5 +1,11 @@
 # @crossmint/integration-tests
 
+## 0.0.16
+
+### Patch Changes
+
+- @crossmint/wallets-sdk@1.22.4
+
 ## 0.0.15
 
 ### Patch Changes
