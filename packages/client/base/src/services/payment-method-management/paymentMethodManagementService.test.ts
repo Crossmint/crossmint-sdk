@@ -1,5 +1,5 @@
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import type {
     CrossmintPaymentMethod,
     CrossmintPaymentMethodManagementProps,
@@ -55,20 +55,37 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(params.has("allowedPaymentMethodTypes")).toBe(false);
     });
 
-    it("carries hideSubmitButton only when the host sets it, so the iframe default applies otherwise", () => {
+    it("always hides the iframe submit button (the host submits via ref.submit())", () => {
         const service = makeService();
 
-        expect(new URL(service.iframe.getUrl({ jwt: "jwt-token" })).searchParams.has("hideSubmitButton")).toBe(false);
-        expect(
-            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: false })).searchParams.has(
-                "hideSubmitButton"
-            )
-        ).toBe(false);
-        expect(
-            new URL(service.iframe.getUrl({ jwt: "jwt-token", hideSubmitButton: true })).searchParams.get(
-                "hideSubmitButton"
-            )
-        ).toBe("true");
+        const url = service.iframe.getUrl({ jwt: "jwt-token" });
+        expect(new URL(url).searchParams.get("hideSubmitButton")).toBe("true");
+    });
+
+    it("tells the iframe that the host shows submit errors, so the message is not drawn twice", () => {
+        const service = makeService();
+
+        const url = service.iframe.getUrl({ jwt: "jwt-token" });
+        expect(new URL(url).searchParams.get("hostShowsSubmitErrors")).toBe("true");
+    });
+
+    it.each<[string, CrossmintPaymentMethodManagementProps["fields"], string]>([
+        ["no fields", undefined, '{"billingDetails":{"address":true}}'],
+        ["empty fields", {}, '{"billingDetails":{"address":true}}'],
+        ["empty billingDetails", { billingDetails: {} }, '{"billingDetails":{"address":true}}'],
+        ["address true", { billingDetails: { address: true } }, '{"billingDetails":{"address":true}}'],
+        ["address false", { billingDetails: { address: false } }, '{"billingDetails":{"address":false}}'],
+        [
+            "address object",
+            { billingDetails: { address: { line2: "hidden" } } },
+            '{"billingDetails":{"address":{"line2":"hidden"}}}',
+        ],
+    ])("collects a billing address unless the host opts out (%s)", (_, fields, expected) => {
+        const service = makeService();
+
+        const url = service.iframe.getUrl({ jwt: "jwt-token", fields });
+
+        expect(new URL(url).searchParams.get("fields")).toBe(expected);
     });
 
     it("drops an empty allowedPaymentMethodTypes so the iframe applies the default", () => {
@@ -79,6 +96,193 @@ describe("paymentMethodManagementService.getUrl", () => {
         // An empty array must not serialize as `[]` (which the iframe would read as
         // "offer no types"); the key is dropped so the documented default applies.
         expect(new URL(url).searchParams.has("allowedPaymentMethodTypes")).toBe(false);
+    });
+});
+
+describe("paymentMethodManagementService.getUrl defaultValues", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function captureWarnings() {
+        return vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    }
+
+    it("carries defaultValues as JSON in the iframe URL", () => {
+        const defaultValues = {
+            billingDetails: {
+                address: {
+                    country: "ES",
+                    line1: "Calle Mayor 1",
+                    line2: "2B",
+                    city: "Madrid",
+                    stateOrRegion: "MD",
+                    postalCode: "28013",
+                },
+            },
+        };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+    });
+
+    it("omits defaultValues when the host does not set it", () => {
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token" });
+
+        expect(new URL(url).searchParams.has("defaultValues")).toBe(false);
+    });
+
+    it("passes invalid values through, since the iframe validates them and only warns", () => {
+        const warn = captureWarnings();
+        const defaultValues = { billingDetails: { address: { country: "es", postalCode: "" } } };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("passes a null address field through as no value, since stored data often has null for a blank field", () => {
+        const warn = captureWarnings();
+        const defaultValues = {
+            billingDetails: { address: { country: "US", line1: "80 SW 8th St", line2: null, city: "Miami" } },
+        };
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(defaultValues);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["defaultValues", null, undefined],
+        ["billingDetails", { billingDetails: null }, {}],
+        ["address", { billingDetails: { address: null } }, { billingDetails: {} }],
+    ])("treats a null %s as no default", (_, defaultValues, expected) => {
+        const warn = captureWarnings();
+
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", defaultValues });
+
+        const param = new URL(url).searchParams.get("defaultValues");
+        expect(param == null ? undefined : JSON.parse(param)).toEqual(expected);
+        expect(warn).not.toHaveBeenCalled();
+    });
+
+    it("accepts a class instance, such as an ORM entity, and reads its getters", () => {
+        class BuyerAddress {
+            country = "US";
+            line1 = "80 SW 8th St";
+            get city() {
+                return "Miami";
+            }
+        }
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: { billingDetails: { address: new BuyerAddress() } },
+        });
+
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual({
+            billingDetails: { address: { country: "US", line1: "80 SW 8th St", city: "Miami" } },
+        });
+    });
+
+    it("keeps unknown keys of a spread buyer record out of the iframe URL", () => {
+        captureWarnings();
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: {
+                billingDetails: {
+                    address: { country: "US", email: "buyer@example.com" } as { country: string },
+                },
+            },
+        });
+
+        expect(url).not.toContain("email");
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual({
+            billingDetails: { address: { country: "US" } },
+        });
+    });
+
+    it.each([
+        ["defaultValues is a string", "ES", /defaultValues must be an object, got string/],
+        ["defaultValues is an array", [], /defaultValues must be an object, got an array/],
+        [
+            "billingDetails is a boolean",
+            { billingDetails: true },
+            /defaultValues\.billingDetails must be an object, got boolean/,
+        ],
+        [
+            "address is an array",
+            { billingDetails: { address: ["Calle Mayor 1"] } },
+            /defaultValues\.billingDetails\.address must be an object, got an array/,
+        ],
+        [
+            "an address field is a number",
+            { billingDetails: { address: { postalCode: 28013 } } },
+            /defaultValues\.billingDetails\.address\.postalCode must be a string, got number/,
+        ],
+        [
+            "an address field is a boolean",
+            { billingDetails: { address: { line2: false } } },
+            /defaultValues\.billingDetails\.address\.line2 must be a string, got boolean/,
+        ],
+        [
+            "an address field is an object",
+            { billingDetails: { address: { city: { name: "Madrid" } } } },
+            /defaultValues\.billingDetails\.address\.city must be a string, got an instance of Object/,
+        ],
+    ])("throws when %s", (_, defaultValues, message) => {
+        expect(() =>
+            makeService().iframe.getUrl({
+                jwt: "jwt-token",
+                defaultValues: defaultValues as CrossmintPaymentMethodManagementProps["defaultValues"],
+            })
+        ).toThrow(message);
+    });
+
+    it.each([
+        [
+            "defaultValues",
+            { billing: {} },
+            'Unknown key "defaultValues.billing" is ignored. Known keys: billingDetails.',
+            {},
+        ],
+        [
+            "defaultValues.billingDetails",
+            { billingDetails: { name: "Ana" } },
+            'Unknown key "defaultValues.billingDetails.name" is ignored. Known keys: address.',
+            { billingDetails: {} },
+        ],
+        [
+            "defaultValues.billingDetails.address",
+            { billingDetails: { address: { country: "ES", postal_code: "28013" } } },
+            'Unknown key "defaultValues.billingDetails.address.postal_code" is ignored. Known keys: country, line1, line2, city, stateOrRegion, postalCode.',
+            { billingDetails: { address: { country: "ES" } } },
+        ],
+    ])("warns about an unknown key under %s and drops it", (_, defaultValues, message, expected) => {
+        const warn = captureWarnings();
+
+        const url = makeService().iframe.getUrl({
+            jwt: "jwt-token",
+            defaultValues: defaultValues as CrossmintPaymentMethodManagementProps["defaultValues"],
+        });
+
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(message));
+        expect(JSON.parse(new URL(url).searchParams.get("defaultValues") ?? "null")).toEqual(expected);
+    });
+
+    it("logs each unknown-key warning once per service, since React rebuilds the URL on every render", () => {
+        const warn = captureWarnings();
+        const service = makeService();
+        const props = { jwt: "jwt-token", defaultValues: { billingDetails: { address: { zip: "28013" } } } };
+
+        service.iframe.getUrl(props as CrossmintPaymentMethodManagementProps);
+        service.iframe.getUrl(props as CrossmintPaymentMethodManagementProps);
+
+        expect(warn).toHaveBeenCalledTimes(1);
     });
 });
 

@@ -1,8 +1,8 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import type { embeddedCheckoutV3IncomingEvents, Order } from "@crossmint/client-sdk-base";
-import type { z } from "zod";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { embeddedCheckoutV3IncomingEvents, type Order } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
+import { CheckoutWindowsContext, type TrustCheckoutWindow } from "./useTrustCheckoutWindow";
 
 export interface CrossmintCheckoutContext {
     order?: Order;
@@ -14,36 +14,53 @@ const CrossmintCheckoutContext = createContext<CrossmintCheckoutContext | undefi
 export function CrossmintCheckoutProvider({ children }: { children: ReactNode }) {
     const [order, setOrder] = useState<Order | undefined>(undefined);
     const [orderClientSecret, setOrderClientSecret] = useState<string | undefined>(undefined);
+    const checkoutWindows = useRef(new Set<Window>());
 
     const { crossmint } = useCrossmint();
-    const apiClient = createCrossmintApiClient(crossmint, {
-        usageOrigin: "client",
-    });
+    const checkoutOrigin = new URL(createCrossmintApiClient(crossmint, { usageOrigin: "client" }).baseUrl).origin;
+
+    const trustCheckoutWindow = useCallback<TrustCheckoutWindow>((checkoutWindow) => {
+        for (const openedWindow of checkoutWindows.current) {
+            if (openedWindow.closed) {
+                checkoutWindows.current.delete(openedWindow);
+            }
+        }
+        checkoutWindows.current.add(checkoutWindow);
+        return () => {
+            checkoutWindows.current.delete(checkoutWindow);
+        };
+    }, []);
 
     useEffect(() => {
         const listener = (event: MessageEvent) => {
-            if (event.origin !== new URL(apiClient.baseUrl).origin) {
+            if (event.origin !== checkoutOrigin) {
                 return;
             }
-            if (event.data.event !== "order:updated") {
+            if (event.source == null || !checkoutWindows.current.has(event.source as Window)) {
                 return;
             }
-            const { order, orderClientSecret } = event.data.data as z.infer<
-                (typeof embeddedCheckoutV3IncomingEvents)["order:updated"]
-            >;
-            setOrder(order);
-            setOrderClientSecret(orderClientSecret);
+            if (event.data?.event !== "order:updated") {
+                return;
+            }
+            const parsed = embeddedCheckoutV3IncomingEvents["order:updated"].safeParse(event.data.data);
+            if (!parsed.success) {
+                return;
+            }
+            setOrder(parsed.data.order);
+            setOrderClientSecret(parsed.data.orderClientSecret);
         };
         window.addEventListener("message", listener);
         return () => {
             window.removeEventListener("message", listener);
         };
-    }, [order]);
+    }, [checkoutOrigin]);
 
     return (
-        <CrossmintCheckoutContext.Provider value={{ order, orderClientSecret }}>
-            {children}
-        </CrossmintCheckoutContext.Provider>
+        <CheckoutWindowsContext.Provider value={trustCheckoutWindow}>
+            <CrossmintCheckoutContext.Provider value={{ order, orderClientSecret }}>
+                {children}
+            </CrossmintCheckoutContext.Provider>
+        </CheckoutWindowsContext.Provider>
     );
 }
 

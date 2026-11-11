@@ -1,5 +1,73 @@
 # @crossmint/client-sdk-auth
 
+## 1.3.38
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/common-sdk-auth@1.1.36
+
+## 1.3.37
+
+### Patch Changes
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.3.36
+
+### Patch Changes
+
+- 0c053ed: Read and write the project-scoped auth cookies in the server SDK. Since `@crossmint/client-sdk-auth` 1.3.4 the client stores the session as `crossmint-jwt-<projectId>` and `crossmint-refresh-token-<projectId>`, but the server SDK only read and wrote `crossmint-jwt` and `crossmint-refresh-token`, so `getSession(request)` saw no session and a custom refresh route stored cookies the client never read. `getSession(request)`, `handleCustomRefresh` and `logout` now read the scoped names, and the legacy names only when no scoped cookie is present. `storeAuthMaterial` (and so `getSession(request, response)`, `handleCustomRefresh` and `logout`) writes the scoped names; `logout` also expires the legacy ones. New `getAuthCookieNames(projectId)` returns the scoped names, for code with no request object such as a Next.js Server Component; `validateAPIKey` is re-exported so the project ID can be read from the API key. The naming helper `getScopedCookieName` now lives in `@crossmint/common-sdk-auth` and the client uses it.
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.3.35
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 1.3.34
+
+### Patch Changes
+
+- d3b62df: OAuth login in the React Native SDK now uses PKCE. The SDK sends a code challenge when the login starts and the matching verifier when it redeems the one-time secret.
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 1.3.33
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.3.32
+
+### Patch Changes
+
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/common-sdk-auth@1.1.30
+
 ## 1.3.31
 
 ### Patch Changes

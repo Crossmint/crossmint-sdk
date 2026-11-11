@@ -1,5 +1,6 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { AUTH_SDK_ROOT_ENDPOINT, SDK_NAME, SDK_VERSION } from "./utils/constants";
+import { authErrorFromResponse } from "./utils/authErrorFromResponse";
 import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
 
 export type CrossmintAuthOptions = {
@@ -30,28 +31,28 @@ export class CrossmintAuth {
         return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
     }
 
-    protected async refreshAuthMaterial(refreshToken?: string): Promise<AuthMaterialWithUser> {
+    protected async refreshAuthMaterial(refreshToken?: string, codeVerifier?: string): Promise<AuthMaterialWithUser> {
         if (this.refreshRoute != null) {
             return await this.refreshFromCustomRoute(refreshToken);
         }
 
         if (refreshToken != null) {
-            return await this.refresh(refreshToken);
+            return await this.refresh(refreshToken, codeVerifier);
         }
 
         throw new CrossmintAuthenticationError("Refresh token missing from parameters");
     }
 
-    protected async refresh(refreshToken: string): Promise<AuthMaterialWithUser> {
+    protected async refresh(refreshToken: string, codeVerifier?: string): Promise<AuthMaterialWithUser> {
         const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/refresh`, {
-            body: JSON.stringify({ refresh: refreshToken }),
+            body: JSON.stringify({ refresh: refreshToken, codeVerifier }),
             headers: {
                 "Content-Type": "application/json",
             },
         });
 
         if (!result.ok) {
-            throw new CrossmintAuthenticationError(result.statusText);
+            throw await authErrorFromResponse(result, "Failed to refresh the session");
         }
 
         const resultJson = (await result.json()) as AuthMaterialResponse;
@@ -76,12 +77,11 @@ export class CrossmintAuth {
             },
         });
 
-        const resultJson = await result.json();
         if (!result.ok) {
-            throw new CrossmintAuthenticationError(resultJson.message);
+            throw await authErrorFromResponse(result, "Failed to refresh the session from the custom refresh route");
         }
 
-        return resultJson;
+        return await result.json();
     }
 
     protected async logoutFromDefaultRoute(refreshToken: string) {

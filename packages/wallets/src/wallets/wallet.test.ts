@@ -9,7 +9,6 @@ import {
     InvalidRecoveryConfigError,
     InvalidSignerError,
     InvalidTransferAmountError,
-    RecoveryNotSupportedOnChainError,
     TransactionNotCreatedError,
     TransactionNotAvailableError,
     WalletNotAvailableError,
@@ -18,6 +17,7 @@ import {
     JWTExpiredError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
+    SignerLimitExceededError,
 } from "../utils/errors";
 import {
     createMockWallet,
@@ -475,6 +475,10 @@ describe("Wallet - send()", () => {
     describe("error cases", () => {
         it("throws TransactionNotCreatedError when API returns error", async () => {
             const errorResponse = {
+                error: {
+                    reason: "unknown",
+                    message: "Insufficient balance",
+                },
                 message: "Insufficient balance",
             };
 
@@ -482,6 +486,27 @@ describe("Wallet - send()", () => {
 
             await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
                 TransactionNotCreatedError
+            );
+        });
+
+        it("includes the API error object in the thrown error", async () => {
+            const errorResponse = {
+                message: "Transaction reverted during execution",
+                error: {
+                    reason: "execution_reverted",
+                    message: "Transaction reverted during execution",
+                    revert: {
+                        type: "contract_call",
+                        reason: "ERC20: transfer amount exceeds balance",
+                        simulationLink: "https://simulation.example.com/abc",
+                    },
+                },
+            };
+
+            mockApiClient.send.mockResolvedValue(errorResponse as unknown as SendResponse);
+
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toThrow(
+                /simulation\.example\.com\/abc/
             );
         });
 
@@ -1168,6 +1193,41 @@ describe("Wallet - addSigner()", () => {
                 })
             );
         });
+
+        it("creates the passkey when the config has no credential id, and registers the new credential", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
+            mockApiClient.registerSigner.mockResolvedValue({
+                type: "passkey",
+                locator: "passkey:new-cred",
+                transaction: { id: "txn-passkey", status: "pending" },
+            } as any);
+            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "new-cred", publicKey: { x: "11", y: "22" } });
+
+            const result = await stellarWallet.addSigner(
+                { type: "passkey", name: "Face ID", onCreatePasskey },
+                { prepareOnly: true }
+            );
+
+            expect(onCreatePasskey).toHaveBeenCalledWith("Face ID");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+            expect(mockApiClient.registerSigner).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.objectContaining({
+                    signer: { type: "passkey", id: "new-cred", name: "Face ID", publicKey: { x: "11", y: "22" } },
+                })
+            );
+            expect(result).toMatchObject({ locator: "passkey:new-cred", transactionId: "txn-passkey" });
+        });
+
+        it("registers nothing when the user cancels the passkey prompt", async () => {
+            const stellarWallet = await createMockWallet("stellar", mockApiClient, "api-key");
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(stellarWallet.addSigner({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
+            );
+            expect(mockApiClient.registerSigner).not.toHaveBeenCalled();
+        });
     });
 
     describe("error cases", () => {
@@ -1183,6 +1243,19 @@ describe("Wallet - addSigner()", () => {
             await expect(evmWallet.addSigner({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
                 "Failed to register signer"
             );
+        });
+
+        it("throws SignerLimitExceededError when the wallet is at its signer limit", async () => {
+            mockApiClient.registerSigner.mockResolvedValue({
+                error: true,
+                message: "A wallet supports at most 16 combined admin and delegated signers, got 17.",
+                code: "SIGNER_LIMIT_EXCEEDED",
+            } as any);
+
+            const addSigner = evmWallet.addSigner({ type: "external-wallet", address: "0x456" });
+
+            await expect(addSigner).rejects.toBeInstanceOf(SignerLimitExceededError);
+            await expect(addSigner).rejects.toBeInstanceOf(InvalidSignerError);
         });
 
         it("throws error when Solana response missing transaction", async () => {
@@ -1635,11 +1708,49 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
+        it("registers the recovery method on EVM with the wallet's chain and reads the transaction id from tx", async () => {
+            const result = await evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: "external-wallet:0x456",
+                approver: "api-key",
+                chain: "base-sepolia",
+            });
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(evmWallet.recoveryMethods).toEqual([
+                { type: "api-key" },
+                { type: "external-wallet", address: "0x456" },
+            ]);
+        });
+
+        it("creates a passkey recovery method that has no credential id, and keeps it with its id", async () => {
+            const onCreatePasskey = vi.fn().mockResolvedValue({ id: "recovery-cred", publicKey: { x: "11", y: "22" } });
+
+            await evmWallet.addRecoveryMethod({ type: "passkey", name: "Recovery passkey", onCreatePasskey });
+
+            const passkey = {
+                type: "passkey",
+                id: "recovery-cred",
+                name: "Recovery passkey",
+                publicKey: { x: "11", y: "22" },
+            };
+            expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
+                recoveryMethods: passkey,
+                approver: "api-key",
+                chain: "base-sepolia",
+            });
+            expect(evmWallet.recoveryMethods[1]).toMatchObject(passkey);
+        });
+
+        it("registers nothing and keeps the recovery methods when the user cancels the passkey prompt", async () => {
+            const before = [...evmWallet.recoveryMethods];
+            const onCreatePasskey = vi.fn().mockRejectedValue(new Error("The user cancelled the passkey prompt"));
+
+            await expect(evmWallet.addRecoveryMethod({ type: "passkey", onCreatePasskey })).rejects.toThrow(
+                "The user cancelled the passkey prompt"
             );
             expect(mockApiClient.registerRecoveryMethod).not.toHaveBeenCalled();
+            expect(evmWallet.recoveryMethods).toEqual(before);
         });
 
         it("throws on API failure", async () => {
@@ -1693,11 +1804,15 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
         });
 
-        it("rejects EVM chains before calling the API", async () => {
-            await expect(evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" })).rejects.toThrow(
-                RecoveryNotSupportedOnChainError
+        it("removes the recovery method on EVM with the wallet's chain", async () => {
+            const result = await evmWallet.removeRecoveryMethod({ type: "external-wallet", address: "0x456" });
+
+            expect(mockApiClient.removeRecoveryMethod).toHaveBeenCalledWith(
+                expect.any(String),
+                "external-wallet:0x456",
+                { approver: "api-key", chain: "base-sepolia" }
             );
-            expect(mockApiClient.removeRecoveryMethod).not.toHaveBeenCalled();
+            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
         });
 
         it("throws on API failure", async () => {
@@ -1725,231 +1840,98 @@ describe("Wallet - signers()", () => {
     });
 
     describe("success cases", () => {
-        it("returns list of signers with status for EVM", async () => {
-            const mockWalletResponse: GetWalletSuccessResponse = {
+        function evmWalletWith(delegatedSigners: unknown[]): GetWalletSuccessResponse {
+            return {
                 chainType: "evm",
                 type: "smart",
                 address: wallet.address,
                 config: {
-                    adminSigner: {
-                        type: "api-key",
-                        address: "0xadmin",
-                        locator: "api-key:admin",
-                    },
-                    delegatedSigners: [
-                        {
-                            type: "external-wallet",
-                            address: "0xsigner1",
-                            locator: "external-wallet:0xsigner1",
-                        },
-                        {
-                            type: "external-wallet",
-                            address: "0xsigner2",
-                            locator: "external-wallet:0xsigner2",
-                        },
-                    ],
+                    adminSigner: { type: "api-key", address: "0xadmin", locator: "api-key:admin" },
+                    delegatedSigners,
                 },
                 createdAt: Date.now(),
             } as GetWalletSuccessResponse;
+        }
 
-            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+        function externalWallet(n: number, chains: Record<string, { status: string; id?: string }>) {
+            return {
+                type: "external-wallet",
+                address: `0xsigner${n}`,
+                locator: `external-wallet:0xsigner${n}`,
+                chains,
+            };
+        }
 
-            // Mock getSigner responses for each signer (EVM requires per-signer API calls)
-            mockApiClient.getSigner
-                .mockResolvedValueOnce({
-                    type: "external-wallet",
-                    address: "0xsigner1",
-                    locator: "external-wallet:0xsigner1",
-                    chains: {
-                        "base-sepolia": { status: "success" },
-                    },
-                } as any)
-                .mockResolvedValueOnce({
-                    type: "external-wallet",
-                    address: "0xsigner2",
-                    locator: "external-wallet:0xsigner2",
-                    chains: {
-                        "base-sepolia": { status: "awaiting-approval", id: "sig-456" },
-                    },
-                } as any);
+        it("returns each signer with its status on this chain, from the wallet request alone", async () => {
+            mockApiClient.getWallet.mockResolvedValue(
+                evmWalletWith([
+                    externalWallet(1, { "base-sepolia": { status: "success" } }),
+                    externalWallet(2, { "base-sepolia": { status: "awaiting-approval", id: "sig-456" } }),
+                ])
+            );
 
             const signers = await wallet.signers();
 
-            expect(signers).toHaveLength(2);
-            expect(signers[0].type).toBe("external-wallet");
-            expect(signers[0].locator).toBe("external-wallet:0xsigner1");
-            expect(signers[0].status).toBe("success");
-            expect(signers[1].locator).toBe("external-wallet:0xsigner2");
-            expect(signers[1].status).toBe("awaiting-approval");
+            expect(signers.map((s) => [s.locator, s.status])).toEqual([
+                ["external-wallet:0xsigner1", "success"],
+                ["external-wallet:0xsigner2", "awaiting-approval"],
+            ]);
+            expect(mockApiClient.getWallet).toHaveBeenCalledTimes(1);
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
         it("filters out signers without approval for current chain", async () => {
-            const mockWalletResponse: GetWalletSuccessResponse = {
-                chainType: "evm",
-                type: "smart",
-                address: wallet.address,
-                config: {
-                    adminSigner: {
-                        type: "api-key",
-                        address: "0xadmin",
-                        locator: "api-key:admin",
-                    },
-                    delegatedSigners: [
-                        {
-                            type: "external-wallet",
-                            address: "0xsigner1",
-                            locator: "external-wallet:0xsigner1",
-                        },
-                        {
-                            type: "external-wallet",
-                            address: "0xsigner2",
-                            locator: "external-wallet:0xsigner2",
-                        },
-                    ],
-                },
-                createdAt: Date.now(),
-            } as GetWalletSuccessResponse;
-
-            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
-
-            // Signer1 has approval for base-sepolia, signer2 only has approval for ethereum (not base-sepolia)
-            mockApiClient.getSigner
-                .mockResolvedValueOnce({
-                    type: "external-wallet",
-                    address: "0xsigner1",
-                    locator: "external-wallet:0xsigner1",
-                    chains: {
-                        "base-sepolia": { status: "success" },
-                    },
-                } as any)
-                .mockResolvedValueOnce({
-                    type: "external-wallet",
-                    address: "0xsigner2",
-                    locator: "external-wallet:0xsigner2",
-                    chains: {
-                        ethereum: { status: "success" },
-                    },
-                } as any);
+            mockApiClient.getWallet.mockResolvedValue(
+                evmWalletWith([
+                    externalWallet(1, { "base-sepolia": { status: "success" } }),
+                    externalWallet(2, { ethereum: { status: "success" } }),
+                ])
+            );
 
             const signers = await wallet.signers();
 
-            expect(signers).toHaveLength(1);
-            expect(signers[0].locator).toBe("external-wallet:0xsigner1");
+            expect(signers.map((s) => s.locator)).toEqual(["external-wallet:0xsigner1"]);
         });
 
         it("returns empty array when no signers", async () => {
-            const mockWalletResponse: GetWalletSuccessResponse = {
-                chainType: "evm",
-                type: "smart",
-                address: wallet.address,
-                config: {
-                    adminSigner: {
-                        type: "api-key",
-                        address: "0xadmin",
-                        locator: "api-key:admin",
-                    },
-                },
-                createdAt: Date.now(),
-            } as GetWalletSuccessResponse;
-
-            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
+            mockApiClient.getWallet.mockResolvedValue(evmWalletWith([]));
 
             const signers = await wallet.signers();
 
             expect(signers).toHaveLength(0);
         });
 
-        it("returns signer status for Solana from getSigner", async () => {
+        it("returns signer status for Solana from the signer's transaction", async () => {
             const solanaWallet = await createMockWallet("solana", mockApiClient);
             vi.mocked(solanaWallet.signers).mockRestore();
 
-            const mockWalletResponse: GetWalletSuccessResponse = {
+            mockApiClient.getWallet.mockResolvedValue({
                 chainType: "solana",
                 type: "smart",
                 address: solanaWallet.address,
                 config: {
-                    adminSigner: {
-                        type: "api-key",
-                        address: "solana-admin",
-                        locator: "api-key:admin",
-                    },
+                    adminSigner: { type: "api-key", address: "solana-admin", locator: "api-key:admin" },
                     delegatedSigners: [
                         {
                             type: "device",
                             locator: "device:solana-device",
                             publicKey: { x: "1", y: "2" },
+                            transaction: {
+                                chainType: "solana",
+                                id: "tx-123",
+                                status: "pending",
+                                onChain: { transaction: "serialized-tx" },
+                            },
                         },
                     ],
                 },
                 createdAt: Date.now(),
-            } as GetWalletSuccessResponse;
-
-            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
-            mockApiClient.getSigner.mockResolvedValue({
-                type: "device",
-                locator: "device:solana-device",
-                publicKey: { x: "1", y: "2" },
-                transaction: {
-                    chainType: "solana",
-                    id: "tx-123",
-                    status: "pending",
-                    onChain: {
-                        transaction: "serialized-tx",
-                    },
-                },
-            } as any);
+            } as GetWalletSuccessResponse);
 
             const signers = await solanaWallet.signers();
 
-            expect(signers).toHaveLength(1);
-            expect(signers[0].locator).toBe("device:solana-device");
-            expect(signers[0].status).toBe("pending");
-        });
-
-        it("returns all successes and filters out failures when some getSigner calls reject", async () => {
-            const configSigners = Array.from({ length: 12 }, (_, i) => ({
-                type: "external-wallet",
-                address: `0xsigner${i}`,
-                locator: `external-wallet:0xsigner${i}`,
-            }));
-
-            const mockWalletResponse: GetWalletSuccessResponse = {
-                chainType: "evm",
-                type: "smart",
-                address: wallet.address,
-                config: {
-                    adminSigner: {
-                        type: "api-key",
-                        address: "0xadmin",
-                        locator: "api-key:admin",
-                    },
-                    delegatedSigners: configSigners,
-                },
-                createdAt: Date.now(),
-            } as GetWalletSuccessResponse;
-
-            mockApiClient.getWallet.mockResolvedValue(mockWalletResponse);
-
-            configSigners.forEach((configSigner, i) => {
-                mockApiClient.getSigner.mockImplementationOnce(async () => {
-                    if (i % 3 === 0) {
-                        throw new Error("rate limited");
-                    }
-                    return {
-                        type: "external-wallet",
-                        address: configSigner.address,
-                        locator: configSigner.locator,
-                        chains: {
-                            "base-sepolia": { status: "success" },
-                        },
-                    } as any;
-                });
-            });
-
-            const signers = await wallet.signers();
-
-            expect(signers).toHaveLength(8);
-            expect(mockApiClient.getSigner).toHaveBeenCalledTimes(12);
+            expect(signers.map((s) => [s.locator, s.status])).toEqual([["device:solana-device", "pending"]]);
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
     });
 

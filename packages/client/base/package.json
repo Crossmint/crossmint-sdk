@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-base",
-    "version": "4.6.1",
+    "version": "5.1.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -24,8 +24,5 @@
         "@crossmint/common-sdk-base": "workspace:*",
         "@datadog/browser-logs": "6.24.1",
         "zod": "3.22.4"
-    },
-    "devDependencies": {
-        "@types/uuid": "11.0.0"
     }
 }

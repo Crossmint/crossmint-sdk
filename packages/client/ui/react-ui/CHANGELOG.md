@@ -1,5 +1,125 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.1.0
+
+### Minor Changes
+
+- 95d83ab: payment-method-management: behaviour change: the add-card form of `CrossmintPaymentMethodManagement` collects a billing address by default.
+
+  - `fields.billingDetails.address` now defaults to `true`. Issuers approve more cards that carry a billing address.
+  - A host that passes no `fields` (or `fields` without `billingDetails.address`) now shows the address form, and `onChange` reports `complete: false` until the buyer fills it in.
+  - Pass `fields: { billingDetails: { address: false } }` to keep the previous behaviour and save cards without a billing address.
+  - `defaultValues.billingDetails.address` now applies without `fields`, because the form collects an address by default.
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-react-base@2.5.7
+  - @crossmint/common-sdk-auth@1.1.36
+  - @crossmint/wallets-sdk@1.22.3
+
+## 5.0.1
+
+### Patch Changes
+
+- Updated dependencies [04ec76f]
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [36903ca]
+  - @crossmint/wallets-sdk@1.22.2
+  - @crossmint/common-sdk-auth@1.1.35
+  - @crossmint/client-sdk-react-base@2.5.6
+
+## 5.0.0
+
+### Major Changes
+
+- a55b5e4: BREAKING: `CrossmintPaymentMethodManagement` no longer renders a built-in submit button. The `hideSubmitButton` prop is removed — the component always asks the host to submit via `ref.submit()`, which must be wired to your own button. The iframe no longer draws the message of an `invalid` or `failed` submit: show the `message` that `ref.submit()` returns. Field errors stay in the iframe.
+
+  `CrossmintPaymentMethodManagement` adds `onReady` and `onChange({ mode, empty, complete })`, like Stripe's `ready` and `change` events, so your button can stay disabled until a submit can succeed. `invalid`, `failed` and `unavailable` submit results now carry a `code` (for example `incomplete_card`, `save_failed`, `timeout`); a code the component does not know becomes `unknown`. The code lists are exported as `PAYMENT_METHOD_SUBMIT_INVALID_CODES`, `PAYMENT_METHOD_SUBMIT_FAILED_CODES` and `PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES`.
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-react-base@2.5.5
+
+## 4.13.4
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 4.13.3
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-react-base@2.5.3
+  - @crossmint/wallets-sdk@1.21.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 4.13.2
+
+### Patch Changes
+
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-react-base@2.5.2
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 4.13.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+  - @crossmint/client-sdk-react-base@2.5.1
+
+## 4.13.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/common-sdk-auth@1.1.30
+
 ## 4.12.1
 
 ### Patch Changes

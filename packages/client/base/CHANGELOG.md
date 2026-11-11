@@ -1,5 +1,75 @@
 # @crossmint/client-sdk-base
 
+## 5.1.0
+
+### Minor Changes
+
+- 95d83ab: payment-method-management: behaviour change: the add-card form of `CrossmintPaymentMethodManagement` collects a billing address by default.
+
+  - `fields.billingDetails.address` now defaults to `true`. Issuers approve more cards that carry a billing address.
+  - A host that passes no `fields` (or `fields` without `billingDetails.address`) now shows the address form, and `onChange` reports `complete: false` until the buyer fills it in.
+  - Pass `fields: { billingDetails: { address: false } }` to keep the previous behaviour and save cards without a billing address.
+  - `defaultValues.billingDetails.address` now applies without `fields`, because the form collects an address by default.
+
+## 5.0.0
+
+### Major Changes
+
+- a55b5e4: BREAKING: `CrossmintPaymentMethodManagement` no longer renders a built-in submit button. The `hideSubmitButton` prop is removed — the component always asks the host to submit via `ref.submit()`, which must be wired to your own button. The iframe no longer draws the message of an `invalid` or `failed` submit: show the `message` that `ref.submit()` returns. Field errors stay in the iframe.
+
+  `CrossmintPaymentMethodManagement` adds `onReady` and `onChange({ mode, empty, complete })`, like Stripe's `ready` and `change` events, so your button can stay disabled until a submit can succeed. `invalid`, `failed` and `unavailable` submit results now carry a `code` (for example `incomplete_card`, `save_failed`, `timeout`); a code the component does not know becomes `unknown`. The code lists are exported as `PAYMENT_METHOD_SUBMIT_INVALID_CODES`, `PAYMENT_METHOD_SUBMIT_FAILED_CODES` and `PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES`.
+
+## 4.8.0
+
+### Minor Changes
+
+- cd18fde: payment-method-management: add `defaultValues.billingDetails.address`, the starting values of the add-card billing address.
+
+  - `defaultValues?: { billingDetails?: { address?: { country?, line1?, line2?, city?, stateOrRegion?, postalCode? } } }` — same `billingDetails` shape as `fields`, with the field names of `card.billing.address`. The buyer can edit every value. `null` or an empty string means no default for that field. The form uses them only when `fields.billingDetails.address` collects an address.
+  - The iframe validates each value: it ignores an invalid value with a console warning and keeps the others. `country` must be an uppercase ISO 3166-1 alpha-2 code; without it, the form starts in the US. `stateOrRegion` must be an exact ISO 3166-2 subdivision code of that country, without the country prefix: `"FL"`, not `"US-FL"` or `"Florida"`.
+  - Like Stripe.js, the SDK throws when `defaultValues`, `billingDetails` or `address` is not an object (an array, a string), or when an address field is not a string or `null`. `null` at any level means no default. Class instances pass. The SDK logs a warning for an unknown key and drops the key, so only known keys reach the iframe URL.
+  - The values travel in the iframe URL. A change after mount reloads the iframe, so pass stable values.
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+
+## 4.7.2
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-base@0.13.2
+
+## 4.7.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+
+## 4.7.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+- 712a06a: payment-method-management: add `fields.billingDetails.address` and surface `card.billing` on the emitted card method.
+
+  - `fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } }` — optional fields of the add-card form, in Stripe's `billingDetails` shape so new fields need no new prop. `address: true` requires a valid billing address before the card saves, for built-in and `ref.submit()` submissions alike. An object collects it too and configures address line 2: `"optional"` (default, same as `true`), `"required"`, or `"hidden"`. Applies to cards only.
+  - `CrossmintCardPaymentMethod.card.billing` — optional billing details (`name`, `address`, `phone`) the card was saved with, surfaced on `onPaymentMethodSelected` and `submit()` results via the new `CrossmintPaymentMethodBillingDetails` / `CrossmintPaymentMethodBillingAddress` types.
+
+  Requires the matching iframe release (Paella-Labs/crossbit-main#33078; the `line2` object form also needs Paella-Labs/crossbit-main#33171): the flag is a no-op until it is deployed.
+
+### Patch Changes
+
+- 754047d: Remove dependencies the packages do not import: `exponential-backoff` and `uuid` from `@crossmint/client-sdk-base`, `zod` from `@crossmint/client-signers-cryptography`, and `bs58`, `lodash.clonedeep`, `lodash.isequal` and `zod` from `@crossmint/client-sdk-react-native-ui`.
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+
 ## 4.6.1
 
 ### Patch Changes

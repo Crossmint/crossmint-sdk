@@ -1,5 +1,61 @@
 # @crossmint/server-sdk
 
+## 1.2.100
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.36
+
+## 1.2.99
+
+### Patch Changes
+
+- e6ad150: `CrossmintAuth.getUser` now throws a `CrossmintAuthenticationError` when Crossmint rejects the request, instead of returning the API's error body as if it were the user. The error carries the HTTP `status` and the API's message, which names the missing `users.read` scope when the API key lacks it. `getUser` now returns `SDKExternalUser` instead of `any`, and the server SDK exports `CrossmintAuthenticationError` and `SDKExternalUser`. Failed session refreshes and logouts also report the status and the API's message.
+- a2181ff: JWT verification no longer waits for the JWKS to be re-downloaded every 10 minutes: the keys are refreshed in the background while verification keeps using the current ones. If the JWKS endpoint keeps failing, keys stay in use for up to an hour; a token signed with an unknown key still waits for a download, as before.
+- a2181ff: `getSession` returns the user (email, phone number, linked accounts) when it had to refresh the session, since the refresh response already carries it. A server that needs the email can skip `getUser` in that case.
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.2.98
+
+### Patch Changes
+
+- 0c053ed: Read and write the project-scoped auth cookies in the server SDK. Since `@crossmint/client-sdk-auth` 1.3.4 the client stores the session as `crossmint-jwt-<projectId>` and `crossmint-refresh-token-<projectId>`, but the server SDK only read and wrote `crossmint-jwt` and `crossmint-refresh-token`, so `getSession(request)` saw no session and a custom refresh route stored cookies the client never read. `getSession(request)`, `handleCustomRefresh` and `logout` now read the scoped names, and the legacy names only when no scoped cookie is present. `storeAuthMaterial` (and so `getSession(request, response)`, `handleCustomRefresh` and `logout`) writes the scoped names; `logout` also expires the legacy ones. New `getAuthCookieNames(projectId)` returns the scoped names, for code with no request object such as a Next.js Server Component; `validateAPIKey` is re-exported so the project ID can be read from the API key. The naming helper `getScopedCookieName` now lives in `@crossmint/common-sdk-auth` and the client uses it.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.2.97
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 1.2.96
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+
+## 1.2.95
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.2.94
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.30
+
 ## 1.2.93
 
 ### Patch Changes

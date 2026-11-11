@@ -5,7 +5,6 @@ import {
     InvalidChainError,
     InvalidEnvironmentError,
     InvalidRecoveryConfigError,
-    RecoveryNotSupportedOnChainError,
     WalletCreationError,
 } from "../utils/errors";
 import { walletsLogger } from "../logger";
@@ -48,6 +47,16 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         },
         createdAt: Date.now(),
     } as GetWalletSuccessResponse;
+
+    const evmWalletWithRecovery = (recoveryMethods: Array<Record<string, unknown>>) =>
+        ({
+            chainType: "evm",
+            type: "smart",
+            address: "0x1234567890123456789012345678901234567890",
+            owner: "test-owner",
+            config: { adminSigner: recoveryMethods[0], recoveryMethods, delegatedSigners: [] },
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -163,31 +172,19 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("uses adminSigner for a single recoveryMethods entry on EVM", async () => {
-            mockApiClient.createWallet.mockResolvedValue({
-                chainType: "evm",
-                type: "smart",
-                address: "0x1234567890123456789012345678901234567890",
-                owner: "test-owner",
-                config: {
-                    adminSigner: { type: "api-key" },
-                    delegatedSigners: [],
-                },
-                createdAt: Date.now(),
-            } as unknown as GetWalletSuccessResponse);
+        it("sends a single recoveryMethods entry on EVM under recoveryMethods", async () => {
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery([{ type: "api-key" }]));
 
             await walletFactory.createWallet({
                 chain: "base-sepolia",
                 recoveryMethods: [{ type: "api-key" }],
             });
 
-            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    config: expect.objectContaining({
-                        adminSigner: expect.objectContaining({ type: "api-key" }),
-                    }),
-                })
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(
+                expect.objectContaining({ recoveryMethods: [{ type: "api-key" }] })
             );
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
         it("routes the deprecated recovery list form to config.recoveryMethods on Solana", async () => {
@@ -204,14 +201,15 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
-        it("still rejects more than one method on EVM when passed through the deprecated recovery list form", async () => {
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recovery: [{ type: "api-key" }, { type: "api-key" }],
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        it("routes the deprecated recovery list form to config.recoveryMethods on EVM", async () => {
+            const recovery = [{ type: "api-key" as const }, { type: "email" as const, email: "user@example.com" }];
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery(recovery));
+
+            await walletFactory.createWallet({ chain: "base-sepolia", recovery });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods: recovery }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
         it("rejects an empty deprecated recovery list as empty", async () => {
@@ -231,14 +229,19 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("rejects multiple recoveryMethods entries on EVM", async () => {
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recoveryMethods: [{ type: "api-key" }, { type: "api-key" }],
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        it("creates an EVM wallet with recovery methods under recoveryMethods", async () => {
+            const recoveryMethods = [
+                { type: "api-key" as const },
+                { type: "external-wallet" as const, address: "0x0000000000000000000000000000000000000456" },
+            ];
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery(recoveryMethods));
+
+            const wallet = await walletFactory.createWallet({ chain: "base-sepolia", recoveryMethods });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
+            expect(wallet.recoveryMethods).toHaveLength(2);
         });
     });
 
@@ -1400,18 +1403,6 @@ describe("WalletFactory - recovery signer lists", () => {
     });
 
     describe("createWallet validation", () => {
-        it("rejects a recovery list on a chain that only supports one recovery signer", async () => {
-            const recovery = [{ type: "api-key" as const }, { type: "api-key" as const }];
-
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recoveryMethods: recovery,
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
-        });
-
         it("rejects an empty recovery list without calling the API", async () => {
             await expect(walletFactory.createWallet({ chain: "solana", recoveryMethods: [] })).rejects.toBeInstanceOf(
                 InvalidRecoveryConfigError
@@ -1458,6 +1449,42 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(withRecovery.recoveryMethods[0]).toEqual(
                 expect.objectContaining({ type: "phone", channel: "whatsapp" })
             );
+        });
+
+        it("accepts a server recovery secret that derives to the existing wallet's server signer address", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            await expect(
+                walletFactory.getWallet(SOLANA_ADDRESS, {
+                    chain: "solana",
+                    recovery: { type: "server", secret: FIRST_SERVER_SECRET },
+                } as WalletCreateArgs<"solana">)
+            ).resolves.toBeDefined();
+        });
+
+        it("rejects a server recovery secret that derives to a different address, without echoing it", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            const result = walletFactory.getWallet(SOLANA_ADDRESS, {
+                chain: "solana",
+                recovery: { type: "server", secret: SECOND_SERVER_SECRET },
+            } as WalletCreateArgs<"solana">);
+
+            await expect(result).rejects.toBeInstanceOf(WalletCreationError);
+            await expect(result).rejects.toThrow(/derives to a different address/);
+            const message = await result.catch((error: Error) => error.message);
+            expect(message).not.toContain(SECOND_SERVER_SECRET);
+            expect(message).not.toContain(FIRST_SERVER_SECRET);
         });
     });
 
@@ -1606,15 +1633,19 @@ describe("WalletFactory - recovery configuration rejected before any side effect
             expect(mockApiClient.getWallet).not.toHaveBeenCalled();
         });
 
-        it("rejects more than one recovery method on EVM", async () => {
-            await expect(
-                walletFactory.getWallet(EVM_ADDRESS, {
-                    chain: "base-sepolia",
-                    recoveryMethods: [email, secondEmail],
-                } as never)
-            ).rejects.toThrow(RecoveryNotSupportedOnChainError);
+        it("loads an EVM wallet with more than one recovery method", async () => {
+            mockApiClient.getWallet.mockResolvedValue({
+                ...existingWallet("evm", EVM_ADDRESS),
+                config: { adminSigner: email, recoveryMethods: [email, secondEmail] },
+            } as unknown as GetWalletSuccessResponse);
 
-            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
+            const wallet = await walletFactory.getWallet(EVM_ADDRESS, {
+                chain: "base-sepolia",
+                recoveryMethods: [email, secondEmail],
+            } as never);
+
+            expect(wallet.address).toBe(EVM_ADDRESS);
+            expect(wallet.recoveryMethods).toEqual([email, secondEmail]);
         });
 
         it("rejects a device signer as the recovery method", async () => {
@@ -1663,5 +1694,126 @@ describe("WalletFactory - recovery configuration rejected before any side effect
 
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
+    });
+});
+
+describe("WalletFactory - signer initialization in getWallet", () => {
+    // getWallet awaits signer initialization. The wallet response already carries each delegated signer's
+    // per-chain status, so loading a wallet whose device key is on this device needs no request beyond GET wallet.
+
+    const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
+    // a valid uncompressed P-256 public key: 0x04 + 32-byte x + 32-byte y
+    const DEVICE_KEY = Buffer.concat([Buffer.from([0x04]), Buffer.alloc(32, 1), Buffer.alloc(32, 2)]).toString(
+        "base64"
+    );
+    const DEVICE_LOCATOR = `device:${DEVICE_KEY}`;
+
+    const walletResponse = (deviceChains: Record<string, { status: string; id?: string }>) =>
+        ({
+            chainType: "evm",
+            type: "smart",
+            address: WALLET_ADDRESS,
+            owner: "email:user@example.com",
+            config: {
+                adminSigner: { type: "email", email: "user@example.com", locator: "email:user@example.com" },
+                delegatedSigners: [{ type: "device", locator: DEVICE_LOCATOR, chains: deviceChains }],
+            },
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    const keyStorage = (where: "mapped" | "unmapped") => ({
+        preload: vi.fn(),
+        getKey: vi.fn().mockResolvedValue(where === "mapped" ? DEVICE_KEY : null),
+        hasKey: vi.fn().mockImplementation(async (key: string) => key === DEVICE_KEY),
+        mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+        saveSignerLocator: vi.fn().mockResolvedValue(undefined),
+        generateKey: vi.fn(),
+        signMessage: vi.fn(),
+        deleteKey: vi.fn(),
+        getDeviceName: vi.fn().mockReturnValue("Test Device"),
+    });
+
+    let apiClient: {
+        isServerSide: boolean;
+        projectId: string;
+        environment: APIKeyEnvironmentPrefix;
+        getWallet: MockedFunction<ApiClient["getWallet"]>;
+        getSigner: MockedFunction<ApiClient["getSigner"]>;
+    };
+    let factory: WalletFactory;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        walletsLogger.debug = vi.fn();
+        apiClient = {
+            isServerSide: false,
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            getSigner: vi.fn(),
+        };
+        factory = new WalletFactory(apiClient as unknown as ApiClient);
+    });
+
+    it.each(["mapped", "unmapped"] as const)(
+        "uses this device's signer with its status from the wallet response, in one request (key %s)",
+        async (where) => {
+            apiClient.getWallet.mockResolvedValue(walletResponse({ "base-sepolia": { status: "success" } }));
+            const storage = keyStorage(where);
+
+            const wallet = await factory.getWallet({
+                chain: "base-sepolia",
+                options: { deviceSignerKeyStorage: storage as never },
+            });
+
+            expect(apiClient.getWallet).toHaveBeenCalledTimes(1);
+            expect(apiClient.getSigner).not.toHaveBeenCalled();
+            expect(wallet.signer?.locator()).toBe(DEVICE_LOCATOR);
+            expect(wallet.signer?.status).toBe("success");
+            expect(wallet.needsRecovery()).toBe(false);
+            if (where === "unmapped") {
+                expect(storage.mapAddressToKey).toHaveBeenCalledWith(WALLET_ADDRESS, DEVICE_KEY);
+            }
+        }
+    );
+
+    it("needs recovery when the response shows this device's signer still awaiting approval", async () => {
+        apiClient.getWallet.mockResolvedValue(
+            walletResponse({ "base-sepolia": { status: "awaiting-approval", id: "sig-1" } })
+        );
+
+        const wallet = await factory.getWallet({
+            chain: "base-sepolia",
+            options: { deviceSignerKeyStorage: keyStorage("mapped") as never },
+        });
+
+        expect(apiClient.getSigner).not.toHaveBeenCalled();
+        expect(wallet.signer?.status).toBe("awaiting-approval");
+        expect(wallet.needsRecovery()).toBe(true);
+    });
+
+    it("ignores a device signer approved only on another chain, like signers() does", async () => {
+        apiClient.getWallet.mockResolvedValue(walletResponse({ base: { status: "success" } }));
+
+        const wallet = await factory.getWallet({
+            chain: "base-sepolia",
+            options: { deviceSignerKeyStorage: keyStorage("unmapped") as never },
+        });
+
+        expect(apiClient.getWallet).toHaveBeenCalledTimes(1);
+        expect(wallet.signer).toBeUndefined();
+        expect(wallet.needsRecovery()).toBe(true);
+    });
+
+    it("starts loading the key storage before the wallet request returns", async () => {
+        const storage = keyStorage("mapped");
+        apiClient.getWallet.mockImplementation(async () => {
+            expect(storage.preload).toHaveBeenCalledTimes(1);
+            return walletResponse({ "base-sepolia": { status: "success" } });
+        });
+
+        await factory.getWallet({ chain: "base-sepolia", options: { deviceSignerKeyStorage: storage as never } });
+
+        expect(storage.preload).toHaveBeenCalledTimes(1);
     });
 });

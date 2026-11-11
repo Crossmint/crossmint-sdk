@@ -260,7 +260,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
      */
     recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
     /**
-     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Recovery methods, each able to authorize on its own.
      * Required unless the deprecated `recovery` is passed.
      */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
