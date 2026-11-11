@@ -228,13 +228,14 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
     /**
      * Older signer frames answer every `request:sign` with a bare `response:sign`, so two in-flight
-     * requests would both resolve with whichever signature comes back first. Until a frame proves it
-     * echoes our `requestId`, requests are queued per frame connection (which may be shared by several
-     * signers); once it does, requests go out in parallel and each caller matches on its own id.
+     * requests would both resolve with whichever signature comes back first. Until the frame behind a
+     * connection proves it echoes our `requestId`, requests are queued per frame connection (which may
+     * be shared by several signers); once it does, requests go out in parallel and each caller matches
+     * on its own id. A reconnect starts the probing over.
      */
     protected requestSignature(data: SignerInputEvent<"sign">["data"]): Promise<SignerOutputEvent<"sign"> | undefined> {
         const connection = this.config.clientTEEConnection;
-        if (connection == null || connectionsEchoingRequestId.has(connection)) {
+        if (connection == null || echoesRequestId(connection)) {
             return this.sendSignRequest(data);
         }
         const previous = lastSignRequestByConnection.get(connection) ?? Promise.resolve();
@@ -255,7 +256,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
         const jwt = this.getJwtOrThrow();
         const connection = this.config.clientTEEConnection;
         const requestId = newSignRequestId();
-        const echoesRequestId = connection != null && connectionsEchoingRequestId.has(connection);
+        const correlated = connection != null && echoesRequestId(connection);
         walletsLogger.info("sign: sending request", { keyType: data.keyType, requestId });
         const startTime = Date.now();
         const res = await connection?.sendAction({
@@ -273,11 +274,11 @@ export abstract class NonCustodialSigner implements SignerAdapter {
                 ...DEFAULT_EVENT_OPTIONS,
                 // A bare response can only be ours while requests are still queued one at a time.
                 condition: (response) =>
-                    response.requestId === requestId || (!echoesRequestId && response.requestId == null),
+                    response.requestId === requestId || (!correlated && response.requestId == null),
             },
         });
         if (connection != null && res?.requestId != null) {
-            connectionsEchoingRequestId.add(connection);
+            echoGenerationByConnection.set(connection, connection.connectionGeneration);
         }
         walletsLogger.info("sign: response received", {
             status: res?.status,
@@ -546,7 +547,14 @@ export const JWT_REQUIRED_ERROR_CODE = "jwt-required";
 
 const UNAUTHORIZED_ERROR_CODES = new Set(["unauthorized", "unauthenticated"]);
 const lastSignRequestByConnection = new WeakMap<object, Promise<unknown>>();
-const connectionsEchoingRequestId = new WeakSet<object>();
+// Keyed by connection, valued with the handshake generation that proved the echo: a frame reload
+// (same connection object, new handshake) may bring a frame that does not echo, so probe again.
+const echoGenerationByConnection = new WeakMap<object, number>();
+
+function echoesRequestId(connection: { connectionGeneration: number }): boolean {
+    const provenGeneration = echoGenerationByConnection.get(connection);
+    return provenGeneration != null && provenGeneration === connection.connectionGeneration;
+}
 
 function newSignRequestId(): string {
     if (typeof crypto !== "undefined" && crypto.randomUUID != null) {
