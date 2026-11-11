@@ -17,7 +17,7 @@ import {
 } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
-import type { SignerOutputEvent } from "@crossmint/client-signers";
+import type { SignerInputEvent, SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 import { normalizeEmail } from "../../utils/signer-validation";
 
@@ -31,6 +31,7 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
     private _onboardingConnectionGeneration: number | null = null;
+    private _lastSignRequest: Promise<unknown> = Promise.resolve();
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
@@ -217,6 +218,45 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             walletsLogger.error("handleAuthRequired promise error", { error });
             throw error;
         }
+    }
+
+    /**
+     * The signer frame answers every `request:sign` with a bare `response:sign`, so two in-flight
+     * requests would both resolve with whichever signature comes back first. Requests are queued
+     * per signer so each caller receives the signature of its own payload.
+     */
+    protected requestSignature(data: SignerInputEvent<"sign">["data"]): Promise<SignerOutputEvent<"sign"> | undefined> {
+        const request = this._lastSignRequest.then(
+            () => this.sendSignRequest(data),
+            () => this.sendSignRequest(data)
+        );
+        this._lastSignRequest = request.catch(() => undefined);
+        return request;
+    }
+
+    private async sendSignRequest(
+        data: SignerInputEvent<"sign">["data"]
+    ): Promise<SignerOutputEvent<"sign"> | undefined> {
+        const jwt = this.getJwtOrThrow();
+        walletsLogger.info("sign: sending request", { keyType: data.keyType });
+        const startTime = Date.now();
+        const res = await this.config.clientTEEConnection?.sendAction({
+            event: "request:sign",
+            responseEvent: "response:sign",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data,
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+        walletsLogger.info("sign: response received", {
+            status: res?.status,
+            durationMs: Date.now() - startTime,
+        });
+        return res;
     }
 
     public async ensureAuthenticated(): Promise<void> {

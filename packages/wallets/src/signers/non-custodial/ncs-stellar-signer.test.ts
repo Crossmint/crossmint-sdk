@@ -1,3 +1,5 @@
+import { HandshakeParent, type SimpleMessageEvent, type Transport } from "@crossmint/client-sdk-window";
+import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { describe, expect, test, vi } from "vitest";
 
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
@@ -9,9 +11,11 @@ const PUBLIC_KEY = { bytes: "cHVibGljLWtleQ==", encoding: "base64", keyType: "ed
 function makeSigner({
     statusOnGetStatus,
     email = "test@example.com",
+    clientTEEConnection,
 }: {
     statusOnGetStatus: "ready" | "new-device";
     email?: string;
+    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }) {
     const sendAction = vi.fn(async (args: { event: string }) => {
         switch (args.event) {
@@ -50,11 +54,56 @@ function makeSigner({
         locator: EMAIL_AUTH_ID,
         address: "GWALLET",
         crossmint: { apiKey: "ck_staging_test", jwt: "test-jwt" },
-        clientTEEConnection: { sendAction },
+        clientTEEConnection: clientTEEConnection ?? { sendAction },
         onAuthRequired,
     } as unknown as EmailInternalSignerConfig | PhoneInternalSignerConfig;
 
     return { signer: new StellarNonCustodialSigner(config), sendAction, onAuthRequired };
+}
+
+/**
+ * Mirrors the signer frame's transport: every request is answered asynchronously with a bare
+ * response event that carries no reference to the request it answers.
+ */
+function frameConnection() {
+    const listeners = new Map<string, (event: SimpleMessageEvent) => void>();
+    const reply = (event: string, data: object) => {
+        setTimeout(() => {
+            for (const listener of listeners.values()) {
+                listener({ type: "message", data: { event, data } });
+            }
+        }, 0);
+    };
+    const transport: Transport<typeof signerInboundEvents> = {
+        send: ({ event, data }) => {
+            if (event === "request:get-status") {
+                reply("response:get-status", {
+                    status: "success",
+                    signerStatus: "ready",
+                    publicKeys: { ed25519: PUBLIC_KEY },
+                });
+            }
+            if (event === "request:sign") {
+                reply("response:sign", {
+                    status: "success",
+                    signature: { bytes: `signed:${data.data.bytes}`, encoding: "base64" },
+                    publicKey: PUBLIC_KEY,
+                });
+            }
+        },
+        addMessageListener: (listener) => {
+            const id = String(listeners.size + 1);
+            listeners.set(id, listener as (event: SimpleMessageEvent) => void);
+            return id;
+        },
+        removeMessageListener: (id) => {
+            listeners.delete(id);
+        },
+    };
+    return new HandshakeParent(transport, {
+        incomingEvents: signerOutboundEvents,
+        outgoingEvents: signerInboundEvents,
+    });
 }
 
 function requestData(sendAction: ReturnType<typeof makeSigner>["sendAction"], event: string) {
@@ -66,6 +115,20 @@ function requestData(sendAction: ReturnType<typeof makeSigner>["sendAction"], ev
 }
 
 describe("StellarNonCustodialSigner.signTransaction", () => {
+    describe("when several payloads are signed at the same time", () => {
+        test("each caller receives the signature of its own payload", async () => {
+            const { signer } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection: frameConnection() });
+
+            const [first, second] = await Promise.all([
+                signer.signTransaction("Zmlyc3Q="),
+                signer.signTransaction("c2Vjb25k"),
+            ]);
+
+            expect(first).toEqual({ signature: "signed:Zmlyc3Q=" });
+            expect(second).toEqual({ signature: "signed:c2Vjb25k" });
+        });
+    });
+
     describe("when the frame reports the device as ready for the selected recovery method", () => {
         test("signs without onboarding and tells the frame which recovery method is signing", async () => {
             const { signer, sendAction, onAuthRequired } = makeSigner({ statusOnGetStatus: "ready" });
