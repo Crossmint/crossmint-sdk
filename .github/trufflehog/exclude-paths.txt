@@ -1,0 +1,4 @@
+# Paths the Crossmint key detectors skip. One Go regex per line, matched against
+# the repo-relative path. Prefer an inline `trufflehog:ignore` comment; use this
+# only for whole files or directories of test fixtures. Every entry needs a
+# reason and an owner.

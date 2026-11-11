@@ -10,6 +10,17 @@ To install the SDK, you can use npm or yarn:
 npm install @crossmint/server-sdk
 ```
 
+## API key and scopes
+
+Use a server-side API key (`sk_...`) from the Crossmint Console. Which scopes it needs depends on the methods you call:
+
+| Method                                           | Scope        |
+| ------------------------------------------------ | ------------ |
+| `getSession`, `handleCustomRefresh`, `logout`    | None         |
+| `getUser`                                        | `users.read` |
+
+`getSession` verifies the JWT with Crossmint's public keys and refreshes the session through endpoints that do not check scopes. `getUser` reads the user's profile, so the key needs `users.read`. Without it, `getUser` throws a `CrossmintAuthenticationError` with `status` 403.
+
 ## Usage
 
 To use the SDK in your application, follow these steps:
@@ -28,36 +39,68 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 
 2. Use the SDK to authenticate users:
 
-With most frameworks, pass the request object:
+Pass the request object, and the SDK reads the session cookies for you. This works with Node.js
+(`IncomingMessage`) and Fetch API (`Request`) requests, including Next.js middleware and route handlers:
 
 ```ts
 const { jwt, userId } = await crossmintAuth.getSession(request);
 ```
 
-With Next.js, fetch the cookies and pass them to the `getSession` method:
+The client SDK stores the session in cookies scoped to your project: `crossmint-jwt-<projectId>` and
+`crossmint-refresh-token-<projectId>`, where the project ID comes from your API key. `getSession(request)` reads
+those names, and reads the legacy `crossmint-jwt` and `crossmint-refresh-token` names only when no scoped cookie is present.
+
+In a Next.js Server Component there is no request object. Read the cookies by the names `getAuthCookieNames(projectId)`
+returns and pass them to `getSession`. The project ID comes from your API key:
 
 ```ts
 import { cookies } from "next/headers";
+import { getAuthCookieNames, validateAPIKey } from "@crossmint/server-sdk";
 
-const cookieStore = cookies();
-const jwtCookie = cookieStore.get("crossmint-jwt")?.value;
-const refreshCookie = cookieStore.get("crossmint-refresh-token")?.value;
+const apiKeyResult = validateAPIKey(process.env.SERVER_CROSSMINT_API_KEY ?? "");
+if (!apiKeyResult.isValid) {
+    throw new Error(apiKeyResult.message);
+}
 
-const { jwt, userId } = await crossmintAuth.getSession({
-    jwt: jwtCookie,
-    refreshToken: refreshCookie,
-});
+const cookieStore = await cookies();
+const cookieNames = getAuthCookieNames(apiKeyResult.projectId);
+const refreshToken = cookieStore.get(cookieNames.refreshToken)?.value;
+
+if (refreshToken != null) {
+    const { jwt, userId } = await crossmintAuth.getSession({
+        jwt: cookieStore.get(cookieNames.jwt)?.value,
+        refreshToken,
+    });
+}
 ```
 
-3. Store the authentication material in cookies
+3. Get the user's profile
 
-If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method:
+`getSession` returns the user's ID. To get their email, phone number or linked X account, pass the ID to `getUser`. It needs the `users.read` scope on your API key:
+
+```ts
+import { CrossmintAuthenticationError } from "@crossmint/server-sdk";
+
+try {
+    const user = await crossmintAuth.getUser(userId); // { id, email?, phoneNumber?, twitter? }
+} catch (error) {
+    if (error instanceof CrossmintAuthenticationError) {
+        // error.status is 403 when the API key lacks users.read, 404 when the user has not signed in to this project
+        console.error(error.status, error.message);
+    }
+    throw error;
+}
+```
+
+4. Store the authentication material in cookies
+
+If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method. The SDK writes the project-scoped cookie names (logout also expires the legacy unscoped ones):
 
 ```ts
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
 ```
 
-4. Logout
+5. Logout
 
 ```ts
 await crossmintAuth.logout(request);
@@ -105,11 +148,11 @@ You can also provide a custom refresh route:
 
 ```typescript
 const crossmintAuth = CrossmintAuth.from(crossmint, {
-    refreshRoute: "/api/refresh",
+    refreshRoute: `${process.env.APP_URL || "http://localhost:3000"}/api/refresh`,
 });
 ```
 
-This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.
+The SDK will use the provided route instead of Crossmint's refresh endpoint. On the server, configure this as a static, trusted absolute URL; never derive it from the incoming request or its `Host` header. Use HTTPS in production. The server SDK verifies the refreshed JWT's signature, expiry, and project audience against Crossmint's JWKS, and takes the user ID from its verified `sub` claim.
 
 ## Set up a custom logout route
 

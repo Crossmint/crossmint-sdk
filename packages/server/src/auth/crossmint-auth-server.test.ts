@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CrossmintAuthServer } from "./CrossmintAuthServer";
-import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import {
+    type Crossmint,
+    CrossmintApiClient,
+    validateAPIKey,
+    type ValidateAPIKeyResult,
+} from "@crossmint/common-sdk-base";
 import { type AuthMaterialBasic, CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
+import { UnsecuredJWT } from "jose";
 import * as cookiesUtils from "./utils/cookies";
 import * as jwtUtils from "./utils/jwt";
 import type { GenericRequest, GenericResponse } from "./types/request";
@@ -9,11 +15,20 @@ import type { ServerResponse } from "http";
 
 vi.mock("@crossmint/common-sdk-base");
 vi.mock("./utils/cookies");
-vi.mock("./utils/jwt");
+vi.mock("./utils/jwt", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("./utils/jwt")>()),
+    verifyCrossmintJwt: vi.fn(),
+}));
+
+const PROJECT_ID = "test-project-id";
+
+function jwtForProject(audience: string | string[]) {
+    return new UnsecuredJWT({}).setAudience(audience).setSubject("user123").encode();
+}
 
 describe("CrossmintAuthServer", () => {
     let crossmintAuthServer: CrossmintAuthServer;
-    const mockCrossmint = { projectId: "test-project-id" };
+    const mockCrossmint = { projectId: PROJECT_ID, apiKey: "mock-api-key" };
     const mockApiClient = {
         baseUrl: "https://api.crossmint.com",
         get: vi.fn(),
@@ -23,17 +38,31 @@ describe("CrossmintAuthServer", () => {
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(CrossmintApiClient).mockReturnValue(mockApiClient as unknown as CrossmintApiClient);
+        vi.mocked(validateAPIKey).mockReturnValue({
+            isValid: true,
+            projectId: PROJECT_ID,
+        } as ValidateAPIKeyResult);
         crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint);
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+        vi.unstubAllGlobals();
     });
 
     describe("from", () => {
         it("creates a new CrossmintAuthServer instance", () => {
             expect(crossmintAuthServer).toBeInstanceOf(CrossmintAuthServer);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
+        });
+
+        it("throws when the API key is invalid", () => {
+            vi.mocked(validateAPIKey).mockReturnValueOnce({
+                isValid: false,
+                message: "bad key",
+            } as ValidateAPIKeyResult);
+
+            expect(() => CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint)).toThrow("bad key");
         });
     });
 
@@ -47,8 +76,23 @@ describe("CrossmintAuthServer", () => {
 
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
                 mockToken,
-                "https://api.crossmint.com/.well-known/jwks.json"
+                "https://api.crossmint.com/.well-known/jwks.json",
+                { audience: PROJECT_ID }
             );
+            expect(result).toBe(mockDecodedJwt);
+        });
+
+        it("forwards the project audience when a JWKS is provided", async () => {
+            const mockToken = "mock.jwt.token";
+            const mockJwks = { keys: [] };
+            const mockDecodedJwt = { sub: "user123" };
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue(mockDecodedJwt);
+
+            const result = await crossmintAuthServer.verifyCrossmintJwt(mockToken, mockJwks);
+
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(mockToken, mockJwks, {
+                audience: PROJECT_ID,
+            });
             expect(result).toBe(mockDecodedJwt);
         });
     });
@@ -85,13 +129,73 @@ describe("CrossmintAuthServer", () => {
             });
         });
 
+        it("reads the session from the cookies scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
+
+            const result = await crossmintAuthServer.getSession(request);
+
+            expect(result).toMatchObject({ jwt: "scoped.jwt.token", refreshToken: { secret: "scoped-refresh" } });
+        });
+
         it("refreshes the session when JWT is invalid", async () => {
+            const refreshedJwt = jwtForProject(PROJECT_ID);
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
-            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid token"))
+                .mockResolvedValueOnce({ sub: "user456", aud: PROJECT_ID });
             mockApiClient.post.mockResolvedValue({
                 json: () =>
                     Promise.resolve({
-                        jwt: "new.jwt.token",
+                        jwt: refreshedJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user456", email: "user@example.com" },
+                    }),
+                ok: true,
+            });
+
+            const result = await crossmintAuthServer.getSession(mockRequest as GenericRequest);
+
+            expect(result).toEqual({
+                jwt: refreshedJwt,
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                userId: "user456",
+                user: { id: "user456", email: "user@example.com" },
+            });
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
+                refreshedJwt,
+                "https://api.crossmint.com/.well-known/jwks.json",
+                { audience: PROJECT_ID }
+            );
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/refresh",
+                expect.any(Object)
+            );
+        });
+
+        it("rejects and clears cookies when the refresh returns a JWT issued for another project", async () => {
+            const foreignJwt = jwtForProject("other-project");
+            const mockResponse = {} as GenericResponse;
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid stored JWT"))
+                .mockRejectedValueOnce(new Error("JWT audience does not match the expected project"));
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: foreignJwt,
                         refresh: {
                             secret: "new-refresh-token",
                             expiresAt: "2023-12-31T23:59:59Z",
@@ -101,19 +205,209 @@ describe("CrossmintAuthServer", () => {
                 ok: true,
             });
 
-            const result = await crossmintAuthServer.getSession(mockRequest as GenericRequest);
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)).rejects.toThrow(
+                "Failed to get session"
+            );
 
-            expect(result).toEqual({
-                jwt: "new.jwt.token",
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: foreignJwt }),
+                PROJECT_ID,
+                expect.anything()
+            );
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenLastCalledWith(
+                foreignJwt,
+                "https://api.crossmint.com/.well-known/jwks.json",
+                { audience: PROJECT_ID }
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                PROJECT_ID,
+                {}
+            );
+        });
+
+        it("rejects the session without logging out when refreshed JWT verification is unavailable", async () => {
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const mockResponse = {} as GenericResponse;
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid stored JWT"))
+                .mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: refreshedJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user456" },
+                    }),
+                ok: true,
+            });
+
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)).rejects.toThrow(
+                "Failed to get session"
+            );
+
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
+        });
+
+        it("rejects the session when a custom refresh JWT fails verification", async () => {
+            const refreshRoute = "https://app.example.com/api/refresh";
+            const mockResponse = {} as GenericResponse;
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const refreshedAuthMaterial = {
+                jwt: refreshedJwt,
                 refreshToken: {
                     secret: "new-refresh-token",
                     expiresAt: "2023-12-31T23:59:59Z",
                 },
-                userId: "user456",
-            });
-            expect(mockApiClient.post).toHaveBeenCalledWith(
-                "api/2024-09-26/session/sdk/auth/refresh",
-                expect.any(Object)
+                user: { id: "other-user" },
+            };
+            const fetchMock = vi.fn().mockResolvedValue(
+                new Response(JSON.stringify(refreshedAuthMaterial), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                })
+            );
+            vi.stubGlobal("fetch", fetchMock);
+            crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint, { refreshRoute });
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid stored JWT"))
+                .mockRejectedValueOnce(new Error("signature verification failed"));
+
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)).rejects.toThrow(
+                "Failed to get session"
+            );
+
+            expect(fetchMock).toHaveBeenCalledWith(refreshRoute, expect.objectContaining({ method: "POST" }));
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
+                expect.anything()
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                PROJECT_ID,
+                {}
+            );
+        });
+
+        it("rejects a custom refresh response when the user does not match the JWT subject", async () => {
+            const refreshRoute = "https://app.example.com/api/refresh";
+            const mockResponse = {} as GenericResponse;
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const refreshedAuthMaterial = {
+                jwt: refreshedJwt,
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "other-user" },
+            };
+            vi.stubGlobal(
+                "fetch",
+                vi.fn().mockResolvedValue(
+                    new Response(JSON.stringify(refreshedAuthMaterial), {
+                        status: 200,
+                        headers: { "Content-Type": "application/json" },
+                    })
+                )
+            );
+            crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint, { refreshRoute });
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt)
+                .mockRejectedValueOnce(new Error("Invalid stored JWT"))
+                .mockResolvedValueOnce({ sub: "user456", aud: PROJECT_ID });
+
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)).rejects.toThrow(
+                "Failed to get session"
+            );
+
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
+                expect.anything()
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                PROJECT_ID,
+                {}
+            );
+        });
+
+        it("rejects and clears cookies when a custom refresh response has no JWT", async () => {
+            const refreshRoute = "https://app.example.com/api/refresh";
+            const mockResponse = {} as GenericResponse;
+            const refreshedAuthMaterial = {
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user456" },
+            };
+            const fetchMock = vi.fn().mockResolvedValue(
+                new Response(JSON.stringify(refreshedAuthMaterial), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                })
+            );
+            vi.stubGlobal("fetch", fetchMock);
+            crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint, { refreshRoute });
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new Error("Invalid stored JWT"));
+
+            await expect(
+                crossmintAuthServer.getSession(mockRequest as GenericRequest, mockResponse)
+            ).rejects.toBeInstanceOf(CrossmintAuthenticationError);
+
+            expect(fetchMock).toHaveBeenCalledWith(refreshRoute, expect.objectContaining({ method: "POST" }));
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledTimes(1);
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ refreshToken: refreshedAuthMaterial.refreshToken }),
+                PROJECT_ID,
+                expect.anything()
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                PROJECT_ID,
+                {}
             );
         });
 
@@ -187,9 +481,7 @@ describe("CrossmintAuthServer", () => {
         it("fetches user data for a given external user ID", async () => {
             const mockExternalUserId = "external-user-123";
             const mockUserData = { id: "user456", email: "user@example.com" };
-            mockApiClient.get.mockResolvedValue({
-                json: () => Promise.resolve(mockUserData),
-            });
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify(mockUserData), { status: 200 }));
 
             const result = await crossmintAuthServer.getUser(mockExternalUserId);
 
@@ -198,6 +490,52 @@ describe("CrossmintAuthServer", () => {
                 `api/2024-09-26/sdk/auth/user/${mockExternalUserId}`,
                 expect.any(Object)
             );
+        });
+
+        it("encodes the user ID so it cannot change the request path", async () => {
+            mockApiClient.get.mockResolvedValue(new Response(JSON.stringify({ id: "x" }), { status: 200 }));
+
+            await crossmintAuthServer.getUser("a/b?c");
+
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "api/2024-09-26/sdk/auth/user/a%2Fb%3Fc",
+                expect.any(Object)
+            );
+        });
+
+        it("throws with the API message when the API key lacks users.read", async () => {
+            const apiMessage =
+                "The API key provided doesn't have the required scopes to perform this action: users.read. It has the scopes: wallets.read.";
+            mockApiClient.get.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 403, message: apiMessage, error: "Forbidden" }), {
+                    status: 403,
+                    statusText: "Forbidden",
+                })
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(403);
+            expect(error.message).toBe(`Failed to get user (403: ${apiMessage})`);
+        });
+
+        it("throws with the status and the API message when the user is not found", async () => {
+            mockApiClient.get.mockResolvedValue(
+                new Response(
+                    JSON.stringify({ statusCode: 404, message: "User with id external-user-123 not found." }),
+                    {
+                        status: 404,
+                        statusText: "Not Found",
+                    }
+                )
+            );
+
+            const error = await crossmintAuthServer.getUser("external-user-123").catch((e) => e);
+
+            expect(error).toBeInstanceOf(CrossmintAuthenticationError);
+            expect(error.status).toBe(404);
+            expect(error.message).toBe("Failed to get user (404: User with id external-user-123 not found.)");
         });
     });
 
@@ -214,7 +552,7 @@ describe("CrossmintAuthServer", () => {
 
             crossmintAuthServer.storeAuthMaterial(mockResponse, mockAuthMaterial);
 
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial, {});
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial, PROJECT_ID, {});
         });
     });
 
@@ -226,7 +564,7 @@ describe("CrossmintAuthServer", () => {
             });
 
             const mockRefreshedAuthRes = {
-                jwt: "new.jwt.token",
+                jwt: jwtForProject(PROJECT_ID),
                 refresh: {
                     secret: "new-refresh-token",
                     expiresAt: "2023-12-31T23:59:59Z",
@@ -234,6 +572,7 @@ describe("CrossmintAuthServer", () => {
                 user: { id: "user123" },
             };
 
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123", aud: PROJECT_ID });
             mockApiClient.post.mockResolvedValue({
                 json: () => Promise.resolve(mockRefreshedAuthRes),
                 ok: true,
@@ -254,7 +593,213 @@ describe("CrossmintAuthServer", () => {
                     refreshToken: mockRefreshedAuthRes.refresh,
                     user: mockRefreshedAuthRes.user,
                 },
+                PROJECT_ID,
                 {}
+            );
+        });
+
+        it("returns 401 and does not store the JWT when the refresh returns one issued for another project", async () => {
+            const foreignJwt = jwtForProject("other-project");
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: foreignJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(
+                new Error("JWT audience does not match the expected project")
+            );
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: foreignJwt }),
+                PROJECT_ID,
+                expect.anything()
+            );
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                expect.any(Response),
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                PROJECT_ID,
+                {}
+            );
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
+                foreignJwt,
+                "https://api.crossmint.com/.well-known/jwks.json",
+                { audience: PROJECT_ID }
+            );
+        });
+
+        it("returns 401 and does not store the JWT when verification fails", async () => {
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: refreshedJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new Error("signature verification failed"));
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
+                expect.anything()
+            );
+        });
+
+        it("returns 401 without verifying or storing a refresh response that has no JWT", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            const refreshedAuthMaterial = {
+                refresh: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user123" },
+            };
+
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(refreshedAuthMaterial),
+                ok: true,
+            });
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(jwtUtils.verifyCrossmintJwt).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ refreshToken: refreshedAuthMaterial.refresh }),
+                PROJECT_ID,
+                expect.anything()
+            );
+        });
+
+        it("returns 503 without logging out when refreshed JWT verification is unavailable", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: jwtForProject(PROJECT_ID),
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(503);
+            expect(result.statusText).toBe("Service Unavailable");
+            expect(await result.json()).toEqual({ error: "Service Unavailable", message: "timeout" });
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
+        });
+
+        it("returns a Node 503 response without logging out when refreshed JWT verification is unavailable", async () => {
+            const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
+            const logoutSpy = vi.spyOn(crossmintAuthServer, "logout");
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: jwtForProject(PROJECT_ID),
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "user123" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValueOnce(new jwtUtils.JwksUnavailableError("timeout"));
+
+            const result = await crossmintAuthServer.handleCustomRefresh(mockNodeRequest, mockNodeResponse);
+
+            expect(result).toBe(mockNodeResponse);
+            expect(mockNodeResponse.statusCode).toBe(503);
+            expect(mockNodeResponse.statusMessage).toBe("Service Unavailable");
+            expect(mockNodeResponse.write).toHaveBeenCalledWith(
+                JSON.stringify({ error: "Service Unavailable", message: "timeout" })
+            );
+            expect(logoutSpy).not.toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalled();
+        });
+
+        it("returns 401 when the refreshed user does not match the JWT subject", async () => {
+            const refreshedJwt = jwtForProject(PROJECT_ID);
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+
+            mockApiClient.post.mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        jwt: refreshedJwt,
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
+                        user: { id: "other-user" },
+                    }),
+                ok: true,
+            });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValueOnce({ sub: "user123", aud: PROJECT_ID });
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(cookiesUtils.setAuthCookies).not.toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ jwt: refreshedJwt }),
+                PROJECT_ID,
+                expect.anything()
             );
         });
 
@@ -280,8 +825,30 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
+        });
+
+        it("returns the API's reason when Crossmint rejects the refresh token", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+            mockApiClient.post.mockResolvedValue(
+                new Response(JSON.stringify({ statusCode: 401, message: "Invalid refresh token" }), {
+                    status: 401,
+                    statusText: "Unauthorized",
+                })
+            );
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(result.status).toBe(401);
+            expect(await result.json()).toEqual({
+                error: "Unauthorized",
+                message: "Failed to refresh the session (401: Invalid refresh token)",
+            });
         });
 
         it("throws error when refresh token is missing", async () => {
@@ -304,7 +871,7 @@ describe("CrossmintAuthServer", () => {
             const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
 
             const mockRefreshedAuthRes = {
-                jwt: "new.jwt.token",
+                jwt: jwtForProject(PROJECT_ID),
                 refresh: {
                     secret: "new-refresh-token",
                     expiresAt: "2023-12-31T23:59:59Z",
@@ -312,6 +879,7 @@ describe("CrossmintAuthServer", () => {
                 user: { id: "user123" },
             };
 
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123", aud: PROJECT_ID });
             mockApiClient.post.mockResolvedValue({
                 json: () => Promise.resolve(mockRefreshedAuthRes),
                 ok: true,
@@ -331,12 +899,13 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
                 mockNodeResponse,
                 expect.objectContaining({
-                    jwt: "new.jwt.token",
+                    jwt: mockRefreshedAuthRes.jwt,
                     refreshToken: {
                         secret: "new-refresh-token",
                         expiresAt: "2023-12-31T23:59:59Z",
                     },
                 }),
+                PROJECT_ID,
                 {}
             );
 
@@ -364,6 +933,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 }),
+                PROJECT_ID,
                 {}
             );
         });
@@ -377,6 +947,24 @@ describe("CrossmintAuthServer", () => {
                 jwt: "mock.jwt.token",
                 refreshToken: "mock-refresh-token",
             });
+        });
+
+        it("revokes the refresh token stored in the cookie scoped to the API key's project", async () => {
+            const { getAuthCookies } = await vi.importActual<typeof import("./utils/cookies")>("./utils/cookies");
+            vi.mocked(cookiesUtils.getAuthCookies).mockImplementation(getAuthCookies);
+            mockApiClient.post.mockResolvedValue({ ok: true });
+            const request = new Request("http://test.com", {
+                headers: {
+                    cookie: `crossmint-jwt-${PROJECT_ID}=scoped.jwt.token; crossmint-refresh-token-${PROJECT_ID}=scoped-refresh`,
+                },
+            });
+
+            await crossmintAuthServer.logout(request, {} as GenericResponse);
+
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                expect.stringContaining("/logout"),
+                expect.objectContaining({ body: JSON.stringify({ refresh: "scoped-refresh" }) })
+            );
         });
 
         it("clears auth material from response and returns it", async () => {
@@ -393,6 +981,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBe(mockResponse);
@@ -410,6 +999,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBeInstanceOf(Response);
@@ -445,6 +1035,7 @@ describe("CrossmintAuthServer", () => {
                         expiresAt: "",
                     },
                 },
+                PROJECT_ID,
                 {}
             );
             expect(result).toBe(mockResponse);

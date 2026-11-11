@@ -1,5 +1,4 @@
 import { WithLoggerContext } from "@crossmint/common-sdk-base";
-import { WebAuthnP256 } from "ox";
 import { walletsLogger } from "../logger";
 
 import type {
@@ -15,7 +14,6 @@ import type {
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     InvalidRecoveryConfigError,
-    RecoveryNotSupportedOnChainError,
     WalletCreationError,
     WalletNotAvailableError,
     throwIfRecoverySignerApiError,
@@ -23,15 +21,17 @@ import {
 import { type Chain, validateChainForEnvironment } from "../chains/chains";
 import type {
     ExternalWalletRegistrationConfig,
+    PasskeyProvider,
     PasskeySignerConfig,
     RecoverySignerConfigForChain,
     SignerConfigForChain,
 } from "../signers/types";
-import { Wallet } from "./wallet";
+import { Wallet, type WalletFactoryConstructorArgs } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
 import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
+import { createPasskeyCredential } from "../signers/passkey";
 import { deriveServerSignerDetails, deriveServerSignerCandidates } from "../signers/server";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 import { createDeviceSigner } from "@/utils/device-signers";
@@ -55,6 +55,11 @@ type ResolvedRecoverySigner = RecoverySignerConfig | RegisterSignerPasskeyParams
  * the `adminSigner` field.
  */
 type RecoveryRequestConfig = { adminSigner: ResolvedRecoverySigner } | { recoveryMethods: ResolvedRecoverySigner[] };
+
+/** Mirrors `RecoverySignerConfigFor`: a device key lives on one device, so it can never recover a wallet. */
+function canBeRecoveryMethod(type: string): boolean {
+    return type !== "device";
+}
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -106,8 +111,16 @@ export class WalletFactory {
         }
 
         const validatedArgs = { ...args, chain: validateChainForEnvironment(args.chain, this.apiClient.environment) };
+        const createArgs = validatedArgs as WalletCreateArgs<C>;
+        if (createArgs.recovery != null || createArgs.recoveryMethods != null) {
+            this.validatedRecoverySignerList(recoveryMethodsFromCreateArgs(createArgs), validatedArgs.chain);
+        }
 
         walletsLogger.info("walletFactory.getWallet.start");
+
+        // Signer initialization reads device keys right after the wallet loads: start loading the key
+        // storage (an iframe on web) now, alongside the request.
+        validatedArgs.options?.deviceSignerKeyStorage?.preload?.();
 
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
@@ -142,6 +155,7 @@ export class WalletFactory {
                     : "A recovery method is required"
             );
         }
+        const recoverySigners = this.validatedRecoverySignerList(recoveryMethods, validatedArgs.chain);
         await validatedArgs.options?.callbacks?.onWalletCreationStart?.();
         walletsLogger.info("walletFactory.createWallet.start");
 
@@ -165,14 +179,20 @@ export class WalletFactory {
         const builtSigners = await this.registerSigners(
             signersToRegister,
             validatedArgs.chain,
-            validatedArgs.options?.deviceSignerKeyStorage
+            validatedArgs.options?.deviceSignerKeyStorage,
+            validatedArgs.options?.passkeyProvider
         );
 
-        const recoverySigners = this.validatedRecoverySignerList(recoveryMethods, validatedArgs.chain);
         const resolvedRecoverySigners: ResolvedRecoverySigner[] = [];
         // Sequential: resolving a passkey signer prompts the user, and browsers reject concurrent WebAuthn calls.
         for (const recoverySigner of recoverySigners) {
-            resolvedRecoverySigners.push(await this.resolveRecoverySigner(recoverySigner, validatedArgs.chain));
+            resolvedRecoverySigners.push(
+                await this.resolveRecoverySigner(
+                    recoverySigner,
+                    validatedArgs.chain,
+                    validatedArgs.options?.passkeyProvider
+                )
+            );
         }
         const recoveryRequestConfig = this.buildRecoveryRequestConfig(validatedArgs, resolvedRecoverySigners);
 
@@ -239,8 +259,7 @@ export class WalletFactory {
         args: WalletCreateArgs<C>,
         resolvedRecoverySigners: ResolvedRecoverySigner[]
     ): RecoveryRequestConfig {
-        // The API only accepts recoveryMethods on Solana and Stellar; EVM still requires adminSigner for one method.
-        if (hasRecoveryMethodList(args) && (args.chain === "solana" || args.chain === "stellar")) {
+        if (hasRecoveryMethodList(args)) {
             return { recoveryMethods: resolvedRecoverySigners };
         }
         return { adminSigner: resolvedRecoverySigners[0] };
@@ -253,10 +272,12 @@ export class WalletFactory {
         if (recoveryMethods.length === 0) {
             throw new InvalidRecoveryConfigError("At least one recovery method is required");
         }
-        if (recoveryMethods.length > 1 && chain !== "solana" && chain !== "stellar") {
-            throw new RecoveryNotSupportedOnChainError(
-                `Multiple recovery methods are not supported on ${chain} yet. Pass a single recovery method.`
-            );
+        for (const method of recoveryMethods) {
+            if (!canBeRecoveryMethod(method.type)) {
+                throw new InvalidRecoveryConfigError(
+                    `A "${method.type}" signer cannot be a recovery method on ${chain}. Register it under \`signers\` instead.`
+                );
+            }
         }
         return recoveryMethods;
     }
@@ -264,10 +285,11 @@ export class WalletFactory {
     /** Creates the passkey / derives the server signer address a recovery signer needs to be sent to the API. */
     private async resolveRecoverySigner<C extends Chain>(
         recovery: RecoverySignerConfigFor<C>,
-        chain: C
+        chain: C,
+        passkeyProvider?: PasskeyProvider
     ): Promise<ResolvedRecoverySigner> {
         if (recovery.type === "passkey" && recovery.id == null) {
-            return await this.createPasskeySigner(recovery as SignerConfigForChain<C>);
+            return await this.createPasskeySigner(recovery as SignerConfigForChain<C>, passkeyProvider);
         }
         if (recovery.type === "server") {
             const { derivedAddress } = deriveServerSignerDetails(
@@ -361,20 +383,19 @@ export class WalletFactory {
             .filter((s) => s.type === "server" && "address" in s && !("secret" in s))
             .map((s) => (s as { address: string }).address);
 
-        const wallet = new Wallet(
-            {
-                chain: args.chain,
-                address: walletResponse.address,
-                owner: walletResponse.owner,
-                options: args.options,
-                alias: args.alias,
-                recovery: recoverySigners,
-                apiRecoveryServerSignerAddresses,
-                apiDelegatedServerSignerAddresses,
-                signers: (signers ?? []) as SignerConfigForChain<C>[],
-            },
-            this.apiClient
-        );
+        const walletArgs: WalletFactoryConstructorArgs<C> = {
+            chain: args.chain,
+            address: walletResponse.address,
+            owner: walletResponse.owner,
+            options: args.options,
+            alias: args.alias,
+            recovery: recoverySigners,
+            apiRecoveryServerSignerAddresses,
+            apiDelegatedServerSignerAddresses,
+            signers: (signers ?? []) as SignerConfigForChain<C>[],
+            apiSigners: apiDelegatedSigners as SignerResponse[] | undefined,
+        };
+        const wallet = new Wallet(walletArgs, this.apiClient);
 
         // Await signer initialization so that needsRecovery() returns the correct
         // value immediately after getWallet() / createWallet() resolves.
@@ -475,24 +496,13 @@ export class WalletFactory {
     }
 
     private async createPasskeySigner<C extends Chain>(
-        signer: SignerConfigForChain<C>
+        signer: SignerConfigForChain<C>,
+        passkeyProvider?: PasskeyProvider
     ): Promise<RegisterSignerPasskeyParams> {
         if (signer.type !== "passkey") {
             throw new Error("Signer is not a passkey");
         }
-        const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
-        const passkeyCredential = signer.onCreatePasskey
-            ? await signer.onCreatePasskey(passkeyName)
-            : await WebAuthnP256.createCredential({ name: passkeyName });
-        return {
-            type: "passkey",
-            id: passkeyCredential.id,
-            name: passkeyName,
-            publicKey: {
-                x: passkeyCredential.publicKey.x.toString(),
-                y: passkeyCredential.publicKey.y.toString(),
-            },
-        };
+        return await createPasskeyCredential(signer, passkeyProvider);
     }
 
     private validateExistingWalletConfig<C extends Chain>(
@@ -537,6 +547,18 @@ export class WalletFactory {
                 const matchIndex = unmatchedExistingSigners.findIndex((existingWalletSigner) =>
                     this.matchesRecoverySigner(inputRecoverySigner, existingWalletSigner, args.chain)
                 );
+                // A server signer is identified by the address its secret derives to. Falling back to a
+                // type-only match would let any secret pass, so an address miss is a mismatch.
+                if (
+                    matchIndex === -1 &&
+                    inputRecoverySigner.type === "server" &&
+                    "secret" in inputRecoverySigner &&
+                    unmatchedExistingSigners.some((s) => s.type === "server")
+                ) {
+                    throw new WalletCreationError(
+                        "The server recovery signer does not match the existing wallet's server recovery signer: its secret derives to a different address"
+                    );
+                }
                 const existingWalletSigner =
                     matchIndex === -1
                         ? unmatchedExistingSigners.find((s) => s.type === inputRecoverySigner.type)
@@ -642,58 +664,66 @@ export class WalletFactory {
     private async registerSigners<C extends Chain>(
         signersList?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>,
         chain?: C,
-        deviceSignerKeyStorage?: DeviceSignerKeyStorage
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage,
+        passkeyProvider?: PasskeyProvider
     ): Promise<Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
-        return await Promise.all(
-            signersList?.map(
-                async (
-                    signer
-                ): Promise<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
-                    if (signer.type === "passkey") {
-                        if (signer.id == null) {
-                            return { signer: await this.createPasskeySigner(signer) };
-                        }
-                        return { signer };
-                    }
-                    if (signer.type === "device") {
-                        // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
-                        if (signer.publicKey != null) {
-                            return {
-                                signer: {
-                                    type: "device" as const,
-                                    publicKey: signer.publicKey,
-                                    name: signer.name,
-                                },
-                            };
-                        }
-                        if (signer.locator != null) {
-                            return { signer: signer.locator };
-                        }
-                        if (deviceSignerKeyStorage == null) {
-                            throw new WalletCreationError("Device signer key storage is required for device signers");
-                        }
-                        const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
-                        return {
-                            signer: {
-                                type: "device" as const,
-                                publicKey: deviceSigner.publicKey,
-                                name: deviceSigner.name,
-                            },
-                        };
-                    }
-                    if (signer.type === "server" && chain != null) {
-                        const { derivedAddress } = deriveServerSignerDetails(
-                            signer,
-                            chain,
-                            this.apiClient.projectId,
-                            this.apiClient.environment
-                        );
-                        return { signer: `server:${derivedAddress}` };
-                    }
-                    return { signer: getSignerLocator(signer) as string };
-                }
-            ) ?? []
-        );
+        const registered: Array<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> = [];
+        // Sequential: creating a passkey or a device key can prompt the user, and the platform rejects a second
+        // prompt (browser WebAuthn, native passkey and biometric dialogs) while one is open.
+        for (const signer of signersList ?? []) {
+            registered.push(await this.registerSigner(signer, chain, deviceSignerKeyStorage, passkeyProvider));
+        }
+        return registered;
+    }
+
+    private async registerSigner<C extends Chain>(
+        signer: SignerConfigForChain<C> | ExternalWalletRegistrationConfig,
+        chain?: C,
+        deviceSignerKeyStorage?: DeviceSignerKeyStorage,
+        passkeyProvider?: PasskeyProvider
+    ): Promise<{ signer: string } | RegisterSignerParams | { signer: PasskeySignerConfig }> {
+        if (signer.type === "passkey") {
+            if (signer.id == null) {
+                return { signer: await this.createPasskeySigner(signer, passkeyProvider) };
+            }
+            return { signer };
+        }
+        if (signer.type === "device") {
+            // If the device signer already has a locator or public key (e.g., created via createDeviceSigner helper), use it directly
+            if (signer.publicKey != null) {
+                return {
+                    signer: {
+                        type: "device" as const,
+                        publicKey: signer.publicKey,
+                        name: signer.name,
+                    },
+                };
+            }
+            if (signer.locator != null) {
+                return { signer: signer.locator };
+            }
+            if (deviceSignerKeyStorage == null) {
+                throw new WalletCreationError("Device signer key storage is required for device signers");
+            }
+            const deviceSigner = await createDeviceSigner(deviceSignerKeyStorage);
+            return {
+                signer: {
+                    type: "device" as const,
+                    publicKey: deviceSigner.publicKey,
+                    name: deviceSigner.name,
+                },
+            };
+        }
+        if (signer.type === "server" && chain != null) {
+            const { derivedAddress } = deriveServerSignerDetails(
+                signer,
+                chain,
+                this.apiClient.projectId,
+                this.apiClient.environment
+            );
+            return { signer: `server:${derivedAddress}` };
+        }
+        return { signer: getSignerLocator(signer) as string };
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {

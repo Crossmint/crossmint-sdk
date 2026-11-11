@@ -14,9 +14,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         const crossmint = createCrossmint({
             apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
         });
-        const url = new URL(request.url);
         const crossmintAuth = CrossmintAuth.from(crossmint, {
-            refreshRoute: `${url.origin}/api/refresh`,
+            refreshRoute: `${process.env.APP_URL || "http://localhost:3001"}/api/refresh`,
         });
 
         const { jwt, userId: fetchedUserId } = await crossmintAuth.getSession(request, inProgressResponse);

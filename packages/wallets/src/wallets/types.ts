@@ -15,6 +15,7 @@ import type {
     DeviceSignerConfig,
     DeviceSignerLocator,
     PasskeySignerConfig,
+    PasskeyProvider,
     ServerSignerConfig,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
@@ -228,6 +229,8 @@ export type WalletOptions = {
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     resetSignerFrame?: () => Promise<void>;
     deviceSignerKeyStorage?: DeviceSignerKeyStorage;
+    /** Creates and signs with passkeys where the browser WebAuthn API is not available (e.g. React Native). */
+    passkeyProvider?: PasskeyProvider;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -257,7 +260,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
      */
     recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
     /**
-     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Recovery methods, each able to authorize on its own.
      * Required unless the deprecated `recovery` is passed.
      */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;

@@ -1,5 +1,191 @@
 # @crossmint/client-sdk-react-base
 
+## 2.5.7
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-auth@1.3.38
+  - @crossmint/common-sdk-auth@1.1.36
+  - @crossmint/wallets-sdk@1.22.3
+
+## 2.5.6
+
+### Patch Changes
+
+- Updated dependencies [04ec76f]
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [36903ca]
+  - @crossmint/wallets-sdk@1.22.2
+  - @crossmint/common-sdk-auth@1.1.35
+  - @crossmint/client-sdk-auth@1.3.37
+
+## 2.5.5
+
+### Patch Changes
+
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-auth@1.3.36
+
+## 2.5.4
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-auth@1.3.35
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 2.5.3
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/client-sdk-auth@1.3.34
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/wallets-sdk@1.21.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 2.5.2
+
+### Patch Changes
+
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-auth@1.3.33
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 2.5.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+
+## 2.5.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/client-sdk-auth@1.3.32
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 2.4.6
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-auth@1.3.31
+  - @crossmint/common-sdk-auth@1.1.29
+
+## 2.4.5
+
+### Patch Changes
+
+- Updated dependencies [0be2c42]
+- Updated dependencies [7401d02]
+- Updated dependencies [25e5591]
+  - @crossmint/client-sdk-base@4.6.0
+  - @crossmint/wallets-sdk@1.20.5
+  - @crossmint/client-sdk-auth@1.3.30
+  - @crossmint/common-sdk-auth@1.1.28
+
+## 2.4.4
+
+### Patch Changes
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [0ee57ff]
+- Updated dependencies [8441595]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/wallets-sdk@1.20.4
+  - @crossmint/client-sdk-base@4.5.0
+  - @crossmint/client-sdk-auth@1.3.29
+  - @crossmint/common-sdk-auth@1.1.27
+
+## 2.4.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+  - @crossmint/client-sdk-auth@1.3.28
+  - @crossmint/wallets-sdk@1.20.3
+
+## 2.4.2
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+- Updated dependencies [2ed2e02]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/wallets-sdk@1.20.2
+  - @crossmint/client-sdk-base@4.4.0
+  - @crossmint/client-sdk-auth@1.3.27
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 2.4.1
+
+### Patch Changes
+
+- be45d5d: `getOrCreateWallet` no longer retries forever when `createOnLogin` fails. A failed attempt used to rewrite the error state, recreate the callback and refire the login effect, so status oscillated between `in-progress` and `error` for as long as the page was open. It now settles on `error` for the args that failed, and retries only when `createOnLogin` or the JWT changes.
+- Updated dependencies [4ab8408]
+- Updated dependencies [924a0b6]
+- Updated dependencies [523fa26]
+  - @crossmint/client-sdk-base@4.3.0
+  - @crossmint/wallets-sdk@1.20.1
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/client-sdk-auth@1.3.26
+  - @crossmint/common-sdk-auth@1.1.24
+
+## 2.4.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
+### Patch Changes
+
+- dc31134: An existing wallet keeps the phone signer's OTP `channel` from `createOnLogin`. The API never returns `channel`, so after a reload a WhatsApp phone signer sent its OTP by SMS. `getOrCreateWallet` now passes the recovery and signer config to `getWallet`, which merges it in. If the signers no longer match the existing wallet, it loads with the recovery config only; if that does not match either, it loads without config, as before.
+- Updated dependencies [2aaeabe]
+  - @crossmint/wallets-sdk@1.20.0
+
 ## 2.3.2
 
 ### Patch Changes

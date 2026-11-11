@@ -7,7 +7,40 @@ import type { EmbeddedCheckoutV3Appearance } from "../embed";
  */
 export type PaymentMethodManagementAllowedType = "card" | "bank-account-us";
 
+/** How the add-card form treats address line 2: shown and optional (default), shown and required, or not shown. */
+export type PaymentMethodBillingAddressLine2 = "optional" | "required" | "hidden";
+
+/** Starting values of the add-card form. See `CrossmintPaymentMethodManagementProps.defaultValues`. */
+export type PaymentMethodManagementDefaultValues = {
+    /** `null` at any level means no default, like a missing key. */
+    billingDetails?: {
+        /** `null` or an empty string means no default for that field. */
+        address?: {
+            /**
+             * Uppercase ISO 3166-1 alpha-2 code, for example `"ES"`. Without it, the form starts
+             * in the US.
+             */
+            country?: string | null;
+            line1?: string | null;
+            line2?: string | null;
+            city?: string | null;
+            /**
+             * ISO 3166-2 subdivision code of the starting country, without the country prefix:
+             * `"FL"` (not `"US-FL"`), `"ON"`, `"MU"` (Murcia, Spain), `"AGU"` (Aguascalientes,
+             * Mexico). The match is exact: the iframe ignores a name (`"Florida"`) or a lowercase
+             * code (`"fl"`) and logs a console warning. Without `country`, use a US code.
+             */
+            stateOrRegion?: string | null;
+            postalCode?: string | null;
+        } | null;
+    } | null;
+};
+
 export interface CrossmintPaymentMethodManagementProps {
+    /**
+     * Pass a user JWT from your own auth provider or a custom JWT.
+     * Crossmint Auth JWTs are not supported.
+     */
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
     /**
@@ -23,7 +56,111 @@ export interface CrossmintPaymentMethodManagementProps {
      * than one type does not yet render a type picker.
      */
     allowedPaymentMethodTypes?: PaymentMethodManagementAllowedType[];
+    /**
+     * Optional fields of the add-card form, in Stripe's `billingDetails` shape so new
+     * fields need no new prop. `billingDetails.address: true` (default) collects a required
+     * billing address: the card form validates it before saving — for built-in and
+     * `ref.submit()` submissions alike — and it comes back on `card.billing.address`
+     * of the emitted method. Applies to cards only; other method types ignore it.
+     * Pass `address: false` to save cards without a billing address; issuers decline
+     * more cards that have none.
+     *
+     * An object collects it too and configures the fields the payment-methods API
+     * leaves optional: `{ line2: "optional" | "required" | "hidden" }`.
+     * `true` equals `{ line2: "optional" }`.
+     */
+    fields?: { billingDetails?: { address?: boolean | { line2?: PaymentMethodBillingAddressLine2 } } };
+    /**
+     * Starting values of the add-card form, in the same `billingDetails` shape as `fields`.
+     * The buyer can edit every value. `null` or an empty string means no default for that
+     * field, so values from a database can pass as they are. The form ignores them when
+     * `fields.billingDetails.address` is `false`.
+     *
+     * The iframe checks each value on its own: it ignores an invalid value and logs a console
+     * warning, and keeps the other values. It drops a `line2` default when
+     * `fields.billingDetails.address.line2` is `"hidden"`.
+     *
+     * The values travel in the iframe URL. A change after mount reloads the iframe, so pass
+     * stable values (for example, memoize the object).
+     */
+    defaultValues?: PaymentMethodManagementDefaultValues | null;
     onPaymentMethodSelected?: (paymentMethod: CrossmintPaymentMethod) => void | Promise<void>;
+    /**
+     * Fires when `ref.submit()` can first select or save, like Stripe's `ready` event. Until then a
+     * submit answers `unavailable`. It fires again after the iframe reloads, for example when `jwt`
+     * or the form configuration changes.
+     */
+    onReady?: () => void;
+    /**
+     * Fires after `onReady` and whenever the form state changes, like Stripe's `change` event. Use
+     * `complete` to enable your submit button. When a prop change reloads the iframe, it fires with
+     * `complete: false` until the new form reports its own state.
+     */
+    onChange?: (event: PaymentMethodManagementChangeEvent) => void;
+}
+
+/**
+ * The form state `onChange` reports.
+ * - `mode`: `"existing"` while a saved method is selected, `"new"` while the add-new form shows.
+ * - `complete`: a submit would select or save without a field error.
+ * - `empty`: the user entered nothing in the add-new form. Prefilled `defaultValues` do not count.
+ */
+export type PaymentMethodManagementChangeEvent = {
+    mode: "new" | "existing";
+    empty: boolean;
+    complete: boolean;
+};
+
+/**
+ * Why a submit did not select or save, for code that branches on the reason or shows its own text.
+ * Each list is the single definition of its codes: the types below and the result validation both
+ * come from it. `unknown` means the component sent no known code.
+ */
+export const PAYMENT_METHOD_SUBMIT_INVALID_CODES = [
+    "incomplete_card",
+    "invalid_billing_address",
+    "incomplete_bank_account",
+    "unknown",
+] as const;
+export const PAYMENT_METHOD_SUBMIT_FAILED_CODES = ["save_failed", "select_failed", "unknown"] as const;
+/** `timeout` comes from the SDK: the component did not answer in time. */
+export const PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES = ["not_ready", "timeout", "unknown"] as const;
+
+export type PaymentMethodSubmitInvalidCode = (typeof PAYMENT_METHOD_SUBMIT_INVALID_CODES)[number];
+export type PaymentMethodSubmitFailedCode = (typeof PAYMENT_METHOD_SUBMIT_FAILED_CODES)[number];
+export type PaymentMethodSubmitUnavailableCode = (typeof PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES)[number];
+
+/**
+ * What `ref.submit()` resolves to. It never rejects.
+ * - `selected`: the user had a saved method selected; it is the one to use.
+ * - `saved`: the method in the form was saved; `onPaymentMethodSelected` also fired.
+ * - `invalid`: the form shows a field error the user has to fix.
+ * - `failed`: the save failed with a message the user can read; they can try again.
+ * - `unavailable`: the component is not ready (not loaded, still loading saved methods, or it
+ *   did not answer in time). After a timeout the save may still have completed:
+ *   `onPaymentMethodSelected` fires if it did, and submitting again returns the same method.
+ * - `superseded`: the component changed or unmounted while submitting. Discard the result;
+ *   this does not cancel a save already started on the server.
+ *
+ * `invalid`, `failed` and `unavailable` carry a `code` (see the `PaymentMethodSubmit*Code` types)
+ * and a `message` to show the user. The component shows only field errors itself.
+ */
+export type PaymentMethodSubmitResult =
+    | { status: "selected"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "saved"; paymentMethod: CrossmintPaymentMethod }
+    | { status: "invalid"; code: PaymentMethodSubmitInvalidCode; message: string }
+    | { status: "failed"; code: PaymentMethodSubmitFailedCode; message: string }
+    | { status: "unavailable"; code: PaymentMethodSubmitUnavailableCode; message: string }
+    | { status: "superseded"; message: string };
+
+export interface CrossmintPaymentMethodManagementRef {
+    /**
+     * Submits what the component shows: the selected saved method, or the add-new form. A call
+     * while one is in flight returns the same promise. Calling it again on an unchanged saved
+     * form returns that method again; nothing is saved twice. A change of buyer, configuration,
+     * or iframe connection supersedes any pending submit.
+     */
+    submit(): Promise<PaymentMethodSubmitResult>;
 }
 
 /**
@@ -48,11 +185,35 @@ export type CrossmintCardPaymentMethod = {
             // 4 digit year
             year: string;
         };
+        /**
+         * Billing details the card was saved with. `address` is present when the card was
+         * saved with a billing address (the SDK default) or the account has one on file. A card
+         * saved with `fields.billingDetails.address: false`, before this default, or outside
+         * the SDK can lack it.
+         */
+        billing?: CrossmintPaymentMethodBillingDetails;
     };
     default?: boolean;
     display?: {
         imageUrl?: string;
     };
+};
+
+export type CrossmintPaymentMethodBillingDetails = {
+    name: string;
+    address?: CrossmintPaymentMethodBillingAddress;
+    phone?: string;
+};
+
+export type CrossmintPaymentMethodBillingAddress = {
+    /** 2-letter ISO country code. */
+    country: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    stateOrRegion?: string;
+    /** May be empty for countries whose address format has no postal code. */
+    postalCode: string;
 };
 
 /**

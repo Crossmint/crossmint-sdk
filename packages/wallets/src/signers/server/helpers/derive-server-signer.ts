@@ -5,7 +5,8 @@ import { Keypair as SolanaKeypair } from "@solana/web3.js";
 import type { Chain } from "../../../chains/chains";
 import type { DerivedServerSigner, ServerSignerConfig } from "../../types";
 import { deriveKeyBytes } from "../../../utils/server-key-derivation";
-import { ed25519KeypairFromSeed, encodeStellarPublicKey } from "../../../utils/stellar";
+import { ed25519KeypairFromSeed } from "../../../utils/ed25519";
+import { encodeStellarPublicKey } from "../../../utils/stellar";
 import { getChainType } from "./get-chain-type";
 
 export function deriveServerSignerAddress(keyBytes: Uint8Array, chain: Chain): string {

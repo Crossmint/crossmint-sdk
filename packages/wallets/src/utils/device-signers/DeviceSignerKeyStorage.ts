@@ -66,9 +66,35 @@ export abstract class DeviceSignerKeyStorage {
     abstract deleteKey(address: string): Promise<void>;
 
     /**
+     * Start any slow setup (e.g. loading an iframe) so later calls don't wait for it. Called when a wallet
+     * starts loading, before its first request. Never throws; the default does nothing.
+     */
+    preload(): void {}
+
+    /**
      * Get a human-readable name for this device (e.g. "MacBook Pro", "iPhone 15").
      * Used to label device signers in the API for identification purposes.
      * @returns A descriptive name for the current device.
      */
     abstract getDeviceName(): string;
+
+    /**
+     * Save the locator of the device signer that this device registered for a wallet.
+     * The SDK uses this locator to remove the old signer after the device loses its key.
+     * Keep the locator in storage that is separate from the key.
+     * The default implementation does not save the locator.
+     * @param address - The wallet address.
+     * @param signerLocator - The device signer locator, in the format `device:<publicKeyBase64>`.
+     */
+    async saveSignerLocator(_address: string, _signerLocator: string): Promise<void> {}
+
+    /**
+     * Get the device signer locator that {@link saveSignerLocator} saved for a wallet.
+     * The default implementation always returns `null`.
+     * @param address - The wallet address.
+     * @returns The saved locator, or `null` if the storage has no locator for the wallet.
+     */
+    async getSavedSignerLocator(_address: string): Promise<string | null> {
+        return null;
+    }
 }

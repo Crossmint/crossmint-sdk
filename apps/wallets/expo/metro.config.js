@@ -13,7 +13,8 @@ const sharedDir = path.resolve(__dirname, "../shared");
 
 module.exports = {
     ...config,
-    watchFolders: [monorepoRoot, packagesDir, sharedDir],
+    // Keep Expo's default watch folders (it detects the monorepo) and add ours.
+    watchFolders: [...new Set([...config.watchFolders, monorepoRoot, packagesDir, sharedDir])],
     resolver: {
         ...config.resolver,
         extraNodeModules: {

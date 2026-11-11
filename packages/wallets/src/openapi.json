@@ -262,7 +262,6 @@
                                 "crossmint-private-testnet-ethereum",
                                 "crossmint-private-testnet-polygon",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "shape-sepolia",
                                 "skale-nebula-testnet",
                                 "space-testnet",
@@ -285,7 +284,6 @@
                                 "apechain",
                                 "mantle",
                                 "skale-nebula",
-                                "sei-pacific-1",
                                 "chiliz",
                                 "avalanche",
                                 "shape",
@@ -446,7 +444,6 @@
                                 "crossmint-private-testnet-ethereum",
                                 "crossmint-private-testnet-polygon",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "shape-sepolia",
                                 "skale-nebula-testnet",
                                 "space-testnet",
@@ -469,7 +466,6 @@
                                 "apechain",
                                 "mantle",
                                 "skale-nebula",
-                                "sei-pacific-1",
                                 "chiliz",
                                 "avalanche",
                                 "shape",
@@ -1206,7 +1202,6 @@
                                 "optimism",
                                 "polygon",
                                 "scroll",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "tempo",
@@ -1223,7 +1218,6 @@
                                 "optimism-sepolia",
                                 "polygon-amoy",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "story-testnet",
                                 "zora-sepolia",
                                 "arc-testnet",
@@ -2400,7 +2394,6 @@
                                 "optimism",
                                 "polygon",
                                 "scroll",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "tempo",
@@ -2417,7 +2410,6 @@
                                 "optimism-sepolia",
                                 "polygon-amoy",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
                                 "story-testnet",
                                 "zora-sepolia",
                                 "arc-testnet",
@@ -2662,8 +2654,6 @@
                                 "robinhood-chain-testnet",
                                 "scroll",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "story-testnet",
@@ -2827,8 +2817,6 @@
                                 "robinhood-chain-testnet",
                                 "scroll",
                                 "scroll-sepolia",
-                                "sei-atlantic-2-testnet",
-                                "sei-pacific-1",
                                 "shape",
                                 "story",
                                 "story-testnet",
@@ -5950,7 +5938,6 @@
                                                                                         "crossmint-private-testnet-ethereum",
                                                                                         "crossmint-private-testnet-polygon",
                                                                                         "scroll-sepolia",
-                                                                                        "sei-atlantic-2-testnet",
                                                                                         "shape-sepolia",
                                                                                         "skale-nebula-testnet",
                                                                                         "space-testnet",
@@ -5973,7 +5960,6 @@
                                                                                         "apechain",
                                                                                         "mantle",
                                                                                         "skale-nebula",
-                                                                                        "sei-pacific-1",
                                                                                         "chiliz",
                                                                                         "avalanche",
                                                                                         "shape",
@@ -16073,7 +16059,6 @@
                                                                             "crossmint-private-testnet-ethereum",
                                                                             "crossmint-private-testnet-polygon",
                                                                             "scroll-sepolia",
-                                                                            "sei-atlantic-2-testnet",
                                                                             "shape-sepolia",
                                                                             "skale-nebula-testnet",
                                                                             "space-testnet",
@@ -16096,7 +16081,6 @@
                                                                             "apechain",
                                                                             "mantle",
                                                                             "skale-nebula",
-                                                                            "sei-pacific-1",
                                                                             "chiliz",
                                                                             "avalanche",
                                                                             "shape",
@@ -24386,29 +24370,6 @@
                                             },
                                             "method": {
                                                 "type": "string",
-                                                "enum": ["sei-atlantic-2-testnet"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
                                                 "enum": ["shape-sepolia"]
                                             },
                                             "currency": {
@@ -24893,29 +24854,6 @@
                                             "method": {
                                                 "type": "string",
                                                 "enum": ["skale-nebula"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["sei-pacific-1"]
                                             },
                                             "currency": {
                                                 "type": "string"
@@ -25955,29 +25893,6 @@
                                             },
                                             "method": {
                                                 "type": "string",
-                                                "enum": ["sei-atlantic-2-testnet"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
                                                 "enum": ["shape-sepolia"]
                                             },
                                             "currency": {
@@ -26462,29 +26377,6 @@
                                             "method": {
                                                 "type": "string",
                                                 "enum": ["skale-nebula"]
-                                            },
-                                            "currency": {
-                                                "type": "string"
-                                            },
-                                            "payerAddress": {
-                                                "description": "An EVM wallet address.",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": ["method", "currency"]
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "receiptEmail": {
-                                                "description": "Email that the receipt will be sent to.",
-                                                "type": "string",
-                                                "format": "email",
-                                                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                                            },
-                                            "method": {
-                                                "type": "string",
-                                                "enum": ["sei-pacific-1"]
                                             },
                                             "currency": {
                                                 "type": "string"
@@ -27094,7 +26986,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -27117,7 +27008,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -27223,7 +27113,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -27246,7 +27135,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -27269,7 +27157,8 @@
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
                                     },
                                     "isSmartWalletSignature": {
-                                        "description": "Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.",
+                                        "const": true,
+                                        "description": "Must be true or omitted. The signature always corresponds to the smart wallet and is wrapped with ERC6492.",
                                         "type": "boolean"
                                     }
                                 },
@@ -27537,7 +27426,6 @@
                                     "optimism",
                                     "polygon",
                                     "scroll",
-                                    "sei-pacific-1",
                                     "shape",
                                     "story",
                                     "tempo",
@@ -27554,7 +27442,6 @@
                                     "optimism-sepolia",
                                     "polygon-amoy",
                                     "scroll-sepolia",
-                                    "sei-atlantic-2-testnet",
                                     "story-testnet",
                                     "zora-sepolia",
                                     "arc-testnet",
@@ -28462,7 +28349,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -28485,7 +28371,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -40858,7 +40743,6 @@
                                                     "crossmint-private-testnet-ethereum",
                                                     "crossmint-private-testnet-polygon",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
                                                     "shape-sepolia",
                                                     "skale-nebula-testnet",
                                                     "space-testnet",
@@ -40881,7 +40765,6 @@
                                                     "apechain",
                                                     "mantle",
                                                     "skale-nebula",
-                                                    "sei-pacific-1",
                                                     "chiliz",
                                                     "avalanche",
                                                     "shape",
@@ -48013,7 +47896,6 @@
                             "ethereum-sepolia",
                             "optimism-sepolia",
                             "polygon-amoy",
-                            "sei-atlantic-2-testnet",
                             "skale-nebula-testnet",
                             "solana",
                             "stellar"
@@ -48910,6 +48792,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -48993,6 +48896,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49007,6 +48935,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49088,6 +49018,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49171,6 +49122,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49185,6 +49161,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49266,6 +49244,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49349,6 +49348,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49363,6 +49387,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49532,6 +49558,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49615,6 +49662,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49629,6 +49701,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49710,6 +49784,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49793,6 +49888,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49807,6 +49927,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -49888,6 +50010,27 @@
                                                     "rawAmount": "18834161225104097789"
                                                 }
                                             },
+                                            "inTransit": {
+                                                "type": "object",
+                                                "description": "Card collateral moving in or out that the card provider has not reflected yet: a deposit it has not credited, or a withdrawal it has signed that has not left the collateral contract. '0' when nothing is moving. available + inTransit is the total the user holds.",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string",
+                                                        "description": "The amount of the token after placing the decimal point",
+                                                        "example": "18.8343253454"
+                                                    },
+                                                    "rawAmount": {
+                                                        "type": "string",
+                                                        "description": "The raw amount of the token",
+                                                        "example": "18834161225104097789"
+                                                    }
+                                                },
+                                                "required": ["amount", "rawAmount"],
+                                                "example": {
+                                                    "amount": "18.8343253454",
+                                                    "rawAmount": "18834161225104097789"
+                                                }
+                                            },
                                             "accounts": {
                                                 "type": "array",
                                                 "items": {
@@ -49971,6 +50114,31 @@
                                                                     },
                                                                     "required": ["amount", "rawAmount"]
                                                                 },
+                                                                "inTransit": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
+                                                                "creditLimit": {
+                                                                    "type": "object",
+                                                                    "description": "The most this card can spend, as set by the card provider. It matches the collateral the provider has credited to the card; deposits it has not credited yet show in inTransit instead.",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "rawAmount": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "rawAmount"]
+                                                                },
                                                                 "type": {
                                                                     "type": "string",
                                                                     "enum": ["card"]
@@ -49985,6 +50153,8 @@
                                                                 "rawAmount",
                                                                 "available",
                                                                 "locked",
+                                                                "inTransit",
+                                                                "creditLimit",
                                                                 "type",
                                                                 "provider"
                                                             ]
@@ -50095,7 +50265,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50118,7 +50287,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50187,7 +50355,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50210,7 +50377,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50306,7 +50472,6 @@
                                                                 "crossmint-private-testnet-ethereum",
                                                                 "crossmint-private-testnet-polygon",
                                                                 "scroll-sepolia",
-                                                                "sei-atlantic-2-testnet",
                                                                 "shape-sepolia",
                                                                 "skale-nebula-testnet",
                                                                 "space-testnet",
@@ -50329,7 +50494,6 @@
                                                                 "apechain",
                                                                 "mantle",
                                                                 "skale-nebula",
-                                                                "sei-pacific-1",
                                                                 "chiliz",
                                                                 "avalanche",
                                                                 "shape",
@@ -50597,7 +50761,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50620,7 +50783,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50689,7 +50851,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -50712,7 +50873,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -50808,7 +50968,6 @@
                                                                 "crossmint-private-testnet-ethereum",
                                                                 "crossmint-private-testnet-polygon",
                                                                 "scroll-sepolia",
-                                                                "sei-atlantic-2-testnet",
                                                                 "shape-sepolia",
                                                                 "skale-nebula-testnet",
                                                                 "space-testnet",
@@ -50831,7 +50990,6 @@
                                                                 "apechain",
                                                                 "mantle",
                                                                 "skale-nebula",
-                                                                "sei-pacific-1",
                                                                 "chiliz",
                                                                 "avalanche",
                                                                 "shape",
@@ -51346,7 +51504,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -51369,7 +51526,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -51469,7 +51625,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -51492,7 +51647,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -55162,7 +55316,6 @@
                                                         "crossmint-private-testnet-ethereum",
                                                         "crossmint-private-testnet-polygon",
                                                         "scroll-sepolia",
-                                                        "sei-atlantic-2-testnet",
                                                         "shape-sepolia",
                                                         "skale-nebula-testnet",
                                                         "space-testnet",
@@ -55185,7 +55338,6 @@
                                                         "apechain",
                                                         "mantle",
                                                         "skale-nebula",
-                                                        "sei-pacific-1",
                                                         "chiliz",
                                                         "avalanche",
                                                         "shape",
@@ -62594,7 +62746,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -62617,7 +62768,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -62712,7 +62862,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -62735,7 +62884,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -66211,7 +66359,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -66234,7 +66381,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -74067,7 +74213,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -74090,7 +74235,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -76018,7 +76162,6 @@
                                             "crossmint-private-testnet-ethereum",
                                             "crossmint-private-testnet-polygon",
                                             "scroll-sepolia",
-                                            "sei-atlantic-2-testnet",
                                             "shape-sepolia",
                                             "skale-nebula-testnet",
                                             "space-testnet",
@@ -76041,7 +76184,6 @@
                                             "apechain",
                                             "mantle",
                                             "skale-nebula",
-                                            "sei-pacific-1",
                                             "chiliz",
                                             "avalanche",
                                             "shape",
@@ -83211,8 +83353,6 @@
                                     "robinhood-chain-testnet",
                                     "scroll",
                                     "scroll-sepolia",
-                                    "sei-atlantic-2-testnet",
-                                    "sei-pacific-1",
                                     "shape",
                                     "story",
                                     "story-testnet",
@@ -85658,8 +85798,6 @@
                                                     "robinhood-chain-testnet",
                                                     "scroll",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
-                                                    "sei-pacific-1",
                                                     "shape",
                                                     "shape-sepolia",
                                                     "skale-nebula",
@@ -87480,8 +87618,6 @@
                                                     "robinhood-chain-testnet",
                                                     "scroll",
                                                     "scroll-sepolia",
-                                                    "sei-atlantic-2-testnet",
-                                                    "sei-pacific-1",
                                                     "shape",
                                                     "story",
                                                     "story-testnet",

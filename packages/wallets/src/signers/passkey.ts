@@ -1,6 +1,14 @@
 import { Hex, WebAuthnP256 } from "ox";
-import { SigningFailedError } from "../utils/errors";
-import type { PasskeyInternalSignerConfig, PasskeySignResult, PasskeySignerLocator, SignerAdapter } from "./types";
+import { InvalidSignerError, SigningFailedError } from "../utils/errors";
+import type { RegisterSignerPasskeyParams } from "../api";
+import type {
+    PasskeyInternalSignerConfig,
+    PasskeyProvider,
+    PasskeySignerConfig,
+    PasskeySignResult,
+    PasskeySignerLocator,
+    SignerAdapter,
+} from "./types";
 
 const AUTHENTICATOR_DATA_MIN_BYTE_LENGTH = 37;
 const AUTHENTICATOR_DATA_FLAGS_OFFSET = 32;
@@ -34,7 +42,7 @@ export class PasskeySigner implements SignerAdapter {
 
     async signMessage(message: string): Promise<PasskeySignResult> {
         if (this.config.onSignWithPasskey) {
-            const result = await this.config.onSignWithPasskey(message);
+            const result = await this.config.onSignWithPasskey(message, this.id === "" ? undefined : this.id);
             if (!isUserVerified(result.metadata.authenticatorData)) {
                 throw new SigningFailedError(
                     'The passkey assertion was created without user verification, and the on-chain verifier requires it. Request the assertion with `userVerification: "required"` so the authenticator prompts for biometrics or a PIN.'
@@ -42,11 +50,19 @@ export class PasskeySigner implements SignerAdapter {
             }
             return result;
         }
+        return await this.signWithWebAuthn(message);
+    }
+
+    private async signWithWebAuthn(message: string): Promise<PasskeySignResult> {
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
             challenge: message as `0x${string}`,
         });
-
+        if (!isUserVerified(metadata.authenticatorData)) {
+            throw new SigningFailedError(
+                "The passkey provider skipped the biometrics or PIN check, so the assertion was created without user verification and the on-chain verifier will reject it. Ask the user to sign again, or to use a passkey provider that verifies the user."
+            );
+        }
         return {
             signature: {
                 r: `0x${signature.r.toString(16)}`,
@@ -59,4 +75,32 @@ export class PasskeySigner implements SignerAdapter {
     async signTransaction(transaction: string) {
         return await this.signMessage(transaction);
     }
+}
+
+function canCreateWebAuthnCredential(): boolean {
+    return typeof window !== "undefined" && typeof window.navigator?.credentials?.create === "function";
+}
+
+/** Creates the WebAuthn credential for a new passkey signer: `onCreatePasskey`, else `passkeyProvider`, else the browser. */
+export async function createPasskeyCredential(
+    config: Pick<PasskeySignerConfig, "name" | "onCreatePasskey">,
+    passkeyProvider?: PasskeyProvider
+): Promise<RegisterSignerPasskeyParams> {
+    const name = config.name ?? `Crossmint Wallet ${Date.now()}`;
+    const onCreatePasskey = config.onCreatePasskey ?? passkeyProvider?.createPasskey;
+    if (onCreatePasskey == null && !canCreateWebAuthnCredential()) {
+        throw new InvalidSignerError(
+            'Creating a passkey needs WebAuthn, which this environment does not have. Pass a created passkey ({ type: "passkey", id, name, publicKey }) or an onCreatePasskey callback.'
+        );
+    }
+    const credential = onCreatePasskey ? await onCreatePasskey(name) : await WebAuthnP256.createCredential({ name });
+    return {
+        type: "passkey",
+        id: credential.id,
+        name,
+        publicKey: {
+            x: credential.publicKey.x.toString(),
+            y: credential.publicKey.y.toString(),
+        },
+    };
 }

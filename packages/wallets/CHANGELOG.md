@@ -1,5 +1,174 @@
 # @crossmint/wallets-sdk
 
+## 1.22.3
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.36
+
+## 1.22.2
+
+### Patch Changes
+
+- 04ec76f: `wallet.addSigner({ type: "passkey" })` and `wallet.addRecoveryMethod({ type: "passkey" })` now create the passkey
+  when the config has no credential id, using the config's `onCreatePasskey`, else the wallet's `passkeyProvider`,
+  else the browser WebAuthn API, and register its id and public key. Before, the SDK looked up a signer named
+  `passkey` and sent the bare config, which the API rejected. A config with a credential id is registered as before,
+  and the request body now carries only the passkey fields the API takes.
+
+  Creating a passkey with no `onCreatePasskey`,
+  no `passkeyProvider` and no WebAuthn (for example in Node) now throws `InvalidSignerError` saying so, in wallet
+  creation too.
+
+- 36903ca: `getWallet` resolves faster when the device signer's key is on this device: signer initialization reads the signer's status from the wallet response instead of fetching the wallet and each signer again, and the device key storage (an iframe on web) starts loading alongside the wallet request. `DeviceSignerKeyStorage` gains an optional `preload()` hook (no-op by default).
+
+  `wallet.signers()` makes one request instead of one per signer: it reads each signer's status from the wallet response.
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.22.1
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.22.0
+
+### Minor Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+### Patch Changes
+
+- e981bab: `wallet.send` now serializes the full API error response into `TransactionNotCreatedError` instead of only the `message` field, so failed transfers surface the structured `error` object (`reason`, `revert.reason`, `revert.explorerLink`, `revert.simulationLink`, Solana `logs`).
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 1.21.2
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+
+## 1.21.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- d170b2d: Stop leaking server signer secrets through wallet signer-config mismatch errors. `compareSignerConfigs` no longer compares or echoes `secret` fields (or runtime callbacks), and its error message names only the mismatching field. A server recovery signer is matched by the address its secret derives to: on an existing wallet, a secret that derives to none of the wallet's server recovery signers is now rejected instead of passing a type-only match. The SDK logger now also scrubs known secret shapes (server signer master secrets, JWTs, Crossmint API keys) from error messages, stack traces and log messages before they reach the log sinks.
+- 6471943: `wallet.balances()` no longer returns `inTransit` on the wallet account in `accounts`. Card accounts and the token total still have it.
+- 3de9265: Type the `creditLimit` field on card accounts in `wallet.balances()` results. Each card in `accounts` now reports `creditLimit`: the collateral the card provider has credited to the card, which caps what it can spend.
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.21.0
+
+### Minor Changes
+
+- 507f354: Support recovery methods on EVM. `createWallet` sends `recoveryMethods` on EVM chains and accepts more than one. `addRecoveryMethod` and `removeRecoveryMethod` work on EVM wallets and send the wallet's chain, which the API requires on EVM. A single recovery method passed as `recovery` still goes under `adminSigner`.
+
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 1.20.6
+
+### Patch Changes
+
+- 46666e3: Preserve the optional `inTransit` field in `wallet.balances()` results. For wallets with a card, it holds funds moving between the wallet and the card's collateral that the card provider has not reflected yet; `available + inTransit` is the total the user holds while funds move.
+  - @crossmint/common-sdk-auth@1.1.29
+
+## 1.20.5
+
+### Patch Changes
+
+- 7401d02: README: passkey signers work on EVM, Solana and Stellar, in the browser and React Native. The React Native README documents the `passkeys` prop on `CrossmintWalletProvider`.
+- 25e5591: Reject a passkey assertion that lacks the user-verification flag on the browser WebAuthn path too, not only when a custom `onSignWithPasskey` is supplied. `WebAuthnP256.sign` requests user verification but does not check that the authenticator honoured it; a UV-less assertion used to be forwarded and fail later as a bundler AA24 "Invalid signature".
+  - @crossmint/common-sdk-auth@1.1.28
+
+## 1.20.4
+
+### Patch Changes
+
+- 0ee57ff: Sign with `@noble/curves` (ed25519) instead of `tweetnacl` in the Solana and Stellar server signers and Solana additional-signer signing. Signatures are byte-for-byte identical. `@noble/curves` is already part of every wallet install through viem and Solana, so this removes `tweetnacl` (about 57 KB minified) from wallet app bundles.
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/common-sdk-auth@1.1.27
+
+## 1.20.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
+## 1.20.2
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.20.1
+
+### Patch Changes
+
+- 924a0b6: Reject a `device` signer passed as a recovery method before calling the API, and apply the same recovery-list rules on `getWallet` that `createWallet` already enforces (non-empty list, one method on EVM). Recovery configuration is now validated before `onWalletCreationStart` and before any signer or passkey is created.
+- 523fa26: Remove the Abstract chain (`abstract`, `abstract-testnet`) from the SDK.
+
+  The Abstract network shuts down on December 15, 2026, and Crossmint no longer supports it.
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain, and move assets off Abstract before December 15, 2026.
+  Code that passes one of these names no longer compiles. At runtime, wallet-chain validation
+  throws an `InvalidChainError`, and common display-name and chain-ID lookups return `undefined`.
+
+- Updated dependencies [523fa26]
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/common-sdk-auth@1.1.24
+
+## 1.20.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
 ## 1.19.0
 
 ### Minor Changes

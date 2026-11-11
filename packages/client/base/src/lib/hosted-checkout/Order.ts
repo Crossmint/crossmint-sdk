@@ -38,7 +38,6 @@ declare const orderSchema: z.ZodObject<
                         readonly APECHAIN: "apechain";
                         readonly APEX: "apex";
                         readonly SKALE_NEBULA: "skale-nebula";
-                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                         readonly CHILIZ: "chiliz";
                         readonly AVALANCHE: "avalanche";
                         readonly SHAPE: "shape";
@@ -58,7 +57,6 @@ declare const orderSchema: z.ZodObject<
                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                         readonly SPACE_TESTNET: "space-testnet";
@@ -181,6 +179,8 @@ declare const orderSchema: z.ZodObject<
                                                             readonly KRW: "krw";
                                                             readonly INR: "inr";
                                                             readonly VND: "vnd";
+                                                            readonly MXN: "mxn";
+                                                            readonly XCD: "xcd";
                                                         }>,
                                                     ]
                                                 >;
@@ -211,7 +211,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             },
                                             {
@@ -238,7 +240,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                         >;
@@ -274,6 +278,8 @@ declare const orderSchema: z.ZodObject<
                                                                 readonly KRW: "krw";
                                                                 readonly INR: "inr";
                                                                 readonly VND: "vnd";
+                                                                readonly MXN: "mxn";
+                                                                readonly XCD: "xcd";
                                                             }>,
                                                         ]
                                                     >;
@@ -304,7 +310,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 },
                                                 {
@@ -331,7 +339,9 @@ declare const orderSchema: z.ZodObject<
                                                         | "hkd"
                                                         | "krw"
                                                         | "inr"
-                                                        | "vnd";
+                                                        | "vnd"
+                                                        | "mxn"
+                                                        | "xcd";
                                                     amount: string;
                                                 }
                                             >
@@ -364,7 +374,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -392,7 +404,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -422,7 +436,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         };
                                         gas?:
@@ -450,7 +466,9 @@ declare const orderSchema: z.ZodObject<
                                                       | "hkd"
                                                       | "krw"
                                                       | "inr"
-                                                      | "vnd";
+                                                      | "vnd"
+                                                      | "mxn"
+                                                      | "xcd";
                                                   amount: string;
                                               }
                                             | undefined;
@@ -489,6 +507,8 @@ declare const orderSchema: z.ZodObject<
                                                     readonly KRW: "krw";
                                                     readonly INR: "inr";
                                                     readonly VND: "vnd";
+                                                    readonly MXN: "mxn";
+                                                    readonly XCD: "xcd";
                                                 }>,
                                             ]
                                         >;
@@ -519,7 +539,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     },
                                     {
@@ -546,7 +568,9 @@ declare const orderSchema: z.ZodObject<
                                             | "hkd"
                                             | "krw"
                                             | "inr"
-                                            | "vnd";
+                                            | "vnd"
+                                            | "mxn"
+                                            | "xcd";
                                         amount: string;
                                     }
                                 >
@@ -588,7 +612,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -616,7 +642,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -647,7 +675,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -686,7 +716,9 @@ declare const orderSchema: z.ZodObject<
                                               | "hkd"
                                               | "krw"
                                               | "inr"
-                                              | "vnd";
+                                              | "vnd"
+                                              | "mxn"
+                                              | "xcd";
                                           amount: string;
                                       };
                                       gas?:
@@ -714,7 +746,9 @@ declare const orderSchema: z.ZodObject<
                                                     | "hkd"
                                                     | "krw"
                                                     | "inr"
-                                                    | "vnd";
+                                                    | "vnd"
+                                                    | "mxn"
+                                                    | "xcd";
                                                 amount: string;
                                             }
                                           | undefined;
@@ -745,7 +779,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   }
                                 | undefined;
@@ -1378,7 +1414,6 @@ declare const orderSchema: z.ZodObject<
                         | "apechain"
                         | "apex"
                         | "skale-nebula"
-                        | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
                         | "shape"
@@ -1398,7 +1433,6 @@ declare const orderSchema: z.ZodObject<
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
                         | "scroll-sepolia"
-                        | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
                         | "space-testnet"
@@ -1455,7 +1489,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1483,7 +1519,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1514,7 +1552,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1620,7 +1660,6 @@ declare const orderSchema: z.ZodObject<
                         | "apechain"
                         | "apex"
                         | "skale-nebula"
-                        | "sei-pacific-1"
                         | "chiliz"
                         | "avalanche"
                         | "shape"
@@ -1640,7 +1679,6 @@ declare const orderSchema: z.ZodObject<
                         | "crossmint-private-testnet-ethereum"
                         | "crossmint-private-testnet-polygon"
                         | "scroll-sepolia"
-                        | "sei-atlantic-2-testnet"
                         | "shape-sepolia"
                         | "skale-nebula-testnet"
                         | "space-testnet"
@@ -1697,7 +1735,9 @@ declare const orderSchema: z.ZodObject<
                                           | "hkd"
                                           | "krw"
                                           | "inr"
-                                          | "vnd";
+                                          | "vnd"
+                                          | "mxn"
+                                          | "xcd";
                                       amount: string;
                                   };
                                   gas?:
@@ -1725,7 +1765,9 @@ declare const orderSchema: z.ZodObject<
                                                 | "hkd"
                                                 | "krw"
                                                 | "inr"
-                                                | "vnd";
+                                                | "vnd"
+                                                | "mxn"
+                                                | "xcd";
                                             amount: string;
                                         }
                                       | undefined;
@@ -1756,7 +1798,9 @@ declare const orderSchema: z.ZodObject<
                                       | "hkd"
                                       | "krw"
                                       | "inr"
-                                      | "vnd";
+                                      | "vnd"
+                                      | "mxn"
+                                      | "xcd";
                                   amount: string;
                               }
                             | undefined;
@@ -1897,6 +1941,8 @@ declare const orderSchema: z.ZodObject<
                                         readonly KRW: "krw";
                                         readonly INR: "inr";
                                         readonly VND: "vnd";
+                                        readonly MXN: "mxn";
+                                        readonly XCD: "xcd";
                                     }>,
                                 ]
                             >;
@@ -1927,7 +1973,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         },
                         {
@@ -1954,7 +2002,9 @@ declare const orderSchema: z.ZodObject<
                                 | "hkd"
                                 | "krw"
                                 | "inr"
-                                | "vnd";
+                                | "vnd"
+                                | "mxn"
+                                | "xcd";
                             amount: string;
                         }
                     >
@@ -1996,7 +2046,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2035,7 +2087,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -2108,7 +2162,6 @@ declare const orderSchema: z.ZodObject<
                     readonly APECHAIN: "apechain";
                     readonly APEX: "apex";
                     readonly SKALE_NEBULA: "skale-nebula";
-                    readonly SEI_PACIFIC_1: "sei-pacific-1";
                     readonly CHILIZ: "chiliz";
                     readonly AVALANCHE: "avalanche";
                     readonly SHAPE: "shape";
@@ -2128,7 +2181,6 @@ declare const orderSchema: z.ZodObject<
                     readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                     readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                     readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                    readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                     readonly SHAPE_SEPOLIA: "shape-sepolia";
                     readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                     readonly SPACE_TESTNET: "space-testnet";
@@ -2166,6 +2218,8 @@ declare const orderSchema: z.ZodObject<
                             readonly KRW: "krw";
                             readonly INR: "inr";
                             readonly VND: "vnd";
+                            readonly MXN: "mxn";
+                            readonly XCD: "xcd";
                         }>,
                     ]
                 >;
@@ -2187,7 +2241,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly APECHAIN: "apechain";
                                             readonly APEX: "apex";
                                             readonly SKALE_NEBULA: "skale-nebula";
-                                            readonly SEI_PACIFIC_1: "sei-pacific-1";
                                             readonly CHILIZ: "chiliz";
                                             readonly AVALANCHE: "avalanche";
                                             readonly SHAPE: "shape";
@@ -2207,7 +2260,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                             readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                             readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                            readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                             readonly SHAPE_SEPOLIA: "shape-sepolia";
                                             readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                             readonly SPACE_TESTNET: "space-testnet";
@@ -2237,7 +2289,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2257,7 +2308,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2284,7 +2334,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2304,7 +2353,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2377,6 +2425,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2394,7 +2444,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly SKALE_NEBULA: "skale-nebula";
-                                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
                                         readonly SHAPE: "shape";
@@ -2414,7 +2463,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
@@ -2452,7 +2500,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2467,7 +2517,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2487,7 +2536,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2522,7 +2570,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2537,7 +2587,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2557,7 +2606,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2600,6 +2648,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2630,7 +2680,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -2657,7 +2709,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -2697,6 +2751,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2714,7 +2770,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly SKALE_NEBULA: "skale-nebula";
-                                        readonly SEI_PACIFIC_1: "sei-pacific-1";
                                         readonly CHILIZ: "chiliz";
                                         readonly AVALANCHE: "avalanche";
                                         readonly SHAPE: "shape";
@@ -2734,7 +2789,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly PRIVATE_TESTNET_ETHEREUM: "crossmint-private-testnet-ethereum";
                                         readonly PRIVATE_TESTNET_POLYGON: "crossmint-private-testnet-polygon";
                                         readonly SCROLL_SEPOLIA: "scroll-sepolia";
-                                        readonly SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet";
                                         readonly SHAPE_SEPOLIA: "shape-sepolia";
                                         readonly SKALE_NEBULA_TESTNET: "skale-nebula-testnet";
                                         readonly SPACE_TESTNET: "space-testnet";
@@ -2772,7 +2826,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2787,7 +2843,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2807,7 +2862,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2842,7 +2896,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                     txId: string;
                                     chain:
@@ -2857,7 +2913,6 @@ declare const orderSchema: z.ZodObject<
                                         | "apechain"
                                         | "apex"
                                         | "skale-nebula"
-                                        | "sei-pacific-1"
                                         | "chiliz"
                                         | "avalanche"
                                         | "shape"
@@ -2877,7 +2932,6 @@ declare const orderSchema: z.ZodObject<
                                         | "crossmint-private-testnet-ethereum"
                                         | "crossmint-private-testnet-polygon"
                                         | "scroll-sepolia"
-                                        | "sei-atlantic-2-testnet"
                                         | "shape-sepolia"
                                         | "skale-nebula-testnet"
                                         | "space-testnet"
@@ -2920,6 +2974,8 @@ declare const orderSchema: z.ZodObject<
                                                 readonly KRW: "krw";
                                                 readonly INR: "inr";
                                                 readonly VND: "vnd";
+                                                readonly MXN: "mxn";
+                                                readonly XCD: "xcd";
                                             }>,
                                         ]
                                     >;
@@ -2950,7 +3006,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 },
                                 {
@@ -2977,7 +3035,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                             >,
@@ -3009,7 +3069,6 @@ declare const orderSchema: z.ZodObject<
                     | "apechain"
                     | "apex"
                     | "skale-nebula"
-                    | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
                     | "shape"
@@ -3029,7 +3088,6 @@ declare const orderSchema: z.ZodObject<
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
                     | "scroll-sepolia"
-                    | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
                     | "space-testnet"
@@ -3061,7 +3119,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3086,7 +3146,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3106,7 +3165,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3152,7 +3210,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3179,7 +3239,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3194,7 +3256,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3214,7 +3275,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3251,7 +3311,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3278,7 +3340,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3293,7 +3357,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3313,7 +3376,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3348,7 +3410,6 @@ declare const orderSchema: z.ZodObject<
                     | "apechain"
                     | "apex"
                     | "skale-nebula"
-                    | "sei-pacific-1"
                     | "chiliz"
                     | "avalanche"
                     | "shape"
@@ -3368,7 +3429,6 @@ declare const orderSchema: z.ZodObject<
                     | "crossmint-private-testnet-ethereum"
                     | "crossmint-private-testnet-polygon"
                     | "scroll-sepolia"
-                    | "sei-atlantic-2-testnet"
                     | "shape-sepolia"
                     | "skale-nebula-testnet"
                     | "space-testnet"
@@ -3400,7 +3460,9 @@ declare const orderSchema: z.ZodObject<
                     | "hkd"
                     | "krw"
                     | "inr"
-                    | "vnd";
+                    | "vnd"
+                    | "mxn"
+                    | "xcd";
                 failureReason?:
                     | {
                           code: string;
@@ -3425,7 +3487,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3445,7 +3506,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3491,7 +3551,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3518,7 +3580,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3533,7 +3597,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3553,7 +3616,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3590,7 +3652,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | {
@@ -3617,7 +3681,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                           txId: string;
                           chain:
@@ -3632,7 +3698,6 @@ declare const orderSchema: z.ZodObject<
                               | "apechain"
                               | "apex"
                               | "skale-nebula"
-                              | "sei-pacific-1"
                               | "chiliz"
                               | "avalanche"
                               | "shape"
@@ -3652,7 +3717,6 @@ declare const orderSchema: z.ZodObject<
                               | "crossmint-private-testnet-ethereum"
                               | "crossmint-private-testnet-polygon"
                               | "scroll-sepolia"
-                              | "sei-atlantic-2-testnet"
                               | "shape-sepolia"
                               | "skale-nebula-testnet"
                               | "space-testnet"
@@ -3705,7 +3769,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -3731,7 +3797,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -3751,7 +3816,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -3783,7 +3847,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -3808,7 +3874,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -3828,7 +3893,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -3874,7 +3938,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -3901,7 +3967,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -3916,7 +3984,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -3936,7 +4003,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -3973,7 +4039,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4000,7 +4068,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4015,7 +4085,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4035,7 +4104,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4081,7 +4149,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4101,7 +4168,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -4158,7 +4224,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -4186,7 +4254,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -4217,7 +4287,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;
@@ -4346,7 +4418,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | undefined;
@@ -4372,7 +4446,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4392,7 +4465,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -4424,7 +4496,9 @@ declare const orderSchema: z.ZodObject<
                 | "hkd"
                 | "krw"
                 | "inr"
-                | "vnd";
+                | "vnd"
+                | "mxn"
+                | "xcd";
             failureReason?:
                 | {
                       code: string;
@@ -4449,7 +4523,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4469,7 +4542,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4515,7 +4587,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4542,7 +4616,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4557,7 +4633,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4577,7 +4652,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4614,7 +4688,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                   }
                 | {
@@ -4641,7 +4717,9 @@ declare const orderSchema: z.ZodObject<
                           | "hkd"
                           | "krw"
                           | "inr"
-                          | "vnd";
+                          | "vnd"
+                          | "mxn"
+                          | "xcd";
                       amount: string;
                       txId: string;
                       chain:
@@ -4656,7 +4734,6 @@ declare const orderSchema: z.ZodObject<
                           | "apechain"
                           | "apex"
                           | "skale-nebula"
-                          | "sei-pacific-1"
                           | "chiliz"
                           | "avalanche"
                           | "shape"
@@ -4676,7 +4753,6 @@ declare const orderSchema: z.ZodObject<
                           | "crossmint-private-testnet-ethereum"
                           | "crossmint-private-testnet-polygon"
                           | "scroll-sepolia"
-                          | "sei-atlantic-2-testnet"
                           | "shape-sepolia"
                           | "skale-nebula-testnet"
                           | "space-testnet"
@@ -4722,7 +4798,6 @@ declare const orderSchema: z.ZodObject<
                 | "apechain"
                 | "apex"
                 | "skale-nebula"
-                | "sei-pacific-1"
                 | "chiliz"
                 | "avalanche"
                 | "shape"
@@ -4742,7 +4817,6 @@ declare const orderSchema: z.ZodObject<
                 | "crossmint-private-testnet-ethereum"
                 | "crossmint-private-testnet-polygon"
                 | "scroll-sepolia"
-                | "sei-atlantic-2-testnet"
                 | "shape-sepolia"
                 | "skale-nebula-testnet"
                 | "space-testnet"
@@ -4799,7 +4873,9 @@ declare const orderSchema: z.ZodObject<
                                   | "hkd"
                                   | "krw"
                                   | "inr"
-                                  | "vnd";
+                                  | "vnd"
+                                  | "mxn"
+                                  | "xcd";
                               amount: string;
                           };
                           gas?:
@@ -4827,7 +4903,9 @@ declare const orderSchema: z.ZodObject<
                                         | "hkd"
                                         | "krw"
                                         | "inr"
-                                        | "vnd";
+                                        | "vnd"
+                                        | "mxn"
+                                        | "xcd";
                                     amount: string;
                                 }
                               | undefined;
@@ -4858,7 +4936,9 @@ declare const orderSchema: z.ZodObject<
                               | "hkd"
                               | "krw"
                               | "inr"
-                              | "vnd";
+                              | "vnd"
+                              | "mxn"
+                              | "xcd";
                           amount: string;
                       }
                     | undefined;

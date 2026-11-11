@@ -1,5 +1,116 @@
 # @crossmint/server-sdk
 
+## 1.2.100
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.36
+
+## 1.2.99
+
+### Patch Changes
+
+- e6ad150: `CrossmintAuth.getUser` now throws a `CrossmintAuthenticationError` when Crossmint rejects the request, instead of returning the API's error body as if it were the user. The error carries the HTTP `status` and the API's message, which names the missing `users.read` scope when the API key lacks it. `getUser` now returns `SDKExternalUser` instead of `any`, and the server SDK exports `CrossmintAuthenticationError` and `SDKExternalUser`. Failed session refreshes and logouts also report the status and the API's message.
+- a2181ff: JWT verification no longer waits for the JWKS to be re-downloaded every 10 minutes: the keys are refreshed in the background while verification keeps using the current ones. If the JWKS endpoint keeps failing, keys stay in use for up to an hour; a token signed with an unknown key still waits for a download, as before.
+- a2181ff: `getSession` returns the user (email, phone number, linked accounts) when it had to refresh the session, since the refresh response already carries it. A server that needs the email can skip `getUser` in that case.
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.2.98
+
+### Patch Changes
+
+- 0c053ed: Read and write the project-scoped auth cookies in the server SDK. Since `@crossmint/client-sdk-auth` 1.3.4 the client stores the session as `crossmint-jwt-<projectId>` and `crossmint-refresh-token-<projectId>`, but the server SDK only read and wrote `crossmint-jwt` and `crossmint-refresh-token`, so `getSession(request)` saw no session and a custom refresh route stored cookies the client never read. `getSession(request)`, `handleCustomRefresh` and `logout` now read the scoped names, and the legacy names only when no scoped cookie is present. `storeAuthMaterial` (and so `getSession(request, response)`, `handleCustomRefresh` and `logout`) writes the scoped names; `logout` also expires the legacy ones. New `getAuthCookieNames(projectId)` returns the scoped names, for code with no request object such as a Next.js Server Component; `validateAPIKey` is re-exported so the project ID can be read from the API key. The naming helper `getScopedCookieName` now lives in `@crossmint/common-sdk-auth` and the client uses it.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.2.97
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 1.2.96
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+
+## 1.2.95
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.2.94
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.30
+
+## 1.2.93
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.29
+
+## 1.2.92
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.28
+
+## 1.2.91
+
+### Patch Changes
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/common-sdk-auth@1.1.27
+
+## 1.2.90
+
+### Patch Changes
+
+- 74b5507: `verifyCrossmintJwt` now requires an `audience` option.
+
+  Pass your project ID when you call the standalone function: `verifyCrossmintJwt(token, jwks, { audience: projectId })`. The function throws if `audience` is missing. It also requires the `exp`, `sub` and `aud` claims and accepts only RS256 signatures. `CrossmintAuth#verifyCrossmintJwt` and `getSession` already pass the project ID, so no change is needed there.
+
+- 6dc366a: `CrossmintAuth.getSession` and `handleCustomRefresh` now verify refreshed session JWTs against Crossmint's JWKS and take the user ID from the verified JWT `sub` claim. `refreshRoute` should be a static absolute URL.
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
+## 1.2.89
+
+### Patch Changes
+
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.2.88
+
+### Patch Changes
+
+- 3ef10b3: Security fix: `CrossmintAuth.getSession`, `handleCustomRefresh` and `verifyCrossmintJwt` now reject Crossmint session JWTs that were issued for a different project.
+
+  Before this fix, any valid Crossmint session JWT was accepted no matter which project it was issued for, so a token from another Crossmint-auth app could authenticate its user in yours. The SDK now requires the JWT `aud` claim to match the project ID of your API key, on both the JWT and the token-refresh paths. Sessions from another project fail with `CrossmintAuthenticationError` and their auth cookies are cleared.
+
+  Upgrade to this version if you use `@crossmint/server-sdk` to authenticate users.
+
+- Updated dependencies [523fa26]
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/common-sdk-auth@1.1.24
+
 ## 1.2.87
 
 ### Patch Changes

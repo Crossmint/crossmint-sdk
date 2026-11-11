@@ -13,6 +13,7 @@ export {
     RecoveryNotSupportedOnChainError,
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
+    SignerLimitExceededError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
     WalletNotAvailableError,
@@ -20,6 +21,7 @@ export {
     QuorumSignerNotSupportedError,
     UnsupportedBrowserError,
     NotAuthorizedError,
+    TransactionNotCreatedError,
     JWTExpiredError,
     JWTInvalidError,
     JWTDecryptionError,
@@ -28,6 +30,17 @@ export {
 
 // API
 export { ApiClient as WalletsApiClient, type RegisterSignerPasskeyParams, type Scope, type TransferScope } from "./api";
+export type {
+    WalletLocator,
+    CreateWalletParams,
+    CreateWalletResponse,
+    SendResponse,
+    FundWalletParams,
+    FundWalletResponse,
+    GetBalanceResponse,
+    GetTransactionResponse,
+    ApproveTransactionParams,
+} from "./api/types";
 
 // Wallets
 export { Wallet } from "./wallets/wallet";
@@ -90,6 +103,8 @@ export type {
     PasskeySignerLocator,
     DeviceSignerLocator,
     DeviceSignerConfig,
+    PasskeyProvider,
+    PasskeySignResult,
     ExternalWalletSignerLocator,
     ApiKeySignerLocator,
     SolanaExternalWalletSignerConfig,

@@ -1,5 +1,90 @@
 # crossmint-auth-node
 
+## 1.1.111
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.100
+
+## 1.1.110
+
+### Patch Changes
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [a2181ff]
+  - @crossmint/server-sdk@1.2.99
+
+## 1.1.109
+
+### Patch Changes
+
+- Updated dependencies [0c053ed]
+  - @crossmint/server-sdk@1.2.98
+
+## 1.1.108
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.97
+
+## 1.1.107
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.96
+
+## 1.1.106
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.95
+
+## 1.1.105
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.94
+
+## 1.1.104
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.93
+
+## 1.1.103
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.92
+
+## 1.1.102
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.91
+
+## 1.1.101
+
+### Patch Changes
+
+- Updated dependencies [74b5507]
+- Updated dependencies [6dc366a]
+  - @crossmint/server-sdk@1.2.90
+
+## 1.1.100
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.2.89
+
+## 1.1.99
+
+### Patch Changes
+
+- Updated dependencies [3ef10b3]
+  - @crossmint/server-sdk@1.2.88
+
 ## 1.1.98
 
 ### Patch Changes

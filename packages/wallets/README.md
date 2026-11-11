@@ -4,7 +4,7 @@ Typescript SDK for creating and managing [Crossmint Wallets](https://docs.crossm
 
 ## Prerequisites
 
-Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a Crossmint API key from the [developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 - **Client-side** (browser): Use a client API key
 - **Server-side** (Node.js): Use a server API key
@@ -37,14 +37,17 @@ const wallet = await wallets.createWallet({
 
 console.log(wallet.address);
 
+// Staging only: mint USDXM, Crossmint's test stablecoin, into the wallet
+await wallet.stagingFund(10);
+
 // Send tokens
-const tx = await wallet.send("0xRecipientAddress", "usdc", "10");
+const tx = await wallet.send("0xRecipientAddress", "usdxm", "10");
 console.log(tx.explorerLink);
 ```
 
 ### Client-side (Headless)
 
-For client-side usage without React, you can use the SDK directly with JWT authentication:
+For client-side usage without React, you can use the SDK directly with a user JWT. In staging, get it from Crossmint Auth (`@crossmint/client-sdk-auth`); in production, or when your app already has an auth provider, use that provider's JWT:
 
 ```ts
 import { createCrossmint, CrossmintWallets } from "@crossmint/wallets-sdk";
@@ -159,6 +162,20 @@ console.log(balances.nativeToken.amount);
 console.log(balances.usdc.amount);
 ```
 
+For wallets with a card, each token also reports how its balance splits:
+
+-   `available`: what can be spent now
+-   `locked`: pending card charges
+-   `inTransit`: funds moving between the wallet and the card that the card provider has not reflected yet
+-   `accounts`: the same split for the wallet and for each card. Only card accounts have `inTransit`. Each card also reports `creditLimit`: the most it can spend, as set by the card provider
+
+`available + inTransit` is the total the user holds while funds move.
+
+```ts
+const { usdc } = await wallet.balances();
+console.log(usdc.available?.amount, usdc.inTransit?.amount);
+```
+
 ### Send Tokens
 
 ```ts
@@ -256,7 +273,7 @@ const result = await wallet.approve({
 | `server` | Server-side automated operations (AI agents, backends). | Node.js |
 | `email` | OTP-based recovery method. | All |
 | `phone` | OTP-based recovery method. | All |
-| `passkey` | WebAuthn/FIDO2 biometric signer. | Browser (EVM only) |
+| `passkey` | WebAuthn/FIDO2 biometric signer on EVM, Solana and Stellar. On Solana it can be a signer but not a recovery method. | Browser, React Native (set the `passkeys` prop on `CrossmintWalletProvider`) |
 | `external-wallet` | Bring-your-own key (MetaMask, KMS, etc). | All |
 
 ## React / React Native

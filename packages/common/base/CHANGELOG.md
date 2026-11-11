@@ -1,5 +1,59 @@
 # @crossmint/common-sdk-base
 
+## 0.13.3
+
+### Patch Changes
+
+- 225e9e9: Mask emails and phone numbers in SDK logs, for example `email:a***@example.com` and `phone:+1***4567`.
+
+## 0.13.2
+
+### Patch Changes
+
+- d3b62df: OAuth login in the React Native SDK now uses PKCE. The SDK sends a code challenge when the login starts and the matching verifier when it redeems the one-time secret.
+
+## 0.13.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- d170b2d: Stop leaking server signer secrets through wallet signer-config mismatch errors. `compareSignerConfigs` no longer compares or echoes `secret` fields (or runtime callbacks), and its error message names only the mismatching field. A server recovery signer is matched by the address its secret derives to: on an existing wallet, a secret that derives to none of the wallet's server recovery signers is now rejected instead of passing a type-only match. The SDK logger now also scrubs known secret shapes (server signer master secrets, JWTs, Crossmint API keys) from error messages, stack traces and log messages before they reach the log sinks.
+
+## 0.13.0
+
+### Minor Changes
+
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+### Patch Changes
+
+- 0ee57ff: Verify API key signatures with `@noble/ed25519` instead of `tweetnacl`. This cuts about 20 KB (minified) from every app that validates an API key, such as the protected input and payment method management components. `@noble/ed25519` is inlined into the build so the CommonJS output still works on older Node versions.
+
+## 0.12.5
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+
+## 0.12.4
+
+### Patch Changes
+
+- 523fa26: Remove the Abstract chain (`abstract`, `abstract-testnet`) from the SDK.
+
+  The Abstract network shuts down on December 15, 2026, and Crossmint no longer supports it.
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain, and move assets off Abstract before December 15, 2026.
+  Code that passes one of these names no longer compiles. At runtime, wallet-chain validation
+  throws an `InvalidChainError`, and common display-name and chain-ID lookups return `undefined`.
+
 ## 0.12.3
 
 ### Patch Changes

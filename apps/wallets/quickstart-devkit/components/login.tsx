@@ -15,6 +15,7 @@ export function CrossmintAuthLoginButton() {
         <button
             className="w-full py-2 px-4 rounded-md text-sm font-medium border bg-gray-50 hover:bg-gray-100 transition-colors"
             onClick={login}
+            data-testid="connect-wallet-button"
         >
             Connect wallet (Crossmint Auth)
         </button>
