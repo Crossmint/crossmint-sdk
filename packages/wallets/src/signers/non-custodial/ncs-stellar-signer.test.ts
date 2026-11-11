@@ -127,6 +127,20 @@ describe("StellarNonCustodialSigner.signTransaction", () => {
             expect(first).toEqual({ signature: "signed:Zmlyc3Q=" });
             expect(second).toEqual({ signature: "signed:c2Vjb25k" });
         });
+
+        test("signers sharing a frame connection each receive the signature of their own payload", async () => {
+            const clientTEEConnection = frameConnection();
+            const { signer: first } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection });
+            const { signer: second } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection });
+
+            const [firstSignature, secondSignature] = await Promise.all([
+                first.signTransaction("Zmlyc3Q="),
+                second.signTransaction("c2Vjb25k"),
+            ]);
+
+            expect(firstSignature).toEqual({ signature: "signed:Zmlyc3Q=" });
+            expect(secondSignature).toEqual({ signature: "signed:c2Vjb25k" });
+        });
     });
 
     describe("when the frame reports the device as ready for the selected recovery method", () => {

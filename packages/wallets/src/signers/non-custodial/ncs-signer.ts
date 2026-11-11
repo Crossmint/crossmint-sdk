@@ -31,7 +31,6 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
     private _onboardingConnectionGeneration: number | null = null;
-    private _lastSignRequest: Promise<unknown> = Promise.resolve();
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         // Only initialize the signer if running client-side
@@ -223,14 +222,23 @@ export abstract class NonCustodialSigner implements SignerAdapter {
     /**
      * The signer frame answers every `request:sign` with a bare `response:sign`, so two in-flight
      * requests would both resolve with whichever signature comes back first. Requests are queued
-     * per signer so each caller receives the signature of its own payload.
+     * per frame connection (which may be shared by several signers) so each caller receives the
+     * signature of its own payload.
      */
     protected requestSignature(data: SignerInputEvent<"sign">["data"]): Promise<SignerOutputEvent<"sign"> | undefined> {
-        const request = this._lastSignRequest.then(
+        const connection = this.config.clientTEEConnection;
+        if (connection == null) {
+            return this.sendSignRequest(data);
+        }
+        const previous = lastSignRequestByConnection.get(connection) ?? Promise.resolve();
+        const request = previous.then(
             () => this.sendSignRequest(data),
             () => this.sendSignRequest(data)
         );
-        this._lastSignRequest = request.catch(() => undefined);
+        lastSignRequestByConnection.set(
+            connection,
+            request.catch(() => undefined)
+        );
         return request;
     }
 
@@ -518,6 +526,7 @@ export const DEFAULT_EVENT_OPTIONS = {
 export const JWT_REQUIRED_ERROR_CODE = "jwt-required";
 
 const UNAUTHORIZED_ERROR_CODES = new Set(["unauthorized", "unauthenticated"]);
+const lastSignRequestByConnection = new WeakMap<object, Promise<unknown>>();
 
 // The signer frame reports a rejected JWT as a bare `HTTP 401: <statusText>` (statusText is empty in React Native).
 function isUnauthorizedResponse(errorMessage: string, code: string | undefined): boolean {
