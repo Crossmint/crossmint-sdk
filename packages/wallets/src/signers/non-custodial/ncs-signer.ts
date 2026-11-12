@@ -17,7 +17,7 @@ import {
 } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey, WithLoggerContext } from "@crossmint/common-sdk-base";
-import type { SignerOutputEvent } from "@crossmint/client-signers";
+import type { SignerInputEvent, SignerOutputEvent } from "@crossmint/client-signers";
 import { walletsLogger } from "../../logger";
 import { normalizeEmail } from "../../utils/signer-validation";
 
@@ -224,6 +224,54 @@ export abstract class NonCustodialSigner implements SignerAdapter {
             walletsLogger.error("handleAuthRequired promise error", { error });
             throw error;
         }
+    }
+
+    /**
+     * The signer frame answers every `request:sign` with a bare `response:sign`, so two in-flight
+     * requests would both resolve with whichever signature comes back first. Requests are queued
+     * per frame connection (which may be shared by several signers) so each caller receives the
+     * signature of its own payload.
+     */
+    protected requestSignature(data: SignerInputEvent<"sign">["data"]): Promise<SignerOutputEvent<"sign"> | undefined> {
+        const connection = this.config.clientTEEConnection;
+        if (connection == null) {
+            return this.sendSignRequest(data);
+        }
+        const previous = lastSignRequestByConnection.get(connection) ?? Promise.resolve();
+        const request = previous.then(
+            () => this.sendSignRequest(data),
+            () => this.sendSignRequest(data)
+        );
+        lastSignRequestByConnection.set(
+            connection,
+            request.catch(() => undefined)
+        );
+        return request;
+    }
+
+    private async sendSignRequest(
+        data: SignerInputEvent<"sign">["data"]
+    ): Promise<SignerOutputEvent<"sign"> | undefined> {
+        const jwt = this.getJwtOrThrow();
+        walletsLogger.info("sign: sending request", { keyType: data.keyType });
+        const startTime = Date.now();
+        const res = await this.config.clientTEEConnection?.sendAction({
+            event: "request:sign",
+            responseEvent: "response:sign",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data,
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+        walletsLogger.info("sign: response received", {
+            status: res?.status,
+            durationMs: Date.now() - startTime,
+        });
+        return res;
     }
 
     public async ensureAuthenticated(): Promise<void> {
@@ -485,6 +533,7 @@ export const DEFAULT_EVENT_OPTIONS = {
 export const JWT_REQUIRED_ERROR_CODE = "jwt-required";
 
 const UNAUTHORIZED_ERROR_CODES = new Set(["unauthorized", "unauthenticated"]);
+const lastSignRequestByConnection = new WeakMap<object, Promise<unknown>>();
 
 // The signer frame reports a rejected JWT as a bare `HTTP 401: <statusText>` (statusText is empty in React Native).
 function isUnauthorizedResponse(errorMessage: string, code: string | undefined): boolean {
