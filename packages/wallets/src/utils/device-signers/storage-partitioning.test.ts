@@ -73,6 +73,43 @@ describe("hasPartitionedStorage", () => {
         });
     });
 
+    describe("embedded Chromium runtimes without partitioning", () => {
+        it("returns false for Android WebView despite a recent Chrome token", () => {
+            setUserAgent(
+                "Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A.240205.004; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Mobile Safari/537.36"
+            );
+            expect(hasPartitionedStorage()).toBe(false);
+        });
+
+        it("returns false for the Facebook in-app browser on Android", () => {
+            setUserAgent(
+                "Mozilla/5.0 (Linux; Android 14; SM-S918B Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/450.0.0.35.108;]"
+            );
+            expect(hasPartitionedStorage()).toBe(false);
+        });
+
+        it("returns false for the Instagram in-app browser on Android", () => {
+            setUserAgent(
+                "Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/138.0.0.0 Mobile Safari/537.36 Instagram 320.0.0.42.101 Android"
+            );
+            expect(hasPartitionedStorage()).toBe(false);
+        });
+
+        it("returns false for Electron", () => {
+            setUserAgent(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) MyApp/1.0 Chrome/128.0.0.0 Electron/32.0.0 Safari/537.36"
+            );
+            expect(hasPartitionedStorage()).toBe(false);
+        });
+
+        it("returns true for Chrome on Android, which is not a WebView", () => {
+            setUserAgent(
+                "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36"
+            );
+            expect(hasPartitionedStorage()).toBe(true);
+        });
+    });
+
     describe("edge cases", () => {
         it("returns false for unknown user agent", () => {
             setUserAgent("SomeCustomBot/1.0");
