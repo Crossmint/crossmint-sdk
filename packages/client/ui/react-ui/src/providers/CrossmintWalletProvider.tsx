@@ -64,9 +64,7 @@ export function CrossmintWalletProvider({
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
 
-    const biometricPolicy = deviceSigner?.biometricPolicy;
-    const biometricExpirationTime = deviceSigner?.biometricExpirationTime;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: rebuild on the policy values, not on every new `deviceSigner` object literal
+    // biome-ignore lint/correctness/useExhaustiveDependencies: one storage per API key; a loaded wallet keeps this instance, so policy changes go through setBiometricOptions below
     const deviceSignerKeyStorage = useMemo(() => {
         try {
             return new IframeDeviceSignerKeyStorage(crossmint.apiKey, deviceSigner);
@@ -77,7 +75,14 @@ export function CrossmintWalletProvider({
             }
             throw error;
         }
-    }, [crossmint.apiKey, biometricPolicy, biometricExpirationTime]);
+    }, [crossmint.apiKey]);
+
+    const biometricPolicy = deviceSigner?.biometricPolicy;
+    const biometricExpirationTime = deviceSigner?.biometricExpirationTime;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: depend on the policy values, not on every new `deviceSigner` object literal
+    useEffect(() => {
+        deviceSignerKeyStorage?.setBiometricOptions(deviceSigner ?? {});
+    }, [deviceSignerKeyStorage, biometricPolicy, biometricExpirationTime]);
 
     useEffect(() => {
         return () => deviceSignerKeyStorage?.destroy();

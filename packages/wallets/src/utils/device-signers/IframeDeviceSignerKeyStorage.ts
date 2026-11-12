@@ -46,25 +46,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private readonly iframeUrl: string;
     private biometricRequestHandler: BiometricRequestHandler | null = null;
     private biometricListener: ((event: MessageEvent) => void) | null = null;
+    private biometricOptions: DeviceSignerBiometricOptions = {};
 
     /**
      * @param apiKey - Crossmint API key. Selects the device signer frame for its environment.
      * @param biometricOptions - Biometric policy for the keys this storage creates. Default: `{ biometricPolicy: "none" }`.
      */
-    constructor(
-        apiKey: string,
-        private readonly biometricOptions: DeviceSignerBiometricOptions = {}
-    ) {
+    constructor(apiKey: string, biometricOptions: DeviceSignerBiometricOptions = {}) {
         super(apiKey);
-
-        if (
-            biometricOptions.biometricPolicy === "session" &&
-            !(Number.isFinite(biometricOptions.biometricExpirationTime) && biometricOptions.biometricExpirationTime > 0)
-        ) {
-            throw new InvalidWalletConfigError(
-                'biometricExpirationTime must be a positive number of seconds when biometricPolicy is "session"'
-            );
-        }
+        this.setBiometricOptions(biometricOptions);
 
         if (typeof window !== "undefined" && !hasPartitionedStorage()) {
             throw new UnsupportedBrowserError(
@@ -87,6 +77,22 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
      */
     setBiometricRequestHandler(handler: BiometricRequestHandler): void {
         this.biometricRequestHandler = handler;
+    }
+
+    /**
+     * Set the biometric policy for the keys this storage creates from now on. Keys that already exist keep theirs.
+     * A wallet keeps the storage instance it loaded with, so change the policy here rather than replace the storage.
+     */
+    setBiometricOptions(biometricOptions: DeviceSignerBiometricOptions): void {
+        if (
+            biometricOptions.biometricPolicy === "session" &&
+            !(Number.isFinite(biometricOptions.biometricExpirationTime) && biometricOptions.biometricExpirationTime > 0)
+        ) {
+            throw new InvalidWalletConfigError(
+                'biometricExpirationTime must be a positive number of seconds when biometricPolicy is "session"'
+            );
+        }
+        this.biometricOptions = biometricOptions;
     }
 
     @WithLoggerContext({
