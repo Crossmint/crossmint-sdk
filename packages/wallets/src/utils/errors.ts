@@ -232,10 +232,58 @@ export class InvalidTransferAmountError extends CrossmintSDKError {
 }
 
 export class TransactionNotCreatedError extends CrossmintSDKError {
-    constructor(message: string, details?: string) {
+    /** Whether the same request can be expected to succeed if retried shortly. */
+    readonly retryable: boolean = false;
+
+    constructor(
+        message: string,
+        details?: string,
+        /** The `code` returned by the wallets API, when it sent one. */
+        public readonly apiErrorCode?: string
+    ) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
     }
 }
+
+/**
+ * Funds were just moved into the card's collateral (deposit or auto top-up) and the card provider
+ * has not credited them as spending power yet. Retry shortly.
+ */
+export class CollateralFundsInTransitError extends TransactionNotCreatedError {
+    override readonly retryable = true;
+
+    constructor(message: string, details?: string) {
+        super(message, details, COLLATERAL_FUNDS_IN_TRANSIT_ERROR_CODE);
+    }
+}
+
+/** The card provider could not arrange collateral funding this attempt (5xx, timeout, pending). Retry shortly. */
+export class CollateralFundingTemporarilyUnavailableError extends TransactionNotCreatedError {
+    override readonly retryable = true;
+
+    constructor(message: string, details?: string) {
+        super(message, details, COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE_ERROR_CODE);
+    }
+}
+
+/** The card provider refused the collateral withdrawal; the developer must act. */
+export class CollateralWithdrawalUnavailableError extends TransactionNotCreatedError {
+    constructor(message: string, details?: string) {
+        super(message, details, COLLATERAL_WITHDRAWAL_UNAVAILABLE_ERROR_CODE);
+    }
+}
+
+/** The card provider's withdrawal authorization failed Crossmint's integrity checks; contact support. */
+export class CollateralWithdrawalIntegrityError extends TransactionNotCreatedError {
+    constructor(message: string, details?: string) {
+        super(message, details, COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR_CODE);
+    }
+}
+
+export const COLLATERAL_FUNDS_IN_TRANSIT_ERROR_CODE = "COLLATERAL_FUNDS_IN_TRANSIT";
+export const COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE_ERROR_CODE = "COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE";
+export const COLLATERAL_WITHDRAWAL_UNAVAILABLE_ERROR_CODE = "COLLATERAL_WITHDRAWAL_UNAVAILABLE";
+export const COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR_CODE = "COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR";
 
 export class TransactionNotAvailableError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
@@ -427,3 +475,28 @@ export type WalletError =
     | JWTInvalidError
     | JWTDecryptionError
     | JWTIdentifierError;
+
+/**
+ * Builds the error for a failed transaction-creation call: a typed subclass when the wallets API
+ * returned a recognized `code`, otherwise a plain `TransactionNotCreatedError` that still exposes
+ * the code (if any) as `apiErrorCode`. The message is `${context}: ${JSON body}`.
+ */
+export function transactionNotCreatedError(response: unknown, context: string): TransactionNotCreatedError {
+    const details = JSON.stringify(response);
+    const message = `${context}: ${details}`;
+    if (!isCrossmintApiErrorBody(response) || response.code == null) {
+        return new TransactionNotCreatedError(message, details);
+    }
+    switch (response.code) {
+        case COLLATERAL_FUNDS_IN_TRANSIT_ERROR_CODE:
+            return new CollateralFundsInTransitError(message, details);
+        case COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE_ERROR_CODE:
+            return new CollateralFundingTemporarilyUnavailableError(message, details);
+        case COLLATERAL_WITHDRAWAL_UNAVAILABLE_ERROR_CODE:
+            return new CollateralWithdrawalUnavailableError(message, details);
+        case COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR_CODE:
+            return new CollateralWithdrawalIntegrityError(message, details);
+        default:
+            return new TransactionNotCreatedError(message, details, response.code);
+    }
+}
