@@ -5,6 +5,7 @@ import {
     JWTIdentifierError,
     JWTInvalidError,
     NotAuthorizedError,
+    ApiClientError,
     WalletErrorCode,
 } from "@crossmint/common-sdk-base";
 
@@ -499,4 +500,29 @@ export function transactionNotCreatedError(response: unknown, context: string): 
         default:
             return new TransactionNotCreatedError(message, details, response.code);
     }
+}
+
+/**
+ * The HTTP layer turns every 5xx into an `ApiClientError` before the body reaches the caller, which
+ * is exactly how the retryable collateral codes arrive (503). Maps such an error to the typed
+ * `TransactionNotCreatedError` when its body carries a wallets API `code`; returns undefined for
+ * anything else (HTML from a load balancer, no body) so the caller can rethrow the transport error.
+ */
+export function transactionNotCreatedErrorFromApiClientError(
+    error: unknown,
+    context: string
+): TransactionNotCreatedError | undefined {
+    if (!(error instanceof ApiClientError) || error.responseBody == null) {
+        return undefined;
+    }
+    let body: unknown;
+    try {
+        body = JSON.parse(error.responseBody);
+    } catch {
+        return undefined;
+    }
+    if (!isCrossmintApiErrorBody(body) || body.code == null) {
+        return undefined;
+    }
+    return transactionNotCreatedError(body, context);
 }
