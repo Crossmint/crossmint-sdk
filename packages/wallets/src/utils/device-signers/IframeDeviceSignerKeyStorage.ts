@@ -1,9 +1,9 @@
 import { getEnvironmentForKey, APIKeyEnvironmentPrefix, WithLoggerContext } from "@crossmint/common-sdk-base";
 import { WebAuthnP256 } from "ox";
-import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
+import { DeviceSignerKeyStorage, type DeviceSignerBiometricOptions } from "./DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
 import { hasPartitionedStorage } from "./storage-partitioning";
-import { UnsupportedBrowserError } from "../errors";
+import { InvalidWalletConfigError, UnsupportedBrowserError } from "../errors";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
     [APIKeyEnvironmentPrefix.DEVELOPMENT]: "https://development.devicekey.store", // "http://localhost:3002"
@@ -47,8 +47,24 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private biometricRequestHandler: BiometricRequestHandler | null = null;
     private biometricListener: ((event: MessageEvent) => void) | null = null;
 
-    constructor(apiKey: string) {
+    /**
+     * @param apiKey - Crossmint API key. Selects the device signer frame for its environment.
+     * @param biometricOptions - Biometric policy for the keys this storage creates. Default: `{ biometricPolicy: "none" }`.
+     */
+    constructor(
+        apiKey: string,
+        private readonly biometricOptions: DeviceSignerBiometricOptions = {}
+    ) {
         super(apiKey);
+
+        if (
+            biometricOptions.biometricPolicy === "session" &&
+            !(Number.isFinite(biometricOptions.biometricExpirationTime) && biometricOptions.biometricExpirationTime > 0)
+        ) {
+            throw new InvalidWalletConfigError(
+                'biometricExpirationTime must be a positive number of seconds when biometricPolicy is "session"'
+            );
+        }
 
         if (typeof window !== "undefined" && !hasPartitionedStorage()) {
             throw new UnsupportedBrowserError(
@@ -77,10 +93,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         logger: walletsLogger,
         methodName: "deviceSignerKeyStorage.generateKey",
     })
-    async generateKey(
-        params: Parameters<DeviceSignerKeyStorage["generateKey"]>[0] = { biometricPolicy: "none" }
-    ): Promise<string> {
-        const result = await this.rpc<{ publicKeyBase64: string }>("generateKey", params);
+    async generateKey(params: Parameters<DeviceSignerKeyStorage["generateKey"]>[0] = {}): Promise<string> {
+        // createDeviceSigner passes no policy, so the storage's own policy applies to wallet creation and recovery
+        const { biometricPolicy, biometricExpirationTime } =
+            params.biometricPolicy != null ? params : this.biometricOptions;
+        const result = await this.rpc<{ publicKeyBase64: string }>("generateKey", {
+            address: params.address,
+            biometricPolicy,
+            biometricExpirationTime,
+        });
         return result.publicKeyBase64;
     }
 
