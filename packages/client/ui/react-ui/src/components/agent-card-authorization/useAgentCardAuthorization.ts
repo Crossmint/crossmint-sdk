@@ -51,7 +51,7 @@ function useFlowLog(): FlowLog {
     const loggerRef = useRef(logger);
     const flowId = useRef<string | null>(null);
     if (flowId.current == null) {
-        flowId.current = crypto.randomUUID();
+        flowId.current = newFlowId();
     }
     useEffect(() => {
         loggerRef.current = logger;
@@ -59,6 +59,14 @@ function useFlowLog(): FlowLog {
     return useCallback((level, event, context = {}) => {
         loggerRef.current?.[level](`react.agentCardAuthorization.${event}`, { flowId: flowId.current, ...context });
     }, []);
+}
+
+// `crypto.randomUUID` exists only in secure contexts (HTTPS or localhost); the flow must still mount elsewhere.
+function newFlowId(): string {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 function statusOf(error: unknown): { "http.response.status_code"?: number } {
