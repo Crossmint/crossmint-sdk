@@ -768,6 +768,64 @@ describe("approve() on a client with no active key", () => {
         });
     });
 
+    describe("when two approve() calls for different requests run at the same time", () => {
+        beforeEach(() => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+        });
+
+        it("signs both with the selected member, even when the first finishes while the second reads its request", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await quorumOnlyWallet(recoveryQuorum);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            const reads = new Map<string, number>();
+            api.getTransaction.mockImplementation((async (_wallet: string, id: string) => {
+                const read = (reads.get(id) ?? 0) + 1;
+                reads.set(id, read);
+                if (read > 1) {
+                    return { ...LANDED, id };
+                }
+                // The second request's first read outlasts the whole first approve().
+                if (id === "txn-2") {
+                    await new Promise((resolve) => setTimeout(resolve, 5_000));
+                }
+                return { ...awaiting([entry], "evm"), id };
+            }) as never);
+
+            const [first, second] = await Promise.all([
+                settle(wallet.approve({ transactionId: "txn-1" })),
+                settle(wallet.approve({ transactionId: "txn-2" })),
+            ]);
+
+            expect(first.error).toBeUndefined();
+            expect(second.error).toBeUndefined();
+            expect(api.approveTransaction.mock.calls.map((call) => call[1])).toEqual(["txn-1", "txn-2"]);
+        });
+    });
+
+    describe("when useSigner() runs while approve() signs with the selected member", () => {
+        beforeEach(() => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+        });
+
+        it("keeps the signer useSigner() set after approve() finishes", async () => {
+            const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);
+            const wallet = await quorumOnlyWallet(recoveryQuorum);
+            vi.spyOn(wallet, "signers").mockResolvedValue([]);
+            await wallet.useRecoveryMethod(bob.config);
+            const entry = bobPending(recoveryQuorum);
+            api.getTransaction.mockResolvedValueOnce(awaiting([entry], "evm") as never);
+            api.getTransaction.mockResolvedValue(LANDED as never);
+
+            const approving = settle(wallet.approve({ transactionId: "txn-change" }));
+            await wallet.useSigner(alice.config);
+            const { error } = await approving;
+
+            expect(error).toBeUndefined();
+            expect(wallet.signer?.locator()).toBe(alice.member.locator);
+        });
+    });
+
     describe("when a member of the recovery quorum is selected with useRecoveryMethod", () => {
         it("signs the member's pending transaction entry, then leaves no active key", async () => {
             const recoveryQuorum = createQuorumApiEntryWith([alice.member, bob.member]);

@@ -447,12 +447,19 @@ export class SignerManager<C extends Chain> {
         return this.#withActiveSigner(this.#assembleRecovery(standIn), run);
     }
 
-    /** Run `run` with the selected recovery method, else the selected member, active when no signer is (use case 6). */
-    async withStandInSigner<T>(run: () => Promise<T>): Promise<T> {
-        if (this.#activeSigner != null || (this.#selectedRecovery == null && this.#selectedMember == null)) {
-            return run();
+    /**
+     * The key approve() signs with: the active signer, else the selected recovery method, else the selected member
+     * (use case 6). It changes no state, so approvals running side by side cannot undo each other's key.
+     */
+    approvalSigner(): SignerAdapter {
+        if (this.#activeSigner != null) {
+            return this.#activeSigner;
         }
-        return this.#withHeldKey(this.#selectedMember, run);
+        const standIn = this.selectedRecovery ?? this.#selectedMember?.config;
+        if (standIn == null) {
+            return this.require();
+        }
+        return this.#assembleRecovery(standIn);
     }
 
     async #withActiveSigner<T>(signer: SignerAdapter, run: () => Promise<T>): Promise<T> {
