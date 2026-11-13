@@ -717,6 +717,49 @@ describe("SignerManager.heldSigners", () => {
     });
 });
 
+describe("SignerManager.withApprover", () => {
+    const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0x1234567890aBcDeF1234567890AbCdEf12345678";
+    const storedRecovery = asRecoveryConfig({
+        type: "external-wallet",
+        address: "0x1234567890aBcDeF1234567890AbCdEf12345678",
+    });
+
+    describe("when the signer option names the recovery method selected with useRecoveryMethod()", () => {
+        it("assembles the selected config, which carries the caller's callback, not the stored entry", async () => {
+            const onSign = vi.fn();
+            const selected = asRecoveryConfig({ ...storedRecovery, onSign });
+            mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
+            const manager = makeManager({ recoverySigners: [apiKeyConfig, storedRecovery] });
+            manager.selectRecovery(1, selected);
+
+            const approver = await manager.withApprover({ explicit: RECOVERY_LOCATOR }, async (approver) => approver);
+
+            expect(approver).toBe(RECOVERY_LOCATOR);
+            expect(mockedAssembleSigner).toHaveBeenCalledWith(
+                "base-sepolia",
+                expect.objectContaining({ onSign }),
+                undefined
+            );
+        });
+    });
+
+    describe("when the signer option names a recovery method that is not selected", () => {
+        it("assembles the stored entry", async () => {
+            mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
+            const withOnSign = asRecoveryConfig({ ...storedRecovery, onSign: vi.fn() });
+            const manager = makeManager({ recoverySigners: [apiKeyConfig, withOnSign] });
+
+            await manager.withApprover({ explicit: RECOVERY_LOCATOR }, async (approver) => approver);
+
+            expect(mockedAssembleSigner).toHaveBeenCalledWith(
+                "base-sepolia",
+                expect.objectContaining({ onSign: withOnSign.onSign }),
+                undefined
+            );
+        });
+    });
+});
+
 describe("SignerManager.memberStandsIn", () => {
     const MEMBER_LOCATOR = "external-wallet:0xMember";
     const member = asRecoveryConfig({ type: "external-wallet", address: "0xMember", onSign: vi.fn() });
