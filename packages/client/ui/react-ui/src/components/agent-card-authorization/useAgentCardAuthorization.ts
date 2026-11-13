@@ -164,7 +164,10 @@ function useTerminalCallbacks(
     );
 
     // Memoized so the callbacks built on it keep their identity across renders.
-    return useMemo(() => ({ fail, succeed, mounted, generation }), [fail, succeed, mounted, generation]);
+    return useMemo(
+        () => ({ fail, succeed, mounted, generation, authorized }),
+        [fail, succeed, mounted, generation, authorized]
+    );
 }
 
 type OrderIntentRequestFields = Pick<CrossmintAgentCardAuthorizationProps, "amount" | "merchant" | "description"> & {
@@ -463,7 +466,7 @@ function useAuthorizeCard(
 }
 
 /** Logs `start` on mount and `abandoned` when the buyer leaves before the flow authorized. */
-function useFlowLifecycleLog(step: AgentCardAuthorizationStep, log: FlowLog) {
+function useFlowLifecycleLog(step: AgentCardAuthorizationStep, authorized: RefObject<boolean>, log: FlowLog) {
     const latestStep = useRef(step);
     useEffect(() => {
         latestStep.current = step;
@@ -472,7 +475,9 @@ function useFlowLifecycleLog(step: AgentCardAuthorizationStep, log: FlowLog) {
         log("info", "start");
         return () => {
             const last = latestStep.current;
-            if (last.kind !== "done") {
+            // `authorized` is set before onAuthorized runs, so a parent that unmounts this component from
+            // onAuthorized (before the `done` step renders) is not logged as abandoned.
+            if (!authorized.current && last.kind !== "done") {
                 log("info", "abandoned", {
                     step: last.kind,
                     ...(last.kind === "select" ? {} : { orderIntentId: last.orderIntent.orderIntentId }),
@@ -499,7 +504,7 @@ export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorization
     const latestProps = useLatestProps(props);
     const log = useFlowLog();
     const terminal = useTerminalCallbacks(latestProps, setStep, log);
-    useFlowLifecycleLog(step, log);
+    useFlowLifecycleLog(step, terminal.authorized, log);
 
     const cache = useOrderIntentCache();
     const { settle, awaitRailActive } = useRailSettlement(api, terminal, cache, setStep, log);
