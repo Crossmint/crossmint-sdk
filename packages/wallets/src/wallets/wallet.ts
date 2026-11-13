@@ -410,7 +410,14 @@ export class Wallet<C extends Chain> {
         if (!isSupportedSmartWallet(walletResponse) || walletResponse.config == null) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
-        const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletResponse.config);
+        // A signer acts only once its add landed on the request's chain (EDD 008 I10): a recovery method or quorum
+        // still awaiting approval, or installed on another chain only, is neither a candidate nor a reason for the
+        // ambiguous error. The API lists such entries with their status; the curated spec omits those fields.
+        const installedOnChain = (entry: object) => {
+            const onChain = mapApiSignerToSigner(entry as APISigner, requestChain);
+            return onChain != null && this.#signerManager.isApprovedSignerStatus(onChain.status);
+        };
+        const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletResponse.config).filter(installedOnChain);
         const configSigners = walletResponse.config.delegatedSigners ?? [];
         const role = resolveTransactionRole({
             held: heldLocator,
@@ -419,7 +426,7 @@ export class Wallet<C extends Chain> {
                 .map((recovery) => this.#signerManager.recoveryLocator(recovery))
                 .filter((locator) => locator != null),
             recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
-            delegatedQuorums: configSigners.filter(isQuorumSigner),
+            delegatedQuorums: configSigners.filter(isQuorumSigner).filter(installedOnChain),
             // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
             registeredOnChain: configSigners.some(
                 (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
