@@ -267,6 +267,89 @@ describe("a creating call with a key that is only a quorum member", () => {
         });
     });
 
+    describe("when the key is in an installed quorum and in one whose registration still awaits approval", () => {
+        it("creates the send as the installed quorum, without the ambiguous error", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const ops = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [
+                    { ...treasury, status: "success" },
+                    { ...ops, chains: { "base-sepolia": { id: "tx-add", status: "awaiting-approval" } } },
+                ],
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+
+        it("acts as itself when every quorum of the key still awaits approval, so the API names the reason", async () => {
+            const ops = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [{ ...ops, chains: { "base-sepolia": { id: "tx-add", status: "awaiting-approval" } } }],
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(bob.locator);
+        });
+    });
+
+    describe("when the key is in an installed quorum and in one installed on another chain only", () => {
+        it("creates the send as the quorum on this chain, without the ambiguous error", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const elsewhere = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [
+                    { ...treasury, status: "success" },
+                    { ...elsewhere, chains: { "polygon-amoy": { id: "tx-add", status: "success" } } },
+                ],
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+    });
+
+    describe("when the key is in an installed delegated quorum and in a recovery quorum still awaiting approval", () => {
+        it("creates the send as the delegated quorum on EVM, where the recovery entry lists the chain", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const recoveryQuorum = createQuorumApiEntryWith([bob]);
+            const pendingRecovery = {
+                ...recoveryQuorum,
+                chains: { "base-sepolia": { status: "awaiting-approval", transaction: { id: "tx-add" } } },
+            };
+            const { wallet } = await walletWithBob(api, {
+                recovery: [{ type: "api-key" }, pendingRecovery],
+                signers: [{ ...treasury, status: "success" }],
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+
+        it("creates the send as the delegated quorum on Stellar, where the recovery entry lists its transaction", async () => {
+            const treasury = createQuorumApiEntryWith([bobMember(BOB_STELLAR)]);
+            const recoveryQuorum = createQuorumApiEntryWith([bobMember(BOB_STELLAR)]);
+            const pendingRecovery = {
+                ...recoveryQuorum,
+                status: "awaiting-approval",
+                transaction: { id: "tx-add", status: "awaiting-approval" },
+            };
+            const { wallet } = await walletWithBob(
+                api,
+                { recovery: [{ type: "api-key" }, pendingRecovery], signers: [{ ...treasury, status: "success" }] },
+                "stellar"
+            );
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+    });
+
     describe("when the key is in two delegated quorums", () => {
         it("throws QuorumSelectionAmbiguousError naming both, and creates nothing", async () => {
             const first = createQuorumApiEntryWith([bob]);
