@@ -26,6 +26,10 @@ export {
     JWTInvalidError,
     JWTDecryptionError,
     JWTIdentifierError,
+    CollateralFundsInTransitError,
+    CollateralFundingTemporarilyUnavailableError,
+    CollateralWithdrawalUnavailableError,
+    CollateralWithdrawalIntegrityError,
 } from "./utils/errors";
 
 // API
