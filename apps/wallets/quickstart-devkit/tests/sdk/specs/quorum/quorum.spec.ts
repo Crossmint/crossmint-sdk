@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { CrossmintWallets, EVMWallet, createCrossmint } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, EVMWallet, createCrossmint, type QuorumSigner } from "@crossmint/wallets-sdk";
 import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, isHex, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import {
@@ -13,6 +13,18 @@ import { MockDeviceSignerKeyStorage } from "../../helpers/mock-device-storage";
 
 // Live quorum flows on staging: EVM needs `release_evmQuorumSigner` on for the API key's project; Stellar needs nothing.
 const API_KEY = AUTH_CONFIG.crossmintApiKey;
+
+function assertQuorum(entry: { type: string }): asserts entry is QuorumSigner {
+    if (entry.type !== "quorum") {
+        throw new Error(`expected a quorum recovery method, got ${entry.type}`);
+    }
+}
+
+function assertHex(value: string): asserts value is Hex {
+    if (!isHex(value)) {
+        throw new Error(`expected a 0x hex string, got ${value}`);
+    }
+}
 
 function makeSdk() {
     return CrossmintWallets.from(createCrossmint({ apiKey: API_KEY }));
@@ -69,11 +81,10 @@ for (const { chain, member, recipient } of CHAINS) {
             });
 
             const [recovery] = wallet.recoveryMethods;
+            assertQuorum(recovery);
             expect(recovery).toMatchObject({ type: "quorum", threshold: 2 });
-            expect((recovery as { locator: string }).locator).toMatch(/^quorum:[0-9a-f-]{36}$/);
-            expect((recovery as { members: Array<{ locator: string }> }).members.map((m) => m.locator)).toEqual(
-                members.map((m) => `external-wallet:${m.address}`)
-            );
+            expect(recovery.locator).toMatch(/^quorum:[0-9a-f-]{36}$/);
+            expect(recovery.members.map((m) => m.locator)).toEqual(members.map((m) => `external-wallet:${m.address}`));
         });
 
         test("adds a delegated quorum the recovery quorum approves, then sends as it with two members", async () => {
@@ -186,12 +197,11 @@ test.describe("Quorum on base-sepolia — ERC-1271", { tag: "@quorum" }, () => {
         await wallet.useSigner(erin);
         const signed = await wallet.approve({ signatureId: requested.signatureId });
 
+        const address = wallet.address;
+        assertHex(address);
+        assertHex(signed.signature);
         const client = createPublicClient({ chain: baseSepolia, transport: http() });
-        const valid = await client.verifyMessage({
-            address: wallet.address as `0x${string}`,
-            message,
-            signature: (signed as { signature: `0x${string}` }).signature,
-        });
+        const valid = await client.verifyMessage({ address, message, signature: signed.signature });
         expect(valid).toBe(true);
     });
 });
