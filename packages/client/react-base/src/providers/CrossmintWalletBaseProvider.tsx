@@ -8,6 +8,7 @@ import {
     type ClientSideWalletArgsFor,
     type WalletCreateArgs,
     type DeviceSignerKeyStorage,
+    IframeDeviceSignerKeyStorage,
     type PasskeyProvider,
     type WalletOptions,
     type RegisterSignerPasskeyParams,
@@ -297,6 +298,13 @@ export function CrossmintWalletBaseProvider({
             }),
         [showPasskeyHelpers]
     );
+
+    useEffect(() => {
+        if (deviceSignerKeyStorage instanceof IframeDeviceSignerKeyStorage) {
+            // The frame starts the biometric WebAuthn ceremony from a message event, which has no user activation
+            deviceSignerKeyStorage.setBiometricRequestHandler(createPasskeyPrompt("transaction"));
+        }
+    }, [deviceSignerKeyStorage, createPasskeyPrompt]);
 
     const updateCallbacks = useMemo(() => {
         let onWalletCreationStart = callbacks?.onWalletCreationStart;

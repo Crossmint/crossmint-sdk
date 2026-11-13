@@ -4,7 +4,9 @@ import { WalletFactory } from "./wallet-factory";
 import type { ApiClient, GetBalanceSuccessResponse, SendResponse, GetWalletSuccessResponse } from "../api";
 import type { ApiSourcedServerSignerConfig, SignerAdapter, SignerConfigForChain } from "../signers/types";
 import { AuthRejectedError, OtpValidationError } from "../signers/types";
+import { ApiClientError } from "@crossmint/common-sdk-base";
 import {
+    CollateralFundsInTransitError,
     InvalidAddressError,
     InvalidRecoveryConfigError,
     InvalidSignerError,
@@ -392,6 +394,44 @@ describe("Wallet - send()", () => {
     });
 
     describe("success cases", () => {
+        it("throws the typed collateral error when the API answers a 503 with a collateral code", async () => {
+            const body = {
+                error: true,
+                code: "COLLATERAL_FUNDS_IN_TRANSIT",
+                message: "Could not pull the shortfall from the card's collateral yet",
+            };
+            mockApiClient.send.mockRejectedValue(
+                new ApiClientError(
+                    "API request failed: 503 Service Unavailable",
+                    503,
+                    "Service Unavailable",
+                    JSON.stringify(body)
+                )
+            );
+
+            const sendPromise = wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0");
+
+            await expect(sendPromise).rejects.toBeInstanceOf(CollateralFundsInTransitError);
+            await expect(sendPromise).rejects.toMatchObject({
+                apiErrorCode: "COLLATERAL_FUNDS_IN_TRANSIT",
+                retryable: true,
+                message: `Failed to send token: ${JSON.stringify(body)}`,
+            });
+        });
+
+        it("rethrows a 5xx without a wallets API code untouched", async () => {
+            const transportError = new ApiClientError(
+                "API request failed: 502 Bad Gateway",
+                502,
+                "Bad Gateway",
+                "<html>"
+            );
+            mockApiClient.send.mockRejectedValue(transportError);
+
+            await expect(wallet.send("0x1111111111111111111111111111111111111111", "usdc", "10.0")).rejects.toBe(
+                transportError
+            );
+        });
         it("sends tokens successfully and return transaction by default", async () => {
             const mockSendResponse = {
                 id: "txn-123",

@@ -1,7 +1,6 @@
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
-import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { walletsLogger } from "../../logger";
+import { NonCustodialSigner } from "./ncs-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -22,30 +21,11 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
 
     private async sign(messageData: Uint8Array): Promise<{ signature: string }> {
         await this.handleAuthRequired();
-        const jwt = this.getJwtOrThrow();
-
-        walletsLogger.info("sign: sending request", { keyType: "ed25519" });
-        const startTime = Date.now();
-        const res = await this.config.clientTEEConnection?.sendAction({
-            event: "request:sign",
-            responseEvent: "response:sign",
-            data: {
-                authData: {
-                    jwt,
-                    apiKey: this.config.crossmint.apiKey,
-                },
-                data: {
-                    keyType: "ed25519",
-                    bytes: base58.encode(new Uint8Array(messageData)),
-                    encoding: "base58",
-                    authId: this.getAuthId(),
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
-        walletsLogger.info("sign: response received", {
-            status: res?.status,
-            durationMs: Date.now() - startTime,
+        const res = await this.requestSignature({
+            keyType: "ed25519",
+            bytes: base58.encode(new Uint8Array(messageData)),
+            encoding: "base58",
+            authId: this.getAuthId(),
         });
 
         if (res?.status === "error") {
