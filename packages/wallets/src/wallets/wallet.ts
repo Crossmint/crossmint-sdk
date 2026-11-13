@@ -110,7 +110,7 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { type RecoveryMember, SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
-import { isQuorumPendingApproval } from "../quorum/approvals";
+import { isQuorumPendingApproval, quorumsAwaitOnlyOthers, splitPendingApprovals } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
 import { resolveTransactionRole } from "../quorum/roles";
 import { quorumsMatchingInput, toQuorumSignerInput } from "../quorum/config";
@@ -729,8 +729,7 @@ export class Wallet<C extends Chain> {
      * @param params.options.additionalSigners - Additional signers for the approval
      * @returns The transaction or signature. While other quorum members must still sign, the transaction comes back
      * without `hash` and `explorerLink`, and the signature without `signature`.
-     * A second call for a request that is still being approved joins the running call and gets its result; its own
-     * `options` are not used.
+     * A second call for a request that is still being approved runs after it, with its own keys and options.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -741,18 +740,18 @@ export class Wallet<C extends Chain> {
     })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         const requestId = params.transactionId ?? params.signatureId;
-        const inFlight = requestId == null ? undefined : this.#approving.get(requestId);
-        if (inFlight != null) {
-            walletsLogger.info("wallet.approve.joined", {
-                transactionId: params.transactionId,
-                signatureId: params.signatureId,
-            });
-            return (await inFlight) as ApproveResult<T>;
-        }
-        const run = this.#approveOnce(params);
+        // One signing pass at a time per request: a later call waits for the running one, then signs with its own keys.
+        const previous = requestId == null ? undefined : this.#approving.get(requestId);
+        const run = (previous == null ? Promise.resolve() : previous.catch(() => undefined)).then(() =>
+            this.#approveOnce(params)
+        );
         if (requestId != null) {
             this.#approving.set(requestId, run);
-            run.finally(() => this.#approving.delete(requestId)).catch(() => undefined);
+            run.finally(() => {
+                if (this.#approving.get(requestId) === run) {
+                    this.#approving.delete(requestId);
+                }
+            }).catch(() => undefined);
         }
         return await run;
     }
@@ -777,17 +776,18 @@ export class Wallet<C extends Chain> {
 
     async #approveRequest<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         if (params.transactionId != null) {
-            const result = (await this.approveTransactionAndWait(
-                params.transactionId,
-                params.options
-            )) as ApproveResult<T>;
+            const result = (await this.approveTransactionAndWait(params.transactionId, params.options, {
+                requireHeldMember: true,
+            })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 transactionId: params.transactionId,
             });
             return result;
         }
         if (params.signatureId != null) {
-            const result = (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveSignatureAndWait(params.signatureId, params.options, {
+                requireHeldMember: true,
+            })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 signatureId: params.signatureId,
             });
@@ -1787,14 +1787,24 @@ export class Wallet<C extends Chain> {
         return this.chain;
     }
 
-    protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
-        await this.approveTransactionInternal(transactionId, options);
+    // `requireHeldMember`: the public approve() fails when no held key can sign; a signer change finishing its own
+    // registration returns it pending instead, since other members sign later.
+    protected async approveTransactionAndWait(
+        transactionId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
+        await this.approveTransactionInternal(transactionId, options, { requireHeldMember });
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
-        const signatureResponse = await this.approveSignatureInternal(signatureId, options);
+    protected async approveSignatureAndWait(
+        signatureId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
+        const signatureResponse = await this.approveSignatureInternal(signatureId, options, { requireHeldMember });
 
         if (
             !("error" in signatureResponse) &&
@@ -1865,7 +1875,27 @@ export class Wallet<C extends Chain> {
         } satisfies ApprovalSigning;
     }
 
-    protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
+    // A wrong key must not look like a recorded approval: a quorum that still waits, with no held key among its
+    // members, is this client's mistake, as a flat entry with no held key already is.
+    #requireHeldMember(pending: PendingApproval[], held: SignerAdapter[]): void {
+        const heldLocators = held.map((signer) => signer.locator());
+        const { quorums } = splitPendingApprovals(pending);
+        if (quorumsAwaitOnlyOthers(quorums, heldLocators)) {
+            const waiting = quorums
+                .filter((entry) => entry.quorumApprovals.remaining > 0)
+                .map((entry) => entry.signer.locator)
+                .join(", ");
+            throw new InvalidSignerError(
+                `None of the keys this client holds (${heldLocators.join(", ")}) is a member of the quorum still approving this request (${waiting})`
+            );
+        }
+    }
+
+    protected async approveSignatureInternal(
+        signatureId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
@@ -1894,20 +1924,27 @@ export class Wallet<C extends Chain> {
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
         }
 
-        const approvals = await collectApprovals(
-            this.#requireSupportedApprovals(signable),
-            this.#approvalSigning(walletSigner, options, signable, (signer, message) => signer.signMessage(message))
+        const signing = this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
+            signer.signMessage(message)
         );
+        const approvals = await collectApprovals(this.#requireSupportedApprovals(signable), signing);
 
-        // Nothing this client holds is pending: the request waits for other members.
+        // Nothing this client holds is pending: a held member already signed, or no held key is a member at all.
         if (approvals.length === 0) {
+            if (requireHeldMember) {
+                this.#requireHeldMember(signable, signing.held);
+            }
             return signature;
         }
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
 
-    protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
+    protected async approveTransactionInternal(
+        transactionId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -1934,15 +1971,16 @@ export class Wallet<C extends Chain> {
         }
 
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
-        const approvals = await collectApprovals(
-            this.#requireSupportedApprovals(signable),
-            this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
-                approvalAdapter.signApproval(signer, transaction, message)
-            )
+        const signing = this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
+            approvalAdapter.signApproval(signer, transaction, message)
         );
+        const approvals = await collectApprovals(this.#requireSupportedApprovals(signable), signing);
 
-        // Nothing this client holds is pending: the transaction waits for other members.
+        // Nothing this client holds is pending: a held member already signed, or no held key is a member at all.
         if (approvals.length === 0) {
+            if (requireHeldMember) {
+                this.#requireHeldMember(signable, signing.held);
+            }
             return transaction;
         }
 
