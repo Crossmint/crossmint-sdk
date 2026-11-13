@@ -16,6 +16,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     }
 
     private handleGlobalMessage = (event: MessageEvent) => {
+        // Hosts deliver messages as synthetic events (null source); a frame or popup carries its own window.
+        if (event.source != null && event.source !== window) {
+            return;
+        }
         const eventName = event.data?.event;
         if (eventName) {
             console.info(`[RNTransport WebView] received: ${String(eventName)}`);
