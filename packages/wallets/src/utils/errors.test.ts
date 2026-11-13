@@ -258,6 +258,24 @@ describe("throwIfRequestExpired", () => {
         });
     });
 
+    describe("when the stored record carries the code with a reworded message", () => {
+        test("throws TransactionExpiredError, matching the code", () => {
+            const response = createExpiredRequest("request-1");
+            response.error.revert.reason = "Expired. Create a new transaction.";
+
+            expect(() => throwIfRequestExpired(response, { transactionId: "tx-1" })).toThrow(TransactionExpiredError);
+        });
+    });
+
+    describe("when the stored record predates the code and carries the message only", () => {
+        test("throws TransactionExpiredError, matching the message", () => {
+            const response = createExpiredRequest("request-1");
+            response.error.revert = { type: "wallet_authorization", reason: TRANSACTION_EXPIRED_API_MESSAGE } as never;
+
+            expect(() => throwIfRequestExpired(response, { signatureId: "sig-1" })).toThrow(TransactionExpiredError);
+        });
+    });
+
     describe("when the request failed for another reason", () => {
         test.each([
             {
