@@ -43,6 +43,10 @@ const USE_SIGNER_REQUIRED =
 /** A recovery method that signs on its own, as opposed to a quorum. */
 type SingleRecoverySigner<C extends Chain> = Exclude<RecoverySignerConfigForChain<C>, QuorumSigner>;
 
+function isSingleRecovery<C extends Chain>(entry: RecoverySignerConfigForChain<C>): entry is SingleRecoverySigner<C> {
+    return !isQuorumSigner(entry);
+}
+
 // How a signer change picks its approver: an explicit `signer` option, and whether to skip the member selection.
 export type ApproverRequest = { explicit?: string; ignoreMember?: boolean };
 
@@ -109,7 +113,21 @@ export class SignerManager<C extends Chain> {
 
     /** Recovery methods that sign on their own, in order: every recovery method except quorums. */
     #singleRecoverySigners(): SingleRecoverySigner<C>[] {
-        return this.#recoverySigners.filter((entry): entry is SingleRecoverySigner<C> => !isQuorumSigner(entry));
+        return this.#recoverySigners.filter(isSingleRecovery);
+    }
+
+    // The recovery method `locator` names. The selected config wins over the stored entry: it carries what the caller
+    // gave useRecoveryMethod() (a passkey callback, a credential id) and the stored entry does not.
+    #recoveryNamed(locator: string): SingleRecoverySigner<C> | null {
+        const isNamed = (entry: SingleRecoverySigner<C>) => {
+            const stored = this.recoveryLocator(entry);
+            return stored != null && isSameSignerLocator(stored, locator);
+        };
+        const selected = this.selectedRecovery;
+        if (selected != null && isSingleRecovery(selected) && isNamed(selected)) {
+            return selected;
+        }
+        return this.#singleRecoverySigners().find(isNamed) ?? null;
     }
 
     /** The default recovery method; throws when every recovery method is a quorum, which signs only through its members. */
@@ -359,10 +377,7 @@ export class SignerManager<C extends Chain> {
     ): Promise<T> {
         const member = ignoreMember ? null : this.#selectedMember;
         if (explicit != null) {
-            const recovery = this.#singleRecoverySigners().find((entry) => {
-                const locator = this.recoveryLocator(entry);
-                return locator != null && isSameSignerLocator(locator, explicit);
-            });
+            const recovery = this.#recoveryNamed(explicit);
             if (recovery != null) {
                 return this.#withActiveSigner(this.#assembleRecovery(recovery), () => operation(explicit));
             }
