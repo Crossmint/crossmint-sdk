@@ -12,6 +12,9 @@ on:
         branches-ignore:
             - main
             - beta
+    # main.yml starts this on the release pull request branch, which GITHUB_TOKEN pushes
+    # without a `push` run.
+    workflow_dispatch:
 
 permissions: {}
 
