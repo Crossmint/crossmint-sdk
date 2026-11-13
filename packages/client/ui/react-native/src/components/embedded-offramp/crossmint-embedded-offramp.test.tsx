@@ -1,3 +1,4 @@
+import { OfframpSignatureRejectedError } from "@crossmint/client-sdk-base";
 import { act, cleanup, render } from "@testing-library/react";
 import React from "react";
 import { WebView } from "react-native-webview";
@@ -287,6 +288,109 @@ describe("<CrossmintEmbeddedOfframp /> (React Native)", () => {
             await act(async () => resolveSend("0xtx"));
             expect(injectJavaScript).toHaveBeenCalledTimes(1);
             expect(replies("crypto:send-transaction:success")).toHaveLength(1);
+        });
+    });
+
+    describe("when the page requests a message signature", () => {
+        const SIGN = { message: "crossmint.com wants you to sign in", chain: "solana", payerAddress: "9Wz" };
+        const payerSigning = (sign: (request: typeof SIGN) => Promise<string>) => ({
+            signAndSendTransaction: vi.fn(),
+            signMessage: vi.fn(sign),
+        });
+
+        test("signs the request with the payer and replies once with the signature", async () => {
+            const payer = payerSigning(async () => "c2ln");
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+
+            await emit("crypto:sign-message", SIGN);
+
+            expect(payer.signMessage).toHaveBeenCalledWith(SIGN);
+            expect(payer.signMessage.mock.contexts[0]).toBe(payer);
+            expect(injectJavaScript).toHaveBeenCalledTimes(1);
+            expect(replies("crypto:sign-message:success")).toEqual([
+                { event: "crypto:sign-message:success", data: { signature: "c2ln" } },
+            ]);
+        });
+
+        test("reports OfframpSignatureRejectedError as rejected", async () => {
+            const payer = payerSigning(() => Promise.reject(new OfframpSignatureRejectedError("declined")));
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+
+            await emit("crypto:sign-message", SIGN);
+
+            expect(injectJavaScript).toHaveBeenCalledTimes(1);
+            expect(replies("crypto:sign-message:failed")).toEqual([
+                { event: "crypto:sign-message:failed", data: { error: "declined", rejected: true } },
+            ]);
+        });
+
+        test("reports a payer without signMessage as failed, not rejected", async () => {
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={{ signAndSendTransaction: vi.fn() }} />);
+
+            await emit("crypto:sign-message", SIGN);
+
+            expect(injectJavaScript).toHaveBeenCalledTimes(1);
+            expect(replies("crypto:sign-message:failed")).toEqual([
+                {
+                    event: "crypto:sign-message:failed",
+                    data: { error: "This payer cannot sign messages", rejected: false },
+                },
+            ]);
+        });
+
+        test("ignores a second request while one is pending", async () => {
+            const signature = deferredTransaction();
+            const payer = payerSigning(() => signature.promise);
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+
+            await emit("crypto:sign-message", SIGN);
+            await emit("crypto:sign-message", SIGN);
+            expect(payer.signMessage).toHaveBeenCalledTimes(1);
+
+            await act(async () => signature.resolve("c2ln"));
+            expect(injectJavaScript).toHaveBeenCalledTimes(1);
+        });
+
+        test("ignores a pending reply after the page starts loading again", async () => {
+            const oldSignature = deferredTransaction();
+            const newSignature = deferredTransaction();
+            const payer = payerSigning(
+                vi.fn().mockReturnValueOnce(oldSignature.promise).mockReturnValueOnce(newSignature.promise)
+            );
+            render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+            await emit("crypto:sign-message", SIGN);
+            act(() => lastWebViewProps().onLoadStart());
+            await emit("crypto:sign-message", SIGN);
+            expect(payer.signMessage).toHaveBeenCalledTimes(2);
+            await act(async () => oldSignature.resolve("old"));
+            expect(injectJavaScript).not.toHaveBeenCalled();
+            await act(async () => newSignature.resolve("new"));
+            expect(replies("crypto:sign-message:success")).toEqual([
+                { event: "crypto:sign-message:success", data: { signature: "new" } },
+            ]);
+        });
+
+        test("does not reply after unmount", async () => {
+            const signature = deferredTransaction();
+            const { unmount } = render(
+                <CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payerSigning(() => signature.promise)} />
+            );
+            await emit("crypto:sign-message", SIGN);
+            unmount();
+            await act(async () => signature.resolve("c2ln"));
+            expect(injectJavaScript).not.toHaveBeenCalled();
+        });
+
+        test("keeps a delayed reply for the same session across callback updates", async () => {
+            const signature = deferredTransaction();
+            const payer = payerSigning(() => signature.promise);
+            const { rerender } = render(<CrossmintEmbeddedOfframp credentials={CREDENTIALS} payer={payer} />);
+            await emit("crypto:sign-message", SIGN);
+            rerender(<CrossmintEmbeddedOfframp credentials={{ ...CREDENTIALS }} payer={payer} onReady={vi.fn()} />);
+            await act(async () => signature.resolve("c2ln"));
+            expect(replies("crypto:sign-message:success")).toEqual([
+                { event: "crypto:sign-message:success", data: { signature: "c2ln" } },
+            ]);
         });
     });
 });
