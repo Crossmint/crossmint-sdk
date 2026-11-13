@@ -1,5 +1,5 @@
 import type { DatadogSink, DatadogSinkOptions } from "./DatadogSink";
-import type { LogEntry } from "../types";
+import type { FlushOptions, LogEntry } from "../types";
 import { DATADOG_CLIENT_TOKEN } from "../init-helpers";
 import type { APIKeyEnvironmentPrefix } from "@/apiKey";
 
@@ -118,7 +118,7 @@ export class HttpDatadogSink implements DatadogSink {
      * This method is called automatically when batches are full or timeout,
      * but can also be called manually to ensure logs are sent before app/browser close
      */
-    async flush(): Promise<void> {
+    async flush(options: FlushOptions = {}): Promise<void> {
         if (this.batchQueue.length === 0) {
             return;
         }
@@ -176,6 +176,8 @@ export class HttpDatadogSink implements DatadogSink {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(logs),
+                // Only for the flush on page exit (SdkLogger browser listeners): keepalive bodies are capped at 64 KiB.
+                ...(options.keepalive === true ? { keepalive: true } : {}),
             });
 
             if (!response.ok) {
