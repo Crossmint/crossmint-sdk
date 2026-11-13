@@ -1,5 +1,5 @@
 import path from "path";
-import { AndroidConfig, XML } from "@expo/config-plugins";
+import { AndroidConfig, XML } from "expo/config-plugins";
 import { beforeEach, describe, expect, test } from "vitest";
 
 import { withGooglePay } from "./withGooglePay";

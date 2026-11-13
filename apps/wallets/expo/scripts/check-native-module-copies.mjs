@@ -9,6 +9,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// On the release/react-native-ui-1.x branch the SDK ships the Expo SDK 54 native modules as its own
+// dependencies, while this playground stays on Expo SDK 58 for 2.x. They cannot share one copy, so
+// the check does not apply here. Test 1.x in a standalone Expo SDK 54 to 57 app instead.
+const sdkPackage = JSON.parse(
+    fs.readFileSync(new URL("../../../../packages/client/ui/react-native/package.json", import.meta.url), "utf8")
+);
+if (sdkPackage.version.startsWith("1.")) {
+    console.log("Skipped: the React Native SDK is on the 1.x line, which this Expo SDK 58 playground does not use.");
+    process.exit(0);
+}
+
 const PLAYGROUND_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPO_ROOT = path.resolve(PLAYGROUND_DIR, "../../..");
 const SDK_DIR = path.join(REPO_ROOT, "packages/client/ui/react-native");
