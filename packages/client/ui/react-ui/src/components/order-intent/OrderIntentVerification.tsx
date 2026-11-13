@@ -4,9 +4,11 @@ import type {
     OrderIntentWithVerification,
     VerificationAppearance,
 } from "@crossmint/client-sdk-base";
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 
+import { LoggerContext } from "../../providers/CrossmintProvider";
 import { mapVerificationAppearanceToAgenticAppearance } from "../../utils/mapVerificationAppearanceToAgenticAppearance";
+import { describeVerificationError } from "./verificationErrorLog";
 
 const AGENTIC_API_URLS = {
     production: "https://api.basistheory.com/agentic",
@@ -38,6 +40,10 @@ export function OrderIntentVerification({
 }: OrderIntentVerificationProps) {
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
+    // Optional: this component can be mounted without a CrossmintProvider.
+    const logger = useContext(LoggerContext);
+    const loggerRef = useRef(logger);
+    const { orderIntentId } = orderIntent;
     const agenticAppearance = mapVerificationAppearanceToAgenticAppearance(appearance);
     const pendingProvider = orderIntent.rails.find(
         (rail): rail is OrderIntentAgenticTokenRail =>
@@ -61,13 +67,35 @@ export function OrderIntentVerification({
     }, [onVerificationError]);
 
     useEffect(() => {
+        loggerRef.current = logger;
+    }, [logger]);
+
+    useEffect(() => {
+        const logContext = { orderIntentId, allowanceId, provider: pendingProvider };
         if (pendingProvider == null) {
+            loggerRef.current?.error("react.orderIntentVerification.failed", {
+                ...logContext,
+                "error.type": "no_pending_rail",
+            });
             errorRef.current?.(new Error("Order intent does not have a rail pending verification"));
             return;
         }
 
         let cancelled = false;
+        let settled = false;
+        let lastAction: string | undefined;
         let verification: AgenticVerificationInstance | undefined;
+
+        function onEvent(event: Record<string, unknown>) {
+            if (event.type === "state_change" && typeof event.action === "string") {
+                lastAction = event.action;
+            } else if (event.type === "ceremony_open") {
+                loggerRef.current?.info("react.orderIntentVerification.ceremonyOpen", {
+                    ...logContext,
+                    network: event.network,
+                });
+            }
+        }
 
         async function verifyAllowance() {
             try {
@@ -75,6 +103,7 @@ export function OrderIntentVerification({
                     apiKey: publicApiKey,
                     apiBaseUrl: AGENTIC_API_URLS[environment],
                     displayName,
+                    onEvent,
                     appearance: hasAgenticAppearance
                         ? {
                               primaryColor,
@@ -86,14 +115,24 @@ export function OrderIntentVerification({
                           }
                         : undefined,
                 });
+                loggerRef.current?.info("react.orderIntentVerification.start", logContext);
                 await verification.verifyAllowance(allowanceId, {
                     provider: pendingProvider,
                 });
+                settled = true;
                 if (!cancelled) {
+                    loggerRef.current?.info("react.orderIntentVerification.success", logContext);
                     completeRef.current?.();
                 }
             } catch (error) {
+                settled = true;
                 if (!cancelled) {
+                    const { level, context } = describeVerificationError(error);
+                    loggerRef.current?.[level]("react.orderIntentVerification.failed", {
+                        ...logContext,
+                        ...context,
+                        lastAction,
+                    });
                     errorRef.current?.(error);
                 }
             }
@@ -103,6 +142,9 @@ export function OrderIntentVerification({
 
         return () => {
             cancelled = true;
+            if (!settled) {
+                loggerRef.current?.info("react.orderIntentVerification.abandoned", { ...logContext, lastAction });
+            }
             verification?.dispose();
         };
     }, [
@@ -113,6 +155,7 @@ export function OrderIntentVerification({
         errorColor,
         fontColor,
         hasAgenticAppearance,
+        orderIntentId,
         pendingProvider,
         primaryColor,
         publicApiKey,

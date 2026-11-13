@@ -26,9 +26,13 @@ vi.mock("@crossmint/client-sdk-base", async (original) => ({
     }),
 }));
 
-vi.mock("@crossmint/client-sdk-react-base", () => ({
-    useCrossmint: () => ({ crossmint: { apiKey: "ck_staging_key" } }),
-}));
+vi.mock("@crossmint/client-sdk-react-base", async () => {
+    const { createContext } = await vi.importActual<typeof import("react")>("react");
+    return {
+        useCrossmint: () => ({ crossmint: { apiKey: "ck_staging_key" } }),
+        createLoggerContext: () => createContext(null),
+    };
+});
 
 vi.mock("@/utils/createCrossmintApiClient", () => ({
     createCrossmintApiClient: () => ({}),

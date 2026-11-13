@@ -176,6 +176,8 @@ export class HttpDatadogSink implements DatadogSink {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(logs),
+                // Lets the browser finish the request after the page unloads (see BrowserDatadogSink).
+                ...(this.platform === "browser" ? { keepalive: true } : {}),
             });
 
             if (!response.ok) {

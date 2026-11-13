@@ -1,6 +1,7 @@
 import { CrossmintCvcRecollectionIFrame } from "./CrossmintCvcRecollectionIFrame";
 import type { CrossmintCvcRecollectionProps, CrossmintCvcRecollectionRef } from "@crossmint/client-sdk-base";
-import { forwardRef } from "react";
+import { forwardRef, useContext } from "react";
+import { LoggerContext } from "../../providers/CrossmintProvider";
 
 /**
  * Asks the user to enter a saved card's CVC again. Render it when an order intent's
@@ -13,6 +14,25 @@ import { forwardRef } from "react";
  */
 export const CrossmintCvcRecollection = forwardRef<CrossmintCvcRecollectionRef, CrossmintCvcRecollectionProps>(
     function CrossmintCvcRecollection(props, ref) {
-        return <CrossmintCvcRecollectionIFrame {...props} ref={ref} />;
+        const logger = useContext(LoggerContext);
+        const { paymentMethodId, onComplete, onError } = props;
+        return (
+            <CrossmintCvcRecollectionIFrame
+                {...props}
+                ref={ref}
+                onComplete={() => {
+                    logger?.info("react.cvcRecollection.success", { paymentMethodId });
+                    onComplete?.();
+                }}
+                onError={(error) => {
+                    logger?.[error.retriable ? "info" : "warn"]("react.cvcRecollection.failed", {
+                        paymentMethodId,
+                        reason: error.reason,
+                        retriable: error.retriable,
+                    });
+                    onError?.(error);
+                }}
+            />
+        );
     }
 );

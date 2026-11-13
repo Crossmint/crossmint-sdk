@@ -14,5 +14,9 @@ export class BrowserDatadogSink extends HttpDatadogSink {
      */
     constructor(environment: APIKeyEnvironmentPrefix) {
         super("browser", environment, window.location.hostname);
+        // Logs still in the batch when the page is closed or navigated away would be lost.
+        window.addEventListener("pagehide", () => {
+            void this.flush();
+        });
     }
 }

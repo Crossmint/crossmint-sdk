@@ -75,6 +75,7 @@ describe("<OrderIntentVerification />", () => {
                     apiKey: "key_test_123",
                     apiBaseUrl: "https://api.test.basistheory.com/agentic",
                     displayName: "Shopping Assistant",
+                    onEvent: expect.any(Function),
                     appearance: undefined,
                 });
                 expect(basisTheory.verifyAllowance).toHaveBeenCalledWith("alw_123", { provider });

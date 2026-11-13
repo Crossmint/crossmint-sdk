@@ -16,7 +16,8 @@ import {
     toAgentCardRail,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { LoggerContext } from "../../providers/CrossmintProvider";
 
 const DEFAULT_EXPIRY_MS = 24 * 60 * 60 * 1000;
 /** Pause between two re-reads of the order intent after a rail step. */
@@ -39,6 +40,40 @@ export type AgentCardAuthorizationStep =
     | ({ kind: "verify"; orderIntent: OrderIntentWithVerification } & Omit<PendingStep, "orderIntent">)
     | ({ kind: "cvc" } & PendingStep)
     | { kind: "done" };
+
+type LogLevel = "info" | "warn" | "error";
+/** Logs `react.agentCardAuthorization.<event>` with the mount's `flowId`. */
+type FlowLog = (level: LogLevel, event: string, context?: Record<string, unknown>) => void;
+
+// One flowId per mount ties together the events logged before and after the order intent exists.
+function useFlowLog(): FlowLog {
+    const logger = useContext(LoggerContext);
+    const loggerRef = useRef(logger);
+    const flowId = useRef<string | null>(null);
+    if (flowId.current == null) {
+        flowId.current = crypto.randomUUID();
+    }
+    useEffect(() => {
+        loggerRef.current = logger;
+    }, [logger]);
+    return useCallback((level, event, context = {}) => {
+        loggerRef.current?.[level](`react.agentCardAuthorization.${event}`, { flowId: flowId.current, ...context });
+    }, []);
+}
+
+function statusOf(error: unknown): { "http.response.status_code"?: number } {
+    return error instanceof OrderIntentsApiError && error.status != null
+        ? { "http.response.status_code": error.status }
+        : {};
+}
+
+function summarizeRails(rails: OrderIntent["rails"]) {
+    return rails.map((rail) => ({
+        rail: rail.rail,
+        ...("provider" in rail ? { provider: rail.provider } : {}),
+        status: rail.status,
+    }));
+}
 
 function errorMessage(error: unknown, fallback: string): string {
     if (error instanceof Error && error.message !== "") {
@@ -81,22 +116,24 @@ function useIsMounted() {
  */
 function useTerminalCallbacks(
     latestProps: RefObject<CrossmintAgentCardAuthorizationProps>,
-    setStep: (step: AgentCardAuthorizationStep) => void
+    setStep: (step: AgentCardAuthorizationStep) => void,
+    log: FlowLog
 ) {
     const mounted = useIsMounted();
     const authorized = useRef(false);
     const generation = useRef(0);
 
     const fail = useCallback(
-        (code: AgentCardAuthorizationErrorCode, message: string) => {
+        (code: AgentCardAuthorizationErrorCode, message: string, orderIntentId?: string) => {
             if (!mounted.current || authorized.current) {
                 return;
             }
+            log("info", "failed", { code, ...(orderIntentId == null ? {} : { orderIntentId }) });
             generation.current += 1;
             setStep({ kind: "select" });
             latestProps.current?.onError({ code, message });
         },
-        [latestProps, mounted, setStep]
+        [latestProps, log, mounted, setStep]
     );
 
     const succeed = useCallback(
@@ -105,6 +142,7 @@ function useTerminalCallbacks(
                 return;
             }
             authorized.current = true;
+            log("info", "authorized", { orderIntentId: orderIntent.orderIntentId, ...selection });
             setStep({ kind: "done" });
             latestProps.current?.onAuthorized({
                 orderIntentId: orderIntent.orderIntentId,
@@ -114,7 +152,7 @@ function useTerminalCallbacks(
                 expiresAt: orderIntent.expiresAt,
             });
         },
-        [latestProps, mounted, setStep]
+        [latestProps, log, mounted, setStep]
     );
 
     // Memoized so the callbacks built on it keep their identity across renders.
@@ -174,7 +212,12 @@ type Terminal = ReturnType<typeof useTerminalCallbacks>;
  * meantime (bumping the generation) aborts the poll before it can authorize, without blocking
  * the poll of the next attempt.
  */
-function useRailPolling(api: OrderIntentsApi, terminal: Terminal, failExpired: (orderIntent: OrderIntent) => void) {
+function useRailPolling(
+    api: OrderIntentsApi,
+    terminal: Terminal,
+    failExpired: (orderIntent: OrderIntent) => void,
+    log: FlowLog
+) {
     const { fail, succeed, mounted, generation } = terminal;
     const pollingGeneration = useRef<number | null>(null);
     return useCallback(
@@ -193,7 +236,12 @@ function useRailPolling(api: OrderIntentsApi, terminal: Terminal, failExpired: (
                         orderIntent = await api.getOrderIntent(orderIntentId);
                     } catch (error) {
                         if (!isTransientReadError(error)) {
-                            fail("verification_failed", errorMessage(error, "Could not re-read the order intent."));
+                            log("warn", "poll.error", { orderIntentId, ...selection, ...statusOf(error) });
+                            fail(
+                                "verification_failed",
+                                errorMessage(error, "Could not re-read the order intent."),
+                                orderIntentId
+                            );
                             return;
                         }
                     }
@@ -207,7 +255,7 @@ function useRailPolling(api: OrderIntentsApi, terminal: Terminal, failExpired: (
                         }
                         const rail = findCardRail(orderIntent.rails, selection);
                         if (rail == null || rail.status === "error") {
-                            fail("verification_failed", "The verified rail is no longer usable.");
+                            fail("verification_failed", "The verified rail is no longer usable.", orderIntentId);
                             return;
                         }
                         if (rail.status === "active") {
@@ -222,9 +270,11 @@ function useRailPolling(api: OrderIntentsApi, terminal: Terminal, failExpired: (
                     await sleep(Math.min(RAIL_POLL_INTERVAL_MS, remaining));
                 }
                 if (stillCurrent()) {
+                    log("warn", "poll.timeout", { orderIntentId, ...selection });
                     fail(
                         "verification_failed",
-                        `The rail did not become active within ${RAIL_POLL_TIMEOUT_MS / 1000}s after verification.`
+                        `The rail did not become active within ${RAIL_POLL_TIMEOUT_MS / 1000}s after verification.`,
+                        orderIntentId
                     );
                 }
             } finally {
@@ -233,7 +283,7 @@ function useRailPolling(api: OrderIntentsApi, terminal: Terminal, failExpired: (
                 }
             }
         },
-        [api, fail, failExpired, generation, mounted, succeed]
+        [api, fail, failExpired, generation, log, mounted, succeed]
     );
 }
 
@@ -245,14 +295,19 @@ function useRailSettlement(
     api: OrderIntentsApi,
     terminal: Terminal,
     cache: RefObject<Map<string, string>>,
-    setStep: (step: AgentCardAuthorizationStep) => void
+    setStep: (step: AgentCardAuthorizationStep) => void,
+    log: FlowLog
 ) {
     const { fail, succeed } = terminal;
 
     const failExpired = useCallback(
         (orderIntent: OrderIntent) => {
             forgetOrderIntent(cache.current, orderIntent.orderIntentId);
-            fail("expired", `Order intent ${orderIntent.orderIntentId} is ${orderIntent.status}.`);
+            fail(
+                "expired",
+                `Order intent ${orderIntent.orderIntentId} is ${orderIntent.status}.`,
+                orderIntent.orderIntentId
+            );
         },
         [cache, fail]
     );
@@ -271,14 +326,21 @@ function useRailSettlement(
                 if (registrationError != null) {
                     fail(
                         "registration_failed",
-                        `Could not register the card for order intents (${registrationError}), and the order intent has no usable card rail.`
+                        `Could not register the card for order intents (${registrationError}), and the order intent has no usable card rail.`,
+                        orderIntent.orderIntentId
                     );
                     return;
                 }
-                fail("rail_unavailable", "The order intent has no usable card rail.");
+                fail("rail_unavailable", "The order intent has no usable card rail.", orderIntent.orderIntentId);
                 return;
             }
             const selection = toAgentCardRail(rail);
+            log("info", "rail.selected", {
+                orderIntentId: orderIntent.orderIntentId,
+                ...selection,
+                status: rail.status,
+                rails: summarizeRails(orderIntent.rails),
+            });
             if (rail.status === "active") {
                 succeed(paymentMethod, orderIntent, selection);
                 return;
@@ -287,7 +349,11 @@ function useRailSettlement(
                 // selectCardRail only returns a pending_verification rail when canVerify, so this
                 // narrows the type rather than handling a reachable case.
                 if (orderIntent.verificationConfig == null) {
-                    fail("rail_unavailable", "The rail needs a verification this order intent cannot run.");
+                    fail(
+                        "rail_unavailable",
+                        "The rail needs a verification this order intent cannot run.",
+                        orderIntent.orderIntentId
+                    );
                     return;
                 }
                 setStep({ kind: "verify", paymentMethod, orderIntent, selection });
@@ -295,10 +361,10 @@ function useRailSettlement(
             }
             setStep({ kind: "cvc", paymentMethod, orderIntent, selection });
         },
-        [fail, failExpired, setStep, succeed]
+        [fail, failExpired, log, setStep, succeed]
     );
 
-    const awaitRailActive = useRailPolling(api, terminal, failExpired);
+    const awaitRailActive = useRailPolling(api, terminal, failExpired, log);
 
     return { settle, awaitRailActive };
 }
@@ -315,7 +381,8 @@ function useAuthorizeCard(
     terminal: Terminal,
     latestProps: RefObject<CrossmintAgentCardAuthorizationProps>,
     cache: RefObject<Map<string, string>>,
-    settle: ReturnType<typeof useRailSettlement>["settle"]
+    settle: ReturnType<typeof useRailSettlement>["settle"],
+    log: FlowLog
 ) {
     const { fail, mounted } = terminal;
     // "24 hours from mount", fixed once so a re-render does not move the expiry.
@@ -337,13 +404,16 @@ function useAuthorizeCard(
             const key = orderIntentCacheKey(paymentMethod.id, request);
             const existingId = cache.current?.get(key);
             if (existingId != null) {
-                return await api.getOrderIntent(existingId);
+                const existing = await api.getOrderIntent(existingId);
+                log("info", "orderIntent.reused", { orderIntentId: existing.orderIntentId });
+                return existing;
             }
             const orderIntent = await api.createOrderIntent({ paymentMethodId: paymentMethod.id, ...request });
             cache.current?.set(key, orderIntent.orderIntentId);
+            log("info", "orderIntent.created", { orderIntentId: orderIntent.orderIntentId });
             return orderIntent;
         },
-        [api, cache, latestProps]
+        [api, cache, latestProps, log]
     );
 
     return useCallback(
@@ -358,15 +428,18 @@ function useAuthorizeCard(
                     await ensureRegistered(api, paymentMethod.id);
                 } catch (error) {
                     registrationError = errorMessage(error, "unknown error");
-                    console.warn("[CrossmintAgentCardAuthorization] order-intent registration failed; continuing", {
+                    const status = statusOf(error)["http.response.status_code"];
+                    // A 4xx is expected: no agentic-token provider accepts this card, and encrypted-card may still serve it.
+                    log(status != null && status >= 400 && status < 500 ? "info" : "warn", "registration.error", {
                         paymentMethodId: paymentMethod.id,
-                        message: registrationError,
+                        ...statusOf(error),
                     });
                 }
                 let orderIntent: OrderIntent;
                 try {
                     orderIntent = await loadOrderIntent(paymentMethod);
                 } catch (error) {
+                    log("warn", "orderIntent.error", { paymentMethodId: paymentMethod.id, ...statusOf(error) });
                     fail("order_intent_creation_failed", errorMessage(error, "Could not create the order intent."));
                     return;
                 }
@@ -377,8 +450,28 @@ function useAuthorizeCard(
                 inFlight.current = false;
             }
         },
-        [api, fail, loadOrderIntent, mounted, settle]
+        [api, fail, loadOrderIntent, log, mounted, settle]
     );
+}
+
+/** Logs `start` on mount and `abandoned` when the buyer leaves before the flow authorized. */
+function useFlowLifecycleLog(step: AgentCardAuthorizationStep, log: FlowLog) {
+    const latestStep = useRef(step);
+    useEffect(() => {
+        latestStep.current = step;
+    }, [step]);
+    useEffect(() => {
+        log("info", "start");
+        return () => {
+            const last = latestStep.current;
+            if (last.kind !== "done") {
+                log("info", "abandoned", {
+                    step: last.kind,
+                    ...(last.kind === "select" ? {} : { orderIntentId: last.orderIntent.orderIntentId }),
+                });
+            }
+        };
+    }, [log]);
 }
 
 export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorizationProps) {
@@ -396,11 +489,13 @@ export function useAgentCardAuthorization(props: CrossmintAgentCardAuthorization
 
     const [step, setStep] = useState<AgentCardAuthorizationStep>({ kind: "select" });
     const latestProps = useLatestProps(props);
-    const terminal = useTerminalCallbacks(latestProps, setStep);
+    const log = useFlowLog();
+    const terminal = useTerminalCallbacks(latestProps, setStep, log);
+    useFlowLifecycleLog(step, log);
 
     const cache = useOrderIntentCache();
-    const { settle, awaitRailActive } = useRailSettlement(api, terminal, cache, setStep);
-    const authorize = useAuthorizeCard(api, terminal, latestProps, cache, settle);
+    const { settle, awaitRailActive } = useRailSettlement(api, terminal, cache, setStep, log);
+    const authorize = useAuthorizeCard(api, terminal, latestProps, cache, settle, log);
     // The payment-method iframe subscribes to its selection callback once, on its first render.
     // Keep the callback identity stable and route through a ref, so a selection made after the
     // `jwt` prop changed runs the `authorize` bound to the current API client, not the first one.
