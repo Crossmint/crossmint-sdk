@@ -6,10 +6,9 @@ import {
     embeddedOfframpOutgoingEvents,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView, WebViewParent, type WebViewInstance } from "@crossmint/client-sdk-rn-window";
 import { useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
-import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
@@ -41,7 +40,7 @@ function EmbeddedOfframpDocument({
 }) {
     const [client, setClient] = useState<EmbeddedOfframpWebViewParent | null>(null);
     const [height, setHeight] = useState(0);
-    const webViewRef = useRef<WebView>(null);
+    const webViewRef = useRef<WebViewInstance>(null);
     const sendPending = useRef<object | null>(null);
     const latestProps = useRef(props);
     useEffect(() => {
