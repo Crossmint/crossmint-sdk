@@ -1,4 +1,4 @@
-import { type ConfigPlugin, withDangerousMod } from "expo/config-plugins";
+import { type ConfigPlugin, withDangerousMod } from "@expo/config-plugins";
 import path from "path";
 import fs from "fs";
 import { LEGACY_PODFILE_INJECTION, LEGACY_PREBUILT_FIX_MARKER } from "./legacyPodfileInjection";

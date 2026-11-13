@@ -1,4 +1,4 @@
-import type { AndroidConfig } from "expo/config-plugins";
+import type { AndroidConfig } from "@expo/config-plugins";
 
 type AndroidManifest = AndroidConfig.Manifest.AndroidManifest;
 type ManifestQuery = AndroidConfig.Manifest.ManifestQuery;
