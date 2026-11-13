@@ -126,6 +126,15 @@ const wallet = await wallets.createWallet({
 
 > Device signers are **browser and React Native only** — not available in Node.js. See the [Server-Side Wallet with Device Signer](https://docs.crossmint.com/wallets/guides/signers/device-signer-server-wallet) guide for the full pattern.
 
+In the browser, a device signer can ask the user for a fingerprint, face or screen lock before it signs. Set the policy when you create the key storage, or with the `deviceSigner` prop of `CrossmintWalletProvider` in React:
+
+```ts
+// "none" (default), "always", or "session" with a duration in seconds
+const storage = new IframeDeviceSignerKeyStorage(apiKey, { biometricPolicy: "session", biometricExpirationTime: 300 });
+```
+
+The policy is fixed when the key is created. Keys that already exist keep their policy. React Native does not support this option yet.
+
 ### Retrieving an existing wallet
 
 ```ts

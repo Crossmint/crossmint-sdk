@@ -1,37 +1,41 @@
 import type { LogContext } from "./types";
 
 /**
- * Set of keys whose values should be redacted from log output.
- * Keys are matched case-insensitively against object property names.
+ * Keys whose values are redacted from log output, compared after {@link normalizeKey}.
  */
 const SENSITIVE_KEYS = new Set([
     "jwt",
     "apikey",
-    "api_key",
+    "xapikey",
     "authorization",
-    "x-api-key",
     "accesstoken",
-    "access_token",
     "authtoken",
-    "auth_token",
     "bearertoken",
-    "bearer_token",
     "idtoken",
-    "id_token",
     "refreshtoken",
-    "refresh_token",
-    "secret",
-    "client_secret",
     "password",
-    "privatekey",
-    "private_key",
     "credential",
     "authdata",
     "bearer",
     "derivedkeybytes",
-    "secretkey",
+    "keybytes",
     "keypair",
 ]);
+
+/**
+ * A key that contains one of these after {@link normalizeKey} is redacted too, e.g. `serverSecret`, `privateKeyHex`.
+ * `keybytes` is exact-only above, so `publicKeyBytes` stays readable.
+ */
+const SENSITIVE_KEY_FRAGMENTS = ["secret", "privatekey", "seed", "mnemonic"];
+
+function normalizeKey(key: string): string {
+    return key.toLowerCase().replace(/[_-]/g, "");
+}
+
+function isSensitiveKey(key: string): boolean {
+    const normalized = normalizeKey(key);
+    return SENSITIVE_KEYS.has(normalized) || SENSITIVE_KEY_FRAGMENTS.some((fragment) => normalized.includes(fragment));
+}
 
 const MAX_REDACTION_DEPTH = 10;
 
@@ -154,8 +158,12 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
     if (typeof obj === "string") {
         return redactSensitiveText(obj, false);
     }
-    if (depth > MAX_REDACTION_DEPTH || obj == null || typeof obj !== "object") {
+    if (obj == null || typeof obj !== "object") {
         return obj;
+    }
+    // Fail closed: sinks serialize the whole value, so an unvisited subtree could carry a secret.
+    if (depth > MAX_REDACTION_DEPTH) {
+        return "[TRUNCATED]";
     }
 
     if (Array.isArray(obj)) {
@@ -175,7 +183,7 @@ export function redactSensitiveFields(obj: unknown, depth = 0): unknown {
 
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-        if (SENSITIVE_KEYS.has(key.toLowerCase())) {
+        if (isSensitiveKey(key)) {
             result[key] = redactValue(value);
         } else if (typeof value === "string" && PHONE_KEYS.has(key.toLowerCase())) {
             result[key] = maskPhoneNumber(value);

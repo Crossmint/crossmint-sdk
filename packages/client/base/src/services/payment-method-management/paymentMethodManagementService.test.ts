@@ -45,6 +45,12 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(JSON.parse(raw ?? "null")).toEqual(["card", "bank-account-us"]);
     });
 
+    it("carries locale in the iframe URL, where the iframe reads the language", () => {
+        const url = makeService().iframe.getUrl({ jwt: "jwt-token", locale: "fr-CA" });
+
+        expect(new URL(url).searchParams.get("locale")).toBe("fr-CA");
+    });
+
     it("omits optional props that are not provided", () => {
         const service = makeService();
 
