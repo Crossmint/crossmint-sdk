@@ -8,4 +8,4 @@ While other quorum members must still sign, `approve` returns the transaction wi
 
 A transaction approval that the API answers with HTTP 422 because its approvals are already complete (another member signed first) now continues to the transaction's outcome instead of throwing. A signature approval the API rejects with another 422 now throws `SignatureFailedError` instead of being re-read as complete.
 
-Two `approve` calls for the same request at the same time share one signing pass: the second joins the first and returns its result, so a member's key signs once and a passkey or device prompt opens once.
+Two `approve` calls for the same request at the same time run one after the other, each with its own keys and options, so a member's key signs once and a passkey or device prompt opens once. `approve` throws `InvalidSignerError` when a quorum still waits for approvals and none of the keys this client holds is one of its members; a repeated call after a held member signed still returns the transaction without a hash.

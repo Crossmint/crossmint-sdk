@@ -112,26 +112,50 @@ describe("approve() on a transaction with a pending quorum entry", () => {
         });
     });
 
-    describe("when this client holds no pending member", () => {
-        it("sends no approval and returns the transaction id without a hash", async () => {
-            const pending = [createQuorumPendingApproval({ quorum: createQuorumApiEntry() })];
-            api.getTransaction.mockResolvedValue(awaiting("txn-1", pending) as never);
+    describe("when no key this client holds is a member of the waiting quorum", () => {
+        it("throws InvalidSignerError naming the held keys and sends nothing", async () => {
+            const quorum = createQuorumApiEntry();
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [createQuorumPendingApproval({ quorum })]) as never);
 
-            const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect((error as Error).message).toContain(member.locator);
+            expect((error as Error).message).toContain(quorum.locator);
             expect(api.approveTransaction).not.toHaveBeenCalled();
-            expect(value).toStrictEqual(AWAITING_TRANSACTION);
+        });
+
+        it("returns the landed transaction when the quorum needs no more approvals", async () => {
+            const quorum = createQuorumApiEntry();
+            api.getTransaction
+                .mockResolvedValueOnce(
+                    awaiting("txn-1", [createQuorumPendingApproval({ quorum, pending: [], remaining: 0 })]) as never
+                )
+                .mockResolvedValue(SUCCESS as never);
+
+            const { value, error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeUndefined();
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(value).toEqual(expect.objectContaining({ hash: "0xhash", transactionId: "txn-1" }));
         });
     });
 
     describe("when two approve() calls run at the same time for one request", () => {
-        it("signs the member once, sends one approval, and gives both calls the same result", async () => {
-            const entry = createQuorumPendingApproval({ quorum: quorumWith([member]) });
-            // Both calls read the request before either approval lands.
+        beforeEach(() => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
+        });
+
+        it("runs the second after the first, so the member signs once and one approval is sent", async () => {
+            const quorum = quorumWith([member]);
+            const [, ...others] = quorum.members;
             api.getTransaction
-                .mockResolvedValueOnce(awaiting("txn-1", [entry]) as never)
-                .mockResolvedValueOnce(awaiting("txn-1", [entry]) as never)
-                .mockResolvedValue(SUCCESS as never);
+                .mockResolvedValueOnce(awaiting("txn-1", [createQuorumPendingApproval({ quorum })]) as never)
+                .mockResolvedValue(
+                    awaiting("txn-1", [
+                        createQuorumPendingApproval({ quorum, pending: others, submitted: [member], remaining: 1 }),
+                    ]) as never
+                );
 
             const [first, second] = await Promise.all([
                 settle(wallet.approve({ transactionId: "txn-1" })),
@@ -139,8 +163,43 @@ describe("approve() on a transaction with a pending quorum entry", () => {
             ]);
 
             expect(first.error).toBeUndefined();
-            expect(second).toEqual(first);
+            expect(second.error).toBeUndefined();
             expect(sentApprovals(api)).toHaveLength(1);
+        });
+
+        it("lets the second call sign with its own keys", async () => {
+            const other = {
+                type: "external-wallet",
+                address: "0x9999999999999999999999999999999999999999",
+                locator: "external-wallet:0x9999999999999999999999999999999999999999",
+            } as QuorumMember;
+            const quorum = quorumWith([member, other]);
+            const afterFirst = createQuorumPendingApproval({
+                quorum,
+                pending: [other, ...quorum.members.slice(2)],
+                submitted: [member],
+                remaining: 1,
+            });
+            api.getTransaction
+                .mockResolvedValueOnce(awaiting("txn-1", [createQuorumPendingApproval({ quorum })]) as never)
+                .mockResolvedValueOnce(awaiting("txn-1", [afterFirst]) as never)
+                .mockResolvedValueOnce(awaiting("txn-1", [afterFirst]) as never)
+                .mockResolvedValue(SUCCESS as never);
+
+            await Promise.all([
+                settle(wallet.approve({ transactionId: "txn-1" })),
+                settle(
+                    wallet.approve({
+                        transactionId: "txn-1",
+                        options: { additionalSigners: [createHeldSigner(other.locator)] },
+                    })
+                ),
+            ]);
+
+            expect(sentApprovals(api).map((approvals) => approvals.map((approval) => approval.signer))).toEqual([
+                [member.locator],
+                [other.locator],
+            ]);
         });
     });
 
@@ -447,15 +506,15 @@ describe("approve() with an api-key active signer", () => {
         });
 
         describe("and no member is held", () => {
-            it("sends nothing and returns the transaction id without a hash", async () => {
+            it("throws InvalidSignerError and sends nothing, as an api-key signs no member", async () => {
                 api.getTransaction.mockResolvedValue(
                     awaiting("txn-1", [createQuorumPendingApproval({ quorum: createQuorumApiEntry() })]) as never
                 );
 
-                const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+                const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
+                expect(error).toBeInstanceOf(InvalidSignerError);
                 expect(api.approveTransaction).not.toHaveBeenCalled();
-                expect(value).toStrictEqual(AWAITING_TRANSACTION);
             });
         });
 
@@ -798,16 +857,16 @@ describe("approve() on a Stellar transaction with pending quorum entries", () =>
     });
 
     describe("with an api-key active signer and no member held", () => {
-        it("sends nothing and returns the transaction id without a hash", async () => {
+        it("throws InvalidSignerError and sends nothing, as an api-key signs no member", async () => {
             wallet = await createMockWallet("stellar", api, "api-key");
             api.getTransaction.mockResolvedValue(
                 awaiting("txn-1", [stellarEntry({ quorum: createQuorumApiEntry() })], "stellar") as never
             );
 
-            const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
+            expect(error).toBeInstanceOf(InvalidSignerError);
             expect(api.approveTransaction).not.toHaveBeenCalled();
-            expect(value).toStrictEqual(AWAITING_TRANSACTION);
         });
     });
 });
@@ -943,13 +1002,13 @@ describe("approve() on a signature with a pending quorum entry", () => {
         expect((error as Error).message).toContain("belongs to multiple quorums");
     });
 
-    it("sends no approval and returns the signature id without a signature when this client holds no pending member", async () => {
+    it("throws InvalidSignerError and sends nothing when no held key is a member of the waiting quorum", async () => {
         const quorum = createQuorumApiEntry();
         api.getSignature.mockResolvedValue(awaiting("sig-1", [createQuorumPendingApproval({ quorum })]) as never);
 
-        const { value } = await settle(wallet.approve({ signatureId: "sig-1" }));
+        const { error } = await settle(wallet.approve({ signatureId: "sig-1" }));
 
+        expect(error).toBeInstanceOf(InvalidSignerError);
         expect(api.approveSignature).not.toHaveBeenCalled();
-        expect(value).toStrictEqual(AWAITING_SIGNATURE);
     });
 });
