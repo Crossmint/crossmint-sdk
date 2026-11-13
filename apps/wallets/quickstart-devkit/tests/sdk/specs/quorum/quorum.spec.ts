@@ -175,12 +175,13 @@ test.describe("Quorum on base-sepolia — ERC-1271", { tag: "@quorum" }, () => {
         await wallet.approve(addRequest);
 
         const message = `quorum e2e ${Date.now()}`;
+        // EVMWallet.from copies the active key once, so a member must be active before the wrap.
+        await wallet.useSigner(dave);
         const evmWallet = EVMWallet.from(wallet);
         const requested = await evmWallet.signMessage({
             message,
             options: { prepareOnly: true, signer: added.locator },
         });
-        await wallet.useSigner(dave);
         await wallet.approve({ signatureId: requested.signatureId });
         await wallet.useSigner(erin);
         const signed = await wallet.approve({ signatureId: requested.signatureId });
