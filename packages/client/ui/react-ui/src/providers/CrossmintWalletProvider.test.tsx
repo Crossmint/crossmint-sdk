@@ -13,7 +13,7 @@ const { MockUnsupportedBrowserError, mockIframeDeviceSignerKeyStorage, mockLogge
     }
     return {
         MockUnsupportedBrowserError,
-        mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn() })),
+        mockIframeDeviceSignerKeyStorage: vi.fn(() => ({ destroy: vi.fn(), setBiometricOptions: vi.fn() })),
         mockLogger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     };
 });
@@ -143,6 +143,19 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
+    });
+
+    it("keeps one key storage and moves it to the new biometric policy when deviceSigner changes", () => {
+        const { rerender } = render(
+            <CrossmintWalletProvider deviceSigner={{ biometricPolicy: "none" }}>{null}</CrossmintWalletProvider>
+        );
+        rerender(
+            <CrossmintWalletProvider deviceSigner={{ biometricPolicy: "always" }}>{null}</CrossmintWalletProvider>
+        );
+
+        expect(mockIframeDeviceSignerKeyStorage).toHaveBeenCalledTimes(1);
+        const storage = mockIframeDeviceSignerKeyStorage.mock.results[0].value;
+        expect(storage.setBiometricOptions).toHaveBeenLastCalledWith({ biometricPolicy: "always" });
     });
 
     it("renders without crashing when browser lacks storage partitioning", () => {
