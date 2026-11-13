@@ -1,5 +1,32 @@
 # @crossmint/wallets-sdk
 
+## 1.23.0
+
+### Minor Changes
+
+- 9e650de: Let apps turn on the device signer biometric policy on web. `IframeDeviceSignerKeyStorage` takes a second argument, `{ biometricPolicy, biometricExpirationTime }`, and every device key it creates (at wallet creation and at device recovery) gets that policy. `setBiometricOptions` changes the policy for keys created later. `CrossmintWalletProvider` in `@crossmint/client-sdk-react-ui` takes the same options in a new `deviceSigner` prop, for example `deviceSigner={{ biometricPolicy: "always" }}`. Before each fingerprint, face or screen lock check, the React provider shows the passkey prompt so that the browser gets a user click. The policy is fixed when a key is created; existing keys keep their policy. `BiometricPolicy` and `DeviceSignerBiometricOptions` are now exported.
+
+### Patch Changes
+
+- 4aff9cf: `wallet.send()` now throws typed subclasses of `TransactionNotCreatedError` for the card-collateral error codes returned by the wallets API — `CollateralFundsInTransitError` and `CollateralFundingTemporarilyUnavailableError` (`retryable: true`), `CollateralWithdrawalUnavailableError` and `CollateralWithdrawalIntegrityError` — and every `TransactionNotCreatedError` exposes the API's `code` as `apiErrorCode`. Existing `instanceof TransactionNotCreatedError` checks and `error.code` are unchanged.
+- 4b49e71: Queue `request:sign` calls per email/phone signer so a transaction that needs several approvals from the same signer (e.g. a Stellar card-funded transfer) no longer submits the first signature for every approval.
+- a089de2: Keep signing keys and session credentials out of application logs. `wallet.signer` no longer exposes key material or the session JWT and API key to `console.log`, `util.inspect` or `JSON.stringify`: Solana and Stellar server signers and email and phone signers now hold them in private class fields. The SDK logger now also redacts compound key names (such as `serverSecret`, `privateKeyHex`, `seed`, `mnemonic` and `keyBytes`), replaces values nested deeper than its redaction limit with `[TRUNCATED]`, and redacts log calls made before the logger is initialized.
+- Updated dependencies [a089de2]
+  - @crossmint/common-sdk-base@0.13.4
+  - @crossmint/common-sdk-auth@1.1.38
+
+## 1.22.4
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.37
+
+## 1.22.3
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.36
+
 ## 1.22.2
 
 ### Patch Changes

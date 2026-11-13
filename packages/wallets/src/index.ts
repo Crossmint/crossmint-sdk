@@ -32,6 +32,10 @@ export {
     JWTInvalidError,
     JWTDecryptionError,
     JWTIdentifierError,
+    CollateralFundsInTransitError,
+    CollateralFundingTemporarilyUnavailableError,
+    CollateralWithdrawalUnavailableError,
+    CollateralWithdrawalIntegrityError,
 } from "./utils/errors";
 
 // API
@@ -135,4 +139,4 @@ export type { CreateServerSignerParams, ServerSigner } from "./utils/server-sign
 
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
-export type { BiometricRequestHandler } from "./utils/device-signers";
+export type { BiometricPolicy, BiometricRequestHandler, DeviceSignerBiometricOptions } from "./utils/device-signers";
