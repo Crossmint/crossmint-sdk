@@ -2,6 +2,10 @@ import { CrossmintErrors } from "@crossmint/common-sdk-base";
 import { describe, expect, test } from "vitest";
 
 import {
+    CollateralFundingTemporarilyUnavailableError,
+    CollateralFundsInTransitError,
+    CollateralWithdrawalIntegrityError,
+    CollateralWithdrawalUnavailableError,
     DuplicateRecoverySignerError,
     JWTDecryptionError,
     JWTExpiredError,
@@ -23,6 +27,8 @@ import {
     throwIfQuorumApiError,
     throwIfRecoverySignerApiError,
     throwIfRequestExpired,
+    TransactionNotCreatedError,
+    transactionNotCreatedError,
 } from "./errors";
 import { createExpiredRequest, TRANSACTION_EXPIRED_API_MESSAGE } from "../wallets/__tests__/test-helpers";
 
@@ -319,5 +325,55 @@ describe("QuorumSelectionAmbiguousError", () => {
         for (const locator of quorumLocators) {
             expect(error.message).toContain(locator);
         }
+    });
+});
+
+describe("transactionNotCreatedError", () => {
+    const collateralCases = [
+        { code: "COLLATERAL_FUNDS_IN_TRANSIT", errorClass: CollateralFundsInTransitError, retryable: true },
+        {
+            code: "COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE",
+            errorClass: CollateralFundingTemporarilyUnavailableError,
+            retryable: true,
+        },
+        {
+            code: "COLLATERAL_WITHDRAWAL_UNAVAILABLE",
+            errorClass: CollateralWithdrawalUnavailableError,
+            retryable: false,
+        },
+        {
+            code: "COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR",
+            errorClass: CollateralWithdrawalIntegrityError,
+            retryable: false,
+        },
+    ];
+
+    test.each(collateralCases)("returns $errorClass.name for the $code code", ({ code, errorClass, retryable }) => {
+        const body = { error: true, code, message: "from the API" };
+
+        const error = transactionNotCreatedError(body, "Failed to send token");
+
+        expect(error).toBeInstanceOf(errorClass);
+        expect(error).toBeInstanceOf(TransactionNotCreatedError);
+        expect(error.code).toBe(CrossmintErrors.NO_TRANSACTION);
+        expect(error.apiErrorCode).toBe(code);
+        expect(error.retryable).toBe(retryable);
+        expect(error.message).toBe(`Failed to send token: ${JSON.stringify(body)}`);
+        expect(error.details).toBe(JSON.stringify(body));
+    });
+
+    test("keeps an unknown API code as apiErrorCode on the base error", () => {
+        const error = transactionNotCreatedError({ error: true, code: "SOMETHING_ELSE" }, "Failed to send token");
+
+        expect(error.constructor).toBe(TransactionNotCreatedError);
+        expect(error.apiErrorCode).toBe("SOMETHING_ELSE");
+        expect(error.retryable).toBe(false);
+    });
+
+    test("returns the base error without apiErrorCode when the response has no code", () => {
+        const error = transactionNotCreatedError({ error: true, message: "nope" }, "Failed to send token");
+
+        expect(error.constructor).toBe(TransactionNotCreatedError);
+        expect(error.apiErrorCode).toBeUndefined();
     });
 });

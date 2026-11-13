@@ -1,3 +1,4 @@
+import type { Locale } from "@/types";
 import type { EmbeddedCheckoutV3Appearance } from "../embed";
 
 /**
@@ -43,6 +44,8 @@ export interface CrossmintPaymentMethodManagementProps {
      */
     jwt: string;
     appearance?: PaymentMethodManagementAppearance;
+    /** The language of the form. Defaults to the browser or device language, else `en-US`. */
+    locale?: Locale;
     /**
      * Which sections the management UI renders. `["new"]` (default) shows only
      * the "add new" section: no saved-methods fetch, no auto-open/auto-select of
