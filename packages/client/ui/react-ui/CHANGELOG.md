@@ -1,5 +1,58 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.3.0
+
+### Minor Changes
+
+- 9e650de: Let apps turn on the device signer biometric policy on web. `IframeDeviceSignerKeyStorage` takes a second argument, `{ biometricPolicy, biometricExpirationTime }`, and every device key it creates (at wallet creation and at device recovery) gets that policy. `setBiometricOptions` changes the policy for keys created later. `CrossmintWalletProvider` in `@crossmint/client-sdk-react-ui` takes the same options in a new `deviceSigner` prop, for example `deviceSigner={{ biometricPolicy: "always" }}`. Before each fingerprint, face or screen lock check, the React provider shows the passkey prompt so that the browser gets a user click. The policy is fixed when a key is created; existing keys keep their policy. `BiometricPolicy` and `DeviceSignerBiometricOptions` are now exported.
+
+### Patch Changes
+
+- Updated dependencies [4aff9cf]
+- Updated dependencies [9e650de]
+- Updated dependencies [4b49e71]
+- Updated dependencies [a089de2]
+  - @crossmint/wallets-sdk@1.23.0
+  - @crossmint/client-sdk-react-base@2.6.0
+  - @crossmint/common-sdk-base@0.13.4
+  - @crossmint/client-sdk-base@5.2.1
+  - @crossmint/common-sdk-auth@1.1.38
+
+## 5.2.0
+
+### Minor Changes
+
+- 8141911: `CrossmintPaymentMethodManagement` takes a `locale` prop, like the checkout, offramp and identity verification components. `Locale` adds `fr-CA` (Canadian French), so every component that takes a `locale` accepts it.
+
+### Patch Changes
+
+- c63b063: `CrossmintCheckoutProvider` now accepts order updates only from the checkout window that the SDK opened, and ignores updates with a bad shape. The hosted checkout service's `createWindow` now returns the window it opens.
+- Updated dependencies [c63b063]
+- Updated dependencies [8141911]
+  - @crossmint/client-sdk-base@5.2.0
+  - @crossmint/client-sdk-react-base@2.5.8
+  - @crossmint/common-sdk-auth@1.1.37
+  - @crossmint/wallets-sdk@1.22.4
+
+## 5.1.0
+
+### Minor Changes
+
+- 95d83ab: payment-method-management: behaviour change: the add-card form of `CrossmintPaymentMethodManagement` collects a billing address by default.
+
+  - `fields.billingDetails.address` now defaults to `true`. Issuers approve more cards that carry a billing address.
+  - A host that passes no `fields` (or `fields` without `billingDetails.address`) now shows the address form, and `onChange` reports `complete: false` until the buyer fills it in.
+  - Pass `fields: { billingDetails: { address: false } }` to keep the previous behaviour and save cards without a billing address.
+  - `defaultValues.billingDetails.address` now applies without `fields`, because the form collects an address by default.
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-react-base@2.5.7
+  - @crossmint/common-sdk-auth@1.1.36
+  - @crossmint/wallets-sdk@1.22.3
+
 ## 5.0.1
 
 ### Patch Changes

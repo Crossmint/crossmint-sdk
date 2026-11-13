@@ -1,5 +1,33 @@
 # @crossmint/client-sdk-base
 
+## 5.2.1
+
+### Patch Changes
+
+- Updated dependencies [a089de2]
+  - @crossmint/common-sdk-base@0.13.4
+
+## 5.2.0
+
+### Minor Changes
+
+- 8141911: `CrossmintPaymentMethodManagement` takes a `locale` prop, like the checkout, offramp and identity verification components. `Locale` adds `fr-CA` (Canadian French), so every component that takes a `locale` accepts it.
+
+### Patch Changes
+
+- c63b063: `CrossmintCheckoutProvider` now accepts order updates only from the checkout window that the SDK opened, and ignores updates with a bad shape. The hosted checkout service's `createWindow` now returns the window it opens.
+
+## 5.1.0
+
+### Minor Changes
+
+- 95d83ab: payment-method-management: behaviour change: the add-card form of `CrossmintPaymentMethodManagement` collects a billing address by default.
+
+  - `fields.billingDetails.address` now defaults to `true`. Issuers approve more cards that carry a billing address.
+  - A host that passes no `fields` (or `fields` without `billingDetails.address`) now shows the address form, and `onChange` reports `complete: false` until the buyer fills it in.
+  - Pass `fields: { billingDetails: { address: false } }` to keep the previous behaviour and save cards without a billing address.
+  - `defaultValues.billingDetails.address` now applies without `fields`, because the form collects an address by default.
+
 ## 5.0.0
 
 ### Major Changes
