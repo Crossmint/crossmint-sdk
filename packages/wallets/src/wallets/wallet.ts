@@ -1192,8 +1192,10 @@ export class Wallet<C extends Chain> {
         if (typeof method === "string") {
             return { type: "server", address: parseSignerLocator(method).value } as ApiSourcedServerSignerConfig;
         }
-        if (method.type === "quorum") {
-            return toQuorumSigner(response.recoveryMethods as unknown as QuorumSigner);
+        // A quorum is listed as the API renders it: the caller's input has no locator yet.
+        const added = response.recoveryMethods;
+        if (added.type === "quorum") {
+            return toQuorumSigner(added);
         }
         return method as RecoverySignerConfigForChain<C>;
     }
