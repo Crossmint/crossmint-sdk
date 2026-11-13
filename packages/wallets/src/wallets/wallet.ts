@@ -48,10 +48,11 @@ import {
     SignatureNotAvailableError,
     TransactionFailedError,
     TransactionNotAvailableError,
-    TransactionNotCreatedError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     throwIfCrossmintApiAuthError,
+    transactionNotCreatedError,
+    transactionNotCreatedErrorFromApiClientError,
 } from "../utils/errors";
 import { validateChainForEnvironment, type Chain } from "../chains/chains";
 import {
@@ -550,15 +551,17 @@ export class Wallet<C extends Chain> {
             signer,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
-        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
+        const transactionCreationResponse = await this.#apiClient
+            .send(this.walletLocator, tokenLocator, sendParams)
+            .catch((error: unknown) => {
+                throw transactionNotCreatedErrorFromApiClientError(error, "Failed to send token") ?? error;
+            });
 
         if ("error" in transactionCreationResponse) {
             walletsLogger.error("wallet.send.error", {
                 error: transactionCreationResponse,
             });
-            throw new TransactionNotCreatedError(
-                `Failed to send token: ${JSON.stringify(transactionCreationResponse)}`
-            );
+            throw transactionNotCreatedError(transactionCreationResponse, "Failed to send token");
         }
 
         if (options?.prepareOnly === true) {
