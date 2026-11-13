@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.3.0
+
+### Minor Changes
+
+- 9e650de: Let apps turn on the device signer biometric policy on web. `IframeDeviceSignerKeyStorage` takes a second argument, `{ biometricPolicy, biometricExpirationTime }`, and every device key it creates (at wallet creation and at device recovery) gets that policy. `setBiometricOptions` changes the policy for keys created later. `CrossmintWalletProvider` in `@crossmint/client-sdk-react-ui` takes the same options in a new `deviceSigner` prop, for example `deviceSigner={{ biometricPolicy: "always" }}`. Before each fingerprint, face or screen lock check, the React provider shows the passkey prompt so that the browser gets a user click. The policy is fixed when a key is created; existing keys keep their policy. `BiometricPolicy` and `DeviceSignerBiometricOptions` are now exported.
+
+### Patch Changes
+
+- Updated dependencies [4aff9cf]
+- Updated dependencies [9e650de]
+- Updated dependencies [4b49e71]
+- Updated dependencies [a089de2]
+  - @crossmint/wallets-sdk@1.23.0
+  - @crossmint/client-sdk-react-base@2.6.0
+  - @crossmint/common-sdk-base@0.13.4
+  - @crossmint/client-sdk-base@5.2.1
+  - @crossmint/common-sdk-auth@1.1.38
+
 ## 5.2.0
 
 ### Minor Changes
