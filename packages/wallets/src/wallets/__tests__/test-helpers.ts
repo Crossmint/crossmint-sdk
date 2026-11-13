@@ -255,6 +255,7 @@ export const createExpiredRequest = (id: string) => ({
         revert: {
             type: "wallet_authorization",
             reason: TRANSACTION_EXPIRED_API_MESSAGE,
+            reasonData: { code: "TRANSACTION_EXPIRED" },
         },
     },
 });

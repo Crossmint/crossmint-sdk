@@ -478,14 +478,20 @@ export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest
 }
 
 /** The fields of a stored transaction or signature request that the expiry check reads. */
-type StoredRequestBody = { status?: unknown; error?: { revert?: { reason?: unknown } } | null };
+type StoredRequestBody = {
+    status?: unknown;
+    error?: { revert?: { reason?: unknown; reasonData?: { code?: unknown } | string | null } } | null;
+};
 
 /** Throws `TransactionExpiredError` for a stored request that failed because its approval window closed. */
 export function throwIfRequestExpired(response: unknown, request: ExpiredRequest): void {
     if (!isResponseBody<StoredRequestBody>(response) || response.status !== "failed") {
         return;
     }
-    if (response.error?.revert?.reason !== TRANSACTION_EXPIRED_MESSAGE) {
+    // The API stores the code in `reasonData`; the message alone identifies records stored before it did.
+    const revert = response.error?.revert;
+    const code = typeof revert?.reasonData === "object" ? revert.reasonData?.code : undefined;
+    if (code !== "TRANSACTION_EXPIRED" && revert?.reason !== TRANSACTION_EXPIRED_MESSAGE) {
         return;
     }
     throw new TransactionExpiredError(TRANSACTION_EXPIRED_MESSAGE, request, JSON.stringify(response));
