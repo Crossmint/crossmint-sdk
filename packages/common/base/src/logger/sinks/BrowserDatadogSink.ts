@@ -25,7 +25,7 @@ export class BrowserDatadogSink extends HttpDatadogSink {
             this.listening = true;
             // Logs still in the batch when the page is closed or navigated away would be lost.
             window.addEventListener("pagehide", () => {
-                void this.flush();
+                void this.flush({ keepalive: true });
             });
         }
         super.initialize();

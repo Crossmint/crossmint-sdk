@@ -118,7 +118,7 @@ export class HttpDatadogSink implements DatadogSink {
      * This method is called automatically when batches are full or timeout,
      * but can also be called manually to ensure logs are sent before app/browser close
      */
-    async flush(): Promise<void> {
+    async flush(options: { keepalive?: boolean } = {}): Promise<void> {
         if (this.batchQueue.length === 0) {
             return;
         }
@@ -176,8 +176,8 @@ export class HttpDatadogSink implements DatadogSink {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(logs),
-                // Lets the browser finish the request after the page unloads (see BrowserDatadogSink).
-                ...(this.platform === "browser" ? { keepalive: true } : {}),
+                // Only for the flush on page exit (see BrowserDatadogSink): keepalive bodies are capped at 64 KiB.
+                ...(options.keepalive === true ? { keepalive: true } : {}),
             });
 
             if (!response.ok) {
