@@ -137,6 +137,10 @@ const REGISTERED: HeldKeyRole = { kind: "registered" };
 
 // A delegated quorum as `signers()` lists it, with its install status.
 type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
+
+// How a caller of the approve-and-wait methods tunes them. `walletSigner` is the key approve() resolved; other
+// callers leave it out and sign with the active signer.
+type ApproveInternalOptions = { requireHeldMember?: boolean; walletSigner?: SignerAdapter };
 const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
 
 function pendingOperationId(operation: PendingSignerOperation): { transactionId: string } | { signatureId: string } {
@@ -771,16 +775,16 @@ export class Wallet<C extends Chain> {
             await this.#recoverIfNeeded();
         }
         // With no active key, the key selected with useRecoveryMethod() approves (EDD 007 §7 use case 6).
-        return this.#signerManager.withStandInSigner(async () => {
-            await this.#authenticateActiveSigner();
-            return this.#approveRequest(params);
-        });
+        const walletSigner = this.#signerManager.approvalSigner();
+        await this.#authenticate(walletSigner);
+        return this.#approveRequest(params, walletSigner);
     }
 
-    async #approveRequest<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+    async #approveRequest<T extends ApproveParams>(params: T, walletSigner: SignerAdapter): Promise<ApproveResult<T>> {
         if (params.transactionId != null) {
             const result = (await this.approveTransactionAndWait(params.transactionId, params.options, {
                 requireHeldMember: true,
+                walletSigner,
             })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 transactionId: params.transactionId,
@@ -790,6 +794,7 @@ export class Wallet<C extends Chain> {
         if (params.signatureId != null) {
             const result = (await this.approveSignatureAndWait(params.signatureId, params.options, {
                 requireHeldMember: true,
+                walletSigner,
             })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 signatureId: params.signatureId,
@@ -1632,7 +1637,10 @@ export class Wallet<C extends Chain> {
     }
 
     async #authenticateActiveSigner(): Promise<void> {
-        const signer = this.#signerManager.require();
+        await this.#authenticate(this.#signerManager.require());
+    }
+
+    async #authenticate(signer: SignerAdapter): Promise<void> {
         if (signer instanceof NonCustodialSigner) {
             await signer.ensureAuthenticated();
         }
@@ -1682,9 +1690,9 @@ export class Wallet<C extends Chain> {
     protected async approveTransactionAndWait(
         transactionId: string,
         options?: ApproveOptions,
-        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+        { requireHeldMember = false, walletSigner }: ApproveInternalOptions = {}
     ) {
-        await this.approveTransactionInternal(transactionId, options, { requireHeldMember });
+        await this.approveTransactionInternal(transactionId, options, { requireHeldMember, walletSigner });
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
@@ -1692,9 +1700,12 @@ export class Wallet<C extends Chain> {
     protected async approveSignatureAndWait(
         signatureId: string,
         options?: ApproveOptions,
-        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+        { requireHeldMember = false, walletSigner }: ApproveInternalOptions = {}
     ) {
-        const signatureResponse = await this.approveSignatureInternal(signatureId, options, { requireHeldMember });
+        const signatureResponse = await this.approveSignatureInternal(signatureId, options, {
+            requireHeldMember,
+            walletSigner,
+        });
 
         if (
             !("error" in signatureResponse) &&
@@ -1784,13 +1795,13 @@ export class Wallet<C extends Chain> {
     protected async approveSignatureInternal(
         signatureId: string,
         options?: ApproveOptions,
-        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+        { requireHeldMember = false, walletSigner: approvingSigner }: ApproveInternalOptions = {}
     ) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
-        const walletSigner = this.#signerManager.require();
+        const walletSigner = approvingSigner ?? this.#signerManager.require();
 
         const signature = await this.#apiClient.getSignature(this.walletLocator, signatureId);
 
@@ -1833,7 +1844,7 @@ export class Wallet<C extends Chain> {
     protected async approveTransactionInternal(
         transactionId: string,
         options?: ApproveOptions,
-        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+        { requireHeldMember = false, walletSigner: approvingSigner }: ApproveInternalOptions = {}
     ) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
@@ -1845,7 +1856,7 @@ export class Wallet<C extends Chain> {
 
         await this.#options?.callbacks?.onTransactionStart?.();
 
-        const walletSigner = this.#signerManager.require();
+        const walletSigner = approvingSigner ?? this.#signerManager.require();
         const pendingApprovals = transaction.approvals?.pending ?? [];
 
         const signable = walletSigner.type === "api-key" ? this.#apiKeySignable(pendingApprovals) : pendingApprovals;
