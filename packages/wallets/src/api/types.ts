@@ -99,18 +99,8 @@ export type TransferScope = {
 
 export type Scope = TransferScope;
 
-/** A quorum as the API takes it: each member's identity fields only (crossbit-main `QuorumSignerInput`). */
-export type QuorumSignerInput = {
-    type: "quorum";
-    threshold: number;
-    members: Array<
-        | { type: "email"; email: string }
-        | { type: "phone"; phone: string }
-        | { type: "external-wallet"; address: string }
-        | { type: "server"; address: string }
-        | { type: "passkey"; id: string; name: string; publicKey: { x: string; y: string } }
-    >;
-};
+/** A quorum as the API takes it: each member's identity fields only. */
+export type QuorumSignerInput = Extract<AddRecoveryMethodsV2025DtoClass["recoveryMethods"], { type: "quorum" }>;
 
 export type RegisterSignerParams = {
     signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain> | QuorumSignerInput;
@@ -130,7 +120,7 @@ export type RemoveSignerResponse =
 export type GetSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerGetDelegatedSigner2Error;
 
 export type RegisterRecoveryMethodParams = {
-    recoveryMethods: AddRecoveryMethodsV2025DtoClass["recoveryMethods"] | QuorumSignerInput;
+    recoveryMethods: AddRecoveryMethodsV2025DtoClass["recoveryMethods"];
     approver: AddRecoveryMethodsV2025DtoClass["approver"];
     chain?: RegisterSignerChain;
 };
