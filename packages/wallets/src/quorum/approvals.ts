@@ -52,6 +52,20 @@ export function awaitsQuorumOnly(operation: { status: string; approvals?: { pend
     return flat.length === 0 && quorums.some((entry) => entry.quorumApprovals.remaining > 0);
 }
 
+/** True when a quorum still needs approvals and none of the held keys is one of its members, pending or submitted. */
+export function quorumsAwaitOnlyOthers(quorums: QuorumPendingApproval[], heldLocators: string[]): boolean {
+    const isHeld = (locator: string) => heldLocators.some((held) => isSameSignerLocator(held, locator));
+    const awaiting = quorums.filter((entry) => entry.quorumApprovals.remaining > 0);
+    return (
+        awaiting.length > 0 &&
+        !awaiting.some((entry) =>
+            [...entry.quorumApprovals.pending, ...entry.quorumApprovals.submitted].some(({ member }) =>
+                isHeld(member.locator)
+            )
+        )
+    );
+}
+
 /** Which pending member messages the held keys sign, per quorum, in pending order. */
 export function planMemberApprovals(
     quorums: QuorumPendingApproval[],
