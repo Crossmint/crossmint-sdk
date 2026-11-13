@@ -39,5 +39,10 @@ export interface LogSink {
      * Flush any pending logs to the destination
      * This is optional - sinks that don't buffer logs don't need to implement this
      */
-    flush?(): Promise<void> | void;
+    flush?(options?: FlushOptions): Promise<void> | void;
 }
+
+export type FlushOptions = {
+    /** Sends with `fetch` keepalive so the request survives page exit (body capped at 64 KiB). */
+    keepalive?: boolean;
+};
