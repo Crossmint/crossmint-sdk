@@ -265,8 +265,10 @@ export class Wallet<C extends Chain> {
                     { type: "device", locator: signerLocator } as SignerConfigForChain<C>,
                     approver == null ? undefined : { prepareOnly: true, signer: approver }
                 ),
-            approveSignature: (signatureId) => this.approveSignatureAndWait(signatureId),
-            approveTransaction: (transactionId) => this.approveTransactionAndWait(transactionId),
+            approveSignature: (signatureId, walletSigner) =>
+                this.approveSignatureAndWait(signatureId, undefined, { walletSigner }),
+            approveTransaction: (transactionId, walletSigner) =>
+                this.approveTransactionAndWait(transactionId, undefined, { walletSigner }),
             deviceSignerActivity: () =>
                 fetchDeviceSignerActivity(this.#apiClient, this.walletLocator, {
                     includeSignatures: this.chainAdapter.supportsSignatures,
