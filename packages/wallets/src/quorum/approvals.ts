@@ -53,6 +53,8 @@ export function toQuorumProgress(entry: QuorumPendingApproval): QuorumApprovalPr
 }
 
 /** True when only quorum members can move the operation forward: no flat signer is pending. */
+// Stellar seeds one entry per auth entry, so a quorum's request can also carry a single-signer entry for another
+// party's address; EVM and Solana seed one entry per request, so there the list has one kind only.
 export function awaitsQuorumOnly(operation: { status: string; approvals?: { pending: PendingApproval[] } }): boolean {
     if (operation.status !== "awaiting-approval" || operation.approvals == null) {
         return false;
