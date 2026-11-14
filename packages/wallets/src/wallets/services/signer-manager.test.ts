@@ -85,6 +85,16 @@ async function expectThrowsMatching(run: () => unknown, branchKeyword: RegExp): 
 
 const apiKeyConfig = { type: "api-key" } as const;
 
+// The error a synchronous call throws, so a test can inspect its message.
+function thrownBy(run: () => unknown): unknown {
+    try {
+        run();
+    } catch (error) {
+        return error;
+    }
+    return undefined;
+}
+
 beforeEach(() => {
     vi.clearAllMocks();
     walletsLogger.warn = vi.fn();
@@ -164,30 +174,17 @@ describe("SignerManager", () => {
         expect(makeManager().isApprovedSignerStatus(status as never)).toBe(expected);
     });
 
-    it.each([true, false])(
-        "withRecoverySigner() swaps to the recovery signer then restores the original (operation succeeds=%s)",
-        async (succeeds) => {
-            const original = makeApiKeySigner("original");
-            const recoverySigner = makeApiKeySigner("recovery");
-            mockedAssembleSigner.mockReturnValue(recoverySigner);
-            const manager = makeManager({ signer: original, recoverySigners: [{ type: "api-key" }] });
-            const failure = new Error("operation failed");
-            let signerDuringOperation: SignerAdapter | undefined;
+    it("resolveApprover() returns the recovery signer and leaves the active signer unchanged", () => {
+        const original = makeApiKeySigner("original");
+        const recoverySigner = makeApiKeySigner("recovery");
+        mockedAssembleSigner.mockReturnValue(recoverySigner);
+        const manager = makeManager({ signer: original, recoverySigners: [{ type: "api-key" }] });
 
-            const run = manager.withRecoverySigner(() => {
-                signerDuringOperation = manager.activeSigner;
-                return succeeds ? Promise.resolve("ok") : Promise.reject(failure);
-            });
+        const approver = manager.resolveApprover({});
 
-            if (succeeds) {
-                expect(await run).toBe("ok");
-            } else {
-                await expect(run).rejects.toBe(failure);
-            }
-            expect(signerDuringOperation).toBe(recoverySigner);
-            expect(manager.activeSigner).toBe(original);
-        }
-    );
+        expect(approver.signer).toBe(recoverySigner);
+        expect(manager.activeSigner).toBe(original);
+    });
 
     it.each([
         [
@@ -203,9 +200,9 @@ describe("SignerManager", () => {
             { recoverySigners: [asRecoveryConfig({ type: "external-wallet", address: "0xExt" })] },
             /Cannot assemble external wallet signer/,
         ],
-    ] as const)("withRecoverySigner() throws when %s", async (_name, overrides, branchKeyword) => {
+    ] as const)("resolveApprover() throws when %s", async (_name, overrides, branchKeyword) => {
         await expectThrowsMatching(
-            () => makeManager(overrides as unknown as Overrides).withRecoverySigner(async () => "unused"),
+            () => makeManager(overrides as unknown as Overrides).resolveApprover({}),
             branchKeyword
         );
     });
@@ -295,7 +292,7 @@ describe("SignerManager", () => {
         }
     );
 
-    it("withRecoverySigner() assembles the active recovery signer and hands its locator to the operation", async () => {
+    it("resolveApprover() assembles the active recovery method and returns its locator as the approver", () => {
         const active = makeSigner("external-wallet", "external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
         const onSign = vi.fn();
         const recoverySigners = [
@@ -310,7 +307,7 @@ describe("SignerManager", () => {
         mockedAssembleSigner.mockReturnValue(assembled);
         const manager = makeManager({ signer: active, recoverySigners });
 
-        const approver = await manager.withRecoverySigner(async (approver) => approver);
+        const { locator: approver } = manager.resolveApprover({});
 
         expect(approver).toBe("external-wallet:0xAbCdEf0123456789aBcDeF0123456789AbCdEf01");
         expect(mockedAssembleSigner).toHaveBeenCalledWith(
@@ -321,10 +318,11 @@ describe("SignerManager", () => {
         expect(manager.activeSigner).toBe(active);
     });
 
-    it("withRecoverySigner() passes no approver for a wallet with a single recovery signer", async () => {
+    it("resolveApprover() names no approver for a wallet with a single recovery signer", () => {
         mockedAssembleSigner.mockReturnValue(makeApiKeySigner("recovery"));
         const manager = makeManager({ signer: makeApiKeySigner("operational"), recoverySigners: [apiKeyConfig] });
-        await expect(manager.withRecoverySigner(async (approver) => approver)).resolves.toBeUndefined();
+
+        expect(manager.resolveApprover({}).locator).toBeUndefined();
     });
 
     it("constructor rejects an empty recovery signer list", () => {
@@ -530,17 +528,12 @@ describe("SignerManager with quorum recovery methods", () => {
         );
 
         it.each(QUORUM_ONLY_LISTS)(
-            "withRecoverySigner() with %s throws RecoveryMethodRequiredError, asking for a member or the signer option, without running the operation",
-            async (_name, recoverySigners) => {
-                const operation = vi.fn();
+            "resolveApprover() with %s throws RecoveryMethodRequiredError, asking for a member or the signer option",
+            (_name, recoverySigners) => {
+                const resolving = () => makeManager({ recoverySigners: [...recoverySigners] }).resolveApprover({});
 
-                const authorizing = makeManager({ recoverySigners: [...recoverySigners] }).withRecoverySigner(
-                    operation
-                );
-
-                await expect(authorizing).rejects.toBeInstanceOf(RecoveryMethodRequiredError);
-                await expect(authorizing).rejects.toThrow(/useRecoveryMethod\(\) with a key that is a member/);
-                expect(operation).not.toHaveBeenCalled();
+                expect(resolving).toThrow(RecoveryMethodRequiredError);
+                expect(resolving).toThrow(/useRecoveryMethod\(\) with a key that is a member/);
             }
         );
     });
@@ -553,36 +546,31 @@ describe("SignerManager with quorum recovery methods", () => {
         });
 
         // Swift and Kotlin count quorums too: with several recovery methods, one must be active or selected.
-        it("asks to select a recovery method even when only one of them signs alone", async () => {
-            const operation = vi.fn();
+        it("asks to select a recovery method even when only one of them signs alone", () => {
             const quorum = createQuorumApiEntry();
             const manager = makeManager({ recoverySigners: [quorum, emailRecovery] });
 
-            const error = await manager.withRecoverySigner(operation).catch((caught: unknown) => caught);
+            const error = thrownBy(() => manager.resolveApprover({}));
 
             expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
             expect(String(error)).toContain("(email:recovery@example.com)");
             expect(String(error)).not.toContain(quorum.locator);
-            expect(operation).not.toHaveBeenCalled();
         });
 
-        it("authorizes with that method when it is the active signer, naming it as approver", async () => {
-            const operation = vi.fn().mockResolvedValue("done");
+        it("authorizes with that method when it is the active signer, naming it as approver", () => {
             const manager = makeManager({
                 recoverySigners: [createQuorumApiEntry(), emailRecovery],
                 signer: makeSigner("email", "email:recovery@example.com"),
             });
 
-            await manager.withRecoverySigner(operation);
-
-            expect(operation).toHaveBeenCalledWith("email:recovery@example.com");
+            expect(manager.resolveApprover({}).locator).toBe("email:recovery@example.com");
         });
 
-        it("asks to select a recovery method and offers only those methods", async () => {
+        it("asks to select a recovery method and offers only those methods", () => {
             const quorum = createQuorumApiEntry();
             const manager = makeManager({ recoverySigners: [quorum, emailRecovery, phoneRecovery] });
 
-            const error = await manager.withRecoverySigner(vi.fn()).catch((caught: unknown) => caught);
+            const error = thrownBy(() => manager.resolveApprover({}));
 
             expect(error).toBeInstanceOf(RecoveryMethodRequiredError);
             expect(String(error)).toContain("email:recovery@example.com");
@@ -663,7 +651,7 @@ describe("SignerManager.heldSigners", () => {
             expect(manager.heldSigners()).toEqual([active]);
         });
 
-        it("throws withRecoverySigner's error when the selection cannot be assembled", () => {
+        it("throws resolveApprover's error when the selection cannot be assembled", () => {
             const manager = makeManager({
                 signer: makeSigner("external-wallet", ACTIVE_LOCATOR),
                 recoverySigners: [
@@ -717,7 +705,7 @@ describe("SignerManager.heldSigners", () => {
     });
 });
 
-describe("SignerManager.withApprover", () => {
+describe("SignerManager.resolveApprover", () => {
     const RECOVERY_LOCATOR: SignerLocator = "external-wallet:0x1234567890aBcDeF1234567890AbCdEf12345678";
     const storedRecovery = asRecoveryConfig({
         type: "external-wallet",
@@ -725,14 +713,14 @@ describe("SignerManager.withApprover", () => {
     });
 
     describe("when the signer option names the recovery method selected with useRecoveryMethod()", () => {
-        it("assembles the selected config, which carries the caller's callback, not the stored entry", async () => {
+        it("assembles the selected config, which carries the caller's callback, not the stored entry", () => {
             const onSign = vi.fn();
             const selected = asRecoveryConfig({ ...storedRecovery, onSign });
             mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
             const manager = makeManager({ recoverySigners: [apiKeyConfig, storedRecovery] });
             manager.selectRecovery(1, selected);
 
-            const approver = await manager.withApprover({ explicit: RECOVERY_LOCATOR }, async (approver) => approver);
+            const { locator: approver } = manager.resolveApprover({ explicit: RECOVERY_LOCATOR });
 
             expect(approver).toBe(RECOVERY_LOCATOR);
             expect(mockedAssembleSigner).toHaveBeenCalledWith(
@@ -744,12 +732,12 @@ describe("SignerManager.withApprover", () => {
     });
 
     describe("when the signer option names a recovery method that is not selected", () => {
-        it("assembles the stored entry", async () => {
+        it("assembles the stored entry", () => {
             mockedAssembleSigner.mockReturnValue(makeSigner("external-wallet", RECOVERY_LOCATOR));
             const withOnSign = asRecoveryConfig({ ...storedRecovery, onSign: vi.fn() });
             const manager = makeManager({ recoverySigners: [apiKeyConfig, withOnSign] });
 
-            await manager.withApprover({ explicit: RECOVERY_LOCATOR }, async (approver) => approver);
+            manager.resolveApprover({ explicit: RECOVERY_LOCATOR });
 
             expect(mockedAssembleSigner).toHaveBeenCalledWith(
                 "base-sepolia",
