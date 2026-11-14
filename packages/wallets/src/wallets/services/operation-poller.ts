@@ -1,5 +1,5 @@
 import type { ApiClient, GetSignatureResponse, GetTransactionSuccessResponse, WalletLocator } from "../../api";
-import { awaitsQuorumOnly } from "../../quorum/approvals";
+import { awaitsQuorumRequest } from "../../quorum/approvals";
 import type { Signature, Transaction } from "../types";
 import {
     SignatureConfirmationTimeoutError,
@@ -131,8 +131,7 @@ export async function waitForTransactionOutcome(
 }
 
 function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transactionId: string): AwaitingApproval {
-    // A single-signer entry still pending next to the quorum (Stellar, another party's auth entry) keeps today's error.
-    if (!awaitsQuorumOnly(transaction)) {
+    if (!awaitsQuorumRequest(transaction)) {
         throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
     }
     return { status: "awaiting-approval", transactionId };
@@ -189,7 +188,7 @@ export async function waitForSignatureOutcome(
 
     // Signature responses may omit `approvals.pending`; no list means no approver is pending.
     const pending = signatureResponse.approvals?.pending ?? [];
-    if (awaitsQuorumOnly({ status: signatureResponse.status, approvals: { pending } })) {
+    if (awaitsQuorumRequest({ status: signatureResponse.status, approvals: { pending } })) {
         return { status: "awaiting-approval", signatureId };
     }
 
