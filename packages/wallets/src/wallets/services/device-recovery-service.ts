@@ -219,7 +219,7 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
-        // Resolves the approver as withApprover will (the member's quorum, else a recovery method), for its error only:
+        // Resolves the approver as resolveApprover will (the member's quorum, else a recovery method), for its error only:
         // no key is created when no approver can be resolved.
         this.#signerManager.approvesAsQuorum();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);

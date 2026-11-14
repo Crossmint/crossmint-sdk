@@ -40,6 +40,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             },
             Wallet.getApiClient(wallet)
         );
+        Wallet.copyServerRecoveryKeys(wallet, this);
     }
 
     static from(wallet: Wallet<Chain>) {

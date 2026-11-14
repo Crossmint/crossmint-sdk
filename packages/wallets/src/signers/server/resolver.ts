@@ -37,6 +37,15 @@ export class ServerSignerResolver {
         this.#knownOnChainAddresses = params.knownOnChainAddresses;
     }
 
+    /** Takes the recovery keys another resolver holds, for a wallet copied with `from()`: no secret is copied. Each
+     * resolver owns its key bytes, so one wiping its key on a later resolution leaves the other's intact. */
+    adoptRecoveryResolutions(other: ServerSignerResolver): void {
+        this.#resolvedRecoveryServerSigners = other.#resolvedRecoveryServerSigners.map((resolved) => ({
+            ...resolved,
+            derivedKeyBytes: new Uint8Array(resolved.derivedKeyBytes),
+        }));
+    }
+
     deriveCandidates(config: ServerSignerConfig): { primary: DerivedServerSigner; legacy: DerivedServerSigner | null } {
         return deriveServerSignerCandidatesHelper(config, this.#chain, this.#projectId, this.#environment);
     }
