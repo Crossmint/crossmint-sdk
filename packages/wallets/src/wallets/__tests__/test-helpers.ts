@@ -1,5 +1,6 @@
 import { vi, type MockedFunction } from "vitest";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
@@ -7,6 +8,7 @@ import type {
     QuorumMember,
     QuorumSigner,
     RecoverySignerConfigForChain,
+    SignerAdapter,
     SignerConfigForChain,
     SignerLocator,
 } from "../../signers/types";
@@ -77,8 +79,58 @@ export const createMockWallet = async <C extends Chain>(
     mockApiClient: MockedApiClient,
     signerType: "api-key" | "external-wallet" = "api-key",
     recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => walletWithSigner(chain, mockApiClient, createMockSigner(signerType, chain), recoverySigners);
+
+// Runs the call to the end, fake timers included, so a sleep on the approval path cannot hang the test.
+export async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
+    const outcome = call.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error })
+    );
+    await vi.runAllTimersAsync();
+    return outcome;
+}
+
+// What a signing test signer returns for `payload`, so a test can tell which message each approval signed.
+export const signatureOver = (payload: string) => `0xsig:${payload}`;
+
+// A wallet whose active signer is a registered external wallet that signs with `signatureOver`.
+export const createSigningWallet = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => {
-    const signer = createMockSigner(signerType, chain);
+    const signer = {
+        ...createMockSigner("external-wallet", chain),
+        onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+    } as SignerConfigForChain<C>;
+    return walletWithSigner(chain, mockApiClient, signer, recoverySigners);
+};
+
+// The active signer of `createSigningWallet` and `createMockWallet(…, "external-wallet")`, as a quorum member.
+export const activeSignerMember = (chain: Chain): QuorumMember => {
+    const locator = getSignerLocator("external-wallet", chain);
+    return { type: "external-wallet", address: locator.split(":")[1], locator } as QuorumMember;
+};
+
+// A signer this client holds beyond the active one (`approve`'s `additionalSigners`), signing with `signatureOver`.
+export const createHeldSigner = (locator: string): SignerAdapter => {
+    const sign = vi.fn(async (payload: string) => ({ signature: signatureOver(payload) }));
+    return {
+        type: locator.split(":")[0],
+        locator: () => locator as SignerLocator,
+        signMessage: sign,
+        signTransaction: sign,
+    } as unknown as SignerAdapter;
+};
+
+const walletWithSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    signer: SignerConfigForChain<C>,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => {
+    const signerType = signer.type === "api-key" ? "api-key" : "external-wallet";
     const wallet = new Wallet(
         {
             chain,
@@ -143,21 +195,23 @@ export const createQuorumPendingApproval = ({
     pending = quorum.members,
     submitted = [],
     remaining = quorum.threshold - submitted.length,
+    createMessage = randomHexMessage,
 }: {
     quorum: QuorumSigner;
     pending?: QuorumMember[];
     submitted?: QuorumMember[];
     remaining?: number;
+    createMessage?: () => string;
 }) =>
     ({
         signer: { type: "quorum", locator: quorum.locator },
         quorumApprovals: {
             threshold: quorum.threshold,
             remaining,
-            pending: pending.map((member) => ({ member, message: randomHexMessage() })),
+            pending: pending.map((member) => ({ member, message: createMessage() })),
             submitted: submitted.map((member) => ({
                 member,
-                message: randomHexMessage(),
+                message: createMessage(),
                 signature: randomHexMessage(),
                 submittedAt: new Date().toISOString(),
             })),
@@ -165,6 +219,9 @@ export const createQuorumPendingApproval = ({
     }) satisfies PendingApproval;
 
 const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
+
+// A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
+export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
 
 // The wallets API's expiry message (crossbit-main `constants/error.ts`, `TRANSACTION_EXPIRED_MESSAGE`).
 export const TRANSACTION_EXPIRED_API_MESSAGE =

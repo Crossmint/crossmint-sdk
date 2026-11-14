@@ -28,6 +28,9 @@ import type {
     ApproveParams,
     ApproveOptions,
     Approval,
+    PendingApproval,
+    PendingSignerOperation,
+    SignerStatus,
     Signature,
     ApproveResult,
     PrepareOnly,
@@ -68,6 +71,7 @@ import {
 import type {
     ExternalWalletRegistrationConfig,
     PasskeySignerConfig,
+    QuorumSigner,
     RecoverySignerConfigForChain,
     ServerSignerConfig,
     SignerAdapter,
@@ -77,6 +81,7 @@ import type {
 import {
     type ApiSourcedServerSignerConfig,
     isApiSourcedServerSignerConfig,
+    isQuorumSigner,
     throwIfQuorumSigner,
 } from "../signers/types";
 import { NonCustodialSigner } from "../signers/non-custodial";
@@ -89,6 +94,8 @@ import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
+import { isQuorumPendingApproval, quorumsAwaitOnlyOthers, splitPendingApprovals } from "../quorum/approvals";
+import { quorumsWithMember } from "../quorum/members";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
@@ -112,6 +119,28 @@ type WalletContructorType<C extends Chain> = {
     signer?: SignerAdapter;
 };
 
+// How `useSigner` holds a key: as a recovery method, a registered signer, or a member of one of the wallet's quorums.
+type HeldKeyRole = { kind: "recovery" } | { kind: "registered" } | { kind: "member"; status: SignerStatus | undefined };
+const RECOVERY: HeldKeyRole = { kind: "recovery" };
+const REGISTERED: HeldKeyRole = { kind: "registered" };
+
+// A delegated quorum as `signers()` lists it, with its install status.
+type WalletQuorum = Extract<WalletSigner, { type: "quorum" }>;
+const isWalletQuorum = (signer: WalletSigner): signer is WalletQuorum => isQuorumSigner(signer);
+
+function pendingOperationId(operation: PendingSignerOperation): { transactionId: string } | { signatureId: string } {
+    switch (operation.type) {
+        case "transaction":
+            return { transactionId: operation.id };
+        case "signature":
+            return { signatureId: operation.id };
+        default: {
+            const _exhaustive: never = operation.type;
+            throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+        }
+    }
+}
+
 export type WalletFactoryConstructorArgs<C extends Chain> = WalletContructorType<C> & { apiSigners?: APISigner[] };
 
 export class Wallet<C extends Chain> {
@@ -128,6 +157,8 @@ export class Wallet<C extends Chain> {
     #apiDelegatedServerSignerAddresses: string[] = [];
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
+    // approve() calls in flight, by request id: a second call for the same request joins the first (one signing pass).
+    #approving = new Map<string, Promise<unknown>>();
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const {
@@ -628,7 +659,9 @@ export class Wallet<C extends Chain> {
      * @param params.options - The options for the approval
      * @param params.options.approval - The approval data
      * @param params.options.additionalSigners - Additional signers for the approval
-     * @returns The transaction or signature
+     * @returns The transaction or signature. While other quorum members must still sign, the transaction comes back
+     * without `hash` and `explorerLink`, and the signature without `signature`.
+     * A second call for a request that is still being approved runs after it, with its own keys and options.
      */
     @WithLoggerContext({
         logger: walletsLogger,
@@ -638,6 +671,24 @@ export class Wallet<C extends Chain> {
         },
     })
     public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
+        const requestId = params.transactionId ?? params.signatureId;
+        // One signing pass at a time per request: a later call waits for the running one, then signs with its own keys.
+        const previous = requestId == null ? undefined : this.#approving.get(requestId);
+        const run = (previous == null ? Promise.resolve() : previous.catch(() => undefined)).then(() =>
+            this.#approveOnce(params)
+        );
+        if (requestId != null) {
+            this.#approving.set(requestId, run);
+            run.finally(() => {
+                if (this.#approving.get(requestId) === run) {
+                    this.#approving.delete(requestId);
+                }
+            }).catch(() => undefined);
+        }
+        return await run;
+    }
+
+    async #approveOnce<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         walletsLogger.info("wallet.approve.start", {
             transactionId: params.transactionId,
             signatureId: params.signatureId,
@@ -646,17 +697,18 @@ export class Wallet<C extends Chain> {
         await this.preAuthIfNeeded();
 
         if (params.transactionId != null) {
-            const result = (await this.approveTransactionAndWait(
-                params.transactionId,
-                params.options
-            )) as ApproveResult<T>;
+            const result = (await this.approveTransactionAndWait(params.transactionId, params.options, {
+                requireHeldMember: true,
+            })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 transactionId: params.transactionId,
             });
             return result;
         }
         if (params.signatureId != null) {
-            const result = (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
+            const result = (await this.approveSignatureAndWait(params.signatureId, params.options, {
+                requireHeldMember: true,
+            })) as ApproveResult<T>;
             walletsLogger.info("wallet.approve.success", {
                 signatureId: params.signatureId,
             });
@@ -676,6 +728,8 @@ export class Wallet<C extends Chain> {
      * cannot authorize this.
      * If the signer being added is the current operational signer, it will be reassembled with the new locator.
      * Otherwise, the original signer is restored after the operation.
+     * When it resumes a registration that quorum members must still approve, it returns the signer with its
+     * `transactionId` or `signatureId` and its current status, as with `prepareOnly: true`.
      * @param signer - The signer configuration object
      * @param options - The options for the operation
      * @param options.prepareOnly - If true, returns the signer with approval ID without auto-approving
@@ -813,51 +867,40 @@ export class Wallet<C extends Chain> {
      */
     private async completeSignerRegistration(
         signer: WalletSigner,
-        pendingOperation: { type: "signature" | "transaction"; id: string } | null,
+        pendingOperation: PendingSignerOperation | null,
         options?: AddSignerOptions
     ): Promise<AddSignerReturnType<C> | WalletSigner> {
-        if (options?.prepareOnly) {
-            if (pendingOperation == null) {
+        if (pendingOperation == null) {
+            if (options?.prepareOnly) {
                 return { ...signer } as AddSignerReturnType<C>;
             }
-            switch (pendingOperation.type) {
-                case "transaction": {
-                    const operationId = { transactionId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                case "signature": {
-                    const operationId = { signatureId: pendingOperation.id };
-                    walletsLogger.info("wallet.addSigner.prepared", operationId);
-                    return { ...signer, ...operationId } as AddSignerReturnType<C>;
-                }
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
-        }
-
-        if (pendingOperation != null) {
-            switch (pendingOperation.type) {
-                case "transaction":
-                    await this.approveTransactionAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { transactionId: pendingOperation.id });
-                    break;
-                case "signature":
-                    await this.approveSignatureAndWait(pendingOperation.id);
-                    walletsLogger.info("wallet.addSigner.success", { signatureId: pendingOperation.id });
-                    break;
-                default: {
-                    const _exhaustive: never = pendingOperation.type;
-                    throw new Error(`Unknown pending operation type: ${_exhaustive}`);
-                }
-            }
-        } else {
             walletsLogger.info("wallet.addSigner.success");
+        } else {
+            const operationId = pendingOperationId(pendingOperation);
+            // prepareOnly signs nothing; after this client approves, other quorum members may still have to sign.
+            const landed = !options?.prepareOnly && (await this.#approvePendingOperation(pendingOperation));
+            if (!landed) {
+                const event = options?.prepareOnly ? "wallet.addSigner.prepared" : "wallet.addSigner.awaitingApproval";
+                walletsLogger.info(event, operationId);
+                return { ...signer, ...operationId } as AddSignerReturnType<C>;
+            }
+            walletsLogger.info("wallet.addSigner.success", operationId);
         }
-
         return { ...signer, status: "success" as const } as WalletSigner;
+    }
+
+    /** True when the operation landed; false while only quorum members can still approve it. */
+    async #approvePendingOperation(pendingOperation: PendingSignerOperation): Promise<boolean> {
+        switch (pendingOperation.type) {
+            case "transaction":
+                return (await this.approveTransactionAndWait(pendingOperation.id)).hash != null;
+            case "signature":
+                return (await this.approveSignatureAndWait(pendingOperation.id)).signature != null;
+            default: {
+                const _exhaustive: never = pendingOperation.type;
+                throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+            }
+        }
     }
 
     /**
@@ -1073,11 +1116,11 @@ export class Wallet<C extends Chain> {
         }
         getSignerDescriptor<C>(signer.type).validateConfig(signer);
 
-        let isAdminSigner = false;
+        let role: HeldKeyRole = REGISTERED;
         if (signer.type === "device") {
             await this.#deviceRecovery.resolveAvailability(signer);
         } else {
-            isAdminSigner = await this.resolveNonDeviceSigner(signer);
+            role = await this.resolveNonDeviceSigner(signer);
         }
 
         const internalConfig = getSignerDescriptor<C>(signer.type).buildInternalConfig(
@@ -1085,7 +1128,11 @@ export class Wallet<C extends Chain> {
             this.#signerManager.descriptorContext()
         );
         const signerLocator = getSignerLocator(signer);
-        this.#signerManager.setActiveSigner(await this.#signerManager.assemble(internalConfig, { isAdminSigner }));
+        const activeSigner =
+            role.kind === "member"
+                ? this.#signerManager.assembleMember(internalConfig, role.status)
+                : await this.#signerManager.assemble(internalConfig, { isAdminSigner: role.kind === "recovery" });
+        this.#signerManager.setActiveSigner(activeSigner);
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
 
@@ -1144,7 +1191,7 @@ export class Wallet<C extends Chain> {
      * For passkeys without an explicit credential id, auto-selects from registered signers.
      * Returns true if the signer is an admin (recovery) signer.
      */
-    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<boolean> {
+    private async resolveNonDeviceSigner(signer: SignerConfigForChain<C>): Promise<HeldKeyRole> {
         // For non-passkey, non-server signers, check if this is the recovery (admin) signer first.
         // Admin signers are always approved — skip the registration check and getSigner API call
         // which only works for delegated signers (returns 404/400 for admin signers).
@@ -1154,7 +1201,7 @@ export class Wallet<C extends Chain> {
         // which resolves the correct (primary or legacy) derivation.
         if (signer.type !== "passkey" && signer.type !== "server" && this.isRecoverySigner(signer)) {
             this.#deviceRecovery.onSignerSelected();
-            return true;
+            return RECOVERY;
         }
 
         // Passkey without id: try to auto-select from registered signers
@@ -1164,7 +1211,7 @@ export class Wallet<C extends Chain> {
                 // No registered passkeys — use recovery if this is the recovery signer
                 if (this.isRecoverySigner(signer)) {
                     this.#deviceRecovery.onSignerSelected();
-                    return true;
+                    return RECOVERY;
                 }
                 throw new Error("No passkey signer is registered on this wallet.");
             }
@@ -1178,13 +1225,19 @@ export class Wallet<C extends Chain> {
         const locator = this.resolveSignerLocator(signer);
         if (await this.signerIsRegistered(locator)) {
             this.#deviceRecovery.onSignerSelected();
-            return false;
+            return REGISTERED;
         }
 
         // Not a registered signer — fall back to recovery
         if (this.isRecoverySigner(signer)) {
             this.#deviceRecovery.onSignerSelected();
-            return true;
+            return RECOVERY;
+        }
+
+        const member = await this.#memberRole(locator);
+        if (member != null) {
+            this.#deviceRecovery.onSignerSelected();
+            return member;
         }
 
         throw new Error(`Signer "${locator}" is not registered in this wallet.`);
@@ -1194,27 +1247,55 @@ export class Wallet<C extends Chain> {
      * Resolve a server signer: prefer a derivation already registered on-chain, else fall back
      * to the recovery (admin) signer. Returns true if the signer is the admin (recovery) signer.
      */
-    private async resolveServerSigner(signer: ServerSignerConfig): Promise<boolean> {
+    private async resolveServerSigner(signer: ServerSignerConfig): Promise<HeldKeyRole> {
         const existingSigners = await this.signers();
         const registeredLocators = existingSigners.map((s) => s.locator);
+        const memberLocators = this.#quorums(existingSigners).flatMap((quorum) =>
+            quorum.members.map((member) => member.locator)
+        );
         const match: { recoveryIndex: number | null } = { recoveryIndex: null };
-        const resolution = this.#serverSignerResolver.resolveForUseSigner(signer, registeredLocators, () => {
-            match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
-            return match.recoveryIndex != null;
-        });
+        const resolution = this.#serverSignerResolver.resolveForUseSigner(
+            signer,
+            registeredLocators,
+            () => {
+                match.recoveryIndex = this.matchRecoverySigner(signer as SignerConfigForChain<C>);
+                return match.recoveryIndex != null;
+            },
+            memberLocators
+        );
         switch (resolution.kind) {
             case "delegated":
                 this.#deviceRecovery.onSignerSelected();
-                return false;
+                return REGISTERED;
+            case "member":
+                this.#deviceRecovery.onSignerSelected();
+                return (await this.#memberRole(resolution.locator, existingSigners)) ?? REGISTERED;
             case "recovery":
                 if (match.recoveryIndex != null) {
                     this.#signerManager.stripSecretFromRecovery(match.recoveryIndex, resolution.address);
                 }
                 this.#deviceRecovery.onSignerSelected();
-                return true;
+                return RECOVERY;
             case "unregistered":
                 throw new Error(resolution.message);
         }
+    }
+
+    // The wallet's recovery quorums (from its config), then its delegated quorums (from `signers`).
+    #quorums(signers: WalletSigner[]): QuorumSigner[] {
+        return [...this.recoveryMethods.filter(isQuorumSigner), ...signers.filter(isWalletQuorum)];
+    }
+
+    // A key that is only a quorum member acts as its quorum (EDD 007 §7 "Role"); a recovery quorum is always active.
+    async #memberRole(locator: string, signers?: WalletSigner[]): Promise<HeldKeyRole | null> {
+        if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), locator).length > 0) {
+            return { kind: "member", status: "active" };
+        }
+        const [delegated] = quorumsWithMember((signers ?? (await this.signers())).filter(isWalletQuorum), locator);
+        if (delegated == null) {
+            return null;
+        }
+        return { kind: "member", status: delegated.status };
     }
 
     /**
@@ -1435,14 +1516,24 @@ export class Wallet<C extends Chain> {
         return this.chain;
     }
 
-    protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
-        await this.approveTransactionInternal(transactionId, options);
+    // `requireHeldMember`: the public approve() fails when no held key can sign; a signer change finishing its own
+    // registration returns it pending instead, since other members sign later.
+    protected async approveTransactionAndWait(
+        transactionId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
+        await this.approveTransactionInternal(transactionId, options, { requireHeldMember });
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
-        const signatureResponse = await this.approveSignatureInternal(signatureId, options);
+    protected async approveSignatureAndWait(
+        signatureId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
+        const signatureResponse = await this.approveSignatureInternal(signatureId, options, { requireHeldMember });
 
         if (
             !("error" in signatureResponse) &&
@@ -1476,17 +1567,63 @@ export class Wallet<C extends Chain> {
         return pendingApprovals;
     }
 
-    // m1 passes heldSigners() and the D3 limit when it lifts the quorum guard on transactions.
-    #approvalSigning(walletSigner: SignerAdapter, options: ApproveOptions | undefined, sign: ApprovalSigning["sign"]) {
+    // An api-key signer's flat entries are approved by the API; on a chain with quorum approvals, quorum members
+    // still sign with the held keys.
+    #apiKeySignable(pendingApprovals: PendingApproval[]): PendingApproval[] {
+        if (!this.chainAdapter.supportsQuorumApprovals) {
+            return [];
+        }
+        return pendingApprovals.filter(isQuorumPendingApproval);
+    }
+
+    // A quorum member may be any key this client holds, the useRecoveryMethod key included (EDD 007 §7 "Approval").
+    // Flat-only approvals keep their keys, so wallets without quorums sign as before.
+    #heldSigners(
+        walletSigner: SignerAdapter,
+        additional: SignerAdapter[],
+        pending: PendingApproval[]
+    ): SignerAdapter[] {
+        if (pending.some(isQuorumPendingApproval)) {
+            return this.#signerManager.heldSigners(additional);
+        }
+        return [...additional, walletSigner];
+    }
+
+    #approvalSigning(
+        walletSigner: SignerAdapter,
+        options: ApproveOptions | undefined,
+        pending: PendingApproval[],
+        sign: ApprovalSigning["sign"]
+    ) {
         return {
-            held: [...(options?.additionalSigners ?? []), walletSigner],
-            limit: "remaining",
+            held: this.#heldSigners(walletSigner, options?.additionalSigners ?? [], pending),
+            limit: "all",
             sign,
             resolveMissing: (locator) => this.#resolveMissingDeviceSigner(locator),
         } satisfies ApprovalSigning;
     }
 
-    protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
+    // A wrong key must not look like a recorded approval: a quorum that still waits, with no held key among its
+    // members, is this client's mistake, as a flat entry with no held key already is.
+    #requireHeldMember(pending: PendingApproval[], held: SignerAdapter[]): void {
+        const heldLocators = held.map((signer) => signer.locator());
+        const { quorums } = splitPendingApprovals(pending);
+        if (quorumsAwaitOnlyOthers(quorums, heldLocators)) {
+            const waiting = quorums
+                .filter((entry) => entry.quorumApprovals.remaining > 0)
+                .map((entry) => entry.signer.locator)
+                .join(", ");
+            throw new InvalidSignerError(
+                `None of the keys this client holds (${heldLocators.join(", ")}) is a member of the quorum still approving this request (${waiting})`
+            );
+        }
+    }
+
+    protected async approveSignatureInternal(
+        signatureId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
         if (!this.chainAdapter.supportsSignatures) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
@@ -1501,8 +1638,10 @@ export class Wallet<C extends Chain> {
             throw new SignatureNotAvailableError(JSON.stringify(signature));
         }
 
-        // API key signers approve automatically
-        if (walletSigner.type === "api-key") {
+        const pendingApprovals = signature.approvals?.pending ?? [];
+
+        const signable = walletSigner.type === "api-key" ? this.#apiKeySignable(pendingApprovals) : pendingApprovals;
+        if (walletSigner.type === "api-key" && signable.length === 0) {
             return signature;
         }
 
@@ -1513,21 +1652,27 @@ export class Wallet<C extends Chain> {
             return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
         }
 
-        const pendingApprovals = signature.approvals?.pending;
+        const signing = this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
+            signer.signMessage(message)
+        );
+        const approvals = await collectApprovals(this.#requireSupportedApprovals(signable), signing);
 
-        if (pendingApprovals == null || pendingApprovals.length === 0) {
+        // Nothing this client holds is pending: a held member already signed, or no held key is a member at all.
+        if (approvals.length === 0) {
+            if (requireHeldMember) {
+                this.#requireHeldMember(signable, signing.held);
+            }
             return signature;
         }
-
-        const approvals = await collectApprovals(
-            this.#requireSupportedApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) => signer.signMessage(message))
-        );
 
         return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
     }
 
-    protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
+    protected async approveTransactionInternal(
+        transactionId: string,
+        options?: ApproveOptions,
+        { requireHeldMember = false }: { requireHeldMember?: boolean } = {}
+    ) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -1539,9 +1684,10 @@ export class Wallet<C extends Chain> {
         await this.#options?.callbacks?.onTransactionStart?.();
 
         const walletSigner = this.#signerManager.require();
+        const pendingApprovals = transaction.approvals?.pending ?? [];
 
-        // API key signers approve automatically
-        if (walletSigner.type === "api-key") {
+        const signable = walletSigner.type === "api-key" ? this.#apiKeySignable(pendingApprovals) : pendingApprovals;
+        if (walletSigner.type === "api-key" && signable.length === 0) {
             return transaction;
         }
 
@@ -1552,19 +1698,19 @@ export class Wallet<C extends Chain> {
             return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
         }
 
-        const pendingApprovals = transaction.approvals?.pending;
+        const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
+        const signing = this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
+            approvalAdapter.signApproval(signer, transaction, message)
+        );
+        const approvals = await collectApprovals(this.#requireSupportedApprovals(signable), signing);
 
-        if (pendingApprovals == null || pendingApprovals.length === 0) {
+        // Nothing this client holds is pending: a held member already signed, or no held key is a member at all.
+        if (approvals.length === 0) {
+            if (requireHeldMember) {
+                this.#requireHeldMember(signable, signing.held);
+            }
             return transaction;
         }
-
-        const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
-        const approvals = await collectApprovals(
-            this.#requireSupportedApprovals(pendingApprovals),
-            this.#approvalSigning(walletSigner, options, (signer, message) =>
-                approvalAdapter.signApproval(signer, transaction, message)
-            )
-        );
 
         return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }

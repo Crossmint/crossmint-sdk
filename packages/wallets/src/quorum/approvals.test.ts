@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PendingApproval } from "../wallets/types";
 import { createQuorumApiEntry, createQuorumPendingApproval } from "../wallets/__tests__/test-helpers";
-import { awaitsQuorumOnly, planMemberApprovals, splitPendingApprovals, toQuorumProgress } from "./approvals";
+import { awaitsQuorumRequest, planMemberApprovals, splitPendingApprovals } from "./approvals";
 
 const MALFORMED_QUORUM_LOCATOR = "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21";
 
@@ -33,45 +33,7 @@ describe("splitPendingApprovals", () => {
     });
 });
 
-describe("toQuorumProgress", () => {
-    it("returns the quorum locator, counts and the pending and submitted member locators", () => {
-        const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
-        const [submittedMember, ...pendingMembers] = quorum.members;
-        const entry = createQuorumPendingApproval({ quorum, pending: pendingMembers, submitted: [submittedMember] });
-
-        expect(toQuorumProgress(entry)).toEqual({
-            quorum: quorum.locator,
-            threshold: 2,
-            remaining: 1,
-            pending: pendingMembers.map((member) => member.locator),
-            submitted: [submittedMember.locator],
-        });
-    });
-
-    it("throws for a malformed quorum locator", () => {
-        const entry = malformedQuorumEntry(createQuorumApiEntry());
-
-        expect(() => toQuorumProgress(entry)).toThrow(`Malformed quorum locator: ${MALFORMED_QUORUM_LOCATOR}`);
-    });
-
-    it.each(["pending", "submitted"] as const)(
-        "throws for a %s member locator that cannot belong to a quorum",
-        (list) => {
-            const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 3 });
-            const [submittedMember, ...pendingMembers] = quorum.members;
-            const entry = createQuorumPendingApproval({
-                quorum,
-                pending: pendingMembers,
-                submitted: [submittedMember],
-            });
-            entry.quorumApprovals[list][0].member.locator = "device:public-key";
-
-            expect(() => toQuorumProgress(entry)).toThrow("Malformed quorum member locator: device:public-key");
-        }
-    );
-});
-
-describe("awaitsQuorumOnly", () => {
+describe("awaitsQuorumRequest", () => {
     const quorumNeedingMembers = () => createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
     const satisfiedQuorum = () => createQuorumPendingApproval({ quorum: createQuorumApiEntry(), remaining: 0 });
 
@@ -89,9 +51,15 @@ describe("awaitsQuorumOnly", () => {
             expected: true,
         },
         {
-            when: "a flat signer is still pending",
+            when: "another party's flat entry is pending next to a quorum that still needs members",
             status: "awaiting-approval",
             pending: () => [flatApproval(), quorumNeedingMembers()],
+            expected: true,
+        },
+        {
+            when: "only flat signers are pending, as before quorums",
+            status: "awaiting-approval",
+            pending: () => [flatApproval()],
             expected: false,
         },
         {
@@ -107,11 +75,21 @@ describe("awaitsQuorumOnly", () => {
             expected: false,
         },
     ])("returns $expected when $when", ({ status, pending, expected }) => {
-        expect(awaitsQuorumOnly({ status, approvals: { pending: pending() } })).toBe(expected);
+        expect(awaitsQuorumRequest({ status, approvals: { pending: pending() } })).toBe(expected);
+    });
+
+    it("returns true when the quorum is satisfied and another party's flat entry is still pending", () => {
+        const satisfied = { signer: { type: "quorum", locator: createQuorumApiEntry().locator } };
+        expect(
+            awaitsQuorumRequest({
+                status: "awaiting-approval",
+                approvals: { pending: [flatApproval()], submitted: [satisfied] },
+            })
+        ).toBe(true);
     });
 
     it("returns false when the operation has no approvals", () => {
-        expect(awaitsQuorumOnly({ status: "awaiting-approval" })).toBe(false);
+        expect(awaitsQuorumRequest({ status: "awaiting-approval" })).toBe(false);
     });
 });
 

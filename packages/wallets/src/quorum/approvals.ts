@@ -6,7 +6,7 @@ import {
     type QuorumMemberLocator,
     type SignerLocator,
 } from "../signers/types";
-import type { PendingApproval, QuorumApprovalProgress } from "../wallets/types";
+import type { PendingApproval } from "../wallets/types";
 import { isSameSignerLocator } from "../utils/signer-locator";
 
 export type QuorumPendingApproval = Extract<PendingApproval, { signer: { type: "quorum" } }>;
@@ -41,26 +41,36 @@ export function splitPendingApprovals(pending: PendingApproval[]): {
     return { flat, quorums };
 }
 
-export function toQuorumProgress(entry: QuorumPendingApproval): QuorumApprovalProgress {
-    const { threshold, remaining, pending, submitted } = entry.quorumApprovals;
-    return {
-        quorum: requireQuorumLocator(entry.signer.locator),
-        threshold,
-        remaining,
-        pending: pending.map(({ member }) => requireQuorumMemberLocator(member.locator)),
-        submitted: submitted.map(({ member }) => requireQuorumMemberLocator(member.locator)),
-    };
-}
-
-/** True when only quorum members can move the operation forward: no flat signer is pending. */
-// Stellar seeds one entry per auth entry, so a quorum's request can also carry a single-signer entry for another
-// party's address; EVM and Solana seed one entry per request, so there the list has one kind only.
-export function awaitsQuorumOnly(operation: { status: string; approvals?: { pending: PendingApproval[] } }): boolean {
+/**
+ * True when a request a quorum takes part in still waits on someone: a member, or another party's auth entry (Stellar
+ * seeds one entry per auth entry). It returns unsigned, as with prepareOnly; a request without a quorum keeps the error.
+ */
+export function awaitsQuorumRequest(operation: {
+    status: string;
+    approvals?: { pending: PendingApproval[]; submitted?: Array<{ signer: { type: string } }> };
+}): boolean {
     if (operation.status !== "awaiting-approval" || operation.approvals == null) {
         return false;
     }
     const { flat, quorums } = splitPendingApprovals(operation.approvals.pending);
-    return flat.length === 0 && quorums.some((entry) => entry.quorumApprovals.remaining > 0);
+    const waitsOnSomeone = flat.length > 0 || quorums.some((entry) => entry.quorumApprovals.remaining > 0);
+    const hasQuorum =
+        quorums.length > 0 || (operation.approvals.submitted ?? []).some((entry) => isQuorumSigner(entry.signer));
+    return waitsOnSomeone && hasQuorum;
+}
+
+/** True when a quorum still needs approvals and none of the held keys is one of its members, pending or submitted. */
+export function quorumsAwaitOnlyOthers(quorums: QuorumPendingApproval[], heldLocators: string[]): boolean {
+    const isHeld = (locator: string) => heldLocators.some((held) => isSameSignerLocator(held, locator));
+    const awaiting = quorums.filter((entry) => entry.quorumApprovals.remaining > 0);
+    return (
+        awaiting.length > 0 &&
+        !awaiting.some((entry) =>
+            [...entry.quorumApprovals.pending, ...entry.quorumApprovals.submitted].some(({ member }) =>
+                isHeld(member.locator)
+            )
+        )
+    );
 }
 
 /** Which pending member messages the held keys sign, per quorum, in pending order. */

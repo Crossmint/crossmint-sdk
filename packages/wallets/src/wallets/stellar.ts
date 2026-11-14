@@ -107,6 +107,8 @@ export class StellarWallet extends Wallet<StellarChain> {
      *     phase-1 `upgrade-wallet` transaction.
      *   - When `prepareOnly` is true and the wallet is already locked (idempotent path):
      *     the prepared phase-2 `migrate-wallet` transaction.
+     *   - When quorum members must still approve phase 1: the phase-1 transaction without
+     *     `hash`; call `migrate()` once it lands.
      *   - Otherwise: the confirmed migrate transaction result.
      */
     @WithLoggerContext({
@@ -135,7 +137,12 @@ export class StellarWallet extends Wallet<StellarChain> {
                 } as Transaction<T extends PrepareOnly<true> ? true : false>;
             }
 
-            await this.approveTransactionAndWait(upgradeTxId);
+            const upgradeResult = await this.approveTransactionAndWait(upgradeTxId);
+            // A quorum still has to approve phase 1, so the wallet is not locked yet: migrate after it lands.
+            if (upgradeResult.hash == null) {
+                walletsLogger.info("stellarWallet.upgrade.phase1.awaitingApproval", { transactionId: upgradeTxId });
+                return upgradeResult as Transaction<T extends PrepareOnly<true> ? true : false>;
+            }
             walletsLogger.info("stellarWallet.upgrade.phase1.success", { transactionId: upgradeTxId });
         } else {
             walletsLogger.info("stellarWallet.upgrade.phase1.skipped", {
